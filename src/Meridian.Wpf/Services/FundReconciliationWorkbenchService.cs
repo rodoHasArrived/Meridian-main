@@ -220,8 +220,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         var criticalOpenBreakCount = items.Count(static item =>
             item.Severity == ReconciliationBreakSeverity.Critical &&
             (item.Status == ReconciliationBreakQueueStatus.Open || item.Status == ReconciliationBreakQueueStatus.InReview));
-        var pendingSignoffCount = items.Count(static item =>
-            string.Equals(item.SignoffStatus, "Pending", StringComparison.OrdinalIgnoreCase));
+        var pendingSignoffCount = items.Count(static item => IsPendingSignoff(item.SignoffStatus));
         var signedOffCount = items.Count(static item =>
             string.Equals(item.SignoffStatus, "SignedOff", StringComparison.OrdinalIgnoreCase));
         var missingCalibrationMetadataCount = items.Count(static item =>
@@ -242,7 +241,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 InReviewBreakCount: group.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview),
                 ResolvedBreakCount: group.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
                 DismissedBreakCount: group.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
-                PendingSignoffCount: group.Count(static item => string.Equals(item.SignoffStatus, "Pending", StringComparison.OrdinalIgnoreCase)),
+                PendingSignoffCount: group.Count(static item => IsPendingSignoff(item.SignoffStatus)),
                 SignedOffCount: group.Count(static item => string.Equals(item.SignoffStatus, "SignedOff", StringComparison.OrdinalIgnoreCase)),
                 LastUpdatedAt: group.Max(static item => item.LastUpdatedAt)))
             .OrderByDescending(static profile => profile.HighestSeverity)
@@ -330,6 +329,11 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             SignedOffCount: profile.SignedOffCount,
             LastUpdatedAtText: FormatTimestamp(profile.LastUpdatedAt));
     }
+
+    private static bool IsPendingSignoff(string? signoffStatus)
+        => string.Equals(signoffStatus, "Pending", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(signoffStatus, "PendingSignoff", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(signoffStatus, "pending-signoff", StringComparison.OrdinalIgnoreCase);
 
     private static FundReconciliationRunRow MapRunRow(FundReconciliationItem item)
     {

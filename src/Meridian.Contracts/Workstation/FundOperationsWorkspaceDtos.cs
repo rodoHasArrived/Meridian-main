@@ -206,8 +206,15 @@ public sealed record FundReportPackProvenanceDto(
     int OpenReconciliationBreakCount,
     int SecurityResolvedCount,
     int SecurityMissingCount,
+    IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers,
     string SourceSnapshotHash,
     int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
+
+public sealed record FundReportPackLineagePointerDto(
+    string ScopeType,
+    string ScopeKey,
+    string EvidenceType,
+    string EvidenceId);
 
 /// <summary>
 /// Structured readiness issue captured when a governed report pack is generated.
@@ -294,10 +301,12 @@ public sealed record FundReportPackHistoryItemDto(
 public enum ReportPackWorkflowStateDto
 {
     Draft = 0,
-    InReview = 1,
-    Approved = 2,
-    Published = 3,
-    Restated = 4
+    Validated = 1,
+    PendingApproval = 2,
+    Approved = 3,
+    Published = 4,
+    Restated = 5,
+    Archived = 6
 }
 
 public sealed record VersionedReportTemplateIdDto(string Name, int Version);

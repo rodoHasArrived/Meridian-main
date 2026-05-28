@@ -47,7 +47,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
     }
 
     /// <inheritdoc />
-    public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
+    public async Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
         var fillSeq = Interlocked.Increment(ref _fillSequence);
 
@@ -84,7 +84,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
             _logger.LogInformation("Paper fill: {Symbol} {Side} {Quantity} @ {Price}",
                 request.Symbol, request.Side, request.Quantity, report.FillPrice);
 
-            return Task.FromResult(report);
+            return report;
         }
 
         // Limit/stop orders are accepted but not immediately filled
@@ -101,7 +101,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
             GatewayOrderId = $"PAPER-{fillSeq}"
         };
 
-        return Task.FromResult(accepted);
+        return accepted;
     }
 
     /// <inheritdoc />

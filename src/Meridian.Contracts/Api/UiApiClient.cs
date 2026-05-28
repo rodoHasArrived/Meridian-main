@@ -246,6 +246,37 @@ public sealed class UiApiClient
     public async Task<List<ReconciliationBreakQueueItem>?> GetReconciliationBreakQueueAsync(CancellationToken ct = default)
         => await GetAsync<List<ReconciliationBreakQueueItem>>(UiApiRoutes.ReconciliationBreakQueue, ct).ConfigureAwait(false);
 
+    public async Task<ReconciliationCalibrationSummaryDto?> GetReconciliationCalibrationSummaryAsync(CancellationToken ct = default)
+        => await GetAsync<ReconciliationCalibrationSummaryDto>(UiApiRoutes.ReconciliationCalibrationSummary, ct).ConfigureAwait(false);
+
+    public async Task<ReconciliationRunDetail?> GetLatestRunReconciliationAsync(string runId, CancellationToken ct = default)
+        => await GetAsync<ReconciliationRunDetail>(
+            UiApiRoutes.WithParam(UiApiRoutes.RunsReconciliation, "runId", runId),
+            ct).ConfigureAwait(false);
+
+    public async Task<ReconciliationRunDetail?> GetReconciliationRunAsync(string reconciliationRunId, CancellationToken ct = default)
+        => await GetAsync<ReconciliationRunDetail>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationRunById, "reconciliationRunId", reconciliationRunId),
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ReviewReconciliationBreakAsync(
+        string breakId,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakReview, "breakId", breakId),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ResolveReconciliationBreakAsync(
+        string breakId,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakResolve, "breakId", breakId),
+            request,
+            ct).ConfigureAwait(false);
+
     public async Task<List<FundReportPackHistoryItemDto>?> GetFundReportPackHistoryAsync(
         string fundProfileId,
         int limit = 20,

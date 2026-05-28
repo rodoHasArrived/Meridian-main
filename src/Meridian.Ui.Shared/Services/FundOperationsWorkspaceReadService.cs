@@ -308,6 +308,9 @@ public sealed class FundOperationsWorkspaceReadService
             RunCount: runs.Count,
             SecurityMissingCount: securityMissingCount,
             Formats: formats,
+            StaleReplayCount: 0,
+            UnresolvedSecurityMasterConflictCount: securityValidationResults.Count(result =>
+                result.Report.Issues.Any(issue => issue.Severity is SecurityValidationSeverityDto.Critical or SecurityValidationSeverityDto.Error)),
             SecurityValidationResults: securityValidationResults));
         var status = _reportPackValidationService.ResolveStatus(validationIssues);
         var lifecycleEvents = _reportPackValidationService.BuildGenerationLifecycle(
@@ -324,6 +327,7 @@ public sealed class FundOperationsWorkspaceReadService
             OpenReconciliationBreakCount: reconciliation.OpenBreakCount,
             SecurityResolvedCount: securityResolvedCount,
             SecurityMissingCount: securityMissingCount,
+            LineagePointers: BuildLineagePointers(report, runs, reconciliation),
             SourceSnapshotHash: ComputeSourceSnapshotHash(
                 normalizedFundProfileId,
                 asOf,
@@ -1305,6 +1309,37 @@ public sealed class FundOperationsWorkspaceReadService
 
         var json = JsonSerializer.SerializeToUtf8Bytes(source, ReportArtifactJsonOptions);
         return Convert.ToHexString(SHA256.HashData(json)).ToLowerInvariant();
+    }
+
+    private static IReadOnlyList<FundReportPackLineagePointerDto> BuildLineagePointers(
+        ReportPack report,
+        IReadOnlyList<StrategyRunEntry> runs,
+        ReconciliationSummary reconciliation)
+    {
+        var pointers = new List<FundReportPackLineagePointerDto>();
+        foreach (var run in runs)
+        {
+            pointers.Add(new FundReportPackLineagePointerDto("report", "summary", "run", run.RunId));
+        }
+
+        foreach (var line in report.TrialBalance)
+        {
+            var lineKey = string.IsNullOrWhiteSpace(line.Symbol)
+                ? line.AccountName
+                : $"{line.AccountName}:{line.Symbol}";
+            pointers.Add(new FundReportPackLineagePointerDto("line", lineKey, "ledger-account", line.AccountName));
+            if (!string.IsNullOrWhiteSpace(line.Symbol))
+            {
+                pointers.Add(new FundReportPackLineagePointerDto("line", lineKey, "security", line.Symbol));
+            }
+        }
+
+        if (reconciliation.RunCount > 0)
+        {
+            pointers.Add(new FundReportPackLineagePointerDto("section", "reconciliation", "reconciliation-summary", $"runs:{reconciliation.RunCount};open-breaks:{reconciliation.OpenBreakCount}"));
+        }
+
+        return pointers;
     }
 
     private static decimal SumBalance(IEnumerable<FundTrialBalanceLine> lines, LedgerAccountType accountType)

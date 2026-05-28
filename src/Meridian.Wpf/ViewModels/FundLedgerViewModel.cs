@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -72,6 +73,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _reconciliationSnapshotWarningText = "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.";
     private string _reportPackOwnershipText = "Governance operator sign-off is pending.";
     private string _reportPackSnapshotWarningText = "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.";
+    private WorkstationStateModel _reportPackReadinessState = WorkstationStateModel.Empty(
+        "Report pack waiting for fund context",
+        "Select a fund profile and refresh the preview before distributing reporting artifacts.",
+        "Refresh Preview",
+        "Report Pack");
     private bool _isReportPackLoading;
     private GovernanceReportKindDto _selectedReportKind = GovernanceReportKindDto.TrialBalance;
     private int _selectedTabIndex;
@@ -532,6 +538,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _reportPackSnapshotWarningText, value);
     }
 
+    public WorkstationStateModel ReportPackReadinessState
+    {
+        get => _reportPackReadinessState;
+        private set => SetProperty(ref _reportPackReadinessState, value);
+    }
+
     public bool IsReportPackLoading
     {
         get => _isReportPackLoading;
@@ -805,6 +817,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _reportPackPreview = null;
         _governanceLifecycle = null;
         ReportPackStatusText = "Governance report-pack preview is waiting for a fund context.";
+        ReportPackReadinessState = WorkstationStateModel.Empty(
+            "Report pack waiting for fund context",
+            "Select a fund profile and refresh the preview before distributing reporting artifacts.",
+            "Refresh Preview",
+            "Report Pack");
         ReportPackKindText = GovernanceReportKindDto.TrialBalance.ToString();
         ReportPackAsOfText = "-";
         ReportPackNetAssetsText = "-";
@@ -1545,6 +1562,89 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             string.IsNullOrWhiteSpace(traceability)
                 ? "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts."
                 : $"{traceability} Refresh the preview before distributing reporting artifacts.");
+        ReportPackReadinessState = BuildReportPackReadinessState(reportOwner, readiness, traceability);
+    }
+
+    private WorkstationStateModel BuildReportPackReadinessState(
+        string reportOwner,
+        string? readiness,
+        string? traceability)
+    {
+        if (_reportPackPreview is null)
+        {
+            var action = new WorkstationActionPostureModel(
+                "Refresh Preview",
+                "Build the report-pack preview from the current fund, reconciliation, and ledger state.",
+                "FundReportPack",
+                reportOwner,
+                WorkstationReadinessTone.Recovery,
+                WorkspaceTone.Warning);
+
+            return WorkstationStateModel.Recovery(
+                "Report pack preview needed",
+                ReportPackStatusText,
+                action,
+                recoveryActions:
+                [
+                    new WorkstationRecoveryActionModel(
+                        "Refresh report pack",
+                        "Refresh preview after accounting, reconciliation, and audit evidence is loaded.",
+                        "FundReportPack")
+                ],
+                signoffRequirement: new WorkstationSignoffRequirementModel(
+                    reportOwner,
+                    "Pending preview",
+                    "Final sign-off is blocked until a current preview is available."));
+        }
+
+        var evidenceLinks = new[]
+        {
+            new WorkstationEvidenceLinkModel(
+                "Report-pack preview",
+                "FundReportPack",
+                _reportPackPreview.ReportKind.ToString(),
+                $"Generated {ReportPackGeneratedAtText}"),
+            new WorkstationEvidenceLinkModel(
+                "Audit traceability",
+                "FundAuditTrail",
+                "governance lifecycle",
+                string.IsNullOrWhiteSpace(traceability) ? "Traceability not reported by the shared lifecycle." : traceability)
+        };
+
+        var detail = string.IsNullOrWhiteSpace(readiness)
+            ? ReportPackStatusText
+            : $"{ReportPackStatusText} {readiness}";
+        var actionPosture = new WorkstationActionPostureModel(
+            "Review handoff",
+            "Confirm preview freshness, ledger evidence, reconciliation state, and report owner before distribution.",
+            "FundReportPack",
+            reportOwner,
+            WorkstationReadinessTone.EvidenceLinked,
+            WorkspaceTone.Info);
+
+        return new WorkstationStateModel(
+            WorkstationStateKind.Ready,
+            "Report pack evidence linked",
+            detail,
+            actionPosture.Label,
+            actionPosture.Target,
+            $"Generated {ReportPackGeneratedAtText}",
+            "\uE8A5",
+            WorkspaceTone.Success,
+            WorkstationReadinessTone.EvidenceLinked,
+            actionPosture,
+            evidenceLinks,
+            RecoveryActions:
+            [
+                new WorkstationRecoveryActionModel(
+                    "Refresh before distribution",
+                    "Refresh the preview after any ledger, reconciliation, or approval change.",
+                    "FundReportPack")
+            ],
+            SignoffRequirement: new WorkstationSignoffRequirementModel(
+                reportOwner,
+                string.IsNullOrWhiteSpace(readiness) ? "Pending operator sign-off" : readiness,
+                "Sign-off should reference the current preview and audit traceability."));
     }
 
     private static (string Mode, string Title, string Subtitle) DescribeWorkbench(FundOperationsTab tab) => tab switch

@@ -33,7 +33,9 @@ public sealed record EvidenceArtifactRefDto(
     string? Route,
     DateTimeOffset GeneratedAt,
     string? Hash,
-    bool Retained);
+    bool Retained,
+    string? CanonicalSubjectKind = null,
+    string? CanonicalSubjectId = null);
 
 public sealed record EvidenceNodeDto(
     string EvidenceId,
@@ -118,6 +120,9 @@ public sealed record EvidenceCompletenessDto(
     IReadOnlyList<string> BlockingWorkItemIds)
 {
     public IReadOnlyList<EvidenceValidationIssueDto> ValidationIssues { get; init; } = [];
+    public int BlockingIssueCount { get; init; }
+    public int WarningIssueCount { get; init; }
+    public IReadOnlyList<string> OrphanEvidenceIds { get; init; } = [];
 }
 
 public sealed record EvidencePacketDto(

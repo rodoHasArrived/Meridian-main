@@ -141,7 +141,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "ops-user",
                 Reviewer: "fund-controller",
                 Rationale: "All gates clean — submitting period close for controller sign-off",
-                ReportPackId: "report-pack-may-2026"));
+                ReportPackId: "report-pack-may-2026",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         submitted.Success.Should().BeTrue();
         submitted.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
@@ -155,7 +156,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "fund-controller",
                 Reviewer: "fund-controller",
                 Rationale: "Reviewed and approved — all evidence clean and consistent",
-                ReportPackId: "report-pack-may-2026"));
+                ReportPackId: "report-pack-may-2026",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         approved.Success.Should().BeTrue();
         approved.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ReadyForClose);
@@ -169,7 +171,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 approved.Workflow.Version,
                 "ops-user",
                 Rationale: "Closing May 2026 accounting period",
-                ReportPackId: "report-pack-may-2026"));
+                ReportPackId: "report-pack-may-2026",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed,
@@ -250,7 +253,12 @@ public sealed class FundOpsCloseLaneScenarioTests
                         null,
                         "AAPL",
                         "Confirm settlement timing with custodian",
-                        [])
+                        [],
+                        new OperationsContinuityCorrelationKeysDto(
+                            RunId: "run-close-break-test",
+                            FundAccountId: fundAccountId,
+                            LedgerBatchId: "batch-break-test",
+                            ReconciliationCaseId: breakId))
                 ]));
 
         reconciled.Success.Should().BeTrue();
@@ -278,15 +286,18 @@ public sealed class FundOpsCloseLaneScenarioTests
         var submitted = await service.SubmitForApprovalAsync(workflowId,
             new OperationsSubmitApprovalRequestDto(
                 posture.Workflow!.Version, "ops-user", "controller",
-                "Break resolved — submitting for close", "report-pack-break-test"));
+                "Break resolved — submitting for close", "report-pack-break-test",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var approved = await service.ApproveWorkflowAsync(workflowId,
             new OperationsApprovalDecisionRequestDto(
                 submitted.Workflow!.Version, "controller", "controller",
-                "Reviewed resolution evidence — approved", "report-pack-break-test"));
+                "Reviewed resolution evidence — approved", "report-pack-break-test",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         var closed = await service.CloseWorkflowAsync(workflowId,
             new OperationsCloseWorkflowRequestDto(
                 approved.Workflow!.Version, "ops-user",
-                "Period closed after break resolution", "report-pack-break-test"));
+                "Period closed after break resolution", "report-pack-break-test",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
@@ -382,7 +393,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 "ops-user",
                 Reviewer: "controller",
                 Rationale: "Report pack confirmed — submitting for approval",
-                ReportPackId: "report-pack-rp-gate"));
+                ReportPackId: "report-pack-rp-gate",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         submitted.Success.Should().BeTrue(
             "submission must succeed once the report pack is marked ready");
@@ -402,6 +414,16 @@ public sealed class FundOpsCloseLaneScenarioTests
             derivation,
             new RecordingLedgerJournalStore());
     }
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
+    [
+        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
+        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
+        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
+        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
+    ];
 
     private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid? aggregateId = null, Guid? periodId = null)
     {

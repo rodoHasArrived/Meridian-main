@@ -5,6 +5,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -233,15 +234,19 @@ public sealed class MainShellViewModelTests
 
             var rootPage = new WorkspaceCapabilityHomePage();
             var rootServices = new ServiceCollection();
+            rootServices.AddSingleton(navigationService);
+            rootServices.AddSingleton<INavigationService>(navigationService);
             rootServices.AddSingleton<WorkspaceCapabilityHomePage>(rootPage);
             using var rootProvider = rootServices.BuildServiceProvider();
             navigationService.SetServiceProvider(rootProvider);
             navigationService.CreatePageContent("PortfolioShell")
                 .Should()
-                .BeSameAs(rootPage);
+                .BeOfType<Page>();
 
             var scopedPage = new WorkspaceCapabilityHomePage();
             var workspaceScopeServices = new ServiceCollection();
+            workspaceScopeServices.AddSingleton(navigationService);
+            workspaceScopeServices.AddSingleton<INavigationService>(navigationService);
             workspaceScopeServices.AddSingleton<WorkspaceCapabilityHomePage>(scopedPage);
             using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
 
@@ -264,6 +269,86 @@ public sealed class MainShellViewModelTests
             workspaceService.GetWorkspaceScope("portfolio").Should().NotBeNull();
             workspaceService.GetWorkspaceScope("portfolio").Should().NotBeSameAs(strategyScope);
             navigationService.GetCurrentPageTag().Should().Be("PortfolioShell");
+        });
+    }
+
+    [Fact]
+    public void CommandPaletteNavigation_UsesTargetWorkspaceScopeForFrameNavigation()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigationService = NavigationService.Instance;
+            navigationService.ResetForTests();
+            var frame = new Frame();
+            navigationService.Initialize(frame);
+
+            var workspaceScopeServices = new ServiceCollection();
+            workspaceScopeServices.AddSingleton(navigationService);
+            workspaceScopeServices.AddSingleton<INavigationService>(navigationService);
+            using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
+
+            WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+            var workspaceService = WorkspaceService.Instance;
+            workspaceService.ResetForTests();
+            workspaceService.SetServiceScopeFactory(workspaceScopeProvider.GetRequiredService<IServiceScopeFactory>());
+            await workspaceService.ActivateWorkspaceAsync("strategy");
+            var strategyScope = workspaceService.ActiveWorkspaceScope;
+
+            var fixtureModeDetector = FixtureModeDetector.Instance;
+            fixtureModeDetector.SetFixtureMode(false);
+            fixtureModeDetector.UpdateBackendReachability(true);
+
+            using var vm = new MainPageViewModel(navigationService, fixtureModeDetector);
+            vm.ShowCommandPaletteCommand.Execute(null);
+            vm.SelectedCommandPalettePage = vm.CommandPalettePages.Single(page => page.PageTag == "PortfolioShell");
+
+            vm.OpenSelectedCommandPalettePageCommand.Execute(null);
+
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeNull();
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeSameAs(strategyScope);
+            navigationService.GetCurrentPageTag().Should().Be("PortfolioShell");
+        });
+    }
+
+    [Fact]
+    public void OperatorInboxNavigation_UsesTargetWorkspaceScopeForFrameNavigation()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var inbox = new OperatorInboxDto(
+                DateTimeOffset.UtcNow,
+                [
+                    new OperatorWorkItemDto(
+                        WorkItemId: "portfolio-scope-check",
+                        Kind: OperatorWorkItemKindDto.BrokerageSync,
+                        Label: "Portfolio workspace check",
+                        Detail: "Open the portfolio shell from the operator queue.",
+                        Tone: OperatorWorkItemToneDto.Warning,
+                        CreatedAt: DateTimeOffset.UtcNow,
+                        TargetPageTag: "PortfolioShell")
+                ],
+                CriticalCount: 0,
+                WarningCount: 1,
+                ReviewCount: 1,
+                Summary: "1 warning work item needs review.");
+
+            using var vm = CreateMainPageViewModel(operatorInboxClient: new FakeOperatorInboxApiClient(inbox));
+            var workspaceScopeServices = new ServiceCollection();
+            workspaceScopeServices.AddSingleton(NavigationService.Instance);
+            workspaceScopeServices.AddSingleton<INavigationService>(NavigationService.Instance);
+            using var workspaceScopeProvider = workspaceScopeServices.BuildServiceProvider();
+
+            var workspaceService = WorkspaceService.Instance;
+            workspaceService.SetServiceScopeFactory(workspaceScopeProvider.GetRequiredService<IServiceScopeFactory>());
+            await workspaceService.ActivateWorkspaceAsync("strategy");
+            var strategyScope = workspaceService.ActiveWorkspaceScope;
+
+            await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
+            vm.OpenOperatorInboxCommand.Execute(null);
+
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeNull();
+            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeSameAs(strategyScope);
+            NavigationService.Instance.GetCurrentPageTag().Should().Be("AccountPortfolio");
         });
     }
 

@@ -12,7 +12,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="280" />
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0"
                        Text="{Binding ElementName=Root, Path=State.Glyph}"
@@ -35,13 +35,22 @@
                            FontSize="12"
                            Foreground="{StaticResource ConsoleTextMutedBrush}"
                            TextWrapping="Wrap" />
+                <Border Margin="0,10,0,0"
+                        Style="{StaticResource WorkstationSignifierEvidenceChipStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding ElementName=Root, Path=State.ActionPosture.Owner}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding ElementName=Root, Path=State.ActionPosture.Detail}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
             <Border Grid.Column="2"
-                    CornerRadius="10"
-                    Padding="10,7"
-                    BorderBrush="{StaticResource ConsoleBorderBrush}"
-                    BorderThickness="1"
-                    Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                    Style="{StaticResource WorkstationSignifierActionPanelStyle}"
                     Margin="12,0,0,0"
                     VerticalAlignment="Center">
                 <StackPanel>
@@ -54,6 +63,49 @@
                                FontSize="11"
                                Foreground="{StaticResource ConsoleTextMutedBrush}"
                                TextWrapping="Wrap" />
+                    <Border Margin="0,8,0,0"
+                            Style="{StaticResource WorkstationSignifierSignoffChipStyle}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ElementName=Root, Path=State.SignoffRequirement.Role}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource WarningColorBrush}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ElementName=Root, Path=State.SignoffRequirement.Status}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ElementName=Root, Path=State.SignoffRequirement.Detail}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <ItemsControl ItemsSource="{Binding ElementName=Root, Path=State.VisibleEvidenceLinks}"
+                                  Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource WorkstationSignifierEvidenceChipStyle}" Margin="0,0,0,6">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Target}" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding ElementName=Root, Path=State.VisibleRecoveryActions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource WorkstationSignifierRecoveryChipStyle}" Margin="0,0,0,6">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource InfoColorBrush}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </Border>
         </Grid>

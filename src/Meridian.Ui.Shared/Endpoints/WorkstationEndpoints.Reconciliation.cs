@@ -5,7 +5,7 @@ using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Services.Services.Reconciliation;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +15,14 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class WorkstationEndpoints
 {
+    private sealed record ReconciliationBreakBulkActionRequest(
+        IReadOnlyList<string> BreakIds,
+        string Action,
+        string? Actor = null,
+        string? Assignee = null,
+        ReconciliationBreakQueueStatus? Status = null,
+        string? CommentTemplate = null);
+
     private static void MapReconciliationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (
@@ -104,7 +112,7 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
 
-        group.MapGet("/api/workstation/accounting/continuity/statement-runs", async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
         {
             if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             return Results.Json(await service.ListStatementRunsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
@@ -112,7 +120,7 @@ public static partial class WorkstationEndpoints
         .WithName("ListStatementRuns")
         .Produces<IReadOnlyList<StatementRunSummaryDto>>(200);
 
-        group.MapGet("/api/workstation/accounting/continuity/statement-runs/{runId}", async (string runId, [FromServices] IReconciliationApiService? service, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (string runId, [FromServices] IReconciliationApiService? service, HttpContext context) =>
         {
             if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             var detail = await service.GetStatementRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
@@ -122,7 +130,7 @@ public static partial class WorkstationEndpoints
         .Produces<StatementRunSummaryDto>(200)
         .Produces(404);
 
-        group.MapGet("/api/workstation/accounting/continuity/statement-exceptions", async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementExceptions), async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
         {
             if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             return Results.Json(await service.ListOpenExceptionsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
@@ -303,7 +311,7 @@ public static partial class WorkstationEndpoints
         .Produces(404);
 
 
-        group.MapPost("/reconciliation/break-queue/bulk", async (
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue) + "/bulk", async (
             ReconciliationBreakBulkActionRequest request,
             HttpContext context,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
@@ -331,7 +339,7 @@ public static partial class WorkstationEndpoints
                 var next = item;
                 if (string.Equals(request.Action, "assign", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(request.Assignee))
                 {
-                    next = item with { AssignedTo = request.Assignee, LifecycleState = ReconciliationCaseLifecycleState.Assigned, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk assigned" };
+                    next = item with { AssignedTo = request.Assignee, LifecycleState = ReconciliationCaseLifecycleState.InReview, LastUpdatedAt = DateTimeOffset.UtcNow, LifecycleRationale = request.CommentTemplate ?? "Bulk assigned" };
                 }
                 else if (string.Equals(request.Action, "status", StringComparison.OrdinalIgnoreCase) && request.Status.HasValue)
                 {

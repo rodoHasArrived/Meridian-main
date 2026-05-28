@@ -20,6 +20,7 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
@@ -126,34 +127,44 @@ public static partial class WorkstationEndpoints
 
         group.MapPost("/collateral/ingest", (
             IReadOnlyList<CollateralInputRow> rows,
-            CollateralIngestionBuffer buffer) =>
+            HttpContext context) =>
         {
-            foreach (var row in rows)
+            if (!HasOperationsContinuityMutationPermission(context))
             {
-                buffer.Ingest(row);
+                return Results.Forbid();
             }
 
-            return Results.Accepted(value: new { ingested = rows.Count });
+            const int maxRowsPerRequest = 1_000;
+            if (rows.Count > maxRowsPerRequest)
+            {
+                return Results.BadRequest(new { error = $"A maximum of {maxRowsPerRequest} collateral rows can be ingested per request." });
+            }
+
+            var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
+            if (buffer is null)
+            {
+                return Results.Accepted(value: new { ingested = 0, buffered = false });
+            }
+
+            var ingested = 0;
+            foreach (var row in rows)
+            {
+                if (!buffer.TryIngest(row))
+                {
+                    return Results.StatusCode(StatusCodes.Status429TooManyRequests);
+                }
+
+                ingested++;
+            }
+
+            return Results.Accepted(value: new { ingested, buffered = true });
         })
         .WithName("IngestCollateralRows")
-        .Produces(202);
-
-        group.MapGet("/collateral/exposure", (
-            CollateralIngestionBuffer buffer,
-            CollateralExposureService service) =>
-        {
-            var batch = buffer.DrainBatch(5_000);
-            var snapshots = service.BuildSnapshots(batch);
-            var breaches = service.EvaluateBreaches(snapshots);
-            return Results.Json(new
-            {
-                generatedAt = DateTimeOffset.UtcNow,
-                counterparties = snapshots,
-                breaches
-            }, jsonOptions);
-        })
-        .WithName("GetCollateralExposure")
-        .Produces(200);
+        .Produces(202)
+        .Produces(400)
+        .Produces(403)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet("/workflows/presets", async (HttpContext context) =>
         {
@@ -314,11 +325,19 @@ public static partial class WorkstationEndpoints
 
         group.MapGet("/collateral/exposure", (HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return Results.Forbid();
+            }
+
             var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
-            return Results.Json(service.BuildSnapshot(), jsonOptions);
+            var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
+            var rows = buffer?.DrainBatch(5_000) ?? [];
+            return Results.Json(BuildCollateralExposureSnapshot(service, rows), jsonOptions);
         })
         .WithName("GetWorkstationCollateralExposure")
-        .Produces<ExposureSnapshotDto>(200);
+        .Produces<ExposureSnapshotDto>(200)
+        .Produces(403);
 
         group.MapGet("/operator/inbox", async (Guid? fundAccountId, HttpContext context) =>
         {
@@ -373,8 +392,6 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationPortfolioSummary")
         .Produces<WorkstationPortfolioSummaryPayload>(200);
-
-        MapOperationsContinuityEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
             Guid? fundAccountId,
@@ -885,7 +902,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
             var result = await service.ApproveWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -917,7 +934,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
             var result = await service.RejectWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1068,10 +1085,9 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var currentUser = EndpointHelpers.GetCurrentUser(context);
-            if (string.IsNullOrWhiteSpace(currentUser))
+            if (!TryResolveCurrentUser(context, out var currentUser))
             {
-                return EndpointHelpers.Unauthorized();
+                return Results.Unauthorized();
             }
 
             var trustedRequest = request with { Actor = currentUser };
@@ -1084,6 +1100,11 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
             {
@@ -1157,11 +1178,57 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationApiService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var runs = await service.ListStatementRunsAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(runs, jsonOptions);
+        })
+        .WithName("ListStatementRuns")
+        .Produces<IReadOnlyList<StatementRunSummaryDto>>(200)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (string runId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationApiService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await service.GetStatementRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
+        })
+        .WithName("GetStatementRun")
+        .Produces<StatementRunSummaryDto>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementExceptions), async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationApiService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var exceptions = await service.ListOpenExceptionsAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(exceptions, jsonOptions);
+        })
+        .WithName("ListStatementExceptions")
+        .Produces<IReadOnlyList<StatementRunExceptionDto>>(200)
+        .Produces(501);
+
         group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
         {
             if (!CanViewReconciliationBreakQueue(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
@@ -1236,7 +1303,7 @@ public static partial class WorkstationEndpoints
 
             if (!CanMutateReconciliationBreakQueue(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
@@ -1282,7 +1349,7 @@ public static partial class WorkstationEndpoints
 
             if (!CanMutateReconciliationBreakQueue(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
@@ -1971,6 +2038,76 @@ public static partial class WorkstationEndpoints
         }).ExcludeFromDescription();
     }
 
+    private static ExposureSnapshotDto BuildCollateralExposureSnapshot(
+        CollateralExposureService service,
+        IReadOnlyList<CollateralInputRow> rows)
+    {
+        var sourceRows = rows.Count == 0 ? BuildFallbackCollateralRows() : rows;
+        var snapshots = service.BuildSnapshots(sourceRows);
+        var breaches = service.EvaluateBreaches(snapshots);
+        var breachDtos = breaches.Select(static breach => new ThresholdBreachDto(
+            breach.Counterparty,
+            breach.Severity.ToString(),
+            breach.CoverageRatio,
+            breach.Severity == ThresholdSeverity.HardBreach ? breach.HardBreachLevel : breach.EarlyWarningLevel,
+            DateTimeOffset.UtcNow,
+            breach.Message)).ToArray();
+
+        var counterpartyDtos = snapshots.Select(static snapshot => new CounterpartyExposureDto(
+            snapshot.Counterparty,
+            snapshot.NetExposure,
+            snapshot.GrossExposure,
+            snapshot.CollateralBalance,
+            snapshot.HaircutAdjustedCollateral,
+            new MarginRequirementDto(0m, snapshot.RequiredCollateral, snapshot.RequiredCollateral),
+            snapshot.HaircutAdjustedCollateral >= snapshot.RequiredCollateral,
+            snapshot.ProductDecomposition.Select(static product => new ProductExposureDto(
+                product.ProductType,
+                product.NetExposure,
+                product.GrossExposure)).ToArray())).ToArray();
+
+        var calls = breaches
+            .Where(static breach => breach.Severity == ThresholdSeverity.HardBreach)
+            .Select(static breach => new CollateralCallDto(
+                $"call-{NormalizeOperatorInboxToken(breach.Counterparty)}",
+                breach.Counterparty,
+                Math.Max(0m, breach.HardBreachLevel - breach.CoverageRatio),
+                0m,
+                DateTimeOffset.UtcNow.AddDays(1),
+                "Open",
+                breach.Message))
+            .ToArray();
+
+        var trend = Enumerable.Range(0, 12)
+            .Select(index => new ExposureTrendPointDto(
+                DateTimeOffset.UtcNow.AddHours(index - 11),
+                snapshots.Sum(static snapshot => snapshot.NetExposure),
+                snapshots.Count == 0 ? 0m : snapshots.Average(static snapshot => snapshot.CollateralCoverageRatio)))
+            .ToArray();
+
+        return new ExposureSnapshotDto(
+            DateTimeOffset.UtcNow,
+            rows.Count == 0 ? "micro-batch fixture" : "micro-batch buffer",
+            counterpartyDtos,
+            breachDtos,
+            calls,
+            trend);
+    }
+
+    private static IReadOnlyList<CollateralInputRow> BuildFallbackCollateralRows() =>
+    [
+        new(
+            DateTimeOffset.UtcNow,
+            "Prime-A",
+            "Equity Swap",
+            1_000_000m,
+            -250_000m,
+            50_000m,
+            "cash",
+            200_000m,
+            100_000m)
+    ];
+
     private static string WorkstationSubroute(string route)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(route);
@@ -2599,7 +2736,7 @@ public static partial class WorkstationEndpoints
             CriticalCount: criticalCount,
             WarningCount: warningCount,
             ReviewCount: reviewCount,
-            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount));
+            Summary: BuildOperatorInboxSummary(items, criticalCount, warningCount, readiness.PortfolioLedgerWorkflowStatus));
     }
 
     private static void RecordOperatorInboxContinuityMetrics(IReadOnlyList<OperatorWorkItemDto> items)
@@ -2844,7 +2981,8 @@ public static partial class WorkstationEndpoints
     private static string BuildOperatorInboxSummary(
         IReadOnlyCollection<OperatorWorkItemDto> items,
         int criticalCount,
-        int warningCount)
+        int warningCount,
+        PortfolioLedgerWorkflowStatusSnapshotDto? statusSnapshot)
     {
         if (items.Count == 0)
         {
@@ -2853,15 +2991,15 @@ public static partial class WorkstationEndpoints
 
         if (criticalCount > 0)
         {
-            return $"{criticalCount} critical and {warningCount} warning work item(s) need review.";
+            return $"{criticalCount} critical and {warningCount} warning work item(s) need review. {statusSnapshot?.Summary}".Trim();
         }
 
         if (warningCount > 0)
         {
-            return $"{warningCount} warning work item(s) need review.";
+            return $"{warningCount} warning work item(s) need review. {statusSnapshot?.Summary}".Trim();
         }
 
-        return $"{items.Count} informational work item(s) are available.";
+        return $"{items.Count} informational work item(s) are available. {statusSnapshot?.Summary}".Trim();
     }
 
     private static string BuildOperatorInboxScopedId(string prefix, string scope)
@@ -3921,7 +4059,9 @@ public static partial class WorkstationEndpoints
                 SecurityIssues: runsWithSecurityIssues),
             CashFlow: BuildGovernanceWorkspaceCashFlowSummary(details),
             Reporting: BuildGovernanceReportingPayload(),
-            ControlCenter: BuildGovernanceControlCenterPayload(breakQueue.Cast<ReconciliationBreakQueueItem>().ToArray(), BuildGovernanceReportingPayload()),
+            ControlCenter: BuildGovernanceControlCenterPayload(
+                await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false),
+                BuildGovernanceReportingPayload()),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
@@ -5984,30 +6124,16 @@ public static partial class WorkstationEndpoints
     }
 
     private static bool CanViewReconciliationBreakQueue(HttpContext context)
-    {
-        const UserPermission requiredPermission = UserPermission.ViewTrades;
-
-        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
-        {
-            return (permissionsFromContext & requiredPermission) == requiredPermission;
-        }
-
-        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is UserRole roleFromContext)
-        {
-            return RolePermissions.HasPermission(roleFromContext, requiredPermission);
-        }
-
-        return false;
-    }
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewTrades,
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ModifySecurityMaster,
+            UserPermission.AdminMaintenance);
 
     private static bool CanMutateReconciliationBreakQueue(HttpContext context)
-    {
-        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is not UserRole role)
-        {
-            return false;
-        }
+        => HasReconciliationMutationPermission(context);
 
-        return role is UserRole.Admin or UserRole.Developer or UserRole.Accounting;
     private static void MapStrategyDesignerEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
         group.MapGet("/strategy/designer/templates", (HttpContext context) =>
@@ -6300,6 +6426,12 @@ public static partial class WorkstationEndpoints
             UserPermission.ManageDirectLending,
             UserPermission.ModifySecurityMaster,
             UserPermission.AdminMaintenance);
+
+    private static bool HasOperationsContinuityMutationPermission(HttpContext context)
+        => HasReconciliationMutationPermission(context);
+
+    private static bool HasGovernedWorkflowReopenPermission(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
 
     private static bool HasSecurityMasterOverrideApprovalPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(

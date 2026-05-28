@@ -293,7 +293,7 @@ export type OperatorWorkItemKind =
   | "LedgerPeriodClose";
 
 export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
-export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked";
+export type TradingAcceptanceGateStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unknown";
 
 export interface OperatorWorkItem {
   workItemId: string;
@@ -532,6 +532,7 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   approvals: OperationsApproval[];
   reportPackReadiness: OperationsReportPackReadiness;
   closeChecklist: OperationsCloseChecklistTask[];
+  closeReadiness: OperationsCloseReadiness | null;
   evidenceLinks: OperationsEvidenceLink[];
   blockers: OperationsWorkflowBlocker[];
 }
@@ -542,6 +543,8 @@ export interface OperationsCloseChecklistTask {
   label: string;
   owner: string;
   dueDate: string | null;
+  requiredApprovalCount: number;
+  expiresOn: string | null;
   status: string;
   blockingReason: string | null;
   evidencePointer: string | null;
@@ -549,6 +552,22 @@ export interface OperationsCloseChecklistTask {
   canAcknowledge: boolean;
   acknowledgedAtUtc: string | null;
   acknowledgedBy: string | null;
+}
+
+export interface OperationsCloseReadiness {
+  isReadyToClose: boolean;
+  severity: string;
+  blockers: OperationsCloseReadinessBlocker[];
+  nextActions: OperationsNextAction[];
+}
+
+export interface OperationsCloseReadinessBlocker {
+  code: string;
+  category: string;
+  severity: string;
+  message: string;
+  gate: OperationsGateKey | null;
+  routeHint: string | null;
 }
 
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";

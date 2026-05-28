@@ -950,7 +950,7 @@ export function triggerBackfill(request: BackfillTriggerRequest) {
 }
 
 export function previewBackfill(request: BackfillTriggerRequest) {
-  return postJson<BackfillTriggerResult>(BACKFILL_API_ENDPOINTS.runPreview, request);
+  return postJson<BackfillPreviewResult>(BACKFILL_API_ENDPOINTS.runPreview, request);
 }
 
 // --- Provider management ---

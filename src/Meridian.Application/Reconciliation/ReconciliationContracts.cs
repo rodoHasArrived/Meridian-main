@@ -6,17 +6,17 @@ using Meridian.Contracts.Domain.Reconciliation;
 
 namespace Meridian.Application.Reconciliation;
 
-public sealed record ReconciliationPollingSchedule(TimeSpan PollInterval, TimeSpan Timeout);
+public sealed record LegacyReconciliationPollingSchedule(TimeSpan PollInterval, TimeSpan Timeout);
 
-public sealed record ReconciliationSourcePayload(
+public sealed record LegacyReconciliationSourcePayload(
     string SourceId,
     ReconciliationSourceType SourceType,
-    IReadOnlyList<RawPositionRecord> RawPositions,
-    IReadOnlyList<RawCashRecord> RawCashEntries,
+    IReadOnlyList<LegacyRawPositionRecord> RawPositions,
+    IReadOnlyList<LegacyRawCashRecord> RawCashEntries,
     DateTimeOffset CapturedAt,
     string Version);
 
-public sealed record RawPositionRecord(
+public sealed record LegacyRawPositionRecord(
     string PositionId,
     string? Cusip,
     string? Isin,
@@ -28,7 +28,7 @@ public sealed record RawPositionRecord(
     string Currency,
     DateTimeOffset AsOfTimestamp);
 
-public sealed record RawCashRecord(
+public sealed record LegacyRawCashRecord(
     string CashEntryId,
     string AccountId,
     string? CounterpartyReference,
@@ -38,37 +38,37 @@ public sealed record RawCashRecord(
     string Currency,
     DateTimeOffset BookingTimestamp);
 
-public interface IReconciliationSourceAdapter
+public interface ILegacyReconciliationSourceAdapter
 {
     string AdapterId { get; }
     ReconciliationSourceType SourceType { get; }
-    Task<ReconciliationSourcePayload> PollAsync(CancellationToken cancellationToken);
+    Task<LegacyReconciliationSourcePayload> PollAsync(CancellationToken cancellationToken);
 }
 
-public interface IPrimeBrokerSourceAdapter : IReconciliationSourceAdapter;
-public interface ICustodianSourceAdapter : IReconciliationSourceAdapter;
-public interface IAdministratorSourceAdapter : IReconciliationSourceAdapter;
-public interface IInternalLedgerSourceAdapter : IReconciliationSourceAdapter;
+public interface ILegacyPrimeBrokerSourceAdapter : ILegacyReconciliationSourceAdapter;
+public interface ILegacyCustodianSourceAdapter : ILegacyReconciliationSourceAdapter;
+public interface ILegacyAdministratorSourceAdapter : ILegacyReconciliationSourceAdapter;
+public interface ILegacyInternalLedgerSourceAdapter : ILegacyReconciliationSourceAdapter;
 
-public interface IReconciliationSourceIngestionScheduler
+public interface ILegacyReconciliationSourceIngestionScheduler
 {
-    Task<IReadOnlyList<ReconciliationSourcePayload>> IngestScheduledAsync(
-        IReadOnlyList<IReconciliationSourceAdapter> adapters,
-        ReconciliationPollingSchedule schedule,
+    Task<IReadOnlyList<LegacyReconciliationSourcePayload>> IngestScheduledAsync(
+        IReadOnlyList<ILegacyReconciliationSourceAdapter> adapters,
+        LegacyReconciliationPollingSchedule schedule,
         CancellationToken cancellationToken);
 }
 
-public interface IInstrumentMappingService
+public interface ILegacyInstrumentMappingService
 {
     string ResolveInstrumentKey(string? cusip, string? isin, string? ticker, string? internalSecurityId);
 }
 
-public interface IFxConversionService
+public interface ILegacyFxConversionService
 {
     decimal GetFxRate(string fromCurrency, string toCurrency, DateTimeOffset timestamp);
 }
 
-public interface IAccountingPeriodService
+public interface ILegacyAccountingPeriodService
 {
     DateOnly ResolvePeriod(DateTimeOffset bookingTimestamp, string sourceId);
     DateTimeOffset AlignTimestamp(DateTimeOffset timestamp, string sourceId);

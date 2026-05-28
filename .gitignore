@@ -76,6 +76,7 @@ desktop.ini
 
 *.nupkg
 packages/
+D:/packages/nuget/
 !.nuget/packages
 
 # ============================================
@@ -281,3 +282,5 @@ __pycache__/
 /src/Meridian.Adapters.SQLite/**/*.sqlite3-*
 /src/Meridian.Adapters.SQLite/**/*.db
 /src/Meridian.Adapters.SQLite/**/*.db-*
+/.nuget
+/.nuget

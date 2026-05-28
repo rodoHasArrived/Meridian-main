@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Ui;

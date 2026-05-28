@@ -341,7 +341,7 @@ public sealed class CppTraderMarketDataClient : IMarketDataClient
             _depthCollector.OnDepth(new MarketDepthUpdate(
                 snapshot.Timestamp,
                 snapshot.Symbol,
-                Position: i,
+                Position: (ushort)i,
                 DepthOperation.Insert,
                 OrderBookSide.Bid,
                 level.Price,
@@ -367,7 +367,7 @@ public sealed class CppTraderMarketDataClient : IMarketDataClient
             _depthCollector.OnDepth(new MarketDepthUpdate(
                 snapshot.Timestamp,
                 snapshot.Symbol,
-                Position: i,
+                Position: (ushort)i,
                 DepthOperation.Insert,
                 OrderBookSide.Ask,
                 level.Price,

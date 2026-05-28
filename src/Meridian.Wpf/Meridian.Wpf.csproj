@@ -110,6 +110,7 @@
     <ProjectReference Include="..\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
     <ProjectReference Include="..\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
+    <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.Strategies\Meridian.Strategies.csproj" />
     <ProjectReference Include="..\Meridian.QuantScript\Meridian.QuantScript.csproj" />
   </ItemGroup>

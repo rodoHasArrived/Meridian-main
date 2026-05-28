@@ -25,13 +25,27 @@ public enum ReconciliationBreakQueueTransitionStatus : byte
 {
     Success = 0,
     NotFound = 1,
-    InvalidTransition = 2
+    InvalidTransition = 2,
+    ValidationFailed = 3,
+    Unauthorized = 4
+}
+
+public enum ReconciliationBreakQueueTransitionErrorCode : byte
+{
+    None = 0,
+    MissingActor = 1,
+    MissingReason = 2,
+    MissingEvidence = 3,
+    IllegalTransition = 4,
+    DualReviewRequired = 5,
+    ReopenNotAllowed = 6
 }
 
 public sealed record ReconciliationBreakQueueTransitionResult(
     ReconciliationBreakQueueTransitionStatus Status,
     ReconciliationBreakQueueItem? Item,
-    string? Error = null);
+    string? Error = null,
+    ReconciliationBreakQueueTransitionErrorCode ErrorCode = ReconciliationBreakQueueTransitionErrorCode.None);
 
 public sealed record ReconciliationBreakQueueAuditEvent(
     string EventId,

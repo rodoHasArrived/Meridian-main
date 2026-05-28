@@ -234,7 +234,89 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
     if trading_route_check is not None:
         results.append(trading_route_check)
 
+    report_pack_route_check = build_report_pack_workflow_route_check(repo_root, target_roots)
+    if report_pack_route_check is not None:
+        results.append(report_pack_route_check)
+
+    signifier_check = build_workstation_signifier_check(repo_root, target_roots)
+    if signifier_check is not None:
+        results.append(signifier_check)
+
     return results
+
+
+def build_workstation_signifier_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs",
+        "src/Meridian.Wpf/Workstation/Controls/WorkstationStatePanelControl.xaml",
+        "src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml",
+        "src/Meridian.Wpf/Views/FundLedgerPage.xaml",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    models = read_required_text(repo_root, target_roots, required_paths[0])
+    state_panel = read_required_text(repo_root, target_roots, required_paths[1])
+    command_bar = read_required_text(repo_root, target_roots, required_paths[2])
+    fund_ledger = read_required_text(repo_root, target_roots, required_paths[3])
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"models: {token}"
+        for token in require_all_tokens(
+            models,
+            [
+                "WorkstationReadinessTone",
+                "WorkstationActionPostureModel",
+                "WorkstationEvidenceLinkModel",
+                "WorkstationRecoveryActionModel",
+                "WorkstationSignoffRequirementModel",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"state panel: {token}"
+        for token in require_all_tokens(
+            state_panel,
+            [
+                "VisibleEvidenceLinks",
+                "VisibleRecoveryActions",
+                "SignoffRequirement",
+                "ActionPosture",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"command bar: {token}"
+        for token in require_all_tokens(
+            command_bar,
+            [
+                "EvidenceSourceText",
+                "TargetText",
+                "DisabledReason",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"fund ledger: {token}"
+        for token in require_all_tokens(
+            fund_ledger,
+            [
+                "FundReconciliationGovernanceSignifier",
+                "ReconciliationSection.GovernanceSignifierState",
+                "FundReportPackReadinessSignifier",
+                "ReportPackReadinessState",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="W4 desktop signifiers use shared workstation affordance primitives",
+        passed=not missing_tokens,
+        detail="Shared action posture, evidence, recovery, sign-off, and W4 Fund Ledger/Report Pack signifier wiring are present."
+        if not missing_tokens
+        else f"Missing signifier tokens: {', '.join(missing_tokens)}",
+    )
 
 
 def build_accounting_workflow_route_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
@@ -374,6 +456,85 @@ def build_trading_workflow_route_check(repo_root: Path, target_roots: list[Path]
         passed=not missing_tokens,
         detail=(
             "Shared paper-trading workflow actions and inbox API routes resolve to WPF TradingShell/RunRisk targets and browser Trading readiness routes."
+            if not missing_tokens
+            else "Missing route tokens: " + ", ".join(missing_tokens)
+        ),
+    )
+
+
+def build_report_pack_workflow_route_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs",
+        "src/Meridian.Wpf/Services/NavigationService.cs",
+        "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs",
+        "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+        "src/Meridian.Ui/dashboard/src/app-shell.view-model.ts",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    shared_workflows = read_required_text(repo_root, target_roots, required_paths[0])
+    wpf_navigation = read_required_text(repo_root, target_roots, required_paths[1])
+    wpf_inbox = read_required_text(repo_root, target_roots, required_paths[2])
+    browser_routes = read_required_text(repo_root, target_roots, required_paths[3])
+    browser_shell = read_required_text(repo_root, target_roots, required_paths[4])
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"shared workflow: {token}"
+        for token in require_all_tokens(
+            shared_workflows,
+            [
+                "WorkflowActionIds.ReportingApproveReportPack",
+                '"FundReportPack"',
+                "OperatorWorkItemKindDto.ReportPackApproval",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF navigation: {token}"
+        for token in require_all_tokens(
+            wpf_navigation,
+            [
+                '"FundReportPack" => new FundOperationsNavigationContext(Tab: FundOperationsTab.ReportPack)',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF inbox: {token}"
+        for token in require_all_tokens(
+            wpf_inbox,
+            [
+                "workItem.Kind == OperatorWorkItemKindDto.ReportPackApproval",
+                'return "FundReportPack";',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"browser route: {token}"
+        for token in require_all_tokens(
+            browser_routes,
+            [
+                "FundReportPack: WORKSTATION_ROUTE_CATALOG.reportingReportPacks",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"browser shell: {token}"
+        for token in require_all_tokens(
+            browser_shell,
+            [
+                'case "ReportPackApproval":',
+                "return WORKSTATION_ROUTE_CATALOG.reportingReportPacks;",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="Report-pack workflow routes stay shared across WPF and browser",
+        passed=not missing_tokens,
+        detail=(
+            "Shared report-pack approval actions and work items resolve to WPF FundReportPack and browser Reporting report-pack routes."
             if not missing_tokens
             else "Missing route tokens: " + ", ".join(missing_tokens)
         ),

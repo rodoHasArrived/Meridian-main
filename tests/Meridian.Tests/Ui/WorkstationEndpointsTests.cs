@@ -28,6 +28,7 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.Ledger;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -502,11 +503,28 @@ public sealed partial class WorkstationEndpointsTests
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
             new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
-            new OperationsSubmitApprovalRequestDto(posture.Workflow!.Version, "spoofed-user", "ops-user", "Submit evidence", "report-pack-1"));
+            new OperationsSubmitApprovalRequestDto(
+                posture.Workflow!.Version,
+                "spoofed-user",
+                "ops-user",
+                "Submit evidence",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
         var approved = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
-            new OperationsApprovalDecisionRequestDto(submitted.Workflow!.Version, "spoofed-user", "spoofed-reviewer", "Approve close", "report-pack-1"));
+            new OperationsApprovalDecisionRequestDto(
+                submitted.Workflow!.Version,
+                "spoofed-user",
+                "spoofed-reviewer",
+                "Approve close",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
         var closed = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/close",
-            new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user", "Close period", "report-pack-1"));
+            new OperationsCloseWorkflowRequestDto(
+                approved.Workflow!.Version,
+                "spoofed-user",
+                "Close period",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
 
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
         closed.Workflow.Timeline.Should().Contain(entry => entry.EventType == "workflow-closed" && entry.Actor == "ops-user");
@@ -514,6 +532,58 @@ public sealed partial class WorkstationEndpointsTests
             approval.Status == OperationsApprovalStateDto.Approved &&
             approval.Operator == "ops-user" &&
             approval.Reviewer == "ops-user");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityApprovalSubmit_ShouldPreserveAssignedReviewerFromRequest()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "spoofed-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+        var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
+        var normalized = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "spoofed-user"));
+        var security = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "spoofed-user"));
+        var draft = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true));
+        var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true));
+        var posted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version,
+                "spoofed-user",
+                "ledger-batch-1",
+                "period-close",
+                true,
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
+        var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
+            new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
+        var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
+            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
+
+        const string assignedReviewer = "independent-reviewer";
+        var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
+            new OperationsSubmitApprovalRequestDto(
+                posture.Workflow!.Version,
+                "spoofed-user",
+                assignedReviewer,
+                "Submit evidence",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+
+        submitted.Workflow!.Approvals.Should().Contain(approval =>
+            approval.Status == OperationsApprovalStateDto.Submitted &&
+            approval.Operator == "ops-user" &&
+            approval.Reviewer == assignedReviewer);
     }
 
     [Fact]
@@ -1247,6 +1317,7 @@ public sealed partial class WorkstationEndpointsTests
                     OpenReconciliationBreakCount: 0,
                     SecurityResolvedCount: 1,
                     SecurityMissingCount: 0,
+                    LineagePointers: [],
                     SourceSnapshotHash: new string('a', 64)),
                 Artifacts: [],
                 Warnings: [])
@@ -3271,6 +3342,34 @@ public sealed partial class WorkstationEndpointsTests
         balancedRun.GetProperty("securityCoverage").GetProperty("missingReferences").EnumerateArray()
             .Should()
             .Contain(item => item.GetProperty("symbol").GetString() == "TSLA");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationStatementRoutes_ShouldUseCanonicalSharedRoutes()
+    {
+        var service = new StubReconciliationApiService();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+        });
+
+        var client = app.GetTestClient();
+
+        var runs = await client.GetFromJsonAsync<List<StatementRunSummaryDto>>(
+            UiApiRoutes.ReconciliationStatementRuns,
+            ServerJsonOptions);
+        runs.Should().ContainSingle(run => run.RunId == "statement-run-1");
+
+        var run = await client.GetFromJsonAsync<StatementRunSummaryDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunById, "runId", "statement-run-1"),
+            ServerJsonOptions);
+        run.Should().NotBeNull();
+        run!.OpenExceptionCount.Should().Be(1);
+
+        var exceptions = await client.GetFromJsonAsync<List<StatementRunExceptionDto>>(
+            UiApiRoutes.ReconciliationStatementExceptions,
+            ServerJsonOptions);
+        exceptions.Should().ContainSingle(item => item.RunId == "statement-run-1");
     }
 
     [Fact]
@@ -5970,6 +6069,16 @@ public sealed partial class WorkstationEndpointsTests
         return result;
     }
 
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredOperationsChecklistControlApprovals() =>
+    [
+        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
+        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
+        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
+        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
+    ];
+
     private static async Task<T> ReadAsync<T>(HttpResponseMessage response)
     {
         var json = await response.Content.ReadAsStringAsync();
@@ -6665,7 +6774,6 @@ public sealed partial class WorkstationEndpointsTests
                     Severity: ReconciliationBreakSeverity.High,
                     EvidenceLink: "/workstation/data/security-master")
             ],
-            BankTransactions: [],
             SecurityMasterAccountingIssues:
             [
                 new SecurityMasterAccountingIssueDto(
@@ -7315,6 +7423,81 @@ public sealed partial class WorkstationEndpointsTests
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(book);
+        }
+    }
+
+    private sealed class StubReconciliationApiService : IReconciliationApiService
+    {
+        private static readonly StatementRunSummaryDto StatementRun = new(
+            RunId: "statement-run-1",
+            ImportId: "import-1",
+            StartedAtUtc: "2026-05-27T12:00:00Z",
+            CompletedAtUtc: "2026-05-27T12:01:00Z",
+            PositionMatches: 3,
+            CashMatches: 2,
+            TransactionMatches: 1,
+            OpenExceptionCount: 1);
+
+        public Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementImportSummaryDto>>(
+            [
+                new(
+                    ImportId: "import-1",
+                    Broker: "custodian",
+                    StatementDate: "2026-05-27",
+                    ImportedAtUtc: "2026-05-27T12:00:00Z",
+                    RawRowCount: 8,
+                    NormalizedRowCount: 6)
+            ]);
+        }
+
+        public Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementRunSummaryDto>>([StatementRun]);
+        }
+
+        public Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(
+                string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
+                    ? StatementRun
+                    : null);
+        }
+
+        public Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<StatementRunExceptionDto>>(
+            [
+                new(
+                    BreakId: "break-1",
+                    RunId: StatementRun.RunId,
+                    ImportId: StatementRun.ImportId,
+                    SourceReference: "row-42",
+                    BreakCode: "cash-delta",
+                    Category: "Cash",
+                    Delta: 10m,
+                    Tolerance: 1m,
+                    ToleranceBreached: true,
+                    CreatedAtUtc: "2026-05-27T12:02:00Z",
+                    Status: "Open")
+            ]);
+        }
+
+        public Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<ReconciliationCaseSummaryDto>>([]);
+        }
+
+        public Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> ListQueueStatusAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<ReconciliationQueueAccountStatusDto>>([]);
         }
     }
 

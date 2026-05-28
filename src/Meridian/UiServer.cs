@@ -11,6 +11,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
 using Meridian.Execution.Interfaces;
@@ -128,7 +129,7 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
         builder.Services.AddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
-        builder.Services.AddSingleton<ImmutableAuditLogService>();
+        builder.Services.AddSingleton<Meridian.Application.Compliance.ImmutableAuditLogService>();
         builder.Services.AddSingleton<AccessReviewService>();
 
         // Execution layer — paper trading gateway wired for cockpit endpoints

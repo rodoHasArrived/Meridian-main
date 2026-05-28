@@ -459,8 +459,8 @@ public static partial class AtomicFileWriter
         {
             if (OperatingSystem.IsWindows())
             {
-                var sourceSecurity = File.GetAccessControl(sourcePath);
-                File.SetAccessControl(targetPath, sourceSecurity);
+                var sourceSecurity = new FileInfo(sourcePath).GetAccessControl();
+                new FileInfo(targetPath).SetAccessControl(sourceSecurity);
                 return;
             }
 

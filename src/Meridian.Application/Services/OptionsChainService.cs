@@ -4,7 +4,10 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
+using Meridian.ProviderSdk;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 namespace Meridian.Application.Services;
 
@@ -19,6 +22,11 @@ public sealed class OptionsChainService
     private readonly OptionDataCollector _collector;
     private readonly IReadOnlyList<IOptionsChainProvider> _providers;
     private readonly ILogger<OptionsChainService> _logger;
+    private readonly IProviderConnectionHealthSource _healthSource;
+    private static readonly Meter OptionsMeter = new("Meridian.OptionsChainService", "1.0");
+    private static readonly Counter<long> FallbackCounter = OptionsMeter.CreateCounter<long>("options_provider_fallback_total");
+    private static readonly Counter<long> FailoverCounter = OptionsMeter.CreateCounter<long>("options_provider_failover_total");
+    private static readonly Histogram<double> ProviderLatencyMs = OptionsMeter.CreateHistogram<double>("options_provider_latency_ms");
 
     public OptionsChainService(
         OptionDataCollector collector,
@@ -27,6 +35,7 @@ public sealed class OptionsChainService
         : this(
             collector,
             logger,
+            new AlwaysHealthyProviderConnectionHealthSource(),
             provider is null ? Array.Empty<IOptionsChainProvider>() : new[] { provider })
     {
     }
@@ -35,9 +44,19 @@ public sealed class OptionsChainService
         OptionDataCollector collector,
         ILogger<OptionsChainService> logger,
         IEnumerable<IOptionsChainProvider>? providers)
+        : this(collector, logger, new AlwaysHealthyProviderConnectionHealthSource(), providers)
+    {
+    }
+
+    public OptionsChainService(
+        OptionDataCollector collector,
+        ILogger<OptionsChainService> logger,
+        IProviderConnectionHealthSource healthSource,
+        IEnumerable<IOptionsChainProvider>? providers)
     {
         _collector = collector ?? throw new ArgumentNullException(nameof(collector));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _healthSource = healthSource ?? throw new ArgumentNullException(nameof(healthSource));
         _providers = NormalizeProviders(providers);
     }
 
@@ -301,31 +320,73 @@ public sealed class OptionsChainService
         string operation,
         CancellationToken ct)
     {
+        var failures = new List<string>();
+
         foreach (var provider in _providers)
         {
             ct.ThrowIfCancellationRequested();
+            var health = await _healthSource.GetHealthAsync(provider.ProviderId, provider.ProviderId, ct).ConfigureAwait(false);
+            if (!health.IsHealthy)
+            {
+                var reason = $"provider {provider.ProviderId} unhealthy ({health.Status})";
+                failures.Add(reason);
+                _logger.LogWarning("Skipping options provider {ProviderId} for {Operation}: {Reason}", provider.ProviderId, operation, reason);
+                continue;
+            }
 
             try
             {
+                var sw = Stopwatch.StartNew();
                 var result = await query(provider).ConfigureAwait(false);
+                sw.Stop();
+                ProviderLatencyMs.Record(sw.Elapsed.TotalMilliseconds,
+                    new KeyValuePair<string, object?>("provider", provider.ProviderId),
+                    new KeyValuePair<string, object?>("operation", operation));
                 if (hasResult(result))
+                {
+                    if (failures.Count > 0)
+                    {
+                        _logger.LogInformation(
+                            "Options provider failover success for {Operation}. Winner={ProviderId}; prior_failures={Failures}",
+                            operation,
+                            provider.ProviderId,
+                            string.Join(" | ", failures));
+                        FailoverCounter.Add(1, new KeyValuePair<string, object?>("provider", provider.ProviderId));
+                    }
                     return result;
+                }
 
+                var emptyReason = $"provider {provider.ProviderId} returned incomplete/empty result";
+                failures.Add(emptyReason);
                 _logger.LogDebug(
                     "Options provider {ProviderId} returned no data for {Operation}; trying fallback provider.",
                     provider.ProviderId,
                     operation);
+                FallbackCounter.Add(1,
+                    new KeyValuePair<string, object?>("provider", provider.ProviderId),
+                    new KeyValuePair<string, object?>("reason", "empty"));
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                var retriable = ex is TimeoutException || ex is HttpRequestException || ex is TaskCanceledException;
+                var reason = $"{provider.ProviderId} failed ({ex.GetType().Name}): {ex.Message}";
+                failures.Add(reason);
                 _logger.LogWarning(
                     ex,
-                    "Options provider {ProviderId} failed while fetching {Operation}; trying fallback provider.",
+                    "Options provider {ProviderId} failed while fetching {Operation}; retriable={Retriable}; trying fallback provider.",
                     provider.ProviderId,
-                    operation);
+                    operation,
+                    retriable);
+                FallbackCounter.Add(1,
+                    new KeyValuePair<string, object?>("provider", provider.ProviderId),
+                    new KeyValuePair<string, object?>("reason", retriable ? "retriable-error" : "error"));
             }
         }
 
+        if (failures.Count > 0)
+        {
+            _logger.LogError("All options providers failed for {Operation}. Provenance: {Failures}", operation, string.Join(" | ", failures));
+        }
         return default;
     }
 
@@ -404,6 +465,12 @@ public sealed class OptionsChainService
         // Third Friday is day 15-21
         return date.Day >= 15 && date.Day <= 21;
     }
+}
+
+internal sealed class AlwaysHealthyProviderConnectionHealthSource : IProviderConnectionHealthSource
+{
+    public ValueTask<ProviderConnectionHealthSnapshot> GetHealthAsync(string connectionId, string providerFamilyId, CancellationToken ct = default)
+        => ValueTask.FromResult(new ProviderConnectionHealthSnapshot(connectionId, providerFamilyId, IsHealthy: true, Status: "unknown"));
 }
 
 /// <summary>

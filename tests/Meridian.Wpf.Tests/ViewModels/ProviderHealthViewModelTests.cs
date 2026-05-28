@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -310,6 +311,37 @@ public sealed class ProviderHealthViewModelTests
             var exception = await Record.ExceptionAsync(() => viewModel.RefreshAsync());
 
             exception.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public void ActivationLifetime_DeactivateCancelsVisiblePageLifetimeWithoutClearingLoadedRows()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            using var viewModel = new ProviderHealthViewModel(
+                WpfServices.StatusService.Instance,
+                WpfServices.ConnectionService.Instance,
+                WpfServices.LoggingService.Instance,
+                WpfServices.NotificationService.Instance);
+            viewModel.Should().BeAssignableTo<IPageActivationLifetime>();
+            viewModel.StreamingProviders.Add(new ProviderStatusModel { ProviderId = "polygon", Name = "Polygon.io" });
+            using var activationCts = new CancellationTokenSource();
+            activationCts.Cancel();
+
+            viewModel.ActivateAsync(activationCts.Token).GetAwaiter().GetResult();
+            var token = viewModel.ActivationToken;
+
+            viewModel.IsActive.Should().BeTrue();
+            token.CanBeCanceled.Should().BeTrue();
+
+            viewModel.Deactivate();
+
+            viewModel.IsActive.Should().BeFalse();
+            token.IsCancellationRequested.Should().BeTrue();
+            viewModel.StreamingProviders.Should().ContainSingle(provider => provider.ProviderId == "polygon");
         });
     }
 }

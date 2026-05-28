@@ -69,6 +69,7 @@ public sealed class OperationsContinuityDtoContractTests
                 [
                     new OperationsEvidenceLinkDto("ev-pack-1", "Draft report pack", "/evidence/report-pack", "reporting", DateTimeOffset.UtcNow)
                 ]),
+            CloseChecklist: [],
             EvidenceLinks:
             [
                 new OperationsEvidenceLinkDto("ev-close-1", "Close checklist", "/evidence/close-checklist", "ops-runbook", DateTimeOffset.UtcNow)

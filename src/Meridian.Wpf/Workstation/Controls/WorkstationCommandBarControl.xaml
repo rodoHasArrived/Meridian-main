@@ -40,17 +40,36 @@
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Glyph}"
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding Glyph}"
                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
                                            FontSize="13"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding Label}"
-                                           Margin="8,0,0,0"
-                                           FontSize="12"
-                                           FontWeight="SemiBold"
-                                           VerticalAlignment="Center" />
-                            </StackPanel>
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{Binding Label}"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding EvidenceSourceText}"
+                                               FontSize="10"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding TargetText}"
+                                               FontSize="10"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding DisabledReason}"
+                                               FontSize="10"
+                                               Foreground="{StaticResource WarningColorBrush}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
                         </Button>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

@@ -727,7 +727,7 @@ export function useDataOperationsViewModel(
   const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
-  const [preview, setPreview] = useState<BackfillTriggerResult | null>(null);
+  const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
@@ -2477,7 +2477,7 @@ export function buildBackfillTriggerState({
   busy: boolean;
   phase: BackfillPhase;
   error: ApiErrorDisplay | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
   configuredProviders?: DataOperationsProviderRecord[];
 }): BackfillTriggerState {
@@ -2531,7 +2531,7 @@ export function buildBackfillDialogState({
   busy: boolean;
   phase: BackfillPhase;
   validationError: string | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   error?: ApiErrorDisplay | null;
   result?: BackfillTriggerResult | null;
   configuredProviders?: DataOperationsProviderRecord[];
@@ -2762,7 +2762,7 @@ export function buildBackfillFormStatusLabel({
   busy: boolean;
   phase: BackfillPhase;
   validationError: string | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   error: ApiErrorDisplay | null;
   result: BackfillTriggerResult | null;
 }): string {
@@ -2811,7 +2811,7 @@ function resolveBackfillFormStatusTone({
   phase: BackfillPhase;
   validationError: string | null;
   error: ApiErrorDisplay | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
 }): BackfillDialogState["formStatusTone"] {
   if (error || (result && !result.success)) {
@@ -3077,7 +3077,7 @@ function buildBackfillStatusAnnouncement({
 }: {
   phase: BackfillPhase;
   error: ApiErrorDisplay | null;
-  preview: BackfillTriggerResult | null;
+  preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
 }): string {
   if (phase === "previewing") {
@@ -3097,7 +3097,7 @@ function buildBackfillStatusAnnouncement({
   }
 
   if (preview) {
-    return `Backfill preview ready for ${preview.symbols.join(", ")}.`;
+    return `Backfill preview ready for ${preview.symbols.map((entry) => entry.symbol).join(", ")}.`;
   }
 
   return "";

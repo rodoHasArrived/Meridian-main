@@ -73,104 +73,113 @@ or Wave 4 progress.
 
 ---
 
-## Wave 2 — Paper-Trading Cockpit Reliability (In Progress)
+## Wave 2 — Paper-Trading Cockpit Reliability (Done)
 
 ### Completion Checklist
 
-- [ ] **Desktop Wave 2 work closes Lane A scenarios from the desktop acceptance matrix.**
-  - [ ] Prove the happy path for paper-session restore, replay verification, readiness review, and
+- [x] **Desktop Wave 2 work closes Lane A scenarios from the desktop acceptance matrix.**
+  - [x] Prove the happy path for paper-session restore, replay verification, readiness review, and
         next-action routing through shared readiness and operator-inbox contracts.
-  - [ ] Prove blocker-path behavior for stale replay, execution-control, promotion-review,
+  - [x] Prove blocker-path behavior for stale replay, execution-control, promotion-review,
         brokerage-sync, or related shared work items without relying on desktop-only wording or
         routing rules.
-  - [ ] Prove recovery-path refresh behavior so WPF and browser both clear or downgrade blocked
+  - [x] Prove recovery-path refresh behavior so WPF and browser both clear or downgrade blocked
         state from the latest shared payload after remediation.
 
-- [ ] **Synthetic harness enablement baseline is complete before Wave A provider completion.**
-  - [ ] Deterministic fixtures are versioned and used by the acceptance harness.
-  - [ ] Replay utilities are available for repeatable restore/replay verification flows.
-  - [ ] Fault-injection hooks exist for provider-path resilience scenarios in the same harness lane.
+- [x] **Synthetic harness enablement baseline is complete before Wave A provider completion.**
+  - [x] Deterministic fixtures are versioned and used by the acceptance harness.
+  - [x] Replay utilities are available for repeatable restore/replay verification flows.
+  - [x] Fault-injection hooks exist for provider-path resilience scenarios in the same harness lane.
 
-- [ ] **Trading readiness endpoint reports accurate state.**
-  - [ ] Validate `GET /api/workstation/trading/readiness` for expected readiness fields.
-  - [ ] Confirm the endpoint reflects current trust, replay, and promotion posture.
-  - [ ] Verify no stale readiness snapshots are presented after state changes.
+- [x] **Trading readiness endpoint reports accurate state.**
+  - [x] Validate `GET /api/workstation/trading/readiness` for expected readiness fields.
+  - [x] Confirm the endpoint reflects current trust, replay, and promotion posture.
+  - [x] Verify no stale readiness snapshots are presented after state changes.
 
-- [ ] **Operator inbox endpoint routes the right action items.**
-  - [ ] Validate `GET /api/workstation/operator/inbox` includes readiness and reconciliation actions.
-  - [ ] Confirm routing hints/deep links map to the correct workflow destinations.
-  - [ ] Verify account-scoped scenarios show the correct scoped work items.
+- [x] **Operator inbox endpoint routes the right action items.**
+  - [x] Validate `GET /api/workstation/operator/inbox` includes readiness and reconciliation actions.
+  - [x] Confirm routing hints/deep links map to the correct workflow destinations.
+  - [x] Verify account-scoped scenarios show the correct scoped work items.
 
-- [ ] **Paper-session replay verification is fresh and durable.**
-  - [ ] Run replay verification for active paper sessions.
-  - [ ] Confirm replay evidence survives restart and can be reloaded.
-  - [ ] Ensure stale replay evidence is detected and re-verification is required.
+- [x] **Paper-session replay verification is fresh and durable.**
+  - [x] Run replay verification for active paper sessions.
+  - [x] Confirm replay evidence survives restart and can be reloaded.
+  - [x] Ensure stale replay evidence is detected and re-verification is required.
 
-- [ ] **Promotion gates enforce trust and control requirements.**
-  - [ ] Validate promotion checklist blocks advancement when required evidence is missing.
-  - [ ] Verify gating reasons are human-readable for operators.
-  - [ ] Confirm gate state changes are auditable and linked to evidence.
+- [x] **Promotion gates enforce trust and control requirements.**
+  - [x] Validate promotion checklist blocks advancement when required evidence is missing.
+  - [x] Verify gating reasons are human-readable for operators.
+  - [x] Confirm gate state changes are auditable and linked to evidence.
 
-- [ ] **Browser trading cockpit is operator-accepted.**
-  - [ ] Run operator-focused scenario validation for key cockpit workflows.
-  - [ ] Capture acceptance evidence for reliability and usability expectations.
-  - [ ] Record unresolved operator concerns as blockers instead of soft notes.
+- [x] **Browser trading cockpit is operator-accepted.**
+  - [x] Run operator-focused scenario validation for key cockpit workflows.
+  - [x] Capture acceptance evidence for reliability and usability expectations.
+  - [x] Record unresolved operator concerns as blockers instead of soft notes.
 
-- [ ] **W2 pilot-readiness gates are green or explicitly blocked.**
-  - [ ] Check `TrustedData`, `PaperPromotion`, and `PaperSession` gate states.
-  - [ ] For any non-green gate, add explicit blocker text and owner.
-  - [ ] Link blockers to concrete follow-up tasks and evidence expectations.
+- [x] **W2 pilot-readiness gates are green or explicitly blocked.**
+  - [x] Check `TrustedData`, `PaperPromotion`, and `PaperSession` gate states.
+  - [x] For any non-green gate, add explicit blocker text and owner.
+  - [x] Link blockers to concrete follow-up tasks and evidence expectations.
 
-- [ ] **Harness parity checks pass before broad provider wave rollout.**
-  - [ ] Run parity checks comparing deterministic harness outputs across the Wave A provider target set.
-  - [ ] Block broad rollout when parity mismatches are unresolved.
-  - [ ] Record parity evidence links and owners for any temporary exceptions.
+- [x] **Harness parity checks pass before broad provider wave rollout.**
+  - [x] Run parity checks comparing deterministic harness outputs across the Wave A provider target set.
+  - [x] Block broad rollout when parity mismatches are unresolved.
+  - [x] Record parity evidence links and owners for any temporary exceptions.
+
+Evidence: closed by the 2026-05-27 W2/W3 evidence slice in
+`docs/plans/current-direction-and-status.md`; latest pilot readiness gates `TrustedData`,
+`PaperPromotion`, and `PaperSession` are `Ready` with no blockers.
 
 ---
 
-## Wave 3 — Shared Run / Portfolio / Ledger Continuity (In Progress)
+## Wave 3 — Shared Run / Portfolio / Ledger Continuity (Done)
 
 ### Completion Checklist
 
-- [ ] **Desktop Wave 3 work closes Lane B scenarios from the desktop acceptance matrix.**
-  - [ ] Prove the happy path from retained run/session -> portfolio -> ledger -> cash-flow ->
+- [x] **Desktop Wave 3 work closes Lane B scenarios from the desktop acceptance matrix.**
+  - [x] Prove the happy path from retained run/session -> portfolio -> ledger -> cash-flow ->
         reconciliation using shared run, portfolio, ledger, and continuity services.
-  - [ ] Prove blocker-path behavior for missing run context, stale brokerage/account sync,
+  - [x] Prove blocker-path behavior for missing run context, stale brokerage/account sync,
         ledger/cash-flow mismatches, or reconciliation gaps without presenting a blank view as
         success.
-  - [ ] Prove recovery-path behavior where restored account sync, retained run context, filter
+  - [x] Prove recovery-path behavior where restored account sync, retained run context, filter
         reset, or reconciliation refresh makes the same shared evidence visible again in both UI
         lanes.
 
-- [ ] **Research runs and comparisons are consistent across workflows.**
-  - [ ] Verify run data shown in research and downstream views is consistent.
-  - [ ] Validate comparison outputs are reproducible for the same inputs.
-  - [ ] Document and resolve any cross-workflow drift.
+- [x] **Research runs and comparisons are consistent across workflows.**
+  - [x] Verify run data shown in research and downstream views is consistent.
+  - [x] Validate comparison outputs are reproducible for the same inputs.
+  - [x] Document and resolve any cross-workflow drift.
 
-- [ ] **Portfolio and ledger stay aligned with run/promotion state.**
-  - [ ] Confirm portfolio summaries reflect current approved run outcomes.
-  - [ ] Confirm ledger entries and counts align with portfolio-facing state.
-  - [ ] Verify state transitions do not create orphaned or contradictory records.
+- [x] **Portfolio and ledger stay aligned with run/promotion state.**
+  - [x] Confirm portfolio summaries reflect current approved run outcomes.
+  - [x] Confirm ledger entries and counts align with portfolio-facing state.
+  - [x] Verify state transitions do not create orphaned or contradictory records.
 
-- [ ] **Brokerage/account synchronization is end-to-end reliable.**
-  - [ ] Validate account sync from source ingestion through surfaced read models.
-  - [ ] Confirm sync history and readiness signals reflect true sync posture.
-  - [ ] Ensure failures surface actionable remediation steps.
+- [x] **Brokerage/account synchronization is end-to-end reliable.**
+  - [x] Validate account sync from source ingestion through surfaced read models.
+  - [x] Confirm sync history and readiness signals reflect true sync posture.
+  - [x] Ensure failures surface actionable remediation steps.
 
-- [ ] **Reconciliation handoffs preserve context and evidence.**
-  - [ ] Verify reconciliation items include required evidence references.
-  - [ ] Confirm operator context (who/what/why/next step) is preserved in handoffs.
-  - [ ] Validate sign-off outcomes are auditable.
+- [x] **Reconciliation handoffs preserve context and evidence.**
+  - [x] Verify reconciliation items include required evidence references.
+  - [x] Confirm operator context (who/what/why/next step) is preserved in handoffs.
+  - [x] Validate sign-off outcomes are auditable.
 
-- [ ] **Shared contracts/read models work across browser and desktop.**
-  - [ ] Validate shared DTO/read-model compatibility in both UI surfaces.
-  - [ ] Confirm no wave-critical behavior diverges between browser and desktop.
-  - [ ] Record compatibility exceptions and mitigation plans if any are unavoidable.
+- [x] **Shared contracts/read models work across browser and desktop.**
+  - [x] Validate shared DTO/read-model compatibility in both UI surfaces.
+  - [x] Confirm no wave-critical behavior diverges between browser and desktop.
+  - [x] Record compatibility exceptions and mitigation plans if any are unavoidable.
 
-- [ ] **W3 pilot-readiness gates are green or explicitly blocked.**
-  - [ ] Check `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, and `Reconciliation`.
-  - [ ] For any non-green gate, document blocker, owner, and due date.
-  - [ ] Attach evidence links showing current state and recovery plan.
+- [x] **W3 pilot-readiness gates are green or explicitly blocked.**
+  - [x] Check `TrustedData`, `ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, and `Reconciliation`.
+  - [x] For any non-green gate, document blocker, owner, and due date.
+  - [x] Attach evidence links showing current state and recovery plan.
+
+Evidence: closed by the 2026-05-27 W2/W3 evidence slice in
+`docs/plans/current-direction-and-status.md`; latest pilot readiness gates `TrustedData`,
+`ResearchRun`, `RunComparison`, `PaperPromotion`, `PortfolioLedgerReview`, and `Reconciliation`
+are `Ready` with no blockers.
 
 ---
 

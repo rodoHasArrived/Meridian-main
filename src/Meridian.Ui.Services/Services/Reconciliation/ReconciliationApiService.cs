@@ -3,16 +3,6 @@ using Meridian.Ui.Shared.Contracts.Reconciliation;
 
 namespace Meridian.Ui.Services.Services.Reconciliation;
 
-public interface IReconciliationApiService
-{
-    Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default);
-    Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(CancellationToken ct = default);
-    Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default);
-    Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(CancellationToken ct = default);
-    Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default);
-    Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> ListQueueStatusAsync(CancellationToken ct = default);
-}
-
 public sealed class ReconciliationApiService(ICanonicalStatementStore importStore, IReconciliationCaseStore caseStore, IReconciliationBreakStore breakStore) : IReconciliationApiService
 {
     public async Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)

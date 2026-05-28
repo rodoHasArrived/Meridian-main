@@ -512,26 +512,26 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         }
 
         var evidence = NormalizeEvidence(request.EvidenceLinks);
-        var requestBlockers = ValidateLedgerPostRequest(request, evidence);
+        var requestBlockers = ValidateLedgerPostRequest(request, evidence).ToList();
+        var serviceBlockers = new List<OperationsWorkflowBlockerDto>();
         LedgerJournalEntryWrite? journalWrite = null;
+        LedgerJournalEntryWrite builtJournalWrite = default!;
         if (requestBlockers.Count == 0)
         {
             if (_transactionalCommitStore is null && _ledgerJournalStore is null)
             {
-                return Failure(
+                var blocker = new OperationsWorkflowBlockerDto(
                     "LEDGER_JOURNAL_STORE_UNAVAILABLE",
-                    "Ledger posting requires a durable ledger journal store or transactional commit store registration.",
-                    [
-                        new OperationsWorkflowBlockerDto(
-                            "LEDGER_JOURNAL_STORE_UNAVAILABLE",
-                            "Register ILedgerJournalStore or IOperationsContinuityTransactionalCommitStore before posting Operations Continuity ledger entries.",
-                            OperationsGateKeyDto.LedgerPosting,
-                            "Critical",
-                            evidence)
-                    ]);
+                    "Register ILedgerJournalStore or IOperationsContinuityTransactionalCommitStore before posting Operations Continuity ledger entries.",
+                    OperationsGateKeyDto.LedgerPosting,
+                    "Critical",
+                    evidence);
+                requestBlockers.Add(blocker);
+                serviceBlockers.Add(blocker);
             }
 
-            if (!TryBuildJournalWrite(workflow, request, out var builtJournalWrite, out var journalBlockers))
+            if (requestBlockers.Count == 0 &&
+                !TryBuildJournalWrite(workflow, request, out builtJournalWrite, out var journalBlockers))
             {
                 return Failure(
                     "VALIDATION_FAILED",
@@ -539,21 +539,24 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     journalBlockers);
             }
 
-            journalWrite = builtJournalWrite;
+            if (requestBlockers.Count == 0)
+            {
+                journalWrite = builtJournalWrite;
+            }
         }
 
         var fromStatus = _statusDerivation.Derive(workflow);
         var fromGateStatus = workflow.LedgerPostingGate.Status;
         var now = DateTimeOffset.UtcNow;
         var workflowForCommit = CloneWorkflow(workflow);
-        workflowForCommit.PostLedgerEntries(request, evidence, now);
+        workflowForCommit.PostLedgerEntries(request, evidence, now, serviceBlockers);
         var toStatus = _statusDerivation.Derive(workflowForCommit);
         var toGateStatus = workflowForCommit.LedgerPostingGate.Status;
         var auditDraft = new OperationsWorkflowAuditDraft(
             workflowForCommit.WorkflowId,
             workflowForCommit.FundAccountId,
             workflowForCommit.PeriodId,
-            "ledger-posted",
+            requestBlockers.Count == 0 ? "ledger-posted" : "ledger-posting-blocked",
             fromStatus,
             toStatus,
             OperationsGateKeyDto.LedgerPosting,
@@ -1009,23 +1012,29 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             ]);
         }
 
-        return await ExecuteTransitionAsync(
+        return await ApplyCommandAsync(
             workflowId,
-            request,
+            request.ExpectedVersion,
+            request.Actor,
+            request.Rationale,
             request.CorrelationId,
-            null,
+            evidenceLinks: null,
             "checklist-task-acknowledged",
             task.Gate,
             command: (workflow, _, now) =>
             {
                 var gate = GetGate(workflow, task.Gate);
-                if (gate.Status != OperationsGateStatusDto.Completed)
+                if (gate.Status != OperationsGateStatusDto.Passed)
                 {
                     return new OperationsWorkflowBlockerDto("CHECKLIST_GATE_NOT_COMPLETE", "Checklist tasks can only be acknowledged when the gate is complete.", task.Gate, "Error", []);
                 }
 
-                gate.CompletedBy = request.Actor.Trim();
-                gate.CompletedAtUtc ??= now;
+                workflow.ReplaceGate(gate.WithStatus(
+                    gate.Status,
+                    gate.Blockers,
+                    gate.NextActions,
+                    gate.CompletedAtUtc ?? now,
+                    request.Actor.Trim()));
                 return null;
             },
             ct: ct).ConfigureAwait(false);
@@ -1081,7 +1090,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 string.Equals(link.Source, gate.GateKey.ToString(), StringComparison.OrdinalIgnoreCase));
             var status = gate.Status switch
             {
-                OperationsGateStatusDto.Completed => "Done",
+                OperationsGateStatusDto.Passed => "Done",
                 OperationsGateStatusDto.Blocked => "Blocked",
                 OperationsGateStatusDto.InProgress => "InProgress",
                 _ => "Pending"
@@ -1092,12 +1101,15 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 gate.GateKey,
                 $"{DisplayName(gate.GateKey)} close gate",
                 gate.CompletedBy ?? "accounting-operator",
+                RequiredEvidence: "Evidence link and gate completion audit",
+                RequiredApprovalCount: gate.GateKey == OperationsGateKeyDto.Approval ? 2 : 1,
+                ExpiresOn: dueBase.AddDays(index + 5),
                 dueBase.AddDays(index),
                 status,
                 gate.Blockers.FirstOrDefault()?.Message,
                 evidence?.EvidenceId,
                 gate.NextActions.FirstOrDefault()?.Route,
-                CanAcknowledge: gate.Status == OperationsGateStatusDto.Completed && evidence is not null,
+                CanAcknowledge: gate.Status == OperationsGateStatusDto.Passed && evidence is not null,
                 gate.CompletedAtUtc,
                 gate.CompletedBy);
         }).ToArray();
@@ -1184,6 +1196,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             entry.Actor,
             entry.Rationale,
             entry.CorrelationId,
+            entry.CorrelationKeys,
             entry.References,
             entry.PreviousHash,
             entry.CurrentHash);
@@ -1291,7 +1304,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         {
             blockers.Add(new OperationsWorkflowBlockerDto(
                 "LEDGER_PERIOD_CLOSED",
-                "Ledger posting into a closed or hard-closed period requires a governed adjustment path.",
+                "Ledger posting into a closed or hard-closed period requires a governed reopen path before adjustment posting.",
                 OperationsGateKeyDto.LedgerPosting,
                 "Critical",
                 evidenceLinks));

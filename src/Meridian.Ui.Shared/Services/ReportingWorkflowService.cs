@@ -32,11 +32,13 @@ public sealed class ReportPackWorkflowService
     private static readonly IReadOnlyDictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]> AllowedTransitions =
         new Dictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]>
         {
-            [ReportPackWorkflowStateDto.Draft] = [ReportPackWorkflowStateDto.InReview],
-            [ReportPackWorkflowStateDto.InReview] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.Draft] = [ReportPackWorkflowStateDto.Validated],
+            [ReportPackWorkflowStateDto.Validated] = [ReportPackWorkflowStateDto.PendingApproval, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.PendingApproval] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Draft],
             [ReportPackWorkflowStateDto.Approved] = [ReportPackWorkflowStateDto.Published],
-            [ReportPackWorkflowStateDto.Published] = [ReportPackWorkflowStateDto.Restated],
-            [ReportPackWorkflowStateDto.Restated] = []
+            [ReportPackWorkflowStateDto.Published] = [ReportPackWorkflowStateDto.Restated, ReportPackWorkflowStateDto.Archived],
+            [ReportPackWorkflowStateDto.Restated] = [ReportPackWorkflowStateDto.Archived],
+            [ReportPackWorkflowStateDto.Archived] = []
         };
 
     private readonly ConcurrentDictionary<Guid, ReportPackWorkflowRecordDto> _records = new();
@@ -90,10 +92,12 @@ public sealed class ReportPackWorkflowService
         var normalized = role.Trim().ToLowerInvariant();
         var allowed = target switch
         {
-            ReportPackWorkflowStateDto.InReview => normalized is "operator" or "reviewer",
+            ReportPackWorkflowStateDto.Validated => normalized is "operator" or "reviewer" or "validator",
+            ReportPackWorkflowStateDto.PendingApproval => normalized is "operator" or "reviewer" or "validator",
             ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
             ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
             ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",
+            ReportPackWorkflowStateDto.Archived => normalized is "admin" or "records-manager",
             _ => true
         };
         if (!allowed) throw new UnauthorizedAccessException($"Role '{role}' cannot transition to {target}.");

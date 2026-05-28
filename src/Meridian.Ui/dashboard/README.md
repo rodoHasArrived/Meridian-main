@@ -54,6 +54,9 @@ session replay panel hash target so replay verification remains directly actiona
 Accounting reconciliation break detail preserves shared queue metadata such as exception route,
 tolerance profile, required sign-off role/status, and decision note so browser recovery posture
 matches the retained WPF Fund Ledger detail panel.
+Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
+approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
+approval gate state enforced by the API and WPF clients.
 
 ## Diagrams
 

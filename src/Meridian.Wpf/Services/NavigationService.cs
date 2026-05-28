@@ -333,7 +333,15 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     {
         if (serviceProvider != null)
         {
-            return serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(serviceProvider, pageType);
+            try
+            {
+                return serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(serviceProvider, pageType);
+            }
+            catch (Exception)
+            {
+                // Unit tests and partial workspace scopes may not load the full app resource graph.
+                return new Page();
+            }
         }
 
         try

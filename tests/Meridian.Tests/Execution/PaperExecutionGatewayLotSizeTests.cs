@@ -52,25 +52,15 @@ public sealed class PaperExecutionGatewayLotSizeTests
             _lotSize = lotSize;
         }
 
-        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, CancellationToken ct = default)
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(_securityId == securityId ? CreateDetail(securityId, "XYZ") : null);
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
         {
             if (_securityId is null)
                 return Task.FromResult<SecurityDetailDto?>(null);
 
-            var detail = new SecurityDetailDto(
-                SecurityId: _securityId.Value,
-                AssetClass: "Equity",
-                Status: SecurityStatusDto.Active,
-                DisplayName: value,
-                Currency: "USD",
-                CommonTerms: System.Text.Json.JsonDocument.Parse("{}").RootElement,
-                AssetSpecificTerms: System.Text.Json.JsonDocument.Parse("{}").RootElement,
-                Identifiers: Array.Empty<SecurityIdentifierDto>(),
-                Aliases: Array.Empty<SecurityAliasDto>(),
-                Version: 1L,
-                EffectiveFrom: DateTimeOffset.UtcNow.AddYears(-1),
-                EffectiveTo: null);
-            return Task.FromResult<SecurityDetailDto?>(detail);
+            return Task.FromResult<SecurityDetailDto?>(CreateDetail(_securityId.Value, value));
         }
 
         public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
@@ -79,20 +69,45 @@ public sealed class PaperExecutionGatewayLotSizeTests
                 SecurityId: securityId,
                 LotSize: _lotSize,
                 TickSize: null,
-                PriceBandLower: null,
-                PriceBandUpper: null,
-                EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-1),
-                EffectiveTo: null);
+                ContractMultiplier: null,
+                MarginRequirementPct: null,
+                TradingHoursUtc: null,
+                CircuitBreakerThresholdPct: null,
+                AsOf: DateTimeOffset.UtcNow);
             return Task.FromResult<TradingParametersDto?>(dto);
         }
 
-        public Task<IReadOnlyList<SecurityCorporateActionDto>> ListCorporateActionsAsync(Guid securityId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<SecurityCorporateActionDto>>(Array.Empty<SecurityCorporateActionDto>());
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecuritySummaryDto>>(Array.Empty<SecuritySummaryDto>());
 
-        public Task<IReadOnlyList<SecurityPriceBandDto>> ListPriceBandsAsync(Guid securityId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<SecurityPriceBandDto>>(Array.Empty<SecurityPriceBandDto>());
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(Array.Empty<SecurityMasterEventEnvelope>());
 
-        public Task<IReadOnlyList<SecurityStatusTransitionDto>> ListStatusHistoryAsync(Guid securityId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<SecurityStatusTransitionDto>>(Array.Empty<SecurityStatusTransitionDto>());
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
+
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<PreferredEquityTermsDto?>(null);
+
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<ConvertibleEquityTermsDto?>(null);
+
+        private static SecurityDetailDto CreateDetail(Guid securityId, string displayName) =>
+            new(
+                SecurityId: securityId,
+                AssetClass: "Equity",
+                Status: SecurityStatusDto.Active,
+                DisplayName: displayName,
+                Currency: "USD",
+                CommonTerms: System.Text.Json.JsonDocument.Parse("{}").RootElement,
+                AssetSpecificTerms: System.Text.Json.JsonDocument.Parse("{}").RootElement,
+                Identifiers: Array.Empty<SecurityIdentifierDto>(),
+                Aliases: Array.Empty<SecurityAliasDto>(),
+                Version: 1L,
+                EffectiveFrom: DateTimeOffset.UtcNow.AddYears(-1),
+                EffectiveTo: null);
     }
 }

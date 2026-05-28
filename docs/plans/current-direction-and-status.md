@@ -44,8 +44,8 @@ Wave status labels and target dates are canonical in [`../status/PROGRAM_STATE.m
 | Wave | Status | Current meaning |
 | --- | --- | --- |
 | W1 Provider confidence and checkpoint evidence | Done | Repo-closed trust gate. Keep DK1 packet, provider matrix, checkpoint, and evidence docs synchronized when provider evidence changes. |
-| W2 Paper-trading cockpit | In Progress | Critical path and first release gate. Readiness contracts, replay evidence, operator inbox, and desktop/browser workflow slices are support evidence; daily-use cockpit confidence remains open until Lane A acceptance is continuously green. |
-| W3 Shared run / portfolio / ledger continuity | In Progress | Critical path. Shared continuity seams exist, but the full run -> portfolio -> ledger -> reconciliation workflow still needs acceptance evidence on high-traffic workflow pages and parity across both clients. |
+| W2 Paper-trading cockpit | Done | Closed in the 2026-05-27 evidence slice: shared W2 readiness/operator-inbox tests, browser Trading parity tests, focused WPF Lane A tests, and pilot `TrustedData`, `PaperPromotion`, and `PaperSession` gates are green. |
+| W3 Shared run / portfolio / ledger continuity | Done | Closed in the 2026-05-27 evidence slice: shared brokerage/continuity/pilot tests, focused WPF portfolio/accounting/cash-flow tests, browser route/API parity tests, and pilot `ResearchRun`, `RunComparison`, `PortfolioLedgerReview`, and `Reconciliation` gates are green. |
 | W4 Governance and fund operations | In Progress | Critical path. Security Master baseline and reconciliation/report-pack support exist; durable casework, sign-off, close/report lifecycle, and provenance still need end-to-end acceptance evidence. |
 | W5 Backtest Studio unification | Planned | Later wave. Do not pull forward ahead of W2-W4 unless the roadmap explicitly changes. |
 | W6 Live integration readiness | Planned | Later wave. Keep read-only/paper-first defaults until trust, paper, reconciliation, and promotion gates are materially closed. |
@@ -59,6 +59,23 @@ IDs, ledger references, and validation text. `.github/workflows/golden-path-vali
 turns that harness into a repeatable acceptance lane and uploads the generated readiness dashboard
 as `pilot-acceptance-evidence`. This advances support evidence for W2-W4; it does not by itself
 close operator acceptance, live readiness, desktop/browser parity, mobile, W5, or W6.
+
+2026-05-27 W2/W3 closure evidence: the current implementation slice repaired the shared
+W2/W3 compile and contract drift, reran the build-enabled shared acceptance filter
+(`Wave2PaperTradingCockpitAcceptanceTests`, `Wave2OperatorInboxAcceptanceTests`,
+`TradingOperatorReadinessServiceTests`, `BrokeragePortfolioSyncServiceTests`, and
+`PilotAcceptanceHarnessTests`; 71 passed), the browser parity set
+(`trading-screen.view-model.test.ts`, `trading-screen.test.tsx`, `api.trading.test.ts`,
+`workstation-endpoints.test.ts`, `workspace.test.ts`, and `command-palette.view-model.test.ts`;
+154 passed, 1 existing todo), and the focused WPF Lane A/B shell set
+(`TradingWorkspaceShellViewModelTests`, `Wave2OperatorInboxAcceptanceTests`,
+`MainShellViewModelTests`, `StrategyRunPortfolioViewModelTests`, `AccountPortfolioViewModelTests`,
+`AggregatePortfolioViewModelTests`, `CashFlowViewModelTests`, `FundLedgerViewModelTests`, and
+`FundAccountsViewModelTests`; 113 passed). The latest
+`artifacts/pilot-acceptance/latest/pilot-readiness.json` generated at
+`2026-05-27T23:17:46.8333629+00:00` reports all W2 and W3 mapped stage gates as `Ready` with no
+blockers. This closes W2 and W3 implementation and acceptance evidence without widening claims into
+W4 governance completion, mobile, W5, or W6 live-readiness.
 
 Release/distribution hygiene evidence as of 2026-05-19 is narrower than roadmap completion: publish
 output now belongs under ignored `artifacts/publish/` paths, the publish script has a

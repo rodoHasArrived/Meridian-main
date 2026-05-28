@@ -12,7 +12,8 @@ public sealed class ReportPackWorkflowServiceTests
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
 
-        var submitted = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        var validated = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
+        var submitted = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
         var approved = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         var published = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Published, "publisher", "publisher");
 
@@ -35,7 +36,8 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Published, "publisher", "publisher");
 

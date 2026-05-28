@@ -37,6 +37,7 @@ import {
 } from "@/screens/data-operations-screen.view-model";
 import type {
   BackfillProgressResponse,
+  BackfillPreviewResult,
   BackfillTriggerRequest,
   BackfillTriggerResult,
   DataOperationsBackfillRecord,
@@ -68,7 +69,22 @@ const backfills: DataOperationsBackfillRecord[] = [
   }
 ];
 
-const preview: BackfillTriggerResult = {
+const preview: BackfillPreviewResult = {
+  provider: "polygon",
+  providerDisplayName: "Polygon",
+  symbols: [
+    { symbol: "AAPL", estimatedBars: 600, hasMarketHoursData: true, notes: [] },
+    { symbol: "MSFT", estimatedBars: 600, hasMarketHoursData: true, notes: [] }
+  ],
+  from: "2024-01-01",
+  to: "2024-01-31",
+  totalDays: 31,
+  estimatedTradingDays: 21,
+  estimatedDurationSeconds: 5,
+  notes: []
+};
+
+const completedBackfill: BackfillTriggerResult = {
   success: true,
   provider: "polygon",
   symbols: ["AAPL", "MSFT"],
@@ -386,7 +402,7 @@ describe("data-operations-screen view model", () => {
   it("ignores stale backfill preview responses after a newer preview settles", async () => {
     const previewRequests: Array<{
       request: BackfillTriggerRequest;
-      resolve: (value: BackfillTriggerResult) => void;
+      resolve: (value: BackfillPreviewResult) => void;
     }> = [];
     const idleProgress: BackfillProgressResponse = {
       active: false,
@@ -395,10 +411,10 @@ describe("data-operations-screen view model", () => {
       message: null
     };
     const services = {
-      preview: (request: BackfillTriggerRequest) => new Promise<BackfillTriggerResult>((resolve) => {
+      preview: (request: BackfillTriggerRequest) => new Promise<BackfillPreviewResult>((resolve) => {
         previewRequests.push({ request, resolve });
       }),
-      run: async (request: BackfillTriggerRequest) => ({ ...preview, symbols: request.symbols }),
+      run: async (request: BackfillTriggerRequest) => ({ ...completedBackfill, symbols: request.symbols }),
       getProgress: async () => idleProgress
     };
 
@@ -426,20 +442,26 @@ describe("data-operations-screen view model", () => {
     await waitFor(() => expect(previewRequests).toHaveLength(2));
 
     await act(async () => {
-      previewRequests[1].resolve({ ...preview, symbols: ["MSFT"], barsWritten: 25 });
+      previewRequests[1].resolve({
+        ...preview,
+        symbols: [{ symbol: "MSFT", estimatedBars: 25, hasMarketHoursData: true, notes: [] }]
+      });
       await secondPreview;
     });
 
-    expect(result.current.preview?.symbols).toEqual(["MSFT"]);
-    expect(result.current.preview?.barsWritten).toBe(25);
+    expect(result.current.preview?.symbols.map((entry) => entry.symbol)).toEqual(["MSFT"]);
+    expect(result.current.preview?.symbols[0]?.estimatedBars).toBe(25);
 
     await act(async () => {
-      previewRequests[0].resolve({ ...preview, symbols: ["AAPL"], barsWritten: 1000 });
+      previewRequests[0].resolve({
+        ...preview,
+        symbols: [{ symbol: "AAPL", estimatedBars: 1000, hasMarketHoursData: true, notes: [] }]
+      });
       await firstPreview;
     });
 
-    expect(result.current.preview?.symbols).toEqual(["MSFT"]);
-    expect(result.current.preview?.barsWritten).toBe(25);
+    expect(result.current.preview?.symbols.map((entry) => entry.symbol)).toEqual(["MSFT"]);
+    expect(result.current.preview?.symbols[0]?.estimatedBars).toBe(25);
     expect(result.current.phase).toBe("idle");
     expect(result.current.busy).toBe(false);
   });
@@ -465,7 +487,7 @@ describe("data-operations-screen view model", () => {
           })
         );
       },
-      run: async (request: BackfillTriggerRequest) => ({ ...preview, symbols: request.symbols }),
+      run: async (request: BackfillTriggerRequest) => ({ ...completedBackfill, symbols: request.symbols }),
       getProgress: async () => idleProgress
     };
     const workspace: DataOperationsWorkspaceResponse = {
@@ -508,7 +530,7 @@ describe("data-operations-screen view model", () => {
     expect(previewCard.rows).toContainEqual({ id: "timing", label: "Timing", value: "Jan 31, 2024 10:00 UTC · 5s elapsed" });
     expect(previewCard.ariaLabel).toContain("Status Preview only");
 
-    const completedCard = buildBackfillResultCardState(preview, "result");
+    const completedCard = buildBackfillResultCardState(completedBackfill, "result");
 
     expect(completedCard.title).toBe("Backfill complete — polygon");
     expect(completedCard.statusLabel).toBe("Written");
@@ -517,7 +539,7 @@ describe("data-operations-screen view model", () => {
 
   it("derives failed backfill result cards with danger tone and error evidence", () => {
     const failedCard = buildBackfillResultCardState({
-      ...preview,
+      ...completedBackfill,
       success: false,
       error: "Provider rejected the requested range.",
       from: null,

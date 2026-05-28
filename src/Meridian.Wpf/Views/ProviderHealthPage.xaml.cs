@@ -31,10 +31,10 @@ public partial class ProviderHealthPage : Page
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e) =>
-        await _viewModel.StartAsync();
+        await _viewModel.ActivateAsync();
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
-        _viewModel.Stop();
+        _viewModel.Deactivate();
 
     private async void Refresh_Click(object sender, RoutedEventArgs e) =>
         await _viewModel.RefreshAsync();

@@ -1,4 +1,3 @@
-using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Wpf.Services;
@@ -39,48 +38,34 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
     }
 
     public Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default)
-        => _apiClient.GetAsync<ReconciliationCalibrationSummaryDto>(UiApiRoutes.ReconciliationCalibrationSummary, ct);
+        => _apiClient.UiApi.GetReconciliationCalibrationSummaryAsync(ct);
 
     public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueAsync(CancellationToken ct = default)
         => await _apiClient.UiApi.GetReconciliationBreakQueueAsync(ct).ConfigureAwait(false)
         ?? [];
 
     public Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default)
-        => _apiClient.GetAsync<ReconciliationRunDetail>(
-            UiApiRoutes.WithParam(UiApiRoutes.RunsReconciliation, "runId", runId),
-            ct);
+        => _apiClient.UiApi.GetLatestRunReconciliationAsync(runId, ct);
 
     public Task<ReconciliationRunDetail?> GetRunDetailAsync(string reconciliationRunId, CancellationToken ct = default)
-        => _apiClient.GetAsync<ReconciliationRunDetail>(
-            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationRunById, "reconciliationRunId", reconciliationRunId),
-            ct);
+        => _apiClient.UiApi.GetReconciliationRunAsync(reconciliationRunId, ct);
 
     public Task<WorkstationReconciliationActionResult> ReviewBreakAsync(
         string breakId,
         ReviewReconciliationBreakRequest request,
         CancellationToken ct = default)
-        => PostActionAsync(
-            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakReview, "breakId", breakId),
-            request,
-            ct);
+        => ToActionResultAsync(_apiClient.UiApi.ReviewReconciliationBreakAsync(breakId, request, ct));
 
     public Task<WorkstationReconciliationActionResult> ResolveBreakAsync(
         string breakId,
         ResolveReconciliationBreakRequest request,
         CancellationToken ct = default)
-        => PostActionAsync(
-            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakResolve, "breakId", breakId),
-            request,
-            ct);
+        => ToActionResultAsync(_apiClient.UiApi.ResolveReconciliationBreakAsync(breakId, request, ct));
 
-    private async Task<WorkstationReconciliationActionResult> PostActionAsync(
-        string endpoint,
-        object request,
-        CancellationToken ct)
+    private static async Task<WorkstationReconciliationActionResult> ToActionResultAsync(
+        Task<Meridian.Contracts.Api.ApiResponse<ReconciliationBreakQueueItem>> responseTask)
     {
-        var response = await _apiClient
-            .PostWithResponseAsync<ReconciliationBreakQueueItem>(endpoint, request, ct)
-            .ConfigureAwait(false);
+        var response = await responseTask.ConfigureAwait(false);
 
         return response.Success
             ? new WorkstationReconciliationActionResult(true, null, response.Data)

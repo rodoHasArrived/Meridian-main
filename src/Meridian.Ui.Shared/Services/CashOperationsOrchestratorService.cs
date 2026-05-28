@@ -1,4 +1,18 @@
-using Meridian.Contracts.Workstation;
+using CashSyncSourceAvailability = Meridian.Contracts.Workstation.CashSyncSourceAvailability;
+using CashSyncWindow = Meridian.Contracts.Workstation.CashSyncWindow;
+using SyncCompletenessResult = Meridian.Contracts.Workstation.SyncCompletenessResult;
+using DeltaOutlierResult = Meridian.Contracts.Workstation.DeltaOutlierResult;
+using WorkstationSyncValidationResult = Meridian.Contracts.Workstation.SyncValidationResult;
+using WorkstationApprovalPolicy = Meridian.Contracts.Workstation.ApprovalPolicy;
+using WorkstationApprovalDecision = Meridian.Contracts.Workstation.ApprovalDecision;
+using WorkstationPaymentInstruction = Meridian.Contracts.Workstation.PaymentInstruction;
+using WorkstationSettlementInstruction = Meridian.Contracts.Workstation.SettlementInstruction;
+using WorkstationCouponEvent = Meridian.Contracts.Workstation.CouponEvent;
+using WorkstationFxConversionReference = Meridian.Contracts.Workstation.FxConversionReference;
+using CashFlowProjectionPoint = Meridian.Contracts.Workstation.CashFlowProjectionPoint;
+using CashForecastResult = Meridian.Contracts.Workstation.CashForecastResult;
+using WorkstationStpStateTransition = Meridian.Contracts.Workstation.StpStateTransition;
+using StpProcessingState = Meridian.Contracts.Workstation.StpProcessingState;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -16,7 +30,7 @@ public sealed class CashOperationsOrchestratorService
             .ToArray();
     }
 
-    public SyncValidationResult ValidateSync(
+    public WorkstationSyncValidationResult ValidateSync(
         IReadOnlyList<SyncCompletenessResult> completeness,
         IReadOnlyList<DeltaOutlierResult> outliers)
     {
@@ -27,15 +41,15 @@ public sealed class CashOperationsOrchestratorService
         if (completeness.Any(c => !c.IsComplete)) warnings.Add("Completeness gaps detected.");
         if (outliers.Any(o => o.IsOutlier)) warnings.Add("Outlier deltas exceed policy threshold.");
 
-        return new SyncValidationResult(warnings.Count == 0, completeness, outliers, warnings);
+        return new WorkstationSyncValidationResult(warnings.Count == 0, completeness, outliers, warnings);
     }
 
-    public ApprovalDecision EvaluateApproval(
+    public WorkstationApprovalDecision EvaluateApproval(
         decimal amount,
         string currency,
         Guid accountId,
         string riskBucket,
-        ApprovalPolicy policy)
+        WorkstationApprovalPolicy policy)
     {
         ArgumentNullException.ThrowIfNull(currency);
         ArgumentNullException.ThrowIfNull(riskBucket);
@@ -77,7 +91,7 @@ public sealed class CashOperationsOrchestratorService
             dualControl = true;
         }
 
-        return new ApprovalDecision(queue, dualControl, reasons);
+        return new WorkstationApprovalDecision(queue, dualControl, reasons);
     }
 
     public DateOnly ResolveSettlementDateWithCutoff(DateTimeOffset bookingTimeLocal, TimeOnly cutoffLocal, int normalSettlementLagDays)
@@ -91,10 +105,10 @@ public sealed class CashOperationsOrchestratorService
     public CashForecastResult BuildCashForecast(
         DateOnly asOf,
         IReadOnlyDictionary<(Guid AccountId, string Currency), decimal> openingBalances,
-        IReadOnlyList<PaymentInstruction> payments,
-        IReadOnlyList<SettlementInstruction> settlements,
-        IReadOnlyList<CouponEvent> coupons,
-        IReadOnlyList<FxConversionReference> fx,
+        IReadOnlyList<WorkstationPaymentInstruction> payments,
+        IReadOnlyList<WorkstationSettlementInstruction> settlements,
+        IReadOnlyList<WorkstationCouponEvent> coupons,
+        IReadOnlyList<WorkstationFxConversionReference> fx,
         decimal liquidityWarningThreshold)
     {
         var timeline = new List<CashFlowProjectionPoint>();
@@ -127,10 +141,10 @@ public sealed class CashOperationsOrchestratorService
         return new CashForecastResult(asOf, timeline.OrderBy(t => t.Date).ThenBy(t => t.AccountId).ToArray(), warnings);
     }
 
-    public IReadOnlyList<StpStateTransition> BuildStpTrail(Guid instructionId, bool validationPassed, bool approved, bool settled, string? exceptionReason)
+    public IReadOnlyList<WorkstationStpStateTransition> BuildStpTrail(Guid instructionId, bool validationPassed, bool approved, bool settled, string? exceptionReason)
     {
         var now = DateTimeOffset.UtcNow;
-        var trail = new List<StpStateTransition> { new(instructionId, StpProcessingState.Received, now, "Instruction received.") };
+        var trail = new List<WorkstationStpStateTransition> { new(instructionId, StpProcessingState.Received, now, "Instruction received.") };
         if (!validationPassed)
         {
             trail.Add(new(instructionId, StpProcessingState.Exception, now, "Validation failed.", exceptionReason ?? "validation-failed"));

@@ -164,6 +164,12 @@ SYSTEM_CHECKS = (
         AI_CONTRACT,
         ("Shared AI documentation", "docs/ai/", ".codex/skills/_shared/project-context.md"),
     ),
+    (
+        "local-ai-maintenance-tools",
+        ("scripts/ai", "tools/codex"),
+        AI_CONTRACT,
+        ("Local AI maintenance tooling", "scripts/ai/", "tools/codex/"),
+    ),
 )
 
 
@@ -325,6 +331,18 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
             )
         )
 
+    for path in sorted_files(root, "tools/codex/*.ps1"):
+        items.append(
+            InventoryItem(
+                surface="codex",
+                kind="codex-tool",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                alternate_markers=("tools/codex/",),
+            )
+        )
+
     for path in sorted_files(root, ".codex/skills/*/SKILL.md"):
         name = path.parent.name
         items.append(
@@ -473,6 +491,18 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 name=path.name,
                 path=repo_relative(root, path),
                 expected_docs=(INSTRUCTIONS_README,),
+            )
+        )
+
+    for path in sorted_files(root, "scripts/ai/*.sh"):
+        items.append(
+            InventoryItem(
+                surface="local-ai-maintenance-tools",
+                kind="maintenance-script",
+                name=path.name,
+                path=repo_relative(root, path),
+                expected_docs=(DOC_AI_README, AI_CONTRACT),
+                alternate_markers=("scripts/ai/",),
             )
         )
 

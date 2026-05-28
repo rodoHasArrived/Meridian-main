@@ -213,4 +213,36 @@
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
+    <Style x:Key="WorkstationSignifierActionPanelStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="BorderBrush" Value="{StaticResource WorkstationSignifierEvidenceBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundDarkBrush}" />
+    </Style>
+
+    <Style x:Key="WorkstationSignifierEvidenceChipStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="BorderBrush" Value="{StaticResource WorkstationSignifierEvidenceBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="{StaticResource WorkstationSignifierEvidenceBrush}" />
+    </Style>
+
+    <Style x:Key="WorkstationSignifierSignoffChipStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="BorderBrush" Value="{StaticResource WorkstationSignifierSignoffBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="{StaticResource WorkstationSignifierSignoffBrush}" />
+    </Style>
+
+    <Style x:Key="WorkstationSignifierRecoveryChipStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="BorderBrush" Value="{StaticResource WorkstationSignifierRecoveryBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="{StaticResource WorkstationSignifierRecoveryBrush}" />
+    </Style>
+
 </ResourceDictionary>

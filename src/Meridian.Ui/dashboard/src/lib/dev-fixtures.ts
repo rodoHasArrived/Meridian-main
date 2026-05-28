@@ -1866,6 +1866,8 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       label: "Broker intake close gate",
       owner: "ops-user",
       dueDate: "2026-05-10",
+      requiredApprovalCount: 1,
+      expiresOn: "2026-05-15",
       status: "Done",
       blockingReason: null,
       evidencePointer: "ev-broker-ingest",
@@ -1875,6 +1877,7 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       acknowledgedBy: "ops-user"
     }
   ],
+  closeReadiness: null,
   evidenceLinks: [],
   blockers: [
     {

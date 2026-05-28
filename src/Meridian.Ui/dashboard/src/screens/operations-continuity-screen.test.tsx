@@ -123,6 +123,8 @@ const detail: OperationsContinuityWorkflow = {
     blockingReason: "Close workflow has unresolved ledger blockers.",
     evidenceLinks: []
   },
+  closeChecklist: [],
+  closeReadiness: null,
   evidenceLinks: [],
   blockers: gates[1]!.blockers
 };
