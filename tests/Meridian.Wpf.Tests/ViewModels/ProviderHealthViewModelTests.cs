@@ -344,4 +344,16 @@ public sealed class ProviderHealthViewModelTests
             viewModel.StreamingProviders.Should().ContainSingle(provider => provider.ProviderId == "polygon");
         });
     }
+
+    [Fact]
+    public void ActivationLifetime_SparklineLoopIsBoundToCurrentActivationTimer()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\ProviderHealthViewModel.cs"));
+
+        source.Should().Contain("var timer = new PeriodicTimer(TimeSpan.FromSeconds(2))");
+        source.Should().Contain("_ = RefreshSparklineDataAsync(timer, ActivationToken)");
+        source.Should().Contain("ReferenceEquals(_sparklineTimer, timer)");
+        source.Should().Contain("timer.WaitForNextTickAsync(ct)");
+        source.Should().Contain("Interlocked.Exchange(ref _sparklineTimer, null)");
+    }
 }

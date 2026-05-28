@@ -595,7 +595,7 @@ public sealed class LedgerIntegrationTests
             .Concat(lines.Skip(1))
             .ToArray();
 
-        var act = () => new JournalEntry(journalId, timestamp, "generated duplicate line", duplicatedLines);
+        var act = () => new JournalEntry(journalId, timestamp, duplicate.Description, duplicatedLines);
 
         act.Should()
             .Throw<LedgerValidationException>()

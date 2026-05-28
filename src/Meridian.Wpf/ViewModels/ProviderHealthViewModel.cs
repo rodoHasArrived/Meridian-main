@@ -1429,14 +1429,17 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
 
     private void StartSparklineTimer()
     {
-        _sparklineTimer = new PeriodicTimer(TimeSpan.FromSeconds(2));
-        _ = RefreshSparklineDataAsync();
+        StopSparklineTimer();
+
+        var timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+        _sparklineTimer = timer;
+        _ = RefreshSparklineDataAsync(timer, ActivationToken);
     }
 
     private void StopSparklineTimer()
     {
-        _sparklineTimer?.Dispose();
-        _sparklineTimer = null;
+        var timer = Interlocked.Exchange(ref _sparklineTimer, null);
+        timer?.Dispose();
     }
 
     private static void CancelAndDispose(CancellationTokenSource? cts, bool cancel = true)
@@ -1467,20 +1470,26 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         }
     }
 
-    private async Task RefreshSparklineDataAsync()
+    private async Task RefreshSparklineDataAsync(PeriodicTimer timer, CancellationToken ct)
     {
         try
         {
-            while (_sparklineTimer is not null)
+            while (ReferenceEquals(_sparklineTimer, timer) && !ct.IsCancellationRequested)
             {
-                await _sparklineTimer.WaitForNextTickAsync();
-                if (_sparklineTimer is null)
+                if (!await timer.WaitForNextTickAsync(ct))
+                {
                     break;
+                }
+
+                if (!ReferenceEquals(_sparklineTimer, timer) || _isDisposed || !_isActive)
+                {
+                    break;
+                }
 
                 _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(UpdateSparklineData);
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             // Timer disposed — ignore
         }
