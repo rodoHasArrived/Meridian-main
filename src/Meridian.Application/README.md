@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Application
@@ -34,10 +34,14 @@ and UI presentation concerns in their owning layers.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. Ledger mapping resolution stays server-side and reuses
   fund-structure assignments before falling back to account ledger references.
+- `Reconciliation/` - statement intake, validation, matching, case creation, and reconciliation
+  orchestration. Statement validation returns structured issue DTOs so operator workflows can
+  distinguish hard blockers from policy-controlled soft issues before import.
 - `Services/` - application use cases and orchestration services.
 - `Reconciliation/` - statement intake, canonical reconciliation orchestration, and staged
   broker-versus-internal matching for positions, cash, and transactions.
 - `Composition/` - application feature registration and service wiring.
+- `Reconciliation/` - statement reconciliation workflows, external statement mapping profiles, case intake, and match orchestration.
 
 ## Important workflows
 
@@ -52,6 +56,11 @@ application service contracts consumed by host and UI surfaces.
   internal portfolio/cash/ledger views, and a tolerance profile. It emits deterministic exact,
   tolerance, candidate, and unmatched results with rule IDs, confidence, side-specific evidence
   references, variance, tolerance, and operator explanations.
+- Statement reconciliation imports return typed normalized collections for positions, cash balances, transactions, security references, and source-row references. The import path keeps legacy canonical rows in adapter infrastructure only while application orchestration consumes the typed result shape.
+- Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
+- Statement validation checks source accessibility, account/profile references, duplicate imports,
+  invariant date/decimal parsing, currency/activity/security resolution, and statement-period
+  alignment through application-layer DTOs rather than relying only on exceptions.
 
 ## Diagrams
 
