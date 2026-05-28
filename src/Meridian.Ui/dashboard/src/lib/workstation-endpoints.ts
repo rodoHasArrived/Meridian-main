@@ -100,6 +100,8 @@ export const SECURITY_MASTER_API_ENDPOINTS = {
 
 export const RECONCILIATION_API_ENDPOINTS = {
   runs: "/api/workstation/reconciliation/runs",
+  statementRuns: "/api/workstation/reconciliation/statement-runs",
+  statementExceptions: "/api/workstation/reconciliation/statement-exceptions",
   breakQueue: "/api/workstation/reconciliation/break-queue",
   calibrationSummary: "/api/workstation/reconciliation/calibration-summary"
 } as const;
@@ -523,6 +525,10 @@ export function securityMasterConflictResolveEndpoint(conflictId: string): strin
 
 export function reconciliationRunEndpoint(reconciliationRunId: string): string {
   return `${RECONCILIATION_API_ENDPOINTS.runs}/${pathSegment(reconciliationRunId, "reconciliationRunId")}`;
+}
+
+export function reconciliationStatementRunEndpoint(statementRunId: string): string {
+  return `${RECONCILIATION_API_ENDPOINTS.statementRuns}/${pathSegment(statementRunId, "statementRunId")}`;
 }
 
 export function reconciliationBreakQueueEndpoint(options: { status?: string; fundAccountId?: string } = {}): string {

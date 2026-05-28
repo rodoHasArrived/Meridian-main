@@ -1,0 +1,3 @@
+account,securityIdentifier,quantity,price,cashAmount,activityCode,tradeDate,currency,customNote
+A1,UNKNOWN,not-a-decimal,150.25,1502.50,BOGUS,2026-06-01,ZZZ,note
+,SPY,10,500,5000,BUY,2026-05-20,USD,note

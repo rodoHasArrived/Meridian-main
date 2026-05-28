@@ -65,6 +65,8 @@ import type {
   ReconciliationBulkCaseworkRequest,
   ReconciliationBulkCaseworkResult,
   ReconciliationCalibrationSummary,
+  StatementRunException,
+  StatementRunSummary,
   ReconciliationCaseworkCommand,
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
@@ -168,6 +170,7 @@ import {
   reconciliationBreakSignOffEndpoint,
   reconciliationBreakTransitionEndpoint,
   reconciliationRunEndpoint,
+  reconciliationStatementRunEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
   securityMasterAliasUpsertEndpoint,
@@ -923,6 +926,18 @@ export function runReconciliation(request: Record<string, unknown>) {
 
 export function getReconciliationRun(reconciliationRunId: string) {
   return getJson<unknown>(reconciliationRunEndpoint(reconciliationRunId));
+}
+
+export function getStatementRuns(options: ApiRequestOptions = {}) {
+  return getJson<StatementRunSummary[]>(RECONCILIATION_API_ENDPOINTS.statementRuns, options);
+}
+
+export function getStatementRun(statementRunId: string, options: ApiRequestOptions = {}) {
+  return getJson<StatementRunSummary>(reconciliationStatementRunEndpoint(statementRunId), options);
+}
+
+export function getStatementRunExceptions(options: ApiRequestOptions = {}) {
+  return getJson<StatementRunException[]>(RECONCILIATION_API_ENDPOINTS.statementExceptions, options);
 }
 
 export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
