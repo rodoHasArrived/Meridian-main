@@ -34,6 +34,9 @@ and UI presentation concerns in their owning layers.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. Ledger mapping resolution stays server-side and reuses
   fund-structure assignments before falling back to account ledger references.
+- `Reconciliation/` - statement intake, validation, matching, case creation, and reconciliation
+  orchestration. Statement validation returns structured issue DTOs so operator workflows can
+  distinguish hard blockers from policy-controlled soft issues before import.
 - `Services/` - application use cases and orchestration services.
 - `Composition/` - application feature registration and service wiring.
 
@@ -45,6 +48,9 @@ application service contracts consumed by host and UI surfaces.
 ## API contract notes
 
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
+- Statement validation checks source accessibility, account/profile references, duplicate imports,
+  invariant date/decimal parsing, currency/activity/security resolution, and statement-period
+  alignment through application-layer DTOs rather than relying only on exceptions.
 
 ## Diagrams
 
