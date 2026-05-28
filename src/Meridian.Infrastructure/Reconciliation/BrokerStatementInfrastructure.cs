@@ -8,6 +8,7 @@ namespace Meridian.Infrastructure.Reconciliation;
 public interface ICanonicalStatementStore
 {
     Task<bool> ImportExistsByChecksumAsync(string checksum, CancellationToken ct = default);
+    Task<bool> ImportExistsByDuplicateKeyAsync(string duplicateKey, CancellationToken ct = default);
     Task SaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default);
     Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default);
 }
@@ -18,6 +19,18 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
 
     public Task<bool> ImportExistsByChecksumAsync(string checksum, CancellationToken ct = default)
         => Task.FromResult(Directory.Exists(_folder) && Directory.EnumerateFiles(_folder, "*.json").Any(path => File.ReadAllText(path).Contains(checksum, StringComparison.Ordinal)));
+
+    public Task<bool> ImportExistsByDuplicateKeyAsync(string duplicateKey, CancellationToken ct = default)
+    {
+        if (!Directory.Exists(_folder))
+            return Task.FromResult(false);
+
+        var exists = Directory.EnumerateFiles(_folder, "*.json")
+            .Select(path => JsonSerializer.Deserialize<ImportEnvelope>(File.ReadAllText(path))?.import)
+            .Any(import => string.Equals(import?.DuplicateKey, duplicateKey, StringComparison.Ordinal));
+
+        return Task.FromResult(exists);
+    }
 
     public async Task SaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default)
     {
@@ -61,22 +74,43 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
 
     public async Task<BrokerStatementImportResult> ImportAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
     {
-        var content = await File.ReadAllTextAsync(request.SourcePath, ct).ConfigureAwait(false);
-        var checksum = Hash(content);
-        if (await store.ImportExistsByChecksumAsync(checksum, ct).ConfigureAwait(false))
-            throw new InvalidOperationException("Statement already imported (checksum match).");
+        var fileBytes = await File.ReadAllBytesAsync(request.SourcePath, ct).ConfigureAwait(false);
+        var content = Encoding.UTF8.GetString(fileBytes);
+        var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash) ? HashBytes(fileBytes) : request.SourceFileHash.Trim().ToUpperInvariant();
+        var duplicateKey = StatementDuplicateKey.Create(
+            request.FundAccountId,
+            request.StatementPeriodStart,
+            request.StatementPeriodEnd,
+            sourceFileHash);
 
-        var importId = Guid.NewGuid().ToString("N");
-        var rows = ParseRows(content, request, importId).ToList();
+        if (await store.ImportExistsByDuplicateKeyAsync(duplicateKey, ct).ConfigureAwait(false))
+            throw new InvalidOperationException("Statement already imported (fund account, statement period, and source file hash match).");
+
+        var importId = duplicateKey;
+        var normalizedRequest = request.WithSourceFileHash(sourceFileHash);
+        var rows = ParseRows(content, normalizedRequest, importId).ToList();
         var import = new CanonicalStatementImport(
             importId,
-            request.Broker,
-            request.StatementDate,
+            normalizedRequest.Broker,
+            normalizedRequest.StatementPeriodEnd,
             DateTimeOffset.UtcNow,
-            request.SourcePath,
-            checksum,
+            normalizedRequest.SourcePath,
+            sourceFileHash,
             rows.Count,
-            rows.Count);
+            rows.Count)
+        {
+            SourceInstitution = normalizedRequest.SourceInstitution,
+            FundAccountId = normalizedRequest.FundAccountId,
+            ExternalAccountId = normalizedRequest.ExternalAccountId,
+            StatementPeriodStart = normalizedRequest.StatementPeriodStart,
+            StatementPeriodEnd = normalizedRequest.StatementPeriodEnd,
+            OriginalFileName = normalizedRequest.OriginalFileName,
+            MappingProfileId = normalizedRequest.MappingProfileId,
+            ToleranceProfileId = normalizedRequest.ToleranceProfileId,
+            ImportedBy = normalizedRequest.ImportedBy,
+            SourceFileHash = sourceFileHash,
+            DuplicateKey = duplicateKey
+        };
         await store.SaveImportAsync(import, rows, ct).ConfigureAwait(false);
         return new BrokerStatementImportResult(import, rows);
     }
@@ -95,8 +129,11 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     }
 
     private static string Hash(string input)
+        => HashBytes(Encoding.UTF8.GetBytes(input));
+
+    private static string HashBytes(byte[] input)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var bytes = SHA256.HashData(input);
         return Convert.ToHexString(bytes);
     }
 }

@@ -76,7 +76,17 @@ public sealed record FundReconciliationBreakQueueRow(
     string ExceptionRouteLabel = "Unrouted",
     string ToleranceProfileLabel = "Unassigned",
     string RequiredSignoffRoleLabel = "Not configured",
-    string SignoffStatusLabel = "Pending");
+    string SignoffStatusLabel = "Pending",
+    string PriorityLabel = "Normal",
+    string SlaBadge = "On track",
+    string AgeBandLabel = "0-4h",
+    string BreachStateLabel = "OnTrack",
+    string RootCauseCodeLabel = "Unset",
+    string ResolutionCodeLabel = "Unset",
+    int CommentCount = 0,
+    int EvidenceCount = 0,
+    string LastActivityText = "No activity",
+    string SignOffChecklist = "Resolution, evidence, and dual-control sign-off required");
 
 public sealed record FundReconciliationRunRow(
     string RowKey,
