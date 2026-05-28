@@ -42,8 +42,10 @@ public sealed class FutureProjectionService : IFutureReferenceService
     public async Task<IReadOnlyList<FutureReferenceDto>> GetExpiryLadderAsync(string rootSymbol, CancellationToken ct = default)
     {
         var all = await GetByRootSymbolAsync(rootSymbol, ct).ConfigureAwait(false);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
         return all
             .Where(r => r.LifecycleStat is not FutureLifecycleStat.Expired and not FutureLifecycleStat.Retired)
+            .Where(r => r.ExpiryDate >= today)
             .OrderBy(r => r.ExpiryDate)
             .ToArray();
     }
