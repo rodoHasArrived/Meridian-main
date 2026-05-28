@@ -309,7 +309,32 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ExceptionRouteLabel: string.IsNullOrWhiteSpace(item.ExceptionRoute) ? "Unrouted" : item.ExceptionRoute,
             ToleranceProfileLabel: string.IsNullOrWhiteSpace(item.ToleranceProfileId) ? "Unassigned" : item.ToleranceProfileId,
             RequiredSignoffRoleLabel: string.IsNullOrWhiteSpace(item.RequiredSignoffRole) ? "Not configured" : item.RequiredSignoffRole,
-            SignoffStatusLabel: Humanize(item.SignoffStatus));
+            SignoffStatusLabel: Humanize(item.SignoffStatus),
+            PriorityLabel: Humanize(item.Priority),
+            SlaBadge: BuildSlaBadge(item),
+            AgeBandLabel: string.IsNullOrWhiteSpace(item.AgeBand) ? "0-4h" : item.AgeBand,
+            BreachStateLabel: Humanize(item.SlaState),
+            RootCauseCodeLabel: string.IsNullOrWhiteSpace(item.RootCauseCode) ? "Unset" : item.RootCauseCode,
+            ResolutionCodeLabel: string.IsNullOrWhiteSpace(item.ResolutionCode) ? "Unset" : item.ResolutionCode,
+            CommentCount: item.CommentCount,
+            EvidenceCount: item.EvidenceCount,
+            LastActivityText: item.LastActivityAt.HasValue ? FormatTimestamp(item.LastActivityAt.Value) : FormatTimestamp(item.LastUpdatedAt),
+            SignOffChecklist: BuildSignOffChecklist(item));
+    }
+
+    private static string BuildSlaBadge(ReconciliationBreakQueueItem item)
+        => item.SlaDueAt.HasValue
+            ? $"{Humanize(item.SlaState)} · due {FormatTimestamp(item.SlaDueAt.Value)}"
+            : Humanize(item.SlaState);
+
+    private static string BuildSignOffChecklist(ReconciliationBreakQueueItem item)
+    {
+        var checks = new List<string>();
+        checks.Add(string.IsNullOrWhiteSpace(item.RootCauseCode) ? "root cause missing" : "root cause captured");
+        checks.Add(string.IsNullOrWhiteSpace(item.ResolutionCode) ? "resolution code missing" : "resolution coded");
+        checks.Add(item.EvidenceCount > 0 ? $"{item.EvidenceCount} evidence link(s)" : "evidence missing");
+        checks.Add(item.SignedOffAt.HasValue ? "signed off" : "dual-control sign-off pending");
+        return string.Join("; ", checks);
     }
 
     private static FundReconciliationCalibrationProfileRow MapCalibrationProfileRow(

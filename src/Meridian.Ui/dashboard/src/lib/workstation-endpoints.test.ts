@@ -46,11 +46,22 @@ import {
   providerRemoveEndpoint,
   providerTestEndpoint,
   qualityAnomalyAcknowledgeEndpoint,
+  reconciliationBreakAssignEndpoint,
   reconciliationBreakAuditEndpoint,
+  reconciliationBreakBulkDryRunEndpoint,
+  reconciliationBreakBulkExecuteEndpoint,
+  reconciliationBreakBulkStatusEndpoint,
+  reconciliationBreakCommentEndpoint,
+  reconciliationBreakCommentsEndpoint,
   reconciliationBreakEndpoint,
   reconciliationBreakQueueEndpoint,
+  reconciliationBreakReopenEndpoint,
+  reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakRootCauseEndpoint,
+  reconciliationBreakSignOffEndpoint,
+  reconciliationBreakTransitionEndpoint,
   reconciliationRunEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
@@ -351,6 +362,39 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reconciliationBreakResolveEndpoint("break / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/break%20%2F%201/resolve"
+    );
+    expect(reconciliationBreakAssignEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/assign"
+    );
+    expect(reconciliationBreakTransitionEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/transition"
+    );
+    expect(reconciliationBreakCommentsEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/comments"
+    );
+    expect(reconciliationBreakCommentEndpoint("break / 1", "comment / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/comments/comment%20%2F%201"
+    );
+    expect(reconciliationBreakRootCauseEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/root-cause"
+    );
+    expect(reconciliationBreakResolutionEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/resolution"
+    );
+    expect(reconciliationBreakSignOffEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/sign-off"
+    );
+    expect(reconciliationBreakReopenEndpoint("break / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/break%20%2F%201/reopen"
+    );
+    expect(reconciliationBreakBulkDryRunEndpoint()).toBe(
+      "/api/workstation/reconciliation/break-queue/bulk/dry-run"
+    );
+    expect(reconciliationBreakBulkExecuteEndpoint()).toBe(
+      "/api/workstation/reconciliation/break-queue/bulk/execute"
+    );
+    expect(reconciliationBreakBulkStatusEndpoint("bulk / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/bulk/bulk%20%2F%201"
     );
   });
 
