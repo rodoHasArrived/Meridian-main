@@ -37,6 +37,7 @@ public sealed class AppServiceRegistrationTests
 
             serviceProvider.GetRequiredService<ConfigService>().Should().BeSameAs(ConfigService.Instance);
             serviceProvider.GetRequiredService<WorkspaceService>().Should().BeSameAs(WorkspaceService.Instance);
+            serviceProvider.GetRequiredService<WorkspaceStateTokenStore>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ConnectionService>().Should().BeSameAs(ConnectionService.Instance);
             serviceProvider.GetRequiredService<LoggingService>().Should().BeSameAs(LoggingService.Instance);
             serviceProvider.GetRequiredService<StatusService>().Should().BeSameAs(StatusService.Instance);
@@ -114,6 +115,8 @@ public sealed class AppServiceRegistrationTests
             services.Single(descriptor => descriptor.ServiceType == typeof(ThemeService))
                 .Lifetime.Should().Be(ServiceLifetime.Singleton);
             services.Single(descriptor => descriptor.ServiceType == typeof(FundContextService))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
+            services.Single(descriptor => descriptor.ServiceType == typeof(WorkspaceStateTokenStore))
                 .Lifetime.Should().Be(ServiceLifetime.Singleton);
 
             services.Single(descriptor => descriptor.ServiceType == typeof(TradingWorkspaceShellPresentationService))

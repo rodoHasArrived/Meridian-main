@@ -353,6 +353,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Meridian.Ui.Services.CollectionSessionService>(_ => Meridian.Ui.Services.CollectionSessionService.Instance);
         services.AddSingleton<Meridian.Ui.Services.ScheduleManagerService>(_ => Meridian.Ui.Services.ScheduleManagerService.Instance);
         services.AddSingleton<WpfServices.StorageService>(_ => WpfServices.StorageService.Instance);
+        services.AddSingleton<WpfServices.WorkspaceStateTokenStore>();
         services.AddSingleton<BatchExportSchedulerService>();
         services.AddSingleton<Meridian.Ui.Services.ActivityFeedService>(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
         services.AddSingleton<Meridian.Ui.Services.CommandPaletteService>(_ => Meridian.Ui.Services.CommandPaletteService.Instance);

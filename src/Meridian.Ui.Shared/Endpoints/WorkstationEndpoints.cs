@@ -20,6 +20,7 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
@@ -1144,6 +1145,52 @@ public static partial class WorkstationEndpoints
         .WithName("GetRunReconciliationHistory")
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationApiService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var runs = await service.ListStatementRunsAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(runs, jsonOptions);
+        })
+        .WithName("ListStatementRuns")
+        .Produces<IReadOnlyList<StatementRunSummaryDto>>(200)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (string runId, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationApiService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await service.GetStatementRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
+        })
+        .WithName("GetStatementRun")
+        .Produces<StatementRunSummaryDto>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementExceptions), async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationApiService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var exceptions = await service.ListOpenExceptionsAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(exceptions, jsonOptions);
+        })
+        .WithName("ListStatementExceptions")
+        .Produces<IReadOnlyList<StatementRunExceptionDto>>(200)
+        .Produces(501);
 
         group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
         {

@@ -107,12 +107,12 @@ public sealed class UiApiClientTests
             var path = request.RequestUri!.AbsolutePath;
             if (path.EndsWith("/review", StringComparison.Ordinal))
             {
-                return JsonResponse("""{"breakId":"break-1","runId":"run-1","strategyName":"Carry","category":"AmountMismatch","status":"InReview","variance":10,"reason":"review","assignedTo":"ops","detectedAt":"2026-05-27T12:00:00Z","lastUpdatedAt":"2026-05-27T12:01:00Z"}""");
+                return JsonResponse("""{"breakId":"break-1","runId":"run-1","strategyName":"Carry","category":0,"status":1,"variance":10,"reason":"review","assignedTo":"ops","detectedAt":"2026-05-27T12:00:00Z","lastUpdatedAt":"2026-05-27T12:01:00Z"}""");
             }
 
             if (path.EndsWith("/resolve", StringComparison.Ordinal))
             {
-                return JsonResponse("""{"breakId":"break-1","runId":"run-1","strategyName":"Carry","category":"AmountMismatch","status":"Resolved","variance":10,"reason":"resolved","assignedTo":"ops","detectedAt":"2026-05-27T12:00:00Z","lastUpdatedAt":"2026-05-27T12:02:00Z"}""");
+                return JsonResponse("""{"breakId":"break-1","runId":"run-1","strategyName":"Carry","category":0,"status":2,"variance":10,"reason":"resolved","assignedTo":"ops","detectedAt":"2026-05-27T12:00:00Z","lastUpdatedAt":"2026-05-27T12:02:00Z"}""");
             }
 
             if (path.EndsWith("/calibration-summary", StringComparison.Ordinal))
