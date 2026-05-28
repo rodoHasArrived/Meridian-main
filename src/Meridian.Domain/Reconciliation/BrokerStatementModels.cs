@@ -107,7 +107,12 @@ public sealed record MatchOutcome(
     string OutcomeType,
     string LinkedEntityId,
     decimal Confidence,
-    string Rationale);
+    string Rationale)
+{
+    public string ToleranceProfileId { get; init; } = string.Empty;
+    public int ToleranceProfileVersion { get; init; }
+    public string? ToleranceRuleId { get; init; }
+}
 
 public interface IBrokerStatementService
 {
