@@ -498,6 +498,8 @@ public static class UiApiRoutes
     public const string ExecutionAudit = "/api/execution/audit";
     public const string ExecutionControls = "/api/execution/controls";
     public const string ExecutionControlsCircuitBreaker = "/api/execution/controls/circuit-breaker";
+    public const string ExecutionControlsDefaultPositionLimit = "/api/execution/controls/position-limits/default";
+    public const string ExecutionControlsSymbolPositionLimit = "/api/execution/controls/position-limits/{symbol}";
     public const string ExecutionControlsManualOverrides = "/api/execution/controls/manual-overrides";
     public const string ExecutionControlsManualOverrideClear = "/api/execution/controls/manual-overrides/{overrideId}/clear";
     public static readonly string ExecutionManualOverrides = ExecutionControlsManualOverrides;

@@ -218,8 +218,8 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         deleted.Item!.Comments![0].DeleteReason.Should().Be("Duplicate request.");
 
         var history = await repo.GetAuditHistoryAsync(item.BreakId);
-        history.Should().Contain(e => e.EventType == "Assigned" && e.CommandId is not null && e.CorrelationId is not null && e.SchemaVersion == 1 && e.Sequence > 0);
-        history.Should().Contain(e => e.EventType == "CommentAdded" && e.AfterPayload is not null && e.AfterPayloadHash is not null);
+        history.Should().Contain(e => e.EventType == "Assigned" && e.CommandId != null && e.CorrelationId != null && e.SchemaVersion == 1 && e.Sequence > 0);
+        history.Should().Contain(e => e.EventType == "CommentAdded" && e.AfterPayload != null && e.AfterPayloadHash != null);
 
         var retried = await repo.ApplyCaseworkCommandAsync(Command(comment.Item, ReconciliationCaseworkAction.AddComment) with
         {

@@ -3367,14 +3367,12 @@ public sealed partial class WorkstationEndpointsTests
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunById, "runId", "statement-run-1"),
             ServerJsonOptions);
         run.Should().NotBeNull();
-        run!.OpenExceptionCount.Should().Be(1);
-        run.EvidenceLinks.Should().ContainSingle(link =>
-            link.RunId == "statement-run-1"
-            && link.SourceFileHash == "HASH-1"
-            && link.BrokerCustodian == "custodian"
-            && link.Account == "external-account-1"
-            && link.BreakIds.Contains("break-1")
-            && link.CaseIds.Contains("case-1"));
+        run!.MatchSummary.Should().NotBeNull();
+        run.MatchSummary!.BreakCount.Should().Be(1);
+        run.Breaks.Should().ContainSingle(statementBreak =>
+            statementBreak.BreakId == "break-1"
+            && statementBreak.Status == "Open"
+            && statementBreak.Severity == StatementValidationSeverity.Error);
         run!.RunId.Should().Be("statement-run-1");
 
         var validation = await client.GetFromJsonAsync<StatementRunValidationDto>(
@@ -3741,7 +3739,7 @@ public sealed partial class WorkstationEndpointsTests
             item.ToleranceBand == 1m &&
             item.RequiredSignoffRole == "Fund operations lead" &&
             item.SignoffStatus == "pending-signoff" &&
-            item.ResolutionNote is null);
+            item.ResolutionNote == null);
         first!.Count(item => item.SourceType == "statement").Should().Be(1);
         second.Count(item => item.SourceType == "statement").Should().Be(1);
 
@@ -7666,31 +7664,7 @@ public sealed partial class WorkstationEndpointsTests
             PositionMatches: 3,
             CashMatches: 2,
             TransactionMatches: 1,
-            OpenExceptionCount: 1,
-            EvidenceLinks:
-            [
-                new StatementRunEvidenceLinkDto(
-                    EvidenceId: "statement-run:statement-run-1",
-                    EvidenceRoute: "/api/workstation/evidence/statement-run/statement-run-1",
-                    RunId: "statement-run-1",
-                    SourceFileHash: "HASH-1",
-                    BrokerCustodian: "custodian",
-                    Account: "external-account-1",
-                    StatementPeriodStart: "2026-05-01",
-                    StatementPeriodEnd: "2026-05-27",
-                    MappingProfileId: "mapping-v1",
-                    MappingProfileVersion: 1,
-                    ToleranceProfileId: "tolerance-v1",
-                    ToleranceProfileVersion: 2,
-                    ValidationSummary: "Passed: 0 issue(s), 0 error(s), 0 warning(s).",
-                    MatchSummary: "6/7 item(s) matched; 1 break(s); 1 case(s).",
-                    BreakIds: ["break-1"],
-                    CaseIds: ["case-1"],
-                    ImportedBy: "ops@example.test",
-                    ImportedAtUtc: "2026-05-27T12:00:00Z",
-                    ReconciledBy: "ops@example.test",
-                    ReconciledAtUtc: "2026-05-27T12:01:00Z")
-            ]);
+            OpenExceptionCount: 1);
 
         public List<StatementRunCreateDto> CreatedRequests { get; } = [];
         public List<string> ReconciledRunIds { get; } = [];

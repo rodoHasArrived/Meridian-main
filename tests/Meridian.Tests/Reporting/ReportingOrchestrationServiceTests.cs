@@ -56,7 +56,7 @@ public sealed class ReportingOrchestrationServiceTests
         var generated = await sut.ExecuteDueSchedulesAsync(schedules, FixedNow, CancellationToken.None);
 
         generated.Select(m => m.RunId).Should().Equal("sched-investor-20260501", "sched-shadow-20260503");
-        generated.Should().OnlyContain(m => m.Trigger == ReportingRunTrigger.Scheduled && m.ScheduleId is not null);
+        generated.Should().OnlyContain(m => m.Trigger == ReportingRunTrigger.Scheduled && m.ScheduleId != null);
         sut.GetAudit("sched-shadow-20260503").Should().ContainSingle(e => e.Action == "RunGenerated" && e.Notes.Contains("trigger=Scheduled"));
     }
 
