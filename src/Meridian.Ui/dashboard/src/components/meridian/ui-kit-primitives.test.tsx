@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS, DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 
 interface TestRow {
@@ -25,6 +26,7 @@ describe("DenseDataTable", () => {
     const onRowSelect = vi.fn();
 
     render(
+      <>
       <DenseDataTable
         columns={columns}
         rows={rows}
@@ -38,6 +40,8 @@ describe("DenseDataTable", () => {
         emptyText="No rows"
         ariaLabel="Test table"
       />
+      <DenseRowDetailPanel id="symbol-detail" ariaLabel="Symbol detail">Symbol detail</DenseRowDetailPanel>
+      </>
     );
 
     const selectedRow = screen.getByRole("row", { name: "Select AAPL" });
@@ -48,7 +52,7 @@ describe("DenseDataTable", () => {
     expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("row", { name: "Select MSFT" })).toHaveAttribute("tabindex", "-1");
     expect(screen.getByRole("table", { name: "Test table" })).toHaveAccessibleDescription(
-      "Use Up Arrow and Down Arrow to move between rows. Use Home and End to jump to the first or last row. Use Enter or Space to select the focused row."
+      DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS
     );
 
     await user.click(screen.getByRole("row", { name: "Select MSFT" }));

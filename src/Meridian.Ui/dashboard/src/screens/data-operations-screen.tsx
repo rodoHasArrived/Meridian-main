@@ -15,6 +15,7 @@ import type { LucideIcon } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
@@ -787,10 +788,10 @@ function BackfillDetailPanel({
 }) {
   if (!detail) {
     return (
-      <aside
+      <DenseRowDetailPanel
         id={DATA_BACKFILL_DETAIL_PANEL_ID}
         role="status"
-        aria-label="Backfill detail empty state"
+        ariaLabel="Backfill detail empty state"
         className="row-detail-panel h-fit min-w-0"
       >
         <div className="eyebrow-label">Selected Backfill</div>
@@ -800,16 +801,14 @@ function BackfillDetailPanel({
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {emptyState?.description ?? "Select a backfill row to inspect repair scope, provider, progress, and update evidence."}
         </p>
-      </aside>
+      </DenseRowDetailPanel>
     );
   }
 
   return (
-    <aside
+    <DenseRowDetailPanel
       id={detail.id}
-      role="region"
-      aria-label={detail.ariaLabel}
-      aria-live="polite"
+      ariaLabel={detail.ariaLabel}
       className="row-detail-panel h-fit min-w-0"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -827,7 +826,7 @@ function BackfillDetailPanel({
           <FieldTile key={field.id} field={field} />
         ))}
       </dl>
-    </aside>
+    </DenseRowDetailPanel>
   );
 }
 
