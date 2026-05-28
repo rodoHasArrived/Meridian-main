@@ -82,7 +82,8 @@
       ],
       "expectedArtifacts": [
         "docs/screenshots/desktop",
-        "artifacts/desktop-workflows"
+        "artifacts/desktop-workflows",
+        "artifacts/desktop-screenshot-capture/all-screenshots"
       ],
       "validationChecks": [
         {
@@ -100,7 +101,8 @@
         },
         "canonicalOutputRoots": [
           "docs/screenshots/desktop",
-          "artifacts/desktop-workflows"
+          "artifacts/desktop-workflows",
+          "artifacts/desktop-screenshot-capture/all-screenshots"
         ],
         "driftChecks": {
           "enforceMissing": false,
