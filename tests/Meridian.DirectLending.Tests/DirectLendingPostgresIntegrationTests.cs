@@ -87,6 +87,44 @@ public sealed class DirectLendingPostgresIntegrationTests
         history.Count(item => item.EventType == "loan.principal-payment-applied").Should().Be(1);
     }
 
+
+    [DirectLendingDatabaseFact]
+    public async Task CommandService_ShouldRejectDuplicateCommandId_WhenMutationDiffers()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+        {
+            return;
+        }
+
+        var created = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        await db.Service.ActivateLoanAsync(created.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+
+        var commandId = Guid.NewGuid();
+        var metadata = new DirectLendingCommandMetadataDto(
+            CausationId: Guid.NewGuid(),
+            CorrelationId: Guid.NewGuid(),
+            CommandId: commandId,
+            SourceSystem: "integration-tests",
+            ReplayFlag: false);
+
+        var first = await db.CommandService.ApplyPrincipalPaymentAsync(
+            created.LoanId,
+            new ApplyPrincipalPaymentRequest(50_000m, new DateOnly(2026, 4, 1), "wire-dup-2"),
+            metadata);
+        var second = await db.CommandService.ApplyPrincipalPaymentAsync(
+            created.LoanId,
+            new ApplyPrincipalPaymentRequest(10_000m, new DateOnly(2026, 4, 2), "wire-dup-3"),
+            metadata);
+
+        first.Error.Should().BeNull();
+        second.Error.Should().NotBeNull();
+        second.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+
+        var history = await db.Service.GetHistoryAsync(created.LoanId);
+        history.Count(item => item.EventType == "loan.principal-payment-applied").Should().Be(1);
+    }
+
     [DirectLendingDatabaseFact]
     public async Task AppendOperationsWorkflowAuditAsync_ShouldReturnLinearHashChainedStream()
     {

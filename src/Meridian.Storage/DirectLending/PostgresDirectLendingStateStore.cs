@@ -278,11 +278,22 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
-        if (metadata.CommandId is Guid commandId &&
-            await CommandAlreadyAppliedAsync(connection, transaction, loanId, commandId, ct).ConfigureAwait(false))
+        if (metadata.CommandId is Guid commandId)
         {
-            await transaction.CommitAsync(ct).ConfigureAwait(false);
-            return;
+            var duplicateStatus = await GetDuplicateCommandStatusAsync(connection, transaction, loanId, commandId, eventType, payload, ct).ConfigureAwait(false);
+            if (duplicateStatus is DuplicateCommandStatus.Matching)
+            {
+                await transaction.CommitAsync(ct).ConfigureAwait(false);
+                return;
+            }
+
+            if (duplicateStatus is DuplicateCommandStatus.Mismatched)
+            {
+                throw new DirectLendingCommandException(
+                    new DirectLendingCommandError(
+                        DirectLendingErrorCode.Conflict,
+                        $"Direct lending command id {commandId} was already used for a different mutation on loan {loanId}."));
+            }
         }
 
         var currentVersion = await LoadCurrentVersionAsync(connection, transaction, loanId, ct).ConfigureAwait(false);
@@ -304,18 +315,21 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
-    private async Task<bool> CommandAlreadyAppliedAsync(
+    private async Task<DuplicateCommandStatus> GetDuplicateCommandStatusAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         Guid loanId,
         Guid commandId,
+        string eventType,
+        JsonDocument payload,
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            select 1
+            select event_type,
+                   payload_json::text
             from {Qualified("loan_event")}
             where loan_id = @loan_id
               and command_id = @command_id
@@ -324,8 +338,27 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         command.Parameters.AddWithValue("loan_id", loanId);
         command.Parameters.AddWithValue("command_id", commandId);
 
-        var existing = await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
-        return existing is not null;
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            return DuplicateCommandStatus.None;
+        }
+
+        var existingEventType = reader.GetString(0);
+        var existingPayloadJson = reader.GetString(1);
+        var incomingPayloadJson = payload.RootElement.GetRawText();
+
+        return string.Equals(existingEventType, eventType, StringComparison.Ordinal) &&
+               string.Equals(existingPayloadJson, incomingPayloadJson, StringComparison.Ordinal)
+            ? DuplicateCommandStatus.Matching
+            : DuplicateCommandStatus.Mismatched;
+    }
+
+    private enum DuplicateCommandStatus
+    {
+        None = 0,
+        Matching = 1,
+        Mismatched = 2
     }
 
     private async Task AppendLedgerJournalEntriesAsync(
