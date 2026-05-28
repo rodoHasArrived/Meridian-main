@@ -92,6 +92,19 @@ dotnet run --project src/Meridian/Meridian.csproj -- --validate-package ./packag
 For ETL local-file workflows, use the `--etl-source-kind` and `--etl-source-path` arguments exposed
 by `src/Meridian.Application/Commands/EtlCommands.cs`.
 
+
+## Production-safe DI defaults
+
+By default, production startup paths must use persistence-backed domain services.
+In-memory governance/domain services are for local fixture/dev scenarios only and now require explicit opt-in:
+
+```bash
+MERIDIAN_USE_INMEMORY_GOVERNANCE=true
+```
+
+When `DOTNET_ENVIRONMENT=Production` (or `ASPNETCORE_ENVIRONMENT=Production`), Meridian fails fast
+if an in-memory governance profile is requested.
+
 ## Troubleshooting
 
 Use the narrowest probe that matches the failure.
