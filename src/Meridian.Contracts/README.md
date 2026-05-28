@@ -66,6 +66,12 @@ controller workflows can treat provider-ledger variances as accounting-grade cas
 detail contract also carries Security Master confidence passports for provider positions, including
 resolution source, confidence score, validation issue codes, and identifier-conflict evidence.
 
+Statement reconciliation payloads live under `Workstation/StatementReconciliationDtos.cs` and keep
+source-file evidence, mapping/tolerance profile versions, normalized positions, cash, transactions,
+match summaries, breaks, and operator cases in the shared contract lane. Keep these DTOs additive and
+transport-safe so browser, WPF, retained evidence, and automation consumers can reconcile custodian
+statements without referencing application, UI, or infrastructure types.
+
 Direct lending command result codes distinguish validation failures, missing aggregates,
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return
 operator-safe failure reasons without parsing exception text.
