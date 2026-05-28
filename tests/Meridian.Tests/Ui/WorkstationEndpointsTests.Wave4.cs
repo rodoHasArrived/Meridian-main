@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
 using Microsoft.AspNetCore.TestHost;
 
@@ -10,6 +11,30 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class WorkstationEndpointsTests
 {
+    [Fact]
+    public async Task OperationsContinuityEndpoints_ApprovalPolicyMatrix_ExposesServerOwnedRules()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(UiApiRoutes.OperationsContinuityApprovalPolicyMatrix);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var matrix = await response.Content.ReadFromJsonAsync<OperationsApprovalPolicyMatrixDto>(ServerJsonOptions);
+        matrix.Should().NotBeNull();
+        matrix!.Rows.Should().Contain(row =>
+            row.PolicyKey == "operations-continuity.approve" &&
+            row.Gate == OperationsGateKeyDto.Approval &&
+            row.RequiresIndependentReviewer &&
+            row.RequiredDistinctApprovals == 2 &&
+            row.RequiresReportPack &&
+            row.RequiresChecklistControlApprovals &&
+            row.AuditEventType == "approval-approved");
+        matrix.Rows.Should().Contain(row =>
+            row.PolicyKey == "operations-continuity.reopen" &&
+            row.RequiredPermission == nameof(UserPermission.AdminMaintenance));
+    }
+
     [Fact]
     public async Task OperationsContinuityEndpoints_ListDetailTimeline_ExposeSharedLifecycleEvidence()
     {

@@ -618,6 +618,30 @@ public sealed record OperationsChecklistControlApprovalDto(
     string ApprovedBy,
     DateTimeOffset ApprovedAtUtc);
 
+public sealed record OperationsApprovalPolicyMatrixDto(
+    string PolicyId,
+    string Version,
+    DateTimeOffset GeneratedAtUtc,
+    IReadOnlyList<OperationsApprovalPolicyMatrixRowDto> Rows);
+
+public sealed record OperationsApprovalPolicyMatrixRowDto(
+    string PolicyKey,
+    string WorkflowArea,
+    string Action,
+    OperationsGateKeyDto Gate,
+    string Trigger,
+    string RequiredPermission,
+    string SubmitterRole,
+    string ReviewerRole,
+    int RequiredDistinctApprovals,
+    bool RequiresIndependentReviewer,
+    bool RequiresReportPack,
+    bool RequiresChecklistControlApprovals,
+    string EvidenceRequirement,
+    string AuditEventType,
+    string Route,
+    string Severity);
+
 public sealed record OperationsTransitionResultDto(
     bool Success,
     string? ErrorCode,

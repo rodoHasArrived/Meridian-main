@@ -43,6 +43,26 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetOperationsContinuitySummary");
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalPolicyMatrix), (
+            HttpContext context,
+            [FromServices] IOperationsApprovalPolicyMatrixService? service) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem("Operations approval policy matrix service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            return Results.Json(service.GetMatrix(), jsonOptions);
+        })
+        .WithName("GetOperationsContinuityApprovalPolicyMatrix")
+        .Produces<OperationsApprovalPolicyMatrixDto>(200)
+        .Produces(403);
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
             OperationsStartWorkflowRequestDto? request,
             HttpContext context,

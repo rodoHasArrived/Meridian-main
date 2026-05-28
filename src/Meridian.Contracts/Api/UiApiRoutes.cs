@@ -554,6 +554,7 @@ public static class UiApiRoutes
     public const string OperationsContinuityLedgerPost = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/post";
     public const string OperationsContinuityReconciliationRun = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/run";
     public const string OperationsContinuityReconciliationBreakResolve = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/breaks/{breakId}/resolve";
+    public const string OperationsContinuityApprovalPolicyMatrix = "/api/workstation/operations/continuity/approval-policy-matrix";
     public const string OperationsContinuityApprovalSubmit = "/api/workstation/operations/continuity/{workflowId:guid}/approval/submit";
     public const string OperationsContinuityApprovalApprove = "/api/workstation/operations/continuity/{workflowId:guid}/approval/approve";
     public const string OperationsContinuityApprovalReject = "/api/workstation/operations/continuity/{workflowId:guid}/approval/reject";

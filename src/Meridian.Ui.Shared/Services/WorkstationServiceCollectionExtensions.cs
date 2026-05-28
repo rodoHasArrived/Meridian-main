@@ -142,6 +142,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>()));
+        services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
 
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
