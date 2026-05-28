@@ -33,6 +33,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [provider-validation-matrix.md](provider-validation-matrix.md) | `active` | Evidence-backed provider readiness matrix used by readiness docs |
 | [provider-capability-matrix.md](provider-capability-matrix.md) | `active` | Canonical adapter capability/readiness matrix for provider follow-up ownership |
 | [contract-compatibility-matrix.md](contract-compatibility-matrix.md) | `active` | Compatibility, deprecation, and migration policy for workstation/strategy/ledger contracts |
+| [workstation-cockpit-acceptance-matrix.md](workstation-cockpit-acceptance-matrix.md) | `active` | Machine-readable cockpit/governance acceptance matrix mapping routes, UI states, tests, and required evidence artifacts |
 | [production-status.md](production-status.md) | `active` | Current production and pilot-readiness caveats |
 | [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md) | `active` | Single hand-authored DK program status dashboard for subsystem readiness, gate state, and rollback posture |
 | [IMPROVEMENTS.md](IMPROVEMENTS.md) | `active` | Tracked implementation themes and recommended focus areas |
