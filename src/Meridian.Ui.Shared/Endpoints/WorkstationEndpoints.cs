@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
@@ -5845,10 +5846,140 @@ public static partial class WorkstationEndpoints
                         ExplainabilitySummary: reconciliationBreak.Reason,
                         RoutingTarget: "/accounting/reconciliation",
                         RoutingDetail: $"Review reconciliation break {breakId} in accounting queue.",
-                        RecommendedAction: "ReviewAndResolve"),
+                        RecommendedAction: "ReviewAndResolve",
+                        SourceType: "provider-ledger",
+                        SourceSystem: "provider-ledger-reconciliation",
+                        SourceReference: reconciliationBreak.CheckId,
+                        SourceBreakId: reconciliationBreak.CheckId,
+                        SourceFingerprint: ComputeReconciliationSourceFingerprint("provider-ledger", run.RunId, reconciliationBreak.CheckId, reconciliationBreak.Category.ToString(), reconciliationBreak.Reason, reconciliationBreak.Variance.ToString(CultureInfo.InvariantCulture))),
                     ct).ConfigureAwait(false);
             }
         }
+    }
+
+    private static async Task SeedStatementBreakQueueAsync(
+        IReconciliationBreakQueueRepository repository,
+        IReadOnlyList<StatementBreakDto> statementBreaks,
+        CancellationToken ct)
+    {
+        foreach (var statementBreak in statementBreaks.Where(static item => IsOpenStatementBreak(item.Status)))
+        {
+            var item = MapStatementBreakToQueueItem(statementBreak);
+            await repository.CreateIfMissingAsync(item, ct).ConfigureAwait(false);
+        }
+    }
+
+    private static ReconciliationBreakQueueItem MapStatementBreakToQueueItem(StatementBreakDto statementBreak)
+    {
+        var observedAt = statementBreak.LastObservedAtUtc ?? statementBreak.CreatedAtUtc ?? DateTimeOffset.UtcNow;
+        var variance = Math.Abs(statementBreak.Delta ?? ((statementBreak.StatementAmount ?? 0m) - (statementBreak.BookAmount ?? 0m)));
+        var category = MapStatementBreakCategory(statementBreak.BreakType);
+        var severity = MapStatementBreakSeverity(statementBreak.Severity, variance, statementBreak.Tolerance);
+        var routing = ResolveReconciliationExceptionRouting(category, severity, variance);
+        var fingerprint = ComputeStatementBreakFingerprint(statementBreak);
+        var sourceReference = NormalizeMetadata(statementBreak.StatementReference) ?? NormalizeMetadata(statementBreak.InternalReference) ?? statementBreak.BreakId;
+
+        return new ReconciliationBreakQueueItem(
+            BreakId: $"statement:{fingerprint}",
+            RunId: NormalizeMetadata(statementBreak.InternalReference) ?? "statement-reconciliation",
+            StrategyName: "Statement reconciliation",
+            Category: category,
+            Status: ReconciliationBreakQueueStatus.Open,
+            Variance: variance,
+            Reason: NormalizeMetadata(statementBreak.Description) ?? $"Statement {statementBreak.BreakType?.ToString() ?? "break"} requires review.",
+            AssignedTo: NormalizeMetadata(statementBreak.Owner),
+            DetectedAt: statementBreak.CreatedAtUtc ?? observedAt,
+            LastUpdatedAt: observedAt,
+            Severity: severity,
+            ExceptionRoute: routing.ExceptionRoute,
+            ToleranceProfileId: routing.ToleranceProfileId,
+            ToleranceBand: statementBreak.Tolerance ?? routing.ToleranceBand,
+            RequiredSignoffRole: routing.RequiredSignoffRole,
+            SignoffStatus: routing.SignoffStatus,
+            ExplainabilitySummary: statementBreak.Description,
+            RoutingTarget: "/accounting/reconciliation/statements",
+            RoutingDetail: $"Review statement reconciliation break {sourceReference ?? statementBreak.BreakId ?? fingerprint} in accounting queue.",
+            RecommendedAction: NormalizeMetadata(statementBreak.RecommendedAction) ?? "ReviewAndResolve",
+            SourceType: "statement",
+            SourceSystem: "statement-reconciliation",
+            SourceReference: sourceReference,
+            SourceImportId: ExtractStatementImportId(statementBreak.StatementReference),
+            SourceBreakId: statementBreak.BreakId,
+            SourceFingerprint: fingerprint,
+            EvidenceLinks: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? null : [statementBreak.EvidenceLink],
+            EvidenceCount: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? 0 : 1);
+    }
+
+    private static bool IsOpenStatementBreak(string? status)
+        => string.IsNullOrWhiteSpace(status) ||
+           status.Equals("open", StringComparison.OrdinalIgnoreCase) ||
+           status.Equals("review", StringComparison.OrdinalIgnoreCase) ||
+           status.Equals("inreview", StringComparison.OrdinalIgnoreCase) ||
+           status.Equals("in-review", StringComparison.OrdinalIgnoreCase);
+
+    private static ReconciliationBreakCategory MapStatementBreakCategory(StatementBreakType? breakType)
+        => breakType switch
+        {
+            StatementBreakType.MissingStatementPosition or StatementBreakType.MissingBookPosition or StatementBreakType.PositionQuantityMismatch or StatementBreakType.PositionMarketValueMismatch
+                => ReconciliationBreakCategory.MissingPortfolioCoverage,
+            StatementBreakType.MissingStatementCash or StatementBreakType.MissingBookCash or StatementBreakType.CashBalanceMismatch
+                => ReconciliationBreakCategory.CashMismatch,
+            StatementBreakType.SecurityIdentifierMismatch or StatementBreakType.ClassificationMismatch
+                => ReconciliationBreakCategory.ClassificationGap,
+            StatementBreakType.ValidationFailure or StatementBreakType.DuplicateStatementItem
+                => ReconciliationBreakCategory.MissingLedgerCoverage,
+            _ => ReconciliationBreakCategory.ExternalStatementMismatch
+        };
+
+    private static ReconciliationBreakSeverity MapStatementBreakSeverity(StatementValidationSeverity? severity, decimal variance, decimal? tolerance)
+        => severity switch
+        {
+            StatementValidationSeverity.Critical => ReconciliationBreakSeverity.Critical,
+            StatementValidationSeverity.Error => ReconciliationBreakSeverity.High,
+            StatementValidationSeverity.Warning => ReconciliationBreakSeverity.Medium,
+            StatementValidationSeverity.Info => ReconciliationBreakSeverity.Info,
+            _ when tolerance.HasValue && variance > tolerance.Value * 10m => ReconciliationBreakSeverity.High,
+            _ => ReconciliationBreakSeverity.Medium
+        };
+
+    private static string ComputeStatementBreakFingerprint(StatementBreakDto statementBreak)
+        => ComputeReconciliationSourceFingerprint(
+            "statement",
+            NormalizeStatementReference(statementBreak.StatementReference),
+            statementBreak.BreakType?.ToString(),
+            statementBreak.Currency,
+            (statementBreak.Delta ?? 0m).ToString(CultureInfo.InvariantCulture),
+            (statementBreak.Tolerance ?? 0m).ToString(CultureInfo.InvariantCulture),
+            NormalizeMetadata(statementBreak.Description));
+
+    private static string? ExtractStatementImportId(string? value)
+    {
+        var normalized = NormalizeMetadata(value);
+        var separator = normalized?.IndexOf(':');
+        return separator is > 0 ? normalized![..separator.Value] : null;
+    }
+
+    private static string NormalizeStatementReference(string? value)
+    {
+        var normalized = NormalizeMetadata(value);
+        if (normalized is null)
+        {
+            return string.Empty;
+        }
+
+        var separator = normalized.LastIndexOf(':');
+        return separator >= 0 && separator + 1 < normalized.Length
+            ? normalized[(separator + 1)..]
+            : normalized;
+    }
+
+    private static string? NormalizeMetadata(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string ComputeReconciliationSourceFingerprint(params string?[] parts)
+    {
+        var payload = string.Join("|", parts.Select(static part => part?.Trim().ToUpperInvariant() ?? string.Empty));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
 
     private sealed record ReconciliationExceptionRouting(
@@ -5917,30 +6048,41 @@ public static partial class WorkstationEndpoints
     {
         var readService = services.GetService<StrategyRunReadService>();
         var reconciliationService = services.GetService<IReconciliationRunService>();
+        var statementService = services.GetService<IReconciliationApiService>();
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, ct).ConfigureAwait(false);
+        await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, ct).ConfigureAwait(false);
     }
 
-    private static async Task EnsureBreakQueueSeededAsync(
+    private static Task EnsureBreakQueueSeededAsync(
         StrategyRunReadService? readService,
         IReconciliationRunService? reconciliationService,
         IReconciliationBreakQueueRepository? repository,
         CancellationToken ct)
+        => EnsureBreakQueueSeededAsync(readService, reconciliationService, null, repository, ct);
+
+    private static async Task EnsureBreakQueueSeededAsync(
+        StrategyRunReadService? readService,
+        IReconciliationRunService? reconciliationService,
+        IReconciliationApiService? statementService,
+        IReconciliationBreakQueueRepository? repository,
+        CancellationToken ct)
     {
-        if (readService is null || reconciliationService is null)
+        if (readService is not null && reconciliationService is not null)
         {
-            return;
+            var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+            if (runs.Count > 0)
+            {
+                var reconciliations = await Task.WhenAll(
+                    runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, ct))).ConfigureAwait(false);
+                await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
+            }
         }
 
-        var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
-        if (runs.Count == 0)
+        if (repository is not null && statementService is not null)
         {
-            return;
+            var statementBreaks = await statementService.ListOpenStatementBreaksAsync(ct).ConfigureAwait(false);
+            await SeedStatementBreakQueueAsync(repository, statementBreaks, ct).ConfigureAwait(false);
         }
-
-        var reconciliations = await Task.WhenAll(
-            runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, ct))).ConfigureAwait(false);
-        await SeedBreakQueueAsync(repository, runs, reconciliations, ct).ConfigureAwait(false);
     }
 
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
