@@ -39,16 +39,45 @@ public sealed class ReconciliationBreakQueueRepositoryTests
 
         var review = await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(item.BreakId, "alice", "alice", "triage"));
         review.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
-        review.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.InReview);
+        review.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
 
         var closed = await repo.ResolveAsync(new ResolveReconciliationBreakRequest(item.BreakId, ReconciliationBreakQueueStatus.Resolved, "bob", "resolved", "evidence packet #42"));
         closed.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
-        closed.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.AwaitingApproval);
+        closed.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
+        closed.Item.ResolutionCode.Should().Be("LegacyResolved");
         closed.Item.SignoffHistory.Should().NotBeNullOrEmpty();
         closed.Item.StateTransitions.Should().HaveCountGreaterThanOrEqualTo(2);
 
         var timestamps = closed.Item.StateTransitions!.Select(t => t.OccurredAt).ToArray();
         timestamps.Should().BeInAscendingOrder();
+    }
+
+    [Fact]
+    public async Task Legacy_states_are_migrated_to_shared_casework_lifecycle()
+    {
+        var repo = CreateRepository(out _);
+        var inReview = CreateItem(status: ReconciliationBreakQueueStatus.InReview) with
+        {
+            LifecycleState = ReconciliationCaseLifecycleState.InReview,
+            AssignedTo = "ops-a"
+        };
+        var dismissed = CreateItem(status: ReconciliationBreakQueueStatus.Dismissed) with
+        {
+            LifecycleState = ReconciliationCaseLifecycleState.Superseded
+        };
+
+        await repo.CreateIfMissingAsync(inReview);
+        await repo.CreateIfMissingAsync(dismissed);
+
+        var migratedReview = await repo.GetByIdAsync(inReview.BreakId);
+        migratedReview!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
+        migratedReview.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+
+        var migratedDismissed = await repo.GetByIdAsync(dismissed.BreakId);
+        migratedDismissed!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
+        migratedDismissed.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        migratedDismissed.RootCauseCode.Should().Be("DismissedFalsePositive");
+        migratedDismissed.ResolutionCode.Should().Be("DismissedFalsePositive");
     }
 
     [Fact]

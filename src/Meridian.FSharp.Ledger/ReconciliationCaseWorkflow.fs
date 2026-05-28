@@ -63,12 +63,12 @@ module ReconciliationCaseWorkflow =
             let transition =
                 match input.Action, input.LifecycleState with
                 | "StartReview", "Open"
-                | "StartReview", "Reopened" -> Some("InReview", "InReview")
-                | "RequestApproval", "InReview" -> Some("AwaitingApproval", "InReview")
-                | "Approve", "AwaitingApproval" -> Some("Approved", "InReview")
-                | "Post", "Approved" -> Some("Posted", "Resolved")
-                | "Reopen", "Posted"
-                | "Reopen", "Approved" -> Some("Reopened", "Open")
+                | "StartReview", "Reopened" -> Some("Investigating", "InReview")
+                | "RequestApproval", "Investigating"
+                | "RequestApproval", "AwaitingEvidence" -> Some("Resolved", "Resolved")
+                | "Approve", "Resolved" -> Some("SignedOff", "SignedOff")
+                | "Post", "SignedOff" -> Some("SignedOff", "SignedOff")
+                | "Reopen", "SignedOff" -> Some("Reopened", "Open")
                 | "Supersede", state when state <> "Superseded" -> Some("Superseded", "Dismissed")
                 | _ -> None
 
@@ -76,9 +76,9 @@ module ReconciliationCaseWorkflow =
             | None -> fail "Illegal transition." "IllegalTransition" input
             | Some _ when input.Action = "Approve"
                           && String.Equals(input.ReviewedBy, input.Actor, StringComparison.OrdinalIgnoreCase) ->
-                fail "Approver must differ from reviewer." "DualReviewRequired" input
-            | Some _ when input.Action = "Reopen" && input.LifecycleState = "Approved" ->
-                fail "Cannot reopen from approved prior to posting." "ReopenNotAllowed" input
+                fail "Signer must differ from resolver." "DualReviewRequired" input
+            | Some _ when input.Action = "Reopen" && input.LifecycleState <> "SignedOff" ->
+                fail "Only signed-off cases can be reopened." "ReopenNotAllowed" input
             | Some(next, status) -> success next status
 
 module ProviderLedgerReconciliationRules =
