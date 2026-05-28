@@ -27,7 +27,6 @@ public static class IBEndpoints
             var socketConfig = config.IB;
             var clientPortalConfig = config.IBClientPortal;
             var buildMode = GetBuildMode();
-            var runtimeTarget = socketConfig?.UsePaperTrading ?? true ? "paper" : "live";
             var socketReady = socketConfig is not null
                 && !string.IsNullOrWhiteSpace(socketConfig.Host)
                 && socketConfig.Port > 0
@@ -42,7 +41,6 @@ public static class IBEndpoints
                 provider = "Interactive Brokers",
                 ibApiAvailable = isIBApiAvailable,
                 buildMode,
-                runtimeTarget,
                 buildInstructions = buildMode switch
                 {
                     "guidance" => "Build with -p:EnableIbApiVendor=true (preferred) and place the official vendor SDK under external/IBApi. Legacy -p:DefineConstants=IBAPI remains supported. Use -p:EnableIbApiSmoke=true only for compile-only verification.",
@@ -53,17 +51,11 @@ public static class IBEndpoints
                 {
                     configured = socketConfig is not null,
                     ready = socketReady,
-                    host = socketConfig?.Host,
-                    port = socketConfig?.Port,
-                    clientId = socketConfig?.ClientId,
-                    paper = socketConfig?.UsePaperTrading ?? true
                 },
                 clientPortal = new
                 {
                     enabled = clientPortalConfig?.Enabled ?? false,
                     ready = clientPortalReady,
-                    baseUrl = clientPortalConfig?.BaseUrl,
-                    allowSelfSignedCertificates = clientPortalConfig?.AllowSelfSignedCertificates ?? false
                 },
                 connectionPorts = new
                 {
