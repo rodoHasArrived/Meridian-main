@@ -308,15 +308,22 @@ public sealed class EvidencePacketValidationService
         {
             foreach (var artifact in node.ArtifactRefs.Where(static artifact => artifact.Retained))
             {
-                if (string.IsNullOrWhiteSpace(artifact.CanonicalSubjectKind) || string.IsNullOrWhiteSpace(artifact.CanonicalSubjectId))
+                var hasCanonicalKind = !string.IsNullOrWhiteSpace(artifact.CanonicalSubjectKind);
+                var hasCanonicalId = !string.IsNullOrWhiteSpace(artifact.CanonicalSubjectId);
+                if (hasCanonicalKind != hasCanonicalId)
                 {
                     issues.Add(new EvidenceValidationIssueDto(
                         Code: "retained-artifact-missing-canonical-subject",
                         Severity: EvidenceValidationSeverityDto.Critical,
-                        Message: $"Retained artifact '{artifact.ArtifactId}' is missing canonical subject linkage.",
+                        Message: $"Retained artifact '{artifact.ArtifactId}' must provide both canonical subject kind and canonical subject id when either field is present.",
                         EvidenceId: node.EvidenceId,
                         EvidenceKind: node.Kind,
                         SourceSystem: node.SourceSystem));
+                    continue;
+                }
+
+                if (!hasCanonicalKind)
+                {
                     continue;
                 }
 
