@@ -535,6 +535,58 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityApprovalSubmit_ShouldPreserveAssignedReviewerFromRequest()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "spoofed-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+        var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
+        var normalized = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "spoofed-user"));
+        var security = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "spoofed-user"));
+        var draft = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true));
+        var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true));
+        var posted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version,
+                "spoofed-user",
+                "ledger-batch-1",
+                "period-close",
+                true,
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId)));
+        var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
+            new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "spoofed-user", BreakCases: []));
+        var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
+            new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
+
+        const string assignedReviewer = "independent-reviewer";
+        var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
+            new OperationsSubmitApprovalRequestDto(
+                posture.Workflow!.Version,
+                "spoofed-user",
+                assignedReviewer,
+                "Submit evidence",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
+
+        submitted.Workflow!.Approvals.Should().Contain(approval =>
+            approval.Status == OperationsApprovalStateDto.Submitted &&
+            approval.Operator == "ops-user" &&
+            approval.Reviewer == assignedReviewer);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperationsContinuityReconciliationRun_ShouldBridgeRealReconciliationOutputsIntoGatePosture()
     {
         var bankEntityId = Guid.NewGuid();
