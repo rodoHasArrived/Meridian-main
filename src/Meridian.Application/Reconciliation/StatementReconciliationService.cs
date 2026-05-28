@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 
@@ -322,7 +323,7 @@ public sealed class StatementReconciliationService
             rawSnapshot["symbol"] = symbol;
             rawSnapshot["activityType"] = activityType;
             rawSnapshot["tradeDate"] = tradeDate.ToString("O");
-            rawSnapshot["rowNumber"] = rowNumber.ToString();
+            rawSnapshot["rowNumber"] = rowNumber.ToString(CultureInfo.InvariantCulture);
             rawSnapshot["rawLine"] = line;
             if (!string.IsNullOrWhiteSpace(settlementDate)) rawSnapshot["settlementDate"] = settlementDate;
             if (!string.IsNullOrWhiteSpace(currency)) rawSnapshot["currency"] = currency;
@@ -533,16 +534,18 @@ public sealed class StatementReconciliationService
                 continue;
             }
 
+            var evidenceRef = $"statement-row:{row.RowId}";
             cases.Add(new ReconciliationCase(
                 $"case:{row.RowId}",
-                row.Fingerprint,
+                row.RawSnapshot.GetValueOrDefault("importId", row.Fingerprint),
                 "Open",
                 classification.WorkflowRationale,
                 0.35m,
                 classification.WorkflowRationale,
                 DateTimeOffset.UtcNow,
-                [new ReconciliationCaseHistoryEntry(DateTimeOffset.UtcNow, "None", "Open", "Case created from statement reconciliation service.")])
+                [new ReconciliationCaseHistoryEntry(DateTimeOffset.UtcNow, "None", "Open", "Case created from statement reconciliation service.") { EvidenceId = evidenceRef }])
             {
+                EvidenceReferences = [evidenceRef],
                 Owner = "fund-ops",
                 Priority = ToCasePriority(classification.Severity),
                 DueAtUtc = DateTimeOffset.UtcNow.AddBusinessDays(2),

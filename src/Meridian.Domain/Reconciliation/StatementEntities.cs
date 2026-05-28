@@ -126,6 +126,8 @@ public sealed record ReconciliationCase(
     public IReadOnlyList<ReconciliationCaseCommentThread> CommentThreads { get; init; } = [];
     public IReadOnlyList<ReconciliationCaseAuditEvent> AuditEvents { get; init; } = [];
     public ReconciliationResolutionMetadata? Resolution { get; init; }
+    public IReadOnlyList<string> EvidenceReferences { get; init; } = [];
+    public IReadOnlyList<ReconciliationCaseDecisionNote> DecisionNotes { get; init; } = [];
     public DateTimeOffset LastUpdatedAtUtc { get; init; } = CreatedAtUtc;
     public string LastUpdatedBy { get; init; } = "system";
 }
@@ -137,6 +139,13 @@ public sealed record ReconciliationCaseComment(string CommentId, string Body, st
 public sealed record ReconciliationCaseAuditEvent(string EventId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Detail);
 
 public sealed record ReconciliationResolutionMetadata(string ResolutionCode, string Summary, string ResolvedBy, DateTimeOffset ResolvedAtUtc, string? SignedOffBy = null, DateTimeOffset? SignedOffAtUtc = null);
+
+public sealed record ReconciliationCaseDecisionNote(
+    string DecisionNoteId,
+    string Actor,
+    DateTimeOffset CreatedAtUtc,
+    string Note,
+    IReadOnlyList<string> EvidenceReferences);
 
 public sealed record ReconciliationCaseHistoryEntry(
     DateTimeOffset TimestampUtc,
@@ -174,4 +183,7 @@ public sealed record ReconciliationBreakRecord(
     decimal Tolerance,
     bool ToleranceBreached,
     DateTimeOffset CreatedAtUtc,
-    string Status);
+    string Status)
+{
+    public string? EvidenceLink { get; init; }
+}
