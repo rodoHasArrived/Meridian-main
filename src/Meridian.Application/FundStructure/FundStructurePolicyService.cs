@@ -4,6 +4,8 @@ namespace Meridian.Application.FundStructure;
 
 public sealed class FundStructurePolicyService : IFundStructurePolicyService
 {
+    public const int MaxCashFlowWindowDays = 3650;
+    public const int MaxCashFlowBucketDays = 365;
     public void EnsureSingleOperatingParent(CreateInvestmentPortfolioRequest request)
     {
         var assignedParents = 0;
@@ -33,9 +35,24 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
             throw new ArgumentOutOfRangeException(nameof(query), "ForecastDays must be greater than or equal to zero.");
         }
 
+        if (query.HistoricalDays > MaxCashFlowWindowDays)
+        {
+            throw new ArgumentOutOfRangeException(nameof(query), $"HistoricalDays must be less than or equal to {MaxCashFlowWindowDays}.");
+        }
+
+        if (query.ForecastDays > MaxCashFlowWindowDays)
+        {
+            throw new ArgumentOutOfRangeException(nameof(query), $"ForecastDays must be less than or equal to {MaxCashFlowWindowDays}.");
+        }
+
         if (query.BucketDays <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(query), "BucketDays must be greater than zero.");
+        }
+
+        if (query.BucketDays > MaxCashFlowBucketDays)
+        {
+            throw new ArgumentOutOfRangeException(nameof(query), $"BucketDays must be less than or equal to {MaxCashFlowBucketDays}.");
         }
     }
 }
