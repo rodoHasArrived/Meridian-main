@@ -352,7 +352,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         {
             return new ReconciliationBulkActionResult(Guid.NewGuid().ToString("N"), string.Empty, request.DryRun, false, request.BreakIds.Count, 0, request.BreakIds.Count, [new ReconciliationBulkCaseResult(string.Empty, false, "Idempotency key is required.")]);
         }
-        if (_bulkResultsByKey.TryGetValue(request.IdempotencyKey, out var existing)) return existing;
+        var cacheKey = BulkResultCacheKey(request.IdempotencyKey, request.DryRun);
+        if (_bulkResultsByKey.TryGetValue(cacheKey, out var existing)) return existing;
         var distinctIds = request.BreakIds.Distinct(StringComparer.OrdinalIgnoreCase).Take(request.MaxCaseCount).ToArray();
         var bulkId = Guid.NewGuid().ToString("N");
         var cases = new List<ReconciliationBulkCaseResult>();
@@ -365,12 +366,22 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             if (!result.Success && !request.AllowPartialSuccess) break;
         }
         var response = new ReconciliationBulkActionResult(bulkId, request.IdempotencyKey, request.DryRun, true, distinctIds.Length, cases.Count(c => c.Success), cases.Count(c => !c.Success), cases);
-        _bulkResultsByKey[request.IdempotencyKey] = response;
+        _bulkResultsByKey[cacheKey] = response;
         return response;
     }
 
     public Task<ReconciliationBulkActionResult?> GetBulkActionResultAsync(string idempotencyKeyOrActionId, CancellationToken ct = default)
-        => Task.FromResult(_bulkResultsByKey.Values.FirstOrDefault(r => string.Equals(r.IdempotencyKey, idempotencyKeyOrActionId, StringComparison.OrdinalIgnoreCase) || string.Equals(r.BulkActionId, idempotencyKeyOrActionId, StringComparison.OrdinalIgnoreCase)));
+    {
+        var result = _bulkResultsByKey.Values.FirstOrDefault(r => string.Equals(r.BulkActionId, idempotencyKeyOrActionId, StringComparison.OrdinalIgnoreCase))
+            ?? _bulkResultsByKey.Values
+                .Where(r => string.Equals(r.IdempotencyKey, idempotencyKeyOrActionId, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(static r => r.DryRun)
+                .FirstOrDefault();
+        return Task.FromResult(result);
+    }
+
+    private static string BulkResultCacheKey(string idempotencyKey, bool dryRun)
+        => (dryRun ? "dry-run:" : "execute:") + idempotencyKey;
 
     public async Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(string breakId, CancellationToken ct = default)
     {

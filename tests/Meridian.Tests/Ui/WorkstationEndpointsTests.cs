@@ -3620,6 +3620,45 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ReconciliationCaseworkPartialRoutes_ShouldAssignBreak()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-assign-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliation = await app.Services
+            .GetRequiredService<IReconciliationRunService>()
+            .RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var client = app.GetTestClient();
+        var queue = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+        queue.Should().NotBeNull();
+        var breakId = queue!.First(item => item.RunId == runId).BreakId;
+
+        var response = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakAssign, "breakId", breakId),
+            new ReconciliationAssignRequest(breakId, "ops.owner", "Ops Owner", "Take ownership."),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await response.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
+        updated.Should().NotBeNull();
+        updated!.AssignedTo.Should().Be("ops.owner");
+        updated.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.InReview);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ReconciliationCalibrationSummary_ShouldAggregateToleranceProfiles()
     {
         await using var app = await CreateAppAsync(services =>
