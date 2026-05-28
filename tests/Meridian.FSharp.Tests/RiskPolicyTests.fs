@@ -3,7 +3,7 @@ module Meridian.FSharp.Tests.RiskPolicyTests
 open System
 open System.Collections.Generic
 open Xunit
-open FsCheck.Xunit
+open FsCheck
 open FsUnit.Xunit
 open Meridian.Execution.Sdk
 open Meridian.Backtesting.Sdk
@@ -71,22 +71,25 @@ let ``Position limit rejects projected quantity above max`` () =
     result.Approved |> should equal false
     result.Reasons[0].Contains("Position limit exceeded") |> should equal true
 
-[<Property(MaxTest = 200)>]
-let ``Scenario_RiskPositionLimit_GeneratedLargerExposureNeverTurnsRejectIntoApprove`` currentSeed maxSeed excessSeed extraSeed =
-    let maxPosition = boundedInt 1 10_000 maxSeed |> decimal
-    let currentPosition = boundedInt 0 (int maxPosition) currentSeed |> decimal
-    let rejectedQuantity = (maxPosition - currentPosition) + (boundedInt 1 5_000 excessSeed |> decimal)
-    let largerQuantity = rejectedQuantity + (boundedInt 0 5_000 extraSeed |> decimal)
+[<Fact>]
+let ``Scenario_RiskPositionLimit_GeneratedLargerExposureNeverTurnsRejectIntoApprove`` () =
+    let property currentSeed maxSeed excessSeed extraSeed =
+        let maxPosition = boundedInt 1 10_000 maxSeed |> decimal
+        let currentPosition = boundedInt 0 (int maxPosition) currentSeed |> decimal
+        let rejectedQuantity = (maxPosition - currentPosition) + (boundedInt 1 5_000 excessSeed |> decimal)
+        let largerQuantity = rejectedQuantity + (boundedInt 0 5_000 extraSeed |> decimal)
 
-    let rejected =
-        RiskInterop.CreateContext(createOrder OrderSide.Buy rejectedQuantity, currentPosition, maxPosition, Nullable(), Nullable(), Nullable())
-        |> RiskInterop.EvaluatePositionLimit
+        let rejected =
+            RiskInterop.CreateContext(createOrder OrderSide.Buy rejectedQuantity, currentPosition, maxPosition, Nullable(), Nullable(), Nullable())
+            |> RiskInterop.EvaluatePositionLimit
 
-    let larger =
-        RiskInterop.CreateContext(createOrder OrderSide.Buy largerQuantity, currentPosition, maxPosition, Nullable(), Nullable(), Nullable())
-        |> RiskInterop.EvaluatePositionLimit
+        let larger =
+            RiskInterop.CreateContext(createOrder OrderSide.Buy largerQuantity, currentPosition, maxPosition, Nullable(), Nullable(), Nullable())
+            |> RiskInterop.EvaluatePositionLimit
 
-    (not rejected.Approved) && (not larger.Approved)
+        (not rejected.Approved) && (not larger.Approved)
+
+    Check.One(Config.QuickThrowOnFailure.WithMaxTest(200), property)
 
 [<Fact>]
 let ``Risk aggregation returns approve when all decisions approve`` () =

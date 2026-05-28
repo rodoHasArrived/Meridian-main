@@ -1,14 +1,13 @@
 // Project Dependency Diagram - Meridian
-// Generated from actual .csproj and .fsproj ProjectReference entries
-// Last Updated: 2026-04-01
-// Render with: dot -Tsvg project-dependencies.dot -o project-dependencies.svg
+// Generated from current .csproj and .fsproj ProjectReference entries.
+// Last Updated: 2026-05-28
+// Render with: npm run generate-diagrams -- --all or Graphviz dot.
 
 digraph ProjectDependencies {
-    // Graph settings
     rankdir=TB;
     fontname="Segoe UI, Helvetica, Arial, sans-serif";
     fontsize=14;
-    label="Meridian - Project Dependencies\n(28 source projects | 8 test projects | 1 benchmark project)";
+    label="Meridian - Project Dependencies\n(26 source projects | 8 test projects | 1 benchmark project)";
     labelloc=t;
     labeljust=c;
     compound=true;
@@ -16,218 +15,179 @@ digraph ProjectDependencies {
     ranksep=0.9;
     splines=ortho;
 
-    // Node defaults
-    node [
-        shape=box,
-        style="rounded,filled",
-        fontname="Segoe UI, Helvetica, Arial, sans-serif",
-        fontsize=10,
-        margin="0.15,0.08"
-    ];
+    node [shape=box, style="rounded,filled", fontname="Segoe UI, Helvetica, Arial, sans-serif", fontsize=10, margin="0.15,0.08"];
+    edge [color="#666666", arrowsize=0.7];
 
-    // Edge defaults
-    edge [
-        color="#666666",
-        arrowsize=0.7
-    ];
-
-    // ==================== Layer 0: Foundation ====================
     subgraph cluster_layer0 {
-        label="Layer 0: Foundation — shared contracts and F# domain primitives (no inbound project deps)";
+        label="Layer 0: Foundation - contracts and F# domain primitives";
         style="rounded,dashed";
         color="#aaaaaa";
         fontsize=11;
-
-        Contracts [label="Contracts\n(API models, DTOs, domain events)", fillcolor="#E8F5E9"];
-
-        subgraph cluster_fsharp_family {
-            label="F# Domain Family";
-            style="rounded";
-            color="#66BB6A";
-            fontsize=10;
-
-            FSharp [label="FSharp\n(validation, calculations, DUs)", fillcolor="#C8E6C9"];
-            FSharpLedger [label="FSharp.Ledger\n(journal, reconciliation)", fillcolor="#C8E6C9"];
-            FSharpTrading [label="FSharp.Trading\n(strategy lifecycle F# types)", fillcolor="#C8E6C9"];
-            FSharpDL [label="FSharp.DirectLending.Aggregates\n(contract & servicing aggregates)", fillcolor="#DCEDC8"];
-        }
-
-        // FSharpDL is the only F# lib that references other projects
-        FSharpDL -> Contracts;
-        FSharpDL -> FSharp;
+        Contracts [label="Contracts\n(API models, DTOs, domain events)", fillcolor="#E8F5E9", style="rounded,filled"];
+        FSharp [label="FSharp\n(validation, calculations, DUs)", fillcolor="#E8F5E9", style="rounded,filled"];
+        FSharpLedger [label="FSharp.Ledger\n(journal, reconciliation)", fillcolor="#E8F5E9", style="rounded,filled"];
+        FSharpTrading [label="FSharp.Trading\n(strategy lifecycle F# types)", fillcolor="#E8F5E9", style="rounded,filled"];
+        FSharpDL [label="FSharp.DirectLending.Aggregates\n(contract and servicing aggregates)", fillcolor="#E8F5E9", style="rounded,filled"];
     }
 
-    // ==================== Layer 1: SDK & Core Interfaces ====================
     subgraph cluster_layer1 {
-        label="Layer 1: SDK & Core Interfaces";
+        label="Layer 1: SDK and core interfaces";
         style="rounded,dashed";
         color="#aaaaaa";
         fontsize=11;
-
-        ProviderSdk [label="ProviderSdk\n(IDataSource, IMarketDataClient\n[DataSource] attribute, registry)", fillcolor="#E3F2FD"];
-        ExecutionSdk [label="Execution.Sdk\n(IOrderGateway, IBrokerageGateway\nIOrderManager, IPositionTracker)", fillcolor="#E3F2FD"];
+        ProviderSdk [label="ProviderSdk\n(provider contracts, registry\n[DataSource] metadata)", fillcolor="#E3F2FD", style="rounded,filled"];
+        ExecutionSdk [label="Execution.Sdk\n(order gateway and broker seams\norders, positions, lifecycle)", fillcolor="#E3F2FD", style="rounded,filled"];
         IbApiStub [label="IbApi.SmokeStub\n(IB API smoke-test stub)", fillcolor="#E3F2FD", style="rounded,filled,dashed"];
     }
 
-    // ==================== Layer 2: Core Domain ====================
     subgraph cluster_layer2 {
-        label="Layer 2: Core Domain";
+        label="Layer 2: Core domain";
         style="rounded,dashed";
         color="#aaaaaa";
         fontsize=11;
-
-        Domain [label="Domain\n(collectors, events, models\nMarketEvent hierarchy)", fillcolor="#E1F5FE"];
-        Core [label="Core\n(config, logging, serialization\nschedules, performance)", fillcolor="#E1F5FE"];
-        Ledger [label="Ledger\n(double-entry journal\nfund & project ledger books)", fillcolor="#E1F5FE"];
+        Domain [label="Domain\n(collectors, events, models\nMarketEvent hierarchy)", fillcolor="#E1F5FE", style="rounded,filled"];
+        Core [label="Core\n(config, logging, serialization\nschedules, performance)", fillcolor="#E1F5FE", style="rounded,filled"];
+        Ledger [label="Ledger\n(double-entry journal\nfund and project books)", fillcolor="#E1F5FE", style="rounded,filled"];
     }
 
-    // ==================== Layer 3: Infrastructure & Storage ====================
     subgraph cluster_layer3 {
-        label="Layer 3: Infrastructure & Storage";
+        label="Layer 3: Infrastructure and storage";
         style="rounded,dashed";
         color="#aaaaaa";
         fontsize=11;
-
-        Infrastructure [label="Infrastructure\n(streaming providers, historical\nproviders, resilience, HTTP)", fillcolor="#FFF3E0"];
-        Storage [label="Storage\n(WAL, JSONL/Parquet sinks, tiered storage\nexport, security master, packaging)", fillcolor="#FFF3E0"];
-        CppTrader [label="Infrastructure.CppTrader\n(native matching engine bridge\nITCH ingestion, replay)", fillcolor="#FFF3E0", style="rounded,filled,dashed"];
+        Infrastructure [label="Infrastructure\n(streaming/historical providers\nresilience, HTTP integration)", fillcolor="#FFF3E0", style="rounded,filled"];
+        CppTrader [label="Infrastructure.CppTrader\n(native matching bridge\nITCH ingestion, replay)", fillcolor="#FFF3E0", style="rounded,filled,dashed"];
+        Storage [label="Storage\n(WAL, JSONL/Parquet sinks\nsecurity master, packaging)", fillcolor="#FFF3E0", style="rounded,filled"];
     }
 
-    // ==================== Layer 4: Application & Backtesting SDK ====================
     subgraph cluster_layer4 {
-        label="Layer 4: Application Logic & Backtesting SDK";
+        label="Layer 4: Application and backtesting SDK";
         style="rounded,dashed";
         color="#aaaaaa";
         fontsize=11;
-
-        Application [label="Application\n(pipeline, backfill, canonicalization\nmonitoring, security master, config)", fillcolor="#FCE4EC"];
-        BacktestSdk [label="Backtesting.Sdk\n(IBacktestStrategy, IBacktestContext\nOrder, Fill, PortfolioSnapshot)", fillcolor="#FCE4EC"];
+        Application [label="Application\n(workflows, pipeline, backfill\nsecurity master, config)", fillcolor="#FCE4EC", style="rounded,filled"];
+        BacktestSdk [label="Backtesting.Sdk\n(strategy/context contracts\norders, fills, snapshots)", fillcolor="#FCE4EC", style="rounded,filled"];
     }
 
-    // ==================== Layer 5: Execution, Backtesting, Risk, Strategies ====================
     subgraph cluster_layer5 {
-        label="Layer 5: Execution, Backtesting, Risk & Strategies";
+        label="Layer 5: Execution, backtesting, risk, strategies, QuantScript";
         style="rounded,dashed";
         color="#aaaaaa";
         fontsize=11;
-
-        Execution [label="Execution\n(PaperTradingGateway, OMS\nbrokerage adapters, risk gateway)", fillcolor="#F3E5F5"];
-        Backtesting [label="Backtesting\n(BacktestEngine, fill models\nmetrics engine, XIRR)", fillcolor="#F3E5F5"];
-        Risk [label="Risk\n(CompositeRiskValidator\nposition limits, drawdown, throttle)", fillcolor="#F3E5F5"];
-        Strategies [label="Strategies\n(StrategyLifecycleManager\npromotion, portfolio read, reconciliation)", fillcolor="#F3E5F5"];
-        QuantScript [label="QuantScript\n(Roslyn scripting, PriceSeries\nPortfolioBuilder, StatisticsEngine)", fillcolor="#F3E5F5"];
+        Execution [label="Execution\n(paper gateway, OMS\nbrokerage adapters, risk gateway)", fillcolor="#F3E5F5", style="rounded,filled"];
+        Backtesting [label="Backtesting\n(BacktestEngine, fill models\nmetrics engine, replay)", fillcolor="#F3E5F5", style="rounded,filled"];
+        Risk [label="Risk\n(pre-trade validation\nlimits, drawdown, throttles)", fillcolor="#F3E5F5", style="rounded,filled"];
+        Strategies [label="Strategies\n(strategy lifecycle, promotion\nportfolio/read-model services)", fillcolor="#F3E5F5", style="rounded,filled"];
+        QuantScript [label="QuantScript\n(Roslyn scripting, price series\nportfolio/statistics tooling)", fillcolor="#F3E5F5", style="rounded,filled"];
     }
 
-    // ==================== Layer 6: UI & Presentation ====================
     subgraph cluster_layer6 {
-        label="Layer 6: UI & Presentation";
+        label="Layer 6: UI and presentation";
         style="rounded,dashed";
         color="#aaaaaa";
         fontsize=11;
-
-        UiShared [label="Ui.Shared\n(300 REST endpoints, auth\nDI wiring, endpoint helpers)", fillcolor="#EDE7F6"];
-        UiServices [label="Ui.Services\n(desktop services, API clients\ncharts, export wizard)", fillcolor="#EDE7F6", style="rounded,filled,dashed"];
-        Wpf [label="Wpf\n(WPF desktop app\n80+ Views, 60+ ViewModels)", fillcolor="#EDE7F6", style="rounded,filled,dashed"];
-        McpServer [label="McpServer\n(Model Context Protocol server\ntools, resources, prompts)", fillcolor="#EDE7F6"];
-        Mcp [label="Mcp\n(MCP tools for code review\nADR & convention resources)", fillcolor="#EDE7F6"];
+        UiShared [label="Ui.Shared\n(shared endpoints, auth\nworkstation APIs)", fillcolor="#EDE7F6", style="rounded,filled"];
+        UiServices [label="Ui.Services\n(workstation read models\ndesktop/browser service seams)", fillcolor="#EDE7F6", style="rounded,filled,dashed"];
+        Wpf [label="Wpf\n(active Windows desktop shell\noperator workflow views)", fillcolor="#EDE7F6", style="rounded,filled,dashed"];
+        Mcp [label="Mcp\n(repo-navigation MCP tools\nADR and convention resources)", fillcolor="#EDE7F6", style="rounded,filled"];
     }
 
-    // ==================== Layer 7: Entry Point ====================
     subgraph cluster_layer7 {
-        label="Layer 7: Entry Point";
+        label="Layer 7: Entry point";
         style="rounded,dashed";
         color="#aaaaaa";
         fontsize=11;
-
-        MainApp [label="Meridian\n(CLI entry point, startup orchestration\nmode runners: collector/backfill/desktop)", fillcolor="#FFEBEE"];
+        MainApp [label="Meridian\n(CLI entry point, startup orchestration\ncollector/backfill/desktop/workstation modes)", fillcolor="#FFEBEE", style="rounded,filled"];
     }
 
-    // ==================== Test Projects ====================
     subgraph cluster_tests {
-        label="Test Projects  (8 projects · 371 test files total)";
+        label="Test Projects (8 projects)";
         style="rounded,dashed";
         color="#888888";
         fontsize=11;
-
-        Tests [label="Tests\n(251 test files)\nApplication, Infrastructure\nStorage, Domain, Integration", fillcolor="#ECEFF1"];
-        FSharpTests [label="FSharp.Tests\n(10 test files)\nvalidation, domain, pipeline", fillcolor="#ECEFF1"];
-        BacktestTests [label="Backtesting.Tests\n(13 test files)\nengine, fill models, metrics", fillcolor="#ECEFF1"];
-        DLTests [label="DirectLending.Tests\n(5 test files)\nservice, workflow, Postgres", fillcolor="#ECEFF1"];
-        McpTests [label="McpServer.Tests\n(2 test files)", fillcolor="#ECEFF1"];
-        QsTests [label="QuantScript.Tests\n(6 test files)\nscripting, statistics", fillcolor="#ECEFF1"];
-        WpfTests [label="Wpf.Tests\n(30 test files)\nViewModels, Services, Views", fillcolor="#ECEFF1", style="rounded,filled,dashed"];
-        UiTests [label="Ui.Tests\n(54 test files)\nUI services, collections", fillcolor="#ECEFF1", style="rounded,filled,dashed"];
+        BacktestingTests [label="Backtesting.Tests\n(21 test files)", fillcolor="#ECEFF1"];
+        DirectLendingTests [label="DirectLending.Tests\n(8 test files)", fillcolor="#ECEFF1"];
+        FSharpTests [label="FSharp.Tests\n(19 test files)", fillcolor="#ECEFF1"];
+        FundStructureTests [label="FundStructure.Tests\n(4 test files)", fillcolor="#ECEFF1"];
+        QuantScriptTests [label="QuantScript.Tests\n(12 test files)", fillcolor="#ECEFF1"];
+        Tests [label="Tests\n(485 test files)", fillcolor="#ECEFF1"];
+        UiTests [label="Ui.Tests\n(60 test files)", fillcolor="#ECEFF1"];
+        WpfTests [label="Wpf.Tests\n(148 test files)", fillcolor="#ECEFF1"];
     }
 
-    // ==================== Benchmarks ====================
     subgraph cluster_benchmarks {
         label="Benchmarks";
         style="rounded,dashed";
         color="#888888";
         fontsize=11;
-
-        Benchmarks [label="Benchmarks\n(BenchmarkDotNet\npipeline, storage, serialization)", fillcolor="#ECEFF1"];
+        Benchmarks [label="Benchmarks\n(17 benchmark files)", fillcolor="#ECEFF1"];
     }
 
-    // ==================== EDGES: Layer 1 -> Layer 0 ====================
-    ProviderSdk -> Contracts;
-    ExecutionSdk -> Contracts;
-
-    // ==================== EDGES: Layer 2 -> Layers 0-1 ====================
-    Domain -> Contracts;
-    Domain -> ProviderSdk;
+    Application -> Contracts;
+    Application -> Core;
+    Application -> Domain;
+    Application -> FSharp;
+    Application -> FSharpDL;
+    Application -> FSharpLedger;
+    Application -> Infrastructure;
+    Application -> Ledger;
+    Application -> ProviderSdk;
+    Application -> Storage;
+    BacktestSdk -> Contracts;
+    BacktestSdk -> Ledger;
+    Backtesting -> Application;
+    Backtesting -> BacktestSdk;
+    Backtesting -> Storage;
+    Backtesting -> Strategies;
     Core -> Contracts;
     Core -> Domain;
     Core -> ProviderSdk;
-    Ledger -> Core;
-    Ledger -> FSharpLedger;
-
-    // ==================== EDGES: Layer 3 -> Layers 1-2 ====================
-    Infrastructure -> Core;
-    Infrastructure -> Domain;
-    Infrastructure -> Contracts;
-    Infrastructure -> ProviderSdk;
-
-    Storage -> Core;
-    Storage -> Domain;
-    Storage -> Contracts;
-    Storage -> ProviderSdk;
-
+    Domain -> Contracts;
+    Domain -> ProviderSdk;
+    ExecutionSdk -> Contracts;
+    Execution -> Application;
+    Execution -> Contracts;
+    Execution -> Core;
+    Execution -> ExecutionSdk;
+    Execution -> Ledger;
+    FSharpDL -> Contracts;
+    FSharpDL -> FSharp;
+    FSharp -> BacktestSdk;
+    FSharp -> Contracts;
+    FSharp -> ExecutionSdk;
+    CppTrader -> Contracts;
+    CppTrader -> Core;
+    CppTrader -> Domain;
     CppTrader -> Execution;
     CppTrader -> ExecutionSdk;
     CppTrader -> Infrastructure;
     CppTrader -> ProviderSdk;
-    CppTrader -> Core;
-    CppTrader -> Domain;
-    CppTrader -> Contracts;
-
-    // ==================== EDGES: Layer 4 -> Layer 3 ====================
-    Application -> Infrastructure;
-    Application -> Storage;
-    Application -> Core;
-    Application -> Domain;
-    Application -> Contracts;
-    Application -> ProviderSdk;
-
-    BacktestSdk -> Contracts;
-    BacktestSdk -> Ledger;
-
-    // ==================== EDGES: Layer 5 -> Layer 4 ====================
-    Execution -> ExecutionSdk;
-    Execution -> Ledger;
-    Execution -> Application;
-    Execution -> Core;
-    Execution -> Contracts;
-
-    Backtesting -> BacktestSdk;
-    Backtesting -> Storage;
-    Backtesting -> Application;
-
-    Risk -> ExecutionSdk;
-    Risk -> Execution;
+    Infrastructure -> Contracts;
+    Infrastructure -> Core;
+    Infrastructure -> Domain;
+    Infrastructure -> ExecutionSdk;
+    Infrastructure -> IbApiStub;
+    Infrastructure -> ProviderSdk;
+    Infrastructure -> Storage;
+    Ledger -> Core;
+    Ledger -> FSharpLedger;
+    ProviderSdk -> Contracts;
+    QuantScript -> Application;
+    QuantScript -> Backtesting;
+    QuantScript -> BacktestSdk;
+    QuantScript -> Contracts;
+    QuantScript -> Domain;
+    QuantScript -> ProviderSdk;
+    QuantScript -> Storage;
     Risk -> Contracts;
+    Risk -> Execution;
+    Risk -> ExecutionSdk;
     Risk -> FSharp;
-
+    Storage -> Contracts;
+    Storage -> Core;
+    Storage -> Domain;
+    Storage -> Ledger;
+    Storage -> ProviderSdk;
     Strategies -> BacktestSdk;
     Strategies -> Contracts;
     Strategies -> Core;
@@ -237,104 +197,88 @@ digraph ProjectDependencies {
     Strategies -> FSharpLedger;
     Strategies -> FSharpTrading;
     Strategies -> Infrastructure;
-
-    QuantScript -> ProviderSdk;
-    QuantScript -> Backtesting;
-    QuantScript -> BacktestSdk;
-    QuantScript -> Application;
-    QuantScript -> Storage;
-    QuantScript -> Contracts;
-    QuantScript -> Domain;
-
-    // ==================== EDGES: Layer 6 -> Layer 5 ====================
+    UiServices -> Contracts;
+    UiServices -> Infrastructure;
+    UiServices -> Storage;
+    UiServices -> UiShared;
     UiShared -> Application;
+    UiShared -> Backtesting;
+    UiShared -> BacktestSdk;
     UiShared -> Contracts;
     UiShared -> Execution;
+    UiShared -> FSharp;
+    UiShared -> FSharpLedger;
     UiShared -> CppTrader;
+    UiShared -> QuantScript;
     UiShared -> Storage;
     UiShared -> Strategies;
-
-    UiServices -> Contracts [style=dashed, label="source\nlink"];
-
-    Wpf -> UiServices [style=dashed];
-    Wpf -> UiShared;
     Wpf -> Backtesting;
-    Wpf -> Strategies;
     Wpf -> QuantScript;
-
-    McpServer -> Application;
-    McpServer -> Contracts;
-    McpServer -> Core;
-    McpServer -> Storage;
-
-    // Mcp has no project references (standalone)
-
-    // ==================== EDGES: Layer 7 -> Layers 6-0 ====================
+    Wpf -> Storage;
+    Wpf -> Strategies;
+    Wpf -> UiServices;
+    Wpf -> UiShared;
     MainApp -> Application;
-    MainApp -> Infrastructure;
-    MainApp -> Storage;
+    MainApp -> Contracts;
     MainApp -> Core;
     MainApp -> Domain;
-    MainApp -> Contracts;
+    MainApp -> Infrastructure;
+    MainApp -> CppTrader;
     MainApp -> ProviderSdk;
+    MainApp -> QuantScript;
+    MainApp -> Storage;
     MainApp -> UiShared;
-    MainApp -> FSharp;
-    MainApp -> FSharpDL;
-    MainApp -> FSharpLedger;
-    MainApp -> FSharpTrading;
 
-    // ==================== EDGES: Tests -> Subjects ====================
+    BacktestingTests -> Backtesting [style=dotted, color="#999999"];
+    BacktestingTests -> BacktestSdk [style=dotted, color="#999999"];
+    BacktestingTests -> Infrastructure [style=dotted, color="#999999"];
+    DirectLendingTests -> Application [style=dotted, color="#999999"];
+    DirectLendingTests -> Contracts [style=dotted, color="#999999"];
+    DirectLendingTests -> Storage [style=dotted, color="#999999"];
+    FSharpTests -> BacktestSdk [style=dotted, color="#999999"];
+    FSharpTests -> Contracts [style=dotted, color="#999999"];
+    FSharpTests -> ExecutionSdk [style=dotted, color="#999999"];
+    FSharpTests -> FSharp [style=dotted, color="#999999"];
+    FSharpTests -> FSharpDL [style=dotted, color="#999999"];
+    FSharpTests -> FSharpLedger [style=dotted, color="#999999"];
+    FSharpTests -> FSharpTrading [style=dotted, color="#999999"];
+    FSharpTests -> Ledger [style=dotted, color="#999999"];
+    FundStructureTests -> Application [style=dotted, color="#999999"];
+    FundStructureTests -> Contracts [style=dotted, color="#999999"];
+    QuantScriptTests -> QuantScript [style=dotted, color="#999999"];
     Tests -> MainApp [style=dotted, color="#999999"];
     Tests -> Application [style=dotted, color="#999999"];
-    Tests -> Infrastructure [style=dotted, color="#999999"];
-    Tests -> Storage [style=dotted, color="#999999"];
+    Tests -> Backtesting [style=dotted, color="#999999"];
+    Tests -> BacktestSdk [style=dotted, color="#999999"];
     Tests -> Core [style=dotted, color="#999999"];
     Tests -> Domain [style=dotted, color="#999999"];
-    Tests -> UiShared [style=dotted, color="#999999"];
     Tests -> Execution [style=dotted, color="#999999"];
-    Tests -> Strategies [style=dotted, color="#999999"];
-    Tests -> Risk [style=dotted, color="#999999"];
-    Tests -> Ledger [style=dotted, color="#999999"];
-    Tests -> BacktestSdk [style=dotted, color="#999999"];
     Tests -> ExecutionSdk [style=dotted, color="#999999"];
+    Tests -> Infrastructure [style=dotted, color="#999999"];
     Tests -> CppTrader [style=dotted, color="#999999"];
-
-    FSharpTests -> FSharp [style=dotted, color="#999999"];
-
-    BacktestTests -> Backtesting [style=dotted, color="#999999"];
-    BacktestTests -> BacktestSdk [style=dotted, color="#999999"];
-    BacktestTests -> Infrastructure [style=dotted, color="#999999"];
-
-    DLTests -> Application [style=dotted, color="#999999"];
-
-    McpTests -> McpServer [style=dotted, color="#999999"];
-
-    QsTests -> QuantScript [style=dotted, color="#999999"];
-
-    WpfTests -> Wpf [style=dotted, color="#999999"];
-    WpfTests -> UiServices [style=dotted, color="#999999"];
-
+    Tests -> Ledger [style=dotted, color="#999999"];
+    Tests -> Risk [style=dotted, color="#999999"];
+    Tests -> Storage [style=dotted, color="#999999"];
+    Tests -> Strategies [style=dotted, color="#999999"];
+    Tests -> UiShared [style=dotted, color="#999999"];
     UiTests -> UiServices [style=dotted, color="#999999"];
-
-    // ==================== EDGES: Benchmarks -> Subjects ====================
+    WpfTests -> UiServices [style=dotted, color="#999999"];
+    WpfTests -> Wpf [style=dotted, color="#999999"];
     Benchmarks -> MainApp [style=dotted, color="#999999"];
     Benchmarks -> Application [style=dotted, color="#999999"];
     Benchmarks -> Core [style=dotted, color="#999999"];
     Benchmarks -> Domain [style=dotted, color="#999999"];
     Benchmarks -> Storage [style=dotted, color="#999999"];
+    Benchmarks -> Strategies [style=dotted, color="#999999"];
 
-    // ==================== LEGEND ====================
     subgraph cluster_legend {
         label="Legend";
         style="rounded";
         color="#888888";
         bgcolor="#fafafa";
         fontsize=10;
-
-        L_SOLID  [shape=plaintext, label="━━━  Project reference (compile dependency)"];
-        L_DASH   [shape=plaintext, label="─ ─  Source-link / Windows-only reference"];
-        L_DOT    [shape=plaintext, label="· · ·  Test / benchmark reference"];
-        L_NATIVE [shape=box, fillcolor="#FFF3E0", style="rounded,filled,dashed",
-                  label="Dashed border = Windows-only\nor conditional build"];
+        L_SOLID [shape=plaintext, label="solid edge = project reference (compile dependency)"];
+        L_DOT [shape=plaintext, label="dotted edge = test / benchmark reference"];
+        L_NATIVE [shape=box, fillcolor="#FFF3E0", style="rounded,filled,dashed", label="Dashed border = Windows-only, conditional, or source-link adjacent project"];
     }
 }

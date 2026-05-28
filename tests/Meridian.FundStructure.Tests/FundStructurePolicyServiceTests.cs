@@ -1,5 +1,6 @@
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
+using Xunit;
 
 namespace Meridian.FundStructure.Tests;
 
@@ -49,7 +50,7 @@ public sealed class FundStructurePolicyServiceTests
         int forecastDays = 7,
         int bucketDays = 7)
         => new(
-            GovernanceScopeKind.Account,
+            GovernanceCashFlowScopeKindDto.Account,
             AccountId: Guid.NewGuid(),
             HistoricalDays: historicalDays,
             ForecastDays: forecastDays,

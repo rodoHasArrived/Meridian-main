@@ -168,7 +168,7 @@ public sealed class BackfillViewModelTests
         sectionSource.Should().Contain("public ObservableCollection<GapAnalysisItem> GapItems");
         sectionSource.Should().Contain("public string BackfillStatusText");
         sectionSource.Should().Contain("public string GapAnalysisSummaryText");
-        viewModelSource.Should().Contain("public BackfillWorkbenchSectionViewModel WorkbenchSection");
+        sectionSource.Should().Contain("public BackfillWorkbenchSectionViewModel WorkbenchSection");
         viewModelSource.Should().Contain("public ObservableCollection<SymbolProgressInfo> SymbolProgress => WorkbenchSection.SymbolProgress");
         viewModelSource.Should().Contain("get => WorkbenchSection.BackfillStatusText");
         viewModelSource.Should().Contain("get => WorkbenchSection.GapAnalysisSummaryText");

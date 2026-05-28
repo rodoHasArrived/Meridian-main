@@ -2,7 +2,7 @@ module Meridian.FSharp.Tests.LedgerKernelTests
 
 open System
 open Xunit
-open FsCheck.Xunit
+open FsCheck
 open FsUnit.Xunit
 open Meridian.FSharp.Ledger
 
@@ -937,34 +937,43 @@ let ``LedgerInterop ClassifyBreakFacts returns stable DTO values for governance 
     classifications[0].Severity |> should equal "High"
     classifications[0].IsFallback |> should equal false
 
-[<Property(MaxTest = 200)>]
-let ``Scenario_ReconciliationBreakIntake_GeneratedFactsClassifyDeterministically`` (seeds: int array) =
-    let facts = generatedBreakFacts seeds 0
+[<Fact>]
+let ``Scenario_ReconciliationBreakIntake_GeneratedFactsClassifyDeterministically`` () =
+    let property (seeds: int array) =
+        let facts = generatedBreakFacts seeds 0
 
-    classifyBreakFacts facts = classifyBreakFacts facts
+        classifyBreakFacts facts = classifyBreakFacts facts
 
-[<Property(MaxTest = 200)>]
-let ``Scenario_ReconciliationBreakIntake_GeneratedFactsIgnoreIrrelevantWhitespace`` (seeds: int array) =
-    let facts = generatedBreakFacts seeds 0
+    Check.One(Config.QuickThrowOnFailure.WithMaxTest(200), property)
 
-    classifyBreakFacts facts = classifyBreakFacts (whitespacePaddedFacts facts)
+[<Fact>]
+let ``Scenario_ReconciliationBreakIntake_GeneratedFactsIgnoreIrrelevantWhitespace`` () =
+    let property (seeds: int array) =
+        let facts = generatedBreakFacts seeds 0
 
-[<Property(MaxTest = 200)>]
-let ``Scenario_ReconciliationBreakIntake_GeneratedFactOrderDoesNotChangeClassifications`` (seeds: int array) =
-    let first = generatedBreakFacts seeds 0
-    let second = generatedBreakFacts seeds 29
+        classifyBreakFacts facts = classifyBreakFacts (whitespacePaddedFacts facts)
 
-    let forward =
-        LedgerInterop.ClassifyBreakFacts [| first; second |]
-        |> Array.map classificationSignature
-        |> Array.sort
+    Check.One(Config.QuickThrowOnFailure.WithMaxTest(200), property)
 
-    let reversed =
-        LedgerInterop.ClassifyBreakFacts [| second; first |]
-        |> Array.map classificationSignature
-        |> Array.sort
+[<Fact>]
+let ``Scenario_ReconciliationBreakIntake_GeneratedFactOrderDoesNotChangeClassifications`` () =
+    let property (seeds: int array) =
+        let first = generatedBreakFacts seeds 0
+        let second = generatedBreakFacts seeds 29
 
-    forward = reversed
+        let forward =
+            LedgerInterop.ClassifyBreakFacts [| first; second |]
+            |> Array.map classificationSignature
+            |> Array.sort
+
+        let reversed =
+            LedgerInterop.ClassifyBreakFacts [| second; first |]
+            |> Array.map classificationSignature
+            |> Array.sort
+
+        forward = reversed
+
+    Check.One(Config.QuickThrowOnFailure.WithMaxTest(200), property)
 
 [<Fact>]
 let ``LedgerInterop ToBreakRecordClassificationDtos preserves canonical classification metadata`` () =
