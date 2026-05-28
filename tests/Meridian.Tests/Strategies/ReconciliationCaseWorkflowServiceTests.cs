@@ -22,7 +22,7 @@ public sealed class ReconciliationCaseWorkflowServiceTests
     public void Apply_rejects_missing_actor_evidence_and_dual_review_violation()
     {
         var svc = new ReconciliationCaseWorkflowService();
-        var item = Seed() with { LifecycleState = ReconciliationCaseLifecycleState.AwaitingApproval, ReviewedBy = "same" };
+        var item = Seed() with { LifecycleState = ReconciliationCaseLifecycleState.Resolved, ReviewedBy = "same" };
         svc.Apply(item, new ReconciliationCaseTransitionCommand(item.BreakId, ReconciliationCaseTransitionAction.Approve, "", "ok", ["ev"]), DateTimeOffset.UtcNow)
             .ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingActor);
         svc.Apply(item, new ReconciliationCaseTransitionCommand(item.BreakId, ReconciliationCaseTransitionAction.Approve, "same", "ok", []), DateTimeOffset.UtcNow)

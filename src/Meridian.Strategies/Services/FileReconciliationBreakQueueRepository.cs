@@ -89,31 +89,32 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 return false;
             }
 
-            _items[item.BreakId] = StampComputedFields(item, item.DetectedAt);
+            var normalized = NormalizeLegacyCaseState(item);
+            _items[item.BreakId] = StampComputedFields(normalized, normalized.DetectedAt);
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
                 EventId: Guid.NewGuid().ToString("N"),
                 BreakId: item.BreakId,
                 EventType: "CaseCreated",
                 PreviousStatus: null,
-                NewStatus: item.Status,
+                NewStatus: normalized.Status,
                 PreviousLifecycleState: null,
-                NewLifecycleState: item.LifecycleState,
+                NewLifecycleState: normalized.LifecycleState,
                 OccurredAt: item.DetectedAt,
-                AssignedTo: item.AssignedTo,
-                ReviewedBy: item.ReviewedBy,
-                ResolvedBy: item.ResolvedBy,
-                Note: item.ResolutionNote,
-                ExceptionRoute: item.ExceptionRoute,
-                ToleranceBand: item.ToleranceBand,
-                RequiredSignoffRole: item.RequiredSignoffRole,
-                SignoffStatus: item.SignoffStatus,
-                ExternalAccountId: item.ExternalAccountId,
-                CustodianId: item.CustodianId,
-                UpstreamSyncCursor: item.UpstreamSyncCursor,
-                Actor: item.AssignedTo ?? item.ReviewedBy ?? item.ResolvedBy,
+                AssignedTo: normalized.AssignedTo,
+                ReviewedBy: normalized.ReviewedBy,
+                ResolvedBy: normalized.ResolvedBy,
+                Note: normalized.ResolutionNote,
+                ExceptionRoute: normalized.ExceptionRoute,
+                ToleranceBand: normalized.ToleranceBand,
+                RequiredSignoffRole: normalized.RequiredSignoffRole,
+                SignoffStatus: normalized.SignoffStatus,
+                ExternalAccountId: normalized.ExternalAccountId,
+                CustodianId: normalized.CustodianId,
+                UpstreamSyncCursor: normalized.UpstreamSyncCursor,
+                Actor: normalized.AssignedTo ?? normalized.ReviewedBy ?? normalized.ResolvedBy,
                 BeforePayload: null,
-                AfterPayload: JsonSerializer.Serialize(item, _jsonOptions)), ct).ConfigureAwait(false);
+                AfterPayload: JsonSerializer.Serialize(normalized, _jsonOptions)), ct).ConfigureAwait(false);
 
             return true;
         }
@@ -131,7 +132,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         try
         {
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            _items![item.BreakId] = item;
+            _items![item.BreakId] = NormalizeLegacyCaseState(item);
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
         }
         finally
@@ -203,7 +204,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 ReviewedBy = request.ReviewedBy,
                 ReviewedAt = now,
                 ResolutionNote = request.ReviewNote,
-                SignoffStatus = "in-review"
+                SignoffStatus = "investigating"
             };
 
             updated = StampComputedFields(updated, now);
@@ -285,26 +286,21 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             {
                 return approval;
             }
-            var updated = request.Status == ReconciliationBreakQueueStatus.Dismissed
-                ? approval.Item with
-                {
-                    Status = request.Status,
-                    ResolvedBy = request.ResolvedBy,
-                    ResolvedAt = now,
-                    ResolutionNote = request.ResolutionNote,
-                    SignoffStatus = "dismissed",
-                    SignoffHistory = (item.SignoffHistory ?? []).Concat(
-                    [
-                        new ReconciliationCaseSignoffRecord(request.ResolvedBy, item.RequiredSignoffRole ?? "operator", request.Status.ToString(), request.OperatorRationale, now)
-                    ]).ToArray()
-                }
-                : approval.Item with
-                {
-                    ResolvedBy = request.ResolvedBy,
-                    ResolvedAt = now,
-                    ResolutionNote = request.ResolutionNote,
-                    SignoffStatus = "awaiting-approval"
-                };
+            var updated = approval.Item with
+            {
+                Status = ReconciliationBreakQueueStatus.Resolved,
+                LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+                ResolvedBy = request.ResolvedBy,
+                ResolvedAt = now,
+                ResolutionNote = request.ResolutionNote,
+                RootCauseCode = approval.Item.RootCauseCode ?? (request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : null),
+                ResolutionCode = approval.Item.ResolutionCode ?? (request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : "LegacyResolved"),
+                SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Dismissed ? "dismissed-false-positive" : "ready-for-signoff",
+                SignoffHistory = (item.SignoffHistory ?? []).Concat(
+                [
+                    new ReconciliationCaseSignoffRecord(request.ResolvedBy, item.RequiredSignoffRole ?? "operator", request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : request.Status.ToString(), request.OperatorRationale, now)
+                ]).ToArray()
+            };
 
             updated = StampComputedFields(updated, now);
             _items[request.BreakId] = updated;
@@ -312,7 +308,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
                 EventId: Guid.NewGuid().ToString("N"),
                 BreakId: request.BreakId,
-                EventType: request.Status == ReconciliationBreakQueueStatus.Resolved ? "Resolved" : "Closed",
+                EventType: request.Status == ReconciliationBreakQueueStatus.Resolved ? "Resolved" : "ResolutionSet",
                 PreviousStatus: item.Status,
                 NewStatus: updated.Status,
                 PreviousLifecycleState: item.LifecycleState,
@@ -568,7 +564,9 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         await using var stream = File.OpenRead(_snapshotPath);
         var snapshot = await JsonSerializer.DeserializeAsync<BreakQueueSnapshot>(stream, _jsonOptions, ct).ConfigureAwait(false);
         var loaded = snapshot?.Items ?? [];
-        _items = loaded.ToDictionary(static item => item.BreakId, StringComparer.OrdinalIgnoreCase);
+        _items = loaded
+            .Select(NormalizeLegacyCaseState)
+            .ToDictionary(static item => item.BreakId, StringComparer.OrdinalIgnoreCase);
     }
 
     private async Task PersistSnapshotAsync(CancellationToken ct)
@@ -598,14 +596,26 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         {
             ReconciliationCaseworkAction.Assign when string.IsNullOrWhiteSpace(command.Assignee)
                 => Invalid(item, "Assignee is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
+            ReconciliationCaseworkAction.TransitionStatus when command.Status is null
+                => Invalid(item, "Target lifecycle status is required.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
+            ReconciliationCaseworkAction.TransitionStatus when !IsLegalLifecycleTransition(item.LifecycleState, command.Status.Value)
+                => Invalid(item, $"Cannot transition case from {item.LifecycleState} to {command.Status}.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Investigating && string.IsNullOrWhiteSpace(item.AssignedTo) && string.IsNullOrWhiteSpace(command.Assignee)
                 => Invalid(item, "Assignment is required before investigation.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.AwaitingEvidence && string.IsNullOrWhiteSpace(command.Note)
                 => Invalid(item, "Evidence request note is required before awaiting evidence.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence),
+            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && string.IsNullOrWhiteSpace(item.RootCauseCode) && string.IsNullOrWhiteSpace(command.RootCauseCode)
+                => Invalid(item, "Root cause code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingRootCause),
+            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && string.IsNullOrWhiteSpace(item.ResolutionCode) && string.IsNullOrWhiteSpace(command.ResolutionCode)
+                => Invalid(item, "Resolution code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingResolutionCode),
+            ReconciliationCaseworkAction.Resolve when item.LifecycleState is not (ReconciliationCaseLifecycleState.Investigating or ReconciliationCaseLifecycleState.AwaitingEvidence or ReconciliationCaseLifecycleState.Reopened)
+                => Invalid(item, $"Cannot resolve case from {item.LifecycleState}.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
             ReconciliationCaseworkAction.Resolve when string.IsNullOrWhiteSpace(item.RootCauseCode) && string.IsNullOrWhiteSpace(command.RootCauseCode)
                 => Invalid(item, "Root cause code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingRootCause),
             ReconciliationCaseworkAction.Resolve when string.IsNullOrWhiteSpace(item.ResolutionCode) && string.IsNullOrWhiteSpace(command.ResolutionCode)
                 => Invalid(item, "Resolution code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingResolutionCode),
+            ReconciliationCaseworkAction.SignOff when item.LifecycleState != ReconciliationCaseLifecycleState.Resolved
+                => Invalid(item, "Only resolved cases can be signed off.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
             ReconciliationCaseworkAction.SignOff when string.Equals(item.ResolvedBy, command.Actor, StringComparison.OrdinalIgnoreCase)
                 => Invalid(item, "Resolver and signer must be different operators.", ReconciliationBreakQueueTransitionErrorCode.ResolverSignerConflict),
             ReconciliationCaseworkAction.Reopen when item.LifecycleState != ReconciliationCaseLifecycleState.SignedOff
@@ -619,6 +629,50 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     private static ReconciliationBreakQueueTransitionResult Invalid(ReconciliationBreakQueueItem? item, string error, ReconciliationBreakQueueTransitionErrorCode code)
         => new(ReconciliationBreakQueueTransitionStatus.ValidationFailed, item, error, code);
 
+    private static bool IsLegalLifecycleTransition(ReconciliationCaseLifecycleState current, ReconciliationCaseLifecycleState next)
+        => current == next || (current, next) switch
+        {
+            (ReconciliationCaseLifecycleState.Open, ReconciliationCaseLifecycleState.Investigating) => true,
+            (ReconciliationCaseLifecycleState.Reopened, ReconciliationCaseLifecycleState.Investigating) => true,
+            (ReconciliationCaseLifecycleState.Investigating, ReconciliationCaseLifecycleState.AwaitingEvidence) => true,
+            (ReconciliationCaseLifecycleState.AwaitingEvidence, ReconciliationCaseLifecycleState.Investigating) => true,
+            (ReconciliationCaseLifecycleState.Investigating, ReconciliationCaseLifecycleState.Resolved) => true,
+            (ReconciliationCaseLifecycleState.AwaitingEvidence, ReconciliationCaseLifecycleState.Resolved) => true,
+            (ReconciliationCaseLifecycleState.Reopened, ReconciliationCaseLifecycleState.Resolved) => true,
+            (ReconciliationCaseLifecycleState.Resolved, ReconciliationCaseLifecycleState.SignedOff) => true,
+            (ReconciliationCaseLifecycleState.SignedOff, ReconciliationCaseLifecycleState.Reopened) => true,
+            _ => false
+        };
+
+    private static ReconciliationBreakQueueItem NormalizeLegacyCaseState(ReconciliationBreakQueueItem item)
+    {
+        var lifecycle = item.LifecycleState == ReconciliationCaseLifecycleState.InReview
+            ? ReconciliationCaseLifecycleState.Investigating
+            : item.LifecycleState;
+        var status = item.Status;
+        var resolutionCode = item.ResolutionCode;
+        var rootCauseCode = item.RootCauseCode;
+        var signoffStatus = item.SignoffStatus;
+
+        if (item.Status == ReconciliationBreakQueueStatus.Dismissed)
+        {
+            lifecycle = ReconciliationCaseLifecycleState.Resolved;
+            status = ReconciliationBreakQueueStatus.Resolved;
+            resolutionCode ??= "DismissedFalsePositive";
+            rootCauseCode ??= "DismissedFalsePositive";
+            signoffStatus ??= "dismissed-false-positive";
+        }
+
+        return item with
+        {
+            LifecycleState = lifecycle,
+            Status = status,
+            ResolutionCode = resolutionCode,
+            RootCauseCode = rootCauseCode,
+            SignoffStatus = signoffStatus
+        };
+    }
+
     private static ReconciliationBreakQueueItem ApplyCaseworkMutation(ReconciliationBreakQueueItem item, ReconciliationCaseworkCommand command, DateTimeOffset now)
     {
         var comments = (item.Comments ?? []).ToList();
@@ -630,7 +684,21 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             case ReconciliationCaseworkAction.ChangePriority:
                 return item with { Priority = command.Priority ?? item.Priority, LastUpdatedAt = now };
             case ReconciliationCaseworkAction.TransitionStatus:
-                return item with { LifecycleState = command.Status ?? item.LifecycleState, Status = MapQueueStatus(command.Status ?? item.LifecycleState, item.Status), LifecycleRationale = command.Note, LastUpdatedAt = now };
+                var lifecycle = command.Status ?? item.LifecycleState;
+                return item with
+                {
+                    LifecycleState = lifecycle,
+                    Status = MapQueueStatus(lifecycle, item.Status),
+                    AssignedTo = command.Assignee ?? item.AssignedTo,
+                    AssigneeId = command.Assignee ?? item.AssigneeId,
+                    AssigneeDisplayName = command.Assignee ?? item.AssigneeDisplayName,
+                    RootCauseCode = command.RootCauseCode ?? item.RootCauseCode,
+                    ResolutionCode = command.ResolutionCode ?? item.ResolutionCode,
+                    ResolvedBy = lifecycle == ReconciliationCaseLifecycleState.Resolved ? command.Actor : item.ResolvedBy,
+                    ResolvedAt = lifecycle == ReconciliationCaseLifecycleState.Resolved ? now : item.ResolvedAt,
+                    LifecycleRationale = command.Note,
+                    LastUpdatedAt = now
+                };
             case ReconciliationCaseworkAction.AddComment:
                 comments.Add(new ReconciliationCaseComment(command.CommentId ?? Guid.NewGuid().ToString("N"), command.ParentCommentId, command.Actor, command.Actor, command.Visibility, command.Note ?? string.Empty, command.EvidenceLinks ?? [], now));
                 evidence.AddRange(command.EvidenceLinks ?? []);
