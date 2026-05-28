@@ -201,6 +201,29 @@ public sealed class BrokerageGatewayAdapterTests
         result.Reason.Should().Contain("notional");
     }
 
+
+    [Fact]
+    public async Task ValidateOrderAsync_RejectsOrderWhenNotionalCannotBeEvaluated()
+    {
+        var config = new BrokerageConfiguration { MaxOrderNotional = 100m };
+        await using var adapter = new BrokerageGatewayAdapter(
+            CreateMockGateway(),
+            NullLogger<BrokerageGatewayAdapter>.Instance,
+            config);
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = SdkOrderType.Market,
+            Quantity = 2m
+        };
+
+        var result = await adapter.ValidateOrderAsync(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("Unable to evaluate order notional");
+    }
+
     [Fact]
     public async Task ValidateOrderAsync_RejectsOrderWhenOpenOrderLimitReached()
     {

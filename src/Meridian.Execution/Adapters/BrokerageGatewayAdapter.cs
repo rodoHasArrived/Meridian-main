@@ -92,7 +92,10 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
         if (_configuration.MaxOrderNotional > 0m)
         {
             var effectivePrice = ResolveEffectivePrice(request);
-            if (effectivePrice.HasValue && (request.Quantity * effectivePrice.Value) > _configuration.MaxOrderNotional)
+            if (!effectivePrice.HasValue)
+                return new OrderValidationResult(false, "Unable to evaluate order notional for this order type without a price input.");
+
+            if ((request.Quantity * effectivePrice.Value) > _configuration.MaxOrderNotional)
                 return new OrderValidationResult(false, $"Order notional exceeds configured maximum of {_configuration.MaxOrderNotional}.");
         }
 
