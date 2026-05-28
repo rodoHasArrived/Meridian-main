@@ -1225,12 +1225,12 @@ public sealed partial class FundLedgerViewModel
             breakRow.Status is ReconciliationBreakQueueStatus.Open
                 ? WorkspaceTone.Danger
                 : WorkspaceTone.Warning);
-        var signoffStatus = string.IsNullOrWhiteSpace(breakRow.SignoffStatus)
+        var signoffStatus = string.IsNullOrWhiteSpace(breakRow.SignoffStatusLabel)
             ? "Pending"
-            : breakRow.SignoffStatus;
-        var signoffRole = string.IsNullOrWhiteSpace(breakRow.RequiredSignoffRole)
+            : breakRow.SignoffStatusLabel;
+        var signoffRole = string.IsNullOrWhiteSpace(breakRow.RequiredSignoffRoleLabel)
             ? "Fund operations reviewer"
-            : breakRow.RequiredSignoffRole;
+            : breakRow.RequiredSignoffRoleLabel;
 
         return new WorkstationStateModel(
             breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed

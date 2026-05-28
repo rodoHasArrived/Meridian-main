@@ -273,31 +273,25 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             }
 
             var now = DateTimeOffset.UtcNow;
-            var updated = item with
-            {
-                Status = request.Status,
-                ResolvedBy = request.ResolvedBy,
-                ResolvedAt = now,
-                LastUpdatedAt = now,
-                ResolutionNote = request.ResolutionNote,
-                SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Resolved
-                    ? "pending-signoff"
-                    : "dismissed",
-                LifecycleState = ReconciliationCaseLifecycleState.AwaitingApproval,
-                LifecycleRationale = request.OperatorRationale,
-                SignoffHistory = (item.SignoffHistory ?? []).Concat(
-                [
-                    new ReconciliationCaseSignoffRecord(request.ResolvedBy, item.RequiredSignoffRole ?? "operator", request.Status.ToString(), request.OperatorRationale, now)
-                ]).ToArray(),
-                StateTransitions = item.StateTransitions
-            };
-
-            var approval = _workflowService.Apply(updated, new ReconciliationCaseTransitionCommand(request.BreakId, ReconciliationCaseTransitionAction.RequestApproval, request.ResolvedBy, request.OperatorRationale, ["resolution-note"]), now);
+            var approval = _workflowService.Apply(item, new ReconciliationCaseTransitionCommand(request.BreakId, ReconciliationCaseTransitionAction.RequestApproval, request.ResolvedBy, request.OperatorRationale, ["resolution-note"]), now);
             if (approval.Status != ReconciliationBreakQueueTransitionStatus.Success || approval.Item is null)
             {
                 return approval;
             }
-            updated = approval.Item;
+            var updated = approval.Item with
+            {
+                Status = request.Status,
+                ResolvedBy = request.ResolvedBy,
+                ResolvedAt = now,
+                ResolutionNote = request.ResolutionNote,
+                SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Resolved
+                    ? "signed-off"
+                    : "dismissed",
+                SignoffHistory = (item.SignoffHistory ?? []).Concat(
+                [
+                    new ReconciliationCaseSignoffRecord(request.ResolvedBy, item.RequiredSignoffRole ?? "operator", request.Status.ToString(), request.OperatorRationale, now)
+                ]).ToArray()
+            };
 
             _items[request.BreakId] = updated with { Score = ComputeScore(updated), SlaDueAt = ComputeSlaDueAt(updated), SlaBreached = IsSlaBreached(updated) };
             await PersistSnapshotAsync(ct).ConfigureAwait(false);
