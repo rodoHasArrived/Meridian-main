@@ -171,7 +171,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 approved.Workflow.Version,
                 "ops-user",
                 Rationale: "Closing May 2026 accounting period",
-                ReportPackId: "report-pack-may-2026"));
+                ReportPackId: "report-pack-may-2026",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed,
@@ -295,7 +296,8 @@ public sealed class FundOpsCloseLaneScenarioTests
         var closed = await service.CloseWorkflowAsync(workflowId,
             new OperationsCloseWorkflowRequestDto(
                 approved.Workflow!.Version, "ops-user",
-                "Period closed after break resolution", "report-pack-break-test"));
+                "Period closed after break resolution", "report-pack-break-test",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
@@ -415,7 +417,12 @@ public sealed class FundOpsCloseLaneScenarioTests
 
     private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
     [
-        new("approval-close-checklist", "controller", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero))
+        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
+        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
+        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
+        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
     ];
 
     private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid? aggregateId = null, Guid? periodId = null)

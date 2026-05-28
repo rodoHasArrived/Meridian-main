@@ -137,6 +137,7 @@ const detail: OperationsContinuityWorkflow = {
     ]
   },
   closeChecklist: [],
+  closeReadiness: null,
   evidenceLinks: [
     {
       evidenceId: "close-workflow-1",

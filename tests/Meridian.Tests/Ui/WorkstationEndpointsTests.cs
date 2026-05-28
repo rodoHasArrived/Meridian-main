@@ -503,11 +503,28 @@ public sealed partial class WorkstationEndpointsTests
         var posture = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/posture/refresh",
             new OperationsGatePostureRequestDto(reconciled.Workflow!.Version, "spoofed-user", ReportPackReady: true, ReportPackId: "report-pack-1"));
         var submitted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/submit",
-            new OperationsSubmitApprovalRequestDto(posture.Workflow!.Version, "spoofed-user", "ops-user", "Submit evidence", "report-pack-1"));
+            new OperationsSubmitApprovalRequestDto(
+                posture.Workflow!.Version,
+                "spoofed-user",
+                "ops-user",
+                "Submit evidence",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
         var approved = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/approval/approve",
-            new OperationsApprovalDecisionRequestDto(submitted.Workflow!.Version, "spoofed-user", "spoofed-reviewer", "Approve close", "report-pack-1"));
+            new OperationsApprovalDecisionRequestDto(
+                submitted.Workflow!.Version,
+                "spoofed-user",
+                "spoofed-reviewer",
+                "Approve close",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
         var closed = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/close",
-            new OperationsCloseWorkflowRequestDto(approved.Workflow!.Version, "spoofed-user", "Close period", "report-pack-1"));
+            new OperationsCloseWorkflowRequestDto(
+                approved.Workflow!.Version,
+                "spoofed-user",
+                "Close period",
+                "report-pack-1",
+                ChecklistControlApprovals: RequiredOperationsChecklistControlApprovals()));
 
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
         closed.Workflow.Timeline.Should().Contain(entry => entry.EventType == "workflow-closed" && entry.Actor == "ops-user");
@@ -5999,6 +6016,16 @@ public sealed partial class WorkstationEndpointsTests
         result.Workflow.Should().NotBeNull();
         return result;
     }
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredOperationsChecklistControlApprovals() =>
+    [
+        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
+        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
+        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
+        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
+    ];
 
     private static async Task<T> ReadAsync<T>(HttpResponseMessage response)
     {

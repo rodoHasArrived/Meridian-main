@@ -35,7 +35,8 @@ workflow DTOs publish the shared broker intake, Security Master, ledger posting,
 approval, close, and audit vocabulary consumed by both browser and WPF workstation clients. Keep
 returned workflow blocker codes in `OperationsWorkflowContractMatrix.BlockerCodes`, including
 ledger journal context-validation failures, so clients can handle command failures without parsing
-messages.
+messages. Close-checklist control approval blockers are part of that shared vocabulary and must
+remain contract-owned rather than browser-only or WPF-only state.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve

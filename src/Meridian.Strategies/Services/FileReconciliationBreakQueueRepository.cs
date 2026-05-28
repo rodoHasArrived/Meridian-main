@@ -181,21 +181,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             }
 
             var now = DateTimeOffset.UtcNow;
-            var updated = item with
-            {
-                Status = ReconciliationBreakQueueStatus.InReview,
-                AssignedTo = request.AssignedTo,
-                ReviewedBy = request.ReviewedBy,
-                ReviewedAt = now,
-                LastUpdatedAt = now,
-                ResolutionNote = request.ReviewNote,
-                SignoffStatus = "in-review",
-                LifecycleState = ReconciliationCaseLifecycleState.InReview,
-                LifecycleRationale = request.ReviewNote,
-                StateTransitions = item.StateTransitions
-            };
-
-            var transitioned = _workflowService.Apply(updated, new ReconciliationCaseTransitionCommand(
+            var transitioned = _workflowService.Apply(item, new ReconciliationCaseTransitionCommand(
                 request.BreakId,
                 ReconciliationCaseTransitionAction.StartReview,
                 request.ReviewedBy,
@@ -205,7 +191,14 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             {
                 return transitioned;
             }
-            updated = transitioned.Item;
+            var updated = transitioned.Item with
+            {
+                AssignedTo = request.AssignedTo,
+                ReviewedBy = request.ReviewedBy,
+                ReviewedAt = now,
+                ResolutionNote = request.ReviewNote,
+                SignoffStatus = "in-review"
+            };
 
             _items[request.BreakId] = updated with { Score = ComputeScore(updated), SlaDueAt = ComputeSlaDueAt(updated), SlaBreached = IsSlaBreached(updated) };
             await PersistSnapshotAsync(ct).ConfigureAwait(false);

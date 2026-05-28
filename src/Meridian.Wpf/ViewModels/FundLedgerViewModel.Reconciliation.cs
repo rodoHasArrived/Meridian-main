@@ -32,39 +32,6 @@ public sealed partial class FundLedgerViewModel
     private bool _isReconciliationActionInFlight;
     private int _selectedReconciliationDetailTabIndex;
     private string _reconciliationSearchText = string.Empty;
-    private string _reconciliationLegalEntityText = "-";
-    private string _reconciliationBaseCurrencyText = "-";
-    private string _reconciliationScopeText = "-";
-    private string _reconciliationWorkspaceAsOfText = "-";
-    private string _reconciliationLastRefreshText = "-";
-    private string _inReviewBreaksText = "0";
-    private string _reconciliationSecurityCoverageIssuesText = "0";
-    private string _reconciliationCalibrationStatusText = "Not loaded";
-    private string _reconciliationCalibrationSummaryText = "Calibration posture appears after the reconciliation workbench loads.";
-    private string _reconciliationCalibrationProfilesText = "0";
-    private string _reconciliationCalibrationPendingSignoffText = "0";
-    private string _reconciliationCalibrationMissingMetadataText = "0";
-    private string _reconciliationActionFeedbackText = string.Empty;
-    private string _reconciliationOperatorText = DefaultReconciliationOperator;
-    private string _reconciliationNoteText = string.Empty;
-    private string _reconciliationDetailTitle = "Select a break or run";
-    private string _reconciliationDetailSubtitle = "Choose a break queue item or reconciliation run to load exception detail.";
-    private string _reconciliationDetailStatusText = "Awaiting selection";
-    private string _reconciliationDetailCoverageText = "Security coverage status appears here when a reconciliation item is selected.";
-    private string _reconciliationDetailLifecycleText = "Select a break queue item to see detection, review, decision, and audit posture.";
-    private string _reconciliationDetailSignoffText = "Sign-off posture appears here when a reconciliation break is selected.";
-    private string _reconciliationDetailLastUpdatedText = "-";
-    private string _reconciliationDetailGuidanceText = "Break queue items support inline review and resolution. Account runs stay read-only in Governance.";
-    private string _reconciliationDetailTotalChecksText = "0";
-    private string _reconciliationDetailMatchedText = "0";
-    private string _reconciliationDetailBreaksText = "0";
-    private string _reconciliationDetailBreakAmountText = "-";
-    private string _reconciliationDetailSecurityIssuesText = "0";
-    private string _reconciliationBreakQueueEmptyStateText = "No strategy-run breaks are queued for this fund.";
-    private string _reconciliationNextBestActionText = "Select a break to view the recommended next action.";
-    private string _reconciliationBlockerReasonText = "No blocker is selected.";
-    private string _reconciliationEvidenceLinksText = "Evidence links appear after selecting a break.";
-    private string _reconciliationRunsEmptyStateText = "No reconciliation runs are available for this fund.";
     private FundReconciliationBreakQueueRow? _selectedBreakQueueItem;
     private FundReconciliationRunRow? _selectedReconciliationRun;
 
@@ -193,34 +160,34 @@ public sealed partial class FundLedgerViewModel
 
     public string ReconciliationLegalEntityText
     {
-        get => _reconciliationLegalEntityText;
-        private set => SetProperty(ref _reconciliationLegalEntityText, value);
+        get => ReconciliationSection.LegalEntityText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.LegalEntityText, text => ReconciliationSection.LegalEntityText = text, value);
     }
 
     public string ReconciliationBaseCurrencyText
     {
-        get => _reconciliationBaseCurrencyText;
-        private set => SetProperty(ref _reconciliationBaseCurrencyText, value);
+        get => ReconciliationSection.BaseCurrencyText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.BaseCurrencyText, text => ReconciliationSection.BaseCurrencyText = text, value);
     }
 
     public string ReconciliationScopeText
     {
-        get => _reconciliationScopeText;
-        private set => SetProperty(ref _reconciliationScopeText, value);
+        get => ReconciliationSection.ScopeText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.ScopeText, text => ReconciliationSection.ScopeText = text, value);
     }
 
     public string ReconciliationWorkspaceAsOfText
     {
-        get => _reconciliationWorkspaceAsOfText;
-        private set => SetProperty(ref _reconciliationWorkspaceAsOfText, value);
+        get => ReconciliationSection.WorkspaceAsOfText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.WorkspaceAsOfText, text => ReconciliationSection.WorkspaceAsOfText = text, value);
     }
 
     public string ReconciliationLastRefreshText
     {
-        get => _reconciliationLastRefreshText;
+        get => ReconciliationSection.LastRefreshText;
         private set
         {
-            if (SetProperty(ref _reconciliationLastRefreshText, value))
+            if (SetReconciliationSectionProperty(ReconciliationSection.LastRefreshText, text => ReconciliationSection.LastRefreshText = text, value))
             {
                 UpdateReconciliationWorkbenchPresentation();
             }
@@ -229,58 +196,58 @@ public sealed partial class FundLedgerViewModel
 
     public string InReviewBreaksText
     {
-        get => _inReviewBreaksText;
-        private set => SetProperty(ref _inReviewBreaksText, value);
+        get => ReconciliationSection.InReviewBreaksText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.InReviewBreaksText, text => ReconciliationSection.InReviewBreaksText = text, value);
     }
 
     public string ReconciliationSecurityCoverageIssuesText
     {
-        get => _reconciliationSecurityCoverageIssuesText;
-        private set => SetProperty(ref _reconciliationSecurityCoverageIssuesText, value);
+        get => ReconciliationSection.SecurityCoverageIssuesText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.SecurityCoverageIssuesText, text => ReconciliationSection.SecurityCoverageIssuesText = text, value);
     }
 
     public string ReconciliationCalibrationStatusText
     {
-        get => _reconciliationCalibrationStatusText;
-        private set => SetProperty(ref _reconciliationCalibrationStatusText, value);
+        get => ReconciliationSection.CalibrationStatusText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationStatusText, text => ReconciliationSection.CalibrationStatusText = text, value);
     }
 
     public string ReconciliationCalibrationSummaryText
     {
-        get => _reconciliationCalibrationSummaryText;
-        private set => SetProperty(ref _reconciliationCalibrationSummaryText, value);
+        get => ReconciliationSection.CalibrationSummaryText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationSummaryText, text => ReconciliationSection.CalibrationSummaryText = text, value);
     }
 
     public string ReconciliationCalibrationProfilesText
     {
-        get => _reconciliationCalibrationProfilesText;
-        private set => SetProperty(ref _reconciliationCalibrationProfilesText, value);
+        get => ReconciliationSection.CalibrationProfilesText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationProfilesText, text => ReconciliationSection.CalibrationProfilesText = text, value);
     }
 
     public string ReconciliationCalibrationPendingSignoffText
     {
-        get => _reconciliationCalibrationPendingSignoffText;
-        private set => SetProperty(ref _reconciliationCalibrationPendingSignoffText, value);
+        get => ReconciliationSection.CalibrationPendingSignoffText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationPendingSignoffText, text => ReconciliationSection.CalibrationPendingSignoffText = text, value);
     }
 
     public string ReconciliationCalibrationMissingMetadataText
     {
-        get => _reconciliationCalibrationMissingMetadataText;
-        private set => SetProperty(ref _reconciliationCalibrationMissingMetadataText, value);
+        get => ReconciliationSection.CalibrationMissingMetadataText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.CalibrationMissingMetadataText, text => ReconciliationSection.CalibrationMissingMetadataText = text, value);
     }
 
     public string ReconciliationActionFeedbackText
     {
-        get => _reconciliationActionFeedbackText;
-        private set => SetProperty(ref _reconciliationActionFeedbackText, value);
+        get => ReconciliationSection.ActionFeedbackText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.ActionFeedbackText, text => ReconciliationSection.ActionFeedbackText = text, value);
     }
 
     public string ReconciliationOperatorText
     {
-        get => _reconciliationOperatorText;
+        get => ReconciliationSection.OperatorText;
         set
         {
-            if (SetProperty(ref _reconciliationOperatorText, value))
+            if (SetReconciliationSectionProperty(ReconciliationSection.OperatorText, text => ReconciliationSection.OperatorText = text, value))
             {
                 NotifyReconciliationDerivedStateChanged();
                 UpdateReconciliationWorkbenchPresentation();
@@ -291,10 +258,10 @@ public sealed partial class FundLedgerViewModel
 
     public string ReconciliationNoteText
     {
-        get => _reconciliationNoteText;
+        get => ReconciliationSection.NoteText;
         set
         {
-            if (SetProperty(ref _reconciliationNoteText, value))
+            if (SetReconciliationSectionProperty(ReconciliationSection.NoteText, text => ReconciliationSection.NoteText = text, value))
             {
                 NotifyReconciliationDerivedStateChanged();
             }
@@ -303,111 +270,111 @@ public sealed partial class FundLedgerViewModel
 
     public string ReconciliationDetailTitle
     {
-        get => _reconciliationDetailTitle;
-        private set => SetProperty(ref _reconciliationDetailTitle, value);
+        get => ReconciliationSection.DetailTitle;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailTitle, text => ReconciliationSection.DetailTitle = text, value);
     }
 
     public string ReconciliationDetailSubtitle
     {
-        get => _reconciliationDetailSubtitle;
-        private set => SetProperty(ref _reconciliationDetailSubtitle, value);
+        get => ReconciliationSection.DetailSubtitle;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailSubtitle, text => ReconciliationSection.DetailSubtitle = text, value);
     }
 
     public string ReconciliationDetailStatusText
     {
-        get => _reconciliationDetailStatusText;
-        private set => SetProperty(ref _reconciliationDetailStatusText, value);
+        get => ReconciliationSection.DetailStatusText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailStatusText, text => ReconciliationSection.DetailStatusText = text, value);
     }
 
     public string ReconciliationDetailCoverageText
     {
-        get => _reconciliationDetailCoverageText;
-        private set => SetProperty(ref _reconciliationDetailCoverageText, value);
+        get => ReconciliationSection.DetailCoverageText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailCoverageText, text => ReconciliationSection.DetailCoverageText = text, value);
     }
 
     public string ReconciliationDetailLifecycleText
     {
-        get => _reconciliationDetailLifecycleText;
-        private set => SetProperty(ref _reconciliationDetailLifecycleText, value);
+        get => ReconciliationSection.DetailLifecycleText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailLifecycleText, text => ReconciliationSection.DetailLifecycleText = text, value);
     }
 
     public string ReconciliationDetailSignoffText
     {
-        get => _reconciliationDetailSignoffText;
-        private set => SetProperty(ref _reconciliationDetailSignoffText, value);
+        get => ReconciliationSection.DetailSignoffText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailSignoffText, text => ReconciliationSection.DetailSignoffText = text, value);
     }
 
     public string ReconciliationDetailLastUpdatedText
     {
-        get => _reconciliationDetailLastUpdatedText;
-        private set => SetProperty(ref _reconciliationDetailLastUpdatedText, value);
+        get => ReconciliationSection.DetailLastUpdatedText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailLastUpdatedText, text => ReconciliationSection.DetailLastUpdatedText = text, value);
     }
 
     public string ReconciliationDetailGuidanceText
     {
-        get => _reconciliationDetailGuidanceText;
-        private set => SetProperty(ref _reconciliationDetailGuidanceText, value);
+        get => ReconciliationSection.DetailGuidanceText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailGuidanceText, text => ReconciliationSection.DetailGuidanceText = text, value);
     }
 
     public string ReconciliationDetailTotalChecksText
     {
-        get => _reconciliationDetailTotalChecksText;
-        private set => SetProperty(ref _reconciliationDetailTotalChecksText, value);
+        get => ReconciliationSection.DetailTotalChecksText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailTotalChecksText, text => ReconciliationSection.DetailTotalChecksText = text, value);
     }
 
     public string ReconciliationDetailMatchedText
     {
-        get => _reconciliationDetailMatchedText;
-        private set => SetProperty(ref _reconciliationDetailMatchedText, value);
+        get => ReconciliationSection.DetailMatchedText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailMatchedText, text => ReconciliationSection.DetailMatchedText = text, value);
     }
 
     public string ReconciliationDetailBreaksText
     {
-        get => _reconciliationDetailBreaksText;
-        private set => SetProperty(ref _reconciliationDetailBreaksText, value);
+        get => ReconciliationSection.DetailBreaksText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailBreaksText, text => ReconciliationSection.DetailBreaksText = text, value);
     }
 
     public string ReconciliationDetailBreakAmountText
     {
-        get => _reconciliationDetailBreakAmountText;
-        private set => SetProperty(ref _reconciliationDetailBreakAmountText, value);
+        get => ReconciliationSection.DetailBreakAmountText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailBreakAmountText, text => ReconciliationSection.DetailBreakAmountText = text, value);
     }
 
     public string ReconciliationDetailSecurityIssuesText
     {
-        get => _reconciliationDetailSecurityIssuesText;
-        private set => SetProperty(ref _reconciliationDetailSecurityIssuesText, value);
+        get => ReconciliationSection.DetailSecurityIssuesText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.DetailSecurityIssuesText, text => ReconciliationSection.DetailSecurityIssuesText = text, value);
     }
 
     public string ReconciliationBreakQueueEmptyStateText
     {
-        get => _reconciliationBreakQueueEmptyStateText;
-        private set => SetProperty(ref _reconciliationBreakQueueEmptyStateText, value);
+        get => ReconciliationSection.BreakQueueEmptyStateText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.BreakQueueEmptyStateText, text => ReconciliationSection.BreakQueueEmptyStateText = text, value);
     }
 
 
     public string ReconciliationNextBestActionText
     {
-        get => _reconciliationNextBestActionText;
-        private set => SetProperty(ref _reconciliationNextBestActionText, value);
+        get => ReconciliationSection.NextBestActionText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.NextBestActionText, text => ReconciliationSection.NextBestActionText = text, value);
     }
 
     public string ReconciliationBlockerReasonText
     {
-        get => _reconciliationBlockerReasonText;
-        private set => SetProperty(ref _reconciliationBlockerReasonText, value);
+        get => ReconciliationSection.BlockerReasonText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.BlockerReasonText, text => ReconciliationSection.BlockerReasonText = text, value);
     }
 
     public string ReconciliationEvidenceLinksText
     {
-        get => _reconciliationEvidenceLinksText;
-        private set => SetProperty(ref _reconciliationEvidenceLinksText, value);
+        get => ReconciliationSection.EvidenceLinksText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.EvidenceLinksText, text => ReconciliationSection.EvidenceLinksText = text, value);
     }
 
     public string ReconciliationRunsEmptyStateText
     {
-        get => _reconciliationRunsEmptyStateText;
-        private set => SetProperty(ref _reconciliationRunsEmptyStateText, value);
+        get => ReconciliationSection.RunsEmptyStateText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.RunsEmptyStateText, text => ReconciliationSection.RunsEmptyStateText = text, value);
     }
 
     public bool HasActiveReconciliationFilters =>
@@ -864,9 +831,9 @@ public sealed partial class FundLedgerViewModel
             _reconciliationSearchText = string.Empty;
             _selectedBreakQueueItem = null;
             _selectedReconciliationRun = null;
-            _reconciliationOperatorText = DefaultReconciliationOperator;
-            _reconciliationNoteText = string.Empty;
-            _reconciliationActionFeedbackText = string.Empty;
+            ReconciliationSection.OperatorText = DefaultReconciliationOperator;
+            ReconciliationSection.NoteText = string.Empty;
+            ReconciliationSection.ActionFeedbackText = string.Empty;
             _reconciliationBreakQueueItems.Clear();
             _reconciliationRunItems.Clear();
             _reconciliationExceptionRows.Clear();

@@ -838,14 +838,12 @@ public sealed class OperationsContinuityWorkflow
             return CreateReportPackMismatchBlocker(request.ReportPackId);
         }
 
-        if (request.ChecklistControlApprovals is null || request.ChecklistControlApprovals.Count == 0)
+        var checklistBlocker = ValidateChecklistControlApprovals(
+            request.ChecklistControlApprovals,
+            includeApprovalGate: false);
+        if (checklistBlocker is not null)
         {
-            return new OperationsWorkflowBlockerDto(
-                "CLOSE_CHECKLIST_CONTROL_APPROVALS_REQUIRED",
-                "Close orchestration requires control approvals for close checklist items.",
-                OperationsGateKeyDto.Approval,
-                "Critical",
-                []);
+            return checklistBlocker;
         }
 
         return null;
@@ -920,14 +918,12 @@ public sealed class OperationsContinuityWorkflow
             return CreateReportPackMismatchBlocker(request.ReportPackId);
         }
 
-        if (request.ChecklistControlApprovals is null || request.ChecklistControlApprovals.Count == 0)
+        var checklistBlocker = ValidateChecklistControlApprovals(
+            request.ChecklistControlApprovals,
+            includeApprovalGate: true);
+        if (checklistBlocker is not null)
         {
-            return new OperationsWorkflowBlockerDto(
-                "CLOSE_CHECKLIST_CONTROL_APPROVALS_REQUIRED",
-                "Close orchestration requires control approvals for close checklist items.",
-                OperationsGateKeyDto.Approval,
-                "Critical",
-                []);
+            return checklistBlocker;
         }
 
         return null;
@@ -1016,6 +1012,14 @@ public sealed class OperationsContinuityWorkflow
             return CreateReportPackMismatchBlocker(request.ReportPackId);
         }
 
+        var checklistBlocker = ValidateChecklistControlApprovals(
+            request.ChecklistControlApprovals,
+            includeApprovalGate: true);
+        if (checklistBlocker is not null)
+        {
+            return checklistBlocker;
+        }
+
         return null;
     }
 
@@ -1050,6 +1054,56 @@ public sealed class OperationsContinuityWorkflow
             OperationsGateKeyDto.Approval,
             "Error",
             ReportPackReadiness.EvidenceLinks);
+
+    private OperationsWorkflowBlockerDto? ValidateChecklistControlApprovals(
+        IReadOnlyList<OperationsChecklistControlApprovalDto>? approvals,
+        bool includeApprovalGate)
+    {
+        if (approvals is null || approvals.Count == 0)
+        {
+            return CreateChecklistControlApprovalBlocker(
+                "CLOSE_CHECKLIST_CONTROL_APPROVALS_REQUIRED",
+                "Close orchestration requires control approvals for close checklist items.");
+        }
+
+        var requiredGates = Gates
+            .Where(gate => gate.Status == OperationsGateStatusDto.Passed || (includeApprovalGate && gate.GateKey == OperationsGateKeyDto.Approval))
+            .Select(gate => gate.GateKey)
+            .Distinct()
+            .ToArray();
+        foreach (var gate in requiredGates)
+        {
+            var requiredTaskId = CloseChecklistTaskId(gate);
+            var requiredApprovalCount = gate == OperationsGateKeyDto.Approval ? 2 : 1;
+            var validApprovalCount = approvals
+                .Where(approval => string.Equals(approval.TaskId?.Trim(), requiredTaskId, StringComparison.OrdinalIgnoreCase))
+                .Where(static approval => !string.IsNullOrWhiteSpace(approval.ApprovedBy))
+                .Where(static approval => approval.ApprovedAtUtc != default)
+                .Select(static approval => approval.ApprovedBy.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
+
+            if (validApprovalCount < requiredApprovalCount)
+            {
+                return CreateChecklistControlApprovalBlocker(
+                    "CLOSE_CHECKLIST_CONTROL_APPROVALS_INCOMPLETE",
+                    $"Close checklist task '{requiredTaskId}' requires {requiredApprovalCount} control approval(s) before this transition.");
+            }
+        }
+
+        return null;
+    }
+
+    private static string CloseChecklistTaskId(OperationsGateKeyDto gate) =>
+        $"close-gate-{gate}".ToLowerInvariant();
+
+    private static OperationsWorkflowBlockerDto CreateChecklistControlApprovalBlocker(string code, string message) =>
+        new(
+            code,
+            message,
+            OperationsGateKeyDto.Approval,
+            "Critical",
+            []);
 
     public OperationsWorkflowBlockerDto? GetReopenTransitionBlocker(OperationsReopenWorkflowRequestDto request)
     {

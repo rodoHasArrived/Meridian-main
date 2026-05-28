@@ -843,7 +843,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
             var result = await service.SubmitForApprovalAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -875,7 +875,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
             var result = await service.ApproveWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -907,7 +907,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser };
+            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
             var result = await service.RejectWorkflowAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
@@ -1073,6 +1073,11 @@ public static partial class WorkstationEndpoints
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationRuns), async (ReconciliationRunRequest request, HttpContext context) =>
         {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var service = context.RequestServices.GetService<IReconciliationRunService>();
             if (service is null)
             {
@@ -1196,7 +1201,7 @@ public static partial class WorkstationEndpoints
         {
             if (!CanViewReconciliationBreakQueue(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
@@ -1271,7 +1276,7 @@ public static partial class WorkstationEndpoints
 
             if (!CanMutateReconciliationBreakQueue(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
@@ -1317,7 +1322,7 @@ public static partial class WorkstationEndpoints
 
             if (!CanMutateReconciliationBreakQueue(context))
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
@@ -6092,31 +6097,15 @@ public static partial class WorkstationEndpoints
     }
 
     private static bool CanViewReconciliationBreakQueue(HttpContext context)
-    {
-        const UserPermission requiredPermission = UserPermission.ViewTrades;
-
-        if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is UserPermission permissionsFromContext)
-        {
-            return (permissionsFromContext & requiredPermission) == requiredPermission;
-        }
-
-        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is UserRole roleFromContext)
-        {
-            return RolePermissions.HasPermission(roleFromContext, requiredPermission);
-        }
-
-        return false;
-    }
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewTrades,
+            UserPermission.ViewSecurityMaster,
+            UserPermission.ModifySecurityMaster,
+            UserPermission.AdminMaintenance);
 
     private static bool CanMutateReconciliationBreakQueue(HttpContext context)
-    {
-        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is not UserRole role)
-        {
-            return false;
-        }
-
-        return role is UserRole.Admin or UserRole.Developer or UserRole.Accounting;
-    }
+        => HasReconciliationMutationPermission(context);
 
     private static void MapStrategyDesignerEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {

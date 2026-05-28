@@ -110,7 +110,10 @@ public sealed partial class WorkstationEndpointsTests
             .Should()
             .Contain(code =>
                 string.Equals(code, "OPERATIONS_GATES_NOT_PASSED", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(code, "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED", StringComparison.OrdinalIgnoreCase));
+                string.Equals(code, "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(code, "APPROVAL_MISSING", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(code, "POSTING_INCOMPLETE", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(code, "EVIDENCE_INCOMPLETE", StringComparison.OrdinalIgnoreCase));
 
         using var timelineResponse = await client.GetAsync(UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityTimeline, "workflowId", workflowId.ToString()));
         timelineResponse.StatusCode.Should().Be(HttpStatusCode.OK);

@@ -183,6 +183,8 @@ public sealed class FundLedgerViewModelTests
                     profile.ExceptionRoute == "fund-ops-review" &&
                     profile.PendingSignoffCount == 1);
                 viewModel.ReconciliationDetailTitle.Should().Be("Reconciliation Strategy");
+                viewModel.ReconciliationSection.DetailTitle.Should().Be(viewModel.ReconciliationDetailTitle);
+                viewModel.ReconciliationSection.CalibrationStatusText.Should().Be(viewModel.ReconciliationCalibrationStatusText);
                 viewModel.ReconciliationDetailLifecycleText.Should().Contain("Start Review");
                 viewModel.ReconciliationDetailLifecycleText.Should().Contain("records ownership");
                 viewModel.ReconciliationDetailSignoffText.Should().Contain("Pending Signoff");
@@ -191,6 +193,7 @@ public sealed class FundLedgerViewModelTests
                 viewModel.CanStartReviewSelectedBreak.Should().BeTrue();
                 viewModel.CanResolveSelectedBreak.Should().BeFalse();
                 viewModel.ReconciliationNoteText = "Investigating ledger drift";
+                viewModel.ReconciliationSection.NoteText.Should().Be("Investigating ledger drift");
                 viewModel.CanResolveSelectedBreak.Should().BeTrue();
                 viewModel.OverviewStatusText.Should().Contain("unresolved security mapping");
             }

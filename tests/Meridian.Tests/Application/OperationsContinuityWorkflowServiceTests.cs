@@ -1330,6 +1330,66 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ApproveWorkflowAsync_ShouldRejectIncompleteChecklistControlApprovals()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var result = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approve with missing approval-gate control evidence",
+            "report-pack-1",
+            ChecklistControlApprovals:
+            [
+                new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
+                new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
+                new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
+                new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
+                new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero))
+            ]));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "CLOSE_CHECKLIST_CONTROL_APPROVALS_INCOMPLETE" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
+    public async Task CloseWorkflowAsync_ShouldRejectMissingChecklistControlApprovalsWithoutAppendingAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
+        var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
+            workflow.Version,
+            "ops-user",
+            "reviewer",
+            "Approved close",
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+        var timelineBefore = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
+            approved.Workflow!.Version,
+            "ops-user",
+            "Close without close-checklist control approvals",
+            "report-pack-1"));
+
+        close.Success.Should().BeFalse();
+        close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        close.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "CLOSE_CHECKLIST_CONTROL_APPROVALS_REQUIRED" &&
+            blocker.Gate == OperationsGateKeyDto.Approval);
+        var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task RejectWorkflowAsync_ShouldRouteLedgerMismatchBackToLedgerDraft()
     {
         var service = CreateService(out _, out var auditStore);
@@ -1391,7 +1451,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             approved.Workflow!.Version,
             "ops-user",
             "Close workflow",
-            "report-pack-1"));
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         var denied = await service.ReopenWorkflowAsync(workflow.WorkflowId, new OperationsReopenWorkflowRequestDto(
             closed.Workflow!.Version,
@@ -1480,7 +1541,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             approved.Workflow!.Version,
             "ops-user",
             "Close using a mismatched report pack",
-            "report-pack-different"));
+            "report-pack-different",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         close.Success.Should().BeFalse();
         close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
@@ -1519,7 +1581,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             approved.Workflow!.Version,
             "ops-user",
             "Close workflow",
-            "report-pack-1"));
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
 
         close.Success.Should().BeFalse();
         close.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
@@ -1718,7 +1781,12 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
     private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
     [
-        new("approval-close-checklist", "controller", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero))
+        new("close-gate-brokeringest", "operations-lead", new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero)),
+        new("close-gate-securitymaster", "security-master-lead", new DateTimeOffset(2026, 5, 31, 12, 1, 0, TimeSpan.Zero)),
+        new("close-gate-ledgerposting", "ledger-lead", new DateTimeOffset(2026, 5, 31, 12, 2, 0, TimeSpan.Zero)),
+        new("close-gate-reconciliation", "reconciliation-lead", new DateTimeOffset(2026, 5, 31, 12, 3, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
+        new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
     ];
 
     private static async Task<OperationsContinuityWorkflowDto> CreateLedgerValidatedWorkflowAsync(
@@ -1785,7 +1853,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             approved.Workflow!.Version,
             "ops-user",
             "Close workflow",
-            "report-pack-1"));
+            "report-pack-1",
+            ChecklistControlApprovals: RequiredChecklistControlApprovals()));
         return closed.Workflow!;
     }
 

@@ -27,7 +27,8 @@ and UI presentation concerns in their owning layers.
 - `Commands/` - CLI command handlers and operator workflows.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
-  and approval close lanes.
+  and approval close lanes. Approval and close commands enforce shared close-checklist control
+  approvals before the workflow can become ready for close or close against a report pack.
 - `Services/` - application use cases and orchestration services.
 - `Composition/` - application feature registration and service wiring.
 

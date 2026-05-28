@@ -124,6 +124,7 @@ const detail: OperationsContinuityWorkflow = {
     evidenceLinks: []
   },
   closeChecklist: [],
+  closeReadiness: null,
   evidenceLinks: [],
   blockers: gates[1]!.blockers
 };
