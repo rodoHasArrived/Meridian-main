@@ -423,7 +423,13 @@ public sealed record ReconciliationBreakQueueItem(
     IReadOnlyList<string>? EvidenceLinks = null,
     int CommentCount = 0,
     int EvidenceCount = 0,
-    DateTimeOffset? LastActivityAt = null);
+    DateTimeOffset? LastActivityAt = null,
+    string? SourceType = null,
+    string? SourceSystem = null,
+    string? SourceReference = null,
+    string? SourceImportId = null,
+    string? SourceBreakId = null,
+    string? SourceFingerprint = null);
 
 
 public sealed record ReconciliationCaseComment(
