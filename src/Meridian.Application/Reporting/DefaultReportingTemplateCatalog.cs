@@ -33,4 +33,7 @@ public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
         => templates.TryGetValue(templateId, out var value)
             ? value
             : throw new KeyNotFoundException($"Unknown reporting template '{templateId}'.");
+
+    public IReadOnlyList<ReportingTemplateMetadata> ListTemplates()
+        => templates.Values.OrderBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase).ToArray();
 }

@@ -5,6 +5,7 @@ using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
+using Meridian.Application.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
@@ -5598,12 +5599,52 @@ public static partial class WorkstationEndpoints
             .Select(static profile => profile.Id)
             .ToArray();
 
+        var templates = new DefaultReportingTemplateCatalog()
+            .ListTemplates()
+            .Select(static template => new WorkstationReportingTemplatePayload(
+                template.TemplateId,
+                template.Family.ToString(),
+                template.Name,
+                template.Version,
+                template.Sections.ToArray()))
+            .ToArray();
+
+        var recentRuns = new[]
+        {
+            new WorkstationReportingRunPayload(
+                RunId: "investor-monthly-statement-20260501",
+                TemplateId: "investor-monthly-statement",
+                Family: ReportingTemplateFamily.InvestorStatement.ToString(),
+                Status: ReportingRunStatus.InReview.ToString(),
+                Trigger: ReportingRunTrigger.Scheduled.ToString(),
+                AttemptCount: 1,
+                SectionCount: 4,
+                LineageLinkedSections: 4,
+                Artifacts: ["investor-monthly-statement-20260501.manifest.json", "investor-monthly-statement-20260501.pdf"],
+                AuditActions: ["RunGenerated", "ApprovalTransition"],
+                FailureReason: null),
+            new WorkstationReportingRunPayload(
+                RunId: "shadow-nav-daily-pack-20260503",
+                TemplateId: "shadow-nav-daily-pack",
+                Family: ReportingTemplateFamily.ShadowNavPack.ToString(),
+                Status: ReportingRunStatus.Draft.ToString(),
+                Trigger: ReportingRunTrigger.Scheduled.ToString(),
+                AttemptCount: 2,
+                SectionCount: 4,
+                LineageLinkedSections: 4,
+                Artifacts: ["shadow-nav-daily-pack-20260503.manifest.json", "shadow-nav-daily-pack-20260503.pdf"],
+                AuditActions: ["RunRetry", "RunGenerated"],
+                FailureReason: null)
+        };
+
         return new WorkstationGovernanceReportingPayload(
             ProfileCount: profiles.Length,
             RecommendedProfiles: recommended,
             Profiles: profiles,
             ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
-            Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.");
+            Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.",
+            Templates: templates,
+            RecentRuns: recentRuns);
     }
 
     private static object BuildGovernanceControlCenterPayload(

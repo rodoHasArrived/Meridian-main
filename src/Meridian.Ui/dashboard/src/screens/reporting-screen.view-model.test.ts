@@ -31,7 +31,31 @@ const reporting: GovernanceReportingSummary = {
     }
   ],
   reportPackTargets: ["board", "audit"],
-  summary: "2 export profiles available."
+  summary: "2 export profiles available.",
+  templates: [
+    {
+      templateId: "investor-monthly-statement",
+      family: "InvestorStatement",
+      name: "Investor Monthly Statement",
+      version: "1.0.0",
+      sections: ["cover", "performance"]
+    }
+  ],
+  recentRuns: [
+    {
+      runId: "investor-monthly-statement-20260501",
+      templateId: "investor-monthly-statement",
+      family: "InvestorStatement",
+      status: "InReview",
+      trigger: "Scheduled",
+      attemptCount: 1,
+      sectionCount: 2,
+      lineageLinkedSections: 2,
+      artifacts: ["manifest.json"],
+      auditActions: ["RunGenerated", "ApprovalTransition"],
+      failureReason: null
+    }
+  ]
 };
 
 function createDeferred<T>() {
@@ -96,6 +120,27 @@ describe("useReportingScreenViewModel", () => {
       text: "No report-pack targets loaded. Configure governed targets in the governance policy before approving this packet.",
       ariaLabel: "No report-pack targets loaded"
     });
+  });
+
+  it("surfaces template metadata and recent run status projections", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting));
+
+    expect(result.current.templateRows).toEqual([
+      {
+        id: "investor-monthly-statement",
+        name: "Investor Monthly Statement",
+        family: "InvestorStatement",
+        version: "1.0.0",
+        sectionSummary: "2 sections"
+      }
+    ]);
+    expect(result.current.runStatusRows[0]).toMatchObject({
+      id: "investor-monthly-statement-20260501",
+      status: "InReview",
+      lineageSummary: "2/2 sections linked",
+      auditSummary: "RunGenerated → ApprovalTransition"
+    });
+    expect(result.current.hasRunStatusRows).toBe(true);
   });
 
   it("builds a route-specific report-pack approval task panel", () => {

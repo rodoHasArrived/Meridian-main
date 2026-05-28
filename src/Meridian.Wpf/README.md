@@ -34,6 +34,8 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
+The Reporting workspace remains a first-class desktop operator lane for governed report packs. It should consume the same shared reporting projections as the browser surface for template families, approval state, lineage completeness, retry/failure posture, and release readiness.
+
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext

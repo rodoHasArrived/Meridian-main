@@ -1377,12 +1377,36 @@ export interface GovernanceReportingProfile {
   dataDictionary: boolean;
 }
 
+export interface ReportingTemplateMetadata {
+  templateId: string;
+  family: string;
+  name: string;
+  version: string;
+  sections: string[];
+}
+
+export interface ReportingRunStatusProjection {
+  runId: string;
+  templateId: string;
+  family: string;
+  status: string;
+  trigger: string;
+  attemptCount: number;
+  sectionCount: number;
+  lineageLinkedSections: number;
+  artifacts: string[];
+  auditActions: string[];
+  failureReason: string | null;
+}
+
 export interface GovernanceReportingSummary {
   profileCount: number;
   recommendedProfiles: string[];
   profiles: GovernanceReportingProfile[];
   reportPackTargets: string[];
   summary: string;
+  templates?: ReportingTemplateMetadata[];
+  recentRuns?: ReportingRunStatusProjection[];
 }
 
 export interface GovernanceWorkspaceResponse {
