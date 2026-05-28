@@ -645,6 +645,48 @@ public sealed class FundLedgerViewModelTests
         reconciliationSource.Should().NotContain("_selectedBreakQueueItem");
     }
 
+
+    [Fact]
+    public void FundLedgerPage_StatementReconciliationPanel_BindsListDetailAndSharedAffordances()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundLedgerPage.xaml"));
+
+        xaml.Should().Contain("StatementReconciliationWorkbench");
+        xaml.Should().Contain("StatementRuns");
+        xaml.Should().Contain("StatementValidationIssues");
+        xaml.Should().Contain("StatementUnresolvedBreaks");
+        xaml.Should().Contain("StatementCaseActions");
+        xaml.Should().Contain("SelectedStatementRun");
+        xaml.Should().Contain("SelectedStatementBreak");
+        xaml.Should().Contain("StatementDisabledReasonText");
+        xaml.Should().Contain("ReconciliationSection.StatementSignifierState");
+        xaml.Should().Contain("RefreshStatementReconciliationCommand");
+    }
+
+    [Fact]
+    public void FundLedgerStatementReconciliationSection_ShouldUseSharedEndpointReadModelsAndVmOwnedState()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.StatementReconciliation.cs"));
+        var serviceSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Services\StatementReconciliationWorkbenchService.cs"));
+
+        sectionSource.Should().Contain("public ObservableCollection<StatementRunWorkbenchRow> StatementRuns");
+        sectionSource.Should().Contain("public ObservableCollection<StatementValidationIssueRow> StatementValidationIssues");
+        sectionSource.Should().Contain("public ObservableCollection<StatementUnresolvedBreakRow> StatementUnresolvedBreaks");
+        sectionSource.Should().Contain("public ObservableCollection<StatementCaseActionRow> StatementCaseActions");
+        sectionSource.Should().Contain("public StatementRunWorkbenchRow? SelectedStatementRun");
+        sectionSource.Should().Contain("public StatementUnresolvedBreakRow? SelectedStatementBreak");
+        sectionSource.Should().Contain("public string StatementDisabledReasonText");
+        viewModelSource.Should().Contain("RefreshStatementReconciliationCommand");
+        viewModelSource.Should().Contain("BuildCaseActionRows");
+        viewModelSource.Should().Contain("BuildStatementBreakSignifier");
+        serviceSource.Should().Contain("GetStatementRunsAsync");
+        serviceSource.Should().Contain("GetStatementExceptionsAsync");
+        serviceSource.Should().Contain("GetOpenStatementBreaksAsync");
+        serviceSource.Should().Contain("GetOpenReconciliationCasesAsync");
+        serviceSource.Should().Contain("GetReconciliationQueueStatusAsync");
+    }
+
     [Fact]
     public void LoadAsync_ReportPackContext_LoadsPreviewAndSelectsReportPackTab()
     {

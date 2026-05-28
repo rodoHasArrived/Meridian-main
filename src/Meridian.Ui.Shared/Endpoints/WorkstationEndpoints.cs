@@ -1226,6 +1226,51 @@ public static partial class WorkstationEndpoints
         .WithName("ListStatementExceptions")
         .Produces<IReadOnlyList<StatementRunExceptionDto>>(200)
         .Produces(501);
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementBreaks), async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationApiService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var breaks = await service.ListOpenStatementBreaksAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(breaks, jsonOptions);
+        })
+        .WithName("ListOpenStatementBreaks")
+        .Produces<IReadOnlyList<StatementBreakDto>>(200)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationOpenCases), async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationApiService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var cases = await service.ListOpenCasesAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(cases, jsonOptions);
+        })
+        .WithName("ListOpenReconciliationCases")
+        .Produces<IReadOnlyList<ReconciliationCaseSummaryDto>>(200)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationQueueStatus), async (HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IReconciliationApiService>();
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var queueStatus = await service.ListQueueStatusAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(queueStatus, jsonOptions);
+        })
+        .WithName("ListReconciliationQueueStatus")
+        .Produces<IReadOnlyList<ReconciliationQueueAccountStatusDto>>(200)
+        .Produces(501);
+
 
         group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
         {

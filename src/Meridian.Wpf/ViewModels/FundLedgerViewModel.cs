@@ -18,6 +18,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private readonly IFundReconciliationWorkbenchService _fundReconciliationWorkbenchService;
     private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
+    private readonly IStatementReconciliationWorkbenchService _statementReconciliationWorkbenchService;
     private readonly FundLedgerCollectionsSectionViewModel _collectionsSection = new();
 
     private string _title = "Fund Operations";
@@ -105,7 +106,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CashFinancingReadService cashFinancingReadService,
         IFundReconciliationWorkbenchService fundReconciliationWorkbenchService,
         FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
-        StrategyRunWorkspaceService runWorkspaceService)
+        StrategyRunWorkspaceService runWorkspaceService,
+        IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null)
     {
         _fundLedgerReadService = fundLedgerReadService ?? throw new ArgumentNullException(nameof(fundLedgerReadService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -115,6 +117,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _fundReconciliationWorkbenchService = fundReconciliationWorkbenchService ?? throw new ArgumentNullException(nameof(fundReconciliationWorkbenchService));
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService ?? throw new ArgumentNullException(nameof(fundOperationsWorkspaceReadService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
+        _statementReconciliationWorkbenchService = statementReconciliationWorkbenchService ?? new NullStatementReconciliationWorkbenchService();
 
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         OpenGovernanceCommand = new RelayCommand(() => _navigationService.NavigateTo("GovernanceShell"));
@@ -132,6 +135,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         OpenSelectedAccountPortfolioCommand = new RelayCommand(OpenSelectedAccountPortfolio, () => SelectedAccount is not null);
         OpenSelectedPortfolioSecurityCommand = new RelayCommand(OpenSelectedPortfolioSecurity, () => SelectedPortfolioPosition is not null);
         OpenSelectedCashFlowSecurityCommand = new RelayCommand(OpenSelectedCashFlowSecurity, () => !string.IsNullOrWhiteSpace(SelectedCashFlowEntry?.Symbol));
+        RefreshStatementReconciliationCommand = new AsyncRelayCommand(RefreshStatementReconciliationAsync);
 
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         InitializeReconciliationWorkbench();
@@ -726,6 +730,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ApplyCashSummary(cashSummary);
         ApplyPortfolio(portfolioPositions);
         await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
+        await LoadStatementReconciliationAsync(ct);
         BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
         BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
         await RefreshReportPackPreviewAsync(ct);
@@ -829,6 +834,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ReportPackAssetSectionsText = "0";
         ReportPackGeneratedAtText = "-";
         ResetReconciliationWorkbenchState();
+        ResetStatementReconciliationState();
         UpdateWorkbenchIdentity();
         UpdateRouteBannerPresentation();
         UpdateReconciliationWorkbenchPresentation();
