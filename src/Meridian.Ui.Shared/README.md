@@ -84,6 +84,14 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
 
+## Security and credentials
+
+`LoginSessionService` stores the authenticated `UserProfile` for each in-memory session so
+account-specific permission overrides and role profile names from `MDC_USERS` remain authoritative
+for `/api/auth/me` and endpoint authorization checks. Do not reconstruct session users from only the
+built-in role label, because that would reapply the full built-in role permission mask and bypass
+configured restrictions.
+
 ## Validation
 
 ```bash
