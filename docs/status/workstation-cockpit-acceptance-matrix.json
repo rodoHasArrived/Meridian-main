@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "matrixId": "workstation-cockpit-governance-acceptance",
+  "lastReviewed": "2026-05-28",
+  "scope": "Machine-readable acceptance matrix for cockpit and governance readiness criteria that must stay mapped to route/API ownership, UI state, automated coverage, and evidence artifacts.",
+  "criteria": [
+    {
+      "id": "cockpit-trading-readiness-posture",
+      "criterion": "Trading readiness summarizes DK1 trust, paper-session continuity, replay status, execution controls, brokerage sync, report-pack readiness, and evidence completeness before an operator accepts paper operation.",
+      "routeOwnership": [
+        { "kind": "api", "route": "/api/workstation/trading/readiness", "owner": "WorkstationEndpoints.GetWorkstationTradingReadiness" },
+        { "kind": "ui", "route": "/trading/readiness", "owner": "OperatorReadinessConsole" }
+      ],
+      "uiBehaviorState": "The readiness console must show Ready, ReviewRequired, Blocked, and loading/error postures with gate-level disabled reasons, work-item details, and route-aware recovery actions.",
+      "automatedTests": [
+        { "project": "tests/Meridian.Tests", "filterableName": "MapWorkstationEndpoints_TradingReadiness_ShouldProjectSharedReadinessAndDegradeWhenEvidenceIsMissing" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > builds the API-first readiness console from shared workstation payloads" },
+        { "project": "tests/Meridian.FSharp.Tests", "filterableName": "Trading readiness overall posture follows canonical gate precedence" }
+      ],
+      "artifacts": [
+        { "kind": "screenshot", "path": "docs/screenshots/workstation/trading-readiness.png", "description": "Readiness console showing current gate states and recovery actions." },
+        { "kind": "packet", "path": "artifacts/provider-validation/_automation/2026-04-27/dk1-pilot-parity-packet.json", "description": "Signed DK1 trust packet that feeds readiness posture." }
+      ]
+    },
+    {
+      "id": "cockpit-operator-inbox-routing",
+      "criterion": "Operator inbox aggregates actionable readiness, reconciliation, brokerage, promotion, Security Master, and report-pack blockers without losing target routes or account scope.",
+      "routeOwnership": [
+        { "kind": "api", "route": "/api/workstation/operator/inbox", "owner": "WorkstationEndpoints.GetWorkstationOperatorInbox" },
+        { "kind": "ui", "route": "/trading/readiness", "owner": "OperatorReadinessConsole.queue" }
+      ],
+      "uiBehaviorState": "The inbox must prioritize critical rows, preserve selected detail, expose retry when the inbox fails, clear stale account-scoped rows while loading a new account, and keep fallback rows visible for triage.",
+      "automatedTests": [
+        { "project": "tests/Meridian.Tests", "filterableName": "MapWorkstationEndpoints_OperatorInbox_ShouldProjectTradingReadinessWorkItemsWithNavigation" },
+        { "project": "tests/Meridian.Tests", "filterableName": "MapWorkstationEndpoints_FundAccountScope_OperatorInboxScopedQueries_ShouldReturnPerAccountBrokerageSyncItemsWithoutCrossAccountLeakage" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > surfaces operator inbox failures while keeping payload fallbacks visible" }
+      ],
+      "artifacts": [
+        { "kind": "screenshot", "path": "docs/screenshots/workstation/operator-inbox.png", "description": "Inbox queue with critical ordering and selected work-item detail." },
+        { "kind": "json", "path": "artifacts/workstation/operator-inbox/latest-response.json", "description": "Captured inbox response used during acceptance review." }
+      ]
+    },
+    {
+      "id": "governance-report-pack-evidence",
+      "criterion": "Governed report-pack evidence must be discoverable from Reporting and linked from cockpit work items before acceptance can claim report output readiness.",
+      "routeOwnership": [
+        { "kind": "ui", "route": "/reporting/evidence", "owner": "EvidenceWorkbenchScreen" },
+        { "kind": "ui", "route": "/reporting/report-packs", "owner": "ReportingScreen.reportPacks" }
+      ],
+      "uiBehaviorState": "Evidence workbench links must preserve subjectKind and subjectId query parameters, and report-pack states must distinguish missing payload, in-review, approved, released, and export-busy states.",
+      "automatedTests": [
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "workspace.test.ts > builds encoded Evidence Workbench subject routes" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > keeps the headline in review when governed report-pack readiness is missing" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "governance-screen.view-model.test.ts > derives reporting profile selector rows and detail state" }
+      ],
+      "artifacts": [
+        { "kind": "manifest", "path": "artifacts/reporting/latest-report-pack-manifest.json", "description": "Report-pack manifest with template, run, approval, and release metadata." },
+        { "kind": "screenshot", "path": "docs/screenshots/workstation/reporting-evidence.png", "description": "Evidence workbench showing subject-scoped report evidence." }
+      ]
+    },
+    {
+      "id": "governance-reconciliation-break-triage",
+      "criterion": "Reconciliation breaks must be visible as governance work items with deterministic detail, resolve/dismiss action state, narratives, and evidence packet links.",
+      "routeOwnership": [
+        { "kind": "api", "route": "/api/workstation/reconciliation/cases", "owner": "WorkstationEndpoints.Reconciliation" },
+        { "kind": "ui", "route": "/accounting/reconciliation", "owner": "GovernanceScreen.reconciliation" }
+      ],
+      "uiBehaviorState": "The reconciliation lane must render open-break counts, selected detail, resolve/dismiss validation, failure copy, narrative context, and evidence packet actions for the selected run.",
+      "automatedTests": [
+        { "project": "tests/Meridian.Tests", "filterableName": "MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOpenReconciliationBreaks" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "governance-screen.view-model.test.ts > derives reconciliation break action state and live announcements" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "governance-screen.view-model.test.ts > derives reconciliation detail actions from the selected run" }
+      ],
+      "artifacts": [
+        { "kind": "replay-output", "path": "artifacts/reconciliation/latest-break-replay.json", "description": "Replay output proving break queue state and transitions." },
+        { "kind": "screenshot", "path": "docs/screenshots/workstation/accounting-reconciliation.png", "description": "Reconciliation detail with evidence packet actions." }
+      ]
+    },
+    {
+      "id": "cockpit-fund-account-context-continuity",
+      "criterion": "Fund account context must thread through readiness and inbox calls so account-scoped brokerage and reconciliation blockers do not leak across accounts.",
+      "routeOwnership": [
+        { "kind": "api", "route": "/api/workstation/trading/readiness?fundAccountId={fundAccountId}", "owner": "WorkstationEndpoints.GetWorkstationTradingReadiness" },
+        { "kind": "api", "route": "/api/workstation/operator/inbox?fundAccountId={fundAccountId}", "owner": "WorkstationEndpoints.GetWorkstationOperatorInbox" }
+      ],
+      "uiBehaviorState": "Account changes must trigger scoped reloads, abort superseded inbox loads, clear stale rows, and keep the visible account context attached to action metadata.",
+      "automatedTests": [
+        { "project": "tests/Meridian.Tests", "filterableName": "MapWorkstationEndpoints_FundAccountScope_ShouldReturnOnlyRequestedAccountWorkItemsAndPreserveRoutingMetadata" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > clears stale account-scoped inbox rows while loading a new fund account inbox" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > aborts superseded operator inbox loads when the fund account changes" }
+      ],
+      "artifacts": [
+        { "kind": "json", "path": "artifacts/workstation/account-context/readiness-scoped-response.json", "description": "Scoped readiness response for the accepted fund account." },
+        { "kind": "json", "path": "artifacts/workstation/account-context/inbox-scoped-response.json", "description": "Scoped inbox response proving no cross-account leakage." }
+      ]
+    },
+    {
+      "id": "cockpit-replay-and-promotion-continuity",
+      "criterion": "Replay mismatch, stale replay, and promotion-review blockers must keep mirrored run identity, route metadata, and packet continuity across readiness, inbox, and evidence views.",
+      "routeOwnership": [
+        { "kind": "api", "route": "/api/workstation/trading/readiness", "owner": "WorkstationEndpoints.GetWorkstationTradingReadiness" },
+        { "kind": "ui", "route": "/trading/readiness", "owner": "OperatorReadinessConsole.replayAndPromotion" },
+        { "kind": "ui", "route": "/reporting/evidence?subjectKind=strategy-run&subjectId={runId}", "owner": "EvidenceWorkbenchScreen" }
+      ],
+      "uiBehaviorState": "Replay and promotion rows must expose mismatch reasons, stale replay recovery, mirrored run IDs, promotion packet action labels, and selected evidence-panel details.",
+      "automatedTests": [
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > maps replay mismatch and stale replay gates into the normalized checkpoints" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > keeps mirrored run-handoff identity and route metadata in operator work items" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > preserves route-aware packet continuity for blocker rows across state slices" }
+      ],
+      "artifacts": [
+        { "kind": "replay-output", "path": "artifacts/workstation/replay/latest-readiness-replay.json", "description": "Replay acceptance output with mismatch and freshness metadata." },
+        { "kind": "export-manifest", "path": "artifacts/workstation/promotion/latest-review-packet-manifest.json", "description": "Promotion review packet manifest tied to mirrored run identity." }
+      ]
+    }
+  ]
+}
