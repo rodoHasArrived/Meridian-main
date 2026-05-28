@@ -22,6 +22,7 @@ concurrency:
 
 env:
   CI: true
+  WORKFLOW_OUTPUT_DIR: ${{ inputs.output_dir }}
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
@@ -63,15 +64,18 @@ jobs:
 
       - name: Capture desktop screenshots
         shell: pwsh
-        run: >
-          scripts/dev/capture-desktop-screenshots.ps1
-          -OutputDir "${{ inputs.output_dir }}"
+        run: |
+          $outputDir = $env:WORKFLOW_OUTPUT_DIR
+          if ([string]::IsNullOrWhiteSpace($outputDir) -or $outputDir -match '[";`|&<>]' -or [System.IO.Path]::IsPathRooted($outputDir) -or $outputDir.Contains("..")) {
+            throw "Invalid output_dir input. Use a repository-relative path without shell metacharacters."
+          }
+          scripts/dev/capture-desktop-screenshots.ps1 -OutputDir $outputDir
 
       - name: Log desktop screenshot capture status
         if: ${{ always() }}
         shell: pwsh
         run: |
-          $outputDir = "${{ inputs.output_dir }}"
+          $outputDir = $env:WORKFLOW_OUTPUT_DIR
           if (-not (Test-Path -LiteralPath $outputDir)) {
             Write-Warning "Desktop screenshot output directory '$outputDir' was not created."
             return
@@ -90,10 +94,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if (Test-Path -LiteralPath "${{ inputs.output_dir }}") {
-            git add -- "${{ inputs.output_dir }}"
+          if (Test-Path -LiteralPath $env:WORKFLOW_OUTPUT_DIR) {
+            git add -- $env:WORKFLOW_OUTPUT_DIR
           } else {
-            Write-Warning "Output path '${{ inputs.output_dir }}' does not exist; nothing to stage."
+            Write-Warning "Output path '$($env:WORKFLOW_OUTPUT_DIR)' does not exist; nothing to stage."
           }
           $changed = git diff --cached --name-only
           if ($changed) {
