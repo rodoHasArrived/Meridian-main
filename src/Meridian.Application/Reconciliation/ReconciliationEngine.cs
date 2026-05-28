@@ -74,24 +74,33 @@ public sealed class ReconciliationMatchingEngine
         IReadOnlyList<DataSourceSnapshot> snapshots,
         ReconciliationRuleContext rules)
     {
-        var allPositions = snapshots.SelectMany(s => s.Positions).ToArray();
-        var allCash = snapshots.SelectMany(s => s.CashEntries).ToArray();
+        var allPositions = snapshots
+            .SelectMany(s => s.Positions.Select(p => new { Snapshot = s, Position = p }))
+            .ToArray();
+        var allCash = snapshots
+            .SelectMany(s => s.CashEntries.Select(c => new { Snapshot = s, Cash = c }))
+            .ToArray();
         var groups = new List<MatchGroup>();
         var breaks = new List<BreakRecord>();
 
-        foreach (var positionSet in allPositions.GroupBy(p => p.InstrumentKey))
+        var expectedSourceCount = snapshots.Select(s => s.SourceId).Distinct(StringComparer.Ordinal).Count();
+
+        foreach (var positionSet in allPositions.GroupBy(p => p.Position.InstrumentKey))
         {
             var stage = "Exact";
             var outcome = ReconciliationOutcome.PotentialBreak;
             var evidence = new Dictionary<string, string>();
 
-            if (positionSet.Select(p => p.Quantity).Distinct().Count() == 1 &&
-                positionSet.Select(p => p.MarketValue).Distinct().Count() == 1)
+            var sourceCount = positionSet.Select(p => p.Snapshot.SourceId).Distinct(StringComparer.Ordinal).Count();
+
+            if (sourceCount == expectedSourceCount &&
+                positionSet.Select(p => p.Position.Quantity).Distinct().Count() == 1 &&
+                positionSet.Select(p => p.Position.MarketValue).Distinct().Count() == 1)
             {
                 outcome = ReconciliationOutcome.Matched;
-                evidence["exact.position"] = "Quantity and MV identical across sources.";
+                evidence["exact.position"] = "Quantity and MV identical across all expected sources.";
             }
-            else if (WithinTolerance(positionSet, rules.Tolerance, out var toleranceEvidence))
+            else if (sourceCount == expectedSourceCount && WithinTolerance(positionSet.Select(p => p.Position), rules.Tolerance, out var toleranceEvidence))
             {
                 stage = "Tolerance";
                 outcome = ReconciliationOutcome.MatchedWithinTolerance;
@@ -100,9 +109,14 @@ public sealed class ReconciliationMatchingEngine
             else
             {
                 stage = "Fuzzy";
-                var fuzzy = allCash.Where(c => c.CounterpartyReference?.Contains(positionSet.Key, StringComparison.OrdinalIgnoreCase) == true
-                                            || c.SettlementId?.Contains(positionSet.Key, StringComparison.OrdinalIgnoreCase) == true
-                                            || c.Comments?.Contains(positionSet.Key, StringComparison.OrdinalIgnoreCase) == true).Take(3).ToArray();
+                if (sourceCount < expectedSourceCount)
+                {
+                    evidence["source.coverage"] = $"Observed {sourceCount} of {expectedSourceCount} expected sources.";
+                }
+
+                var fuzzy = allCash.Where(c => c.Cash.CounterpartyReference?.Contains(positionSet.Key, StringComparison.OrdinalIgnoreCase) == true
+                                            || c.Cash.SettlementId?.Contains(positionSet.Key, StringComparison.OrdinalIgnoreCase) == true
+                                            || c.Cash.Comments?.Contains(positionSet.Key, StringComparison.OrdinalIgnoreCase) == true).Take(3).ToArray();
                 if (fuzzy.Length > 0)
                 {
                     outcome = ReconciliationOutcome.PotentialBreak;
@@ -121,7 +135,7 @@ public sealed class ReconciliationMatchingEngine
                 stage,
                 ResolveRuleIds(rules, stage),
                 evidence,
-                positionSet.ToArray(),
+                positionSet.Select(p => p.Position).ToArray(),
                 Array.Empty<NormalizedCashEntry>(),
                 run.RunTimestamp);
             groups.Add(matchGroup);
@@ -132,6 +146,49 @@ public sealed class ReconciliationMatchingEngine
             }
         }
 
+
+        foreach (var cashSet in allCash.GroupBy(c => (c.Cash.AccountId, c.Cash.AccountingPeriod)))
+        {
+            var stage = "CashTolerance";
+            var evidence = new Dictionary<string, string>();
+            var sourceCount = cashSet.Select(c => c.Snapshot.SourceId).Distinct(StringComparer.Ordinal).Count();
+            var hasExpectedCoverage = sourceCount == expectedSourceCount;
+            var amounts = cashSet.Select(c => c.Cash.BaseAmount).ToArray();
+            var amountSpread = amounts.Max() - amounts.Min();
+            var minBookedAt = cashSet.Min(c => c.Cash.BookingTimestamp);
+            var maxBookedAt = cashSet.Max(c => c.Cash.BookingTimestamp);
+            var timingSpread = maxBookedAt - minBookedAt;
+
+            var withinTolerance = hasExpectedCoverage
+                && Math.Abs(amountSpread) <= rules.Tolerance.CashAmount
+                && timingSpread <= rules.Tolerance.TimingWindow;
+
+            var outcome = withinTolerance
+                ? ReconciliationOutcome.MatchedWithinTolerance
+                : ReconciliationOutcome.PotentialBreak;
+
+            evidence["cash.tolerance"] = $"Amount spread {amountSpread}, timing spread {timingSpread}.";
+            if (!hasExpectedCoverage)
+            {
+                evidence["source.coverage"] = $"Observed {sourceCount} of {expectedSourceCount} expected sources.";
+            }
+
+            var group = new MatchGroup(
+                Guid.NewGuid(),
+                outcome,
+                stage,
+                ResolveRuleIds(rules, stage),
+                evidence,
+                Array.Empty<NormalizedPosition>(),
+                cashSet.Select(c => c.Cash).ToArray(),
+                run.RunTimestamp);
+            groups.Add(group);
+
+            if (outcome is ReconciliationOutcome.PotentialBreak or ReconciliationOutcome.TrueBreak)
+            {
+                breaks.Add(new BreakRecord(Guid.NewGuid(), group.MatchGroupId, outcome, "CASH_BREAK", $"{stage} stage break for account {cashSet.Key.AccountId}", group.RuleIds, evidence, run.RunTimestamp));
+            }
+        }
         return (groups, breaks);
     }
 
