@@ -102,46 +102,72 @@ public sealed class ReconciliationMatchingEngine
         var groupedByInstrument = allPositions.GroupBy(static p => p.InstrumentCanonicalId);
         foreach (var instrumentGroup in groupedByInstrument)
         {
-            var exactGroups = instrumentGroup.GroupBy(static p => (p.Quantity, p.Price, p.MarketValue)).ToArray();
+            var positions = instrumentGroup.ToArray();
+            var resolvedPositionIds = new HashSet<string>(StringComparer.Ordinal);
+            var exactGroups = positions.GroupBy(static p => (p.Quantity, p.Price, p.MarketValue)).ToArray();
             foreach (var exactGroup in exactGroups.Where(static g => g.Count() > 1))
             {
+                var exactPositions = exactGroup.ToArray();
                 var exactEvidence = new MatchEvidence(Guid.NewGuid().ToString("N"), "exact-position-v1", "Exact", "Exact position tuple match.", 0m, new Dictionary<string, string>());
                 evidence.Add(exactEvidence);
-                matches.Add(new MatchGroup(Guid.NewGuid().ToString("N"), BreakClassification.Matched, exactEvidence.RuleId, exactGroup.Select(p => p.PositionId).ToArray(), Array.Empty<string>(), [exactEvidence.EvidenceId])
+                matches.Add(new MatchGroup(Guid.NewGuid().ToString("N"), BreakClassification.Matched, exactEvidence.RuleId, exactPositions.Select(p => p.PositionId).ToArray(), Array.Empty<string>(), [exactEvidence.EvidenceId])
                 {
                     ToleranceProfileId = toleranceProfile.ProfileId,
                     ToleranceProfileVersion = toleranceProfile.Version
                 });
+
+                foreach (var position in exactPositions)
+                {
+                    resolvedPositionIds.Add(position.PositionId);
+                }
             }
 
-            if (exactGroups.Length > 1 || exactGroups[0].Count() == 1)
+            var toleranceCandidates = positions
+                .Where(position => !resolvedPositionIds.Contains(position.PositionId))
+                .ToArray();
+            foreach (var toleranceMatch in FindPositionToleranceMatches(toleranceCandidates, toleranceProfile))
             {
-                var positions = instrumentGroup.ToArray();
-                if (TryFindPositionToleranceMatch(positions, toleranceProfile, out var toleratedPositions, out var positionRule, out var positionDelta))
-                {
-                    var toleranceEvidence = new MatchEvidence(
-                        Guid.NewGuid().ToString("N"),
-                        positionRule.RuleId,
-                        "Tolerance",
-                        $"Position tolerance rule {positionRule.RuleId} allowed quantity/price/market value deltas.",
-                        positionDelta,
-                        new Dictionary<string, string>
-                        {
-                            ["toleranceProfileId"] = toleranceProfile.ProfileId,
-                            ["toleranceProfileVersion"] = toleranceProfile.Version.ToString(),
-                            ["toleranceRuleId"] = positionRule.RuleId
-                        });
-                    evidence.Add(toleranceEvidence);
-                    matches.Add(new MatchGroup(Guid.NewGuid().ToString("N"), BreakClassification.MatchedWithinTolerance, toleranceEvidence.RuleId, toleratedPositions.Select(p => p.PositionId).ToArray(), Array.Empty<string>(), [toleranceEvidence.EvidenceId])
+                var toleranceEvidence = new MatchEvidence(
+                    Guid.NewGuid().ToString("N"),
+                    toleranceMatch.Rule.RuleId,
+                    "Tolerance",
+                    $"Position tolerance rule {toleranceMatch.Rule.RuleId} allowed quantity/price/market value deltas.",
+                    toleranceMatch.MaxDelta,
+                    new Dictionary<string, string>
                     {
-                        ToleranceProfileId = toleranceProfile.ProfileId,
-                        ToleranceProfileVersion = toleranceProfile.Version,
-                        ToleranceRuleId = positionRule.RuleId
+                        ["toleranceProfileId"] = toleranceProfile.ProfileId,
+                        ["toleranceProfileVersion"] = toleranceProfile.Version.ToString(),
+                        ["toleranceRuleId"] = toleranceMatch.Rule.RuleId
                     });
-                    continue;
-                }
+                evidence.Add(toleranceEvidence);
+                matches.Add(new MatchGroup(Guid.NewGuid().ToString("N"), BreakClassification.MatchedWithinTolerance, toleranceEvidence.RuleId, toleranceMatch.Positions.Select(p => p.PositionId).ToArray(), Array.Empty<string>(), [toleranceEvidence.EvidenceId])
+                {
+                    ToleranceProfileId = toleranceProfile.ProfileId,
+                    ToleranceProfileVersion = toleranceProfile.Version,
+                    ToleranceRuleId = toleranceMatch.Rule.RuleId
+                });
 
-                var breakEvidence = new MatchEvidence(Guid.NewGuid().ToString("N"), "true-break-position-v1", "Exact", "Position has no exact cross-source match.", null, new Dictionary<string, string>());
+                foreach (var position in toleranceMatch.Positions)
+                {
+                    resolvedPositionIds.Add(position.PositionId);
+                }
+            }
+
+            var unresolvedPositions = positions
+                .Where(position => !resolvedPositionIds.Contains(position.PositionId))
+                .ToArray();
+            if (unresolvedPositions.Length > 0)
+            {
+                var breakEvidence = new MatchEvidence(
+                    Guid.NewGuid().ToString("N"),
+                    "true-break-position-v1",
+                    "Exact",
+                    "Position has no exact cross-source match.",
+                    null,
+                    new Dictionary<string, string>
+                    {
+                        ["unresolvedPositionIds"] = string.Join(",", unresolvedPositions.Select(static position => position.PositionId))
+                    });
                 evidence.Add(breakEvidence);
                 breaks.Add(new BreakRecord(Guid.NewGuid().ToString("N"), BreakClassification.TrueBreak, breakEvidence.RuleId, "No exact matching position candidate found.", effectiveRun.SourceSnapshots.Select(s => s.SnapshotId).ToArray(), [breakEvidence.EvidenceId]));
             }
@@ -227,40 +253,56 @@ public sealed class ReconciliationMatchingEngine
         return null;
     }
 
-    private static bool TryFindPositionToleranceMatch(
+    private static IReadOnlyList<PositionToleranceMatch> FindPositionToleranceMatches(
         IReadOnlyList<NormalizedPosition> positions,
-        StatementToleranceProfile profile,
-        out IReadOnlyList<NormalizedPosition> toleratedPositions,
-        out PositionToleranceRule rule,
-        out decimal maxDelta)
+        StatementToleranceProfile profile)
     {
+        var matches = new List<PositionToleranceMatch>();
+        var resolvedPositionIds = new HashSet<string>(StringComparer.Ordinal);
+
         for (var i = 0; i < positions.Count; i++)
         {
+            var left = positions[i];
+            if (resolvedPositionIds.Contains(left.PositionId))
+            {
+                continue;
+            }
+
             for (var j = i + 1; j < positions.Count; j++)
             {
+                var right = positions[j];
+                if (resolvedPositionIds.Contains(right.PositionId))
+                {
+                    continue;
+                }
+
                 foreach (var candidateRule in profile.PositionRules)
                 {
-                    var left = positions[i];
-                    var right = positions[j];
                     if (!candidateRule.Allows(left.Quantity, right.Quantity, left.MarketValue, right.MarketValue, left.Price, right.Price))
                     {
                         continue;
                     }
 
-                    toleratedPositions = [left, right];
-                    rule = candidateRule;
-                    maxDelta = Math.Max(Math.Abs(left.Quantity - right.Quantity), Math.Max(Math.Abs(left.Price - right.Price), Math.Abs(left.MarketValue - right.MarketValue)));
-                    return true;
+                    resolvedPositionIds.Add(left.PositionId);
+                    resolvedPositionIds.Add(right.PositionId);
+                    matches.Add(new PositionToleranceMatch(
+                        [left, right],
+                        candidateRule,
+                        Math.Max(Math.Abs(left.Quantity - right.Quantity), Math.Max(Math.Abs(left.Price - right.Price), Math.Abs(left.MarketValue - right.MarketValue)))));
+                    break;
+                }
+
+                if (resolvedPositionIds.Contains(left.PositionId))
+                {
+                    break;
                 }
             }
         }
 
-        toleratedPositions = [];
-        rule = new PositionToleranceRule(string.Empty, 0m, 0m, 0m);
-        maxDelta = 0m;
-        return false;
+        return matches;
     }
 
+    private sealed record PositionToleranceMatch(IReadOnlyList<NormalizedPosition> Positions, PositionToleranceRule Rule, decimal MaxDelta);
 }
 
 public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIngestionScheduler
