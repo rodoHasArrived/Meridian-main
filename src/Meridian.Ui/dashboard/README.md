@@ -54,6 +54,10 @@ session replay panel hash target so replay verification remains directly actiona
 Accounting reconciliation break detail preserves shared queue metadata such as exception route,
 tolerance profile, required sign-off role/status, and decision note so browser recovery posture
 matches the retained WPF Fund Ledger detail panel.
+Accounting reconciliation statement runs now use the shared statement-run endpoint/client seam for
+broker or custodian, account, period, status, validation, match, break, case, and import timing
+read models; React components only render these values and do not reimplement matching, tolerance,
+validation, or case-state rules.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients.
