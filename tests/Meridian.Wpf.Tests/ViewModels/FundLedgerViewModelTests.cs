@@ -21,6 +21,7 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Workstation.Models;
 using AppSecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -189,6 +190,12 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReconciliationDetailLifecycleText.Should().Contain("records ownership");
                 viewModel.ReconciliationDetailSignoffText.Should().Contain("Pending Signoff");
                 viewModel.ReconciliationDetailSignoffText.Should().Contain("Fund operations lead");
+                viewModel.ReconciliationSection.GovernanceSignifierState.Kind.Should().Be(WorkstationStateKind.Blocked);
+                viewModel.ReconciliationSection.GovernanceSignifierState.ActionPosture!.Label.Should().Be("Start Review");
+                viewModel.ReconciliationSection.GovernanceSignifierState.SignoffRequirement!.Role.Should().Be("Fund operations lead");
+                viewModel.ReconciliationSection.GovernanceSignifierState.VisibleEvidenceLinks
+                    .Should()
+                    .Contain(link => link.Target.Contains("/api/workstation/reconciliation/break-queue/", StringComparison.Ordinal));
                 viewModel.SupportsSelectedBreakActions.Should().BeTrue();
                 viewModel.CanStartReviewSelectedBreak.Should().BeTrue();
                 viewModel.CanResolveSelectedBreak.Should().BeFalse();
@@ -609,6 +616,10 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().Contain("ReconciliationRefreshQueueButton");
         xaml.Should().Contain("ReconciliationDetailLifecycleText");
         xaml.Should().Contain("ReconciliationDetailSignoffText");
+        xaml.Should().Contain("FundReconciliationGovernanceSignifier");
+        xaml.Should().Contain("ReconciliationSection.GovernanceSignifierState");
+        xaml.Should().Contain("FundReportPackReadinessSignifier");
+        xaml.Should().Contain("ReportPackReadinessState");
     }
 
     [Fact]
@@ -727,6 +738,11 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackAssetSections.Should().NotBeEmpty();
                 viewModel.ReportPackOwnershipText.Should().Contain("sign-off");
                 viewModel.ReportPackSnapshotWarningText.Should().NotBeNullOrWhiteSpace();
+                viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
+                viewModel.ReportPackReadinessState.ReadinessTone.Should().Be(WorkstationReadinessTone.EvidenceLinked);
+                viewModel.ReportPackReadinessState.ActionPosture!.Target.Should().Be("FundReportPack");
+                viewModel.ReportPackReadinessState.VisibleEvidenceLinks.Should().Contain(link => link.Label == "Report-pack preview");
+                viewModel.ReportPackReadinessState.SignoffRequirement!.Role.Should().NotBeNullOrWhiteSpace();
             }
             finally
             {

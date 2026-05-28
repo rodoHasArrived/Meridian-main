@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -60,6 +61,11 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     private string _blockerReasonText = "No blocker is selected.";
     private string _evidenceLinksText = "Evidence links appear after selecting a break.";
     private string _runsEmptyStateText = "No reconciliation runs are available for this fund.";
+    private WorkstationStateModel _governanceSignifierState = WorkstationStateModel.Empty(
+        "Select reconciliation evidence",
+        "Choose a break queue item or reconciliation run to see lifecycle, sign-off, evidence, and recovery posture.",
+        "Select a break",
+        "Fund Reconciliation");
 
     public string LegalEntityText { get => _legalEntityText; set => SetProperty(ref _legalEntityText, value); }
     public string BaseCurrencyText { get => _baseCurrencyText; set => SetProperty(ref _baseCurrencyText, value); }
@@ -94,6 +100,7 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     public string BlockerReasonText { get => _blockerReasonText; set => SetProperty(ref _blockerReasonText, value); }
     public string EvidenceLinksText { get => _evidenceLinksText; set => SetProperty(ref _evidenceLinksText, value); }
     public string RunsEmptyStateText { get => _runsEmptyStateText; set => SetProperty(ref _runsEmptyStateText, value); }
+    public WorkstationStateModel GovernanceSignifierState { get => _governanceSignifierState; set => SetProperty(ref _governanceSignifierState, value); }
 }
 
 public sealed partial class FundLedgerViewModel

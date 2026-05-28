@@ -238,7 +238,85 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
     if report_pack_route_check is not None:
         results.append(report_pack_route_check)
 
+    signifier_check = build_workstation_signifier_check(repo_root, target_roots)
+    if signifier_check is not None:
+        results.append(signifier_check)
+
     return results
+
+
+def build_workstation_signifier_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs",
+        "src/Meridian.Wpf/Workstation/Controls/WorkstationStatePanelControl.xaml",
+        "src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml",
+        "src/Meridian.Wpf/Views/FundLedgerPage.xaml",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    models = read_required_text(repo_root, target_roots, required_paths[0])
+    state_panel = read_required_text(repo_root, target_roots, required_paths[1])
+    command_bar = read_required_text(repo_root, target_roots, required_paths[2])
+    fund_ledger = read_required_text(repo_root, target_roots, required_paths[3])
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"models: {token}"
+        for token in require_all_tokens(
+            models,
+            [
+                "WorkstationReadinessTone",
+                "WorkstationActionPostureModel",
+                "WorkstationEvidenceLinkModel",
+                "WorkstationRecoveryActionModel",
+                "WorkstationSignoffRequirementModel",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"state panel: {token}"
+        for token in require_all_tokens(
+            state_panel,
+            [
+                "VisibleEvidenceLinks",
+                "VisibleRecoveryActions",
+                "SignoffRequirement",
+                "ActionPosture",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"command bar: {token}"
+        for token in require_all_tokens(
+            command_bar,
+            [
+                "EvidenceSourceText",
+                "TargetText",
+                "DisabledReason",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"fund ledger: {token}"
+        for token in require_all_tokens(
+            fund_ledger,
+            [
+                "FundReconciliationGovernanceSignifier",
+                "ReconciliationSection.GovernanceSignifierState",
+                "FundReportPackReadinessSignifier",
+                "ReportPackReadinessState",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="W4 desktop signifiers use shared workstation affordance primitives",
+        passed=not missing_tokens,
+        detail="Shared action posture, evidence, recovery, sign-off, and W4 Fund Ledger/Report Pack signifier wiring are present."
+        if not missing_tokens
+        else f"Missing signifier tokens: {', '.join(missing_tokens)}",
+    )
 
 
 def build_accounting_workflow_route_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:

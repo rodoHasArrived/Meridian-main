@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -1178,6 +1179,11 @@ public sealed partial class FundLedgerViewModel
             ReconciliationNextBestActionText = "Select a break to view the recommended next action.";
             ReconciliationBlockerReasonText = "No blocker is selected.";
             ReconciliationEvidenceLinksText = "Evidence links appear after selecting a break.";
+            ReconciliationSection.GovernanceSignifierState = WorkstationStateModel.Empty(
+                "Select reconciliation evidence",
+                "Choose a break queue item or reconciliation run to see lifecycle, sign-off, evidence, and recovery posture.",
+                "Select a break",
+                "Fund Reconciliation");
             return;
         }
 
@@ -1188,6 +1194,81 @@ public sealed partial class FundLedgerViewModel
             ? "Awaiting break summary from workstation host."
             : SelectedBreakQueueItem.Reason;
         ReconciliationEvidenceLinksText = $"/api/workstation/reconciliation/break-queue/{SelectedBreakQueueItem.BreakId}";
+        ReconciliationSection.GovernanceSignifierState = BuildSelectedBreakSignifierState(SelectedBreakQueueItem);
+    }
+
+    private WorkstationStateModel BuildSelectedBreakSignifierState(FundReconciliationBreakQueueRow breakRow)
+    {
+        var actionLabel = breakRow.Status switch
+        {
+            ReconciliationBreakQueueStatus.Open => "Start Review",
+            ReconciliationBreakQueueStatus.InReview => "Resolve or Dismiss",
+            _ => "Audit Decision"
+        };
+        var target = $"/api/workstation/reconciliation/break-queue/{breakRow.BreakId}";
+        var reason = string.IsNullOrWhiteSpace(breakRow.Reason)
+            ? "Awaiting break summary from workstation host."
+            : breakRow.Reason;
+        var owner = string.IsNullOrWhiteSpace(ReconciliationOperatorText) ||
+                    string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
+            ? "Owner not confirmed"
+            : $"Owner {ReconciliationOperatorText}";
+        var status = breakRow.Status.ToString();
+        var actionPosture = new WorkstationActionPostureModel(
+            actionLabel,
+            reason,
+            target,
+            owner,
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed
+                ? WorkstationReadinessTone.EvidenceLinked
+                : WorkstationReadinessTone.Blocked,
+            breakRow.Status is ReconciliationBreakQueueStatus.Open
+                ? WorkspaceTone.Danger
+                : WorkspaceTone.Warning);
+        var signoffStatus = string.IsNullOrWhiteSpace(breakRow.SignoffStatus)
+            ? "Pending"
+            : breakRow.SignoffStatus;
+        var signoffRole = string.IsNullOrWhiteSpace(breakRow.RequiredSignoffRole)
+            ? "Fund operations reviewer"
+            : breakRow.RequiredSignoffRole;
+
+        return new WorkstationStateModel(
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed
+                ? WorkstationStateKind.Ready
+                : WorkstationStateKind.Blocked,
+            $"{status} reconciliation break",
+            ReconciliationDetailLifecycleText,
+            actionPosture.Label,
+            actionPosture.Target,
+            ReconciliationEvidenceLinksText,
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed ? "\uE73E" : "\uE783",
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed ? WorkspaceTone.Success : WorkspaceTone.Danger,
+            breakRow.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed ? WorkstationReadinessTone.EvidenceLinked : WorkstationReadinessTone.Blocked,
+            actionPosture,
+            EvidenceLinks:
+            [
+                new WorkstationEvidenceLinkModel(
+                    "Break queue evidence",
+                    target,
+                    "shared workstation endpoint",
+                    ReconciliationDetailLastUpdatedText),
+                new WorkstationEvidenceLinkModel(
+                    "Audit trail",
+                    "FundAuditTrail",
+                    "reconciliation audit",
+                    ReconciliationDetailSignoffText)
+            ],
+            RecoveryActions:
+            [
+                new WorkstationRecoveryActionModel(
+                    actionLabel,
+                    ReconciliationNextBestActionText,
+                    target)
+            ],
+            SignoffRequirement: new WorkstationSignoffRequirementModel(
+                signoffRole,
+                signoffStatus,
+                ReconciliationDetailSignoffText));
     }
 
     private static string HumanizeLedgerScope(FundLedgerScope scope)

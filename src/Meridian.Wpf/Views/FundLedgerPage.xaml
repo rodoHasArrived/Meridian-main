@@ -1,6 +1,7 @@
 <Page x:Class="Meridian.Wpf.Views.FundLedgerPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:workstationControls="clr-namespace:Meridian.Wpf.Workstation.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
@@ -1164,6 +1165,10 @@
                                             <TextBlock Text="{Binding ReconciliationDetailCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                             <TextBlock Text="{Binding ReconciliationDetailLifecycleText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                             <TextBlock Text="{Binding ReconciliationDetailSignoffText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                            <workstationControls:WorkstationStatePanelControl
+                                                State="{Binding ReconciliationSection.GovernanceSignifierState}"
+                                                Margin="0,14,0,0"
+                                                AutomationProperties.AutomationId="FundReconciliationGovernanceSignifier" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" HorizontalAlignment="Right">
                                             <TextBlock Text="Last Updated" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Right" />
@@ -1458,6 +1463,10 @@
                             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
                                     <TextBlock Text="Handoff Readiness" Style="{StaticResource CardHeaderStyle}" />
+                                    <workstationControls:WorkstationStatePanelControl
+                                        State="{Binding ReportPackReadinessState}"
+                                        Margin="0,14,0,14"
+                                        AutomationProperties.AutomationId="FundReportPackReadinessSignifier" />
                                     <UniformGrid Columns="2" Margin="0,16,0,0">
                                         <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,12">
                                             <StackPanel>
