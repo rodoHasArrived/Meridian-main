@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
@@ -45,6 +46,7 @@ export interface BackfillTriggerState {
   symbolsHelpText: string;
   statusAnnouncement: string;
   dialogState: BackfillDialogState;
+  requestStatus: RequestLifecycleStatus;
 }
 
 export interface BackfillDialogFieldState {
@@ -698,6 +700,20 @@ const NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE =
 const SELECT_CONFIGURED_BACKFILL_PROVIDER_MESSAGE =
   "Select a configured provider before previewing a backfill.";
 
+
+const idleBackfillRequestStatus: RequestLifecycleStatus = {
+  operation: "historical backfill command",
+  phase: "idle",
+  inFlight: false,
+  version: 0,
+  message: "Ready to submit historical backfill command.",
+  error: null,
+  startedAt: null,
+  settledAt: null,
+  staleDiscardCount: 0,
+  backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+};
+
 const BACKFILL_PROVIDER_ALIASES: Record<string, string> = {
   "alpaca": "alpaca",
   "composite": "composite",
@@ -732,7 +748,14 @@ export function useDataOperationsViewModel(
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
-  const backfillCommandRevisionRef = useRef(0);
+  const backfillLifecycle = useRequestLifecycle({
+    operation: "historical backfill command",
+    runningMessage: "Submitting historical backfill command.",
+    successMessage: "Historical backfill command completed.",
+    failureMessage: "Historical backfill command failed.",
+    staleMessage: "Older historical backfill response discarded.",
+    maxRetries: 1
+  });
 
   // Provider setup state
   const [providerSetupOpen, setProviderSetupOpen] = useState(false);
@@ -751,15 +774,6 @@ export function useDataOperationsViewModel(
     [data?.providers]
   );
 
-  const nextBackfillCommandRevision = useCallback(() => {
-    const revision = backfillCommandRevisionRef.current + 1;
-    backfillCommandRevisionRef.current = revision;
-    return revision;
-  }, []);
-
-  const isCurrentBackfillCommand = useCallback((revision: number) => (
-    backfillCommandRevisionRef.current === revision
-  ), []);
 
   const nextProviderSetupCommandRevision = useCallback(() => {
     const revision = providerSetupCommandRevisionRef.current + 1;
@@ -772,10 +786,10 @@ export function useDataOperationsViewModel(
   ), []);
 
   useEffect(() => () => {
-    backfillCommandRevisionRef.current += 1;
+    backfillLifecycle.invalidate();
     providerSetupCommandRevisionRef.current += 1;
     providerVerifyCommandRevisionRef.current += 1;
-  }, []);
+  }, [backfillLifecycle.invalidate]);
 
   const workstream = useMemo(() => resolveDataOperationsWorkstream(pathname), [pathname]);
   const selectedProvider = useMemo(
@@ -834,9 +848,10 @@ export function useDataOperationsViewModel(
       error,
       preview,
       result,
-      configuredProviders: configuredBackfillProviders
+      configuredProviders: configuredBackfillProviders,
+      requestStatus: backfillLifecycle.status
     }),
-    [busy, configuredBackfillProviders, error, form, phase, preview, result]
+    [backfillLifecycle.status, busy, configuredBackfillProviders, error, form, phase, preview, result]
   );
   const previewResultCard = useMemo(
     () => preview ? buildBackfillResultCardState(preview, "preview") : null,
@@ -848,14 +863,14 @@ export function useDataOperationsViewModel(
   );
 
   const openBackfillDialog = useCallback(() => {
-    nextBackfillCommandRevision();
+    backfillLifecycle.invalidate();
     setDialogOpen(true);
     setPreview(null);
     setResult(null);
     setError(null);
     setBusy(false);
     setPhase("idle");
-  }, [nextBackfillCommandRevision]);
+  }, [backfillLifecycle.invalidate]);
 
   useEffect(() => {
     setForm((current) => {
@@ -896,31 +911,37 @@ export function useDataOperationsViewModel(
       return;
     }
 
-    const commandRevision = nextBackfillCommandRevision();
-    setBusy(true);
-    setPhase("previewing");
-    setError(null);
-    setResult(null);
+    const token = backfillLifecycle.start({ runningMessage: "Previewing historical backfill request." });
+    if (!token) return;
+    token.safeSetState(setBusy, true);
+    token.safeSetState(setPhase, "previewing");
+    token.safeSetState(setError, null);
+    token.safeSetState(setResult, null);
 
     try {
       const nextPreview = await services.preview(buildBackfillRequest(form));
-      if (!isCurrentBackfillCommand(commandRevision)) {
+      if (!token.isCurrent()) {
+        backfillLifecycle.markStale(token.version);
         return;
       }
-      setPreview(nextPreview);
+      token.safeSetState(setPreview, nextPreview);
+      backfillLifecycle.succeed(token, { message: "Historical backfill preview completed." });
     } catch (err) {
-      if (!isCurrentBackfillCommand(commandRevision)) {
+      if (!token.isCurrent()) {
+        backfillLifecycle.markStale(token.version);
         return;
       }
-      setPreview(null);
-      setError(buildDataOperationsErrorState(err, "Backfill preview failed."));
+      token.safeSetState(setPreview, null);
+      token.safeSetState(setError, buildDataOperationsErrorState(err, "Backfill preview failed."));
+      backfillLifecycle.fail(token, err, { fallback: "Backfill preview failed." });
     } finally {
-      if (isCurrentBackfillCommand(commandRevision)) {
-        setBusy(false);
-        setPhase("idle");
+      if (token.isCurrent()) {
+        token.safeSetState(setBusy, false);
+        token.safeSetState(setPhase, "idle");
       }
+      backfillLifecycle.finish(token);
     }
-  }, [configuredBackfillProviders, form, isCurrentBackfillCommand, nextBackfillCommandRevision, services]);
+  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, services]);
 
   const runBackfill = useCallback(async () => {
     const validationError = validateBackfillForm(form, configuredBackfillProviders);
@@ -934,30 +955,36 @@ export function useDataOperationsViewModel(
       return;
     }
 
-    const commandRevision = nextBackfillCommandRevision();
-    setBusy(true);
-    setPhase("running");
-    setError(null);
+    const token = backfillLifecycle.start({ runningMessage: "Running historical backfill request." });
+    if (!token) return;
+    token.safeSetState(setBusy, true);
+    token.safeSetState(setPhase, "running");
+    token.safeSetState(setError, null);
 
     try {
       const nextResult = await services.run(buildBackfillRequest(form));
-      if (!isCurrentBackfillCommand(commandRevision)) {
+      if (!token.isCurrent()) {
+        backfillLifecycle.markStale(token.version);
         return;
       }
-      setResult(nextResult);
+      token.safeSetState(setResult, nextResult);
       await services.getProgress().catch(() => null);
+      backfillLifecycle.succeed(token, { message: "Historical backfill run completed." });
     } catch (err) {
-      if (!isCurrentBackfillCommand(commandRevision)) {
+      if (!token.isCurrent()) {
+        backfillLifecycle.markStale(token.version);
         return;
       }
-      setError(buildDataOperationsErrorState(err, "Backfill run failed."));
+      token.safeSetState(setError, buildDataOperationsErrorState(err, "Backfill run failed."));
+      backfillLifecycle.fail(token, err, { fallback: "Backfill run failed." });
     } finally {
-      if (isCurrentBackfillCommand(commandRevision)) {
-        setBusy(false);
-        setPhase("idle");
+      if (token.isCurrent()) {
+        token.safeSetState(setBusy, false);
+        token.safeSetState(setPhase, "idle");
       }
+      backfillLifecycle.finish(token);
     }
-  }, [configuredBackfillProviders, form, isCurrentBackfillCommand, nextBackfillCommandRevision, preview, services]);
+  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, services]);
 
   const openProviderSetup = useCallback(() => {
     nextProviderSetupCommandRevision();
@@ -1167,7 +1194,8 @@ export function useDataOperationsViewModel(
     providerSetupResult,
     providerSetupError,
     submitProviderSetup,
-    providerSetupDialogState
+    providerSetupDialogState,
+    backfillRequestStatus: backfillLifecycle.status
   };
 }
 
@@ -2471,7 +2499,8 @@ export function buildBackfillTriggerState({
   error,
   preview,
   result,
-  configuredProviders = []
+  configuredProviders = [],
+  requestStatus
 }: {
   form: BackfillFormState;
   busy: boolean;
@@ -2480,6 +2509,7 @@ export function buildBackfillTriggerState({
   preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
   configuredProviders?: DataOperationsProviderRecord[];
+  requestStatus?: RequestLifecycleStatus;
 }): BackfillTriggerState {
   const validationError = validateBackfillForm(form, configuredProviders);
   const feedbackText = error?.summary ?? null;
@@ -2513,7 +2543,8 @@ export function buildBackfillTriggerState({
           : "Run previewed backfill request",
     symbolsHelpText: "Separate symbols with spaces or commas. At least one symbol is required.",
     statusAnnouncement: buildBackfillStatusAnnouncement({ phase, error, preview, result }),
-    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result, configuredProviders })
+    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result, configuredProviders }),
+    requestStatus: requestStatus ?? idleBackfillRequestStatus
   };
 }
 

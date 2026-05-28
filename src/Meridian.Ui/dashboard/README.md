@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-27
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Ui/dashboard
@@ -63,6 +63,11 @@ review.
 No-host browser previews must keep fixture data visibly labeled as demo data. The shell banner
 routes operators through the typed demo evidence path: watchlist, live quote evidence, trading
 readiness, and provider setup, while keeping retry-to-live behavior available.
+
+Refresh-capable browser modules use the shared `useRequestLifecycle` hook for request versioning,
+stale response discard, unmount-safe state updates, AbortController handoff, and retry/backoff status
+metadata. Keep overview bootstrap, live quotes, backfill preview/run, trading readiness handoffs, and
+command-triggered refresh paths on that lifecycle instead of adding ad-hoc revision refs.
 
 Shared workflow targets must land on the same operator lane as WPF. `FundTrialBalance` resolves to
 the browser accounting ledger route (`/accounting/ledger`) so Lane B/W3 continuity actions from the

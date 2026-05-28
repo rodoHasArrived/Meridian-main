@@ -41,7 +41,9 @@ vi.mock("@/lib/api", () => ({
   getSystemStatus: vi.fn(),
   getTradingWorkspace: vi.fn(),
   getWorkflowLibrary: vi.fn(),
-  getWorkflowPresets: vi.fn()
+  getWorkflowPresets: vi.fn(),
+  getFeatureCapabilities: vi.fn(),
+  setFeatureCapability: vi.fn()
 }));
 
 type Deferred<T> = {
@@ -92,6 +94,10 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getBrokerageHouseholdPortfolio).mockImplementation(() => track<BrokerageHouseholdPortfolio>("brokeragePortfolio"));
     vi.mocked(api.getWorkflowLibrary).mockImplementation(() => track<WorkflowLibrary>("workflowLibrary"));
     vi.mocked(api.getWorkflowPresets).mockImplementation(() => track<WorkflowPresetLibrary>("workflowPresets"));
+    vi.mocked(api.getFeatureCapabilities).mockResolvedValue({
+      generatedAt: "2026-01-01T00:00:00Z",
+      capabilities: []
+    } as never);
     vi.mocked(api.hasDevelopmentFixtureUsage).mockReturnValue(false);
   });
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -476,6 +477,7 @@ export interface TradingReadinessState {
   refreshDisabled: boolean;
   refreshDisabledReason: string | null;
   statusAnnouncement: string;
+  requestStatus: RequestLifecycleStatus;
 }
 
 export interface TradingReadinessViewModel extends TradingReadinessState {
@@ -490,10 +492,37 @@ export interface BuildTradingReadinessStateOptions {
   readiness: TradingOperatorReadiness | null;
   refreshing: boolean;
   errorText: string | null;
+  requestStatus?: RequestLifecycleStatus;
 }
 
 const defaultTradingReadinessServices: TradingReadinessServices = {
   getTradingReadiness: (options?: ApiRequestOptions) => workstationApi.getTradingReadiness(options)
+};
+
+const idleTradingReadinessStatus: RequestLifecycleStatus = {
+  operation: "trading readiness handoff refresh",
+  phase: "idle",
+  inFlight: false,
+  version: 0,
+  message: "Ready to refresh trading readiness.",
+  error: null,
+  startedAt: null,
+  settledAt: null,
+  staleDiscardCount: 0,
+  backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+};
+
+const idleExecutionEvidenceStatus: RequestLifecycleStatus = {
+  operation: "execution evidence refresh",
+  phase: "idle",
+  inFlight: false,
+  version: 0,
+  message: "Ready to refresh execution evidence.",
+  error: null,
+  startedAt: null,
+  settledAt: null,
+  staleDiscardCount: 0,
+  backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
 };
 
 const visibleWorkItemLimit = 4;
@@ -595,55 +624,54 @@ export function useTradingReadinessViewModel({
   const [readiness, setReadiness] = useState<TradingOperatorReadiness | null>(initialReadiness);
   const [refreshing, setRefreshing] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
-  const readinessRevisionRef = useRef(0);
-  const readinessAbortRef = useRef<AbortController | null>(null);
+  const readinessLifecycle = useRequestLifecycle({
+    operation: "trading readiness handoff refresh",
+    runningMessage: "Refreshing trading readiness handoff evidence.",
+    successMessage: "Trading readiness refreshed.",
+    failureMessage: "Trading readiness refresh failed.",
+    staleMessage: "Older trading readiness response discarded.",
+    maxRetries: 2
+  });
 
   useEffect(() => {
-    return () => {
-      readinessRevisionRef.current += 1;
-      readinessAbortRef.current?.abort();
-    };
-  }, []);
-
-  useEffect(() => {
-    readinessRevisionRef.current += 1;
-    readinessAbortRef.current?.abort();
+    readinessLifecycle.invalidate();
     setReadiness(initialReadiness);
     setErrorText(null);
     setRefreshing(false);
-  }, [initialReadiness]);
+  }, [initialReadiness, readinessLifecycle.invalidate]);
 
   const refresh = useCallback(async () => {
-    const revision = readinessRevisionRef.current + 1;
-    readinessRevisionRef.current = revision;
-    readinessAbortRef.current?.abort();
-    const controller = new AbortController();
-    readinessAbortRef.current = controller;
-    setRefreshing(true);
-    setErrorText(null);
+    const token = readinessLifecycle.start();
+    if (!token) return;
+    token.safeSetState(setRefreshing, true);
+    token.safeSetState(setErrorText, null);
 
     try {
-      const nextReadiness = await services.getTradingReadiness({ signal: controller.signal, fundAccountId });
-      if (readinessRevisionRef.current === revision) {
-        setReadiness(nextReadiness);
+      const nextReadiness = await services.getTradingReadiness({ signal: token.signal, fundAccountId });
+      if (!token.isCurrent()) {
+        readinessLifecycle.markStale(token.version);
+        return;
       }
+      token.safeSetState(setReadiness, nextReadiness);
+      readinessLifecycle.succeed(token);
     } catch (err) {
-      if (readinessRevisionRef.current === revision) {
-        setErrorText(toErrorMessage(err, "Failed to refresh trading readiness."));
+      if (!token.isCurrent()) {
+        readinessLifecycle.markStale(token.version);
+        return;
       }
+      token.safeSetState(setErrorText, toErrorMessage(err, "Failed to refresh trading readiness."));
+      readinessLifecycle.fail(token, err, { fallback: "Failed to refresh trading readiness." });
     } finally {
-      if (readinessRevisionRef.current === revision) {
-        if (readinessAbortRef.current === controller) {
-          readinessAbortRef.current = null;
-        }
-        setRefreshing(false);
+      if (token.isCurrent()) {
+        token.safeSetState(setRefreshing, false);
       }
+      readinessLifecycle.finish(token);
     }
-  }, [fundAccountId, services]);
+  }, [fundAccountId, readinessLifecycle.fail, readinessLifecycle.finish, readinessLifecycle.markStale, readinessLifecycle.start, readinessLifecycle.succeed, services]);
 
   const state = useMemo(
-    () => buildTradingReadinessState({ readiness, refreshing, errorText }),
-    [errorText, readiness, refreshing]
+    () => buildTradingReadinessState({ readiness, refreshing, errorText, requestStatus: readinessLifecycle.status }),
+    [errorText, readiness, readinessLifecycle.status, refreshing]
   );
 
   return {
@@ -655,7 +683,8 @@ export function useTradingReadinessViewModel({
 export function buildTradingReadinessState({
   readiness,
   refreshing,
-  errorText
+  errorText,
+  requestStatus
 }: BuildTradingReadinessStateOptions): TradingReadinessState {
   const summaryRows = readiness ? buildTradingReadinessSummaryRows(readiness) : [];
   const workItems = readiness?.workItems ?? [];
@@ -697,7 +726,8 @@ export function buildTradingReadinessState({
     refreshBusyLabel: refreshing ? "Refreshing readiness..." : null,
     refreshDisabled: refreshing,
     refreshDisabledReason: refreshing ? "Trading readiness refresh is already running." : null,
-    statusAnnouncement: buildTradingReadinessAnnouncement({ readiness, refreshing, errorText })
+    statusAnnouncement: buildTradingReadinessAnnouncement({ readiness, refreshing, errorText }),
+    requestStatus: requestStatus ?? idleTradingReadinessStatus
   };
 }
 
@@ -1206,6 +1236,7 @@ export interface ExecutionEvidenceState {
   refreshDisabled: boolean;
   refreshDisabledReason: string | null;
   statusAnnouncement: string;
+  requestStatus: RequestLifecycleStatus;
 }
 
 export interface ExecutionEvidenceViewModel extends ExecutionEvidenceState {
@@ -1222,6 +1253,7 @@ export interface BuildExecutionEvidenceStateOptions {
   controlsSnapshot: ExecutionControlSnapshot | null;
   loading: boolean;
   errorText: string | null;
+  requestStatus?: RequestLifecycleStatus;
 }
 
 const defaultExecutionEvidenceServices: ExecutionEvidenceServices = {
@@ -1240,45 +1272,66 @@ export function useExecutionEvidenceViewModel({
   const [controlsSnapshot, setControlsSnapshot] = useState<ExecutionControlSnapshot | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const executionLifecycle = useRequestLifecycle({
+    operation: "execution evidence refresh",
+    runningMessage: "Refreshing execution audit and control evidence.",
+    successMessage: "Execution evidence refreshed.",
+    failureMessage: "Execution evidence refresh failed.",
+    staleMessage: "Older execution evidence response discarded.",
+    maxRetries: 2
+  });
 
   const refresh = useCallback(async () => {
-    setLoading(true);
-    setErrorText(null);
+    const token = executionLifecycle.start({ busyMode: "drop" });
+    if (!token) return;
+    token.safeSetState(setLoading, true);
+    token.safeSetState(setErrorText, null);
 
     const [auditResult, controlsResult] = await Promise.allSettled([
       Promise.resolve().then(() => services.getExecutionAudit(auditTake)),
       Promise.resolve().then(() => services.getExecutionControls())
     ]);
 
+    if (!token.isCurrent()) {
+      executionLifecycle.markStale(token.version);
+      return;
+    }
+
     if (auditResult.status === "fulfilled") {
-      setAuditEntries(auditResult.value);
+      token.safeSetState(setAuditEntries, auditResult.value);
     } else {
-      setAuditEntries([]);
+      token.safeSetState(setAuditEntries, []);
     }
 
     if (controlsResult.status === "fulfilled") {
-      setControlsSnapshot(controlsResult.value);
+      token.safeSetState(setControlsSnapshot, controlsResult.value);
     } else {
-      setControlsSnapshot(null);
+      token.safeSetState(setControlsSnapshot, null);
     }
 
     const failures = [auditResult, controlsResult].filter((result) => result.status === "rejected");
     if (failures.length > 0) {
       const firstFailure = failures[0];
       const reason = firstFailure.status === "rejected" ? firstFailure.reason : null;
-      setErrorText(toErrorMessage(reason, "Execution evidence refresh failed."));
+      token.safeSetState(setErrorText, toErrorMessage(reason, "Execution evidence refresh failed."));
+      executionLifecycle.fail(token, reason, { fallback: "Execution evidence refresh failed." });
+    } else {
+      executionLifecycle.succeed(token);
     }
 
-    setLoading(false);
-  }, [auditTake, services]);
+    if (token.isCurrent()) {
+      token.safeSetState(setLoading, false);
+    }
+    executionLifecycle.finish(token);
+  }, [auditTake, executionLifecycle.fail, executionLifecycle.finish, executionLifecycle.markStale, executionLifecycle.start, executionLifecycle.succeed, services]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
   const state = useMemo(
-    () => buildExecutionEvidenceState({ auditEntries, controlsSnapshot, loading, errorText }),
-    [auditEntries, controlsSnapshot, errorText, loading]
+    () => buildExecutionEvidenceState({ auditEntries, controlsSnapshot, loading, errorText, requestStatus: executionLifecycle.status }),
+    [auditEntries, controlsSnapshot, errorText, executionLifecycle.status, loading]
   );
 
   return {
@@ -1291,7 +1344,8 @@ export function buildExecutionEvidenceState({
   auditEntries,
   controlsSnapshot,
   loading,
-  errorText
+  errorText,
+  requestStatus
 }: BuildExecutionEvidenceStateOptions): ExecutionEvidenceState {
   const auditRows = auditEntries.map(buildExecutionAuditRow);
   const controlsPanel = controlsSnapshot ? buildExecutionControlsPanel(controlsSnapshot) : null;
@@ -1313,7 +1367,8 @@ export function buildExecutionEvidenceState({
     refreshBusyLabel: loading ? "Refreshing evidence..." : null,
     refreshDisabled: loading,
     refreshDisabledReason: loading ? "Execution evidence refresh is already running." : null,
-    statusAnnouncement: buildExecutionEvidenceAnnouncement({ auditRows, controlsPanel, loading, errorText })
+    statusAnnouncement: buildExecutionEvidenceAnnouncement({ auditRows, controlsPanel, loading, errorText }),
+    requestStatus: requestStatus ?? idleExecutionEvidenceStatus
   };
 }
 

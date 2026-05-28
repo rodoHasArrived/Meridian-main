@@ -28,6 +28,22 @@ vi.mock("@/lib/api", async () => {
 const mockedUseWorkstationData = vi.mocked(useWorkstationData);
 type WorkstationDataSnapshot = ReturnType<typeof useWorkstationData>;
 
+function idleRequestStatus(operation: string) {
+  return {
+    operation,
+    phase: "idle" as const,
+    inFlight: false,
+    version: 0,
+    message: "Ready.",
+    error: null,
+    startedAt: null,
+    settledAt: null,
+    staleDiscardCount: 0,
+    backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+  };
+}
+
+
 function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
   mockedUseWorkstationData.mockReturnValue({
     session: null,
@@ -53,6 +69,10 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     loading: false,
     error: null,
     workspaceErrors: {},
+    refreshStatus: idleRequestStatus("workstation overview refresh"),
+    tradingRefreshStatus: idleRequestStatus("trading workspace refresh"),
+    providerRoutingRefreshStatus: idleRequestStatus("provider routing refresh"),
+    portfolioRefreshStatus: idleRequestStatus("portfolio refresh"),
     refresh: vi.fn(),
     refreshTrading: vi.fn(),
     refreshPortfolio: vi.fn(),
