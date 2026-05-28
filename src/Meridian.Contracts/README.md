@@ -36,12 +36,19 @@ approval, close, and audit vocabulary consumed by both browser and WPF workstati
 returned workflow blocker codes in `OperationsWorkflowContractMatrix.BlockerCodes`, including
 ledger journal context-validation failures, so clients can handle command failures without parsing
 messages. Close-checklist control approval blockers are part of that shared vocabulary and must
-remain contract-owned rather than browser-only or WPF-only state.
+remain contract-owned rather than browser-only or WPF-only state. Close readiness score payloads
+are also contract-owned and include server-derived Security Master, position, cash, ledger,
+pricing, reconciliation, report, and approval components so UI clients can render readiness without
+client-local scoring rules.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
 `FundAccountBrokerageSyncActivityDto` for durable account-level evidence, positions, orders, fills,
 and cash-transaction details.
+
+Direct lending command result codes distinguish validation failures, missing aggregates,
+optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return
+operator-safe failure reasons without parsing exception text.
 
 ## Diagrams
 

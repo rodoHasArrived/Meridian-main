@@ -181,6 +181,7 @@ public static class OperationsWorkflowContractMatrix
         "APPROVAL_SUBMISSION_REQUIRED",
         "AUDIT_CHAIN_INVALID",
         "AUDIT_CHAIN_MISSING",
+        "BROKER_CASH_COVERAGE_INCOMPLETE",
         "BROKER_IMPORT_ALREADY_RECORDED",
         "BROKER_IMPORT_GATE_NOT_READY",
         "BROKER_IMPORT_REQUIRED",
@@ -231,6 +232,8 @@ public static class OperationsWorkflowContractMatrix
         "OPERATIONS_GATES_NOT_PASSED",
         "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED",
         "PERIOD_REQUIRED",
+        "POSITION_COVERAGE_INCOMPLETE",
+        "PRICING_COVERAGE_INCOMPLETE",
         "RECONCILIATION_ACTUAL_FEED_ACTIVITY_MISSING_EXPECTED_EVENT",
         "RECONCILIATION_BREAK_NOT_FOUND",
         "RECONCILIATION_BREAK_RATIONALE_REQUIRED",
@@ -793,8 +796,21 @@ public sealed record OperationsReportPackReadinessDto(
 public sealed record OperationsCloseReadinessDto(
     bool IsReadyToClose,
     string Severity,
+    int Score,
+    IReadOnlyList<OperationsCloseReadinessComponentDto> Components,
     IReadOnlyList<OperationsCloseReadinessBlockerDto> Blockers,
     IReadOnlyList<OperationsNextActionDto> NextActions);
+
+public sealed record OperationsCloseReadinessComponentDto(
+    string Key,
+    string Label,
+    int Score,
+    int Weight,
+    bool IsReady,
+    string Severity,
+    string? BlockingReason,
+    OperationsGateKeyDto? Gate,
+    string? RouteHint);
 
 public sealed record OperationsCloseReadinessBlockerDto(
     string Code,

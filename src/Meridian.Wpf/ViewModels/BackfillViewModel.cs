@@ -11,6 +11,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using UiBackfillCompletedEventArgs = Meridian.Ui.Services.BackfillCompletedEventArgs;
@@ -32,7 +33,7 @@ public readonly record struct BackfillStatsPresentation(
 /// the code-behind is thinned to lifecycle wiring and form-input delegation.
 /// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandContextProvider, IPageActionBarProvider
+public sealed class BackfillViewModel : BindableBase, IPageActivationLifetime, IDisposable, ICommandContextProvider, IPageActionBarProvider
 {
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.NavigationService _navigationService;
@@ -46,7 +47,10 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     private readonly CommandPaletteService _commandPaletteService;
 
     private readonly DispatcherTimer _progressPollTimer;
+    private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _backfillCts;
+    private bool _isActive;
+    private bool _isDisposed;
 
     // Last known symbol counts — used to restore taskbar progress after a resume.
     private ulong _lastCompletedSymbols;
@@ -496,8 +500,26 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────────────
-    public async Task StartAsync(CancellationToken ct = default)
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
+    public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct);
+
+    public async Task ActivateAsync(CancellationToken ct = default)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+        if (_isActive)
+        {
+            return;
+        }
+
+        _isActive = true;
+        _activationCts?.Dispose();
+        _activationCts = ct.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct)
+            : new CancellationTokenSource();
+
         _backfillService.ProgressUpdated += OnBackfillProgressUpdated;
         _backfillService.BackfillCompleted += OnBackfillCompleted;
 
@@ -506,17 +528,26 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         Actions.Add(new ActionEntry("Start Backfill", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "\uE768", "Start a new backfill", IsPrimary: true));
         Actions.Add(new ActionEntry("View Status", new RelayCommand(() => _navigationService.NavigateTo("Backfill")), "\uE9D9", "View backfill status"));
 
-        await LoadScheduledJobsAsync();
-        await LoadResumableJobsAsync();
-        await RefreshStatusFromApiAsync();
+        await LoadScheduledJobsAsync(ActivationToken);
+        await LoadResumableJobsAsync(ActivationToken);
+        await RefreshStatusFromApiAsync(ActivationToken);
     }
 
-    public void Stop()
+    public void Stop() => Deactivate();
+
+    public void Deactivate()
     {
+        if (!_isActive)
+        {
+            return;
+        }
+
+        _isActive = false;
         _progressPollTimer.Stop();
-        _backfillCts?.Cancel();
         _backfillService.ProgressUpdated -= OnBackfillProgressUpdated;
         _backfillService.BackfillCompleted -= OnBackfillCompleted;
+        CancelAndDispose(Interlocked.Exchange(ref _backfillCts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
     }
 
     // ── Data loading ────────────────────────────────────────────────────────
@@ -1407,7 +1438,34 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         paletteService.UnregisterContextualProvider(ContextKey);
     }
 
-    public void Dispose() => Stop();
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+        Deactivate();
+    }
+
+    private static void CancelAndDispose(CancellationTokenSource? cts)
+    {
+        if (cts is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        cts.Dispose();
+    }
 
     public readonly record struct BackfillStartRequest(
         string[] Symbols,

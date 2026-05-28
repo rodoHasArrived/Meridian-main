@@ -70,6 +70,7 @@ public sealed class BackfillViewModelTests
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\BackfillPage.xaml"));
         var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\BackfillPage.xaml.cs"));
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.cs"));
 
         xaml.Should().Contain("BackfillStartReadinessCard");
         xaml.Should().Contain("{Binding StartReadinessTitle}");
@@ -85,6 +86,13 @@ public sealed class BackfillViewModelTests
         codeBehind.Should().NotContain("SymbolsValidationError.Text =");
         codeBehind.Should().NotContain("FromDateValidationError.Text =");
         codeBehind.Should().NotContain("ToDateValidationError.Text =");
+        codeBehind.Should().Contain("await _viewModel.ActivateAsync()");
+        codeBehind.Should().Contain("_viewModel.Deactivate()");
+        codeBehind.Should().NotContain("_viewModel.StartAsync()");
+        codeBehind.Should().NotContain("_viewModel.Stop()");
+        viewModel.Should().Contain("IPageActivationLifetime");
+        viewModel.Should().Contain("public bool IsActive");
+        viewModel.Should().Contain("public CancellationToken ActivationToken");
     }
 
     [Fact]

@@ -28,7 +28,9 @@ and UI presentation concerns in their owning layers.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
   and approval close lanes. Approval and close commands enforce shared close-checklist control
-  approvals before the workflow can become ready for close or close against a report pack.
+  approvals before the workflow can become ready for close or close against a report pack. Close
+  readiness is scored server-side across Security Master, position, cash, ledger, pricing,
+  reconciliation, report, and approval components.
 - `Services/` - application use cases and orchestration services.
 - `Composition/` - application feature registration and service wiring.
 

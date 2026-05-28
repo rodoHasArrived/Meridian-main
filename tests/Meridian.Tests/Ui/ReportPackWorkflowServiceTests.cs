@@ -21,9 +21,9 @@ public sealed class ReportPackWorkflowServiceTests
         published.AuditTrail.Should().HaveCount(5);
         published.AuditTrail.Should().ContainSingle(e =>
             e.Action == "create"
-            && e.ActorId == "author"
-            && e.From == ReportPackWorkflowStateDto.Draft
-            && e.To == ReportPackWorkflowStateDto.Draft);
+            && e.Actor == "author"
+            && e.FromState == ReportPackWorkflowStateDto.Draft
+            && e.ToState == ReportPackWorkflowStateDto.Draft);
     }
 
     [Fact]

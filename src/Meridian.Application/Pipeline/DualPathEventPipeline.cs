@@ -304,7 +304,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
                 symbolHash,
                 trade.Price,
                 trade.Size,
-                (int)trade.Aggressor,
+                (byte)trade.Aggressor,
                 evt.Sequence);
 
             if (_tradeBuffer.TryWrite(in raw))

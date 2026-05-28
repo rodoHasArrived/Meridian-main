@@ -42,12 +42,12 @@ public partial class BackfillPage : Page
         UpdateGranularityHint();
         RefreshStartSetupState();
 
-        await _viewModel.StartAsync();
+        await _viewModel.ActivateAsync();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-        _viewModel.Stop();
+        _viewModel.Deactivate();
         SavePageFilterState();
     }
 

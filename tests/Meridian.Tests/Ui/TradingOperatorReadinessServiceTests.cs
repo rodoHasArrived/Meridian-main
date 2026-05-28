@@ -467,7 +467,7 @@ public sealed class TradingOperatorReadinessServiceTests
 
         readiness.Should().NotBeNull();
         readiness!.Status.Should().Be(TradingAcceptanceGateStatusDto.Blocked);
-        readiness.Detail.Should().Contain("critical validation issue", StringComparison.OrdinalIgnoreCase);
+        readiness.Detail.Should().Contain("critical validation issue");
     }
 
     [Fact]

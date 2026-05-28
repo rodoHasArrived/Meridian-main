@@ -30,14 +30,9 @@ public static class ComplianceEndpoints
         })
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
 
-<<<<<<< Updated upstream
-        app.MapGet("/api/compliance/audit/extract", (ImmutableAuditLogService auditLog) =>
+        app.MapGet("/api/compliance/audit/extract", ([FromServices] ImmutableAuditLogService auditLog) =>
             Results.Ok(new { integrityValid = auditLog.VerifyIntegrity(), events = auditLog.GetAll() }))
             .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
-=======
-        app.MapGet("/api/compliance/audit/extract", ([FromServices] ImmutableAuditLogService auditLog) =>
-            Results.Ok(new { integrityValid = auditLog.VerifyIntegrity(), events = auditLog.GetAll() }));
->>>>>>> Stashed changes
 
         app.MapGet("/api/compliance/controls/attestation", ([FromServices] ImmutableAuditLogService auditLog) =>
             Results.Ok(new
@@ -63,12 +58,8 @@ public static class ComplianceEndpoints
         })
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
 
-<<<<<<< Updated upstream
-        app.MapGet("/api/compliance/access-reviews", (AccessReviewService reviews) => Results.Ok(reviews.GetReviews()))
+        app.MapGet("/api/compliance/access-reviews", ([FromServices] AccessReviewService reviews) => Results.Ok(reviews.GetReviews()))
             .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageUsers));
-=======
-        app.MapGet("/api/compliance/access-reviews", ([FromServices] AccessReviewService reviews) => Results.Ok(reviews.GetReviews()));
->>>>>>> Stashed changes
 
         return app;
     }
@@ -80,8 +71,8 @@ public static class ComplianceEndpoints
             : "anonymous";
 
         var roles = http.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var currentRole) && currentRole is UserRole role
-            ? [role.ToString()]
-            : [];
+            ? new[] { role.ToString() }
+            : Array.Empty<string>();
 
         var team = http.Request.Headers["X-Actor-Team"].FirstOrDefault();
         var mfa = http.User.Claims.Any(claim =>

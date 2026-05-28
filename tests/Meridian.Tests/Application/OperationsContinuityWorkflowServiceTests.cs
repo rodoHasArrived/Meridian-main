@@ -414,6 +414,11 @@ public sealed class OperationsContinuityWorkflowServiceTests
         closed.Workflow.Gates.Should().OnlyContain(gate => gate.Status == OperationsGateStatusDto.Passed);
         closed.Workflow.ReportPackReadiness.IsReady.Should().BeTrue();
         closed.Workflow.Approvals.Should().Contain(approval => approval.Status == OperationsApprovalStateDto.Approved);
+        closed.Workflow.CloseReadiness.Should().NotBeNull();
+        closed.Workflow.CloseReadiness!.IsReadyToClose.Should().BeTrue();
+        closed.Workflow.CloseReadiness.Score.Should().Be(100);
+        closed.Workflow.CloseReadiness.Components.Should().HaveCount(8);
+        closed.Workflow.CloseReadiness.Components.Should().OnlyContain(component => component.IsReady);
 
         var timeline = await auditStore.GetTimelineAsync(workflowId);
         timeline.Select(entry => entry.EventType).Should().ContainInOrder(
@@ -1519,6 +1524,12 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "report-pack-1"));
 
         close.Success.Should().BeFalse();
+        close.CloseReadiness.Should().NotBeNull();
+        close.CloseReadiness!.Score.Should().BeLessThan(100);
+        close.CloseReadiness.Components.Should().Contain(component =>
+            component.Key == "reconciliation" &&
+            component.IsReady == false &&
+            component.Weight == 15);
         close.Blockers.Should().Contain(blocker => blocker.Code == "RECONCILIATION_BREAKS_OPEN");
         close.Blockers.Should().Contain(blocker => blocker.Code == "APPROVAL_MISSING");
     }

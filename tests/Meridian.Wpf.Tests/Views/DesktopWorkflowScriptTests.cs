@@ -336,6 +336,14 @@ public sealed class DesktopWorkflowScriptTests
         launcher.Should().Contain("$buildIsolationKey = if ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }");
         launcher.Should().Contain("function Wait-ForDesktopWindow");
         launcher.Should().Contain("function Stop-DesktopProcessAfterSmoke");
+        launcher.Should().Contain("function Stop-OwnedDesktopProcessSafely");
+        launcher.Should().Contain("$hostShutdownToken = [System.Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))");
+        launcher.Should().Contain("MDC_SHUTDOWN_TOKEN = $env:MDC_SHUTDOWN_TOKEN");
+        launcher.Should().Contain("$env:MDC_SHUTDOWN_TOKEN = $hostShutdownToken");
+        launcher.Should().Contain("http://localhost:$hostPort/api/system/shutdown");
+        launcher.Should().Contain("\"X-Meridian-Shutdown-Token\" = $hostShutdownToken");
+        launcher.Should().Contain("Local Meridian host stopped gracefully");
+        launcher.Should().Contain("Stop-OwnedDesktopProcessSafely");
         launcher.Should().Contain("Write-Step 'Startup smoke'");
         launcher.Should().Contain("Wait-ForDesktopWindow -Process $desktopProcess -TimeoutSec $StartupSmokeTimeoutSec");
         launcher.Should().Contain("Stop-DesktopProcessAfterSmoke -Process $desktopProcess");

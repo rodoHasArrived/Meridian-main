@@ -2,6 +2,18 @@
 
 Meridian hosts should shut down through cooperative cancellation before any owned process is terminated. This applies to the CLI host, WPF desktop shell, and installed Web Workstation host.
 
+## Desktop Development Launcher
+
+`scripts/dev/run-desktop.ps1` owns both processes it starts during a local desktop run: the
+desktop-local host and the WPF shell. The launcher assigns the host a per-run
+`MDC_SHUTDOWN_TOKEN`, posts to `POST /api/system/shutdown` with
+`X-Meridian-Shutdown-Token` during cleanup, waits for host exit, and only then terminates the
+owned host process if cooperative shutdown did not complete.
+
+For `-StartupSmoke` and interrupted launches, the runner also closes the owned WPF shell process
+before exiting so a failed smoke pass does not leave a hidden or orphaned `Meridian.Desktop`
+instance behind.
+
 ## Web Workstation Sessions
 
 The installed Web Workstation launcher tracks the host it starts in `%LOCALAPPDATA%\Meridian\service\web-workstation-runtime.json`. The state file records the PID, port, executable path, config path, start time, and local shutdown token.

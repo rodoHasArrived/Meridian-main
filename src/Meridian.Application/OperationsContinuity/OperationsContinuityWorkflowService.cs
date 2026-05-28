@@ -1143,29 +1143,106 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
 
     private static OperationsCloseReadinessDto EvaluateCloseReadiness(OperationsContinuityWorkflow workflow)
     {
+        var components = new List<OperationsCloseReadinessComponentDto>(capacity: 8);
         var blockers = new List<OperationsCloseReadinessBlockerDto>();
-        if (workflow.BreakCases.Any(static item => !string.Equals(item.Status, "closed", StringComparison.OrdinalIgnoreCase) && !string.Equals(item.Status, "resolved", StringComparison.OrdinalIgnoreCase)))
-        {
-            blockers.Add(new("RECONCILIATION_BREAKS_OPEN", "Breaks", "Critical", "Unresolved reconciliation breaks still require disposition.", OperationsGateKeyDto.Reconciliation, "/workstation/accounting"));
-        }
+        AddComponent(components, blockers, "security-master", "Security Master", 15,
+            workflow.SecurityMasterGate.Status == OperationsGateStatusDto.Passed &&
+                workflow.SecurityMasterState is OperationsSecurityMasterStateDto.Complete or OperationsSecurityMasterStateDto.OverridesApproved,
+            "SECURITY_MASTER_RESOLUTION_REQUIRED",
+            "Security Master mappings, overrides, and instrument confidence must be complete.",
+            OperationsGateKeyDto.SecurityMaster,
+            "/workstation/data");
+        AddComponent(components, blockers, "positions", "Positions", 10,
+            workflow.BrokerIngestGate.Status == OperationsGateStatusDto.Passed &&
+                workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Complete,
+            "POSITION_COVERAGE_INCOMPLETE",
+            "Broker or custodian position coverage is not complete.",
+            OperationsGateKeyDto.BrokerIngest,
+            "/workstation/accounting");
+        AddComponent(components, blockers, "cash", "Cash", 10,
+            workflow.BrokerIngestGate.Status == OperationsGateStatusDto.Passed &&
+                workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Complete,
+            "BROKER_CASH_COVERAGE_INCOMPLETE",
+            "Broker or custodian cash activity coverage is not complete.",
+            OperationsGateKeyDto.BrokerIngest,
+            "/workstation/accounting");
+        AddComponent(components, blockers, "ledger", "Ledger", 15,
+            workflow.LedgerPostingGate.Status == OperationsGateStatusDto.Passed &&
+                workflow.LedgerPostingState is OperationsLedgerPostingStateDto.Posted or OperationsLedgerPostingStateDto.Complete,
+            "POSTING_INCOMPLETE",
+            "Ledger posting state is not complete for close.",
+            OperationsGateKeyDto.LedgerPosting,
+            "/workstation/accounting");
+        AddComponent(components, blockers, "pricing", "Pricing", 10,
+            workflow.SecurityMasterGate.Status == OperationsGateStatusDto.Passed,
+            "PRICING_COVERAGE_INCOMPLETE",
+            "Pricing and valuation coverage is not complete.",
+            OperationsGateKeyDto.SecurityMaster,
+            "/workstation/data");
+        AddComponent(components, blockers, "reconciliation", "Reconciliation", 15,
+            workflow.ReconciliationGate.Status == OperationsGateStatusDto.Passed &&
+                workflow.ReconciliationState == OperationsReconciliationStateDto.Complete &&
+                workflow.BreakCases.All(static item =>
+                    string.Equals(item.Status, "closed", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(item.Status, "resolved", StringComparison.OrdinalIgnoreCase)),
+            "RECONCILIATION_BREAKS_OPEN",
+            "Unresolved reconciliation breaks still require disposition.",
+            OperationsGateKeyDto.Reconciliation,
+            "/workstation/accounting");
+        AddComponent(components, blockers, "reports", "Reports", 15,
+            workflow.ReportPackReadiness.IsReady &&
+                !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId),
+            "EVIDENCE_INCOMPLETE",
+            "Close evidence is incomplete or report pack is missing.",
+            OperationsGateKeyDto.Approval,
+            "/workstation/reporting");
+        AddComponent(components, blockers, "approvals", "Approvals", 10,
+            workflow.ApprovalGate.Status == OperationsGateStatusDto.Passed &&
+                workflow.ApprovalState == OperationsApprovalStateDto.Approved,
+            "APPROVAL_MISSING",
+            "Close requires final approval before execution.",
+            OperationsGateKeyDto.Approval,
+            "/workstation/accounting");
 
-        if (workflow.ApprovalState != OperationsApprovalStateDto.Approved)
-        {
-            blockers.Add(new("APPROVAL_MISSING", "Approvals", "Critical", "Close requires final approval before execution.", OperationsGateKeyDto.Approval, "/workstation/accounting"));
-        }
-
-        if (workflow.LedgerPostingState != OperationsLedgerPostingStateDto.Posted && workflow.LedgerPostingState != OperationsLedgerPostingStateDto.Complete)
-        {
-            blockers.Add(new("POSTING_INCOMPLETE", "Posting", "Critical", "Ledger posting state is not complete for close.", OperationsGateKeyDto.LedgerPosting, "/workstation/accounting"));
-        }
-
-        if (!workflow.ReportPackReadiness.IsReady || string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId))
-        {
-            blockers.Add(new("EVIDENCE_INCOMPLETE", "Evidence", "Critical", "Close evidence is incomplete or report pack is missing.", OperationsGateKeyDto.Approval, "/workstation/reporting"));
-        }
-
+        var score = components.Sum(static component => component.Score);
+        var severity = score == 100 ? "Info" : "Critical";
         var actions = blockers.Select(static b => new OperationsNextActionDto(b.Code, b.Message, b.RouteHint, b.Gate)).ToArray();
-        return new OperationsCloseReadinessDto(blockers.Count == 0, blockers.Count == 0 ? "Info" : "Critical", blockers, actions);
+        return new OperationsCloseReadinessDto(score == 100, severity, score, components, blockers, actions);
+    }
+
+    private static void AddComponent(
+        ICollection<OperationsCloseReadinessComponentDto> components,
+        ICollection<OperationsCloseReadinessBlockerDto> blockers,
+        string key,
+        string label,
+        int weight,
+        bool isReady,
+        string blockerCode,
+        string blockingReason,
+        OperationsGateKeyDto gate,
+        string routeHint)
+    {
+        components.Add(new OperationsCloseReadinessComponentDto(
+            key,
+            label,
+            isReady ? weight : 0,
+            weight,
+            isReady,
+            isReady ? "Info" : "Critical",
+            isReady ? null : blockingReason,
+            gate,
+            routeHint));
+
+        if (!isReady)
+        {
+            blockers.Add(new OperationsCloseReadinessBlockerDto(
+                blockerCode,
+                label,
+                "Critical",
+                blockingReason,
+                gate,
+                routeHint));
+        }
     }
 
     private static OperationsGateDto ToGateDto(OperationsGateState gate) =>
