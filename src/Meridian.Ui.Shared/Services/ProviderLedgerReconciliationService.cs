@@ -388,7 +388,7 @@ public sealed class ProviderLedgerReconciliationService
                     confidenceScore: position.Security.IsInferredMatch ? 85m : 100m,
                     resolutionSource: "provider-position",
                     reason: "Provider position already carries a resolved Security Master reference.",
-                    observedAt));
+                    observedAt: observedAt));
                 AddMatched(
                     checks,
                     checkId,
@@ -427,7 +427,7 @@ public sealed class ProviderLedgerReconciliationService
                     confidenceScore: resolved.IsInferredMatch ? 80m : 90m,
                     resolutionSource: "security-master-lookup",
                     reason: "Provider position resolved through the shared Security Master lookup.",
-                    observedAt));
+                    observedAt: observedAt));
                 AddMatched(
                     checks,
                     checkId,
@@ -462,12 +462,12 @@ public sealed class ProviderLedgerReconciliationService
                         providerProjection,
                         position,
                         security: null,
-                        validation,
+                        validation: validation,
                         status: ProviderSecurityMasterPassportStatusDto.Resolved,
                         confidenceScore: 80m,
                         resolutionSource: "security-validation-gate",
                         reason: "Security Master validation accepted the provider position.",
-                        observedAt));
+                        observedAt: observedAt));
                     AddMatched(
                         checks,
                         checkId,
@@ -493,14 +493,14 @@ public sealed class ProviderLedgerReconciliationService
                     providerProjection,
                     position,
                     security: null,
-                    validation,
+                    validation: validation,
                     status: validation.IsBlocked || validation.Report.HasBlockingIssues
                         ? ProviderSecurityMasterPassportStatusDto.Blocked
                         : ProviderSecurityMasterPassportStatusDto.Unresolved,
                     confidenceScore: 0m,
                     resolutionSource: "security-validation-gate",
-                    reason,
-                    observedAt));
+                    reason: reason,
+                    observedAt: observedAt));
             }
             else
             {
@@ -512,8 +512,8 @@ public sealed class ProviderLedgerReconciliationService
                     status: ProviderSecurityMasterPassportStatusDto.Unresolved,
                     confidenceScore: 0m,
                     resolutionSource: "unresolved",
-                    reason,
-                    observedAt));
+                    reason: reason,
+                    observedAt: observedAt));
             }
 
             AddBreak(

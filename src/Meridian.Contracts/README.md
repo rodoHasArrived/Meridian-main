@@ -58,7 +58,9 @@ and cash-transaction details. Provider-ledger reconciliation payloads in the sam
 fund-account scoped and compare the latest provider projection with Meridian's internal
 account-balance snapshot plus Security Master coverage posture. Reconciliation break payloads carry
 stable break keys, owner assignment, tolerance, first/last-observed aging, and sign-off state so
-controller workflows can treat provider-ledger variances as accounting-grade case records.
+controller workflows can treat provider-ledger variances as accounting-grade case records. The
+detail contract also carries Security Master confidence passports for provider positions, including
+resolution source, confidence score, validation issue codes, and identifier-conflict evidence.
 
 Direct lending command result codes distinguish validation failures, missing aggregates,
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return

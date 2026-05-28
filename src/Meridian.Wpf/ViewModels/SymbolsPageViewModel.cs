@@ -216,7 +216,6 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         }
     }
 
-    private SymbolViewModel? _selectedItem;
     public SymbolViewModel? SelectedItem
     {
         get => SymbolsSection.SelectedItem;
@@ -238,88 +237,6 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     }
 
     public bool HasSelectedSymbol => SelectedItem != null;
-
-    /*
-        Previous inline section state has moved to SymbolsPageSectionViewModel.
-        Adapter properties remain here so XAML and command surfaces do not churn.
-    */
-/*
-    private string _searchText = string.Empty;
-    public string SearchText
-    {
-        get => _searchText;
-        set
-        {
-            if (SetProperty(ref _searchText, value ?? string.Empty) && !_suppressFilterApply)
-                ApplyFilters();
-        }
-    }
-
-    private string _selectedSubscriptionFilter = "All";
-    public string SelectedSubscriptionFilter
-    {
-        get => _selectedSubscriptionFilter;
-        set
-        {
-            var next = string.IsNullOrWhiteSpace(value) ? "All" : value;
-            if (SetProperty(ref _selectedSubscriptionFilter, next) && !_suppressFilterApply)
-                ApplyFilters();
-        }
-    }
-
-    private string _selectedExchangeFilter = "All";
-    public string SelectedExchangeFilter
-    {
-        get => _selectedExchangeFilter;
-        set
-        {
-            var next = string.IsNullOrWhiteSpace(value) ? "All" : value;
-            if (SetProperty(ref _selectedExchangeFilter, next) && !_suppressFilterApply)
-                ApplyFilters();
-        }
-    }
-
-    private string _visibleSymbolScopeText = "No configured symbols";
-    public string VisibleSymbolScopeText
-    {
-        get => _visibleSymbolScopeText;
-        private set => SetProperty(ref _visibleSymbolScopeText, value);
-    }
-
-    private bool _hasActiveFilters;
-    public bool HasActiveFilters
-    {
-        get => _hasActiveFilters;
-        private set => SetProperty(ref _hasActiveFilters, value);
-    }
-
-    private bool _hasVisibleSymbols;
-    public bool HasVisibleSymbols
-    {
-        get => _hasVisibleSymbols;
-        private set => SetProperty(ref _hasVisibleSymbols, value);
-    }
-
-    private bool _isSymbolsEmptyStateVisible = true;
-    public bool IsSymbolsEmptyStateVisible
-    {
-        get => _isSymbolsEmptyStateVisible;
-        private set => SetProperty(ref _isSymbolsEmptyStateVisible, value);
-    }
-
-    private string _symbolsEmptyStateTitle = "No symbols configured yet";
-    public string SymbolsEmptyStateTitle
-    {
-        get => _symbolsEmptyStateTitle;
-        private set => SetProperty(ref _symbolsEmptyStateTitle, value);
-    }
-
-    private string _symbolsEmptyStateDetail = "Add a symbol, load a watchlist, or apply a template to start collecting market data.";
-    public string SymbolsEmptyStateDetail
-    {
-        get => _symbolsEmptyStateDetail;
-        private set => SetProperty(ref _symbolsEmptyStateDetail, value);
-    }
 
     // ── Security Master bridge properties ───────────────────────────────────
     private string _selectedSymbolTicker = string.Empty;
@@ -355,28 +272,6 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         get => _selectedSymbolSecurityId;
         private set => SetProperty(ref _selectedSymbolSecurityId, value);
     }
-
-    private SymbolViewModel? _selectedItem;
-    public SymbolViewModel? SelectedItem
-    {
-        get => _selectedItem;
-        set
-        {
-            if (SetProperty(ref _selectedItem, value))
-            {
-                SelectedSymbolTicker = value?.Symbol ?? string.Empty;
-                RaisePropertyChanged(nameof(HasSelectedSymbol));
-                NavigateToLiveDataCommand?.NotifyCanExecuteChanged();
-                NavigateToOrderBookCommand?.NotifyCanExecuteChanged();
-                StartBackfillCommand?.NotifyCanExecuteChanged();
-                NavigateToChartCommand?.NotifyCanExecuteChanged();
-                ExportSymbolDataCommand?.NotifyCanExecuteChanged();
-            }
-        }
-    }
-
-    public bool HasSelectedSymbol => _selectedItem != null;
-*/
 
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Symbols";
@@ -1022,11 +917,11 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     // ── Action Strip Commands ───────────────────────────────────────────────
     private void NavigateToLiveData()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("LiveData", _selectedItem.Symbol);
+            _navigationService.NavigateTo("LiveData", SelectedItem.Symbol);
         }
         catch (OperationCanceledException)
         {
@@ -1044,11 +939,11 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
 
     private void NavigateToOrderBook()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("OrderBook", _selectedItem.Symbol);
+            _navigationService.NavigateTo("OrderBook", SelectedItem.Symbol);
         }
         catch (OperationCanceledException)
         {
@@ -1066,11 +961,11 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
 
     private void StartBackfill()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("Backfill", _selectedItem.Symbol);
+            _navigationService.NavigateTo("Backfill", SelectedItem.Symbol);
         }
         catch (OperationCanceledException)
         {
@@ -1088,11 +983,11 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
 
     private void NavigateToChart()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("Charts", _selectedItem.Symbol);
+            _navigationService.NavigateTo("Charts", SelectedItem.Symbol);
         }
         catch (OperationCanceledException)
         {
@@ -1110,11 +1005,11 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
 
     private void ExportSymbolData()
     {
-        if (_selectedItem == null)
+        if (SelectedItem == null)
             return;
         try
         {
-            _navigationService.NavigateTo("DataExport", _selectedItem.Symbol);
+            _navigationService.NavigateTo("DataExport", SelectedItem.Symbol);
         }
         catch (OperationCanceledException)
         {
@@ -1401,12 +1296,12 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         {
             var removeCommand = new RelayCommand(async () =>
             {
-                if (_selectedItem != null)
-                    await DeleteSymbolAsync(_selectedItem);
+                if (SelectedItem != null)
+                    await DeleteSymbolAsync(SelectedItem);
             });
             commands.Add(new CommandEntry(
                 "Remove Selected",
-                $"Remove {_selectedItem?.Symbol} from the list",
+                $"Remove {SelectedItem?.Symbol} from the list",
                 "Symbols",
                 removeCommand,
                 "Delete"));
@@ -1418,7 +1313,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
             var liveDataCommand = new RelayCommand(NavigateToLiveData);
             commands.Add(new CommandEntry(
                 "View in Live Data",
-                $"Open {_selectedItem?.Symbol} in the Live Data viewer",
+                $"Open {SelectedItem?.Symbol} in the Live Data viewer",
                 "Symbols",
                 liveDataCommand));
         }

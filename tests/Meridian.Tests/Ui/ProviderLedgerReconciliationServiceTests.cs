@@ -45,6 +45,14 @@ public sealed class ProviderLedgerReconciliationServiceTests
             detail.Checks.Should().Contain(check => check.CheckId == "cash-balance" && check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
             detail.Checks.Should().Contain(check => check.CheckId == "securities-market-value" && check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
             detail.Checks.Should().Contain(check => check.CheckId == "security-master:AAPL" && check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+            var passport = detail.SecurityMasterPassports.Should().NotBeNull().And.ContainSingle(item => item.Symbol == "AAPL").Subject;
+            passport.ProviderId.Should().Be("alpaca");
+            passport.ExternalAccountId.Should().Be("PA-LEDGER");
+            passport.SecurityId.Should().Be(Guid.Parse("35D27D8E-4460-4B17-92B8-6E5F53773D1D"));
+            passport.Status.Should().Be(ProviderSecurityMasterPassportStatusDto.Resolved);
+            passport.ConfidenceScore.Should().Be(90m);
+            passport.ResolutionSource.Should().Be("security-master-lookup");
+            passport.ValidationIssueCodes.Should().BeEmpty();
             File.Exists(detail.Summary.DetailPath).Should().BeTrue("latest reconciliation detail must be retained as evidence");
         }
         finally
@@ -175,6 +183,11 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 breakRow.Code == "SM_PROVIDER_POSITION_SECURITY_UNRESOLVED" &&
                 breakRow.Symbol == "AAPL" &&
                 breakRow.Category == ReconciliationBreakCategory.ClassificationGap);
+            var passport = detail.SecurityMasterPassports.Should().NotBeNull().And.ContainSingle(item => item.Symbol == "AAPL").Subject;
+            passport.Status.Should().Be(ProviderSecurityMasterPassportStatusDto.Unresolved);
+            passport.ConfidenceScore.Should().Be(0m);
+            passport.ResolutionSource.Should().Be("unresolved");
+            passport.SecurityId.Should().BeNull();
         }
         finally
         {
@@ -207,6 +220,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 JsonOptions);
             latest.Should().NotBeNull();
             latest!.Summary.ReconciliationRunId.Should().Be(created.Summary.ReconciliationRunId);
+            latest.SecurityMasterPassports.Should().NotBeNull().And.ContainSingle(item =>
+                item.Symbol == "AAPL" &&
+                item.Status == ProviderSecurityMasterPassportStatusDto.Resolved &&
+                item.ResolutionSource == "security-master-lookup");
         }
         finally
         {

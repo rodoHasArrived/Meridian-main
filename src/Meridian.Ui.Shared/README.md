@@ -49,6 +49,9 @@ coverage, and retains the latest detail under workstation data for browser and W
 consume later without adding client-specific reconciliation logic. Break records preserve stable
 keys, owner assignment, tolerance, first/last-observed aging, and sign-off state from the previous
 latest detail so repeated provider-ledger variances can be controlled as accounting casework.
+Reconciliation details also emit provider-to-Security-Master confidence passports for every
+provider position, preserving the resolution path, confidence score, validation issue codes, and
+identifier-conflict evidence alongside the persisted accounting detail.
 
 ## Diagrams
 

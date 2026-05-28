@@ -184,6 +184,28 @@ public sealed class SymbolsPageViewModelTests
         viewModel.Should().Contain("public CancellationToken ActivationToken");
     }
 
+    [Fact]
+    public void SymbolsPageSection_ShouldOwnCollectionsFiltersAndSelectionWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SymbolsPageViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SymbolsPageViewModel.cs"));
+
+        sectionSource.Should().Contain("public ObservableCollection<SymbolViewModel> Symbols");
+        sectionSource.Should().Contain("public ObservableCollection<SymbolViewModel> FilteredSymbols");
+        sectionSource.Should().Contain("public ObservableCollection<WatchlistInfo> Watchlists");
+        sectionSource.Should().Contain("public string SearchText");
+        sectionSource.Should().Contain("public string SelectedSubscriptionFilter");
+        sectionSource.Should().Contain("public SymbolViewModel? SelectedItem");
+        viewModelSource.Should().Contain("public SymbolsPageSectionViewModel SymbolsSection");
+        viewModelSource.Should().Contain("public ObservableCollection<SymbolViewModel> Symbols => SymbolsSection.Symbols");
+        viewModelSource.Should().Contain("get => SymbolsSection.SearchText");
+        viewModelSource.Should().Contain("get => SymbolsSection.SelectedItem");
+        viewModelSource.Should().NotContain("_searchText");
+        viewModelSource.Should().NotContain("_selectedSubscriptionFilter");
+        viewModelSource.Should().NotContain("_selectedExchangeFilter");
+        viewModelSource.Should().NotContain("_selectedItem");
+    }
+
     private static SymbolsPageViewModel CreateViewModel(
         Func<CancellationToken, Task<SymbolConfigDto[]>>? getConfiguredSymbolsAsync = null,
         Func<SymbolConfigDto[], CancellationToken, Task>? saveSymbolsAsync = null,

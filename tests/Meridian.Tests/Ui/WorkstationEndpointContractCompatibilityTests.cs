@@ -6,6 +6,7 @@ using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
+using FsCheck.Xunit;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -93,6 +94,59 @@ public sealed class WorkstationEndpointContractCompatibilityTests
         });
     }
 
+    [Property(MaxTest = 200)]
+    public void Scenario_WorkstationJsonContracts_GeneratedOperatorWorkItemsRoundTripWithOptionalNulls(
+        int kindSeed,
+        int toneSeed,
+        int optionalShapeSeed)
+    {
+        var kind = Pick(Enum.GetValues<OperatorWorkItemKindDto>(), kindSeed);
+        var tone = Pick(Enum.GetValues<OperatorWorkItemToneDto>(), toneSeed);
+        var workItemId = $"item-{Math.Abs((long)kindSeed) % 10_000}";
+        var includeOptionalNulls = Math.Abs((long)optionalShapeSeed) % 2 == 0;
+        var optionalJson = includeOptionalNulls
+            ? """,
+              "runId": null,
+              "workspace": "Trading",
+              "targetRoute": null,
+              "targetPageTag": "ProviderHealth",
+              "scope": null,
+              "priorityExplanation": null
+              """
+            : string.Empty;
+        var json = $$"""
+            {
+              "workItemId": "{{workItemId}}",
+              "kind": "{{kind}}",
+              "label": "Generated {{kind}}",
+              "detail": "Generated contract item",
+              "tone": "{{tone}}",
+              "createdAt": "2026-02-11T13:30:00+00:00",
+              "priorityScore": 42{{optionalJson}}
+            }
+            """;
+
+        var item = JsonSerializer.Deserialize<OperatorWorkItemDto>(json, JsonOptions);
+        var roundTripped = JsonSerializer.Deserialize<OperatorWorkItemDto>(
+            JsonSerializer.Serialize(item, JsonOptions),
+            JsonOptions);
+
+        roundTripped.Should().NotBeNull();
+        roundTripped!.WorkItemId.Should().Be(workItemId);
+        roundTripped.Kind.Should().Be(kind);
+        roundTripped.Tone.Should().Be(tone);
+        roundTripped.Title.Should().Be($"Generated {kind}");
+        roundTripped.Description.Should().Be("Generated contract item");
+        roundTripped.PriorityScore.Should().Be(42);
+        if (includeOptionalNulls)
+        {
+            roundTripped.Workspace.Should().Be("Trading");
+            roundTripped.TargetPageTag.Should().Be("ProviderHealth");
+            roundTripped.RunId.Should().BeNull();
+            roundTripped.TargetRoute.Should().BeNull();
+        }
+    }
+
     private static string[] ExtractTopLevelProperties<T>(T payload)
     {
         var node = JsonSerializer.SerializeToNode(payload, JsonOptions).AsObject();
@@ -168,4 +222,7 @@ public sealed class WorkstationEndpointContractCompatibilityTests
     }
 
     private static string ComputeSha256(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+
+    private static T Pick<T>(IReadOnlyList<T> values, int seed)
+        => values[(int)(Math.Abs((long)seed) % values.Count)];
 }
