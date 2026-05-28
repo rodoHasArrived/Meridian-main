@@ -90,6 +90,38 @@ public sealed class ReconciliationCaseworkHardeningTests : IDisposable
         audit.Should().Contain(e => e.EventType == "BulkActionCaseSucceeded" && e.CommandId is null);
     }
 
+    [Fact]
+    public async Task Scenario_AccountingClose_BulkDryRunDoesNotConsumeExecuteIdempotencyKey()
+    {
+        var item = BuildCase("BRK-bulk-idempotency");
+        await _repository.CreateIfMissingAsync(item);
+
+        var preview = new ReconciliationBulkActionRequest(
+            [item.BreakId],
+            ReconciliationBulkActionType.ChangePriority,
+            "idem-preview-commit",
+            DryRun: true,
+            AllowPartialSuccess: true,
+            Priority: ReconciliationCasePriority.High,
+            Reason: "Preview priority escalation.");
+
+        var dryRun = await _repository.BulkActionAsync(preview, "ops.lead");
+        dryRun.DryRun.Should().BeTrue();
+        dryRun.SuccessCount.Should().Be(1);
+        (await _repository.GetByIdAsync(item.BreakId))!.Priority.Should().Be(ReconciliationCasePriority.Normal);
+
+        var execute = await _repository.BulkActionAsync(preview with { DryRun = false }, "ops.lead");
+        execute.DryRun.Should().BeFalse();
+        execute.SuccessCount.Should().Be(1);
+        execute.BulkActionId.Should().NotBe(dryRun.BulkActionId);
+        (await _repository.GetByIdAsync(item.BreakId))!.Priority.Should().Be(ReconciliationCasePriority.High);
+
+        var lookup = await _repository.GetBulkActionResultAsync("idem-preview-commit");
+        lookup.Should().NotBeNull();
+        lookup!.DryRun.Should().BeFalse();
+        lookup.BulkActionId.Should().Be(execute.BulkActionId);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_directory))
