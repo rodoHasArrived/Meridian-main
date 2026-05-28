@@ -623,6 +623,29 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
+    public void FundLedgerReconciliationSection_ShouldOwnQueueAndDetailCollectionsWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Sections.cs"));
+        var reconciliationSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Reconciliation.cs"));
+
+        sectionSource.Should().Contain("public ObservableCollection<FundReconciliationBreakQueueRow> BreakQueueItems");
+        sectionSource.Should().Contain("public ObservableCollection<FundReconciliationCheckDetailRow> ExceptionRows");
+        sectionSource.Should().Contain("public IReadOnlyList<FundReconciliationBreakQueueRow> AllBreakQueueItems");
+        sectionSource.Should().Contain("public FundReconciliationQueueView SelectedQueueView");
+        sectionSource.Should().Contain("public FundReconciliationBreakQueueFilter SelectedBreakQueueFilter");
+        sectionSource.Should().Contain("public FundReconciliationBreakQueueRow? SelectedBreakQueueItem");
+        reconciliationSource.Should().Contain("public ObservableCollection<FundReconciliationBreakQueueRow> ReconciliationBreakQueueItems => ReconciliationSection.BreakQueueItems");
+        reconciliationSource.Should().Contain("get => (int)ReconciliationSection.SelectedQueueView");
+        reconciliationSource.Should().Contain("ReconciliationSection.SelectedBreakQueueFilter = filter");
+        reconciliationSource.Should().Contain("SynchronizeCollection(ReconciliationSection.BreakQueueItems");
+        reconciliationSource.Should().NotContain("_reconciliationBreakQueueItems");
+        reconciliationSource.Should().NotContain("_allReconciliationBreakQueueItems");
+        reconciliationSource.Should().NotContain("_selectedReconciliationQueueView");
+        reconciliationSource.Should().NotContain("_selectedReconciliationBreakQueueFilter");
+        reconciliationSource.Should().NotContain("_selectedBreakQueueItem");
+    }
+
+    [Fact]
     public void LoadAsync_ReportPackContext_LoadsPreviewAndSelectsReportPackTab()
     {
         WpfTestThread.Run(async () =>

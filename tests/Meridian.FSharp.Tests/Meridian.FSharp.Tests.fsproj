@@ -41,6 +41,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FSharp.Core" />
+    <PackageReference Include="FsCheck.Xunit" />
     <!-- FsUnit.xUnit brings xunit.v3; keep the central pin aligned with the VS adapter. -->
     <PackageReference Include="FsUnit.xUnit" />
   </ItemGroup>

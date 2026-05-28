@@ -52,4 +52,4 @@ let ``Provider ledger amount check applies absolute tolerance`` () =
     matched.IsMatched |> should equal true
     matched.Variance |> should equal 0.5m
     broken.IsMatched |> should equal false
-    broken.Reason |> should contain "exceeds tolerance"
+    broken.Reason.Contains("exceeds tolerance") |> should equal true

@@ -69,9 +69,14 @@ module SettlementInstructionCommands =
         if not candidate.IsDefault then
             Ok existing
         else
+            let currencyMatches x =
+                String.IsNullOrWhiteSpace(x.Currency)
+                || String.IsNullOrWhiteSpace(candidate.Currency)
+                || String.Equals(x.Currency, candidate.Currency, StringComparison.OrdinalIgnoreCase)
+
             let sameScope x =
                 x.AccountId = candidate.AccountId
-                && String.Equals(x.Currency, candidate.Currency, StringComparison.OrdinalIgnoreCase)
+                && currencyMatches x
                 && x.CounterpartyScope = candidate.CounterpartyScope
                 && not x.IsClosed
                 && overlaps x candidate

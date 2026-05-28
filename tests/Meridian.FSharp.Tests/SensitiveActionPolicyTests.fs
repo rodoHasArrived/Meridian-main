@@ -32,7 +32,7 @@ let ``Sensitive action policy blocks override self approval for accounting team`
                 Team = "accounting" })
 
     decision.Allowed |> should equal false
-    decision.Reason |> should contain "Segregation-of-duties"
+    decision.Reason.Contains("Segregation-of-duties") |> should equal true
 
 [<Fact>]
 let ``Sensitive action policy rejects unknown actions`` () =

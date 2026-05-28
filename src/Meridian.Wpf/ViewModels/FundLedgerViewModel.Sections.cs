@@ -28,6 +28,24 @@ internal sealed class FundLedgerCollectionsSectionViewModel
 
 public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
 {
+    public ObservableCollection<FundReconciliationBreakQueueRow> BreakQueueItems { get; } = [];
+    public ObservableCollection<FundReconciliationRunRow> RunItems { get; } = [];
+    public ObservableCollection<FundReconciliationCheckDetailRow> ExceptionRows { get; } = [];
+    public ObservableCollection<FundReconciliationCheckDetailRow> AllCheckRows { get; } = [];
+    public ObservableCollection<FundReconciliationSecurityCoverageRow> SecurityCoverageRows { get; } = [];
+    public ObservableCollection<FundReconciliationAuditTrailRow> AuditRows { get; } = [];
+    public ObservableCollection<FundReconciliationCalibrationProfileRow> CalibrationProfiles { get; } = [];
+
+    public IReadOnlyList<FundReconciliationBreakQueueRow> AllBreakQueueItems { get; set; } = [];
+    public IReadOnlyList<FundReconciliationRunRow> AllRunItems { get; set; } = [];
+
+    private FundReconciliationQueueView _selectedQueueView = FundReconciliationQueueView.BreakQueue;
+    private FundReconciliationBreakQueueFilter _selectedBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
+    private FundReconciliationScopeFilter _selectedScopeFilter = FundReconciliationScopeFilter.All;
+    private int _selectedDetailTabIndex;
+    private string _searchText = string.Empty;
+    private FundReconciliationBreakQueueRow? _selectedBreakQueueItem;
+    private FundReconciliationRunRow? _selectedRun;
     private string _legalEntityText = "-";
     private string _baseCurrencyText = "-";
     private string _scopeText = "-";
@@ -67,6 +85,13 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
         "Select a break",
         "Fund Reconciliation");
 
+    public FundReconciliationQueueView SelectedQueueView { get => _selectedQueueView; set => SetProperty(ref _selectedQueueView, value); }
+    public FundReconciliationBreakQueueFilter SelectedBreakQueueFilter { get => _selectedBreakQueueFilter; set => SetProperty(ref _selectedBreakQueueFilter, value); }
+    public FundReconciliationScopeFilter SelectedScopeFilter { get => _selectedScopeFilter; set => SetProperty(ref _selectedScopeFilter, value); }
+    public int SelectedDetailTabIndex { get => _selectedDetailTabIndex; set => SetProperty(ref _selectedDetailTabIndex, value); }
+    public string SearchText { get => _searchText; set => SetProperty(ref _searchText, value); }
+    public FundReconciliationBreakQueueRow? SelectedBreakQueueItem { get => _selectedBreakQueueItem; set => SetProperty(ref _selectedBreakQueueItem, value); }
+    public FundReconciliationRunRow? SelectedRun { get => _selectedRun; set => SetProperty(ref _selectedRun, value); }
     public string LegalEntityText { get => _legalEntityText; set => SetProperty(ref _legalEntityText, value); }
     public string BaseCurrencyText { get => _baseCurrencyText; set => SetProperty(ref _baseCurrencyText, value); }
     public string ScopeText { get => _scopeText; set => SetProperty(ref _scopeText, value); }

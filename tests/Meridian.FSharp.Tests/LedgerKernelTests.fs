@@ -2,6 +2,7 @@ module Meridian.FSharp.Tests.LedgerKernelTests
 
 open System
 open Xunit
+open FsCheck.Xunit
 open FsUnit.Xunit
 open Meridian.FSharp.Ledger
 
@@ -703,6 +704,114 @@ let private rawFacts breakType =
         MappingResolved = None
     }
 
+let private classificationSignature (classification: CanonicalBreakClassificationDto) =
+    String.concat
+        "|"
+        [|
+            classification.TaxonomyVersion
+            classification.BreakClass
+            classification.PrimaryReasonCode
+            String.concat "," classification.ReasonCodes
+            classification.Severity
+            string classification.IsFallback
+        |]
+
+let private generatedBreakTypes =
+    [| "timing"; "quantity"; "price"; "instrument"; "cash-flow"; "corporate-action"; "mapping-error"; "vendor-new-break" |]
+
+let private generatedInstrumentIds =
+    [| "AAPL"; "MSFT"; "CUSIP:037833100"; "ISIN:US5949181045"; "swap-leg-a" |]
+
+let private generatedCurrencies =
+    [| "USD"; "EUR"; "JPY"; "GBP"; "CHF" |]
+
+let private generatedCorporateActionTypes =
+    [| "split"; "dividend"; "spin-off"; "merger" |]
+
+let private generatedMappingKeys =
+    [| ""; "CUSIP:037833100"; "ISIN:US5949181045"; "issuer-map:42"; "duplicate-entry" |]
+
+let private seedAt (seeds: int array) index =
+    let baseValue =
+        if isNull seeds || seeds.Length = 0 then
+            int64 index * 7919L
+        else
+            int64 seeds[index % seeds.Length]
+
+    baseValue + (int64 index * 7919L)
+
+let private bounded modulus seed =
+    int (abs (seed % int64 modulus))
+
+let private chooseFrom values seed =
+    values[bounded values.Length seed]
+
+let private maybeDecimal seed =
+    if bounded 5 seed = 0 then
+        None
+    else
+        Some (decimal ((seed % 20001L) - 10000L) / 10m)
+
+let private maybeSettlementDate seed presenceSeed =
+    if bounded 4 presenceSeed = 0 then
+        None
+    else
+        let days = (bounded 61 seed) - 30
+        Some (DateTimeOffset.Parse("2026-03-01T00:00:00Z").AddDays(float days))
+
+let private maybeMappingResolved seed =
+    match bounded 3 seed with
+    | 0 -> None
+    | 1 -> Some true
+    | _ -> Some false
+
+let private generatedBreakFacts (seeds: int array) offset : BreakFactsDto =
+    let pick index = seedAt seeds (offset + index)
+
+    {
+        BreakType = chooseFrom generatedBreakTypes (pick 0)
+        ExpectedQuantity = maybeDecimal (pick 1)
+        ActualQuantity = maybeDecimal (pick 2)
+        ExpectedPrice = maybeDecimal (pick 3)
+        ActualPrice = maybeDecimal (pick 4)
+        ExpectedInstrumentId = chooseFrom generatedInstrumentIds (pick 5)
+        ActualInstrumentId = chooseFrom generatedInstrumentIds (pick 6)
+        ExpectedCashAmount = maybeDecimal (pick 7)
+        ActualCashAmount = maybeDecimal (pick 8)
+        ExpectedCurrency = chooseFrom generatedCurrencies (pick 9)
+        ActualCurrency = chooseFrom generatedCurrencies (pick 10)
+        ExpectedSettlementDate = maybeSettlementDate (pick 11) (pick 12)
+        ActualSettlementDate = maybeSettlementDate (pick 13) (pick 14)
+        TimingToleranceDays = bounded 10 (pick 15)
+        ExpectedCorporateActionType = chooseFrom generatedCorporateActionTypes (pick 16)
+        ActualCorporateActionType = chooseFrom generatedCorporateActionTypes (pick 17)
+        ExpectedCorporateActionFactor = maybeDecimal (pick 18)
+        ActualCorporateActionFactor = maybeDecimal (pick 19)
+        MappingKey = chooseFrom generatedMappingKeys (pick 20)
+        MappingResolved = maybeMappingResolved (pick 21)
+    }
+
+let private classifyBreakFacts facts =
+    LedgerInterop.ClassifyBreakFacts [| facts |]
+    |> Array.exactlyOne
+    |> classificationSignature
+
+let private padWhitespace value =
+    sprintf " \t%s\r\n " value
+
+let private whitespacePaddedFacts (facts: BreakFactsDto) =
+    {
+        facts with
+            BreakType = padWhitespace facts.BreakType
+            ExpectedInstrumentId = padWhitespace facts.ExpectedInstrumentId
+            ActualInstrumentId = padWhitespace facts.ActualInstrumentId
+            ExpectedCurrency = padWhitespace facts.ExpectedCurrency
+            ActualCurrency = padWhitespace facts.ActualCurrency
+            ExpectedCorporateActionType = padWhitespace facts.ExpectedCorporateActionType
+            ActualCorporateActionType = padWhitespace facts.ActualCorporateActionType
+            MappingKey = padWhitespace facts.MappingKey
+    }
+
 [<Theory>]
 [<InlineData("timing", "Timing", "TimingOutsideTolerance")>]
 [<InlineData("quantity", "Quantity", "QuantityMismatch")>]
@@ -827,6 +936,35 @@ let ``LedgerInterop ClassifyBreakFacts returns stable DTO values for governance 
     classifications[0].PrimaryReasonCode |> should equal "PriceMismatch"
     classifications[0].Severity |> should equal "High"
     classifications[0].IsFallback |> should equal false
+
+[<Property(MaxTest = 200)>]
+let ``Scenario_ReconciliationBreakIntake_GeneratedFactsClassifyDeterministically`` (seeds: int array) =
+    let facts = generatedBreakFacts seeds 0
+
+    classifyBreakFacts facts = classifyBreakFacts facts
+
+[<Property(MaxTest = 200)>]
+let ``Scenario_ReconciliationBreakIntake_GeneratedFactsIgnoreIrrelevantWhitespace`` (seeds: int array) =
+    let facts = generatedBreakFacts seeds 0
+
+    classifyBreakFacts facts = classifyBreakFacts (whitespacePaddedFacts facts)
+
+[<Property(MaxTest = 200)>]
+let ``Scenario_ReconciliationBreakIntake_GeneratedFactOrderDoesNotChangeClassifications`` (seeds: int array) =
+    let first = generatedBreakFacts seeds 0
+    let second = generatedBreakFacts seeds 29
+
+    let forward =
+        LedgerInterop.ClassifyBreakFacts [| first; second |]
+        |> Array.map classificationSignature
+        |> Array.sort
+
+    let reversed =
+        LedgerInterop.ClassifyBreakFacts [| second; first |]
+        |> Array.map classificationSignature
+        |> Array.sort
+
+    forward = reversed
 
 [<Fact>]
 let ``LedgerInterop ToBreakRecordClassificationDtos preserves canonical classification metadata`` () =
