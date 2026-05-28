@@ -52,7 +52,7 @@ latest detail so repeated provider-ledger variances can be controlled as account
 Reconciliation details also emit provider-to-Security-Master confidence passports for every
 provider position, preserving the resolution path, confidence score, validation issue codes, and
 identifier-conflict evidence alongside the persisted accounting detail.
-Reconciliation casework hardening is a shared Accounting workflow: break queue read models now carry owner, priority, SLA policy/due-warning-breach state, business age, taxonomy codes, comment/evidence counts, sign-off/reopen metadata, and optimistic concurrency versions. Lifecycle mutations flow through shared workstation endpoints with immutable audit events and compatibility review/resolve wrappers so WPF and browser clients consume the same casework state.
+Reconciliation casework hardening is a shared Accounting workflow: break queue read models now carry owner, priority, SLA policy/due-warning-breach state, business age, taxonomy codes, comment/evidence counts, sign-off/reopen metadata, and optimistic concurrency versions. Lifecycle mutations flow through shared workstation endpoints with immutable audit events and compatibility review/resolve wrappers so WPF and browser clients consume the same casework state. Statement-run endpoints expose shared contract DTOs for create, detail, validation, run-scoped breaks, and reconcile commands while endpoint lambdas delegate behavior to shared reconciliation services.
 
 Fund-structure endpoints expose `/api/fund-structure/ledger-mapping-view` as the shared accounting
 control surface for account ledger mappings. The endpoint returns server-derived assignment source,
