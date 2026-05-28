@@ -288,6 +288,7 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("\"build\"");
         script.Should().Contain("$wpfProject");
         script.Should().Contain("$wpfTestsProject");
+        script.Should().Contain("\"--no-dependencies\"");
         script.Should().Contain("\"test\"");
         script.Should().Contain("--no-build");
         script.Should().Contain("wpf-dev-test-validation.json");
@@ -306,7 +307,7 @@ public sealed class DesktopWorkflowScriptTests
         guide.Should().Contain("pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1");
         guide.Should().Contain("make desktop-test-dev");
         guide.Should().Contain("-AllowConcurrentDotnet");
-        guide.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal");
+        guide.Should().Contain("dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --no-dependencies /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal");
     }
 
     [Fact]

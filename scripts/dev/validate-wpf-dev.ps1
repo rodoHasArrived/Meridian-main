@@ -159,6 +159,7 @@ if (-not $blockedByConcurrentDotnet) {
         $wpfProject,
         "-c", $Configuration,
         "--no-restore",
+        "--no-dependencies",
         "--nologo",
         "--verbosity", "minimal"
     ) + $serializedBuildArgs
@@ -179,6 +180,7 @@ if (-not $blockedByConcurrentDotnet) {
             $wpfTestsProject,
             "-c", $Configuration,
             "--no-restore",
+            "--no-dependencies",
             "--nologo",
             "--verbosity", "minimal"
         ) + $serializedBuildArgs

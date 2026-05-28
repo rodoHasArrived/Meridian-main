@@ -58,6 +58,14 @@ public sealed class ProviderLedgerReconciliationService
         var staleAfterMinutes = Math.Max(1, request.ProviderStaleAfterMinutes);
         var runId = Guid.NewGuid();
         var createdAt = DateTimeOffset.UtcNow;
+        var previousLatest = await GetLatestAsync(accountId, ct).ConfigureAwait(false);
+        var lifecycle = new BreakLifecycleContext(
+            CreatedAt: createdAt,
+            AmountTolerance: tolerance,
+            DefaultOwner: NormalizeOwner(request.DefaultBreakOwner) ?? "fund-accounting",
+            SignedOffBreakKeys: new HashSet<string>(request.SignedOffBreakKeys ?? [], StringComparer.OrdinalIgnoreCase),
+            SignedOffBy: NormalizeOwner(request.SignedOffBy) ?? NormalizeOwner(request.RequestedBy),
+            PreviousBreaksByKey: BuildPreviousBreakMap(previousLatest));
 
         var providerProjection = await _brokerageSync.GetActivityAsync(accountId, ct).ConfigureAwait(false);
         var internalSnapshot = await _fundAccountService.GetLatestBalanceSnapshotAsync(accountId, ct).ConfigureAwait(false);
@@ -70,6 +78,7 @@ public sealed class ProviderLedgerReconciliationService
         {
             AddBreak(
                 runId,
+                lifecycle,
                 checks,
                 breaks,
                 "provider-projection-available",
@@ -104,6 +113,7 @@ public sealed class ProviderLedgerReconciliationService
             {
                 AddBreak(
                     runId,
+                    lifecycle,
                     checks,
                     breaks,
                     "provider-projection-freshness",
@@ -137,6 +147,7 @@ public sealed class ProviderLedgerReconciliationService
         {
             AddBreak(
                 runId,
+                lifecycle,
                 checks,
                 breaks,
                 "internal-ledger-snapshot-available",
@@ -169,6 +180,7 @@ public sealed class ProviderLedgerReconciliationService
         {
             AddAmountCheck(
                 runId,
+                lifecycle,
                 checks,
                 breaks,
                 "cash-balance",
@@ -186,6 +198,7 @@ public sealed class ProviderLedgerReconciliationService
             {
                 AddBreak(
                     runId,
+                    lifecycle,
                     checks,
                     breaks,
                     "securities-market-value",
@@ -204,6 +217,7 @@ public sealed class ProviderLedgerReconciliationService
             {
                 AddAmountCheck(
                     runId,
+                    lifecycle,
                     checks,
                     breaks,
                     "securities-market-value",
@@ -224,6 +238,7 @@ public sealed class ProviderLedgerReconciliationService
                 + (internalSnapshot.PendingSettlement ?? 0m);
             AddAmountCheck(
                 runId,
+                lifecycle,
                 checks,
                 breaks,
                 "total-equity",
@@ -241,6 +256,7 @@ public sealed class ProviderLedgerReconciliationService
         {
             AddBreak(
                 runId,
+                lifecycle,
                 checks,
                 breaks,
                 "provider-balance-available",
@@ -260,6 +276,7 @@ public sealed class ProviderLedgerReconciliationService
         {
             await AddSecurityCoverageChecksAsync(
                     runId,
+                    lifecycle,
                     providerProjection,
                     request.RequestedBy,
                     checks,
@@ -290,6 +307,9 @@ public sealed class ProviderLedgerReconciliationService
             MatchedChecks: checks.Count(static check => check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched),
             BreakCount: breaks.Count,
             SecurityIssueCount: breaks.Count(static item => item.Code.StartsWith("SM_", StringComparison.OrdinalIgnoreCase)),
+            OpenBreakCount: breaks.Count(static item => item.SignOffState != ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff),
+            SignedOffBreakCount: breaks.Count(static item => item.SignOffState == ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff),
+            OldestBreakAgeMinutes: breaks.Count == 0 ? 0 : breaks.Max(static item => item.AgeMinutes),
             AmountTolerance: tolerance,
             ProviderStaleAfterMinutes: staleAfterMinutes,
             ProviderId: providerProjection?.Link.ProviderId,
@@ -332,6 +352,7 @@ public sealed class ProviderLedgerReconciliationService
 
     private async Task AddSecurityCoverageChecksAsync(
         Guid runId,
+        BreakLifecycleContext lifecycle,
         FundAccountBrokerageSyncActivityDto providerProjection,
         string? requestedBy,
         List<ProviderLedgerReconciliationCheckDto> checks,
@@ -435,6 +456,7 @@ public sealed class ProviderLedgerReconciliationService
 
             AddBreak(
                 runId,
+                lifecycle,
                 checks,
                 breaks,
                 checkId,
@@ -476,6 +498,7 @@ public sealed class ProviderLedgerReconciliationService
 
     private static void AddAmountCheck(
         Guid runId,
+        BreakLifecycleContext lifecycle,
         List<ProviderLedgerReconciliationCheckDto> checks,
         List<ProviderLedgerReconciliationBreakDto> breaks,
         string checkId,
@@ -511,6 +534,7 @@ public sealed class ProviderLedgerReconciliationService
 
         AddBreak(
             runId,
+            lifecycle,
             checks,
             breaks,
             checkId,
@@ -553,6 +577,7 @@ public sealed class ProviderLedgerReconciliationService
 
     private static void AddBreak(
         Guid runId,
+        BreakLifecycleContext lifecycle,
         List<ProviderLedgerReconciliationCheckDto> checks,
         List<ProviderLedgerReconciliationBreakDto> breaks,
         string checkId,
@@ -584,6 +609,25 @@ public sealed class ProviderLedgerReconciliationService
             variance,
             severity,
             reason));
+        var breakKey = BuildBreakKey(checkId, code, symbol);
+        lifecycle.PreviousBreaksByKey.TryGetValue(breakKey, out var previousBreak);
+        var firstObservedAt = previousBreak?.FirstObservedAt ?? lifecycle.CreatedAt;
+        var isSignedOff = lifecycle.SignedOffBreakKeys.Contains(breakKey)
+            || previousBreak?.SignOffState == ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff;
+        var owner = previousBreak?.Owner ?? lifecycle.DefaultOwner;
+        var signedOffBy = isSignedOff
+            ? lifecycle.SignedOffBy ?? previousBreak?.SignedOffBy
+            : null;
+        var signedOffAt = isSignedOff
+            ? (lifecycle.SignedOffBreakKeys.Contains(breakKey) ? lifecycle.CreatedAt : previousBreak?.SignedOffAt)
+            : null;
+        var signOffState = isSignedOff
+            ? ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff
+            : string.IsNullOrWhiteSpace(owner)
+                ? ProviderLedgerReconciliationBreakSignOffStateDto.Open
+                : ProviderLedgerReconciliationBreakSignOffStateDto.Assigned;
+        var ageMinutes = Math.Max(0, (int)Math.Floor((lifecycle.CreatedAt - firstObservedAt).TotalMinutes));
+
         breaks.Add(new ProviderLedgerReconciliationBreakDto(
             $"{runId:N}:{NormalizeBreakIdPart(checkId)}",
             checkId,
@@ -597,8 +641,59 @@ public sealed class ProviderLedgerReconciliationService
             variance,
             reason,
             symbol,
-            evidenceLink));
+            evidenceLink,
+            breakKey,
+            owner,
+            lifecycle.AmountTolerance,
+            firstObservedAt,
+            lifecycle.CreatedAt,
+            ageMinutes,
+            signOffState,
+            signedOffBy,
+            signedOffAt));
     }
+
+    private static IReadOnlyDictionary<string, ProviderLedgerReconciliationBreakDto> BuildPreviousBreakMap(
+        ProviderLedgerReconciliationDetailDto? previousLatest)
+    {
+        if (previousLatest is null)
+        {
+            return new Dictionary<string, ProviderLedgerReconciliationBreakDto>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        return previousLatest.Breaks
+            .Select(item => new
+            {
+                Key = string.IsNullOrWhiteSpace(item.BreakKey)
+                    ? BuildBreakKey(item.CheckId, item.Code, item.Symbol)
+                    : item.BreakKey,
+                Break = item
+            })
+            .GroupBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.OrderByDescending(item => item.Break.LastObservedAt ?? previousLatest.Summary.CreatedAt).First().Break,
+                StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string BuildBreakKey(string checkId, string code, string? symbol)
+        => string.Join(
+            ":",
+            "provider-ledger",
+            NormalizeBreakIdPart(checkId),
+            NormalizeBreakIdPart(code),
+            NormalizeBreakIdPart(string.IsNullOrWhiteSpace(symbol) ? "account" : symbol));
+
+    private static string? NormalizeOwner(string? owner)
+        => string.IsNullOrWhiteSpace(owner) ? null : owner.Trim();
+
+    private sealed record BreakLifecycleContext(
+        DateTimeOffset CreatedAt,
+        decimal AmountTolerance,
+        string? DefaultOwner,
+        IReadOnlySet<string> SignedOffBreakKeys,
+        string? SignedOffBy,
+        IReadOnlyDictionary<string, ProviderLedgerReconciliationBreakDto> PreviousBreaksByKey);
 
     private static string NormalizeBreakIdPart(string value)
         => string.Join("-", value.Trim().Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries))

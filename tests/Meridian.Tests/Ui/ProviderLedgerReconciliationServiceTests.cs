@@ -64,10 +64,52 @@ public sealed class ProviderLedgerReconciliationServiceTests
             var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
 
             detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
-            detail.Breaks.Should().Contain(breakRow =>
+            var cashBreak = detail.Breaks.Should().ContainSingle(breakRow =>
                 breakRow.Code == "CASH_BALANCE_MISMATCH" &&
                 breakRow.Category == ReconciliationBreakCategory.CashMismatch &&
-                breakRow.Variance == 100m);
+                breakRow.Variance == 100m).Subject;
+            cashBreak.BreakKey.Should().NotBeNullOrWhiteSpace();
+            cashBreak.Owner.Should().Be("fund-accounting");
+            cashBreak.Tolerance.Should().Be(0.01m);
+            cashBreak.SignOffState.Should().Be(ProviderLedgerReconciliationBreakSignOffStateDto.Assigned);
+            cashBreak.FirstObservedAt.Should().NotBeNull();
+            cashBreak.LastObservedAt.Should().NotBeNull();
+            detail.Summary.OpenBreakCount.Should().BeGreaterThan(0);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_PreservesBreakAgingAndSignOffState()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true, internalCash: 49_900m);
+
+            var firstDetail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(DefaultBreakOwner: "fund-controller"));
+            var firstCashBreak = firstDetail.Breaks.Single(breakRow => breakRow.Code == "CASH_BALANCE_MISMATCH");
+
+            var signedOffDetail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(
+                    DefaultBreakOwner: "fund-controller",
+                    SignedOffBreakKeys: [firstCashBreak.BreakKey!],
+                    SignedOffBy: "controller"));
+            var signedOffCashBreak = signedOffDetail.Breaks.Single(breakRow => breakRow.Code == "CASH_BALANCE_MISMATCH");
+
+            signedOffCashBreak.BreakKey.Should().Be(firstCashBreak.BreakKey);
+            signedOffCashBreak.Owner.Should().Be("fund-controller");
+            signedOffCashBreak.FirstObservedAt.Should().Be(firstCashBreak.FirstObservedAt);
+            signedOffCashBreak.SignOffState.Should().Be(ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff);
+            signedOffCashBreak.SignedOffBy.Should().Be("controller");
+            signedOffCashBreak.SignedOffAt.Should().NotBeNull();
+            signedOffDetail.Summary.SignedOffBreakCount.Should().BeGreaterThan(0);
         }
         finally
         {

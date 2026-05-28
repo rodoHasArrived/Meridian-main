@@ -278,10 +278,21 @@ public enum ProviderLedgerReconciliationCheckStatusDto
     Blocked = 2
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderLedgerReconciliationBreakSignOffStateDto>))]
+public enum ProviderLedgerReconciliationBreakSignOffStateDto
+{
+    Open = 0,
+    Assigned = 1,
+    SignedOff = 2
+}
+
 public sealed record ProviderLedgerReconciliationRequestDto(
     decimal AmountTolerance = 0.01m,
     int ProviderStaleAfterMinutes = 30,
-    string? RequestedBy = null);
+    string? RequestedBy = null,
+    string? DefaultBreakOwner = null,
+    IReadOnlyList<string>? SignedOffBreakKeys = null,
+    string? SignedOffBy = null);
 
 public sealed record ProviderLedgerReconciliationCheckDto(
     string CheckId,
@@ -309,7 +320,16 @@ public sealed record ProviderLedgerReconciliationBreakDto(
     decimal? Variance,
     string Reason,
     string? Symbol = null,
-    string? EvidenceLink = null);
+    string? EvidenceLink = null,
+    string? BreakKey = null,
+    string? Owner = null,
+    decimal? Tolerance = null,
+    DateTimeOffset? FirstObservedAt = null,
+    DateTimeOffset? LastObservedAt = null,
+    int AgeMinutes = 0,
+    ProviderLedgerReconciliationBreakSignOffStateDto SignOffState = ProviderLedgerReconciliationBreakSignOffStateDto.Open,
+    string? SignedOffBy = null,
+    DateTimeOffset? SignedOffAt = null);
 
 public sealed record ProviderLedgerReconciliationSummaryDto(
     Guid ReconciliationRunId,
@@ -326,7 +346,10 @@ public sealed record ProviderLedgerReconciliationSummaryDto(
     string? ExternalAccountId,
     DateTimeOffset? ProviderSyncedAt,
     DateOnly? InternalAsOfDate,
-    string? DetailPath = null);
+    string? DetailPath = null,
+    int OpenBreakCount = 0,
+    int SignedOffBreakCount = 0,
+    int OldestBreakAgeMinutes = 0);
 
 public sealed record ProviderLedgerReconciliationDetailDto(
     ProviderLedgerReconciliationSummaryDto Summary,

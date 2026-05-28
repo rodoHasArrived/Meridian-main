@@ -120,6 +120,8 @@ public sealed class AppServiceRegistrationTests
                 .Lifetime.Should().Be(ServiceLifetime.Singleton);
             services.Single(descriptor => descriptor.ServiceType == typeof(WorkspaceStateTokenStore))
                 .Lifetime.Should().Be(ServiceLifetime.Singleton);
+            services.Single(descriptor => descriptor.ServiceType == typeof(IWorkspaceShellSlotContributionService))
+                .Lifetime.Should().Be(ServiceLifetime.Singleton);
 
             services.Single(descriptor => descriptor.ServiceType == typeof(TradingWorkspaceShellPresentationService))
                 .Lifetime.Should().Be(ServiceLifetime.Scoped);

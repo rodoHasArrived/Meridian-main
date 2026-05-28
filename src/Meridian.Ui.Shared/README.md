@@ -46,7 +46,9 @@ client surfaces consume the same readiness posture instead of recalculating it l
 Provider-ledger reconciliation is shared service/API behavior: it reads the latest brokerage sync
 projection, compares it with the internal fund-account balance snapshot, validates Security Master
 coverage, and retains the latest detail under workstation data for browser and WPF clients to
-consume later without adding client-specific reconciliation logic.
+consume later without adding client-specific reconciliation logic. Break records preserve stable
+keys, owner assignment, tolerance, first/last-observed aging, and sign-off state from the previous
+latest detail so repeated provider-ledger variances can be controlled as accounting casework.
 
 ## Diagrams
 

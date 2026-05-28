@@ -1,4 +1,6 @@
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Tests.Models;
 
@@ -58,6 +60,58 @@ public sealed class WorkspaceShellChromeContributionTests
             .Equal(WorkspaceShellSlot.ContextStrip, WorkspaceShellSlot.ActionBar);
     }
 
+    [Fact]
+    public async Task ContributionService_ShouldComposeContextStripAndActionBarSlots()
+    {
+        var tradingContext = new WorkspaceShellContext { WorkspaceTitle = "Trading" };
+        var actionBar = new WorkspaceCommandGroup
+        {
+            PrimaryCommands =
+            [
+                new WorkspaceCommandItem { Id = "refresh", Label = "Refresh" }
+            ],
+            SecondaryCommands =
+            [
+                new WorkspaceCommandItem { Id = "dock", Label = "Dock" }
+            ]
+        };
+        IWorkspaceShellSlotContributionService service = new WorkspaceShellSlotContributionService(
+        [
+            new StaticContributor(
+                new WorkspaceShellActionBarContribution("trading", actionBar, Order: 20),
+                new WorkspaceShellContextStripContribution("trading", tradingContext, Order: 10)),
+            new StaticContributor(
+                new WorkspaceShellContextStripContribution("accounting", new WorkspaceShellContext { WorkspaceTitle = "Accounting" }))
+        ]);
+
+        var request = new WorkspaceShellSlotContributionRequest("trading", "TradingShell");
+
+        var context = await service.GetContextStripAsync(request);
+        var commands = await service.GetActionBarAsync(request);
+
+        context.Should().BeSameAs(tradingContext);
+        commands.PrimaryCommands.Should().ContainSingle(command => command.Id == "refresh");
+        commands.SecondaryCommands.Should().ContainSingle(command => command.Id == "dock");
+    }
+
+    [Fact]
+    public async Task ServiceCollectionExtension_ShouldLetFeatureModulesRegisterSlotContributors()
+    {
+        var services = new ServiceCollection();
+        services.AddWorkspaceShellSlotContributor<TradingChromeContributor>();
+        services.AddSingleton<IWorkspaceShellSlotContributionService, WorkspaceShellSlotContributionService>();
+
+        using var provider = services.BuildServiceProvider();
+        var service = provider.GetRequiredService<IWorkspaceShellSlotContributionService>();
+
+        var context = await service.GetContextStripAsync(new WorkspaceShellSlotContributionRequest("trading", "TradingShell"));
+        var commands = await service.GetActionBarAsync(new WorkspaceShellSlotContributionRequest("trading", "TradingShell"));
+
+        context.Should().NotBeNull();
+        context!.WorkspaceTitle.Should().Be("Trading");
+        commands.PrimaryCommands.Should().ContainSingle(command => command.Id == "refresh-trading");
+    }
+
     private sealed class StaticContributor(params IWorkspaceShellSlotContribution[] contributions)
         : IWorkspaceShellSlotContributor
     {
@@ -74,6 +128,35 @@ public sealed class WorkspaceShellChromeContributionTests
                 .ToArray();
 
             return ValueTask.FromResult<IReadOnlyList<IWorkspaceShellSlotContribution>>(matching);
+        }
+    }
+
+    private sealed class TradingChromeContributor : IWorkspaceShellSlotContributor
+    {
+        public ValueTask<IReadOnlyList<IWorkspaceShellSlotContribution>> GetContributionsAsync(
+            WorkspaceShellSlotContributionRequest request,
+            CancellationToken ct = default)
+        {
+            if (!string.Equals(request.WorkspaceId, "trading", StringComparison.OrdinalIgnoreCase))
+            {
+                return ValueTask.FromResult<IReadOnlyList<IWorkspaceShellSlotContribution>>(Array.Empty<IWorkspaceShellSlotContribution>());
+            }
+
+            return ValueTask.FromResult<IReadOnlyList<IWorkspaceShellSlotContribution>>(
+            [
+                new WorkspaceShellContextStripContribution(
+                    "trading",
+                    new WorkspaceShellContext { WorkspaceTitle = "Trading" }),
+                new WorkspaceShellActionBarContribution(
+                    "trading",
+                    new WorkspaceCommandGroup
+                    {
+                        PrimaryCommands =
+                        [
+                            new WorkspaceCommandItem { Id = "refresh-trading", Label = "Refresh" }
+                        ]
+                    })
+            ]);
         }
     }
 }
