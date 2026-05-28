@@ -281,7 +281,6 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.AddSingleton<WpfServices.WorkstationOperatingContextService>();
         services.AddSingleton<WpfServices.WorkspaceShellContextService>();
-        services.AddSingleton<WpfServices.IWorkspaceShellSlotContributionService, WpfServices.WorkspaceShellSlotContributionService>();
         services.AddSingleton<Meridian.Application.UI.ConfigStore>();
 
         // ── Domain / feature services ───────────────────────────────────────

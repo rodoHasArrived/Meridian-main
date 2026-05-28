@@ -159,10 +159,22 @@ if (-not $blockedByConcurrentDotnet) {
         $wpfProject,
         "-c", $Configuration,
         "--no-restore",
-        "--no-dependencies",
         "--nologo",
         "--verbosity", "minimal"
     ) + $serializedBuildArgs
+
+    if ([string]::IsNullOrWhiteSpace($buildIsolationKey)) {
+        $buildWpfCommand = @(
+            "dotnet",
+            "build",
+            $wpfProject,
+            "-c", $Configuration,
+            "--no-restore",
+            "--no-dependencies",
+            "--nologo",
+            "--verbosity", "minimal"
+        ) + $serializedBuildArgs
+    }
 
     $buildWpfStep = Invoke-MeridianStepWithTestHostRetry `
         -Name "Build WPF desktop shell" `
@@ -180,10 +192,22 @@ if (-not $blockedByConcurrentDotnet) {
             $wpfTestsProject,
             "-c", $Configuration,
             "--no-restore",
-            "--no-dependencies",
             "--nologo",
             "--verbosity", "minimal"
         ) + $serializedBuildArgs
+
+        if ([string]::IsNullOrWhiteSpace($buildIsolationKey)) {
+            $buildTestsCommand = @(
+                "dotnet",
+                "build",
+                $wpfTestsProject,
+                "-c", $Configuration,
+                "--no-restore",
+                "--no-dependencies",
+                "--nologo",
+                "--verbosity", "minimal"
+            ) + $serializedBuildArgs
+        }
 
         $buildTestsStep = Invoke-MeridianStepWithTestHostRetry `
             -Name "Build WPF desktop tests" `
