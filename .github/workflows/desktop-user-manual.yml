@@ -26,6 +26,8 @@ concurrency:
 
 env:
   CI: true
+  WORKFLOW_OUTPUT_PATH: ${{ inputs.output_path }}
+  WORKFLOW_SCREENSHOT_ROOT: ${{ inputs.screenshot_root }}
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
@@ -67,10 +69,15 @@ jobs:
 
       - name: Generate desktop user manual
         shell: pwsh
-        run: >
-          scripts/dev/generate-desktop-user-manual.ps1
-          -OutputPath "${{ inputs.output_path }}"
-          -ScreenshotRoot "${{ inputs.screenshot_root }}"
+        run: |
+          $outputPath = $env:WORKFLOW_OUTPUT_PATH
+          $screenshotRoot = $env:WORKFLOW_SCREENSHOT_ROOT
+          foreach ($path in @($outputPath, $screenshotRoot)) {
+            if ([string]::IsNullOrWhiteSpace($path) -or $path -match '[";`|&<>]' -or [System.IO.Path]::IsPathRooted($path) -or $path.Contains("..")) {
+              throw "Invalid path input. Use repository-relative paths without shell metacharacters."
+            }
+          }
+          scripts/dev/generate-desktop-user-manual.ps1 -OutputPath $outputPath -ScreenshotRoot $screenshotRoot
 
       - name: Commit and push results
         if: ${{ inputs.commit == true }}
@@ -78,7 +85,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- "${{ inputs.output_path }}" "${{ inputs.screenshot_root }}"
+          git add -- $env:WORKFLOW_OUTPUT_PATH $env:WORKFLOW_SCREENSHOT_ROOT
           $changed = git diff --cached --name-only
           if ($changed) {
             git commit -m "chore: refresh desktop user manual [skip ci]"
