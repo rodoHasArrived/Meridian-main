@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -14,7 +15,7 @@ namespace Meridian.Wpf.ViewModels;
 /// ViewModel for the BacktestPage. Drives the three-panel layout:
 /// left panel (configuration), centre panel (equity curve), right panel (results tabs).
 /// </summary>
-public sealed class BacktestViewModel : BindableBase, IDisposable
+public sealed class BacktestViewModel : BindableBase, IPageActivationLifetime, IDisposable
 {
     private readonly BacktestService _backtestService;
     private readonly NavigationService _navigationService;
@@ -23,6 +24,8 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
     // ── Coverage debounce ────────────────────────────────────────────────────
     private CancellationTokenSource _coverageCts = new();
+    private CancellationTokenSource? _activationCts;
+    private bool _isActive;
     private bool _isDisposed;
 
     // ── Configuration properties ─────────────────────────────────────────────
@@ -203,14 +206,49 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         OpenRunLedgerCommand = new RelayCommand(() => OpenRunSurface("RunLedger"), () => HasLatestRecordedRun);
         OpenRunRiskCommand = new RelayCommand(() => OpenRunSurface("RunRisk"), () => HasLatestRecordedRun);
 
-        _backtestService.BacktestCompleted += OnBacktestCompleted;
-        _backtestService.BacktestCancelled += OnBacktestCancelled;
-
         PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName is nameof(SymbolsText) or nameof(FromDate) or nameof(ToDate) or nameof(DataRoot))
+            if (_isActive && e.PropertyName is nameof(SymbolsText) or nameof(FromDate) or nameof(ToDate) or nameof(DataRoot))
                 ScheduleCoverageRefresh();
         };
+    }
+
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
+    public Task ActivateAsync(CancellationToken ct = default)
+    {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+        if (_isActive)
+        {
+            return Task.CompletedTask;
+        }
+
+        _isActive = true;
+        _activationCts?.Dispose();
+        _activationCts = ct.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct)
+            : new CancellationTokenSource();
+
+        _backtestService.BacktestCompleted += OnBacktestCompleted;
+        _backtestService.BacktestCancelled += OnBacktestCancelled;
+        ScheduleCoverageRefresh();
+        return Task.CompletedTask;
+    }
+
+    public void Deactivate()
+    {
+        if (!_isActive)
+        {
+            return;
+        }
+
+        _isActive = false;
+        _backtestService.BacktestCompleted -= OnBacktestCompleted;
+        _backtestService.BacktestCancelled -= OnBacktestCancelled;
+        CancelCoverageRefresh();
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
     }
 
     // ── Command implementations ───────────────────────────────────────────────
@@ -343,10 +381,16 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
     private void ScheduleCoverageRefresh()
     {
-        _coverageCts.Cancel();
-        _coverageCts.Dispose();
-        _coverageCts = new CancellationTokenSource();
-        _ = DelayThenRefreshAsync(_coverageCts.Token);
+        if (!_isActive || _isDisposed)
+        {
+            return;
+        }
+
+        var coverageCts = CancellationTokenSource.CreateLinkedTokenSource(ActivationToken);
+        var previousCts = _coverageCts;
+        _coverageCts = coverageCts;
+        CancelAndDispose(previousCts);
+        _ = DelayThenRefreshAsync(coverageCts.Token);
     }
 
     private async Task DelayThenRefreshAsync(CancellationToken cancellationToken)
@@ -438,10 +482,14 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
             return;
         }
 
+        Deactivate();
         _isDisposed = true;
-        _backtestService.BacktestCompleted -= OnBacktestCompleted;
-        _backtestService.BacktestCancelled -= OnBacktestCancelled;
+        CancelCoverageRefresh();
+        _coverageCts.Dispose();
+    }
 
+    private void CancelCoverageRefresh()
+    {
         try
         {
             _coverageCts.Cancel();
@@ -450,8 +498,24 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         {
             // Coverage refreshes can dispose the CTS before the page teardown finishes.
         }
+    }
 
-        _coverageCts.Dispose();
+    private static void CancelAndDispose(CancellationTokenSource? cts)
+    {
+        if (cts is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        cts.Dispose();
     }
 }
 

@@ -532,6 +532,20 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task EvidenceEndpoints_VaultSearch_RejectsEmptyLookup()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-search-empty-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(null, null, null, null, null));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task EvidenceEndpoints_VaultSearch_FindsBundlesByRunReportPackAndReconciliationCase()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-search-{Guid.NewGuid():N}");

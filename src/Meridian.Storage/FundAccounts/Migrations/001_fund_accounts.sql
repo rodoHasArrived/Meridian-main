@@ -24,6 +24,7 @@ create table if not exists __SCHEMA__.account_definition (
     ledger_reference    text,
     strategy_id         text,
     run_id              text,
+    operational_status  text        not null default 'Active',
     -- Extended settlement details (nullable; present for Custody and Bank types)
     custodian_details   jsonb,
     bank_details        jsonb,

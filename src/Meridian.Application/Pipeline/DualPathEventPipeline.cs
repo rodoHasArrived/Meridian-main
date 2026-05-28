@@ -296,25 +296,6 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryRouteTrade(in MarketEvent evt)
     {
-        if (evt.Payload is not Trade trade)
-            return _slowPath.TryPublish(in evt); // Unknown payload — fall back
-
-        var symbolId = _symbolTable.GetOrAdd(evt.EffectiveSymbol);
-        var raw = new RawTradeEvent(
-            timestampTicks: evt.Timestamp.UtcTicks,
-            symbolHash: symbolId,
-            price: trade.Price,
-            size: trade.Size,
-            aggressor: (byte)trade.Aggressor,
-            sequence: evt.Sequence);
-
-        if (_tradeBuffer.TryWrite(in raw))
-        {
-            Interlocked.Increment(ref _hotTradePublished);
-            return true;
-        }
-
-        // Ring buffer full — fall back to slow path to avoid data loss.
         Interlocked.Increment(ref _hotTradeFallbacks);
         return _slowPath.TryPublish(in evt);
     }
@@ -322,29 +303,10 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool TryRouteQuote(in MarketEvent evt)
     {
-        if (evt.Payload is not BboQuotePayload quote)
-            return _slowPath.TryPublish(in evt); // Unknown payload — fall back
-
-        var symbolId = _symbolTable.GetOrAdd(evt.EffectiveSymbol);
-        var raw = new RawQuoteEvent(
-            timestampTicks: evt.Timestamp.UtcTicks,
-            symbolHash: symbolId,
-            bidPrice: quote.BidPrice,
-            bidSize: quote.BidSize,
-            askPrice: quote.AskPrice,
-            askSize: quote.AskSize,
-            sequence: evt.Sequence);
-
-        if (_quoteBuffer.TryWrite(in raw))
-        {
-            Interlocked.Increment(ref _hotQuotePublished);
-            return true;
-        }
-
-        // Ring buffer full — fall back to slow path to avoid data loss.
         Interlocked.Increment(ref _hotQuoteFallbacks);
         return _slowPath.TryPublish(in evt);
     }
+
 
     // -------------------------------------------------------------------------
     // Consumer loops

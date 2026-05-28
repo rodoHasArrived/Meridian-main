@@ -40,12 +40,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 (account_id, account_type, entity_id, fund_id, sleeve_id, vehicle_id,
                  account_code, display_name, base_currency, institution, is_active,
                  effective_from, effective_to, portfolio_id, ledger_reference,
-                 strategy_id, run_id, custodian_details, bank_details, updated_at)
+                 strategy_id, run_id, operational_status, custodian_details, bank_details, updated_at)
             VALUES
                 (@account_id, @account_type, @entity_id, @fund_id, @sleeve_id, @vehicle_id,
                  @account_code, @display_name, @base_currency, @institution, @is_active,
                  @effective_from, @effective_to, @portfolio_id, @ledger_reference,
-                 @strategy_id, @run_id, @custodian_details::jsonb, @bank_details::jsonb, now())
+                 @strategy_id, @run_id, @operational_status, @custodian_details::jsonb, @bank_details::jsonb, now())
             ON CONFLICT (account_id) DO UPDATE SET
                 account_type        = EXCLUDED.account_type,
                 entity_id           = EXCLUDED.entity_id,
@@ -63,6 +63,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 ledger_reference    = EXCLUDED.ledger_reference,
                 strategy_id         = EXCLUDED.strategy_id,
                 run_id              = EXCLUDED.run_id,
+                operational_status  = EXCLUDED.operational_status,
                 custodian_details   = EXCLUDED.custodian_details,
                 bank_details        = EXCLUDED.bank_details,
                 updated_at          = now()
@@ -84,6 +85,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         cmd.Parameters.AddWithValue("ledger_reference", (object?)account.LedgerReference ?? DBNull.Value);
         cmd.Parameters.AddWithValue("strategy_id", (object?)account.StrategyId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("run_id", (object?)account.RunId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("operational_status", account.OperationalStatus.ToString());
         cmd.Parameters.AddWithValue("custodian_details",
             account.CustodianDetails is not null ? JsonSerializer.Serialize(account.CustodianDetails, JsonOpts) : DBNull.Value);
         cmd.Parameters.AddWithValue("bank_details",
@@ -100,7 +102,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             SELECT account_id, account_type, entity_id, fund_id, sleeve_id, vehicle_id,
                    account_code, display_name, base_currency, institution, is_active,
                    effective_from, effective_to, portfolio_id, ledger_reference,
-                   strategy_id, run_id, custodian_details, bank_details
+                   strategy_id, run_id, operational_status, custodian_details, bank_details
             FROM {Qualified("account_definition")}
             WHERE account_id = @account_id
             """;
@@ -120,7 +122,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             SELECT account_id, account_type, entity_id, fund_id, sleeve_id, vehicle_id,
                    account_code, display_name, base_currency, institution, is_active,
                    effective_from, effective_to, portfolio_id, ledger_reference,
-                   strategy_id, run_id, custodian_details, bank_details
+                   strategy_id, run_id, operational_status, custodian_details, bank_details
             FROM {Qualified("account_definition")}
             WHERE 1=1
             """);
@@ -208,7 +210,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             LedgerReference: reader.IsDBNull(reader.GetOrdinal("ledger_reference")) ? null : reader.GetString(reader.GetOrdinal("ledger_reference")),
             StrategyId: reader.IsDBNull(reader.GetOrdinal("strategy_id")) ? null : reader.GetString(reader.GetOrdinal("strategy_id")),
             RunId: reader.IsDBNull(reader.GetOrdinal("run_id")) ? null : reader.GetString(reader.GetOrdinal("run_id")),
-            OperationalStatus: AccountOperationalStatusDto.Active,
+            OperationalStatus: Enum.Parse<AccountOperationalStatusDto>(reader.GetString(reader.GetOrdinal("operational_status"))),
             CustodianDetails: custodianJson is not null ? JsonSerializer.Deserialize<CustodianAccountDetailsDto>(custodianJson, JsonOpts) : null,
             BankDetails: bankJson is not null ? JsonSerializer.Deserialize<BankAccountDetailsDto>(bankJson, JsonOpts) : null);
     }
