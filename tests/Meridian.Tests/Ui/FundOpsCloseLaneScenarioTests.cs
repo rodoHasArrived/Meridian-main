@@ -252,7 +252,12 @@ public sealed class FundOpsCloseLaneScenarioTests
                         null,
                         "AAPL",
                         "Confirm settlement timing with custodian",
-                        [])
+                        [],
+                        new OperationsContinuityCorrelationKeysDto(
+                            RunId: "run-close-break-test",
+                            FundAccountId: fundAccountId,
+                            LedgerBatchId: "batch-break-test",
+                            ReconciliationCaseId: breakId))
                 ]));
 
         reconciled.Success.Should().BeTrue();

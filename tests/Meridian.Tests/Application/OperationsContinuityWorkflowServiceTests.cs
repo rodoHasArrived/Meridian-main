@@ -1142,7 +1142,12 @@ public sealed class OperationsContinuityWorkflowServiceTests
                     null,
                     "BOND1",
                     "Upload evidence",
-                    [])
+                    [],
+                    new OperationsContinuityCorrelationKeysDto(
+                        RunId: "run-break-1",
+                        FundAccountId: workflow.FundAccountId,
+                        LedgerBatchId: "ledger-batch-1",
+                        ReconciliationCaseId: "break-1"))
             ]));
         reconciled.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Blocked);
 
@@ -1399,7 +1404,10 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             Rationale: "Incident requires reopened reconciliation",
             IncidentId: "INC-123",
-            IsGovernedAdmin: true));
+            IsGovernedAdmin: true,
+            Justification: "Controller approved reopening the closed period.",
+            ApprovalReference: "approval-ref-123",
+            ImpactSummary: "Reopens reconciliation gate for incident follow-up."));
 
         denied.Success.Should().BeFalse();
         denied.Blockers.Should().ContainSingle(blocker => blocker.Code == "REOPEN_GOVERNANCE_METADATA_REQUIRED");
@@ -1419,7 +1427,28 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "ops-user",
             BreakCases:
             [
-                new OperationsBreakCaseDto("break-critical", "id", "type", "Critical", "Open", null, null, "summary", "source", 10m, null, 11m, null, "SYM", "action", [])
+                new OperationsBreakCaseDto(
+                    "break-critical",
+                    "id",
+                    "type",
+                    "Critical",
+                    "Open",
+                    null,
+                    null,
+                    "summary",
+                    "source",
+                    10m,
+                    null,
+                    11m,
+                    null,
+                    "SYM",
+                    "action",
+                    [],
+                    new OperationsContinuityCorrelationKeysDto(
+                        RunId: "run-critical",
+                        FundAccountId: workflow.FundAccountId,
+                        LedgerBatchId: "ledger-batch-1",
+                        ReconciliationCaseId: "break-critical"))
             ]));
 
         var close = await service.CloseWorkflowAsync(workflow.WorkflowId, new OperationsCloseWorkflowRequestDto(
@@ -1429,7 +1458,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "report-pack-1"));
 
         close.Success.Should().BeFalse();
-        close.Blockers.Should().Contain(blocker => blocker.Code == "OPERATIONS_GATES_NOT_PASSED");
+        close.Blockers.Should().Contain(blocker => blocker.Code == "RECONCILIATION_BREAKS_OPEN");
+        close.Blockers.Should().Contain(blocker => blocker.Code == "APPROVAL_MISSING");
     }
 
     [Fact]

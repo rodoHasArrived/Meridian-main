@@ -9,6 +9,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Models;
 using Meridian.Wpf.Workstation.ViewModels;
@@ -21,7 +22,7 @@ namespace Meridian.Wpf.ViewModels;
 /// All state, HTTP loading, timer management, and connection-event tracking live here
 /// so that the code-behind is thinned to lifecycle wiring only.
 /// </summary>
-public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable, IPageActionBarProvider
+public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivationLifetime, IDisposable, IPageActionBarProvider
 {
     private static readonly Brush ReadyPostureBrush = CreateFrozenBrush(63, 185, 80);
     private static readonly Brush WarningPostureBrush = CreateFrozenBrush(255, 193, 7);
@@ -41,6 +42,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _staleCheckTimer;
     private PeriodicTimer? _sparklineTimer;
+    private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _cts;
     private DateTime? _lastRefreshTime;
     private bool _isActive;
@@ -198,7 +200,13 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         UpdateProviderMetricTiles();
     }
 
-    public async Task StartAsync(CancellationToken ct = default)
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
+    public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct);
+
+    public async Task ActivateAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
         if (_isActive)
@@ -207,6 +215,11 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         }
 
         _isActive = true;
+        _activationCts?.Dispose();
+        _activationCts = ct.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct)
+            : new CancellationTokenSource();
+
         _connectionService.StateChanged += OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated += OnConnectionHealthUpdated;
 
@@ -216,15 +229,22 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         Actions.Add(new ActionEntry("Run Diagnostics", new RelayCommand(RunSelectedProviderDiagnostics), "\uE9D9", "Run selected provider diagnostics"));
         Actions.Add(new ActionEntry("Reconnect All", new RelayCommand(() => _notificationService.NotifyInfo("Reconnecting", "Initiating provider reconnection...")), "\uE71B", "Reconnect all providers"));
 
-        await RefreshDataAsync();
+        await RefreshDataAsync(ActivationToken);
 
         _refreshTimer.Start();
         _staleCheckTimer.Start();
         StartSparklineTimer();
     }
 
-    public void Stop()
+    public void Stop() => Deactivate();
+
+    public void Deactivate()
     {
+        if (!_isActive)
+        {
+            return;
+        }
+
         _isActive = false;
         _connectionService.StateChanged -= OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated -= OnConnectionHealthUpdated;
@@ -233,6 +253,8 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IDisposable,
         StopSparklineTimer();
         var refreshCts = Interlocked.Exchange(ref _cts, null);
         CancelAndDispose(refreshCts);
+        var activationCts = Interlocked.Exchange(ref _activationCts, null);
+        CancelAndDispose(activationCts);
     }
 
     public async Task RefreshAsync(CancellationToken ct = default)
