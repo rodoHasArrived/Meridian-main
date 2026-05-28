@@ -106,7 +106,7 @@ public sealed class KeyboardShortcutService
     {
         // Navigation shortcuts
         RegisterShortcut("NavigateDashboard", Key.D, ModifierKeys.Control,
-            "Navigate to Research Workspace", ShortcutCategory.Navigation);
+            "Navigate to Strategy Workspace", ShortcutCategory.Navigation);
 
         RegisterShortcut("NavigateSymbols", Key.Y, ModifierKeys.Control,
             "Navigate to Symbols", ShortcutCategory.Navigation);

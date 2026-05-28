@@ -33,6 +33,23 @@ public sealed class ProviderDegradationCalibrationTests
         snapshot.Comparison.ExpectedAlertVolumeChangePercent.Should().NotBe(double.NaN);
     }
 
+
+    [Fact]
+    public void Run_WithIncompleteIncidentCoverage_FailsPromotionCriteria()
+    {
+        var dataset = new ProviderIncidentCalibrationDataset("dataset-incomplete", DateTimeOffset.UtcNow, "unit",
+        [
+            new("A", DateTimeOffset.UtcNow.AddHours(-2), DateTimeOffset.UtcNow.AddHours(-1), IncidentSeverity.Critical, 0.8, 0.8, 0.8, 0.8, 0, 1),
+            new("A", DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow, IncidentSeverity.Major, 0.7, 0.7, 0.7, 0.7, 0, 1)
+        ]);
+        var profile = ProviderDegradationKernelProfile.Default("baseline");
+
+        var snapshot = new ProviderDegradationCalibrationRunner().Run(dataset, profile, profile with { KernelVersion = "candidate" }, "test");
+
+        snapshot.CalibrationPass.Should().BeFalse();
+        snapshot.PromotionCriteria.BlockingReasons.Should().Contain(r => r.Contains("coverage", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Fact]
     public void Policy_Evaluate_BlocksStaleSnapshot()
     {
@@ -109,6 +126,8 @@ public sealed class ProviderDegradationCalibrationTests
                 CandidateRecall: criticalRecall,
                 BaselinePrecision: 0.70,
                 BaselineRecall: 0.70),
+            PromotionCriteria: new PromotionCriteriaSummary(criticalPrecision-0.70, criticalRecall-0.70, criticalPrecision>=0.70 && criticalRecall>=0.70, criticalPrecision-0.05, criticalRecall-0.05, 1.0, Array.Empty<string>()),
+            KernelLineage: new KernelLineageMetadata("baseline", "candidate-v2", "dataset-2026-04", createdAt ?? DateTimeOffset.UtcNow, "ops"),
             RunBy: "ops",
             CalibrationPass: criticalPrecision >= 0.70 && criticalRecall >= 0.70);
     }

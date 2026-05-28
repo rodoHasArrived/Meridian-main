@@ -6,7 +6,6 @@
       xmlns:conv="clr-namespace:Meridian.Wpf.Converters"
       mc:Ignorable="d"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
-      Loaded="OnPageLoaded"
       AutomationProperties.Name="Data Export">
     <Page.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -144,23 +143,22 @@
 
                         <StackPanel Grid.Row="1" Grid.Column="0">
                             <TextBlock Text="Export Format" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="ExportFormatCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="ExportFormatCombo_SelectionChanged">
-                                <ComboBoxItem Content="CSV (Comma-Separated)" Tag="csv" />
-                                <ComboBoxItem Content="Parquet (Columnar)" Tag="parquet" />
-                                <ComboBoxItem Content="JSON Lines" Tag="jsonl" />
-                                <ComboBoxItem Content="HDF5 (Hierarchical)" Tag="hdf5" />
-                                <ComboBoxItem Content="Feather (Arrow IPC)" Tag="feather" />
-                            </ComboBox>
+                            <ComboBox x:Name="ExportFormatCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding ExportFormatOptions}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Key"
+                                      SelectedValue="{Binding SelectedExportFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="1" Grid.Column="1">
                             <TextBlock Text="Compression" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="CompressionCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="CompressionCombo_SelectionChanged">
-                                <ComboBoxItem Content="None" Tag="none" />
-                                <ComboBoxItem Content="Gzip" Tag="gzip" />
-                                <ComboBoxItem Content="LZ4 (Fast)" Tag="lz4" />
-                                <ComboBoxItem Content="Zstd (Best)" Tag="zstd" />
-                            </ComboBox>
+                            <ComboBox x:Name="CompressionCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding CompressionOptions}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Key"
+                                      SelectedValue="{Binding SelectedCompression, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
@@ -231,14 +229,10 @@
                             <TextBlock Text="Database Type" Style="{StaticResource FormLabelStyle}" />
                             <ComboBox x:Name="DatabaseTypeCombo"
                                       Style="{StaticResource FormComboBoxStyle}"
-                                      SelectionChanged="DatabaseType_SelectionChanged">
-                                <ComboBoxItem Content="PostgreSQL" Tag="postgresql" />
-                                <ComboBoxItem Content="TimescaleDB" Tag="timescaledb" />
-                                <ComboBoxItem Content="ClickHouse" Tag="clickhouse" />
-                                <ComboBoxItem Content="QuestDB" Tag="questdb" />
-                                <ComboBoxItem Content="InfluxDB" Tag="influxdb" />
-                                <ComboBoxItem Content="SQLite" Tag="sqlite" />
-                            </ComboBox>
+                                      ItemsSource="{Binding DatabaseTypeOptions}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Key"
+                                      SelectedValue="{Binding SelectedDatabaseType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="0" Grid.Column="1">
@@ -345,12 +339,12 @@
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Frequency" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="ScheduleFrequencyCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="ScheduleFrequency_SelectionChanged">
-                                <ComboBoxItem Content="Hourly" Tag="hourly" />
-                                <ComboBoxItem Content="Daily" Tag="daily" />
-                                <ComboBoxItem Content="Weekly" Tag="weekly" />
-                                <ComboBoxItem Content="Monthly" Tag="monthly" />
-                            </ComboBox>
+                            <ComboBox x:Name="ScheduleFrequencyCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding ScheduleFrequencyOptions}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Key"
+                                      SelectedValue="{Binding SelectedScheduleFrequency, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1">
@@ -427,21 +421,22 @@
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Payload Format" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="WebhookFormatCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="WebhookFormat_SelectionChanged">
-                                <ComboBoxItem Content="JSON" Tag="json" />
-                                <ComboBoxItem Content="MessagePack" Tag="msgpack" />
-                                <ComboBoxItem Content="Protobuf" Tag="protobuf" />
-                            </ComboBox>
+                            <ComboBox x:Name="WebhookFormatCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding WebhookFormatOptions}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Key"
+                                      SelectedValue="{Binding SelectedWebhookFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="Batching" Style="{StaticResource FormLabelStyle}" />
-                            <ComboBox x:Name="WebhookBatchCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="WebhookBatch_SelectionChanged">
-                                <ComboBoxItem Content="Real-time (each event)" Tag="realtime" />
-                                <ComboBoxItem Content="Micro-batch (100ms)" Tag="microbatch" />
-                                <ComboBoxItem Content="Batch (1 second)" Tag="batch" />
-                                <ComboBoxItem Content="Bulk (1 minute)" Tag="bulk" />
-                            </ComboBox>
+                            <ComboBox x:Name="WebhookBatchCombo"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding WebhookBatchOptions}"
+                                      DisplayMemberPath="Label"
+                                      SelectedValuePath="Key"
+                                      SelectedValue="{Binding SelectedWebhookBatch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                     </Grid>
 
@@ -491,13 +486,12 @@
 
                     <StackPanel Margin="0,12,0,0">
                         <TextBlock Text="Resolution" Style="{StaticResource FormLabelStyle}" />
-                        <ComboBox x:Name="LeanResolutionCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="LeanResolution_SelectionChanged">
-                            <ComboBoxItem Content="Tick" Tag="tick" />
-                            <ComboBoxItem Content="Second" Tag="second" />
-                            <ComboBoxItem Content="Minute" Tag="minute" />
-                            <ComboBoxItem Content="Hour" Tag="hour" />
-                            <ComboBoxItem Content="Daily" Tag="daily" />
-                        </ComboBox>
+                        <ComboBox x:Name="LeanResolutionCombo"
+                                  Style="{StaticResource FormComboBoxStyle}"
+                                  ItemsSource="{Binding LeanResolutionOptions}"
+                                  DisplayMemberPath="Label"
+                                  SelectedValuePath="Key"
+                                  SelectedValue="{Binding SelectedLeanResolution, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,12,0,0">

@@ -465,6 +465,7 @@ public sealed class BacktestEngine(
 
             var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel, requestDefault);
             var result = model.TryFill(order, evt);
+            var acceptedFilledQuantity = 0L;
 
             foreach (var fill in result.Fills)
             {
@@ -484,6 +485,7 @@ public sealed class BacktestEngine(
 
                 ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
                 allFills.Add(fill);
+                acceptedFilledQuantity += fill.FilledQuantity;
                 rollingState.IncrementFills();
                 strategy.OnOrderFill(fill, ctx);
 
@@ -491,13 +493,31 @@ public sealed class BacktestEngine(
                     pendingOrders.Add(contingentOrder);
             }
 
-            if (result.RemoveOrder)
+            if (acceptedFilledQuantity == 0)
+            {
+                // Preserve trigger activation even when all generated fills were rejected.
+                pendingOrders[i] = result.WasTriggered
+                    ? order with { IsTriggered = true }
+                    : order;
+                continue;
+            }
+
+            var updatedOrder = order with
+            {
+                FilledQuantity = order.FilledQuantity + acceptedFilledQuantity,
+                Status = order.RemainingQuantity - Math.Abs(acceptedFilledQuantity) == 0
+                    ? OrderStatus.Filled
+                    : OrderStatus.PartiallyFilled,
+                IsTriggered = result.UpdatedOrder.IsTriggered
+            };
+
+            if (updatedOrder.IsComplete)
             {
                 filled.Add(order.OrderId);
                 continue;
             }
 
-            pendingOrders[i] = result.UpdatedOrder;
+            pendingOrders[i] = updatedOrder;
         }
 
         pendingOrders.RemoveAll(o =>

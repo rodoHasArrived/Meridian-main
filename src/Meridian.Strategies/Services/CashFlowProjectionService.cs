@@ -50,7 +50,7 @@ public sealed class CashFlowProjectionService
 
             var effectiveAsOf = asOf ?? run.StartedAt;
             var effectiveCcy = string.IsNullOrWhiteSpace(currency) ? DefaultCurrency : currency!;
-            var effectiveBuckets = Math.Max(1, bucketDays ?? DefaultBucketDays);
+            var effectiveBuckets = ClampBucketDays(effectiveAsOf, bucketDays ?? DefaultBucketDays);
 
             var cashFlows = run.Metrics?.CashFlows ?? [];
             var entries = BuildEntries(cashFlows, effectiveCcy);
@@ -73,6 +73,16 @@ public sealed class CashFlowProjectionService
         }
 
         return null;
+    }
+
+    private static int ClampBucketDays(DateTimeOffset asOf, int requestedBucketDays)
+    {
+        var minBucketDays = 1;
+        var maxBucketDays = Math.Max(
+            minBucketDays,
+            (int)Math.Floor((DateTimeOffset.MaxValue - asOf).TotalDays));
+
+        return Math.Clamp(requestedBucketDays, minBucketDays, maxBucketDays);
     }
 
     private static CashFlowEntryDto[] BuildEntries(

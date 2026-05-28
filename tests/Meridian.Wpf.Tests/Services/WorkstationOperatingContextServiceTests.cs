@@ -91,6 +91,37 @@ public sealed class WorkstationOperatingContextServiceTests
     }
 
     [Fact]
+    public async Task LoadAsync_WhenCatalogHandlerRequestsLoad_ShouldReuseInFlightLoad()
+    {
+        var fundContext = await CreateFundContextAsync();
+        var service = new WorkstationOperatingContextService(
+            fundContext,
+            storagePath: BuildStoragePath("operating-context"));
+        Task? reentrantLoad = null;
+        var reentrantLoadWasCompleted = true;
+        var catalogEvents = 0;
+        service.ContextCatalogChanged += (_, _) =>
+        {
+            catalogEvents++;
+            reentrantLoad = service.LoadAsync();
+            reentrantLoadWasCompleted = reentrantLoad.IsCompleted;
+        };
+
+        var load = service.LoadAsync();
+
+        await load.WaitAsync(TimeSpan.FromSeconds(5));
+        if (reentrantLoad is not null)
+        {
+            await reentrantLoad.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        catalogEvents.Should().Be(1);
+        reentrantLoad.Should().BeSameAs(load);
+        reentrantLoadWasCompleted.Should().BeFalse("catalog subscribers must see the initial operating context load as still in flight");
+        service.Contexts.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public async Task LoadAsync_WithPublishedEnvironmentRuntime_ShouldApplyLaneMetadata()
     {
         var fundContext = await CreateFundContextAsync();

@@ -29,6 +29,45 @@
                 </StackPanel>
             </Border>
 
+            <Border Style="{StaticResource WorkspaceContextStripStyle}"
+                    Margin="0,0,0,16"
+                    AutomationProperties.AutomationId="StorageMetricsReadinessStrip">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Metrics readiness"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding MetricsStatusText}"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"
+                                   AutomationProperties.AutomationId="StorageMetricsStatusText" />
+                        <Button Grid.Column="2"
+                                Content="Refresh Metrics"
+                                Command="{Binding RefreshMetricsCommand}"
+                                IsEnabled="{Binding CanRefreshMetrics}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="12,0,0,0"
+                                AutomationProperties.AutomationId="StorageRefreshMetricsButton" />
+                    </Grid>
+                    <ProgressBar Height="3"
+                                 Margin="0,10,0,0"
+                                 IsIndeterminate="True"
+                                 Visibility="{Binding IsMetricsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                                 AutomationProperties.AutomationId="StorageMetricsProgress" />
+                </StackPanel>
+            </Border>
+
             <!-- Storage Overview -->
             <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
@@ -179,9 +218,13 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="DataDirectoryBox" Style="{StaticResource FormTextBoxStyle}"
-                                     Text="./data" IsReadOnly="True"
+                                     Text="{Binding DataDirectoryText, Mode=OneWay}"
+                                     IsReadOnly="True"
                                      AutomationProperties.AutomationId="StorageDataDirectoryBox" />
-                            <Button Grid.Column="1" Content="Browse" Style="{StaticResource SecondaryButtonStyle}"
+                            <Button Grid.Column="1" Content="Browse"
+                                    Command="{Binding BrowseStorageRootCommand}"
+                                    AutomationProperties.AutomationId="StorageBrowseDirectoryButton"
+                                    Style="{StaticResource SecondaryButtonStyle}"
                                     Margin="8,0,0,0" />
                         </Grid>
                     </StackPanel>
@@ -191,8 +234,9 @@
                         <ComboBox x:Name="NamingConventionCombo"
                                   Style="{StaticResource FormComboBoxStyle}"
                                   AutomationProperties.AutomationId="StorageNamingConventionCombo"
-                                  SelectionChanged="StorageConfig_Changed">
-                            <ComboBoxItem Content="By Symbol (symbol/type/date)" Tag="BySymbol" IsSelected="True" />
+                                  SelectedValuePath="Tag"
+                                  SelectedValue="{Binding NamingConvention, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <ComboBoxItem Content="By Symbol (symbol/type/date)" Tag="BySymbol" />
                             <ComboBoxItem Content="By Date (date/symbol/type)" Tag="ByDate" />
                             <ComboBoxItem Content="By Type (type/symbol/date)" Tag="ByType" />
                             <ComboBoxItem Content="Flat (symbol_type_date)" Tag="Flat" />
@@ -204,9 +248,10 @@
                         <ComboBox x:Name="CompressionCombo"
                                   Style="{StaticResource FormComboBoxStyle}"
                                   AutomationProperties.AutomationId="StorageCompressionCombo"
-                                  SelectionChanged="StorageConfig_Changed">
+                                  SelectedValuePath="Tag"
+                                  SelectedValue="{Binding CompressionFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                             <ComboBoxItem Content="None" Tag="none" />
-                            <ComboBoxItem Content="Gzip" Tag="gzip" IsSelected="True" />
+                            <ComboBoxItem Content="Gzip" Tag="gzip" />
                             <ComboBoxItem Content="LZ4 (Fast)" Tag="lz4" />
                             <ComboBoxItem Content="ZSTD (Best)" Tag="zstd" />
                         </ComboBox>

@@ -109,9 +109,9 @@ public sealed class StrategyRunContinuityServiceTests
         var readService = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
         var reconciliationRepository = new InMemoryReconciliationRunRepository();
         var reconciliationService = new ReconciliationRunService(
-            readService,
-            new ReconciliationProjectionService(),
-            reconciliationRepository);
+            runReadService: readService,
+            projectionService: new ReconciliationProjectionService(),
+            repository: reconciliationRepository);
         await reconciliationService.RunAsync(new ReconciliationRunRequest("continuity-root"));
 
         var continuityService = new StrategyRunContinuityService(
@@ -163,9 +163,9 @@ public sealed class StrategyRunContinuityServiceTests
             readService,
             new CashFlowProjectionService(store),
             new ReconciliationRunService(
-                readService,
-                new ReconciliationProjectionService(),
-                new InMemoryReconciliationRunRepository()));
+                runReadService: readService,
+                projectionService: new ReconciliationProjectionService(),
+                repository: new InMemoryReconciliationRunRepository()));
 
         var continuity = await continuityService.GetRunContinuityAsync("continuity-warning");
 
@@ -208,6 +208,91 @@ public sealed class StrategyRunContinuityServiceTests
 
         continuity.Should().NotBeNull();
         continuity!.ContinuityStatus.Warnings.Select(static warning => warning.Code).Should().Contain(expectedWarningCode);
+    }
+
+    [Fact]
+    public async Task GetRunContinuityAsync_MissingPortfolioAndLedgerAfterPromotion_EmitsSeamWarnings()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildContinuityRun(
+            "continuity-promoted-seam-gaps",
+            includePortfolio: false,
+            includeLedger: false,
+            includeFills: true,
+            promotionState: StrategyRunPromotionState.CandidateForLive));
+
+        var continuity = await BuildContinuityService(store).GetRunContinuityAsync("continuity-promoted-seam-gaps");
+
+        continuity.Should().NotBeNull();
+        continuity!.ContinuityStatus.Warnings.Select(static warning => warning.Code)
+            .Should()
+            .Contain(["missing-portfolio", "missing-ledger"]);
+    }
+
+    [Fact]
+    public async Task GetRunContinuityAsync_ReconciliationBreakEmergenceAndClearance_UpdatesContinuityStatus()
+    {
+        var runId = "continuity-reconciliation-breaks";
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(BuildContinuityRun(runId, includeFills: true));
+
+        var readService = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var repo = new InMemoryReconciliationRunRepository();
+        var continuityService = new StrategyRunContinuityService(
+            readService,
+            new CashFlowProjectionService(store),
+            new ReconciliationRunService(
+                runReadService: readService,
+                projectionService: new ReconciliationProjectionService(),
+                repository: repo));
+
+        await repo.SaveAsync(new ReconciliationRunDetail(
+            new ReconciliationRunSummary("recon-open", runId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, 0, 1, 1, false, 0.01m, 5, 0, false, 0, 0, 0, 0, 0, false),
+            [],
+            [new ReconciliationBreakDto("cash-balance", "Cash balance", ReconciliationBreakCategory.CashMismatch, ReconciliationBreakStatus.Open, "ledger", 100m, 110m, 10m, ReconciliationBreakSeverity.High, "variance", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow)],
+            []));
+        var open = await continuityService.GetRunContinuityAsync(runId);
+
+        await repo.SaveAsync(new ReconciliationRunDetail(
+            new ReconciliationRunSummary("recon-cleared", runId, DateTimeOffset.UtcNow.AddMinutes(1), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, 1, 0, 0, false, 0.01m, 5, 0, false, 0, 0, 0, 0, 0, false),
+            [new ReconciliationMatchDto("cash-balance", "Cash balance", "portfolio", "ledger", 100m, 100m, 0m, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow)],
+            [],
+            []));
+        var cleared = await continuityService.GetRunContinuityAsync(runId);
+
+        open!.ContinuityStatus.OpenReconciliationBreaks.Should().Be(1);
+        open.ContinuityStatus.Warnings.Select(static w => w.Code).Should().Contain("open-reconciliation-breaks");
+        cleared!.ContinuityStatus.OpenReconciliationBreaks.Should().Be(0);
+        cleared.ContinuityStatus.Warnings.Select(static w => w.Code).Should().NotContain("open-reconciliation-breaks");
+    }
+
+    [Fact]
+    public async Task GetRunContinuityAsync_MixedCompleteness_NormalizesAcrossResearchTradingGovernanceViews()
+    {
+        var runId = "continuity-mixed-completeness";
+        var staleStartedAt = DateTimeOffset.UtcNow.AddHours(-2);
+        var staleEndedAt = staleStartedAt.AddMinutes(5);
+        var staleRun = BuildContinuityRun(runId, includePortfolio: true, includeLedger: false, includeCashFlows: false) with
+        {
+            StartedAt = staleStartedAt,
+            EndedAt = staleEndedAt,
+            AuditReference = null
+        };
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(staleRun);
+
+        var continuity = await BuildContinuityService(store).GetRunContinuityAsync(runId);
+
+        continuity.Should().NotBeNull();
+        continuity!.Run.Summary.Identity!.HasReplayAudit.Should().BeFalse();
+        continuity.Run.Summary.Governance!.HasAuditTrail.Should().BeFalse();
+        continuity.ContinuityStatus.RunHealth.Should().Be(StrategyRunContinuitySeamHealthStatus.Stale);
+        continuity.ContinuityStatus.HasPortfolio.Should().BeTrue();
+        continuity.ContinuityStatus.HasLedger.Should().BeFalse();
+        continuity.ContinuityStatus.HasCashFlow.Should().BeFalse();
+        continuity.ContinuityStatus.Warnings.Select(static warning => warning.Code)
+            .Should()
+            .Contain(["missing-ledger", "missing-cash-flow", "missing-reconciliation"]);
     }
 
     private static StrategyRunEntry BuildContinuityRun(
@@ -348,9 +433,9 @@ public sealed class StrategyRunContinuityServiceTests
             readService,
             new CashFlowProjectionService(store),
             new ReconciliationRunService(
-                readService,
-                new ReconciliationProjectionService(),
-                new InMemoryReconciliationRunRepository()));
+                runReadService: readService,
+                projectionService: new ReconciliationProjectionService(),
+                repository: new InMemoryReconciliationRunRepository()));
     }
 
     private static StrategyPromotionRecord BuildPromotionRecord(string runId, string sourceRunId, string? targetRunId)

@@ -73,7 +73,8 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(1, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotTradePublished.Should().Be(1);
+        _pipeline.HotTradePublished.Should().Be(0);
+        _pipeline.HotTradeFallbacks.Should().Be(1);
         _sink.ReceivedEvents.Should().ContainSingle(e => e.Symbol == "SPY");
     }
 
@@ -85,7 +86,8 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(1, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotQuotePublished.Should().Be(1);
+        _pipeline.HotQuotePublished.Should().Be(0);
+        _pipeline.HotQuoteFallbacks.Should().Be(1);
         _sink.ReceivedEvents.Should().ContainSingle(e => e.Symbol == "AAPL");
     }
 
@@ -131,6 +133,49 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task TradeHotPath_WhenSlowPathBackpressures_WaitsWithoutRecordingFalseDrops()
+    {
+        var release = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var blockingSink = new BlockingStorageSink(release.Task);
+        await using var constrainedSlowPath = new EventPipeline(
+            blockingSink,
+            capacity: 1,
+            fullMode: System.Threading.Channels.BoundedChannelFullMode.Wait,
+            batchSize: 1,
+            enablePeriodicFlush: false);
+        await using var pipeline = new DualPathEventPipeline(
+            constrainedSlowPath,
+            new SymbolTable(),
+            ringBufferCapacity: 32,
+            batchDrainSize: 4);
+
+        pipeline.TryPublish(CreateTradeEvent("SPY", seq: 1));
+        pipeline.TryPublish(CreateTradeEvent("SPY", seq: 2));
+        pipeline.TryPublish(CreateTradeEvent("SPY", seq: 3));
+
+        var firstBlockSw = System.Diagnostics.Stopwatch.StartNew();
+        while (blockingSink.ReceivedCount < 1 && firstBlockSw.Elapsed < TimeSpan.FromSeconds(5))
+        {
+            await Task.Delay(10);
+        }
+
+        blockingSink.ReceivedCount.Should().BeGreaterThanOrEqualTo(1,
+            "the slow path should have received at least one trade before releasing backpressure in this test");
+        release.SetResult(true);
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (blockingSink.ReceivedCount < 3 && sw.Elapsed < TimeSpan.FromSeconds(5))
+        {
+            await Task.Delay(10);
+        }
+
+        blockingSink.ReceivedCount.Should().Be(3,
+            "trade hot-path backpressure should wait for slow-path capacity instead of losing events");
+        constrainedSlowPath.DroppedCount.Should().Be(0,
+            "waiting for slow-path capacity must not be misreported as dropped-event loss");
+    }
+
+    [Fact]
     public async Task TryPublish_IntegrityEvent_GoesToSlowPath_NotHotPath()
     {
         var evt = MarketEvent.Integrity(
@@ -167,7 +212,8 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(count, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotTradePublished.Should().Be(count);
+        _pipeline.HotTradePublished.Should().Be(0);
+        _pipeline.HotTradeFallbacks.Should().Be(count);
         _sink.ReceivedEvents.Should().HaveCount(count);
     }
 
@@ -185,7 +231,8 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(1, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotTradePublished.Should().Be(1);
+        _pipeline.HotTradePublished.Should().Be(0);
+        _pipeline.HotTradeFallbacks.Should().Be(1);
         _sink.ReceivedEvents.Should().ContainSingle(e => e.Symbol == "SPY");
     }
 
@@ -199,12 +246,13 @@ public class DualPathEventPipelineTests : IAsyncLifetime
 
         await WaitForSinkCount(1, timeout: TimeSpan.FromSeconds(5));
 
-        _pipeline.HotQuotePublished.Should().Be(1);
+        _pipeline.HotQuotePublished.Should().Be(0);
+        _pipeline.HotQuoteFallbacks.Should().Be(1);
         _sink.ReceivedEvents.Should().ContainSingle(e => e.Symbol == "AAPL");
     }
 
     [Fact]
-    public async Task TryPublishTrade_WhenBufferFull_ReturnsFalse()
+    public async Task TryPublishTrade_WhenBufferFull_FallsBackToSlowPath()
     {
         // Fill the ring buffer completely (consumers disabled so they cannot race to drain it)
         await using var tinyPipeline = new DualPathEventPipeline(_slowPath, _symbolTable, ringBufferCapacity: 2, batchDrainSize: 1, startConsumers: false);
@@ -215,10 +263,14 @@ public class DualPathEventPipelineTests : IAsyncLifetime
         tinyPipeline.TryPublishTrade(in raw);
         tinyPipeline.TryPublishTrade(in raw);
 
-        // Buffer should now be full — next write should fail
+        // Buffer should now be full — next write should fall back to the slow path
         var result = tinyPipeline.TryPublishTrade(in raw);
-        result.Should().BeFalse();
-        tinyPipeline.HotTradeDropped.Should().BeGreaterThanOrEqualTo(1);
+        result.Should().BeTrue();
+        tinyPipeline.HotTradeFallbacks.Should().Be(1);
+
+        await tinyPipeline.DisposeAsync();
+        await WaitForEventsAsync(_sink, expectedCount: 3, timeout: TimeSpan.FromSeconds(5));
+        _sink.ReceivedEvents.Should().HaveCount(3);
     }
 
     #endregion
@@ -247,7 +299,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     {
         _pipeline.TryPublish(CreateTradeEvent("SPY", seq: 1));
         await WaitForConsumed(1, timeout: TimeSpan.FromSeconds(5));
-        _pipeline.HotTradeConsumed.Should().BeGreaterThanOrEqualTo(1);
+        _pipeline.HotTradeConsumed.Should().Be(0);
     }
 
     [Fact]
@@ -255,7 +307,7 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     {
         _pipeline.TryPublish(CreateQuoteEvent("AAPL", seq: 1));
         await WaitForQuoteConsumed(1, timeout: TimeSpan.FromSeconds(5));
-        _pipeline.HotQuoteConsumed.Should().BeGreaterThanOrEqualTo(1);
+        _pipeline.HotQuoteConsumed.Should().Be(0);
     }
 
     #endregion
@@ -272,8 +324,10 @@ public class DualPathEventPipelineTests : IAsyncLifetime
         await WaitForSinkCount(3, timeout: TimeSpan.FromSeconds(5));
 
         _sink.ReceivedEvents.Should().HaveCount(3);
-        _pipeline.HotTradePublished.Should().Be(1);
-        _pipeline.HotQuotePublished.Should().Be(1);
+        _pipeline.HotTradePublished.Should().Be(0);
+        _pipeline.HotTradeFallbacks.Should().Be(1);
+        _pipeline.HotQuotePublished.Should().Be(0);
+        _pipeline.HotQuoteFallbacks.Should().Be(1);
     }
 
     #endregion
@@ -323,6 +377,13 @@ public class DualPathEventPipelineTests : IAsyncLifetime
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
         while (_pipeline.HotQuoteConsumed < expected && sw.Elapsed < timeout)
+            await Task.Delay(5);
+    }
+
+    private static async Task WaitForEventsAsync(MockStorageSink sink, int expectedCount, TimeSpan timeout)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        while (sink.ReceivedEvents.Count < expectedCount && sw.Elapsed < timeout)
             await Task.Delay(5);
     }
 

@@ -1,0 +1,155 @@
+name: Desktop Screenshot Capture
+
+on:
+  workflow_dispatch:
+    inputs:
+      output_dir:
+        description: Output directory for captured screenshots.
+        required: false
+        default: "docs/screenshots/desktop"
+      commit:
+        description: Commit and push results to the repository.
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-screenshot-capture-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  WORKFLOW_OUTPUT_DIR: ${{ inputs.output_dir }}
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+
+jobs:
+  capture-screenshots:
+    name: Capture Desktop Screenshots
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: ${{ inputs.commit }}
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-wpf-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-wpf-
+            ${{ runner.os }}-nuget-
+
+      - name: Restore WPF project
+        shell: pwsh
+        run: >
+          dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj
+          /p:EnableWindowsTargeting=true
+          /p:EnableFullWpfBuild=true
+
+      - name: Validate desktop output directory
+        id: validate_output_dir
+        shell: pwsh
+        run: |
+          $baseDir = "docs/screenshots/desktop"
+          $requested = "${{ inputs.output_dir }}"
+          if ([string]::IsNullOrWhiteSpace($requested)) {
+            $requested = $baseDir
+          }
+
+          if ([System.IO.Path]::IsPathRooted($requested)) {
+            Write-Error "output_dir must be a repository-relative path under '$baseDir'."
+            exit 1
+          }
+
+          $normalized = ($requested -replace '\\', '/')
+          if ($normalized -ne $baseDir -and -not $normalized.StartsWith("$baseDir/")) {
+            Write-Error "output_dir must stay within '$baseDir'. Received '$normalized'."
+            exit 1
+          }
+
+          "safe_output_dir=$normalized" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Capture desktop screenshots
+        id: capture_desktop
+        shell: pwsh
+        run: >
+          scripts/dev/capture-desktop-screenshots.ps1
+          -OutputDir "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
+
+      - name: Log desktop screenshot capture status
+        if: ${{ always() }}
+        shell: pwsh
+        run: |
+          $outputDir = "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
+          if (-not (Test-Path -LiteralPath $outputDir)) {
+            Write-Warning "Desktop screenshot output directory '$outputDir' was not created."
+            return
+          }
+
+          $captures = @(Get-ChildItem -LiteralPath $outputDir -Filter '*.png' -File -ErrorAction SilentlyContinue)
+          if ($captures.Count -eq 0) {
+            Write-Warning "No desktop screenshots were captured under '$outputDir'."
+          } else {
+            Write-Host "[INFO] Captured $($captures.Count) desktop screenshot(s) in '$outputDir'."
+          }
+
+      - name: Commit and push results
+        if: ${{ success() && inputs.commit == true }}
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if (Test-Path -LiteralPath "${{ steps.validate_output_dir.outputs.safe_output_dir }}") {
+            git add -- "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
+          } else {
+            Write-Warning "Output path '${{ steps.validate_output_dir.outputs.safe_output_dir }}' does not exist; nothing to stage."
+          }
+          $changed = git diff --cached --name-only
+          if ($changed) {
+            git commit -m "chore: refresh desktop screenshot catalog [skip ci]"
+            $maxPushAttempts = 3
+            $pushed = $false
+            for ($attempt = 1; $attempt -le $maxPushAttempts; $attempt++) {
+              git pull --rebase
+              git push
+              if ($LASTEXITCODE -eq 0) {
+                $pushed = $true
+                break
+              }
+              if ($attempt -lt $maxPushAttempts) {
+                $delay = [math]::Pow(2, $attempt)
+                Write-Host "::warning::Push was rejected on attempt $attempt of $maxPushAttempts; retrying after ${delay}s delay and refreshing from remote."
+                Start-Sleep -Seconds $delay
+              }
+            }
+            if (-not $pushed) {
+              Write-Host "::error::Unable to push screenshot updates after $maxPushAttempts attempts."
+              exit 1
+            }
+          } else {
+            Write-Host "[INFO] No changes to commit."
+          }
+
+      - name: Upload screenshot artifacts
+        if: ${{ inputs.commit != true && steps.capture_desktop.outcome == 'success' }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: desktop-screenshots-${{ github.run_number }}
+          path: ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
+          if-no-files-found: ignore
+          retention-days: 14

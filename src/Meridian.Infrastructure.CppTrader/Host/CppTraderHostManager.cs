@@ -99,7 +99,7 @@ public sealed class CppTraderHostManager(
             executablePath);
 
         return new HostManagedSession(
-            new ProcessBackedCppTraderSessionClient(process, session.SessionId, sessionKind, _logger),
+            new ProcessBackedCppTraderSessionClient(process, session.SessionId, sessionKind, options.ShutdownTimeout, _logger),
             onDispose: () => Interlocked.Decrement(ref _activeSessions));
     }
 

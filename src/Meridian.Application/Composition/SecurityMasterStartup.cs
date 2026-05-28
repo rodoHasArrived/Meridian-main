@@ -39,7 +39,7 @@ internal static class SecurityMasterStartup
             return;
         }
 
-        migrationRunner.EnsureMigratedAsync().GetAwaiter().GetResult();
+        Task.Run(() => migrationRunner.EnsureMigratedAsync()).GetAwaiter().GetResult();
         logger?.LogInformation("Security Master schema is ready.");
     }
 }

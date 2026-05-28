@@ -10,7 +10,7 @@ param(
     [ValidateSet("all", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")]
     [string]$Platform = "all",
 
-    [ValidateSet("all", "collector", "desktop")]
+    [ValidateSet("all", "collector", "desktop", "web-workstation")]
     [string]$Project = "all",
 
     [string]$Version = "1.0.0",
@@ -25,6 +25,8 @@ param(
 
     [ValidateRange(0, [int]::MaxValue)]
     [int]$OutputRetainLatest = 5,
+
+    [switch]$SizeOptimized,
 
     [switch]$Help
 )
@@ -48,6 +50,7 @@ else {
 $AllPlatforms = @("win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")
 $WindowsPlatforms = @("win-x64", "win-arm64")
 $CollectorProject = Join-Path $RepoRoot "src/Meridian/Meridian.csproj"
+$WebWorkstationProject = Join-Path $RepoRoot "src/Meridian/Meridian.csproj"
 $DesktopProject = Join-Path $RepoRoot "src/Meridian.Wpf/Meridian.Wpf.csproj"
 $ArtifactRetentionModule = Join-Path $LibDir "ArtifactRetention.psm1"
 if (Test-Path $ArtifactRetentionModule) {
@@ -79,6 +82,24 @@ function Write-Error {
     param([string]$Message)
     Write-Host "[ERROR] " -ForegroundColor Red -NoNewline
     Write-Host $Message
+}
+
+function Get-SizeOptimizedPublishArguments {
+    if (-not $SizeOptimized) {
+        return @()
+    }
+
+    return @(
+        "-maxcpucount:1",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:DebugType=none",
+        "-p:DebugSymbols=false",
+        "-p:GenerateDocumentationFile=false",
+        "-p:PublishDocumentationFile=false",
+        "-p:CopyDocumentationFilesFromPackages=false",
+        "-p:PublishReadyToRun=false"
+    )
 }
 
 function Get-PublishOutputProcesses {
@@ -158,18 +179,21 @@ Parameters:
                   all        Build all projects
                   collector  Build only Meridian (CLI)
                   desktop    Build only Meridian.Wpf / Meridian.Desktop (Windows Desktop App)
+                  web-workstation Build only the browser workstation local host
 
   -Version      Version number (default: 1.0.0)
   -Configuration Build configuration (default: Release)
   -OutputDir    Output directory (default: ./dist)
   -OutputRetentionDays Days to keep generated publish output when OutputDir is under artifacts/publish (default: 14; 0 disables age pruning)
   -OutputRetainLatest Latest generated publish output directories to keep under artifacts/publish (default: 5; 0 disables count pruning)
+  -SizeOptimized Keep standalone single-file publishing but suppress publish-only debug/doc output and run MSBuild in a lower-parallelism mode
   -Help         Show this help message
 
 Examples:
   .\publish.ps1                                    # Build all platforms, all projects
   .\publish.ps1 -Platform linux-x64                # Build Linux x64 only
   .\publish.ps1 -Platform win-x64 -Project collector  # Build Windows collector only
+  .\publish.ps1 -Platform win-x64 -Project web-workstation -SizeOptimized -OutputDir artifacts/publish/local-size
   .\publish.ps1 -Version 2.0.0                     # Build with custom version
 "@
 }
@@ -185,6 +209,7 @@ function Publish-Project {
     $outputPath = Join-Path (Join-Path $ResolvedOutputDir $RuntimeId) $OutputSubDir
 
     Write-Info "Publishing $ProjectName for $RuntimeId..."
+    $sizeOptimizedArgs = Get-SizeOptimizedPublishArguments
 
     dotnet publish $ProjectPath `
         -c $Configuration `
@@ -196,7 +221,8 @@ function Publish-Project {
         -p:PublishTrimmed=true `
         -p:EnableCompressionInSingleFile=true `
         -p:IncludeNativeLibrariesForSelfExtract=true `
-        -p:IncludeAllContentForSelfExtract=true
+        -p:IncludeAllContentForSelfExtract=true `
+        @sizeOptimizedArgs
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to publish $ProjectName for $RuntimeId"
@@ -218,6 +244,7 @@ function Publish-DesktopApp {
     $platform = if ($RuntimeId -eq "win-arm64") { "ARM64" } else { "x64" }
 
     Write-Info "Publishing Meridian Desktop (WPF) for $RuntimeId..."
+    $sizeOptimizedArgs = Get-SizeOptimizedPublishArguments
 
     # Meridian Desktop is a WPF app with a separate assembly name.
     dotnet publish $DesktopProject `
@@ -229,7 +256,8 @@ function Publish-DesktopApp {
         -p:Platform=$platform `
         --self-contained true `
         -p:WindowsPackageType=None `
-        -p:PublishReadyToRun=false
+        -p:PublishReadyToRun=false `
+        @sizeOptimizedArgs
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to publish Meridian Desktop for $RuntimeId"
@@ -251,6 +279,35 @@ function Publish-DesktopApp {
     New-Item -ItemType Directory -Path $dataDir -Force | Out-Null
 
     Write-Success "Published Meridian Desktop (WPF) for $RuntimeId -> $outputPath"
+}
+
+function Publish-WebWorkstationHost {
+    param([string]$RuntimeId)
+
+    $outputPath = Join-Path (Join-Path $ResolvedOutputDir $RuntimeId) "web-workstation"
+
+    Write-Info "Publishing Meridian Web Workstation host for $RuntimeId..."
+    $sizeOptimizedArgs = Get-SizeOptimizedPublishArguments
+
+    dotnet publish $WebWorkstationProject `
+        -c $Configuration `
+        -r $RuntimeId `
+        -o $outputPath `
+        -p:Version=$Version `
+        --self-contained true `
+        -p:PublishSingleFile=true `
+        -p:PublishReadyToRun=false `
+        -p:PublishTrimmed=false `
+        -p:EnableCompressionInSingleFile=true `
+        -p:IncludeNativeLibrariesForSelfExtract=true `
+        -p:IncludeAllContentForSelfExtract=true `
+        @sizeOptimizedArgs
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to publish Meridian Web Workstation host for $RuntimeId"
+    }
+
+    Write-Success "Published Meridian Web Workstation host for $RuntimeId -> $outputPath"
 }
 
 function New-Package {
@@ -315,6 +372,9 @@ New-Item -ItemType Directory -Path $ResolvedOutputDir -Force | Out-Null
 Write-Info "Building Meridian v$Version ($Configuration)"
 Write-Info "Target platforms: $($TargetPlatforms -join ', ')"
 Write-Info "Target projects: $Project"
+if ($SizeOptimized) {
+    Write-Info "Size-optimized standalone publish mode enabled"
+}
 Write-Host ""
 
 foreach ($rid in $TargetPlatforms) {
@@ -322,6 +382,10 @@ foreach ($rid in $TargetPlatforms) {
 
     if ($Project -eq "all" -or $Project -eq "collector") {
         Publish-Project -ProjectPath $CollectorProject -RuntimeId $rid -ProjectName "Meridian" -OutputSubDir "collector"
+    }
+
+    if ($Project -eq "web-workstation") {
+        Publish-WebWorkstationHost -RuntimeId $rid
     }
 
     # Build the WPF desktop app only for Windows platforms

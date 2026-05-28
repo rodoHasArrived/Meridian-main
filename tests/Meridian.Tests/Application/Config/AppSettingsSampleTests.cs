@@ -18,6 +18,8 @@ public sealed class AppSettingsSampleTests
 
         configuration["DataSource"].Should().Be("Synthetic");
         configuration["Backfill:Providers:Robinhood:Enabled"].Should().Be("False");
+        configuration["Serilog:WriteTo:1:Args:fileSizeLimitBytes"].Should().Be("16777216");
+        configuration["Serilog:WriteTo:1:Args:rollOnFileSizeLimit"].Should().Be("True");
     }
 
     private static string FindRepositoryRoot()

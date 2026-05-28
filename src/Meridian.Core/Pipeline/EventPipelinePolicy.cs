@@ -11,6 +11,7 @@ namespace Meridian.Application.Pipeline;
 /// <list type="bullet">
 ///   <item><see cref="Default"/> - General-purpose event pipelines (100k capacity, DropOldest)</item>
 ///   <item><see cref="HighThroughput"/> - Streaming data pipelines (50k capacity, DropOldest)</item>
+///   <item><see cref="DurableStreaming"/> - Persistence-critical streaming pipelines (50k capacity, Wait)</item>
 ///   <item><see cref="MessageBuffer"/> - Internal message buffering (50k capacity, DropOldest, no metrics)</item>
 ///   <item><see cref="MaintenanceQueue"/> - Background tasks (100 capacity, Wait/backpressure)</item>
 ///   <item><see cref="Logging"/> - Log channels (1k capacity, DropOldest)</item>
@@ -45,6 +46,15 @@ public sealed record EventPipelinePolicy(
     public static EventPipelinePolicy HighThroughput { get; } = new(
         PipelinePolicyConstants.HighThroughputCapacity,
         BoundedChannelFullMode.DropOldest,
+        EnableMetrics: true);
+
+    /// <summary>
+    /// Policy for persistence-critical streaming pipelines where producers must see
+    /// explicit backpressure instead of silently evicting already-queued events.
+    /// </summary>
+    public static EventPipelinePolicy DurableStreaming { get; } = new(
+        PipelinePolicyConstants.DurableStreamingCapacity,
+        BoundedChannelFullMode.Wait,
         EnableMetrics: true);
 
     /// <summary>

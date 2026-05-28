@@ -27,7 +27,10 @@ public sealed class PaperTradingGateway : IOrderGateway
     private readonly ISecurityMasterQueryService? _securityMaster;
     private readonly System.Threading.Channels.Channel<OrderStatusUpdate> _updates;
     private readonly Dictionary<string, OrderRequest> _workingOrders = new();
-    private readonly ConcurrentDictionary<string, TradingParametersDto?> _tradingParamsCache = new(StringComparer.OrdinalIgnoreCase);
+    private const int MaxCachedSymbols = 1024;
+    private const int MaxCacheableSymbolLength = 64;
+
+    private readonly ConcurrentDictionary<string, TradingParametersDto> _tradingParamsCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _lock = new();
     private bool _disposed;
 
@@ -253,7 +256,7 @@ public sealed class PaperTradingGateway : IOrderGateway
     }
 
     /// <summary>
-    /// Looks up trading parameters for a symbol via the Security Master. Results are
+    /// Looks up trading parameters for a symbol via the Security Master. Successful results are
     /// cached per symbol for the lifetime of this gateway instance to avoid repeated I/O.
     /// Returns <c>null</c> on any error or when no Security Master is configured.
     /// </summary>
@@ -262,7 +265,8 @@ public sealed class PaperTradingGateway : IOrderGateway
         if (_securityMaster is null)
             return null;
 
-        if (_tradingParamsCache.TryGetValue(symbol, out var cached))
+        var cacheKey = NormalizeSymbolForCache(symbol);
+        if (cacheKey is not null && _tradingParamsCache.TryGetValue(cacheKey, out var cached))
             return cached;
 
         try
@@ -271,22 +275,33 @@ public sealed class PaperTradingGateway : IOrderGateway
                 SecurityIdentifierKind.Ticker, symbol, provider: null, ct)
                 .ConfigureAwait(false);
 
-            TradingParametersDto? result = null;
-            if (detail is not null)
+            if (detail is null)
+                return null;
+
+            var result = await _securityMaster.GetTradingParametersAsync(detail.SecurityId, DateTimeOffset.UtcNow, ct)
+                .ConfigureAwait(false);
+
+            if (result is not null && cacheKey is not null && _tradingParamsCache.Count < MaxCachedSymbols)
             {
-                result = await _securityMaster.GetTradingParametersAsync(detail.SecurityId, DateTimeOffset.UtcNow, ct)
-                    .ConfigureAwait(false);
+                _tradingParamsCache.TryAdd(cacheKey, result);
             }
 
-            _tradingParamsCache[symbol] = result;
             return result;
         }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "Could not resolve trading parameters for {Symbol} — lot-size and tick-size checks skipped", symbol);
-            _tradingParamsCache[symbol] = null;
             return null;
         }
+    }
+
+    private static string? NormalizeSymbolForCache(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+            return null;
+
+        var normalized = symbol.Trim().ToUpperInvariant();
+        return normalized.Length <= MaxCacheableSymbolLength ? normalized : null;
     }
 
     /// <summary>

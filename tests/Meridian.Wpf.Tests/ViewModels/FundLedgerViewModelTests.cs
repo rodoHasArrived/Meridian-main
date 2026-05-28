@@ -21,6 +21,7 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Workstation.Models;
 using AppSecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -115,9 +116,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,
@@ -183,12 +184,143 @@ public sealed class FundLedgerViewModelTests
                     profile.ExceptionRoute == "fund-ops-review" &&
                     profile.PendingSignoffCount == 1);
                 viewModel.ReconciliationDetailTitle.Should().Be("Reconciliation Strategy");
+                viewModel.ReconciliationSection.DetailTitle.Should().Be(viewModel.ReconciliationDetailTitle);
+                viewModel.ReconciliationSection.CalibrationStatusText.Should().Be(viewModel.ReconciliationCalibrationStatusText);
+                viewModel.ReconciliationDetailLifecycleText.Should().Contain("Start Review");
+                viewModel.ReconciliationDetailLifecycleText.Should().Contain("records ownership");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("Pending Signoff");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("Fund operations lead");
+                viewModel.ReconciliationSection.GovernanceSignifierState.Kind.Should().Be(WorkstationStateKind.Blocked);
+                viewModel.ReconciliationSection.GovernanceSignifierState.ActionPosture!.Label.Should().Be("Start Review");
+                viewModel.ReconciliationSection.GovernanceSignifierState.SignoffRequirement!.Role.Should().Be("Fund operations lead");
+                viewModel.ReconciliationSection.GovernanceSignifierState.VisibleEvidenceLinks
+                    .Should()
+                    .Contain(link => link.Target.Contains("/api/workstation/reconciliation/break-queue/", StringComparison.Ordinal));
                 viewModel.SupportsSelectedBreakActions.Should().BeTrue();
                 viewModel.CanStartReviewSelectedBreak.Should().BeTrue();
                 viewModel.CanResolveSelectedBreak.Should().BeFalse();
                 viewModel.ReconciliationNoteText = "Investigating ledger drift";
+                viewModel.ReconciliationSection.NoteText.Should().Be("Investigating ledger drift");
                 viewModel.CanResolveSelectedBreak.Should().BeTrue();
                 viewModel.OverviewStatusText.Should().Contain("unresolved security mapping");
+            }
+            finally
+            {
+                if (File.Exists(storagePath))
+                {
+                    File.Delete(storagePath);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public void ResolveSelectedBreakAsync_RefreshesQueueAndKeepsDecisionAuditVisible()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var storagePath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-fund-ledger-tests",
+                $"{Guid.NewGuid():N}.json");
+
+            try
+            {
+                var navigation = NavigationService.Instance;
+                navigation.ResetForTests();
+                navigation.Initialize(new Frame());
+
+                var fundContext = new FundContextService(storagePath);
+                await fundContext.UpsertProfileAsync(new FundProfileDetail(
+                    FundProfileId: "alpha-fund",
+                    DisplayName: "Alpha Fund",
+                    LegalEntityName: "Alpha Fund LP",
+                    BaseCurrency: "USD",
+                    DefaultWorkspaceId: "governance",
+                    DefaultLandingPageTag: "FundLedger",
+                    DefaultLedgerScope: FundLedgerScope.Consolidated,
+                    EntityIds: ["entity-alpha"],
+                    SleeveIds: ["sleeve-credit"],
+                    VehicleIds: ["vehicle-master"],
+                    IsDefault: true));
+                await fundContext.SelectFundProfileAsync("alpha-fund");
+
+                var store = new StrategyRunStore();
+                await store.RecordRunAsync(BuildFundScopedRun("run-fund-ops"));
+
+                var portfolioReadService = new PortfolioReadService();
+                var ledgerReadService = new LedgerReadService();
+                var runReadService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
+                var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient(
+                [
+                    BuildBreakQueueItem("run-fund-ops")
+                ],
+                [
+                    BuildStrategyDetail("run-fund-ops")
+                ]);
+
+                var fundAccountService = new InMemoryFundAccountService();
+                var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
+                var reconciliationRepository = new InMemoryReconciliationRunRepository();
+                var strategyReconciliationService = new ReconciliationRunService(
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
+                var reconciliationReadService = new ReconciliationReadService(
+                    fundAccountService,
+                    fundAccountReadService,
+                    workspaceService,
+                    strategyReconciliationService);
+                var workbenchService = new FundReconciliationWorkbenchService(
+                    reconciliationReadService,
+                    fundAccountService,
+                    workspaceService,
+                    fakeApiClient);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext, fundAccountReadService);
+                var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
+                    fundAccountService,
+                    store,
+                    portfolioReadService,
+                    strategyReconciliationService);
+
+                using var viewModel = new FundLedgerViewModel(
+                    fundLedgerReadService,
+                    fundContext,
+                    navigation,
+                    fundAccountReadService,
+                    cashFinancingReadService,
+                    workbenchService,
+                    fundOperationsWorkspaceReadService,
+                    workspaceService);
+
+                await viewModel.LoadAsync();
+                await WaitForConditionAsync(() => viewModel.SupportsSelectedBreakActions);
+
+                viewModel.ReconciliationNoteText = "Reviewed custodian statement and matched ledger adjustment.";
+                await viewModel.StartReviewSelectedBreakAsync();
+                await WaitForConditionAsync(() =>
+                    viewModel.SelectedBreakQueueItem?.Status == ReconciliationBreakQueueStatus.InReview &&
+                    viewModel.ReconciliationDetailLifecycleText.Contains("active review", StringComparison.OrdinalIgnoreCase));
+
+                await viewModel.ResolveSelectedBreakAsync();
+                await WaitForConditionAsync(() =>
+                    viewModel.SelectedBreakQueueItem?.Status == ReconciliationBreakQueueStatus.Resolved &&
+                    viewModel.ReconciliationDetailLifecycleText.Contains("closed by", StringComparison.OrdinalIgnoreCase) &&
+                    viewModel.ReconciliationAuditRows.Any(row => row.Title == "Break closed"));
+
+                viewModel.IsAllBreakQueueFilterSelected.Should().BeTrue();
+                viewModel.ReconciliationBreakQueueItems.Should().ContainSingle(item =>
+                    item.BreakId == "run-fund-ops:price-gap" &&
+                    item.Status == ReconciliationBreakQueueStatus.Resolved &&
+                    item.ResolutionNote == "Reviewed custodian statement and matched ledger adjustment.");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("Decision captured");
+                viewModel.ReconciliationDetailSignoffText.Should().Contain("close approval blocked");
+                viewModel.ReconciliationAuditRows.Should().Contain(row =>
+                    row.Title == "Break closed" &&
+                    row.Description == "Reviewed custodian statement and matched ledger adjustment.");
+                viewModel.ReconciliationActionFeedbackText.Should().Be("Break resolved and audit note captured.");
             }
             finally
             {
@@ -292,9 +424,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,
@@ -407,9 +539,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,
@@ -482,6 +614,12 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().Contain("ReconciliationResetFiltersButton");
         xaml.Should().Contain("Command=\"{Binding ResetReconciliationFiltersCommand}\"");
         xaml.Should().Contain("ReconciliationRefreshQueueButton");
+        xaml.Should().Contain("ReconciliationDetailLifecycleText");
+        xaml.Should().Contain("ReconciliationDetailSignoffText");
+        xaml.Should().Contain("FundReconciliationGovernanceSignifier");
+        xaml.Should().Contain("ReconciliationSection.GovernanceSignifierState");
+        xaml.Should().Contain("FundReportPackReadinessSignifier");
+        xaml.Should().Contain("ReportPackReadinessState");
     }
 
     [Fact]
@@ -555,9 +693,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,
@@ -600,6 +738,11 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackAssetSections.Should().NotBeEmpty();
                 viewModel.ReportPackOwnershipText.Should().Contain("sign-off");
                 viewModel.ReportPackSnapshotWarningText.Should().NotBeNullOrWhiteSpace();
+                viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
+                viewModel.ReportPackReadinessState.ReadinessTone.Should().Be(WorkstationReadinessTone.EvidenceLinked);
+                viewModel.ReportPackReadinessState.ActionPosture!.Target.Should().Be("FundReportPack");
+                viewModel.ReportPackReadinessState.VisibleEvidenceLinks.Should().Contain(link => link.Label == "Report-pack preview");
+                viewModel.ReportPackReadinessState.SignoffRequirement!.Role.Should().NotBeNullOrWhiteSpace();
             }
             finally
             {
@@ -683,9 +826,9 @@ public sealed class FundLedgerViewModelTests
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
-                    runReadService,
-                    new ReconciliationProjectionService(),
-                    reconciliationRepository);
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
                 var reconciliationReadService = new ReconciliationReadService(
                     fundAccountService,
                     fundAccountReadService,
@@ -1025,7 +1168,7 @@ public sealed class FundLedgerViewModelTests
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<SecurityDetailDto?>(null);
 
-        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
         {
             if (string.Equals(identifierValue, "AAPL", StringComparison.OrdinalIgnoreCase))
             {

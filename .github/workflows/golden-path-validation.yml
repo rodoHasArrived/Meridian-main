@@ -2,105 +2,120 @@ name: Golden Path Validation
 
 on:
   pull_request:
-    branches: ["main", "develop"]
     paths:
-      - "README.md"
-      - "docs/**/*.md"
-      - "Makefile"
-      - "build/scripts/install/**"
-      - "build/scripts/docs/dashboard_rendering.py"
+      - ".github/workflows/golden-path-validation.yml"
       - "build/scripts/docs/generate-pilot-readiness-dashboard.py"
-      - "build/scripts/docs/validate-golden-path.sh"
+      - "build/scripts/docs/tests/test_pilot_readiness_dashboard.py"
+      - "src/Meridian.Application/Commands/LedgerCliCommand.cs"
+      - "src/Meridian.Application/Ledger/TextJournal/**"
       - "src/Meridian.Contracts/Workstation/**"
       - "src/Meridian.Execution/**"
       - "src/Meridian.Ledger/**"
       - "src/Meridian.Strategies/**"
       - "src/Meridian.Ui.Shared/**"
+      - "tests/Meridian.Tests/Application/Commands/LedgerCliCommandTests.cs"
       - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
-      - ".github/workflows/golden-path-validation.yml"
+      - "tests/scripts/test_golden_path_validation_workflow.py"
+      - "tests/scripts/test_generate_dk1_pilot_parity_packet.py"
+      - "tests/scripts/test_prepare_dk1_operator_signoff.py"
   push:
-    branches: ["main"]
+    branches:
+      - main
     paths:
-      - "README.md"
-      - "docs/**/*.md"
-      - "Makefile"
-      - "build/scripts/install/**"
-      - "build/scripts/docs/dashboard_rendering.py"
+      - ".github/workflows/golden-path-validation.yml"
       - "build/scripts/docs/generate-pilot-readiness-dashboard.py"
-      - "build/scripts/docs/validate-golden-path.sh"
+      - "build/scripts/docs/tests/test_pilot_readiness_dashboard.py"
+      - "src/Meridian.Application/Commands/LedgerCliCommand.cs"
+      - "src/Meridian.Application/Ledger/TextJournal/**"
       - "src/Meridian.Contracts/Workstation/**"
       - "src/Meridian.Execution/**"
       - "src/Meridian.Ledger/**"
       - "src/Meridian.Strategies/**"
       - "src/Meridian.Ui.Shared/**"
+      - "tests/Meridian.Tests/Application/Commands/LedgerCliCommandTests.cs"
       - "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs"
-      - ".github/workflows/golden-path-validation.yml"
+      - "tests/scripts/test_golden_path_validation_workflow.py"
+      - "tests/scripts/test_generate_dk1_pilot_parity_packet.py"
+      - "tests/scripts/test_prepare_dk1_operator_signoff.py"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: golden-path-${{ github.workflow }}-${{ github.ref }}
+  group: golden-path-validation-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
   DOTNET_VERSION: '10.0.x'
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
 
 jobs:
-  validate:
-    name: Validate golden path evidence
+  pilot-acceptance:
+    name: Pilot Acceptance Evidence
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
 
-      - name: Setup .NET with Cache
-        uses: ./.github/actions/setup-dotnet-cache
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          cache-suffix: golden-path
 
-      - name: Validate Golden Path installer references
-        run: ./build/scripts/docs/validate-golden-path.sh
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-golden-path-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore pilot test project
+        run: dotnet restore tests/Meridian.Tests/Meridian.Tests.csproj /p:EnableWindowsTargeting=true
+
+      - name: Run pilot acceptance harness
+        run: |
+          # Scenario source: tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "trx;LogFilePrefix=pilot-acceptance" --results-directory artifacts/test-results/pilot-acceptance /p:EnableWindowsTargeting=true
 
       - name: Validate pilot readiness dashboard renderer
         run: python3 -m unittest build/scripts/docs/tests/test_pilot_readiness_dashboard.py
 
-      - name: Restore pilot acceptance test project
-        run: dotnet restore tests/Meridian.Tests/Meridian.Tests.csproj /p:EnableWindowsTargeting=true --verbosity minimal
-
-      - name: Run pilot acceptance harness
+      - name: Validate provider-validation script tests
         run: |
-          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
-            --no-restore \
-            --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" \
-            --logger "trx;LogFileName=pilot-acceptance.trx" \
-            --results-directory ./TestResults \
-            --verbosity minimal \
-            /p:EnableWindowsTargeting=true
+          python3 -m unittest tests/scripts/test_generate_dk1_pilot_parity_packet.py
+          python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
 
-      - name: Generate pilot readiness evidence dashboard
-        if: always()
+      - name: Generate pilot readiness dashboard
         run: |
-          python3 build/scripts/docs/generate-pilot-readiness-dashboard.py \
-            --output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md \
-            --json-output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json \
-            --summary
+          python3 build/scripts/docs/generate-pilot-readiness-dashboard.py --output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md --json-output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json
 
       - name: Upload pilot acceptance evidence
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: pilot-acceptance-evidence
           path: |
-            artifacts/pilot-acceptance/latest/*
-            TestResults/*
-          if-no-files-found: warn
-          retention-days: 14
+            artifacts/pilot-acceptance/latest/pilot-readiness.json
+            artifacts/pilot-acceptance/latest/pilot-readiness.md
+            artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md
+            artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json
+            artifacts/test-results/pilot-acceptance/
+          if-no-files-found: ignore
+          retention-days: 30

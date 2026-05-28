@@ -4,6 +4,7 @@ using Meridian.Contracts.Domain.Enums;
 using Meridian.Storage.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -15,6 +16,7 @@ public static class CatalogEndpoints
 {
     public static void MapCatalogEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        var logger = app.Logger;
         var group = app.MapGroup("").WithTags("Catalog");
 
         // GET /api/catalog/search — structured or natural-language search over stored data
@@ -120,7 +122,8 @@ public static class CatalogEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Catalog search failed: {ex.Message}");
+                logger.LogError(ex, "Catalog search failed.");
+                return Results.Problem("Catalog search failed.");
             }
         })
         .WithName("CatalogSearch")
@@ -155,7 +158,8 @@ public static class CatalogEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to list symbols: {ex.Message}");
+                logger.LogError(ex, "Failed to list catalog symbols.");
+                return Results.Problem("Failed to list catalog symbols.");
             }
         })
         .WithName("CatalogSymbols")
@@ -232,7 +236,8 @@ public static class CatalogEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to build timeline: {ex.Message}");
+                logger.LogError(ex, "Failed to build catalog timeline.");
+                return Results.Problem("Failed to build catalog timeline.");
             }
         })
         .WithName("CatalogTimeline")
@@ -274,7 +279,8 @@ public static class CatalogEndpoints
             }
             catch (Exception ex)
             {
-                return Results.Problem($"Failed to build coverage summary: {ex.Message}");
+                logger.LogError(ex, "Failed to build catalog coverage summary.");
+                return Results.Problem("Failed to build catalog coverage summary.");
             }
         })
         .WithName("CatalogCoverage")

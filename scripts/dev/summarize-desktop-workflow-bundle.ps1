@@ -32,12 +32,23 @@ if (Test-Path -LiteralPath $resolvedManifestPath) {
     $manifest = Get-Content -LiteralPath $resolvedManifestPath -Raw | ConvertFrom-Json
 }
 
+$manifestRunError = $null
+if ($null -ne $manifest) {
+    $runProperty = $manifest.PSObject.Properties['run']
+    if ($null -ne $runProperty) {
+        $runErrorProperty = $runProperty.Value.PSObject.Properties['error']
+        if ($null -ne $runErrorProperty -and -not [string]::IsNullOrWhiteSpace([string]$runErrorProperty.Value)) {
+            $manifestRunError = [string]$runErrorProperty.Value
+        }
+    }
+}
+
 $firstFailingStage = $stageEntries | Where-Object { $_.status -eq 'failed' } | Select-Object -First 1
 $topFailureCause = if ($null -ne $firstFailingStage -and -not [string]::IsNullOrWhiteSpace($firstFailingStage.message)) {
     [string]$firstFailingStage.message
 }
-elseif ($null -ne $manifest -and $null -ne $manifest.run -and -not [string]::IsNullOrWhiteSpace($manifest.run.error)) {
-    [string]$manifest.run.error
+elseif (-not [string]::IsNullOrWhiteSpace($manifestRunError)) {
+    $manifestRunError
 }
 else {
     'No failure recorded.'
@@ -66,8 +77,8 @@ $summary = @(
     '# Desktop Workflow Bundle Summary'
     ''
     "- Generated (UTC): $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'))"
-    "- Bundle path: `$resolvedBundlePath`"
-    "- Manifest path: `$resolvedManifestPath`"
+    "- Bundle path: $resolvedBundlePath"
+    "- Manifest path: $resolvedManifestPath"
     ''
     '## Outcome'
     "- Status: $($manifest.run.status)"

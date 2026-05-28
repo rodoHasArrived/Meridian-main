@@ -113,6 +113,44 @@ public sealed class NotificationCenterViewModelTests
     }
 
     [Fact]
+    public void AlertSummaryPresentation_FormatsVisibleBadgesAndAutomationName()
+    {
+        var presentation = NotificationCenterViewModel.BuildAlertSummaryPresentation(new AlertSummary
+        {
+            CriticalCount = 1,
+            ErrorCount = 2,
+            WarningCount = 1,
+            SnoozedCount = 3,
+            TotalActive = 7
+        });
+
+        presentation.AlertTotalText.Should().Be("7 active");
+        presentation.CriticalAlertCountText.Should().Be("1 Critical");
+        presentation.IsCriticalAlertBadgeVisible.Should().BeTrue();
+        presentation.ErrorAlertCountText.Should().Be("2 Errors");
+        presentation.IsErrorAlertBadgeVisible.Should().BeTrue();
+        presentation.WarningAlertCountText.Should().Be("1 Warning");
+        presentation.IsWarningAlertBadgeVisible.Should().BeTrue();
+        presentation.SnoozedAlertCountText.Should().Be("3 snoozed");
+        presentation.IsSnoozedAlertCountVisible.Should().BeTrue();
+        presentation.AlertSummaryAutomationName.Should().Be("Active alerts: 7 active; 1 Critical; 2 Errors; 1 Warning; 3 snoozed");
+    }
+
+    [Fact]
+    public void AlertSummaryPresentation_WithNoAlerts_HidesSeverityBadges()
+    {
+        var presentation = NotificationCenterViewModel.BuildAlertSummaryPresentation(new AlertSummary());
+
+        presentation.AlertTotalText.Should().Be("0 active");
+        presentation.IsCriticalAlertBadgeVisible.Should().BeFalse();
+        presentation.IsErrorAlertBadgeVisible.Should().BeFalse();
+        presentation.IsWarningAlertBadgeVisible.Should().BeFalse();
+        presentation.SnoozedAlertCountText.Should().BeEmpty();
+        presentation.IsSnoozedAlertCountVisible.Should().BeFalse();
+        presentation.AlertSummaryAutomationName.Should().Be("Active alerts: 0 active");
+    }
+
+    [Fact]
     public void AreAllTypesSelected_TogglesSeverityFiltersTogether()
     {
         WpfTestThread.Run(() =>
@@ -158,6 +196,14 @@ public sealed class NotificationCenterViewModelTests
         xaml.Should().Contain("NotificationHistoryResetFiltersButton");
         xaml.Should().Contain("{Binding ClearHistoryFiltersCommand}");
         xaml.Should().Contain("{Binding HasFilterRecoveryAction");
+        xaml.Should().Contain("{Binding AlertTotalText}");
+        xaml.Should().Contain("{Binding CriticalAlertCountText}");
+        xaml.Should().Contain("{Binding IsCriticalAlertBadgeVisible");
+        xaml.Should().Contain("{Binding ErrorAlertCountText}");
+        xaml.Should().Contain("{Binding WarningAlertCountText}");
+        xaml.Should().Contain("{Binding SnoozedAlertCountText}");
+        xaml.Should().Contain("{Binding IsSnoozedAlertCountVisible");
+        xaml.Should().Contain("{Binding AlertSummaryAutomationName}");
         xaml.Should().Contain("{Binding AreAllTypesSelected, Mode=TwoWay");
         xaml.Should().Contain("{Binding ShowErrors, Mode=TwoWay");
         xaml.Should().Contain("{Binding ShowWarnings, Mode=TwoWay");
@@ -165,6 +211,11 @@ public sealed class NotificationCenterViewModelTests
         xaml.Should().Contain("{Binding ShowSuccess, Mode=TwoWay");
         xaml.Should().NotContain("Checked=\"FilterChanged\"");
         xaml.Should().NotContain("Unchecked=\"FilterChanged\"");
+        codeBehind.Should().NotContain("AlertTotalText.Text");
+        codeBehind.Should().NotContain("CriticalBadge.Visibility");
+        codeBehind.Should().NotContain("ErrorBadge.Visibility");
+        codeBehind.Should().NotContain("WarningBadge.Visibility");
+        codeBehind.Should().NotContain("SnoozedCountText.Text");
         codeBehind.Should().NotContain("FilterChanged");
         codeBehind.Should().NotContain("ApplyCheckboxFilters(");
     }

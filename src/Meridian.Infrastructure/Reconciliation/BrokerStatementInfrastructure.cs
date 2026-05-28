@@ -101,12 +101,97 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     }
 }
 
+public sealed record StatementMatchingTolerance(decimal PositionQuantityTolerance, decimal CashAmountTolerance, decimal TransactionAmountTolerance)
+{
+    public static StatementMatchingTolerance Default => new(0.0001m, 0.01m, 0.01m);
+}
+
+public interface IReconciliationBreakStore
+{
+    Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default);
+    Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenAsync(CancellationToken ct = default);
+}
+
+public sealed class JsonReconciliationBreakStore(string dataRoot) : IReconciliationBreakStore
+{
+    private readonly string _folder = Path.Combine(dataRoot, "reconciliation", "statement-breaks");
+
+    public async Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default)
+    {
+        Directory.CreateDirectory(_folder);
+        foreach (var record in records)
+        {
+            var path = Path.Combine(_folder, $"{record.BreakId}.json");
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(record), ct).ConfigureAwait(false);
+        }
+    }
+
+    public Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenAsync(CancellationToken ct = default)
+    {
+        if (!Directory.Exists(_folder)) return Task.FromResult<IReadOnlyList<ReconciliationBreakRecord>>([]);
+        var items = Directory.EnumerateFiles(_folder, "*.json")
+            .Select(path => JsonSerializer.Deserialize<ReconciliationBreakRecord>(File.ReadAllText(path)))
+            .Where(x => x is not null && x.Status == "Open")
+            .Cast<ReconciliationBreakRecord>()
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .ToList();
+        return Task.FromResult<IReadOnlyList<ReconciliationBreakRecord>>(items);
+    }
+}
+
 public sealed class StatementMatchingService
 {
-    public IReadOnlyList<MatchOutcome> MatchRows(IReadOnlyList<CanonicalStatementRow> rows)
-        => rows.Select(r =>
+    public IReadOnlyList<MatchOutcome> MatchRows(IReadOnlyList<CanonicalStatementRow> rows, StatementMatchingTolerance? tolerance = null)
+    {
+        var t = tolerance ?? StatementMatchingTolerance.Default;
+        return rows.Select(r =>
         {
-            var known = r.Symbol.Length <= 5 && r.Quantity != 0;
-            return new MatchOutcome(r.RawChecksum, known ? "linked-position" : "unmatched", known ? $"POS-{r.Symbol}" : string.Empty, known ? 0.95m : 0.35m, known ? "Matched by symbol + non-zero quantity." : "No confident linkage found.");
+            var (ok, code, rationale, conf) = r.ActivityType.ToLowerInvariant() switch
+            {
+                "position" => MatchPosition(r, t),
+                "cash" => MatchCash(r, t),
+                _ => MatchTransaction(r, t)
+            };
+
+            return new MatchOutcome(r.RawChecksum, ok ? "matched" : code, ok ? $"SRC-{r.SourceRowNumber}" : string.Empty, conf, rationale);
         }).ToList();
+    }
+
+    public IReadOnlyList<ReconciliationBreakRecord> BuildBreakRecords(string runId, string importId, IReadOnlyList<CanonicalStatementRow> rows, IReadOnlyList<MatchOutcome> outcomes, StatementMatchingTolerance? tolerance = null)
+    {
+        var t = tolerance ?? StatementMatchingTolerance.Default;
+        return rows.Zip(outcomes, (row, outcome) => (row, outcome))
+            .Where(x => x.outcome.OutcomeType != "matched")
+            .Select(x => new ReconciliationBreakRecord(
+                BreakId: Guid.NewGuid().ToString("N"),
+                RunId: runId,
+                ImportId: importId,
+                SourceReference: $"{importId}:{x.row.SourceRowNumber}",
+                BreakCode: x.outcome.OutcomeType,
+                Category: x.row.ActivityType,
+                Delta: Math.Abs(x.row.Quantity) + Math.Abs(x.row.CashAmount),
+                Tolerance: x.row.ActivityType.Equals("cash", StringComparison.OrdinalIgnoreCase) ? t.CashAmountTolerance : t.TransactionAmountTolerance,
+                ToleranceBreached: true,
+                CreatedAtUtc: DateTimeOffset.UtcNow,
+                Status: "Open")).ToList();
+    }
+
+    private static (bool,string,string,decimal) MatchPosition(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
+    {
+        if (string.IsNullOrWhiteSpace(row.Symbol)) return (false, "POS_SYMBOL_MISSING", "Position row missing symbol.", 0.1m);
+        if (Math.Abs(row.Quantity) <= tolerance.PositionQuantityTolerance) return (false, "POS_QTY_TOLERANCE_BREACH", "Position quantity within tolerance floor and treated as unresolved.", 0.3m);
+        return (true, "", "Position matched within configured tolerance.", 0.95m);
+    }
+
+    private static (bool,string,string,decimal) MatchCash(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
+    {
+        if (Math.Abs(row.CashAmount) <= tolerance.CashAmountTolerance) return (true, "", "Cash movement within tolerance.", 0.9m);
+        return (false, "CASH_TOLERANCE_BREACH", "Cash movement exceeds configured tolerance.", 0.25m);
+    }
+
+    private static (bool,string,string,decimal) MatchTransaction(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
+    {
+        if (Math.Abs(row.Price * row.Quantity) <= tolerance.TransactionAmountTolerance) return (true, "", "Transaction amount within tolerance.", 0.85m);
+        return (false, "TXN_TOLERANCE_BREACH", "Transaction amount exceeds configured tolerance.", 0.25m);
+    }
 }

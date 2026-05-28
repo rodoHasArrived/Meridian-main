@@ -164,7 +164,7 @@ public static class OptionsOverwriteMetricsCalculator
 
         var downside = dailyReturns.Where(r => r < dailyRfr).ToArray();
         if (downside.Length == 0)
-            return double.PositiveInfinity;
+            return 0.0;
 
         double downsideVariance = downside.Sum(r => (r - dailyRfr) * (r - dailyRfr)) / downside.Length;
         double downsideVol = Math.Sqrt(downsideVariance * TradingDaysPerYear);

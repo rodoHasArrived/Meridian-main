@@ -88,6 +88,13 @@ public sealed class MarketEventBuilder
     /// <summary>Wraps an arbitrary pre-built <see cref="MarketEventPayload"/>.</summary>
     public MarketEventBuilder WithPayload(MarketEventPayload payload)
     {
+        _kind = payload switch
+        {
+            Trade => BuilderPayloadKind.Trade,
+            HistoricalBar => BuilderPayloadKind.Bar,
+            _ => throw new ArgumentException(
+                $"Unsupported payload type '{payload.GetType().Name}'. Use {nameof(WithTrade)} or {nameof(WithBar)} payloads.")
+        };
         _payload = payload;
         return this;
     }

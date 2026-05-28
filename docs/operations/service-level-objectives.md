@@ -205,6 +205,22 @@ At the start of each month:
 4. Adjust alert thresholds if burn rate is too noisy
 5. Update incident priority mappings if needed
 
+
+### Monthly Report Publication
+
+Publish one dated report per month under `docs/status/slo-reports/` using [`slo-review-template.md`](./slo-review-template.md).
+
+Recommended filename format: `YYYY-MM-slo-review.md`.
+
+**Collection workflow (manual or automation script wrapper):**
+
+1. Capture monitoring exports for the month window (`/metrics`, `/status`, `/healthz`) into `artifacts/slo/YYYY-MM/`.
+2. Compute compliance and error-budget burn from the captured data.
+3. Link all P1/P2 incidents to postmortems and mitigation actions.
+4. Publish the completed report to `docs/status/slo-reports/YYYY-MM-slo-review.md`.
+
+**Launch gate:** shipping readiness requires **3 consecutive monthly SLO reviews with no unmitigated critical breach**.
+
 ---
 
 ## Monitoring Implementation

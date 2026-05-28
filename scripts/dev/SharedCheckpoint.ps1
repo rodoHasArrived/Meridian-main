@@ -113,8 +113,34 @@ function Test-MeridianCheckpointStepShouldRun {
         return $true
     }
 
-    $status = [string]$Context.Data.steps[$StepId].state
-    return $status -ne 'succeeded'
+    $step = $Context.Data.steps[$StepId]
+    $status = [string]$step.state
+    if ($status -ne 'succeeded') {
+        return $true
+    }
+
+    $stepInputHash = if (Test-MeridianDictionaryContainsKey -Dictionary $step -Key 'inputHash') { [string]$step.inputHash } else { '' }
+    if (-not [string]::Equals($stepInputHash, [string]$Context.Data.inputHash, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    if (-not (Test-MeridianDictionaryContainsKey -Dictionary $step -Key 'artifactPointers')) {
+        return $true
+    }
+
+    $artifactPointers = @($step.artifactPointers)
+    if ($artifactPointers.Count -eq 0) {
+        return $true
+    }
+
+    foreach ($artifactPointer in $artifactPointers) {
+        $artifactPath = [string]$artifactPointer
+        if ([string]::IsNullOrWhiteSpace($artifactPath) -or -not (Test-Path -LiteralPath $artifactPath)) {
+            return $true
+        }
+    }
+
+    return $false
 }
 
 function Start-MeridianCheckpointStep {

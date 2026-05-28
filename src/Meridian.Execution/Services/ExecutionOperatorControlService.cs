@@ -139,6 +139,15 @@ public sealed class ExecutionOperatorControlService
     }
 
     /// <summary>
+    /// Convenience constructor for test scenarios that do not need explicit options or a logger.
+    /// Uses <see cref="ExecutionOperatorControlOptions.Default"/> and a null logger.
+    /// </summary>
+    public ExecutionOperatorControlService()
+        : this(ExecutionOperatorControlOptions.Default, Microsoft.Extensions.Logging.Abstractions.NullLogger<ExecutionOperatorControlService>.Instance)
+    {
+    }
+
+    /// <summary>
     /// Returns the current control state.
     /// </summary>
     public ExecutionControlSnapshot GetSnapshot()

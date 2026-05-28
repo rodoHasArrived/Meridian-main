@@ -37,4 +37,52 @@ public sealed class ReconciliationGovernanceServiceTests
         Assert.Equal(TradingAcceptanceGateStatusDto.ReviewRequired, result.Status);
         Assert.True(result.SecondaryApprovalRequired);
     }
+
+    [Fact]
+    public async Task EvaluateGateAsync_DoesNotWriteAudit_WhenWriteAuditDisabled()
+    {
+        var repo = new InMemoryReconciliationRunRepository();
+        var detail = new ReconciliationRunDetail(
+            new ReconciliationRunSummary("rec-3", "run-3", DateTimeOffset.UtcNow, null, null, 0, 1, 0, false, 0.01m, 1),
+            [],
+            []);
+        await repo.SaveAsync(detail);
+
+        var auditStore = new TestReconciliationGovernanceAuditStore();
+        var sut = new ReconciliationGovernanceService(repo, auditStore);
+
+        _ = await sut.EvaluateGateAsync("run-3", new ReconciliationPolicyThresholds(), waiverRequested: false, secondaryApprovalSigned: false, writeAudit: false);
+
+        Assert.Equal(0, auditStore.AppendCount);
+    }
+
+    [Fact]
+    public async Task EvaluateGateAsync_WritesAudit_ByDefault()
+    {
+        var repo = new InMemoryReconciliationRunRepository();
+        var detail = new ReconciliationRunDetail(
+            new ReconciliationRunSummary("rec-4", "run-4", DateTimeOffset.UtcNow, null, null, 0, 1, 0, false, 0.01m, 1),
+            [],
+            []);
+        await repo.SaveAsync(detail);
+
+        var auditStore = new TestReconciliationGovernanceAuditStore();
+        var sut = new ReconciliationGovernanceService(repo, auditStore);
+
+        _ = await sut.EvaluateGateAsync("run-4", new ReconciliationPolicyThresholds(), waiverRequested: false, secondaryApprovalSigned: false);
+
+        Assert.Equal(1, auditStore.AppendCount);
+    }
+
+    private sealed class TestReconciliationGovernanceAuditStore : IReconciliationGovernanceAuditStore
+    {
+        public int AppendCount { get; private set; }
+
+        public Task AppendAsync(ReconciliationGateEvaluation evaluation, CancellationToken ct = default)
+        {
+            AppendCount++;
+            return Task.CompletedTask;
+        }
+    }
+
 }

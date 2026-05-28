@@ -19,13 +19,37 @@ public enum GovernanceReportArtifactFormatDto
     Xlsx = 2
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<GovernanceReportPackStatusDto>))]
+public enum GovernanceReportPackStatusDto
+{
+    Unknown = 0,
+    Draft = 1,
+    Generated = 2,
+    Validated = 3,
+    ReviewRequired = 4,
+    Approved = 5,
+    Rejected = 6,
+    Exported = 7,
+    Retained = 8,
+    Superseded = 9,
+    Restated = 10
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<GovernanceReportValidationSeverityDto>))]
+public enum GovernanceReportValidationSeverityDto
+{
+    Info = 0,
+    Warning = 1,
+    Critical = 2
+}
+
 /// <summary>
 /// Version contract for governed local report-pack exports.
 /// </summary>
 public static class GovernanceReportPackContract
 {
     public const string ContractName = "governance-report-pack";
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
     public const int MinimumReadableSchemaVersion = 1;
 
     public static bool IsReadableSchemaVersion(int schemaVersion) =>
@@ -110,7 +134,8 @@ public sealed record FundOperationsWorkspaceDto(
     CashFinancingSummary CashFinancing,
     ReconciliationSummary Reconciliation,
     FundNavAttributionSummaryDto Nav,
-    FundReportingSummaryDto Reporting);
+    FundReportingSummaryDto Reporting,
+    GovernanceLifecycleProjectionDto? Governance = null);
 
 /// <summary>
 /// Request to build a preview of a governance report pack for one fund profile.
@@ -181,8 +206,43 @@ public sealed record FundReportPackProvenanceDto(
     int OpenReconciliationBreakCount,
     int SecurityResolvedCount,
     int SecurityMissingCount,
+    IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers,
     string SourceSnapshotHash,
     int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
+
+public sealed record FundReportPackLineagePointerDto(
+    string ScopeType,
+    string ScopeKey,
+    string EvidenceType,
+    string EvidenceId);
+
+/// <summary>
+/// Structured readiness issue captured when a governed report pack is generated.
+/// </summary>
+public sealed record FundReportPackValidationIssueDto(
+    string Code,
+    GovernanceReportValidationSeverityDto Severity,
+    string Title,
+    string Message,
+    Guid? AffectedReportId = null,
+    string? AffectedSection = null,
+    string? AffectedLineItem = null,
+    string? AffectedAccount = null,
+    string? AffectedSecurity = null,
+    DateTimeOffset? AffectedPeriod = null,
+    string? SuggestedAction = null,
+    string? EvidenceLink = null);
+
+/// <summary>
+/// Audit event describing a report-pack lifecycle transition.
+/// </summary>
+public sealed record FundReportPackLifecycleEventDto(
+    GovernanceReportPackStatusDto? FromStatus,
+    GovernanceReportPackStatusDto ToStatus,
+    DateTimeOffset ChangedAt,
+    string Actor,
+    string Reason,
+    string CorrelationId);
 
 /// <summary>
 /// Immutable manifest for a generated governance report pack.
@@ -203,7 +263,14 @@ public sealed record FundReportPackSnapshotDto(
     IReadOnlyList<FundReportPackArtifactDto> Artifacts,
     IReadOnlyList<string> Warnings,
     string ContractName = GovernanceReportPackContract.ContractName,
-    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion)
+{
+    public GovernanceReportPackStatusDto Status { get; init; } = GovernanceReportPackStatusDto.Unknown;
+
+    public IReadOnlyList<FundReportPackValidationIssueDto> ValidationIssues { get; init; } = [];
+
+    public IReadOnlyList<FundReportPackLifecycleEventDto> LifecycleEvents { get; init; } = [];
+}
 
 /// <summary>
 /// Lightweight row used when listing generated governance report packs.
@@ -221,4 +288,46 @@ public sealed record FundReportPackHistoryItemDto(
     int ArtifactCount,
     int WarningCount,
     string RelativeManifestPath,
-    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion)
+{
+    public GovernanceReportPackStatusDto Status { get; init; } = GovernanceReportPackStatusDto.Unknown;
+
+    public int ValidationIssueCount { get; init; }
+
+    public int LifecycleEventCount { get; init; }
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportPackWorkflowStateDto>))]
+public enum ReportPackWorkflowStateDto
+{
+    Draft = 0,
+    Validated = 1,
+    PendingApproval = 2,
+    Approved = 3,
+    Published = 4,
+    Restated = 5,
+    Archived = 6
+}
+
+public sealed record VersionedReportTemplateIdDto(string Name, int Version);
+public sealed record ReportTemplateParameterDefinitionDto(string Name, bool Required);
+public sealed record ReportTemplateDefinitionDto(VersionedReportTemplateIdDto TemplateId, string DisplayName, IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters);
+public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto TemplateId, IReadOnlyDictionary<string, string> Parameters);
+public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters);
+
+public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
+public sealed record ReportPackChangedLineDto(string LineKey, string PreviousValue, string CurrentValue);
+public sealed record ReportPackRestatementMetadataDto(string ReasonCode, string Approver, Guid PriorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> ChangedLines);
+public sealed record ReportPackWorkflowRecordDto(
+    Guid ReportId,
+    string FundProfileId,
+    string FundAccountId,
+    string Period,
+    VersionedReportTemplateIdDto TemplateId,
+    ReportPackWorkflowStateDto State,
+    int Version,
+    DateTimeOffset CreatedAt,
+    string CreatedBy,
+    DateTimeOffset UpdatedAt,
+    IReadOnlyList<ReportPackAuditEventDto> AuditTrail,
+    ReportPackRestatementMetadataDto? Restatement);

@@ -1,7 +1,12 @@
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Workstation.Models;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -85,13 +90,192 @@ public sealed class ProviderHealthViewModelTests
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\ProviderHealthPage.xaml"));
 
         xaml.Should().Contain("Provider posture briefing");
-        xaml.Should().Contain("ProviderPostureTitle");
-        xaml.Should().Contain("ProviderPostureDetail");
-        xaml.Should().Contain("ProviderPostureActionText");
-        xaml.Should().Contain("ProviderPostureTargetText");
-        xaml.Should().Contain("ProviderPostureEvidenceText");
+        xaml.Should().Contain("WorkstationStatePanelControl");
+        xaml.Should().Contain("ProviderPostureState");
+        xaml.Should().Contain("HealthBadgeControl");
+        xaml.Should().Contain("ProviderPostureBadge");
         xaml.Should().Contain("ProviderPostureBriefingCard");
-        xaml.Should().Contain("ProviderPostureHandoffPanel");
+        xaml.Should().Contain("ProviderManagementCenter");
+        xaml.Should().Contain("Provider Management");
+        xaml.Should().Contain("WorkstationCommandBarControl");
+        xaml.Should().Contain("ProviderManagementCommandGroup");
+        xaml.Should().Contain("Configured Provider");
+        xaml.Should().Contain("DenseDataGridControl");
+        xaml.Should().Contain("ProviderManagementTable");
+        xaml.Should().Contain("InspectorPanelControl");
+        xaml.Should().Contain("SelectedProviderInspector");
+        xaml.Should().Contain("DiagnosticsChecklistControl");
+        xaml.Should().Contain("SelectedProviderDiagnostics");
+        xaml.Should().Contain("RoutingMatrixControl");
+        xaml.Should().Contain("SelectedProviderRoutingMatrix");
+        xaml.Should().Contain("ActivityLogGridControl");
+        xaml.Should().Contain("ProviderActivityTimeline");
+    }
+
+    [Fact]
+    public void BuildProviderManagementRows_MergesStreamingAndBackfillProvidersWithoutDuplicatingProviderFamilies()
+    {
+        var streamingProviders = new[]
+        {
+            new ProviderStatusModel
+            {
+                ProviderId = "polygon",
+                Name = "Polygon.io",
+                StatusText = "Connected",
+                LatencyText = "Latency: 82ms",
+                UptimeText = "Uptime: 2h",
+                ActionText = "Disconnect",
+                IsConnected = true
+            }
+        };
+        var backfillProviders = new[]
+        {
+            new BackfillProviderModel
+            {
+                ProviderId = "polygon",
+                Name = "Polygon.io",
+                StatusText = "Available",
+                RateLimitText = "5 req/min (free)",
+                LastUsedText = "Last used: 5m ago"
+            },
+            new BackfillProviderModel
+            {
+                ProviderId = "yahoo",
+                Name = "Yahoo Finance",
+                StatusText = "Available",
+                RateLimitText = "100 req/min",
+                LastUsedText = "Last used: --"
+            }
+        };
+
+        var rows = ProviderHealthViewModel.BuildProviderManagementRows(
+            streamingProviders,
+            backfillProviders,
+            new DateTime(2026, 5, 20, 18, 30, 0, DateTimeKind.Utc));
+
+        rows.Should().HaveCount(2);
+        rows.Should().ContainSingle(row => row.ProviderId == "polygon")
+            .Which.Should().Match<ProviderManagementRowModel>(row =>
+                row.DisplayName == "Polygon.io" &&
+                row.CapabilityText == "Data + Backfill" &&
+                row.HealthText == "Healthy" &&
+                row.CredentialStateText == "Configured" &&
+                row.VerificationStateText == "Verified" &&
+                row.AffectedWorkflowsText.Contains("Live quotes") &&
+                row.AffectedWorkflowsText.Contains("Backfill") &&
+                row.ActionText == "View Details");
+        rows.Should().ContainSingle(row => row.ProviderId == "yahoo")
+            .Which.Should().Match<ProviderManagementRowModel>(row =>
+                row.CredentialStateText == "Not Required" &&
+                row.VerificationStateText == "Not Required" &&
+                row.MaskedKeyPreviewText == "Not required");
+    }
+
+    [Fact]
+    public void BuildProviderManagementRows_SeparatesMissingCredentialsFromProviderHealth()
+    {
+        var rows = ProviderHealthViewModel.BuildProviderManagementRows(
+            [
+                new ProviderStatusModel
+                {
+                    ProviderId = "alpaca",
+                    Name = "Alpaca Paper",
+                    StatusText = "Not Configured",
+                    LatencyText = "Latency: --",
+                    UptimeText = "Uptime: --",
+                    ActionText = "Configure",
+                    IsConnected = false
+                }
+            ],
+            Array.Empty<BackfillProviderModel>(),
+            null);
+
+        var alpaca = rows.Should().ContainSingle().Subject;
+        alpaca.HealthText.Should().Be("Blocked");
+        alpaca.CredentialStateText.Should().Be("Missing");
+        alpaca.VerificationStateText.Should().Be("Failed");
+        alpaca.RecommendedActionText.Should().Contain("Add credentials");
+        alpaca.Diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Label == "Credential presence" &&
+            diagnostic.StatusText == "Fail");
+    }
+
+    [Fact]
+    public void BuildProviderManagementTable_ShouldExposeReusableDenseGridColumns()
+    {
+        var rows = new ObservableCollection<ProviderManagementRowModel>
+        {
+            new()
+            {
+                ProviderId = "polygon",
+                DisplayName = "Polygon.io",
+                CapabilityText = "Data + Backfill",
+                HealthText = "Healthy"
+            }
+        };
+
+        var table = ProviderHealthViewModel.BuildProviderManagementTable(rows);
+
+        table.Title.Should().Be("Provider management table");
+        table.Columns.Should().Contain(column => column.Header == "Provider" && column.BindingPath == nameof(ProviderManagementRowModel.DisplayName));
+        table.Columns.Should().Contain(column => column.Header == "Verification" && column.BindingPath == nameof(ProviderManagementRowModel.VerificationStateText));
+        table.Rows.Should().ContainSingle().Which.DisplayName.Should().Be("Polygon.io");
+        ((WorkstationTableModel)table).Rows.Cast<object>().Should().ContainSingle();
+    }
+
+    [Fact]
+    public void BuildProviderDiagnosticsChecklist_ShouldMapProviderDiagnosticsToSharedChecklist()
+    {
+        var row = new ProviderManagementRowModel
+        {
+            DisplayName = "Alpaca Paper",
+            HealthText = "Blocked",
+            CredentialStateText = "Missing",
+            VerificationStateText = "Failed"
+        };
+        row.Diagnostics.Add(new ProviderManagementDiagnosticModel
+        {
+            Label = "Credential presence",
+            StatusText = "Fail",
+            Detail = "Missing"
+        });
+
+        var checklist = ProviderHealthViewModel.BuildProviderDiagnosticsChecklist(row);
+
+        checklist.Title.Should().Be("Diagnostics");
+        checklist.Items.Should().ContainSingle().Which.Should().Match<DiagnosticsChecklistItemModel>(item =>
+            item.Label == "Credential presence" &&
+            item.StatusText == "Fail" &&
+            item.Tone == WorkspaceTone.Danger);
+    }
+
+    [Fact]
+    public void BuildProviderInspectorAndRoutingMatrix_ShouldKeepProviderSpecificLogicOutOfControls()
+    {
+        var row = new ProviderManagementRowModel
+        {
+            DisplayName = "Polygon.io",
+            CapabilityText = "Data + Backfill",
+            HealthText = "Healthy",
+            CredentialStateText = "Configured",
+            CredentialSourceText = "Source: encrypted store",
+            VerificationStateText = "Verified",
+            LastVerifiedText = "Last verified: 2026-05-20 18:30 UTC",
+            LastSuccessfulConnectionText = "Latency: 82ms",
+            FallbackText = "Fallback not active",
+            AffectedWorkflowsText = "Live quotes, Backfill",
+            TrustExplanationText = "Health=Healthy; credentials=Configured; verification=Verified;",
+            RecommendedActionText = "Keep provider active and monitor diagnostics."
+        };
+
+        var inspector = ProviderHealthViewModel.BuildProviderInspector(row);
+        var routing = ProviderHealthViewModel.BuildProviderRoutingMatrix(row);
+
+        inspector.Title.Should().Be("Polygon.io");
+        inspector.Badge.Should().NotBeNull();
+        inspector.Facts.Should().Contain(fact => fact.Label == "Credential state" && fact.Value == "Configured");
+        routing.Rows.Should().HaveCount(2);
+        routing.Rows.Should().Contain(row => row.Workflow == "Live quotes" && row.Route == "Polygon.io");
     }
 
     [Fact]
@@ -106,7 +290,7 @@ public sealed class ProviderHealthViewModelTests
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
 
             using var serviceProvider = services.BuildServiceProvider();
             using var viewModel = new ProviderHealthViewModel(
@@ -127,6 +311,37 @@ public sealed class ProviderHealthViewModelTests
             var exception = await Record.ExceptionAsync(() => viewModel.RefreshAsync());
 
             exception.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public void ActivationLifetime_DeactivateCancelsVisiblePageLifetimeWithoutClearingLoadedRows()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            using var viewModel = new ProviderHealthViewModel(
+                WpfServices.StatusService.Instance,
+                WpfServices.ConnectionService.Instance,
+                WpfServices.LoggingService.Instance,
+                WpfServices.NotificationService.Instance);
+            viewModel.Should().BeAssignableTo<IPageActivationLifetime>();
+            viewModel.StreamingProviders.Add(new ProviderStatusModel { ProviderId = "polygon", Name = "Polygon.io" });
+            using var activationCts = new CancellationTokenSource();
+            activationCts.Cancel();
+
+            viewModel.ActivateAsync(activationCts.Token).GetAwaiter().GetResult();
+            var token = viewModel.ActivationToken;
+
+            viewModel.IsActive.Should().BeTrue();
+            token.CanBeCanceled.Should().BeTrue();
+
+            viewModel.Deactivate();
+
+            viewModel.IsActive.Should().BeFalse();
+            token.IsCancellationRequested.Should().BeTrue();
+            viewModel.StreamingProviders.Should().ContainSingle(provider => provider.ProviderId == "polygon");
         });
     }
 }

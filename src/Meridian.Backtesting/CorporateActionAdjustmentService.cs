@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
@@ -13,6 +14,7 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
     private readonly Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService _queryService;
     private readonly ISecurityResolver _resolver;
     private readonly ILogger<CorporateActionAdjustmentService> _logger;
+    private readonly ConcurrentDictionary<string, Task<List<CorporateActionDto>?>> _sortedActionsByTicker = new(StringComparer.OrdinalIgnoreCase);
 
     public CorporateActionAdjustmentService(
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
@@ -68,7 +70,15 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         }
     }
 
-    private async Task<List<CorporateActionDto>?> GetSortedCorporateActionsAsync(string ticker, CancellationToken ct)
+    private Task<List<CorporateActionDto>?> GetSortedCorporateActionsAsync(string ticker, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(ticker))
+            return Task.FromResult<List<CorporateActionDto>?>(null);
+
+        return _sortedActionsByTicker.GetOrAdd(ticker.Trim(), key => LoadSortedCorporateActionsAsync(key, ct));
+    }
+
+    private async Task<List<CorporateActionDto>?> LoadSortedCorporateActionsAsync(string ticker, CancellationToken ct)
     {
         var securityId = await _resolver.ResolveAsync(
             new ResolveSecurityRequest(

@@ -91,3 +91,32 @@ The workflow returns:
 - explicit `blockingReasons`
 
 A candidate kernel is promotable only when `approved == true`.
+
+
+## 7) Unified evidence-bundle automation
+
+Run the end-to-end flow with:
+
+```powershell
+./scripts/dev/run-provider-validation-evidence-bundle.ps1 -CalibrationInput ./incidents-2026-q1.json -BaselineKernelVersion kernel-v1 -CandidateKernelVersion kernel-v2
+```
+
+This command chains Wave 1 validation, DK1 parity packet generation, operator sign-off validation, and calibration governance output under `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
+
+It fails fast when:
+- required summary/packet/sign-off fields are missing;
+- packet timestamps are stale compared with the Wave 1 summary;
+- gate outcomes are inconsistent (for example summary `passed` while packet is not `ready-for-operator-review`).
+
+Promotion checklist:
+1. `wave1-validation-summary.json` reports `result=passed`.
+2. `dk1-pilot-parity-packet.json` reports `status=ready-for-operator-review`.
+3. `dk1-operator-signoff.json` reports `validForDk1Exit=true`.
+4. Calibration governance output reports `approved=true` and `calibrationPass=true`.
+5. Evidence bundle reports `promotionPosture.status=candidate-approved`.
+
+Rollback triggers:
+- Any calibration governance `approved=false` decision.
+- Any stale or missing bundle artifact field in the required schema.
+- Any mismatch between summary and packet gate outcomes.
+- Any post-promotion packet/sign-off regression to non-ready or non-valid status.

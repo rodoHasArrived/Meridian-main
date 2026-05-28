@@ -30,9 +30,8 @@ make collect-debug
 
 Use the GitHub Actions workflow to run the same observability toolkit in CI and upload artifacts for debugging:
 
-```bash
-.github/workflows/build-observability.yml
-```
+Build observability is now local tooling rather than a dedicated GitHub Actions workflow. Use the
+commands in this guide directly when diagnostics are needed.
 
 The workflow executes:
 
@@ -83,12 +82,28 @@ repeated local automation does not fill the disk before age-based cleanup can ru
 window with `--isolation-retention-days <days>`, the count guard with
 `--isolation-retain-latest <count>`, and the size guard with
 `--isolation-max-root-size-mb <mb>`, or set all three to `0` for a run that must skip cleanup.
+Retention skips symlink, junction, and other reparse-point artifact roots or child directories before
+recursive deletion. It also verifies resolved Python build roots remain inside the repository so a
+count-based or size-based cleanup cannot follow a linked artifact route to an external target.
 
 `build/scripts/publish/publish.ps1` keeps the default `./dist` publish behavior unchanged. When
 automation points `-OutputDir` under `artifacts/publish/<run-name>`, the script prunes sibling
 generated publish directories older than 14 days or beyond the latest 5 runs before publishing.
 Tune that with `-OutputRetentionDays <days>` and `-OutputRetainLatest <count>`, or set both to `0`
 to skip publish-output retention for a run.
+
+Use `-SizeOptimized` when investigating standalone publish size or running under tight local disk
+constraints. It keeps single-file publishing, disables publish-only debug/doc output, disables
+ReadyToRun, and lowers MSBuild parallelism so size-focused publish runs are less likely to create
+large temporary output bursts. Use `build/scripts/publish/measure-size.ps1` to compare common
+repo-local output roots such as `artifacts/publish`, dashboard `node_modules`, built workstation
+assets, `src`, and `tests`.
+
+`scripts/dev/cleanup-generated.ps1` previews untracked generated `bin`, `obj`, `TestResults`, and
+BenchmarkDotNet output by default. The scan skips Node dependency trees so package `bin` folders are
+not treated as .NET build output. Add `-IncludeNodeModules` only when you explicitly want to include
+repo-local dependency installs such as `src/Meridian.Ui/dashboard/node_modules` in the preview or
+execution pass.
 
 ## Event Schema
 

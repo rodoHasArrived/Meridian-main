@@ -95,6 +95,16 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             created_at = "2024-01-02T10:00:00Z"
         });
 
+    private static StringContent BuildOptionInstrumentResponse(string chainSymbol = "AAPL") =>
+        BuildJson(new
+        {
+            url = "https://api.robinhood.com/options/instruments/opt-close/",
+            chain_symbol = chainSymbol,
+            expiration_date = "2024-01-19",
+            strike_price = "100.00",
+            type = "call"
+        });
+
     private static StringContent BuildInstrumentListResponse() =>
         BuildJson(new
         {
@@ -287,6 +297,7 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             var response = request.RequestUri?.AbsolutePath switch
             {
                 "/accounts/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+                "/options/instruments/opt-close/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOptionInstrumentResponse("AAPL") },
                 "/options/orders/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOptionOrderResponse() },
                 _ => new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") }
             };
@@ -325,6 +336,52 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         handler.Requests.Should().NotContain(r => r.Url.Contains("/instruments/", StringComparison.Ordinal));
         handler.Requests.Should().NotContain(
             r => r.Method == HttpMethod.Post && string.Equals(r.Url, "https://api.robinhood.com/orders/", StringComparison.Ordinal));
+
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_WithOptionMetadataSymbolMismatch_ReturnsRejectedReport()
+    {
+        var handler = new RecordingHttpHandler((request, _) =>
+        {
+            var response = request.RequestUri?.AbsolutePath switch
+            {
+                "/accounts/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+                "/options/instruments/opt-close/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOptionInstrumentResponse("TSLA") },
+                "/options/orders/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOptionOrderResponse() },
+                _ => new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") }
+            };
+
+            return Task.FromResult(response);
+        });
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            TimeInForce = TimeInForce.Day,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["asset_class"] = "option",
+                ["option_instrument_url"] = "https://api.robinhood.com/options/instruments/opt-close/",
+                ["position_effect"] = "close"
+            }
+        };
+
+        var report = await sut.SubmitOrderAsync(request, cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Rejected);
+        report.OrderStatus.Should().Be(OrderStatus.Rejected);
+        report.RejectReason.Should().Contain("does not match order symbol");
+        handler.Requests.Should().NotContain(
+            r => r.Method == HttpMethod.Post && r.Url.EndsWith("/options/orders/", StringComparison.Ordinal));
 
         await sut.DisposeAsync();
     }

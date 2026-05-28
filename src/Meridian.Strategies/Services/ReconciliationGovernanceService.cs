@@ -53,7 +53,8 @@ public sealed class ReconciliationGovernanceService(
         ReconciliationPolicyThresholds policy,
         bool waiverRequested,
         bool secondaryApprovalSigned,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        bool writeAudit = true)
     {
         var latest = await repository.GetLatestForRunAsync(runId, ct).ConfigureAwait(false);
         if (latest is null)
@@ -65,7 +66,7 @@ public sealed class ReconciliationGovernanceService(
                 0,
                 0m,
                 false);
-            if (auditStore is not null) await auditStore.AppendAsync(missing, ct).ConfigureAwait(false);
+            if (writeAudit && auditStore is not null) await auditStore.AppendAsync(missing, ct).ConfigureAwait(false);
             return missing;
         }
 
@@ -90,7 +91,7 @@ public sealed class ReconciliationGovernanceService(
             : $"Policy within threshold (open={openCount}, critical={criticalCount}, maxVariance={maxAbsVariance:0.####}).";
 
         var evaluation = new ReconciliationGateEvaluation(status, detail, openCount, criticalCount, maxAbsVariance, secondaryRequired);
-        if (auditStore is not null) await auditStore.AppendAsync(evaluation, ct).ConfigureAwait(false);
+        if (writeAudit && auditStore is not null) await auditStore.AppendAsync(evaluation, ct).ConfigureAwait(false);
         return evaluation;
     }
 

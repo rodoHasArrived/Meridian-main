@@ -178,6 +178,7 @@ public sealed class BatchBacktestViewModelTests
 
         xaml.Should().Contain("BatchBacktestResultsGrid");
         xaml.Should().Contain("BatchBacktestResultsEmptyState");
+        xaml.Should().Contain("{Binding ProgressPercent, Mode=OneWay}");
         xaml.Should().Contain("{Binding HasResults, Converter={StaticResource BoolToVisibilityConverter}}");
         xaml.Should().Contain("{Binding IsResultsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}");
         xaml.Should().Contain("{Binding ResultsEmptyStateTitle}");

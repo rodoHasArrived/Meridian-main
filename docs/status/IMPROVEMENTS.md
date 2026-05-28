@@ -1,9 +1,13 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-04-28
-**Status:** Active tracking document
+**Last Updated:** 2026-05-27
+**Status:** Active tracking document (theme backlog scope)
 
-This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
+**Scope:** Themed improvement priorities and recommended focus areas (not the flat execution task ledger).
+
+**Alignment note:** Completion percentages in this file apply to the historical core improvement theme list (A-G/J), not to program-wave completion. Canonical wave status and readiness remain in [`PROGRAM_STATE.md`](PROGRAM_STATE.md) and [`ROADMAP.md`](ROADMAP.md).
+
+This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md).
 
 Legacy `ROADMAP:` labels below retain their original milestone wording for traceability. Use [`PROGRAM_STATE.md`](PROGRAM_STATE.md) as the canonical source for wave status labels and target dates.
 
@@ -17,8 +21,8 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 | Wave | Owner | Primary Owner | Backup Owner | Escalation SLA | Dependency Owners | Status | Target Date | Evidence Link |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | W1 | Data Operations + Provider Reliability | Data Confidence and Validation | Trading Workstation | 4 hours / 1 business day | Trading Workstation; Shared Platform Interop; Governance and Ledger | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
-| W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion) |
-| W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
+| W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
 | W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
 | W5 | Research Platform | Strategy and Research | Shared Workflow and Contracts | 2 business days / 3 business days | Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
 | W6 | Execution + Brokerage Integrations | Execution and Brokerage Integrations | Governance and Ledger | 4 hours / 1 business day | Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
@@ -72,11 +76,11 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 ### Portfolio Health Snapshot
 
-- **Completion ratio:** 100% complete (35/35), 0% partial (0/35), 0% open (0/35).
-- **Core improvement themes A-G are closed** for the current platform baseline.
-- **Theme J canonicalization is closed** through J8, including drift reporting and fixture-maintenance workflow support.
-- **Kernel migration parity program initiated:** blueprint and status tracking are now defined for fixture-driven C# ↔ F# boundary parity (`score`/`severity`/`reason`) with expected-divergence controls and CI gating for kernel-related PRs. Track rollout in [`docs/plans/kernel-parity-migration-blueprint.md`](../plans/kernel-parity-migration-blueprint.md) and live coverage in [`KERNEL_PARITY_STATUS.md`](KERNEL_PARITY_STATUS.md).
-- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization Baseline) are complete. K1, K2, and K3 remain active, and the shell-first workstation baseline is now validated in code through metadata-driven navigation, workspace-shell pages, shared deep-page shell hosting, Trading/Research/Data Operations desk briefing heroes, Trading Hours session briefing, OrderBook order-flow posture, Welcome readiness progress, Storage archive posture plus preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention detail, Watchlist pinned-first staging, Fund Accounts balance-evidence briefing, route-aware operator queue attention with actionable run review-packet items, DI fixes, registered-page sweep coverage, and hardened scheduled/manual WPF screenshot evidence capture.
+- **Completion ratio (core theme backlog only):** 100% complete (35/35), 0% partial (0/35), 0% open (0/35).
+- **Core improvement themes A-G are closed** for the baseline improvement backlog and do not indicate Wave 2-4 closure.
+- **Theme J canonicalization is closed** through J8 (backlog scope), including drift reporting and fixture-maintenance workflow support.
+- **Kernel migration parity program initiated:** blueprint and status tracking are now defined for fixture-driven C# ↔ F# boundary parity (`score`/`severity`/`reason`) with expected-divergence controls and CI gating for kernel-related PRs. Track rollout in [`docs/plans/kernel-parity-migration-blueprint.md`](../plans/kernel-parity-migration-blueprint.md) and the archived bootstrap placeholder in [`archive/docs/summaries/KERNEL_PARITY_STATUS-placeholder-2026-04-20.md`](../../archive/docs/summaries/KERNEL_PARITY_STATUS-placeholder-2026-04-20.md).
+- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization Baseline) are complete. K1, K2, and K3 remain active, and the browser and WPF workstation lanes is now backed by WPF compatibility evidence through metadata-driven navigation, workspace-shell pages, shared deep-page shell hosting, Trading/Research/Data desk briefing heroes, the feature-owned Data shell module, Trading Hours session briefing, OrderBook order-flow posture, Welcome readiness progress, Storage archive posture plus preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention detail, Watchlist pinned-first staging, Fund Accounts balance-evidence briefing, route-aware operator queue attention with actionable run review-packet items, DI fixes, registered-page sweep coverage, and hardened scheduled/manual WPF screenshot evidence capture.
 - **Recommended focus:** keep the closed Wave 1 trust gate synchronized around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; harden the existing paper-trading cockpit and shared operator-inbox handoffs (Wave 2); deepen workflow-native inspectors and page-body harmonization on top of the delivered shell host; and continue governance/fund-operations productization on top of the delivered Security Master and Fund Accounts baselines (K2).
 
 ### Backlog Inputs
@@ -91,7 +95,7 @@ The active improvement tracker now absorbs the current-value outputs from the br
   - `archive/docs/assessments/high-impact-improvement-brainstorm-2026-03.md`
   - `archive/docs/assessments/high-impact-improvements-brainstorm.md`
 
-Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active normalized backlog, and treat brainstorm documents as supporting analysis unless they are explicitly promoted here.
+Use this document and `FULL_IMPLEMENTATION_TODO.md` as the active normalized backlog, and treat brainstorm documents as supporting analysis unless they are explicitly promoted here.
 
 ### Next Sprint Backlog (Recommended)
 
@@ -1478,9 +1482,9 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-**Last Updated:** 2026-04-28
+**Last Updated:** 2026-05-27
 **Maintainer:** Project Team
-**Status:** ✅ Active tracking document — 100% of core improvements complete (35/35), Theme J canonicalization complete (8/8), Theme K delivery active
+**Status:** ✅ Active tracking document — core improvements backlog complete (35/35) and Theme J complete (8/8); Theme K plus Waves 2-4 delivery remains active per ROADMAP/PROGRAM_STATE
 **Next Review:** Weekly engineering sync (or immediately after any status change)
 
 

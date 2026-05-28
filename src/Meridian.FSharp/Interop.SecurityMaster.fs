@@ -2,6 +2,7 @@ namespace Meridian.FSharp.SecurityMasterInterop
 
 open System
 open System.Text.Json
+open Meridian.Contracts.SecurityMaster
 open Meridian.FSharp.Domain
 
 /// Private helpers for F# option → C# nullable conversion, mirroring the helpers in Interop.fs.
@@ -30,6 +31,7 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
         | IdentifierKind.Cusip -> "Cusip"
         | IdentifierKind.Sedol -> "Sedol"
         | IdentifierKind.Figi -> "Figi"
+        | IdentifierKind.OccOptionSymbol -> "OccOptionSymbol"
         | IdentifierKind.ProviderSymbol _ -> "ProviderSymbol"
         | IdentifierKind.InternalCode -> "InternalCode"
         | IdentifierKind.Lei -> "Lei"
@@ -51,7 +53,7 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
 [<AllowNullLiteral>]
 [<Sealed>]
 type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
-    let schemaVersion = 1
+    let schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms
 
     // Idea 2: delegate to the domain function instead of duplicating the match.
     let assetClass = SecurityKind.assetClass record.Kind
@@ -125,17 +127,21 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    expiry = terms.Expiry
                    multiplier = terms.Multiplier |})
         | SecurityKind.Bond terms ->
-            let couponType =
+            let couponType, floatingIndex, spreadBps, capRate, floorRate =
                 match terms.Coupon with
-                | BondCouponStructure.Fixed _ -> "Fixed"
-                | BondCouponStructure.Floating _ -> "Floating"
-                | BondCouponStructure.ZeroCoupon -> "ZeroCoupon"
+                | BondCouponStructure.Fixed _ -> "Fixed", None, None, None, None
+                | BondCouponStructure.Floating(index, spread, cap, floor, _) -> "Floating", Some index, spread, cap, floor
+                | BondCouponStructure.ZeroCoupon -> "ZeroCoupon", None, None, None, None
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    maturity = terms.Maturity
                    issueDate = terms.IssueDate
                    couponType = couponType
                    couponRate = BondTerms.couponRate terms
+                   floatingIndex = floatingIndex
+                   spreadBps = spreadBps
+                   capRate = capRate
+                   floorRate = floorRate
                    dayCount = BondTerms.dayCount terms
                    isCallable = terms.IsCallable
                    callDate = terms.CallDate

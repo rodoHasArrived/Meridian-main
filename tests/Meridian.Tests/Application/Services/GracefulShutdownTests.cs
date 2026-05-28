@@ -1,5 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Services;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Xunit;
 
 namespace Meridian.Tests;
@@ -7,6 +10,7 @@ namespace Meridian.Tests;
 /// <summary>
 /// Tests for the GracefulShutdownService and IFlushable implementations.
 /// </summary>
+[Collection("Sequential")]
 public class GracefulShutdownTests
 {
     [Fact]
@@ -260,6 +264,239 @@ public class GracefulShutdownTests
         flushOrder.Should().Contain("Slow");
     }
 
+    [Fact]
+    public async Task StopAsync_EmitsCorrelatedStructuredShutdownOutcome()
+    {
+        var originalLogger = Log.Logger;
+        var sink = new CollectingSink();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Sink(sink)
+            .CreateLogger();
+
+        try
+        {
+            var service = new GracefulShutdownService(
+                new IFlushable[] { new MockFlushable("Fast") },
+                shutdownTimeout: TimeSpan.FromSeconds(5));
+
+            await service.StartAsync(CancellationToken.None);
+            await service.StopAsync(CancellationToken.None);
+
+            sink.Events.Should().Contain(evt =>
+                evt.MessageTemplate.Text.Contains("Graceful shutdown initiated for {OperationName}", StringComparison.Ordinal)
+                && evt.Properties["OperationName"].ToString().Contains("runtime.shutdown.flush", StringComparison.Ordinal)
+                && evt.Properties.ContainsKey("CorrelationId"));
+
+            sink.Events.Should().Contain(evt =>
+                evt.MessageTemplate.Text.Contains("Graceful shutdown completed for {OperationName}", StringComparison.Ordinal)
+                && evt.Properties["Succeeded"].ToString().Contains("1", StringComparison.Ordinal)
+                && evt.Properties["ElapsedMs"].ToString().Length > 0);
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+            Log.Logger = originalLogger;
+        }
+    }
+
+    [Fact]
+    public async Task StopAsync_WhenFlushFails_LogsStructuredRecoveryAction()
+    {
+        var originalLogger = Log.Logger;
+        var sink = new CollectingSink();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Sink(sink)
+            .CreateLogger();
+
+        try
+        {
+            var service = new GracefulShutdownService(
+                new IFlushable[] { new MockFlushable("Failing", shouldThrow: true) },
+                shutdownTimeout: TimeSpan.FromSeconds(5));
+
+            await service.StartAsync(CancellationToken.None);
+            await service.StopAsync(CancellationToken.None);
+
+            sink.Events.Should().Contain(evt =>
+                evt.Level == LogEventLevel.Error
+                && evt.MessageTemplate.Text.Contains("Failed to flush {ComponentName}", StringComparison.Ordinal)
+                && evt.Properties["OperationName"].ToString().Contains("runtime.shutdown.flush", StringComparison.Ordinal)
+                && evt.Properties.ContainsKey("CorrelationId"));
+
+            sink.Events.Should().Contain(evt =>
+                evt.Level == LogEventLevel.Error
+                && evt.MessageTemplate.Text.Contains("Graceful shutdown completed with flush failures", StringComparison.Ordinal)
+                && evt.Properties["Failed"].ToString().Contains("1", StringComparison.Ordinal)
+                && evt.Properties["RecoveryAction"].ToString().Contains("Inspect failed component", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+            Log.Logger = originalLogger;
+        }
+    }
+
+    [Fact]
+    public async Task Handler_InitiateShutdownAsync_SanitizesMessageAndPropagatesCorrelation()
+    {
+        var originalLogger = Log.Logger;
+        var sink = new CollectingSink();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Sink(sink)
+            .CreateLogger();
+
+        try
+        {
+            await using var handler = new GracefulShutdownHandler(
+                new GracefulShutdownConfig { ForceExitOnTimeout = false });
+            handler.RegisterFlushable(new MockFlushable("Fast"));
+
+            ShutdownContext? context = null;
+            var progressEvents = new List<ShutdownProgress>();
+            handler.RegisterShutdownCallback(ctx =>
+            {
+                context = ctx;
+                return Task.CompletedTask;
+            });
+            handler.OnProgress += progressEvents.Add;
+
+            var result = await handler.InitiateShutdownAsync(
+                ShutdownReason.UserRequested,
+                "operator requested shutdown password=super-secret accountNumber=ACCT-123456");
+
+            result.Success.Should().BeTrue();
+            result.CorrelationId.Should().NotBeNullOrWhiteSpace();
+            context.Should().NotBeNull();
+            context!.Value.CorrelationId.Should().Be(result.CorrelationId);
+            context.Value.Message.Should().Contain("[REDACTED]");
+            context.Value.Message.Should().NotContain("super-secret");
+            context.Value.Message.Should().NotContain("ACCT-123456");
+            progressEvents.Should().NotBeEmpty();
+            progressEvents.Should().OnlyContain(progress => progress.CorrelationId == result.CorrelationId);
+
+            sink.Events.Should().Contain(evt =>
+                evt.MessageTemplate.Text.Contains("Shutdown sequence started for {OperationName}", StringComparison.Ordinal)
+                && evt.Properties["CorrelationId"].ToString().Contains(result.CorrelationId, StringComparison.Ordinal)
+                && evt.Properties["OperationName"].ToString().Contains("runtime.shutdown.sequence", StringComparison.Ordinal)
+                && evt.Properties["ComponentName"].ToString().Contains("GracefulShutdownHandler", StringComparison.Ordinal));
+
+            sink.Events.Should().Contain(evt =>
+                evt.MessageTemplate.Text.Contains("Shutdown sequence completed for {OperationName}", StringComparison.Ordinal)
+                && evt.Properties["CorrelationId"].ToString().Contains(result.CorrelationId, StringComparison.Ordinal));
+
+            string.Join(Environment.NewLine, sink.Events.Select(evt => evt.RenderMessage()))
+                .Should().NotContain("super-secret")
+                .And.NotContain("ACCT-123456");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+            Log.Logger = originalLogger;
+        }
+    }
+
+    [Fact]
+    public async Task Handler_DuplicateShutdownRequest_LogsStructuredRecoveryAction()
+    {
+        var originalLogger = Log.Logger;
+        var sink = new CollectingSink();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Sink(sink)
+            .CreateLogger();
+
+        try
+        {
+            await using var handler = new GracefulShutdownHandler(
+                new GracefulShutdownConfig { ForceExitOnTimeout = false });
+            var callbackEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var releaseCallback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            handler.RegisterShutdownCallback(async _ =>
+            {
+                callbackEntered.SetResult();
+                await releaseCallback.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            });
+
+            var firstShutdown = handler.InitiateShutdownAsync(ShutdownReason.UserRequested, "first");
+            await callbackEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            var duplicate = await handler.InitiateShutdownAsync(ShutdownReason.ProcessExit, "second");
+            releaseCallback.SetResult();
+            var first = await firstShutdown.WaitAsync(TimeSpan.FromSeconds(5));
+
+            first.Success.Should().BeTrue();
+            duplicate.Success.Should().BeFalse();
+            duplicate.ErrorMessage.Should().Be("Shutdown already in progress");
+
+            sink.Events.Should().Contain(evt =>
+                evt.Level == LogEventLevel.Warning
+                && evt.MessageTemplate.Text.Contains("Duplicate shutdown request ignored", StringComparison.Ordinal)
+                && evt.Properties["OperationName"].ToString().Contains("runtime.shutdown.sequence", StringComparison.Ordinal)
+                && evt.Properties["RecoveryAction"].ToString().Contains("Wait for the active shutdown sequence", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+            Log.Logger = originalLogger;
+        }
+    }
+
+    [Fact]
+    public async Task Handler_FlushFailure_RedactsFailureReasonAndWarnings()
+    {
+        var originalLogger = Log.Logger;
+        var sink = new CollectingSink();
+        var shutdownDiagnostics = new ShutdownDiagnosticsService();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Sink(sink)
+            .CreateLogger();
+
+        try
+        {
+            await using var handler = new GracefulShutdownHandler(
+                new GracefulShutdownConfig { ForceExitOnTimeout = false },
+                shutdownDiagnostics);
+            handler.RegisterFlushable(new MockFlushable("password=leaked-token", shouldThrow: true));
+
+            var result = await handler.InitiateShutdownAsync(ShutdownReason.Error, "failure path");
+            var snapshot = shutdownDiagnostics.GetSnapshot();
+
+            result.Success.Should().BeTrue();
+            result.Warnings.Should().NotBeNull();
+            result.Warnings!.Should().ContainSingle(warning =>
+                warning.Contains("Flush error for MockFlushable", StringComparison.Ordinal)
+                && warning.Contains("[REDACTED]", StringComparison.Ordinal));
+            result.Warnings.Should().OnlyContain(warning => !warning.Contains("leaked-token", StringComparison.Ordinal));
+
+            var renderedEvents = string.Join(Environment.NewLine, sink.Events.Select(evt => evt.RenderMessage()));
+            renderedEvents.Should().Contain("failureReason=");
+            renderedEvents.Should().Contain("[REDACTED]");
+            renderedEvents.Should().NotContain("leaked-token");
+            snapshot.Available.Should().BeTrue();
+            snapshot.CorrelationId.Should().Be(result.CorrelationId);
+            snapshot.Status.Should().Be("Completed");
+            snapshot.IncompleteFlushCount.Should().Be(1);
+            snapshot.WarningCount.Should().Be(1);
+            snapshot.WarningSummary.Should().ContainSingle(warning =>
+                warning.Contains("[REDACTED]", StringComparison.Ordinal)
+                && !warning.Contains("leaked-token", StringComparison.Ordinal));
+            sink.Events.Should().Contain(evt =>
+                evt.Level == LogEventLevel.Error
+                && evt.MessageTemplate.Text.Contains("Flush failed for {OperationName}", StringComparison.Ordinal)
+                && evt.Properties["FailureReason"].ToString().Contains("[REDACTED]", StringComparison.Ordinal)
+                && evt.Properties["RecoveryAction"].ToString().Contains("Inspect component logs", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+            Log.Logger = originalLogger;
+        }
+    }
+
     private sealed class OrderTrackingFlushable : IFlushable
     {
         private readonly string _name;
@@ -312,6 +549,31 @@ public class GracefulShutdownTests
             }
 
             WasFlushed = true;
+        }
+    }
+
+    private sealed class CollectingSink : ILogEventSink
+    {
+        private readonly object _gate = new();
+        private readonly List<LogEvent> _events = [];
+
+        public IReadOnlyList<LogEvent> Events
+        {
+            get
+            {
+                lock (_gate)
+                {
+                    return _events.ToArray();
+                }
+            }
+        }
+
+        public void Emit(LogEvent logEvent)
+        {
+            lock (_gate)
+            {
+                _events.Add(logEvent);
+            }
         }
     }
 }

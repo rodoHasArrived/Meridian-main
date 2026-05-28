@@ -9,7 +9,10 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Models;
+using Meridian.Wpf.Workstation.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -19,7 +22,7 @@ namespace Meridian.Wpf.ViewModels;
 /// All state, HTTP loading, timer management, and connection-event tracking live here
 /// so that the code-behind is thinned to lifecycle wiring only.
 /// </summary>
-public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageActionBarProvider
+public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivationLifetime, IDisposable, IPageActionBarProvider
 {
     private static readonly Brush ReadyPostureBrush = CreateFrozenBrush(63, 185, 80);
     private static readonly Brush WarningPostureBrush = CreateFrozenBrush(255, 193, 7);
@@ -34,19 +37,24 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     private readonly WpfServices.ConnectionService _connectionService;
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly ProviderHealthCollectionsSectionViewModel _collectionsSection = new();
 
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _staleCheckTimer;
     private PeriodicTimer? _sparklineTimer;
+    private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _cts;
     private DateTime? _lastRefreshTime;
     private bool _isActive;
     private bool _isDisposed;
 
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<ProviderStatusModel> StreamingProviders { get; } = new();
-    public ObservableCollection<BackfillProviderModel> BackfillProviders { get; } = new();
-    public ObservableCollection<ConnectionEventModel> ConnectionHistory { get; } = new();
+    public ObservableCollection<ProviderStatusModel> StreamingProviders => _collectionsSection.StreamingProviders;
+    public ObservableCollection<BackfillProviderModel> BackfillProviders => _collectionsSection.BackfillProviders;
+    public ObservableCollection<ConnectionEventModel> ConnectionHistory => _collectionsSection.ConnectionHistory;
+    public ObservableCollection<ProviderManagementRowModel> ProviderManagementRows => _collectionsSection.ProviderManagementRows;
+    public ObservableCollection<ProviderManagementSummaryCardModel> ProviderManagementSummaryCards => _collectionsSection.ProviderManagementSummaryCards;
+    public ObservableCollection<WorkstationMetricModel> ProviderMetricTiles => _collectionsSection.ProviderMetricTiles;
 
     // ── Bindable properties ─────────────────────────────────────────────────
     private string _connectedCount = "0";
@@ -94,9 +102,80 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     private Brush _providerPostureBackgroundBrush = NeutralPostureBackgroundBrush;
     public Brush ProviderPostureBackgroundBrush { get => _providerPostureBackgroundBrush; private set => SetProperty(ref _providerPostureBackgroundBrush, value); }
 
+    private ProviderManagementRowModel? _selectedProviderManagementRow;
+    public ProviderManagementRowModel? SelectedProviderManagementRow
+    {
+        get => _selectedProviderManagementRow;
+        set
+        {
+            if (SetProperty(ref _selectedProviderManagementRow, value))
+            {
+                UpdateProviderManagementSummary();
+            }
+        }
+    }
+
+    private string _providerManagementStatusText = "Provider management evidence is loading.";
+    public string ProviderManagementStatusText { get => _providerManagementStatusText; private set => SetProperty(ref _providerManagementStatusText, value); }
+
+    private string _providerVerificationStatusText = "Credential verification can be run from Diagnostics.";
+    public string ProviderVerificationStatusText { get => _providerVerificationStatusText; private set => SetProperty(ref _providerVerificationStatusText, value); }
+
+    private WorkstationStateModel _providerPostureState = WorkstationStateModel.Loading(
+        "Provider posture loading",
+        "Refresh provider health to compute the active streaming and backfill posture.");
+    public WorkstationStateModel ProviderPostureState { get => _providerPostureState; private set => SetProperty(ref _providerPostureState, value); }
+
+    private WorkstationBadgeModel _providerPostureBadge = new("Posture", "Loading", "\uE946", WorkspaceTone.Info);
+    public WorkstationBadgeModel ProviderPostureBadge { get => _providerPostureBadge; private set => SetProperty(ref _providerPostureBadge, value); }
+
+    private WorkstationCommandGroupModel _providerManagementCommandGroup = new();
+    public WorkstationCommandGroupModel ProviderManagementCommandGroup
+    {
+        get => _providerManagementCommandGroup;
+        private set => SetProperty(ref _providerManagementCommandGroup, value);
+    }
+
+    private WorkstationTableModel<ProviderManagementRowModel> _providerManagementTable =
+        BuildProviderManagementTable(new ObservableCollection<ProviderManagementRowModel>());
+    public WorkstationTableModel<ProviderManagementRowModel> ProviderManagementTable
+    {
+        get => _providerManagementTable;
+        private set => SetProperty(ref _providerManagementTable, value);
+    }
+
+    private InspectorPanelModel _selectedProviderInspector = BuildEmptyInspector();
+    public InspectorPanelModel SelectedProviderInspector
+    {
+        get => _selectedProviderInspector;
+        private set => SetProperty(ref _selectedProviderInspector, value);
+    }
+
+    private DiagnosticsChecklistModel _selectedProviderDiagnostics = BuildEmptyDiagnostics();
+    public DiagnosticsChecklistModel SelectedProviderDiagnostics
+    {
+        get => _selectedProviderDiagnostics;
+        private set => SetProperty(ref _selectedProviderDiagnostics, value);
+    }
+
+    private RoutingMatrixModel _selectedProviderRoutingMatrix = BuildEmptyRoutingMatrix();
+    public RoutingMatrixModel SelectedProviderRoutingMatrix
+    {
+        get => _selectedProviderRoutingMatrix;
+        private set => SetProperty(ref _selectedProviderRoutingMatrix, value);
+    }
+
+    public AuditTimelineModel ProviderActivityTimeline { get; } = new()
+    {
+        Title = "Connection History",
+        EmptyText = "No connection events recorded."
+    };
+
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Provider Health";
-    public ObservableCollection<ActionEntry> Actions { get; } = new();
+    public ObservableCollection<ActionEntry> Actions => _collectionsSection.Actions;
+
+    internal ProviderHealthCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
     public ProviderHealthViewModel(
         WpfServices.StatusService statusService,
@@ -114,9 +193,20 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
         _staleCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _staleCheckTimer.Tick += (_, _) => UpdateStaleIndicator();
+
+        ProviderManagementCommandGroup = BuildProviderManagementCommandGroup();
+        CommandGroup = ProviderManagementCommandGroup;
+        ProviderManagementTable = BuildProviderManagementTable(ProviderManagementRows);
+        UpdateProviderMetricTiles();
     }
 
-    public async Task StartAsync(CancellationToken ct = default)
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
+    public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct);
+
+    public async Task ActivateAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
         if (_isActive)
@@ -125,23 +215,36 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         }
 
         _isActive = true;
+        _activationCts?.Dispose();
+        _activationCts = ct.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct)
+            : new CancellationTokenSource();
+
         _connectionService.StateChanged += OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated += OnConnectionHealthUpdated;
 
         // Populate action bar.
         Actions.Clear();
         Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "\uE72C", "Refresh provider data", IsPrimary: true));
+        Actions.Add(new ActionEntry("Run Diagnostics", new RelayCommand(RunSelectedProviderDiagnostics), "\uE9D9", "Run selected provider diagnostics"));
         Actions.Add(new ActionEntry("Reconnect All", new RelayCommand(() => _notificationService.NotifyInfo("Reconnecting", "Initiating provider reconnection...")), "\uE71B", "Reconnect all providers"));
 
-        await RefreshDataAsync();
+        await RefreshDataAsync(ActivationToken);
 
         _refreshTimer.Start();
         _staleCheckTimer.Start();
         StartSparklineTimer();
     }
 
-    public void Stop()
+    public void Stop() => Deactivate();
+
+    public void Deactivate()
     {
+        if (!_isActive)
+        {
+            return;
+        }
+
         _isActive = false;
         _connectionService.StateChanged -= OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated -= OnConnectionHealthUpdated;
@@ -150,6 +253,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         StopSparklineTimer();
         var refreshCts = Interlocked.Exchange(ref _cts, null);
         CancelAndDispose(refreshCts);
+        var activationCts = Interlocked.Exchange(ref _activationCts, null);
+        CancelAndDispose(activationCts);
     }
 
     public async Task RefreshAsync(CancellationToken ct = default)
@@ -206,11 +311,64 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     {
         ConnectionHistory.Clear();
         HasNoHistory = true;
+        RebuildProviderActivityTimeline();
         _notificationService.ShowNotification(
             "History Cleared",
             "Connection history has been cleared.",
             NotificationType.Info);
     }
+
+    public async Task ExecuteProviderManagementCommandAsync(string commandId, CancellationToken ct = default)
+    {
+        switch (commandId)
+        {
+            case "AddProvider":
+                OpenAddProviderWizard();
+                break;
+            case "RefreshStatus":
+                await RefreshAsync(ct);
+                break;
+            case "RunDiagnostics":
+                RunSelectedProviderDiagnostics();
+                break;
+            case "OpenSettings":
+                OpenProviderSettings();
+                break;
+        }
+    }
+
+    public void RunSelectedProviderDiagnostics()
+    {
+        var selected = SelectedProviderManagementRow;
+        if (selected is null)
+        {
+            ProviderVerificationStatusText = "Select a provider before running diagnostics.";
+            _notificationService.ShowNotification(
+                "No provider selected",
+                "Select a provider before running diagnostics.",
+                NotificationType.Warning);
+            return;
+        }
+
+        ProviderVerificationStatusText =
+            string.Equals(selected.VerificationStateText, "Verified", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(selected.VerificationStateText, "Not Required", StringComparison.OrdinalIgnoreCase)
+                ? $"Credential verification passed for {selected.DisplayName}."
+                : $"Credential verification needs review for {selected.DisplayName}.";
+
+        _notificationService.ShowNotification(
+            "Provider diagnostics",
+            ProviderVerificationStatusText,
+            string.Equals(selected.VerificationStateText, "Failed", StringComparison.OrdinalIgnoreCase)
+                ? NotificationType.Warning
+                : NotificationType.Info);
+    }
+
+    public void OpenAddProviderWizard() =>
+        WpfServices.NavigationService.Instance.NavigateTo("AddProviderWizard");
+
+    public void OpenProviderSettings() =>
+        WpfServices.NavigationService.Instance.NavigateTo("Settings");
 
     private void OnConnectionStateChanged(object? sender, ConnectionStateChangedEventArgs e)
     {
@@ -266,6 +424,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
             await LoadStreamingProvidersAsync(refreshCts.Token);
             await LoadBackfillProvidersAsync(refreshCts.Token);
             UpdateSummaryStats();
+            UpdateProviderManagementCenter();
             _lastRefreshTime = DateTime.UtcNow;
             UpdateStaleIndicator();
         }
@@ -444,6 +603,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         AvgLatency = _connectionService.State == ConnectionState.Connected
             ? $"{_connectionService.LastLatencyMs:F0}"
             : "--";
+        UpdateProviderMetricTiles();
         UpdateProviderPosture();
     }
 
@@ -470,7 +630,615 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         ProviderPostureIcon = posture.Icon;
         ProviderPostureAccentBrush = GetPostureAccentBrush(posture.Tone);
         ProviderPostureBackgroundBrush = GetPostureBackgroundBrush(posture.Tone);
+        ProviderPostureState = ToWorkstationState(posture);
+        ProviderPostureBadge = new WorkstationBadgeModel(
+            "Posture",
+            posture.Tone.ToString(),
+            posture.Icon,
+            ToWorkspaceTone(posture.Tone));
     }
+
+    private void UpdateProviderManagementCenter()
+    {
+        var previouslySelectedProviderId = SelectedProviderManagementRow?.ProviderId;
+        var rows = BuildProviderManagementRows(StreamingProviders, BackfillProviders, _lastRefreshTime);
+
+        ProviderManagementRows.Clear();
+        foreach (var row in rows)
+        {
+            ProviderManagementRows.Add(row);
+        }
+
+        SelectedProviderManagementRow = ProviderManagementRows.FirstOrDefault(row =>
+                string.Equals(row.ProviderId, previouslySelectedProviderId, StringComparison.OrdinalIgnoreCase))
+            ?? ProviderManagementRows.FirstOrDefault();
+
+        ProviderManagementTable = BuildProviderManagementTable(ProviderManagementRows);
+        UpdateProviderManagementSummary();
+    }
+
+    private void UpdateProviderManagementSummary()
+    {
+        var selected = SelectedProviderManagementRow;
+        ProviderManagementSummaryCards.Clear();
+
+        if (selected is null)
+        {
+            ProviderManagementSummaryCards.Add(new ProviderManagementSummaryCardModel
+            {
+                Label = "Connection Health",
+                Value = "No provider",
+                Detail = "Configure a provider before routing Data workspace workflows.",
+                AccentBrush = CreateModelBrush(139, 148, 158)
+            });
+            ProviderManagementStatusText = "No configured provider is available for management.";
+            SelectedProviderInspector = BuildEmptyInspector();
+            SelectedProviderDiagnostics = BuildEmptyDiagnostics();
+            SelectedProviderRoutingMatrix = BuildEmptyRoutingMatrix();
+            return;
+        }
+
+        ProviderManagementSummaryCards.Add(new ProviderManagementSummaryCardModel
+        {
+            Label = "Connection Health",
+            Value = selected.HealthText,
+            Detail = selected.TrustExplanationText,
+            AccentBrush = selected.HealthBrush
+        });
+        ProviderManagementSummaryCards.Add(new ProviderManagementSummaryCardModel
+        {
+            Label = "Credential State",
+            Value = selected.CredentialStateText,
+            Detail = selected.CredentialSourceText,
+            AccentBrush = BrushForCredentialState(selected.CredentialStateText)
+        });
+        ProviderManagementSummaryCards.Add(new ProviderManagementSummaryCardModel
+        {
+            Label = "Verification State",
+            Value = selected.VerificationStateText,
+            Detail = "Verification remains separate from configured state.",
+            AccentBrush = BrushForVerificationState(selected.VerificationStateText)
+        });
+        ProviderManagementSummaryCards.Add(new ProviderManagementSummaryCardModel
+        {
+            Label = "Latency / Last Response",
+            Value = selected.LastSuccessfulConnectionText,
+            Detail = selected.LastVerifiedText,
+            AccentBrush = CreateModelBrush(31, 111, 235)
+        });
+        ProviderManagementSummaryCards.Add(new ProviderManagementSummaryCardModel
+        {
+            Label = "Affected Workflows",
+            Value = selected.AffectedWorkflowsText,
+            Detail = selected.FallbackText,
+            AccentBrush = CreateModelBrush(139, 148, 158)
+        });
+        ProviderManagementSummaryCards.Add(new ProviderManagementSummaryCardModel
+        {
+            Label = "Recommended Action",
+            Value = selected.ActionText,
+            Detail = selected.RecommendedActionText,
+            AccentBrush = selected.HealthBrush
+        });
+
+        ProviderManagementStatusText =
+            $"{ProviderManagementRows.Count} provider(s) loaded; selected {selected.DisplayName}. " +
+            "Routing and advanced diagnostics are read-only placeholders in the retained desktop MVP.";
+        SelectedProviderInspector = BuildProviderInspector(selected);
+        SelectedProviderDiagnostics = BuildProviderDiagnosticsChecklist(selected);
+        SelectedProviderRoutingMatrix = BuildProviderRoutingMatrix(selected);
+    }
+
+    internal static WorkstationTableModel<ProviderManagementRowModel> BuildProviderManagementTable(
+        ObservableCollection<ProviderManagementRowModel> rows)
+        => new(
+            rows,
+            [
+                new("Provider", nameof(ProviderManagementRowModel.DisplayName), 150),
+                new("Capability", nameof(ProviderManagementRowModel.CapabilityText), 130),
+                new("Status", nameof(ProviderManagementRowModel.HealthText), 90),
+                new("Credential", nameof(ProviderManagementRowModel.CredentialStateText), 105),
+                new("Verification", nameof(ProviderManagementRowModel.VerificationStateText), 110),
+                new("Last good", nameof(ProviderManagementRowModel.LastSuccessfulConnectionText), 130),
+                new("Workflows", nameof(ProviderManagementRowModel.AffectedWorkflowsText), 190),
+                new("Action", nameof(ProviderManagementRowModel.ActionText), 90)
+            ],
+            "Provider management table",
+            "No providers discovered",
+            "Configure a provider before routing Data workspace workflows.");
+
+    internal static WorkstationCommandGroupModel BuildProviderManagementCommandGroup()
+        => new()
+        {
+            PrimaryCommands =
+            [
+                new("AddProvider", "Add Provider", "Add a provider configuration.", "\uE710", WorkspaceTone.Primary),
+                new("RefreshStatus", "Refresh Status", "Refresh provider health and routing posture.", "\uE72C"),
+                new("RunDiagnostics", "Run Diagnostics", "Run selected provider diagnostics.", "\uE9D9")
+            ],
+            SecondaryCommands =
+            [
+                new("OpenSettings", "Open Settings", "Open provider settings.", "\uE713")
+            ]
+        };
+
+    internal static InspectorPanelModel BuildProviderInspector(ProviderManagementRowModel selected)
+        => new()
+        {
+            Title = selected.DisplayName,
+            Subtitle = selected.CapabilityText,
+            Detail = selected.TrustExplanationText,
+            Badge = new WorkstationBadgeModel("Health", selected.HealthText, "\uE946", ToneForHealth(selected.HealthText)),
+            Facts =
+            [
+                new("Credential state", selected.CredentialStateText, selected.CredentialSourceText),
+                new("Verification", selected.VerificationStateText, selected.LastVerifiedText),
+                new("Connection", selected.LastSuccessfulConnectionText),
+                new("Fallback", selected.FallbackText),
+                new("Last failure", selected.LastFailureText),
+                new("Last error", selected.LastErrorText),
+                new("Masked preview", selected.MaskedKeyPreviewText),
+                new("External account", selected.ExternalAccountIdText)
+            ]
+        };
+
+    internal static DiagnosticsChecklistModel BuildProviderDiagnosticsChecklist(ProviderManagementRowModel selected)
+        => new()
+        {
+            Title = "Diagnostics",
+            Detail = "Credential checks stay separate from provider health so routing decisions remain explainable.",
+            Items = selected.Diagnostics
+                .Select(static diagnostic => new DiagnosticsChecklistItemModel(
+                    diagnostic.Label,
+                    diagnostic.StatusText,
+                    diagnostic.Detail,
+                    ToneForDiagnosticStatus(diagnostic.StatusText)))
+                .ToArray()
+        };
+
+    internal static RoutingMatrixModel BuildProviderRoutingMatrix(ProviderManagementRowModel selected)
+        => new()
+        {
+            Title = "Routing Matrix",
+            Detail = selected.RecommendedActionText,
+            Rows = selected.AffectedWorkflowsText
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(workflow => new RoutingMatrixRowModel(
+                    workflow,
+                    selected.DisplayName,
+                    selected.HealthText,
+                    selected.FallbackText,
+                    ToneForHealth(selected.HealthText)))
+                .ToArray()
+        };
+
+    private static InspectorPanelModel BuildEmptyInspector()
+        => new()
+        {
+            Title = "No provider selected",
+            Subtitle = "Provider management",
+            Detail = "Select a provider to inspect credentials, routing, and diagnostics."
+        };
+
+    private static DiagnosticsChecklistModel BuildEmptyDiagnostics()
+        => new()
+        {
+            Title = "Diagnostics",
+            Detail = "Select a provider to review credential and route diagnostics."
+        };
+
+    private static RoutingMatrixModel BuildEmptyRoutingMatrix()
+        => new()
+        {
+            Title = "Routing Matrix",
+            Detail = "Select a provider to review affected workstation workflows."
+        };
+
+    internal static IReadOnlyList<ProviderManagementRowModel> BuildProviderManagementRows(
+        IReadOnlyCollection<ProviderStatusModel> streamingProviders,
+        IReadOnlyCollection<BackfillProviderModel> backfillProviders,
+        DateTime? lastRefreshUtc)
+    {
+        var providerIds = streamingProviders.Select(provider => provider.ProviderId)
+            .Concat(backfillProviders.Select(provider => provider.ProviderId))
+            .Where(providerId => !string.IsNullOrWhiteSpace(providerId))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(providerId => providerId, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var rows = new List<ProviderManagementRowModel>(providerIds.Count);
+        foreach (var providerId in providerIds)
+        {
+            var streaming = streamingProviders.FirstOrDefault(provider =>
+                string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
+            var backfill = backfillProviders.FirstOrDefault(provider =>
+                string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
+
+            var displayName = streaming?.Name ?? backfill?.Name ?? providerId;
+            var isStreaming = streaming is not null;
+            var isBackfill = backfill is not null;
+            var isConnected = streaming?.IsConnected == true;
+            var isBackfillAvailable = string.Equals(backfill?.StatusText, "Available", StringComparison.OrdinalIgnoreCase);
+            var isExplicitlyNotConfigured =
+                string.Equals(streaming?.StatusText, "Not Configured", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(backfill?.StatusText, "Not Configured", StringComparison.OrdinalIgnoreCase);
+            var isConfigured = isConnected || isBackfillAvailable ||
+                !isExplicitlyNotConfigured;
+
+            var credentialState = CredentialStateForProvider(providerId, isConfigured, isBackfillAvailable, isExplicitlyNotConfigured);
+            var verificationState = VerificationStateForProvider(providerId, isConnected, isBackfillAvailable, credentialState);
+            var health = HealthForProvider(streaming, backfill, isConnected, isBackfillAvailable);
+            var workflows = WorkflowsForProvider(providerId, isStreaming, isBackfill);
+            var capability = isStreaming && isBackfill ? "Data + Backfill" : isStreaming ? "Live data" : "Historical backfill";
+            var lastSuccessful = isConnected
+                ? streaming?.LatencyText ?? "Connected"
+                : isBackfillAvailable
+                    ? backfill?.LastUsedText ?? "Available"
+                    : "Never";
+
+            var row = new ProviderManagementRowModel
+            {
+                ProviderId = providerId,
+                DisplayName = displayName,
+                CapabilityText = capability,
+                HealthText = health,
+                CredentialStateText = credentialState,
+                CredentialSourceText = CredentialSourceForProvider(providerId, credentialState),
+                VerificationStateText = verificationState,
+                LastSuccessfulConnectionText = lastSuccessful,
+                LastVerifiedText = lastRefreshUtc.HasValue ? $"Last verified: {lastRefreshUtc.Value:yyyy-MM-dd HH:mm} UTC" : "Last verified: Never",
+                LastFailureText = health is "Healthy" ? "Last failure: None reported" : "Last failure: Not reported",
+                LastErrorText = health is "Blocked" ? "Provider is not configured for dependent workflows." : "None reported",
+                AffectedWorkflowsText = string.Join(", ", workflows),
+                RecommendedActionText = RecommendedActionForProvider(health, credentialState, verificationState),
+                ActionText = ActionForProvider(health, credentialState, verificationState),
+                EnvironmentText = EnvironmentForProvider(providerId),
+                MaskedKeyPreviewText = credentialState is "Not Required" ? "Not required" : "Stored values remain masked",
+                ExternalAccountIdText = IsBrokerageProvider(providerId) ? "Not reported" : "Not applicable",
+                FallbackText = isBackfillAvailable && !isConnected && isStreaming ? "Fallback active for historical repair only" : "Fallback not active",
+                TrustExplanationText = TrustExplanationForProvider(health, credentialState, verificationState),
+                IsFallbackActive = isBackfillAvailable && !isConnected && isStreaming,
+                HealthBrush = BrushForHealth(health)
+            };
+
+            foreach (var diagnostic in BuildProviderDiagnostics(row))
+            {
+                row.Diagnostics.Add(diagnostic);
+            }
+
+            rows.Add(row);
+        }
+
+        return rows;
+    }
+
+    private static IEnumerable<ProviderManagementDiagnosticModel> BuildProviderDiagnostics(ProviderManagementRowModel row)
+    {
+        yield return new ProviderManagementDiagnosticModel
+        {
+            Label = "Credential presence",
+            StatusText = row.CredentialStateText is "Missing" or "Invalid" ? "Fail" : "Pass",
+            Detail = row.CredentialStateText,
+            StatusBrush = row.CredentialStateText is "Missing" or "Invalid" ? CreateModelBrush(244, 67, 54) : CreateModelBrush(63, 185, 80)
+        };
+        yield return new ProviderManagementDiagnosticModel
+        {
+            Label = "Credential verification",
+            StatusText = row.VerificationStateText is "Failed" ? "Fail" : row.VerificationStateText is "Not Verified" ? "Review" : "Pass",
+            Detail = row.VerificationStateText,
+            StatusBrush = row.VerificationStateText is "Failed"
+                ? CreateModelBrush(244, 67, 54)
+                : row.VerificationStateText is "Not Verified"
+                    ? CreateModelBrush(255, 193, 7)
+                    : CreateModelBrush(63, 185, 80)
+        };
+        yield return new ProviderManagementDiagnosticModel
+        {
+            Label = "Endpoint reachable",
+            StatusText = "Placeholder",
+            Detail = "Provider-specific reachability checks are a follow-up phase in retained desktop.",
+            StatusBrush = CreateModelBrush(139, 148, 158)
+        };
+        yield return new ProviderManagementDiagnosticModel
+        {
+            Label = "Sample quote test",
+            StatusText = "Placeholder",
+            Detail = "Quote diagnostics will use provider-specific checks when shared diagnostics are wired here.",
+            StatusBrush = CreateModelBrush(139, 148, 158)
+        };
+        yield return new ProviderManagementDiagnosticModel
+        {
+            Label = "Sample backfill test",
+            StatusText = "Placeholder",
+            Detail = "Backfill diagnostics will use provider-specific checks when shared diagnostics are wired here.",
+            StatusBrush = CreateModelBrush(139, 148, 158)
+        };
+    }
+
+    private static string CredentialStateForProvider(
+        string providerId,
+        bool isConfigured,
+        bool isBackfillAvailable,
+        bool isExplicitlyNotConfigured)
+    {
+        if (IsCredentialFreeProvider(providerId))
+        {
+            return "Not Required";
+        }
+
+        if (isExplicitlyNotConfigured)
+        {
+            return "Missing";
+        }
+
+        return isConfigured || isBackfillAvailable || CheckCredentialsConfigured(providerId)
+            ? "Configured"
+            : "Missing";
+    }
+
+    private static string VerificationStateForProvider(string providerId, bool isConnected, bool isBackfillAvailable, string credentialState)
+    {
+        if (credentialState is "Not Required")
+        {
+            return "Not Required";
+        }
+
+        if (isConnected)
+        {
+            return "Verified";
+        }
+
+        if (isBackfillAvailable || credentialState is "Configured")
+        {
+            return "Not Verified";
+        }
+
+        return "Failed";
+    }
+
+    private static string HealthForProvider(
+        ProviderStatusModel? streaming,
+        BackfillProviderModel? backfill,
+        bool isConnected,
+        bool isBackfillAvailable)
+    {
+        if (isConnected || isBackfillAvailable)
+        {
+            return "Healthy";
+        }
+
+        if (string.Equals(streaming?.StatusText, "Reconnecting...", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Warning";
+        }
+
+        return string.Equals(streaming?.StatusText, "Not Configured", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(backfill?.StatusText, "Not Configured", StringComparison.OrdinalIgnoreCase)
+            ? "Blocked"
+            : "Warning";
+    }
+
+    private static IReadOnlyList<string> WorkflowsForProvider(string providerId, bool isStreaming, bool isBackfill)
+    {
+        var workflows = new List<string>();
+        if (isStreaming)
+        {
+            workflows.Add("Live quotes");
+            workflows.Add(IsBrokerageProvider(providerId) ? "Paper trading" : "Research");
+        }
+
+        if (isBackfill)
+        {
+            workflows.Add("Backfill");
+            workflows.Add("Research");
+        }
+
+        if (IsBrokerageProvider(providerId))
+        {
+            workflows.Add("Brokerage");
+        }
+
+        return workflows.Count > 0 ? workflows.Distinct(StringComparer.OrdinalIgnoreCase).ToArray() : ["Workflow impact not declared"];
+    }
+
+    private static string RecommendedActionForProvider(string health, string credentialState, string verificationState)
+    {
+        if (credentialState is "Missing" or "Invalid")
+        {
+            return "Add credentials in Settings before routing dependent workflows.";
+        }
+
+        if (verificationState is "Not Verified" or "Failed")
+        {
+            return "Run credential verification before routing dependent workflows.";
+        }
+
+        if (health is "Blocked")
+        {
+            return "Configure provider access before using this provider.";
+        }
+
+        if (health is "Warning")
+        {
+            return "Review provider posture before live handoffs.";
+        }
+
+        return "Keep provider active and monitor diagnostics.";
+    }
+
+    private static string ActionForProvider(string health, string credentialState, string verificationState)
+    {
+        if (credentialState is "Missing" or "Invalid")
+        {
+            return "Configure";
+        }
+
+        if (verificationState is "Not Verified" or "Failed")
+        {
+            return "Verify";
+        }
+
+        return health is "Blocked" ? "Repair" : "View Details";
+    }
+
+    private static string CredentialSourceForProvider(string providerId, string credentialState)
+    {
+        if (credentialState is "Not Required")
+        {
+            return "Source: not required";
+        }
+
+        return CheckCredentialsConfigured(providerId)
+            ? "Source: environment or encrypted store"
+            : "Source: missing";
+    }
+
+    private static string EnvironmentForProvider(string providerId) =>
+        providerId.Equals("alpaca", StringComparison.OrdinalIgnoreCase) ? "Paper or live" :
+        IsBrokerageProvider(providerId) ? "Live/sandbox" : "Default";
+
+    private static string TrustExplanationForProvider(string health, string credentialState, string verificationState) =>
+        $"Health={health}; credentials={credentialState}; verification={verificationState}; routing mutation not enabled in desktop MVP.";
+
+    private static bool IsCredentialFreeProvider(string providerId) =>
+        providerId.Equals("yahoo", StringComparison.OrdinalIgnoreCase) ||
+        providerId.Equals("stooq", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsBrokerageProvider(string providerId) =>
+        providerId.Equals("alpaca", StringComparison.OrdinalIgnoreCase) ||
+        providerId.Equals("ib", StringComparison.OrdinalIgnoreCase) ||
+        providerId.Equals("interactivebrokers", StringComparison.OrdinalIgnoreCase) ||
+        providerId.Equals("robinhood", StringComparison.OrdinalIgnoreCase);
+
+    private static SolidColorBrush BrushForHealth(string health) =>
+        health switch
+        {
+            "Healthy" => CreateModelBrush(63, 185, 80),
+            "Warning" => CreateModelBrush(255, 193, 7),
+            "Blocked" => CreateModelBrush(244, 67, 54),
+            _ => CreateModelBrush(139, 148, 158)
+        };
+
+    private static SolidColorBrush BrushForCredentialState(string credentialState) =>
+        credentialState switch
+        {
+            "Configured" or "Verified" or "Not Required" => CreateModelBrush(63, 185, 80),
+            "Missing" or "Invalid" => CreateModelBrush(244, 67, 54),
+            _ => CreateModelBrush(255, 193, 7)
+        };
+
+    private static SolidColorBrush BrushForVerificationState(string verificationState) =>
+        verificationState switch
+        {
+            "Verified" or "Not Required" => CreateModelBrush(63, 185, 80),
+            "Failed" => CreateModelBrush(244, 67, 54),
+            _ => CreateModelBrush(255, 193, 7)
+        };
+
+    private static SolidColorBrush CreateModelBrush(byte red, byte green, byte blue)
+    {
+        var brush = new SolidColorBrush(Color.FromRgb(red, green, blue));
+        brush.Freeze();
+        return brush;
+    }
+
+    private void UpdateProviderMetricTiles()
+    {
+        ProviderMetricTiles.Clear();
+        ProviderMetricTiles.Add(new WorkstationMetricModel(
+            "Connected",
+            ConnectedCount,
+            "Streaming sessions ready",
+            "\uE73E",
+            WorkspaceTone.Success,
+            ReadyPostureBrush));
+        ProviderMetricTiles.Add(new WorkstationMetricModel(
+            "Disconnected",
+            DisconnectedCount,
+            "Streaming sessions needing review",
+            "\uE783",
+            WorkspaceTone.Danger,
+            ErrorBrush()));
+        ProviderMetricTiles.Add(new WorkstationMetricModel(
+            "Avg Latency",
+            AvgLatency,
+            "Milliseconds for active feed",
+            "\uE916",
+            WorkspaceTone.Info,
+            InfoBrush()));
+        ProviderMetricTiles.Add(new WorkstationMetricModel(
+            "Total Providers",
+            TotalProviders,
+            "Streaming plus backfill",
+            "\uE968",
+            WorkspaceTone.Neutral,
+            NeutralPostureBrush));
+    }
+
+    private void RebuildProviderActivityTimeline()
+    {
+        ProviderActivityTimeline.Entries.Clear();
+        foreach (var evt in ConnectionHistory)
+        {
+            ProviderActivityTimeline.Entries.Add(new AuditTimelineEntryModel(
+                evt.Message,
+                evt.Provider,
+                evt.TimeText,
+                WorkspaceTone.Info));
+        }
+    }
+
+    private static WorkstationStateModel ToWorkstationState(ProviderHealthPostureState posture)
+    {
+        var kind = posture.Tone switch
+        {
+            ProviderHealthPostureTone.Ready => WorkstationStateKind.Ready,
+            ProviderHealthPostureTone.Warning => WorkstationStateKind.Stale,
+            ProviderHealthPostureTone.Critical => WorkstationStateKind.Blocked,
+            _ => WorkstationStateKind.Empty
+        };
+
+        return new WorkstationStateModel(
+            kind,
+            posture.Title,
+            posture.Detail,
+            posture.ActionText,
+            posture.TargetText,
+            posture.EvidenceText,
+            posture.Icon,
+            ToWorkspaceTone(posture.Tone));
+    }
+
+    private static string ToWorkspaceTone(ProviderHealthPostureTone tone)
+        => tone switch
+        {
+            ProviderHealthPostureTone.Ready => WorkspaceTone.Success,
+            ProviderHealthPostureTone.Warning => WorkspaceTone.Warning,
+            ProviderHealthPostureTone.Critical => WorkspaceTone.Danger,
+            _ => WorkspaceTone.Neutral
+        };
+
+    private static string ToneForHealth(string health)
+        => health switch
+        {
+            "Healthy" => WorkspaceTone.Success,
+            "Warning" => WorkspaceTone.Warning,
+            "Blocked" => WorkspaceTone.Danger,
+            _ => WorkspaceTone.Neutral
+        };
+
+    private static string ToneForDiagnosticStatus(string status)
+        => status switch
+        {
+            "Pass" => WorkspaceTone.Success,
+            "Fail" => WorkspaceTone.Danger,
+            "Review" => WorkspaceTone.Warning,
+            _ => WorkspaceTone.Neutral
+        };
+
+    private static Brush InfoBrush() => CreateModelBrush(31, 111, 235);
+
+    private static Brush ErrorBrush() => CreateModelBrush(244, 67, 54);
 
     private void AddConnectionEvent(string message, string provider, EventType eventType)
     {
@@ -496,6 +1264,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
         foreach (var evt in ConnectionHistory)
             evt.TimeText = FormatTimeAgo(evt.Timestamp);
+
+        RebuildProviderActivityTimeline();
     }
 
     private static string FormatUptime(TimeSpan uptime)

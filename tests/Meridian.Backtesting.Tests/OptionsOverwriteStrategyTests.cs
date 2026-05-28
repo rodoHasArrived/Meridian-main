@@ -480,6 +480,7 @@ public sealed class OptionsOverwriteStrategyTests
             var curve = BuildEquityCurve(100_000m, 252, 0.001); // ~25 % annual return
             var metrics = OptionsOverwriteMetricsCalculator.Calculate([], curve, 0.04);
             metrics.Cagr.Should().BePositive();
+            double.IsFinite(metrics.SortinoRatio).Should().BeTrue();
         }
 
         [Fact]

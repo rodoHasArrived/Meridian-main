@@ -32,6 +32,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
     private readonly StreamingFailoverService _failoverService;
     private readonly string _ruleId;
     private readonly SemaphoreSlim _switchLock = new(1, 1);
+    private readonly CancellationTokenSource _cts = new();
 
     private volatile IMarketDataClient _activeClient;
     private volatile string _activeProviderId;
@@ -53,15 +54,18 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         string ruleId,
         string initialProviderId)
     {
-        _providers = providers ?? throw new ArgumentNullException(nameof(providers));
+        ArgumentNullException.ThrowIfNull(providers);
+
+        _providers = NormalizeProviders(providers);
         _failoverService = failoverService ?? throw new ArgumentNullException(nameof(failoverService));
         _ruleId = ruleId;
 
-        if (!_providers.TryGetValue(initialProviderId, out var initial))
-            throw new ArgumentException($"Initial provider '{initialProviderId}' not found in provider map.", nameof(initialProviderId));
+        var initialKey = ProviderIdentity.NormalizeId(initialProviderId);
+        if (!_providers.TryGetValue(initialKey, out var initial))
+            throw new ArgumentException($"Initial provider '{initialKey}' not found in provider map.", nameof(initialProviderId));
 
         _activeClient = initial;
-        _activeProviderId = initialProviderId;
+        _activeProviderId = initialKey;
 
         _failoverService.OnFailoverTriggered += HandleFailoverTriggered;
         _failoverService.OnFailoverRecovered += HandleFailoverRecovered;
@@ -81,6 +85,10 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             _failoverService.RecordSuccess(_activeProviderId);
             _log.Information("Connected to active provider {ProviderId}", _activeProviderId);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested || _cts.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _log.Error(ex, "Failed to connect to active provider {ProviderId}, attempting failover", _activeProviderId);
@@ -99,6 +107,11 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
     {
+        ArgumentNullException.ThrowIfNull(cfg);
+
+        if (_depthSubIds.TryGetValue(cfg.Symbol, out var existingId))
+            return existingId;
+
         try
         {
             var id = _activeClient.SubscribeMarketDepth(cfg);
@@ -141,6 +154,11 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public int SubscribeTrades(SymbolConfig cfg)
     {
+        ArgumentNullException.ThrowIfNull(cfg);
+
+        if (_tradeSubIds.TryGetValue(cfg.Symbol, out var existingId))
+            return existingId;
+
         try
         {
             var id = _activeClient.SubscribeTrades(cfg);
@@ -194,6 +212,9 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public async ValueTask DisposeAsync()
     {
+        _cts.Cancel();
+        _cts.Dispose();
+
         _failoverService.OnFailoverTriggered -= HandleFailoverTriggered;
         _failoverService.OnFailoverRecovered -= HandleFailoverRecovered;
 
@@ -230,8 +251,9 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
         try
         {
-            await SwitchProviderAsync(evt.ToProviderId, CancellationToken.None);
+            await SwitchProviderAsync(evt.ToProviderId, _cts.Token);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _log.Error(ex, "Failed to execute failover switch from {From} to {To} for rule {RuleId}",
@@ -246,8 +268,9 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
         try
         {
-            await SwitchProviderAsync(evt.ToProviderId, CancellationToken.None);
+            await SwitchProviderAsync(evt.ToProviderId, _cts.Token);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             _log.Error(ex, "Failed to execute recovery switch from {From} to {To} for rule {RuleId}",
@@ -257,13 +280,14 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     private async Task SwitchProviderAsync(string newProviderId, CancellationToken ct)
     {
-        if (!_providers.TryGetValue(newProviderId, out var newClient))
+        var newProviderKey = ProviderIdentity.NormalizeId(newProviderId);
+        if (!_providers.TryGetValue(newProviderKey, out var newClient))
         {
-            _log.Error("Cannot switch to unknown provider {ProviderId}", newProviderId);
+            _log.Error("Cannot switch to unknown provider {ProviderId}", newProviderKey);
             return;
         }
 
-        if (string.Equals(_activeProviderId, newProviderId, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(_activeProviderId, newProviderKey, StringComparison.OrdinalIgnoreCase))
             return;
 
         await _switchLock.WaitAsync(ct);
@@ -272,7 +296,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             var previousId = _activeProviderId;
             var previousClient = _activeClient;
 
-            _log.Information("Switching streaming provider: {From} -> {To}", previousId, newProviderId);
+            _log.Information("Switching streaming provider: {From} -> {To}", previousId, newProviderKey);
 
             // 1. Connect the new provider
             await newClient.ConnectAsync(ct);
@@ -282,7 +306,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
             // 3. Swap the active client
             _activeClient = newClient;
-            _activeProviderId = newProviderId;
+            _activeProviderId = newProviderKey;
 
             // 4. Disconnect the old provider gracefully
             try
@@ -294,7 +318,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
                 _log.Warning(ex, "Error disconnecting previous provider {ProviderId} during failover", previousId);
             }
 
-            _log.Information("Provider switch complete: now using {ProviderId}", newProviderId);
+            _log.Information("Provider switch complete: now using {ProviderId}", newProviderKey);
         }
         finally
         {
@@ -323,6 +347,10 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
                     _log.Information("Failover connect succeeded to {ProviderId}", kvp.Key);
                     return;
                 }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested || _cts.IsCancellationRequested)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     _log.Warning(ex, "Failover connect to {ProviderId} also failed", kvp.Key);
@@ -337,6 +365,27 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         {
             _switchLock.Release();
         }
+    }
+
+    private static Dictionary<string, IMarketDataClient> NormalizeProviders(
+        Dictionary<string, IMarketDataClient> providers)
+    {
+        var normalized = new Dictionary<string, IMarketDataClient>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (providerId, client) in providers)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+            ArgumentNullException.ThrowIfNull(client);
+
+            var key = ProviderIdentity.NormalizeId(providerId);
+            if (!normalized.TryAdd(key, client))
+            {
+                throw new ArgumentException(
+                    $"Duplicate provider '{providerId}' resolves to normalized key '{key}'.",
+                    nameof(providers));
+            }
+        }
+
+        return normalized;
     }
 
     private Task ResubscribeAsync(IMarketDataClient newClient, CancellationToken ct)

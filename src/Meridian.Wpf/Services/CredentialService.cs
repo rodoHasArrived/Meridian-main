@@ -119,6 +119,7 @@ public sealed class CredentialService : IDisposable
     public const string NasdaqApiKeyResource = $"{ResourcePrefix}.NasdaqDataLink";
     public const string OpenFigiApiKeyResource = $"{ResourcePrefix}.OpenFigi";
     public const string OAuthTokenResource = $"{ResourcePrefix}.OAuth";
+    private const string OAuthRefreshTokenSuffix = ".refresh";
 
     // Alpaca API endpoints for testing
     private const string AlpacaPaperBaseUrl = "https://paper-api.alpaca.markets";
@@ -535,7 +536,7 @@ public sealed class CredentialService : IDisposable
                 LastTestedAt = metadata?.LastTestedAt,
                 TestStatus = metadata?.TestStatus ?? CredentialTestStatus.Unknown,
                 CanAutoRefresh = metadata?.AutoRefreshEnabled ?? false,
-                RefreshToken = metadata?.RefreshToken
+                RefreshToken = null
             });
         }
 
@@ -808,12 +809,22 @@ public sealed class CredentialService : IDisposable
     {
         var resource = $"{OAuthTokenResource}.{providerId}";
         SaveCredential(resource, "oauth", accessToken);
+        var refreshTokenResource = $"{resource}{OAuthRefreshTokenSuffix}";
+
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            RemoveCredential(refreshTokenResource);
+        }
+        else
+        {
+            SaveCredential(refreshTokenResource, "oauth_refresh", refreshToken);
+        }
 
         await UpdateMetadataAsync(resource, m =>
         {
             m.CredentialType = CredentialType.OAuth2Token;
             m.ExpiresAt = expiresAt;
-            m.RefreshToken = refreshToken;
+            m.RefreshToken = null;
             m.TokenEndpoint = tokenEndpoint;
             m.ClientId = clientId;
             m.AutoRefreshEnabled = !string.IsNullOrEmpty(refreshToken);
@@ -831,8 +842,10 @@ public sealed class CredentialService : IDisposable
     {
         var resource = $"{OAuthTokenResource}.{providerId}";
         var metadata = GetMetadata(resource);
+        var refreshTokenResource = $"{resource}{OAuthRefreshTokenSuffix}";
+        var refreshToken = GetCredential(refreshTokenResource)?.Password;
 
-        if (metadata == null || string.IsNullOrEmpty(metadata.RefreshToken) ||
+        if (metadata == null || string.IsNullOrEmpty(refreshToken) ||
             string.IsNullOrEmpty(metadata.TokenEndpoint))
         {
             return false;
@@ -845,7 +858,7 @@ public sealed class CredentialService : IDisposable
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 ["grant_type"] = "refresh_token",
-                ["refresh_token"] = metadata.RefreshToken,
+                ["refresh_token"] = refreshToken,
                 ["client_id"] = metadata.ClientId ?? ""
             });
 
@@ -861,7 +874,7 @@ public sealed class CredentialService : IDisposable
                     await SaveOAuthTokenAsync(
                         providerId,
                         tokenResponse.AccessToken,
-                        tokenResponse.RefreshToken ?? metadata.RefreshToken,
+                        tokenResponse.RefreshToken ?? refreshToken,
                         tokenResponse.GetExpirationTime(),
                         metadata.TokenEndpoint,
                         metadata.ClientId);

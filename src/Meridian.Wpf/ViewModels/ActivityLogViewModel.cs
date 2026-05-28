@@ -137,6 +137,27 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     public bool CanExportVisibleLogs => FilteredLogs.Count > 0;
 
+    private bool _isClearConfirmationVisible;
+    public bool IsClearConfirmationVisible
+    {
+        get => _isClearConfirmationVisible;
+        private set
+        {
+            if (SetProperty(ref _isClearConfirmationVisible, value))
+            {
+                RequestClearCommand.NotifyCanExecuteChanged();
+                ConfirmClearCommand.NotifyCanExecuteChanged();
+                CancelClearCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public string ClearConfirmationTitle => "Clear retained activity log?";
+
+    public string ClearConfirmationDetail => HasLogHistory
+        ? $"This removes {FormatEntryCount(_allLogs.Count)} from the local activity window. Export first if support or audit review needs this trace."
+        : "There are no retained activity entries to clear.";
+
     public string EmptyStateTitle => HasFilterRecoveryAction
         ? "No log entries match the current filters"
         : "No log entries to display";
@@ -153,6 +174,9 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     // ── Commands ──────────────────────────────────────────────────────────────────
 
     public IRelayCommand ClearCommand { get; }
+    public IRelayCommand RequestClearCommand { get; }
+    public IRelayCommand ConfirmClearCommand { get; }
+    public IRelayCommand CancelClearCommand { get; }
     public IRelayCommand ClearFiltersCommand { get; }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -167,6 +191,9 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
         _baseUrl = statusService.BaseUrl;
 
         ClearCommand = new RelayCommand(ExecuteClear, () => CanClearLog);
+        RequestClearCommand = new RelayCommand(RequestClearConfirmation, () => CanClearLog && !IsClearConfirmationVisible);
+        ConfirmClearCommand = new RelayCommand(ExecuteClear, () => CanClearLog && IsClearConfirmationVisible);
+        CancelClearCommand = new RelayCommand(CancelClearConfirmation, () => IsClearConfirmationVisible);
         ClearFiltersCommand = new RelayCommand(ClearFilters, () => HasActiveFilters);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
@@ -437,6 +464,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     private void ExecuteClear()
     {
+        IsClearConfirmationVisible = false;
         _allLogs.Clear();
         ApplyFilters();
 
@@ -444,6 +472,20 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
             "Cleared",
             "Activity log has been cleared.",
             NotificationType.Info);
+    }
+
+    private void RequestClearConfirmation()
+    {
+        if (!CanClearLog)
+            return;
+
+        IsClearConfirmationVisible = true;
+        OnPropertyChanged(nameof(ClearConfirmationDetail));
+    }
+
+    private void CancelClearConfirmation()
+    {
+        IsClearConfirmationVisible = false;
     }
 
     private void ClearFilters()
@@ -539,9 +581,13 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
         OnPropertyChanged(nameof(HasFilterRecoveryAction));
         OnPropertyChanged(nameof(CanClearLog));
         OnPropertyChanged(nameof(CanExportVisibleLogs));
+        OnPropertyChanged(nameof(ClearConfirmationDetail));
         OnPropertyChanged(nameof(EmptyStateTitle));
         OnPropertyChanged(nameof(EmptyStateDetail));
         ClearCommand.NotifyCanExecuteChanged();
+        RequestClearCommand.NotifyCanExecuteChanged();
+        ConfirmClearCommand.NotifyCanExecuteChanged();
+        CancelClearCommand.NotifyCanExecuteChanged();
         ClearFiltersCommand.NotifyCanExecuteChanged();
     }
 

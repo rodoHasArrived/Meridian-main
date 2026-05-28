@@ -1,6 +1,7 @@
 using Meridian.Application.Services;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
+using Meridian.ProviderSdk;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Application.Composition.Features;
@@ -19,12 +20,16 @@ internal sealed class CollectorFeatureRegistration : IServiceFeatureRegistration
             return new QuoteCollector(publisher);
         });
 
+        // SessionStatsCollector - per-symbol intraday open/high/low/last/volume/VWAP
+        services.AddSingleton<SessionStatsCollector>();
+
         // TradeDataCollector - tick-by-tick trade processing
         services.AddSingleton<TradeDataCollector>(sp =>
         {
             var publisher = sp.GetRequiredService<IMarketEventPublisher>();
             var quoteCollector = sp.GetRequiredService<QuoteCollector>();
-            return new TradeDataCollector(publisher, quoteCollector);
+            var sessionStats = sp.GetRequiredService<SessionStatsCollector>();
+            return new TradeDataCollector(publisher, quoteCollector, sessionStats);
         });
 
         // MarketDepthCollector - L2 order book maintenance
@@ -46,8 +51,9 @@ internal sealed class CollectorFeatureRegistration : IServiceFeatureRegistration
         {
             var collector = sp.GetRequiredService<OptionDataCollector>();
             var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<OptionsChainService>>();
+            var healthSource = sp.GetService<IProviderConnectionHealthSource>() ?? new AlwaysHealthyProviderConnectionHealthSource();
             var providers = sp.GetServices<Infrastructure.Adapters.Core.IOptionsChainProvider>();
-            return new OptionsChainService(collector, logger, providers);
+            return new OptionsChainService(collector, logger, healthSource, providers);
         });
 
         return services;

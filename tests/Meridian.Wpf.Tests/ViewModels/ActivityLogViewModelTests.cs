@@ -154,6 +154,48 @@ public sealed class ActivityLogViewModelTests
     }
 
     [Fact]
+    public void ClearConfirmationCommands_GuardDestructiveClear()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var viewModel = CreateViewModel();
+
+            viewModel.RequestClearCommand.CanExecute(null).Should().BeFalse();
+            viewModel.ConfirmClearCommand.CanExecute(null).Should().BeFalse();
+            viewModel.CancelClearCommand.CanExecute(null).Should().BeFalse();
+
+            viewModel.AddLocalLogEntry(LogLevel.Warning, "Provider feed delayed", "Connection");
+
+            viewModel.RequestClearCommand.CanExecute(null).Should().BeTrue();
+            viewModel.ConfirmClearCommand.CanExecute(null).Should().BeFalse();
+
+            viewModel.RequestClearCommand.Execute(null);
+
+            viewModel.IsClearConfirmationVisible.Should().BeTrue();
+            viewModel.RequestClearCommand.CanExecute(null).Should().BeFalse();
+            viewModel.ConfirmClearCommand.CanExecute(null).Should().BeTrue();
+            viewModel.CancelClearCommand.CanExecute(null).Should().BeTrue();
+            viewModel.ClearConfirmationTitle.Should().Be("Clear retained activity log?");
+            viewModel.ClearConfirmationDetail.Should().Contain("1 entry");
+
+            viewModel.CancelClearCommand.Execute(null);
+
+            viewModel.IsClearConfirmationVisible.Should().BeFalse();
+            viewModel.RequestClearCommand.CanExecute(null).Should().BeTrue();
+            viewModel.ConfirmClearCommand.CanExecute(null).Should().BeFalse();
+
+            viewModel.RequestClearCommand.Execute(null);
+            viewModel.ConfirmClearCommand.Execute(null);
+
+            viewModel.IsClearConfirmationVisible.Should().BeFalse();
+            viewModel.FilteredLogs.Should().BeEmpty();
+            viewModel.CanClearLog.Should().BeFalse();
+            viewModel.RequestClearCommand.CanExecute(null).Should().BeFalse();
+            viewModel.ConfirmClearCommand.CanExecute(null).Should().BeFalse();
+        });
+    }
+
+    [Fact]
     public void ActivityLogPageSource_BindsFilterControlsAndRecoveryAction()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\ActivityLogPage.xaml"));
@@ -164,9 +206,18 @@ public sealed class ActivityLogViewModelTests
         xaml.Should().Contain("ActivityLogSearchBox");
         xaml.Should().Contain("ActivityLogExportButton");
         xaml.Should().Contain("ActivityLogClearButton");
+        xaml.Should().Contain("ActivityLogClearConfirmationPanel");
+        xaml.Should().Contain("ActivityLogConfirmClearButton");
+        xaml.Should().Contain("ActivityLogCancelClearButton");
         xaml.Should().Contain("ActivityLogResetFiltersButton");
         xaml.Should().Contain("{Binding CanExportVisibleLogs}");
         xaml.Should().Contain("{Binding CanClearLog}");
+        xaml.Should().Contain("{Binding RequestClearCommand}");
+        xaml.Should().Contain("{Binding ConfirmClearCommand}");
+        xaml.Should().Contain("{Binding CancelClearCommand}");
+        xaml.Should().Contain("{Binding IsClearConfirmationVisible");
+        xaml.Should().Contain("{Binding ClearConfirmationTitle}");
+        xaml.Should().Contain("{Binding ClearConfirmationDetail}");
         xaml.Should().Contain("{Binding LevelFilter, Mode=TwoWay");
         xaml.Should().Contain("{Binding CategoryFilter, Mode=TwoWay");
         xaml.Should().Contain("{Binding SearchText, Mode=TwoWay");
@@ -176,8 +227,11 @@ public sealed class ActivityLogViewModelTests
         xaml.Should().Contain("{Binding EmptyStateDetail}");
         xaml.Should().NotContain("SelectionChanged=\"Filter_Changed\"");
         xaml.Should().NotContain("TextChanged=\"Search_Changed\"");
+        xaml.Should().NotContain("Click=\"Clear_Click\"");
         codeBehind.Should().NotContain("Filter_Changed");
         codeBehind.Should().NotContain("Search_Changed");
+        codeBehind.Should().NotContain("Clear_Click");
+        codeBehind.Should().NotContain("MessageBox.Show");
     }
 
     [Fact]

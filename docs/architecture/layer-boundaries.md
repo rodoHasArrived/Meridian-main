@@ -35,9 +35,6 @@ Meridian (Host/Exe)   →  Application (+ transitive)
                          ↑                                ↑
           Meridian.Ui                  Meridian.Wpf
             →  Ui.Shared                            →  Ui.Services, Contracts
-                         ↑
-          Meridian.McpServer
-            →  Application, Core, Storage, Contracts
 ```
 
 ## Forbidden Dependencies
@@ -52,7 +49,6 @@ Meridian (Host/Exe)   →  Application (+ transitive)
 | **Ui.Services**     | Wpf host types                             | Must stay platform-neutral            |
 | **Ui.Shared**       | WPF-only APIs, Ui.Services                 | Must stay web-host-agnostic           |
 | **Ui / Wpf hosts**  | Each other                                 | No host-to-host references            |
-| **McpServer**       | Ui.Shared, Ui.Services, Wpf                | Tool host only; no UI-layer deps      |
 | **Contracts**       | UI or application hosts                    | Pure contract layer                   |
 
 ## Enforcement Mechanisms
@@ -64,7 +60,7 @@ Meridian (Host/Exe)   →  Application (+ transitive)
    `RS0037` (Banned Symbols) rules that flag `using` statements importing
    forbidden namespaces.
 
-3. **CI Gate**: The `pr-checks.yml` workflow runs `dotnet build` which catches
+3. **CI Gate**: The `ci.yml` workflow runs `dotnet build` which catches
    any project reference violations at compile time.
 
 ## Examples
@@ -112,7 +108,7 @@ If a new cross-layer dependency is needed:
 3. Update the `.csproj` `<ProjectReference>` entries.
 4. Update this document.
 5. Verify with `dotnet build -c Release`.
-6. The `pr-checks.yml` CI workflow will catch any violations on pull request.
+6. The `ci.yml` CI workflow will catch any violations on pull request.
 
 ## BannedReferences.txt
 

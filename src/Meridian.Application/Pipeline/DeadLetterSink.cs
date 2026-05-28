@@ -90,7 +90,7 @@ public sealed class DeadLetterSink : IAsyncDisposable
             try
             {
                 var json = JsonSerializer.Serialize(record, JsonOptions);
-                await AtomicFileWriter.AppendLinesAsync(GetDeadLetterFilePath(), [json], ct).ConfigureAwait(false);
+                await AppendJsonLineAsync(GetDeadLetterFilePath(), json, ct).ConfigureAwait(false);
             }
             finally
             {
@@ -127,7 +127,7 @@ public sealed class DeadLetterSink : IAsyncDisposable
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // AtomicFileWriter.AppendLinesAsync fsyncs each append, so flush only needs to
+            // Writes are completed during each append, so flush only needs to
             // wait for any in-flight record append to complete.
         }
         finally
@@ -153,6 +153,12 @@ public sealed class DeadLetterSink : IAsyncDisposable
         return Path.Combine(_deadLetterDirectory, "rejected_events.jsonl");
     }
 
+
+    private static Task AppendJsonLineAsync(string path, string json, CancellationToken ct)
+    {
+        return AtomicFileWriter.AppendLinesAsync(path, new[] { json }, ct);
+    }
+
     private static JsonSerializerOptions CreateJsonOptions()
     {
         return new JsonSerializerOptions(MarketDataJsonContext.HighPerformanceOptions)
@@ -173,7 +179,7 @@ public sealed class DeadLetterSink : IAsyncDisposable
         await _writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            // No buffered writer state remains once AtomicFileWriter.AppendLinesAsync returns.
+            // No buffered writer state remains once append returns.
         }
         finally
         {

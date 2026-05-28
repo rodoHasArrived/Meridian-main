@@ -16,6 +16,7 @@ This checklist maps 1:1 to the pre-production checklist in `docs/status/producti
 | Implement reconciliation workflows and break-review UX | Reconciliation run created, reviewed, and resolved in pilot environment. |
 | Implement report generation and governed export/report-pack flows | Export/report-pack generation tested with retention and audit metadata checks. |
 | Validate end-to-end observability and operator diagnostics against the final product surfaces | Metrics, traces, logs, and alert-routing verification completed for all pilot-critical flows. |
+| No unresolved High/Critical threat-model residual concerns remain open for launch | Current `docs/security/security-remediation-backlog.md` review attached with closure evidence links for all High/Critical items, or explicit launch block documented. |
 
 ## Usage
 

@@ -84,6 +84,53 @@ instead of re-assembling the same token combinations.
 
 ---
 
+## Security Master Master-Detail Pattern
+
+Use this pattern for Security Master and security-detail workstation pages. It is the canonical
+reference-workbench shape for dense instrument data, cash-flow/factor schedules, provider identity
+evidence, overrides, and audit history.
+
+### Required structure
+
+| Layer | Required pattern |
+|---|---|
+| Command deck | Full-width `panel-surface-strong` summary with page title, concise operational description, and four compact status metrics. Metrics must come from the view model. |
+| Master list | A search/filter panel using `DenseDataTable`, row selection, `aria-selected`, `aria-controls`, and `aria-expanded` when a row opens detail. Identifier columns must stay visible enough to compare CUSIP/ISIN/FIGI/ticker evidence. |
+| Selected detail | A full-width selected-security detail page frame before the detail modules. It must show selected security ID, asset class, status badge, and a `ToolbarStrip` for Overview, Schedules, Controls, and Audit cues. |
+| Overview modules | Use sectioned reference data groups and `EntitySummary` for identity, classification, issuance, valuation, ESG, operational, and override metadata. Hide irrelevant asset-class fields visually, but keep their underlying override state intact. |
+| Schedule modules | Cash-flow, factor, corporate-action, conversion, redemption, lot, and trading-parameter schedules must render as dense tables or compact metadata grids, not loose card lists. |
+| Audit modules | Provider identity conflicts, alias history, notes/comments, overrides, and audit history must remain attached to the selected security rather than sent to a separate workflow. |
+
+For the browser workstation v1, the Security Master `Schedules` module owns the cash-flow/factor
+reference pattern: asset-class-aware rows, expected and actual amounts, variance/posting state,
+selected-event detail, controls, validation posture, notes, and audit evidence stay in the selected
+security detail frame.
+
+### Interaction rules
+
+- Search, selection, empty states, loading text, disabled reasons, and live-region copy belong in
+  view models.
+- Preserve keyboard selection on table rows with `Enter` and `Space`, and preserve row-to-row
+  navigation with `Up Arrow`, `Down Arrow`, `Home`, and `End`; do not rely on pointer-only row
+  activation.
+- Keep destructive or live-like actions gated. Import, bulk edit, export, and override actions need
+  an explicit disabled reason or confirmation state until a real backing workflow exists.
+- Prefer one dense detail route over separate disconnected tabs. Section navigation can be shown as
+  a `ToolbarStrip`, but the selected security context must remain visible while users inspect
+  schedules, controls, lots, conflicts, and audit evidence.
+- Do not add mobile-specific Security Master surfaces. Responsive browser validation is allowed for
+  the workstation route only.
+
+### Meridian implementation anchor
+
+The browser workstation implements this pattern at `/accounting/security-master` in
+`src/Meridian.Ui/dashboard/src/screens/governance-screen.tsx`, with copy and summary state owned by
+`src/Meridian.Ui/dashboard/src/screens/governance-screen.view-model.ts`. The v1 schedule data is
+dashboard-local and fixture-backed; do not add a new shared API, persistence contract, WPF surface,
+mobile surface, or third-party chart/document dependency for this slice.
+
+---
+
 ## Button
 
 **File:** `components/ui/button.tsx`

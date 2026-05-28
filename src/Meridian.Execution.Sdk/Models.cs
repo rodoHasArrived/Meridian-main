@@ -30,7 +30,8 @@ public enum OrderType
     MarketOnOpen,
     MarketOnClose,
     LimitOnOpen,
-    LimitOnClose
+    LimitOnClose,
+    TrailingStop
 }
 
 /// <summary>Order time-in-force.</summary>
@@ -55,6 +56,15 @@ public enum OrderStatus
     Expired
 }
 
+/// <summary>Option leg position intent for option orders and multi-leg strategies.</summary>
+public enum PositionIntent
+{
+    BuyToOpen,
+    BuyToClose,
+    SellToOpen,
+    SellToClose
+}
+
 /// <summary>Execution report type.</summary>
 public enum ExecutionReportType
 {
@@ -76,10 +86,39 @@ public sealed record OrderRequest
     public required decimal Quantity { get; init; }
     public decimal? LimitPrice { get; init; }
     public decimal? StopPrice { get; init; }
+    public decimal? TrailPrice { get; init; }
+    public decimal? TrailPercent { get; init; }
     public TimeInForce TimeInForce { get; init; } = TimeInForce.Day;
     public string? ClientOrderId { get; init; }
     public string? StrategyId { get; init; }
+    public PositionIntent? PositionIntent { get; init; }
+    public OptionContractIdentity? OptionContract { get; init; }
+    public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+}
+
+/// <summary>One leg in a multi-leg options order.</summary>
+public sealed record OrderLeg
+{
+    public required string Symbol { get; init; }
+    public required OrderSide Side { get; init; }
+    public required decimal RatioQuantity { get; init; }
+    public PositionIntent? PositionIntent { get; init; }
+    public OptionContractIdentity? OptionContract { get; init; }
+}
+
+/// <summary>Canonical identity for options contracts across broker adapters and execution events.</summary>
+public sealed record OptionContractIdentity
+{
+    public string? UnderlyingSymbol { get; init; }
+    public DateOnly? ExpirationDate { get; init; }
+    public decimal? StrikePrice { get; init; }
+    /// <summary>Normalized right code (C/P) where available.</summary>
+    public string? Right { get; init; }
+    public string? Multiplier { get; init; }
+    public string? ContractMonth { get; init; }
+    public string? TradingClass { get; init; }
+    public string? LocalSymbol { get; init; }
 }
 
 /// <summary>Request to modify an existing order.</summary>
@@ -88,6 +127,7 @@ public sealed record OrderModification
     public decimal? NewQuantity { get; init; }
     public decimal? NewLimitPrice { get; init; }
     public decimal? NewStopPrice { get; init; }
+    public decimal? NewTrail { get; init; }
 }
 
 /// <summary>Report from the execution gateway about an order event.</summary>
@@ -108,6 +148,20 @@ public sealed record ExecutionReport
     public string? GatewayOrderId { get; init; }
     /// <summary>The client-provided order ID from the original <see cref="OrderRequest"/>.</summary>
     public string? ClientOrderId { get; init; }
+    public OptionContractIdentity? OptionContract { get; init; }
+    public IReadOnlyList<OrderLeg>? Legs { get; init; }
+    public ExecutionDiagnostics? Diagnostics { get; init; }
+}
+
+/// <summary>Normalized operational diagnostics derived from broker status/reject payloads.</summary>
+public sealed record ExecutionDiagnostics
+{
+    public string? BrokerStatus { get; init; }
+    public string? BrokerRejectReason { get; init; }
+    public string? RejectCode { get; init; }
+    public string? Category { get; init; }
+    public string? Severity { get; init; }
+    public string? RecommendedAction { get; init; }
 }
 
 /// <summary>Result of an order management operation.</summary>

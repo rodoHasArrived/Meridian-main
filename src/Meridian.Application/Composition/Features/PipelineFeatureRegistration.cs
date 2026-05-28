@@ -5,6 +5,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
+using Meridian.Core.Performance;
 using Meridian.Domain.Events;
 using Meridian.Storage;
 using Meridian.Storage.Interfaces;
@@ -40,7 +41,14 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<DataQualityMonitoringService>(sp =>
         {
             var eventMetrics = sp.GetRequiredService<IEventMetrics>();
-            return new DataQualityMonitoringService(eventMetrics: eventMetrics);
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var reportOutputDirectory = Path.Combine(configStore.GetDataRoot(configStore.Load()), "reports");
+            return new DataQualityMonitoringService(
+                new DataQualityMonitoringConfig
+                {
+                    ReportOutputDirectory = reportOutputDirectory
+                },
+                eventMetrics);
         });
 
         // DataFreshnessSlaMonitor - monitors data freshness SLA compliance
@@ -58,7 +66,10 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var policy = sp.GetRequiredService<JsonlStoragePolicy>();
-            return new JsonlStorageSink(storageOptions, policy);
+            return new JsonlStorageSink(
+                storageOptions,
+                policy,
+                JsonlBatchOptions.Default);
         });
 
         // ParquetStorageSink - writes events to Parquet files (optional)
@@ -152,7 +163,12 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             return ledger;
         });
 
+        // SymbolTable - shared symbol interning for hot-path trade/quote routing.
+        services.AddSingleton<SymbolTable>();
+
         // EventPipeline - bounded channel event routing with WAL for durability.
+        // Use a no-eviction streaming policy so overload surfaces as explicit
+        // backpressure instead of silently replacing already-queued market events.
         services.AddSingleton<EventPipeline>(sp =>
         {
             var sink = sp.GetRequiredService<IStorageSink>();
@@ -178,7 +194,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
 
             return new EventPipeline(
                 sink,
-                EventPipelinePolicy.HighThroughput,
+                EventPipelinePolicy.DurableStreaming,
                 metrics: metrics,
                 wal: wal,
                 auditTrail: auditTrail,
@@ -186,6 +202,14 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                 deadLetterSink: deadLetterSink,
                 dedupLedger: dedupLedger,
                 consumerCount: wal is null && validator is null && dedupLedger is null && Environment.ProcessorCount > 2 ? 2 : 1);
+        });
+
+        services.AddSingleton<DualPathEventPipeline>(sp =>
+        {
+            var slowPath = sp.GetRequiredService<EventPipeline>();
+            var symbolTable = sp.GetRequiredService<SymbolTable>();
+            var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<DualPathEventPipeline>>();
+            return new DualPathEventPipeline(slowPath, symbolTable, logger: logger);
         });
 
         // IMarketEventPublisher - facade for publishing events.
@@ -201,9 +225,11 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                     return canonPublisher;
             }
 
-            var pipeline = sp.GetRequiredService<EventPipeline>();
             var metrics = sp.GetRequiredService<IEventMetrics>();
-            IMarketEventPublisher publisher = new PipelinePublisher(pipeline, metrics);
+            IMarketEventPublisher innerPublisher = sp.GetRequiredService<DualPathEventPipeline>();
+            IMarketEventPublisher publisher = new PipelinePublisher(
+                innerPublisher,
+                metrics);
 
             var pipelineConfigStore = sp.GetRequiredService<ConfigStore>();
             var pipelineConfig = pipelineConfigStore.Load();

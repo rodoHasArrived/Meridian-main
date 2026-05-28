@@ -39,7 +39,28 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         "Send to Trading Review",
                         "Open the Trading workspace with the strategy handoff in view.",
                         "TradingShell",
-                        "Primary")
+                        "Primary"),
+                    Action(
+                        WorkflowActionIds.EvidenceOpenPacket,
+                        "Open Evidence Packet",
+                        "Open the reusable evidence packet for the selected workflow subject.",
+                        "EvidenceWorkbench",
+                        "Primary",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectPacket]),
+                    Action(
+                        WorkflowActionIds.EvidenceValidate,
+                        "Validate Evidence",
+                        "Validate evidence completeness without mutating source workflows.",
+                        "EvidenceWorkbench",
+                        "Warning",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectValidate]),
+                    Action(
+                        WorkflowActionIds.EvidenceExportManifest,
+                        "Export Evidence Manifest",
+                        "Write a manifest-only evidence export for audit review.",
+                        "EvidenceWorkbench",
+                        "Primary",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectExportManifest])
                 ],
                 EvidenceTags: ["run history", "promotion state", "portfolio coverage", "ledger coverage"],
                 MarketPatternTags: ["research to backtest", "backtest to paper handoff", "review queue"]),
@@ -81,7 +102,28 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         "RunRisk",
                         "Warning",
                         workItemKind: OperatorWorkItemKindDto.ExecutionControl,
-                        routePrefixes: [UiApiRoutes.ExecutionControls])
+                        routePrefixes: [UiApiRoutes.ExecutionControls]),
+                    Action(
+                        WorkflowActionIds.EvidenceOpenPacket,
+                        "Open Evidence Packet",
+                        "Open the reusable evidence packet for the selected workflow subject.",
+                        "EvidenceWorkbench",
+                        "Primary",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectPacket]),
+                    Action(
+                        WorkflowActionIds.EvidenceValidate,
+                        "Validate Evidence",
+                        "Validate evidence completeness without mutating source workflows.",
+                        "EvidenceWorkbench",
+                        "Warning",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectValidate]),
+                    Action(
+                        WorkflowActionIds.EvidenceExportManifest,
+                        "Export Evidence Manifest",
+                        "Write a manifest-only evidence export for audit review.",
+                        "EvidenceWorkbench",
+                        "Primary",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectExportManifest])
                 ],
                 EvidenceTags: ["readiness gates", "replay verification", "control evidence", "operator work items"],
                 MarketPatternTags: ["paper trading", "live readiness gate", "execution controls"]),
@@ -135,7 +177,28 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         "Open Accounting Shell",
                         "Continue ledger, reconciliation, cash, banking, and audit review.",
                         "AccountingShell",
-                        "Primary")
+                        "Primary"),
+                    Action(
+                        WorkflowActionIds.EvidenceOpenPacket,
+                        "Open Evidence Packet",
+                        "Open the reusable evidence packet for the selected workflow subject.",
+                        "EvidenceWorkbench",
+                        "Primary",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectPacket]),
+                    Action(
+                        WorkflowActionIds.EvidenceValidate,
+                        "Validate Evidence",
+                        "Validate evidence completeness without mutating source workflows.",
+                        "EvidenceWorkbench",
+                        "Warning",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectValidate]),
+                    Action(
+                        WorkflowActionIds.EvidenceExportManifest,
+                        "Export Evidence Manifest",
+                        "Write a manifest-only evidence export for audit review.",
+                        "EvidenceWorkbench",
+                        "Primary",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectExportManifest])
                 ],
                 EvidenceTags: ["break queue", "trial balance", "ledger continuity", "audit references"],
                 MarketPatternTags: ["exception queue", "audit trail", "approval handoff"]),
@@ -217,7 +280,28 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         "Open report-pack review and approval output.",
                         "FundReportPack",
                         "Primary",
-                        workItemKind: OperatorWorkItemKindDto.ReportPackApproval)
+                        workItemKind: OperatorWorkItemKindDto.ReportPackApproval),
+                    Action(
+                        WorkflowActionIds.EvidenceOpenPacket,
+                        "Open Evidence Packet",
+                        "Open the reusable evidence packet for the selected workflow subject.",
+                        "EvidenceWorkbench",
+                        "Primary",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectPacket]),
+                    Action(
+                        WorkflowActionIds.EvidenceValidate,
+                        "Validate Evidence",
+                        "Validate evidence completeness without mutating source workflows.",
+                        "EvidenceWorkbench",
+                        "Warning",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectValidate]),
+                    Action(
+                        WorkflowActionIds.EvidenceExportManifest,
+                        "Export Evidence Manifest",
+                        "Write a manifest-only evidence export for audit review.",
+                        "EvidenceWorkbench",
+                        "Primary",
+                        routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectExportManifest])
                 ],
                 EvidenceTags: ["operating context", "account sync", "report pack", "export presets"],
                 MarketPatternTags: ["dashboard to export", "saved output preset", "approval queue"]),

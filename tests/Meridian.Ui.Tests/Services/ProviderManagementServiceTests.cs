@@ -19,6 +19,30 @@ public sealed class ProviderManagementServiceTests
         a.Should().BeSameAs(b);
     }
 
+    [Fact]
+    public void RouteBuilders_ShouldUseCanonicalEncodedProviderRoutes()
+    {
+        ProviderManagementService.BuildProviderDetailRoute("alpaca paper/1")
+            .Should()
+            .Be("/api/providers/alpaca%20paper%2F1");
+
+        ProviderManagementService.BuildProviderRateLimitHistoryRoute("alpaca paper/1", 12)
+            .Should()
+            .Be("/api/providers/alpaca%20paper%2F1/rate-limit-history?hours=12");
+
+        ProviderManagementService.BuildProviderTestRoute("alpaca paper/1")
+            .Should()
+            .Be("/api/providers/alpaca%20paper%2F1/test");
+    }
+
+    [Fact]
+    public void RouteBuilders_ShouldRejectBlankProviderNames()
+    {
+        Action act = () => ProviderManagementService.BuildProviderDetailRoute("   ");
+
+        act.Should().Throw<ArgumentException>();
+    }
+
     // ── AllProvidersStatusResult ──────────────────────────────────────
 
     [Fact]

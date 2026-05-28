@@ -47,6 +47,11 @@ internal static class DirectLendingServiceSupport
             return new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Floating-rate terms require an interest index name.");
         }
 
+        if (terms.EffectiveRateFloor is { } floor && terms.EffectiveRateCap is { } cap && cap < floor)
+        {
+            return new DirectLendingCommandError(DirectLendingErrorCode.Validation, "Effective rate cap must be greater than or equal to the effective rate floor.");
+        }
+
         return null;
     }
 

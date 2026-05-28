@@ -49,10 +49,10 @@ public partial class LiveDataViewerPage : Page
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e) =>
-        await _vm.StartAsync();
+        await _vm.ActivateAsync();
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
-        _vm.Dispose();
+        _vm.Deactivate();
 
     private void Symbol_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {

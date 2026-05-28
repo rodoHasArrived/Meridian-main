@@ -108,7 +108,7 @@ $requiredSamples = @(
 $requiredDocs = @(
     [ordered]@{
         name = "DK1 pilot parity runbook"
-        path = "docs/status/dk1-pilot-parity-runbook.md"
+        path = "docs/status/evidence/dk1-pilot-parity-runbook.md"
         gate = "parity"
         requiredTokens = @(
             "DK1-ALPACA-QUOTE-GOLDEN",
@@ -120,7 +120,7 @@ $requiredDocs = @(
     },
     [ordered]@{
         name = "DK1 trust rationale mapping"
-        path = "docs/status/dk1-trust-rationale-mapping.md"
+        path = "docs/status/evidence/dk1-trust-rationale-mapping.md"
         gate = "explainability"
         requiredTokens = @(
             "signalSource",
@@ -138,7 +138,7 @@ $requiredDocs = @(
     },
     [ordered]@{
         name = "DK1 baseline trust thresholds"
-        path = "docs/status/dk1-baseline-trust-thresholds.md"
+        path = "docs/status/evidence/dk1-baseline-trust-thresholds.md"
         gate = "calibration"
         requiredTokens = @(
             "Composite trust score",
@@ -220,14 +220,13 @@ function Test-ApprovedDecision {
     return @("approved", "signed", "complete", "completed") -contains $Decision.Trim().ToLowerInvariant()
 }
 
-function Get-ExistingPacketReview {
-    param([Parameter(Mandatory)][string]$Path)
+function Get-PacketReview {
+    param(
+        [Parameter(Mandatory)][object]$Packet,
+        [Parameter(Mandatory)][string]$Path
+    )
 
-    if (-not (Test-Path -LiteralPath $Path)) {
-        return $null
-    }
-
-    $packet = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
+    $packet = $Packet
     $sampleReview = Get-ObjectPropertyValue -Object $packet -Name "sampleReview"
     $requiredSampleCountValue = Get-ObjectPropertyValue -Object $sampleReview -Name "requiredCount"
     $requiredSampleCount = if ($null -ne $requiredSampleCountValue) { [int]$requiredSampleCountValue } else { 0 }
@@ -631,8 +630,8 @@ $missingDocs = @($docReviews | Where-Object { -not $_.exists } | ForEach-Object 
 $incompleteDocs = @($docReviews | Where-Object { $_.status -eq "incomplete" })
 $incompleteSamples = @($sampleReviews | Where-Object { $_.status -eq "incomplete" })
 
-$trustDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/dk1-trust-rationale-mapping.md" } | Select-Object -First 1)
-$thresholdDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/dk1-baseline-trust-thresholds.md" } | Select-Object -First 1)
+$trustDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/evidence/dk1-trust-rationale-mapping.md" } | Select-Object -First 1)
+$thresholdDocReview = @($docReviews | Where-Object { $_.path -eq "docs/status/evidence/dk1-baseline-trust-thresholds.md" } | Select-Object -First 1)
 $trustContractStatus = if ($trustDocReview.Count -eq 0) { "missing" } else { [string]$trustDocReview[0]["status"] }
 $thresholdContractStatus = if ($thresholdDocReview.Count -eq 0) { "missing" } else { [string]$thresholdDocReview[0]["status"] }
 $trustContractMissingRequirements = if ($trustDocReview.Count -eq 0) { @() } else { @($trustDocReview[0]["missingRequirements"]) }
@@ -669,19 +668,22 @@ foreach ($doc in $incompleteDocs) {
 $packetStatus = if ($blockers.Count -eq 0) { "ready-for-operator-review" } else { "blocked" }
 $jsonPath = Join-Path $summaryDir "dk1-pilot-parity-packet.json"
 $mdPath = Join-Path $summaryDir "dk1-pilot-parity-packet.md"
-$reviewedPacket = Get-ExistingPacketReview -Path $jsonPath
-$operatorSignoff = Get-OperatorSignoffPacket `
-    -Path $OperatorSignoffPath `
-    -RequiredOwners $requiredOperatorOwners `
-    -ExpectedPacketReview $reviewedPacket
-
 $packetGeneratedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
-if ($operatorSignoff.validForDk1Exit -and $null -ne $operatorSignoff.packetReview) {
-    $reviewedGeneratedAtUtc = Get-ObjectPropertyValue -Object $operatorSignoff.packetReview -Name "generatedAtUtc"
-    $reviewedGeneratedAtUtcText = [string]$reviewedGeneratedAtUtc
-    if (-not [string]::IsNullOrWhiteSpace($reviewedGeneratedAtUtcText)) {
-        $packetGeneratedAtUtc = $reviewedGeneratedAtUtc
-    }
+
+$governanceEvidencePath = Join-Path $summaryDir "latest-governance-decision.json"
+$calibrationSnapshotPath = Join-Path $summaryDir "latest-calibration-snapshot.json"
+$kernelPromotionEvidence = [ordered]@{
+    governanceDecisionPath = ConvertTo-RelativePath -Path $governanceEvidencePath
+    calibrationSnapshotPath = ConvertTo-RelativePath -Path $calibrationSnapshotPath
+    status = "missing"
+    approved = $false
+    blockingReasons = @("Kernel promotion evidence files were not found.")
+}
+if ((Test-Path -LiteralPath $governanceEvidencePath) -and (Test-Path -LiteralPath $calibrationSnapshotPath)) {
+    $governance = Get-Content -Raw -LiteralPath $governanceEvidencePath | ConvertFrom-Json
+    $kernelPromotionEvidence.status = "validated"
+    $kernelPromotionEvidence.approved = [bool]$governance.approved
+    $kernelPromotionEvidence.blockingReasons = @($governance.blockingReasons)
 }
 
 $packet = [ordered]@{
@@ -699,7 +701,7 @@ $packet = [ordered]@{
         samples = @($sampleReviews)
     }
     trustRationaleContract = [ordered]@{
-        documentPath = "docs/status/dk1-trust-rationale-mapping.md"
+        documentPath = "docs/status/evidence/dk1-trust-rationale-mapping.md"
         requiredPayloadFields = @("signalSource", "reasonCode", "recommendedAction")
         requiredReasonCodes = @(
             "HEALTHY_BASELINE",
@@ -715,7 +717,7 @@ $packet = [ordered]@{
         missingRequirements = $trustContractMissingRequirements
     }
     baselineThresholdContract = [ordered]@{
-        documentPath = "docs/status/dk1-baseline-trust-thresholds.md"
+        documentPath = "docs/status/evidence/dk1-baseline-trust-thresholds.md"
         requiredMetrics = @(
             "Composite trust score",
             "Connection stability score",
@@ -728,9 +730,17 @@ $packet = [ordered]@{
         missingRequirements = $thresholdContractMissingRequirements
     }
     evidenceDocuments = @($docReviews)
-    operatorSignoff = $operatorSignoff
+    kernelPromotionEvidence = $kernelPromotionEvidence
+    operatorSignoff = $null
     blockers = @($blockers)
 }
+
+$expectedPacketReview = Get-PacketReview -Packet $packet -Path $jsonPath
+$operatorSignoff = Get-OperatorSignoffPacket `
+    -Path $OperatorSignoffPath `
+    -RequiredOwners $requiredOperatorOwners `
+    -ExpectedPacketReview $expectedPacketReview
+$packet.operatorSignoff = $operatorSignoff
 
 if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-dk1-packet-json") {
     Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-dk1-packet-json" -Description "Write DK1 pilot parity packet JSON."

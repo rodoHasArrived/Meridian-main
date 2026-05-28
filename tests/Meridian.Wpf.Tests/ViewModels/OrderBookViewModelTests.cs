@@ -1,5 +1,6 @@
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -179,6 +180,31 @@ public sealed class OrderBookViewModelTests
         viewModel.Should().Contain("public string SelectedSymbol");
         viewModel.Should().Contain("public int SelectedDepthLevels");
         viewModel.Should().Contain("public IReadOnlyList<int> DepthLevelOptions");
+    }
+
+    [Fact]
+    public void ActivationLifetime_DeactivateCancelsPollingLifetimeWithoutClearingSelection()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var viewModel = CreateViewModel();
+            viewModel.Should().BeAssignableTo<IPageActivationLifetime>();
+            viewModel.SelectedSymbol = "SPY";
+            using var activationCts = new CancellationTokenSource();
+            activationCts.Cancel();
+
+            viewModel.ActivateAsync(activationCts.Token).GetAwaiter().GetResult();
+            var token = viewModel.ActivationToken;
+
+            viewModel.IsActive.Should().BeTrue();
+            token.CanBeCanceled.Should().BeTrue();
+
+            viewModel.Deactivate();
+
+            viewModel.IsActive.Should().BeFalse();
+            token.IsCancellationRequested.Should().BeTrue();
+            viewModel.SelectedSymbol.Should().Be("SPY");
+        });
     }
 
     private static OrderBookViewModel CreateViewModel()

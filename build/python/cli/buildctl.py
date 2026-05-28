@@ -206,8 +206,25 @@ def _prune_isolated_build_artifacts(
     deleted_count = 0
     freed_bytes = 0
 
+    resolved_repo_root = repo_root.resolve()
+
     for relative_root in _ISOLATED_BUILD_ARTIFACT_ROOTS:
-        artifact_root = (repo_root / relative_root).resolve()
+        artifact_root_link = repo_root / relative_root
+        if artifact_root_link.is_symlink():
+            print(
+                f"WARN: Skipping isolated build artifact root symlink: {artifact_root_link}",
+                file=sys.stderr,
+            )
+            continue
+
+        artifact_root = artifact_root_link.resolve()
+        if not _path_is_relative_to(artifact_root, resolved_repo_root):
+            print(
+                f"WARN: Skipping isolated build artifact root outside repository: {artifact_root}",
+                file=sys.stderr,
+            )
+            continue
+
         if not artifact_root.is_dir():
             continue
 
@@ -274,6 +291,14 @@ def _prune_isolated_build_artifacts(
                 projected_root_bytes -= candidate_bytes
 
         for candidate_path in delete_paths:
+            resolved_candidate = candidate_path.resolve()
+            if candidate_path.is_symlink() or not _path_is_relative_to(resolved_candidate, artifact_root):
+                print(
+                    f"WARN: Skipping isolated build artifact delete outside expected root: {candidate_path}",
+                    file=sys.stderr,
+                )
+                continue
+
             try:
                 shutil.rmtree(candidate_path)
             except OSError as exc:
@@ -307,7 +332,7 @@ _REQUIRED_DIRS = [
     "docs",
 ]
 
-_DOTNET_MIN = (9, 0)
+_DOTNET_MIN = (10, 0)
 
 # ---------------------------------------------------------------------------
 # Provider environment variable registry
@@ -335,7 +360,7 @@ _POSTGRES_DOCKER_FIX = (
 def _check_dotnet() -> tuple[bool, bool, str]:
     """Returns (ok, is_warning, message)."""
     if not _have("dotnet"):
-        return False, False, "dotnet SDK not found — install .NET 9.0 SDK"
+        return False, False, "dotnet SDK not found — install .NET 10.0 SDK"
     result = _run(["dotnet", "--version"])
     if result.returncode != 0:
         return False, False, "dotnet --version failed"
@@ -357,8 +382,8 @@ def _check_dotnet() -> tuple[bool, bool, str]:
 def _check_python() -> tuple[bool, bool, str]:
     version = platform.python_version()
     major, minor = sys.version_info[:2]
-    if (major, minor) < (3, 8):
-        return False, False, f"Python {version} found, 3.8+ required"
+    if (major, minor) < (3, 10):
+        return False, False, f"Python {version} found, 3.10+ required"
     return True, False, f"Python {version}"
 
 
@@ -516,6 +541,9 @@ def _check_global_json() -> tuple[bool, bool, str, str | None]:
     if not required:
         return True, False, "global.json: no SDK version constraint", None
 
+    if not _have("dotnet"):
+        return False, False, "dotnet SDK not found", "Install from https://dot.net/download"
+
     result = _run(["dotnet", "--version"])
     if result.returncode != 0:
         return False, False, "dotnet SDK not found", "Install from https://dot.net/download"
@@ -656,12 +684,12 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     print(_color("Tooling", BLUE) if sys.stdout.isatty() else "Tooling")
 
     ok, is_warn, detail = _check_python()
-    _print_check("Python 3.8+", ok, is_warn, detail)
+    _print_check("Python 3.10+", ok, is_warn, detail)
     if not ok:
         (warnings if is_warn else failures).append(f"Python: {detail}")
 
     ok, is_warn, detail = _check_dotnet()
-    _print_check(".NET SDK 9+", ok, is_warn, detail)
+    _print_check(".NET SDK 10+", ok, is_warn, detail)
     if not ok:
         (warnings if is_warn else failures).append(f".NET SDK: {detail}")
 
@@ -1049,6 +1077,39 @@ def cmd_fingerprint(args: argparse.Namespace) -> int:
     return 0
 
 
+
+
+def _is_sensitive_env_var(name: str) -> bool:
+    lowered = name.lower()
+    sensitive_markers = (
+        "key",
+        "secret",
+        "token",
+        "password",
+        "connection_string",
+        "connectionstring",
+        "connstr",
+        "sas",
+        "private",
+        "credential",
+    )
+    return any(marker in lowered for marker in sensitive_markers)
+
+
+def _mask_env_value(value: str) -> str:
+    if not value:
+        return ""
+    if len(value) <= 4:
+        return "****"
+    return f"{value[:2]}***{value[-1]}"
+
+
+def _safe_env_snapshot() -> dict[str, str]:
+    return {
+        key: ("<redacted>" if _is_sensitive_env_var(key) else value)
+        for key, value in os.environ.items()
+    }
+
 # ---------------------------------------------------------------------------
 # env-capture command
 # ---------------------------------------------------------------------------
@@ -1064,7 +1125,7 @@ def cmd_env_capture(args: argparse.Namespace) -> int:
         "timestamp": _utc_now(),
         "platform": platform.platform(),
         "python": platform.python_version(),
-        "env": {k: v for k, v in os.environ.items() if not k.lower().endswith(("key", "secret", "token", "password"))},
+        "env": _safe_env_snapshot(),
     }
 
     result = _run(["dotnet", "--version"])
@@ -1119,8 +1180,10 @@ def cmd_env_diff(args: argparse.Namespace) -> int:
         v2 = flat2.get(key, "<missing>")
         if v1 != v2:
             print(f"  {key}:")
-            print(f"    {env1}: {v1}")
-            print(f"    {env2}: {v2}")
+            display_v1 = "<redacted>" if _is_sensitive_env_var(key) else _mask_env_value(v1)
+            display_v2 = "<redacted>" if _is_sensitive_env_var(key) else _mask_env_value(v2)
+            print(f"    {env1}: {display_v1}")
+            print(f"    {env2}: {display_v2}")
             diffs += 1
 
     if diffs == 0:

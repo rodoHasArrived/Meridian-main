@@ -7,7 +7,7 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Services;
 
-public sealed class TradingWorkspaceShellPresentationService
+public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedService
 {
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
@@ -174,6 +174,7 @@ public sealed class TradingWorkspaceShellPresentationService
             "RunRisk" => new(actionId, "RunRisk", PaneDropAction.SplitRight, null, false, false, null),
             "NotificationCenter" => new(actionId, "NotificationCenter", PaneDropAction.SplitBelow, null, false, false, null),
             "FundTrialBalance" => new(actionId, "FundTrialBalance", PaneDropAction.OpenTab, null, false, false, null),
+            "ReplayVerification" => new(actionId, "FundAuditTrail", PaneDropAction.OpenTab, null, false, false, "Replay verification launched. Record a fresh replay audit marker before accepting readiness."),
             "FundReconciliation" => new(actionId, "FundReconciliation", PaneDropAction.SplitBelow, null, false, false, null),
             "FundAuditTrail" => new(actionId, "FundAuditTrail", PaneDropAction.OpenTab, null, false, false, null),
             "TradingHours" => new(actionId, "TradingHours", PaneDropAction.Replace, null, true, false, null),
@@ -495,6 +496,11 @@ public sealed class TradingWorkspaceShellPresentationService
 
     internal static string ResolveOperatorWorkItemActionId(OperatorWorkItemDto workItem)
     {
+        if (workItem.Kind == OperatorWorkItemKindDto.LedgerPeriodClose)
+        {
+            return "FundReconciliation";
+        }
+
         var routeActionId = ResolveOperatorWorkItemRouteActionId(workItem.TargetRoute);
         if (!string.IsNullOrWhiteSpace(routeActionId))
         {
@@ -509,13 +515,13 @@ public sealed class TradingWorkspaceShellPresentationService
 
         return workItem.Kind switch
         {
-            OperatorWorkItemKindDto.PaperReplay => "FundAuditTrail",
+            OperatorWorkItemKindDto.PaperReplay => "ReplayVerification",
             OperatorWorkItemKindDto.PromotionReview => "StrategyRuns",
             OperatorWorkItemKindDto.BrokerageSync => "AccountPortfolio",
             OperatorWorkItemKindDto.SecurityMasterCoverage => "SecurityMaster",
             OperatorWorkItemKindDto.ReconciliationBreak => "FundReconciliation",
             OperatorWorkItemKindDto.ReportPackApproval => "FundReportPack",
-            OperatorWorkItemKindDto.ProviderTrustGate => "FundAuditTrail",
+            OperatorWorkItemKindDto.ProviderTrustGate => "ProviderHealth",
             OperatorWorkItemKindDto.ExecutionControl => "RunRisk",
             _ => "NotificationCenter"
         };
@@ -701,7 +707,7 @@ public sealed class TradingWorkspaceShellPresentationService
         {
             return new ActiveRunPresentation(
                 "No active trading run",
-                "Use Research to promote a run, or open a live/paper panel below.",
+                "Use Strategy to promote a run, or open a live/paper panel below.",
                 "Watchlists and active strategies populate once paper or live runs are started.",
                 "Live data, order book, portfolio, and accounting consequences are ready to dock below.",
                 summary is null
@@ -912,7 +918,7 @@ public sealed class TradingWorkspaceShellPresentationService
         "session" => "StrategyRuns",
         "promotion" => "StrategyRuns",
         "audit-controls" => "RunRisk",
-        "replay" => "FundAuditTrail",
+        "replay" => "ReplayVerification",
         "dk1-trust" => "FundAuditTrail",
         _ => "NotificationCenter"
     };
@@ -941,6 +947,12 @@ public sealed class TradingWorkspaceShellPresentationService
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))
         {
             return "SecurityMaster";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerBooks) ||
+            RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.LedgerPeriods))
+        {
+            return "FundTrialBalance";
         }
 
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.FundAccountBrokerageSyncAccounts) ||
@@ -1076,6 +1088,7 @@ public sealed class TradingWorkspaceShellPresentationService
         "RunPortfolio" => "Open Portfolio",
         "RunRisk" => "Open Risk Rail",
         "FundAuditTrail" => "Audit Trail",
+        "ReplayVerification" => "Verify Replay",
         "NotificationCenter" => "Open Alerts",
         "AccountPortfolio" => "Open Portfolio",
         "SecurityMaster" => "Security Master",
@@ -1100,6 +1113,7 @@ public sealed class TradingWorkspaceShellPresentationService
         "FundReconciliation" => "FundReconciliation",
         "FundReportPack" => "FundReportPack",
         "FundTrialBalance" => "FundTrialBalance",
+        "ReplayVerification" => "FundAuditTrail",
         _ => string.IsNullOrWhiteSpace(fallbackTargetPageTag) ? "TradingShell" : fallbackTargetPageTag
     };
 

@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Meridian — Form inputs</title>
 <link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="preview-common.css">
 <style>
   body { margin: 0; padding: 20px; font-family: var(--font-sans); color: var(--fg); }
   .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
@@ -13,6 +15,9 @@
 </style>
 </head>
 <body class="bg-app">
+<main class="preview-sheet" aria-label="Form inputs">
+<h1 class="preview-sr-only">Form inputs</h1>
+<a class="preview-home-link" href="index.html">Catalogue</a>
   <div class="row">
     <div><label class="l">Symbol</label><input value="AAPL"></div>
     <div><label class="l">Side</label><select><option>Buy</option><option>Sell</option></select></div>
@@ -23,5 +28,6 @@
     <div><label class="l">Limit · focus</label><input class="focus-demo" value="187.42"></div>
     <div><label class="l">Session ID</label><input placeholder="sess-…"></div>
   </div>
+</main>
 </body>
 </html>

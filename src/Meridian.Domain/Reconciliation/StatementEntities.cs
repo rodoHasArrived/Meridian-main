@@ -30,10 +30,57 @@ public sealed record ReconciliationCase(
     decimal Confidence,
     string Rationale,
     DateTimeOffset CreatedAtUtc,
-    IReadOnlyList<ReconciliationCaseHistoryEntry> History);
+    IReadOnlyList<ReconciliationCaseHistoryEntry> History)
+{
+    public string Owner { get; init; } = "unassigned";
+    public string Priority { get; init; } = "Normal";
+    public DateTimeOffset? DueAtUtc { get; init; }
+    public DateTimeOffset? SlaBreachedAtUtc { get; init; }
+    public IReadOnlyList<ReconciliationCaseCommentThread> CommentThreads { get; init; } = [];
+    public IReadOnlyList<ReconciliationCaseAuditEvent> AuditEvents { get; init; } = [];
+    public ReconciliationResolutionMetadata? Resolution { get; init; }
+    public DateTimeOffset LastUpdatedAtUtc { get; init; } = CreatedAtUtc;
+    public string LastUpdatedBy { get; init; } = "system";
+}
+
+public sealed record ReconciliationCaseCommentThread(string ThreadId, string Subject, IReadOnlyList<ReconciliationCaseComment> Comments);
+
+public sealed record ReconciliationCaseComment(string CommentId, string Body, string Actor, DateTimeOffset CreatedAtUtc, string? ParentCommentId = null);
+
+public sealed record ReconciliationCaseAuditEvent(string EventId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Detail);
+
+public sealed record ReconciliationResolutionMetadata(string ResolutionCode, string Summary, string ResolvedBy, DateTimeOffset ResolvedAtUtc, string? SignedOffBy = null, DateTimeOffset? SignedOffAtUtc = null);
 
 public sealed record ReconciliationCaseHistoryEntry(
     DateTimeOffset TimestampUtc,
     string FromStatus,
     string ToStatus,
-    string Note);
+    string Note)
+{
+    public string Actor { get; init; } = "system";
+    public string? EvidenceId { get; init; }
+}
+
+
+public sealed record StatementReconciliationRun(
+    string RunId,
+    string ImportId,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset CompletedAtUtc,
+    int PositionMatches,
+    int CashMatches,
+    int TransactionMatches,
+    int OpenExceptionCount);
+
+public sealed record ReconciliationBreakRecord(
+    string BreakId,
+    string RunId,
+    string ImportId,
+    string SourceReference,
+    string BreakCode,
+    string Category,
+    decimal Delta,
+    decimal Tolerance,
+    bool ToleranceBreached,
+    DateTimeOffset CreatedAtUtc,
+    string Status);

@@ -85,7 +85,7 @@ internal static class SecurityEconomicDefinitionAdapter
     private static JsonElement BuildEconomicTermsJson(SecurityEconomicDefinition definition)
         => JsonSerializer.SerializeToElement(new
         {
-            schemaVersion = 2,
+            schemaVersion = SecurityMasterSchemaVersions.EconomicTerms,
             maturity = definition.Terms.Maturity is null ? null : new
             {
                 effectiveDate = definition.Terms.Maturity.Value.EffectiveDate,
@@ -182,6 +182,24 @@ internal static class SecurityEconomicDefinitionAdapter
                 weightedAverageMaturityDays = definition.Terms.Fund.Value.WeightedAverageMaturityDays,
                 sweepEligible = definition.Terms.Fund.Value.SweepEligible,
                 liquidityFeeEligible = definition.Terms.Fund.Value.LiquidityFeeEligible
+            },
+            structuredProduct = definition.Terms.StructuredProduct is null ? null : new
+            {
+                factor = definition.Terms.StructuredProduct.Value.Factor,
+                factorDate = definition.Terms.StructuredProduct.Value.FactorDate,
+                weightedAvgCoupon = definition.Terms.StructuredProduct.Value.WeightedAvgCoupon,
+                weightedAvgMaturityMonths = definition.Terms.StructuredProduct.Value.WeightedAvgMaturityMonths,
+                weightedAvgLoanAgeMos = definition.Terms.StructuredProduct.Value.WeightedAvgLoanAgeMos,
+                collateralType = definition.Terms.StructuredProduct.Value.CollateralType is null ? null : definition.Terms.StructuredProduct.Value.CollateralType.Value,
+                poolIdentifier = definition.Terms.StructuredProduct.Value.PoolIdentifier is null ? null : definition.Terms.StructuredProduct.Value.PoolIdentifier.Value,
+                trancheClass = definition.Terms.StructuredProduct.Value.TrancheClass is null ? null : definition.Terms.StructuredProduct.Value.TrancheClass.Value,
+                prepaymentAssumption = definition.Terms.StructuredProduct.Value.PrepaymentAssumption is null ? null : SerializePrepaymentModel(definition.Terms.StructuredProduct.Value.PrepaymentAssumption.Value),
+                averageLifeYears = definition.Terms.StructuredProduct.Value.AverageLifeYears,
+                isInterestOnly = definition.Terms.StructuredProduct.Value.IsInterestOnly,
+                isPrincipalOnly = definition.Terms.StructuredProduct.Value.IsPrincipalOnly,
+                notionalBalance = definition.Terms.StructuredProduct.Value.NotionalBalance,
+                originator = definition.Terms.StructuredProduct.Value.Originator is null ? null : definition.Terms.StructuredProduct.Value.Originator.Value,
+                creditEnhancementPct = definition.Terms.StructuredProduct.Value.CreditEnhancementPct
             }
         });
 
@@ -202,5 +220,16 @@ internal static class SecurityEconomicDefinitionAdapter
         if (cat.IsSuperVoting)
             return "SuperVoting";
         throw new InvalidOperationException($"Unsupported {nameof(VotingRightsCat)} case encountered during serialization.");
+    }
+
+    private static object SerializePrepaymentModel(PrepaymentModel model)
+    {
+        if (model.IsPsa)
+            return new { model = "Psa", speed = ((PrepaymentModel.Psa)model).speed };
+        if (model.IsCpr)
+            return new { model = "Cpr", annualRate = ((PrepaymentModel.Cpr)model).annualRate };
+        if (model.IsSmm)
+            return new { model = "Smm", monthlyRate = ((PrepaymentModel.Smm)model).monthlyRate };
+        throw new InvalidOperationException($"Unsupported {nameof(PrepaymentModel)} case encountered during serialization.");
     }
 }

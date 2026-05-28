@@ -16,6 +16,7 @@ into Meridian UI.
 | `uploads/pasted-1777051293697-0.png` | Projection visual: fan/range scenarios with a forecast cut line and compact probability table. |
 | `uploads/pasted-1777387641525-0.png`, `uploads/pasted-1777387675319-0.png` | Security master and reporting docs: master-detail identity panes, tabbed inspectors, canonical identifiers, report template grouping. |
 | `uploads/Screenshot 2026-04-03 135932.png`, `uploads/Screenshot 2026-04-03 140237.png` | Financial SaaS counterpoints: entity search cards, chart workspace, analyst-facing left navigation, bright-data readability that Meridian should convert into dark cockpit structure. |
+| `cash-flow-factor-sch-main.zip` | Security Master reference workflow: searchable/sortable security table, selected-security detail, asset-class-specific cash-flow/factor schedules, conversion/redemption/defeasance sections, notes, import/export/bulk actions, and audit history. |
 
 ## Design deductions
 
@@ -43,6 +44,12 @@ into Meridian UI.
    orange Beta One accents, and legacy report panes. Meridian keeps the deep navy shell, cyan signal
    color, semantic state tokens, tighter radii, and line icons.
 
+7. **Turn schedule-heavy Security Master flows into one reference workbench.** The cash-flow/factor
+   prototype is useful for information architecture, not for visual copying. Meridian should retain
+   the selected security while operators inspect identity, schedules, controls, notes, overrides,
+   and audit evidence. Import, export, bulk edit, and delete actions need explicit backing workflow
+   state, disabled reasons, or confirmation gates.
+
 ## Components this brief should influence
 
 - `workstation-frame`: full-page shell with masthead, rail, and content surface.
@@ -51,6 +58,8 @@ into Meridian UI.
 - `dense-table`: high-row-count grids with mono data, sticky headers, selected rows, and right
   aligned numeric columns.
 - `split-workbench`: list/detail or chart/detail layout for canonical record inspection.
+- `reference-workbench`: command deck plus master table plus selected-security detail for Security
+  Master, cash-flow/factor schedules, controls, notes, and audit evidence.
 - `entity-summary`: canonical identifier blocks for Security Master, portfolio, custody, and
   reporting records.
 - `annotation-callout`: documentation-only marker for product guides and screenshot walkthroughs.

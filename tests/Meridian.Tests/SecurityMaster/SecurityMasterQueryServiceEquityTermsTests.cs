@@ -166,6 +166,214 @@ public sealed class SecurityMasterQueryServiceEquityTermsTests
         result.Should().BeNull();
     }
 
+    [Fact]
+    public async Task GetByIdentifierAsync_FallsBackToNormalizedUniverseMatch_WhenExactStoreLookupMisses()
+    {
+        var securityId = Guid.NewGuid();
+        var projection = CreateEquityProjection(
+            securityId,
+            JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                shareClass = "Common",
+                classification = "Common"
+            })) with
+        {
+            Identifiers =
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Isin,
+                    "us-0378331005",
+                    true,
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    null,
+                    null)
+            ],
+            PrimaryIdentifierKind = "Isin",
+            PrimaryIdentifierValue = "us-0378331005"
+        };
+
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.Isin,
+                Arg.Any<string>(),
+                Arg.Any<string?>(),
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns((SecurityProjectionRecord?)null);
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns([projection]);
+
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(SecurityIdentifierKind.Isin, "US0378331005", null);
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        result.Identifiers.Should().ContainSingle();
+        result.Identifiers[0].NormalizedValue.Should().Be("US0378331005");
+    }
+
+    [Fact]
+    public async Task GetByIdentifierAsync_UsesRequestedAsOfTimestamp_ForEffectiveDatedLookup()
+    {
+        var securityId = Guid.NewGuid();
+        var asOfUtc = new DateTimeOffset(2026, 5, 20, 15, 30, 0, TimeSpan.Zero);
+        var projection = CreateEquityProjection(
+            securityId,
+            JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                shareClass = "Common",
+                classification = "Common"
+            }));
+
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker,
+                "MPFD",
+                null,
+                asOfUtc,
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns(projection);
+
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(
+            SecurityIdentifierKind.Ticker,
+            "MPFD",
+            null,
+            asOfUtc: asOfUtc);
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        await store.Received(1).GetByIdentifierAsync(
+            SecurityIdentifierKind.Ticker,
+            "MPFD",
+            null,
+            asOfUtc,
+            true,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetByIdentifierAsync_ResolvesOccOptionSymbol_FromNormalizedUniverseFallback()
+    {
+        var securityId = Guid.NewGuid();
+        var projection = new SecurityProjectionRecord(
+            SecurityId: securityId,
+            AssetClass: "Option",
+            Status: SecurityStatusDto.Active,
+            DisplayName: "Apple Jun 2024 150 Call",
+            Currency: "USD",
+            PrimaryIdentifierKind: "OccOptionSymbol",
+            PrimaryIdentifierValue: "aapl 240621 c00150000",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Apple Jun 2024 150 Call",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                underlyingId = Guid.NewGuid(),
+                putCall = "Call",
+                strike = 150m,
+                expiry = new DateOnly(2024, 6, 21),
+                multiplier = 100m
+            }),
+            Provenance: JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "test",
+                updatedBy = "codex",
+                asOf = DateTimeOffset.UtcNow
+            }),
+            Version: 3,
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-30),
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.OccOptionSymbol,
+                    "aapl 240621 c00150000",
+                    true,
+                    DateTimeOffset.UtcNow.AddDays(-30))
+            ],
+            Aliases: Array.Empty<SecurityAliasDto>());
+
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.OccOptionSymbol,
+                Arg.Any<string>(),
+                Arg.Any<string?>(),
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns((SecurityProjectionRecord?)null);
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns([projection]);
+
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(
+            SecurityIdentifierKind.OccOptionSymbol,
+            "AAPL240621C00150000",
+            null);
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        result.Identifiers.Should().ContainSingle();
+        result.Identifiers[0].NormalizedValue.Should().Be("AAPL240621C00150000");
+    }
+
+    [Fact]
+    public async Task GetByIdentifierAsync_UsesNormalizedValueAndProvider_BeforeUniverseFallback()
+    {
+        var securityId = Guid.NewGuid();
+        var projection = CreateEquityProjection(
+            securityId,
+            JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                shareClass = "Common",
+                classification = "Common"
+            })) with
+        {
+            Identifiers =
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Isin,
+                    "us-0378331005",
+                    true,
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    null,
+                    "xnas")
+            ]
+        };
+
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.Isin,
+                "US0378331005",
+                "XNAS",
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns(projection);
+
+        var service = CreateQueryService(store);
+
+        var result = await service.GetByIdentifierAsync(SecurityIdentifierKind.Isin, "us-0378331005", "xnas");
+
+        result.Should().NotBeNull();
+        result!.SecurityId.Should().Be(securityId);
+        result.Identifiers[0].NormalizedValue.Should().Be("US0378331005");
+        result.Identifiers[0].NormalizedProvider.Should().Be("XNAS");
+        await store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
+    }
+
     private static SecurityMasterQueryService CreateQueryService(ISecurityMasterStore store)
     {
         var eventStore = Substitute.For<ISecurityMasterEventStore>();

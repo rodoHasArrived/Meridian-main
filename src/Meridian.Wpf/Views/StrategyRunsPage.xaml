@@ -29,7 +29,7 @@
                                    FontSize="24" Foreground="{DynamicResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
                     </Border>
                     <StackPanel>
-                        <TextBlock Text="Strategy Run Browser" Style="{DynamicResource PageTitleStyle}" />
+                        <TextBlock Text="Strategy Run Workstation" Style="{DynamicResource PageTitleStyle}" />
                         <TextBlock Text="{Binding StatusText}" Style="{DynamicResource CardDescriptionStyle}" Margin="0,6,0,0" />
                     </StackPanel>
                 </StackPanel>
@@ -48,6 +48,10 @@
 
         <Border Grid.Row="1" Style="{DynamicResource CardStyle}" Margin="0,0,0,20">
             <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="16" />
@@ -97,6 +101,61 @@
                             Style="{DynamicResource GhostButtonStyle}"
                             Visibility="{Binding IsComparisonVisible, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
+
+                <Border Grid.Row="1"
+                        Grid.ColumnSpan="5"
+                        Margin="0,16,0,0"
+                        Padding="14,12"
+                        CornerRadius="10"
+                        Background="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
+                        BorderBrush="{DynamicResource InfoColorBrush}"
+                        BorderThickness="1"
+                        AutomationProperties.AutomationId="StrategyRunsSelectionPanel">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Selection"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding SelectionText}"
+                                       Margin="0,6,0,0"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="{Binding SelectionDetail}"
+                                       Margin="0,6,0,0"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding SelectionContextText}"
+                                       Margin="0,6,0,0"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="StrategyRunsSelectionContextText" />
+                        </StackPanel>
+                        <WrapPanel Grid.Column="1"
+                                   Margin="16,0,0,0"
+                                   VerticalAlignment="Center">
+                            <Button Content="Open Detail"
+                                    Command="{Binding OpenDetailCommand}"
+                                    Style="{DynamicResource SecondaryButtonStyle}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Compare 2 runs"
+                                    Command="{Binding CompareRunsCommand}"
+                                    Style="{DynamicResource GhostButtonStyle}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Open Portfolio"
+                                    Command="{Binding OpenPortfolioCommand}"
+                                    Style="{DynamicResource GhostButtonStyle}"
+                                    Margin="0,0,8,8" />
+                        </WrapPanel>
+                    </Grid>
+                </Border>
             </Grid>
         </Border>
 
@@ -214,17 +273,74 @@
                 </Grid>
             </Border>
 
-            <!-- Side-by-side comparison diff panel -->
+            <!-- Selection and comparison detail rail -->
             <Border Grid.Column="1"
-                    Width="380"
+                    Width="400"
                     Margin="16,0,0,0"
-                    Style="{DynamicResource CardStyle}"
-                    Visibility="{Binding IsComparisonVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                    Style="{DynamicResource CardStyle}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="0">
-                        <TextBlock Text="Run Comparison" Style="{DynamicResource CardHeaderStyle}" Margin="0,0,0,14" />
+                        <Border Background="{DynamicResource ConsoleBackgroundLightBrush}"
+                                CornerRadius="10"
+                                Padding="14,12"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Selection detail"
+                                           Style="{DynamicResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding SelectionText}"
+                                           Margin="0,10,0,0"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="{Binding SelectionDetail}"
+                                           Margin="0,6,0,0"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+                                <Border Margin="0,12,0,0"
+                                        Padding="12,10"
+                                        CornerRadius="8"
+                                        Background="{DynamicResource ConsoleAccentBlueAlpha10Brush}"
+                                        BorderBrush="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
+                                        BorderThickness="1">
+                                    <TextBlock Text="{Binding SelectionContextText}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource InfoColorBrush}"
+                                               TextWrapping="Wrap" />
+                                </Border>
+                                <TextBlock Text="Performance"
+                                           Margin="0,14,0,0"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ConsoleTextMutedBrush}" />
+                                <TextBlock Text="{Binding SelectedRunPerformanceText}"
+                                           Margin="0,6,0,0"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
+                                           TextWrapping="Wrap"
+                                           AutomationProperties.AutomationId="StrategyRunsSelectionPerformanceText" />
+                                <TextBlock Text="Evidence"
+                                           Margin="0,14,0,0"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource ConsoleTextMutedBrush}" />
+                                <TextBlock Text="{Binding SelectedRunEvidenceText}"
+                                           Margin="0,6,0,0"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
+                                           TextWrapping="Wrap"
+                                           AutomationProperties.AutomationId="StrategyRunsSelectionEvidenceText" />
+                            </StackPanel>
+                        </Border>
 
-                        <!-- Column headers -->
+                        <TextBlock Text="Run comparison" Style="{DynamicResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding ComparisonPanelDetail}"
+                                   Margin="0,8,0,14"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="StrategyRunsComparisonPanelDetail" />
+
                         <Grid Margin="0,0,0,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="110" />
@@ -235,10 +351,10 @@
                                        Foreground="{DynamicResource ConsoleTextMutedBrush}" FontWeight="SemiBold" />
                             <TextBlock Grid.Column="1" FontSize="11" FontWeight="SemiBold"
                                        Foreground="{DynamicResource InfoColorBrush}"
-                                       Text="{Binding ComparisonResult[0].Mode, StringFormat='A ({0})'}" />
+                                       Text="{Binding ComparisonHeaderAText}" />
                             <TextBlock Grid.Column="2" FontSize="11" FontWeight="SemiBold"
                                        Foreground="{DynamicResource SuccessColorBrush}"
-                                       Text="{Binding ComparisonResult[1].Mode, StringFormat='B ({0})'}" />
+                                       Text="{Binding ComparisonHeaderBText}" />
                         </Grid>
 
                         <Rectangle Height="1" Fill="{DynamicResource ConsoleTextMutedBrush}" Margin="0,0,0,8" Opacity="0.2" />
@@ -254,12 +370,19 @@
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11"
                                                    Foreground="{DynamicResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding ValueA}" FontSize="11" />
-                                        <TextBlock Grid.Column="2" Text="{Binding ValueB}" FontSize="11" />
+                                        <TextBlock Grid.Column="1" Text="{Binding ValueA}" FontSize="11" TextWrapping="Wrap" Margin="0,0,8,0" />
+                                        <TextBlock Grid.Column="2" Text="{Binding ValueB}" FontSize="11" TextWrapping="Wrap" />
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+
+                        <TextBlock Text="{Binding ComparisonPlaceholderText}"
+                                   Margin="0,12,0,0"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="StrategyRunsComparisonPlaceholderText" />
                     </StackPanel>
                 </ScrollViewer>
             </Border>

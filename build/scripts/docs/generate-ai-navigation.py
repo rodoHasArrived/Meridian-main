@@ -9,7 +9,8 @@ This script produces two synchronized artifacts under docs/ai/generated/:
 Usage:
     python3 build/scripts/docs/generate-ai-navigation.py \
         --json-output docs/ai/generated/repo-navigation.json \
-        --markdown-output docs/ai/generated/repo-navigation.md
+        --markdown-output docs/ai/generated/repo-navigation.md \
+        --recent-changes-output docs/ai/generated/recent-changes.md
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -26,6 +28,8 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[3]
 GENERATOR_VERSION = "1.0"
 EXCLUDED_PARTS = {"bin", "obj", "node_modules", ".git", ".vs", "__pycache__", "TestResults", "artifacts"}
+DEFAULT_RECENT_CHANGES_DAYS = 14
+DEFAULT_RECENT_CHANGES_LIMIT = 40
 
 
 @dataclass(frozen=True)
@@ -149,6 +153,19 @@ PROJECT_SEEDS: dict[str, ProjectSeed] = {
         ("shared ui", "components", "contracts"),
         ("src/Meridian.Ui.Shared",),
         ("",),
+    ),
+    "Meridian.Ui.Dashboard": ProjectSeed(
+        "Meridian.Ui.Dashboard",
+        "workstation-ui",
+        "browser-ui",
+        "Browser workstation dashboard implemented with TypeScript and React.",
+        ("browser workstation issue", "react component flow", "dashboard routing"),
+        ("browser", "dashboard", "typescript", "react", "workstation"),
+        (
+            "src/Meridian.Ui/dashboard/package.json",
+            "src/Meridian.Ui/dashboard/src/main.tsx",
+        ),
+        ("package.json", "src/main.tsx", "src/App.tsx"),
     ),
     "Meridian.Backtesting": ProjectSeed(
         "Meridian.Backtesting",
@@ -536,6 +553,21 @@ TASK_ROUTE_SEEDS: list[dict[str, Any]] = [
         "recommendedAgent": "provider-builder-agent",
     },
     {
+        "id": "browser-workstation",
+        "title": "Browser workstation and dashboard UI issues",
+        "description": "Use when the task touches TypeScript/React dashboard screens, browser routing, operator interactions, or workstation UI state in src/Meridian.Ui/dashboard.",
+        "keywords": ["browser", "dashboard", "typescript", "react", "workstation", "ui"],
+        "subsystems": ["workstation-ui"],
+        "startProjects": ["Meridian.Ui.Dashboard", "Meridian.Ui.Services", "Meridian.Ui.Shared"],
+        "startSymbols": [],
+        "docs": [
+            "docs/ai/navigation/README.md",
+            "docs/ai/ai-known-errors.md",
+        ],
+        "recommendedSkill": "meridian-browser-workstation",
+        "recommendedAgent": "software-engineer-agent-v1",
+    },
+    {
         "id": "wpf-workflow",
         "title": "WPF and workstation workflow issues",
         "description": "Use when the task involves shell navigation, workspace composition, desktop view models, or desktop UX flows.",
@@ -592,6 +624,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--root", type=Path, default=REPO_ROOT, help="Repository root.")
     parser.add_argument("--json-output", type=Path, required=True, help="Path to JSON output.")
     parser.add_argument("--markdown-output", type=Path, required=True, help="Path to markdown output.")
+    parser.add_argument("--recent-changes-output", type=Path, help="Optional path to recent changes markdown output.")
+    parser.add_argument(
+        "--recent-days",
+        type=int,
+        default=DEFAULT_RECENT_CHANGES_DAYS,
+        help=f"Lookback window in days for recent source changes (default: {DEFAULT_RECENT_CHANGES_DAYS}).",
+    )
+    parser.add_argument(
+        "--recent-limit",
+        type=int,
+        default=DEFAULT_RECENT_CHANGES_LIMIT,
+        help=f"Maximum number of recent source files to track (default: {DEFAULT_RECENT_CHANGES_LIMIT}).",
+    )
     parser.add_argument("--summary", action="store_true", help="Print a short summary to stdout.")
     return parser.parse_args()
 
@@ -643,6 +688,41 @@ def find_entrypoints(root: Path, project_dir: Path, preferred_names: tuple[str, 
     return [repo_relative(root, project_dir)]
 
 
+NON_PROJECT_SEED_PATHS: dict[str, str] = {
+    "Meridian.Ui.Dashboard": "src/Meridian.Ui/dashboard",
+}
+
+
+def _build_project_record(
+    root: Path,
+    project_name: str,
+    project_dir: Path,
+    seed: ProjectSeed,
+    project_references: list[str],
+) -> dict[str, Any]:
+    entrypoints = find_entrypoints(root, project_dir, seed.preferred_entrypoints)
+    existing_contracts = [path for path in seed.key_contracts if (root / path).exists()]
+    related_docs = [
+        doc["path"]
+        for doc in DOC_CATALOG
+        if any(keyword in " ".join(doc["keywords"]).lower() for keyword in seed.keywords[:3])
+    ]
+
+    return {
+        "name": project_name,
+        "path": repo_relative(root, project_dir),
+        "kind": seed.kind,
+        "subsystem": seed.subsystem,
+        "summary": seed.summary,
+        "commonTasks": list(seed.common_tasks),
+        "keywords": sorted(set(seed.keywords)),
+        "entrypoints": entrypoints,
+        "keyContracts": existing_contracts,
+        "projectReferences": project_references,
+        "relatedDocs": related_docs,
+    }
+
+
 def discover_projects(root: Path) -> list[dict[str, Any]]:
     projects: list[dict[str, Any]] = []
     project_files = sorted(root.glob("src/*/*.csproj")) + sorted(root.glob("src/*/*.fsproj"))
@@ -652,29 +732,33 @@ def discover_projects(root: Path) -> list[dict[str, Any]]:
         if seed is None:
             continue
 
-        project_dir = project_file.parent
-        entrypoints = find_entrypoints(root, project_dir, seed.preferred_entrypoints)
-        existing_contracts = [path for path in seed.key_contracts if (root / path).exists()]
-        related_docs = [
-            doc["path"]
-            for doc in DOC_CATALOG
-            if any(keyword in " ".join(doc["keywords"]).lower() for keyword in seed.keywords[:3])
-        ]
-
         projects.append(
-            {
-                "name": project_name,
-                "path": repo_relative(root, project_dir),
-                "kind": seed.kind,
-                "subsystem": seed.subsystem,
-                "summary": seed.summary,
-                "commonTasks": list(seed.common_tasks),
-                "keywords": sorted(set(seed.keywords)),
-                "entrypoints": entrypoints,
-                "keyContracts": existing_contracts,
-                "projectReferences": parse_project_references(project_file),
-                "relatedDocs": related_docs,
-            }
+            _build_project_record(
+                root=root,
+                project_name=project_name,
+                project_dir=project_file.parent,
+                seed=seed,
+                project_references=parse_project_references(project_file),
+            )
+        )
+
+    for project_name, relative_path in NON_PROJECT_SEED_PATHS.items():
+        if any(project["name"] == project_name for project in projects):
+            continue
+        seed = PROJECT_SEEDS.get(project_name)
+        if seed is None:
+            continue
+        project_dir = root / relative_path
+        if not project_dir.exists():
+            continue
+        projects.append(
+            _build_project_record(
+                root=root,
+                project_name=project_name,
+                project_dir=project_dir,
+                seed=seed,
+                project_references=[],
+            )
         )
 
     return projects
@@ -805,24 +889,106 @@ def build_routes(subsystems: list[dict[str, Any]], symbols: list[dict[str, Any]]
     return routes
 
 
-def build_dataset(root: Path) -> dict[str, Any]:
+def _subsystem_for_path(path: str, subsystems: list[dict[str, Any]]) -> str:
+    for subsystem in subsystems:
+        for project_path in subsystem.get("projectPaths", []):
+            if path == project_path or path.startswith(f"{project_path}/"):
+                return subsystem["title"]
+    return "Unmapped"
+
+
+def collect_recent_source_changes(
+    root: Path,
+    subsystems: list[dict[str, Any]],
+    *,
+    days: int,
+    limit: int,
+) -> list[dict[str, Any]]:
+    if days < 1 or limit < 1:
+        return []
+
+    result = subprocess.run(
+        [
+            "git",
+            "log",
+            f"--since={days} days ago",
+            "--name-only",
+            "--date=iso-strict",
+            "--pretty=format:%ad\t%h\t%s",
+            "--",
+            "src",
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+
+    file_index: dict[str, dict[str, Any]] = {}
+    current_header: tuple[str, str, str] | None = None
+    for raw_line in result.stdout.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        if "\t" in line:
+            parts = line.split("\t", 2)
+            if len(parts) == 3:
+                current_header = (parts[0], parts[1], parts[2])
+            continue
+
+        if current_header is None or not line.startswith("src/"):
+            continue
+
+        record = file_index.get(line)
+        if record is None:
+            record = {
+                "path": line,
+                "subsystem": _subsystem_for_path(line, subsystems),
+                "lastModified": current_header[0],
+                "lastCommit": current_header[1],
+                "lastSummary": current_header[2],
+                "touches": 0,
+            }
+            file_index[line] = record
+        record["touches"] += 1
+
+    ordered = sorted(
+        file_index.values(),
+        key=lambda entry: (entry["lastModified"], entry["touches"]),
+        reverse=True,
+    )
+    return ordered[:limit]
+
+
+def build_dataset(root: Path, *, recent_days: int = DEFAULT_RECENT_CHANGES_DAYS, recent_limit: int = DEFAULT_RECENT_CHANGES_LIMIT) -> dict[str, Any]:
     projects = discover_projects(root)
     docs = discover_documents(root)
     symbols = discover_symbols(root)
     subsystems = build_subsystems(projects, docs)
     dependencies = build_dependencies(projects)
     routes = build_routes(subsystems, symbols)
+    recent_changes = collect_recent_source_changes(
+        root,
+        subsystems,
+        days=recent_days,
+        limit=recent_limit,
+    )
 
     return {
         "generatedAt": now_iso(),
         "generatorVersion": GENERATOR_VERSION,
-        "repositoryRoot": root.resolve().as_posix(),
+        "repositoryRoot": root.name,
         "subsystems": subsystems,
         "projects": projects,
         "documents": docs,
         "symbols": symbols,
         "taskRoutes": routes,
         "dependencies": dependencies,
+        "recentChanges": recent_changes,
+        "recentChangesWindowDays": recent_days,
         "notes": {
             "purpose": "Orientation-first navigation dataset for assistants working inside Meridian.",
             "scope": "High-signal subsystems, contracts, docs, and task routes rather than exhaustive symbol search.",
@@ -892,6 +1058,54 @@ def render_markdown(dataset: dict[str, Any]) -> str:
             f"| `{dependency['from']}` | `{dependency['to']}` | {dependency['reason']} |"
         )
 
+    lines.extend([
+        "",
+        "## What Changed Recently",
+        "",
+        f"Recent source-file activity from the last {dataset.get('recentChangesWindowDays', DEFAULT_RECENT_CHANGES_DAYS)} days.",
+        "",
+    ])
+
+    if dataset["recentChanges"]:
+        lines.extend([
+            "| File | Subsystem | Last commit | Touches |",
+            "|---|---|---|---|",
+        ])
+        for item in dataset["recentChanges"][:15]:
+            lines.append(
+                f"| `{item['path']}` | {item['subsystem']} | `{item['lastCommit']}` ({item['lastModified']}) | {item['touches']} |"
+            )
+    else:
+        lines.append("_No recent source changes detected for the configured window._")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_recent_changes_markdown(dataset: dict[str, Any]) -> str:
+    lines = [
+        "# Meridian AI Recent Changes",
+        "",
+        f"> Auto-generated on {dataset['generatedAt']} by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.",
+        "",
+        f"Rolling source-file activity for the last {dataset.get('recentChangesWindowDays', DEFAULT_RECENT_CHANGES_DAYS)} days.",
+        "",
+    ]
+
+    if not dataset["recentChanges"]:
+        lines.append("_No recent source changes found in the configured window._")
+        lines.append("")
+        return "\n".join(lines)
+
+    lines.extend([
+        "| File | Subsystem | Last modified | Commit | Summary | Touches |",
+        "|---|---|---|---|---|---|",
+    ])
+    for item in dataset["recentChanges"]:
+        summary = item["lastSummary"].replace("|", "\\|")
+        lines.append(
+            f"| `{item['path']}` | {item['subsystem']} | {item['lastModified']} | `{item['lastCommit']}` | {summary} | {item['touches']} |"
+        )
     lines.append("")
     return "\n".join(lines)
 
@@ -899,13 +1113,16 @@ def render_markdown(dataset: dict[str, Any]) -> str:
 def main() -> int:
     args = parse_args()
     root = args.root.resolve()
-    dataset = build_dataset(root)
+    dataset = build_dataset(root, recent_days=args.recent_days, recent_limit=args.recent_limit)
 
     args.json_output.parent.mkdir(parents=True, exist_ok=True)
     args.markdown_output.parent.mkdir(parents=True, exist_ok=True)
 
     args.json_output.write_text(json.dumps(dataset, indent=2) + "\n", encoding="utf-8")
     args.markdown_output.write_text(render_markdown(dataset) + "\n", encoding="utf-8")
+    if args.recent_changes_output:
+        args.recent_changes_output.parent.mkdir(parents=True, exist_ok=True)
+        args.recent_changes_output.write_text(render_recent_changes_markdown(dataset) + "\n", encoding="utf-8")
 
     if args.summary:
         print(
@@ -918,6 +1135,7 @@ def main() -> int:
                     "symbols": len(dataset["symbols"]),
                     "routes": len(dataset["taskRoutes"]),
                     "dependencies": len(dataset["dependencies"]),
+                    "recentChanges": len(dataset["recentChanges"]),
                 },
                 indent=2,
             )

@@ -100,7 +100,18 @@ public record ProviderStatusResponse(
     bool IsEnabled,
     int Priority,
     int ActiveSubscriptions,
-    DateTimeOffset? LastHeartbeat);
+    DateTimeOffset? LastHeartbeat,
+    string? LifecycleState = null,
+    string? WebSocketState = null,
+    bool? IsReconnecting = null,
+    DateTimeOffset? LastHeartbeatReceivedAt = null,
+    DateTimeOffset? LastMessageReceivedAt = null,
+    DateTimeOffset? LastReconnectAttemptAt = null,
+    int? ReconnectAttempts = null,
+    string? LastFailureKind = null,
+    int? FailedSubscriptions = null,
+    int? RecoveringSubscriptions = null,
+    DateTimeOffset? LastSubscriptionMessageAt = null);
 
 /// <summary>Response containing detailed provider metrics.</summary>
 public record ProviderMetricsResponse(
@@ -150,7 +161,22 @@ public record ProviderHealthResponse(
     DateTimeOffset? LastSuccessTime,
     double DegradationScore,
     ProviderScoreReasonResponse[] Reasons,
-    HealthIssueResponse[] RecentIssues);
+    HealthIssueResponse[] RecentIssues,
+    ProviderKernelProvenanceResponse? KernelProvenance,
+    KernelPromotionRecommendationResponse? PromotionRecommendation);
+
+public record ProviderKernelProvenanceResponse(
+    string BaselineKernelVersion,
+    string CandidateKernelVersion,
+    string DatasetId,
+    DateTimeOffset CalibratedAt,
+    string CalibratedBy);
+
+public record KernelPromotionRecommendationResponse(
+    bool Approved,
+    bool CalibrationPass,
+    bool FreshnessPass,
+    string[] BlockingReasons);
 
 /// <summary>Compact explanation reason attached to score outputs.</summary>
 public readonly record struct ProviderScoreReasonResponse(

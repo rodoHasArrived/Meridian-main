@@ -24,6 +24,7 @@ create table if not exists __SCHEMA__.account_definition (
     ledger_reference    text,
     strategy_id         text,
     run_id              text,
+    operational_status  text        not null default 'Active',
     -- Extended settlement details (nullable; present for Custody and Bank types)
     custodian_details   jsonb,
     bank_details        jsonb,
@@ -161,3 +162,73 @@ create table if not exists __SCHEMA__.account_reconciliation_breaks (
 
 create index if not exists ix_recon_breaks_run
     on __SCHEMA__.account_reconciliation_breaks (reconciliation_run_id);
+
+-- ── Account sync history ──────────────────────────────────────────────────────
+
+create table if not exists __SCHEMA__.account_sync_history (
+    sync_history_id             uuid        primary key,
+    account_id                  uuid        not null references __SCHEMA__.account_definition (account_id),
+    capability                  text        not null,
+    status                      text        not null,
+    provider_link_status        text        not null,
+    provider_id                 text,
+    external_account_id         text,
+    attempted_at                timestamptz not null,
+    completed_at                timestamptz,
+    fresh_until                 timestamptz,
+    failure_kind                text        not null,
+    failure_message             text,
+    correlation_id              text,
+    requested_by                text,
+    raw_evidence_path           text,
+    projection_evidence_path    text,
+    security_missing_count      integer     not null default 0,
+    warnings                    jsonb       not null default '[]'
+);
+
+create index if not exists ix_sync_history_account
+    on __SCHEMA__.account_sync_history (account_id, attempted_at desc);
+
+-- ── Account margin snapshots ──────────────────────────────────────────────────
+
+create table if not exists __SCHEMA__.account_margin_snapshot (
+    margin_snapshot_id                  uuid          primary key,
+    account_id                          uuid          not null references __SCHEMA__.account_definition (account_id),
+    effective_at                        timestamptz   not null,
+    recorded_at                         timestamptz   not null,
+    currency                            text          not null,
+    margin_type                         text          not null,
+    margin_call_status                  text          not null,
+    initial_margin                      numeric(24,6),
+    maintenance_margin                  numeric(24,6),
+    excess_liquidity                    numeric(24,6),
+    buying_power                        numeric(24,6),
+    sma                                 numeric(24,6),
+    loan_balance                        numeric(24,6),
+    debit_balance                       numeric(24,6),
+    credit_balance                      numeric(24,6),
+    collateral_value                    numeric(24,6),
+    marginable_securities_value         numeric(24,6),
+    non_marginable_securities_value     numeric(24,6),
+    margin_utilization                  numeric(12,6),
+    missing_requirement_count           integer       not null default 0,
+    missing_collateral_classification_count integer   not null default 0,
+    concentration_limit_breach_count    integer       not null default 0,
+    is_live_account                     boolean       not null default false,
+    approved_for_live_margin            boolean       not null default false,
+    requirements_json                   jsonb         not null default '[]',
+    warnings_json                       jsonb         not null default '[]',
+    provider_id                         text,
+    external_account_id                 text,
+    fresh_until                         timestamptz,
+    agreement_evidence_path             text,
+    snapshot_evidence_path              text,
+    correlation_id                      text
+);
+
+create unique index if not exists ux_margin_snapshot_account_effective
+    on __SCHEMA__.account_margin_snapshot (account_id, effective_at);
+
+create index if not exists ix_margin_snapshot_account
+    on __SCHEMA__.account_margin_snapshot (account_id, effective_at desc);
+

@@ -148,6 +148,30 @@ public sealed class RoslynScriptCompilerTests
         result.Diagnostics.Should().NotBeEmpty();
     }
 
+
+    [Fact]
+    public async Task CompileAsync_SafeMode_BlocksSystemIoAccess()
+    {
+        var compiler = BuildCompiler(new QuantScriptOptions { EnableUnsafeScripts = false });
+        var source = "var text = System.IO.File.ReadAllText(\"/tmp/a.txt\");";
+
+        var result = await compiler.CompileAsync(source);
+
+        result.Success.Should().BeFalse();
+        result.Diagnostics.Should().Contain(d => d.Message.Contains("System.IO", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CompileAsync_UnsafeMode_AllowsSystemIoAccessSyntax()
+    {
+        var compiler = BuildCompiler(new QuantScriptOptions { EnableUnsafeScripts = true });
+        var source = "var text = System.IO.File.ReadAllText(\"/tmp/a.txt\");";
+
+        var result = await compiler.CompileAsync(source);
+
+        result.Success.Should().BeTrue();
+    }
+
     [Fact]
     public async Task CompileAsync_UnsafeMode_AllowsScriptLevelAssemblyReferences()
     {

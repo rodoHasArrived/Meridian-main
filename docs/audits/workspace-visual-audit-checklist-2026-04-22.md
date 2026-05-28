@@ -3,7 +3,7 @@
 ## Scope
 - Research workspace shell (`ResearchWorkspaceShellPage.xaml`)
 - Trading workspace shell (`TradingWorkspaceShellPage.xaml`)
-- Data Operations workspace shell (`DataOperationsWorkspaceShellPage.xaml`)
+- Data workspace shell (`Features/Data/Shell/DataWorkspaceShellPage.xaml`)
 - Governance workspace shell (`GovernanceWorkspaceShellPage.xaml`)
 
 ## Checklist

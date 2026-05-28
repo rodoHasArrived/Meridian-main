@@ -10,7 +10,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Application.Config;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Features;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -44,6 +47,10 @@ public sealed class SettingsViewModel : BindableBase
     private Visibility _noCredentialsVisibility = Visibility.Collapsed;
     private Visibility _credentialListVisibility = Visibility.Visible;
     private bool _loadingDesktopPreferences;
+    private bool _isConfigValid = true;
+    private bool _hasUnsavedChanges;
+    private string _configValidationErrors = string.Empty;
+    private bool _isPopulatingConfig;
 
     // ── Appearance / notification / performance settings (bindable defaults) ──
     private int _themeIndex;
@@ -60,20 +67,28 @@ public sealed class SettingsViewModel : BindableBase
     public SettingsViewModel(
         WpfServices.ConfigService configService,
         WpfServices.NotificationService notificationService,
-        WpfServices.StatusService statusService)
+        WpfServices.StatusService statusService,
+        IFeatureCapabilityGate? capabilityGate = null,
+        IEnumerable<FeatureCapabilityDescriptor>? capabilityDescriptors = null)
     {
         _configService = configService;
         _notificationService = notificationService;
         _statusService = statusService;
         _settingsConfigService = SettingsConfigurationService.Instance;
-
         StoredCredentials = new ObservableCollection<CredentialDisplayInfo>();
         RecentActivity = new ObservableCollection<SettingsActivityItem>();
+        CapabilityToggles = new ObservableCollection<FeatureCapabilityToggleViewModel>(
+            BuildCapabilityToggles(capabilityGate, capabilityDescriptors));
         ShellDensityModes =
         [
             ShellDensityMode.Standard,
             ShellDensityMode.Compact
         ];
+
+        if (capabilityGate is not null)
+        {
+            capabilityGate.Changes.Subscribe(new CapabilityChangeObserver(this));
+        }
 
         // Navigation commands
         AddProviderCommand = new RelayCommand(() => WpfServices.NavigationService.Instance.NavigateTo("AddProviderWizard"));
@@ -90,8 +105,10 @@ public sealed class SettingsViewModel : BindableBase
 
         // Configuration commands
         OpenConfigFolderCommand = new RelayCommand(OpenConfigFolder);
-        ReloadConfigCommand = new RelayCommand(ReloadConfig);
-        ResetToDefaultsCommand = new RelayCommand(ResetToDefaults);
+        ReloadConfigCommand = new AsyncRelayCommand(ReloadConfigAsync);
+        ResetToDefaultsCommand = new AsyncRelayCommand(ResetToDefaultsAsync);
+        SaveConfigCommand = new AsyncRelayCommand(SaveConfigAsync, CanSaveConfig);
+        ApplyConfigCommand = new AsyncRelayCommand(ApplyConfigAsync, CanSaveConfig);
 
         // Test / support commands
         SendTestNotificationCommand = new RelayCommand(SendTestNotification);
@@ -108,6 +125,7 @@ public sealed class SettingsViewModel : BindableBase
 
     public ObservableCollection<CredentialDisplayInfo> StoredCredentials { get; }
     public ObservableCollection<SettingsActivityItem> RecentActivity { get; }
+    public ObservableCollection<FeatureCapabilityToggleViewModel> CapabilityToggles { get; }
     public IReadOnlyList<ShellDensityMode> ShellDensityModes { get; }
 
     // ── Bindable Properties ───────────────────────────────────────────────────
@@ -208,14 +226,14 @@ public sealed class SettingsViewModel : BindableBase
     public int ThemeIndex
     {
         get => _themeIndex;
-        set => SetProperty(ref _themeIndex, value);
+        set => SetSettingProperty(ref _themeIndex, value);
     }
 
     /// <summary>Selected index of the accent-color ComboBox.</summary>
     public int AccentColorIndex
     {
         get => _accentColorIndex;
-        set => SetProperty(ref _accentColorIndex, value);
+        set => SetSettingProperty(ref _accentColorIndex, value);
     }
 
     public ShellDensityMode SelectedShellDensityMode
@@ -236,6 +254,7 @@ public sealed class SettingsViewModel : BindableBase
             }
 
             _settingsConfigService.SetShellDensityMode(value);
+            MarkDirty();
         }
     }
 
@@ -254,7 +273,10 @@ public sealed class SettingsViewModel : BindableBase
         set
         {
             if (SetProperty(ref _isNotificationsEnabled, value))
+            {
                 RaisePropertyChanged(nameof(NotificationsPanelOpacity));
+                MarkDirty();
+            }
         }
     }
 
@@ -264,37 +286,37 @@ public sealed class SettingsViewModel : BindableBase
     public string MaxConcurrentDownloads
     {
         get => _maxConcurrentDownloads;
-        set => SetProperty(ref _maxConcurrentDownloads, value);
+        set => SetSettingProperty(ref _maxConcurrentDownloads, value);
     }
 
     public string WriteBufferSize
     {
         get => _writeBufferSize;
-        set => SetProperty(ref _writeBufferSize, value);
+        set => SetSettingProperty(ref _writeBufferSize, value);
     }
 
     public bool IsMetricsEnabled
     {
         get => _isMetricsEnabled;
-        set => SetProperty(ref _isMetricsEnabled, value);
+        set => SetSettingProperty(ref _isMetricsEnabled, value);
     }
 
     public bool IsDebugLoggingEnabled
     {
         get => _isDebugLoggingEnabled;
-        set => SetProperty(ref _isDebugLoggingEnabled, value);
+        set => SetSettingProperty(ref _isDebugLoggingEnabled, value);
     }
 
     public string ApiBaseUrl
     {
         get => _apiBaseUrl;
-        set => SetProperty(ref _apiBaseUrl, value);
+        set => SetSettingProperty(ref _apiBaseUrl, value);
     }
 
     public string StatusRefreshInterval
     {
         get => _statusRefreshInterval;
-        set => SetProperty(ref _statusRefreshInterval, value);
+        set => SetSettingProperty(ref _statusRefreshInterval, value);
     }
 
     // ── Commands ──────────────────────────────────────────────────────────────
@@ -309,8 +331,10 @@ public sealed class SettingsViewModel : BindableBase
     public IRelayCommand TestAllCredentialsCommand { get; }
     public IRelayCommand ClearAllCredentialsCommand { get; }
     public IRelayCommand OpenConfigFolderCommand { get; }
-    public IRelayCommand ReloadConfigCommand { get; }
-    public IRelayCommand ResetToDefaultsCommand { get; }
+    public IAsyncRelayCommand ReloadConfigCommand { get; }
+    public IAsyncRelayCommand ResetToDefaultsCommand { get; }
+    public IAsyncRelayCommand SaveConfigCommand { get; }
+    public IAsyncRelayCommand ApplyConfigCommand { get; }
     public IRelayCommand SendTestNotificationCommand { get; }
     public IAsyncRelayCommand TestConnectionCommand { get; }
     public IRelayCommand CheckForUpdatesCommand { get; }
@@ -323,6 +347,8 @@ public sealed class SettingsViewModel : BindableBase
     public void Initialize()
     {
         LoadDesktopPreferences();
+        _ = LoadConfigAsync();
+        RefreshCapabilityToggles();
         ConfigPath = _configService.ConfigPath;
         RefreshStoredCredentials();
         RefreshCredentialVault();
@@ -343,6 +369,35 @@ public sealed class SettingsViewModel : BindableBase
         {
             _loadingDesktopPreferences = false;
         }
+    }
+
+    private static IEnumerable<FeatureCapabilityToggleViewModel> BuildCapabilityToggles(
+        IFeatureCapabilityGate? capabilityGate,
+        IEnumerable<FeatureCapabilityDescriptor>? descriptors)
+    {
+        if (capabilityGate is null || descriptors is null)
+        {
+            return [];
+        }
+
+        return descriptors
+            .OrderBy(static descriptor => descriptor.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .Select(descriptor => new FeatureCapabilityToggleViewModel(descriptor, capabilityGate));
+    }
+
+    private void RefreshCapabilityToggles()
+    {
+        foreach (var toggle in CapabilityToggles)
+        {
+            toggle.Refresh();
+        }
+    }
+
+    private void OnCapabilityChanged(CapabilityChangedEvent change)
+    {
+        var toggle = CapabilityToggles.FirstOrDefault(item =>
+            string.Equals(item.CapabilityKey, change.CapabilityKey, StringComparison.OrdinalIgnoreCase));
+        toggle?.Refresh(change.IsEnabled);
     }
 
     // ── Credential Vault ──────────────────────────────────────────────────────
@@ -520,13 +575,63 @@ public sealed class SettingsViewModel : BindableBase
         }
     }
 
-    private void ReloadConfig()
+    private async Task ReloadConfigAsync()
+    {
+        await LoadConfigAsync(true);
+    }
+
+    private async Task ResetToDefaultsAsync()
+    {
+        var result = MessageBox.Show(
+            "This will reset all settings to their default values. Your symbols and credentials will be preserved. Continue?",
+            "Reset to Defaults",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            await _configService.WriteConfigAsync(new AppConfigDto());
+            await LoadConfigAsync(false);
+            _notificationService.ShowNotification("Reset Complete", "Settings have been reset to defaults.", NotificationType.Success);
+        }
+        catch (Exception ex)
+        {
+            _notificationService.ShowNotification("Reset Failed", ex.Message, NotificationType.Error);
+        }
+    }
+
+    public bool IsConfigValid
+    {
+        get => _isConfigValid;
+        private set => SetProperty(ref _isConfigValid, value);
+    }
+
+    public bool HasUnsavedChanges
+    {
+        get => _hasUnsavedChanges;
+        private set => SetProperty(ref _hasUnsavedChanges, value);
+    }
+
+    public string ConfigValidationErrors
+    {
+        get => _configValidationErrors;
+        private set => SetProperty(ref _configValidationErrors, value);
+    }
+
+    private async Task LoadConfigAsync(bool showNotification = false)
     {
         try
         {
-            ConfigStatusText = "Valid";
-            ConfigStatusDot = new SolidColorBrush(Color.FromRgb(63, 185, 80));
-            _notificationService.ShowNotification("Configuration Reloaded", "Configuration has been reloaded successfully.", NotificationType.Success);
+            var config = await _configService.LoadConfigFromDiskAsync();
+            PopulateFromConfig(config);
+            await RefreshValidationAsync();
+            if (showNotification)
+            {
+                _notificationService.ShowNotification("Configuration Reloaded", "Configuration has been reloaded successfully.", NotificationType.Success);
+            }
         }
         catch (Exception ex)
         {
@@ -536,29 +641,110 @@ public sealed class SettingsViewModel : BindableBase
         }
     }
 
-    private void ResetToDefaults()
+    private void PopulateFromConfig(AppConfigDto config)
     {
-        var result = MessageBox.Show(
-            "This will reset all settings to their default values. Your symbols and credentials will be preserved. Continue?",
-            "Reset to Defaults",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result == MessageBoxResult.Yes)
+        _isPopulatingConfig = true;
+        try
         {
-            ThemeIndex = 0;
+            var settings = config.Settings ?? new AppSettingsDto();
+            ApiBaseUrl = config.IBClientPortal?.BaseUrl ?? "http://localhost:8080";
+            StatusRefreshInterval = settings.StatusRefreshIntervalSeconds.ToString();
+            IsNotificationsEnabled = settings.NotificationsEnabled;
+            SelectedShellDensityMode = settings.CompactMode ? ShellDensityMode.Compact : ShellDensityMode.Standard;
+            ThemeIndex = string.Equals(settings.Theme, "Dark", StringComparison.OrdinalIgnoreCase) ? 2 : string.Equals(settings.Theme, "Light", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
             AccentColorIndex = 0;
-            SelectedShellDensityMode = ShellDensityMode.Standard;
-            IsNotificationsEnabled = true;
-            MaxConcurrentDownloads = "4";
-            WriteBufferSize = "64";
-            IsMetricsEnabled = true;
+            MaxConcurrentDownloads = settings.MaxReconnectAttempts.ToString();
+            WriteBufferSize = config.Compress ? "64" : "0";
+            IsMetricsEnabled = settings.AutoReconnectEnabled;
             IsDebugLoggingEnabled = false;
-            ApiBaseUrl = "http://localhost:8080";
-            StatusRefreshInterval = "2";
-
-            _notificationService.ShowNotification("Reset Complete", "Settings have been reset to defaults.", NotificationType.Success);
+            HasUnsavedChanges = false;
         }
+        finally
+        {
+            _isPopulatingConfig = false;
+        }
+    }
+
+    private AppConfigDto BuildConfigDtoFromSettings()
+    {
+        var interval = int.TryParse(StatusRefreshInterval, out var parsedInterval) ? parsedInterval : 2;
+        var maxReconnect = int.TryParse(MaxConcurrentDownloads, out var parsedMaxReconnect) ? parsedMaxReconnect : 10;
+        return new AppConfigDto
+        {
+            IBClientPortal = new IBClientPortalOptionsDto { BaseUrl = ApiBaseUrl },
+            Compress = WriteBufferSize != "0",
+            Settings = new AppSettingsDto
+            {
+                Theme = ThemeIndex switch { 1 => "Light", 2 => "Dark", _ => "System" },
+                NotificationsEnabled = IsNotificationsEnabled,
+                CompactMode = SelectedShellDensityMode == ShellDensityMode.Compact,
+                AutoReconnectEnabled = IsMetricsEnabled,
+                MaxReconnectAttempts = maxReconnect,
+                StatusRefreshIntervalSeconds = interval
+            }
+        };
+    }
+
+    private async Task SaveConfigAsync() => await SaveOrApplyConfigAsync("Configuration Saved");
+    private async Task ApplyConfigAsync() => await SaveOrApplyConfigAsync("Configuration Applied");
+    private async Task SaveOrApplyConfigAsync(string messageTitle)
+    {
+        var validation = await RefreshValidationAsync();
+        if (!validation.IsValid)
+        {
+            _notificationService.ShowNotification("Validation Failed", string.Join(Environment.NewLine, validation.Errors), NotificationType.Error);
+            return;
+        }
+
+        await _configService.WriteConfigAsync(BuildConfigDtoFromSettings());
+        HasUnsavedChanges = false;
+        _notificationService.ShowNotification(messageTitle, "Settings have been written to disk.", NotificationType.Success);
+    }
+
+    private async Task<WpfServices.ConfigServiceValidationResult> RefreshValidationAsync()
+    {
+        var result = await _configService.ValidateConfigAsync();
+        IsConfigValid = result.IsValid;
+        ConfigValidationErrors = string.Join(Environment.NewLine, result.Errors);
+        ConfigStatusText = result.IsValid ? "Valid" : "Invalid";
+        ConfigStatusDot = result.IsValid ? new SolidColorBrush(Color.FromRgb(63, 185, 80)) : new SolidColorBrush(Color.FromRgb(248, 81, 73));
+        SaveConfigCommand.NotifyCanExecuteChanged();
+        ApplyConfigCommand.NotifyCanExecuteChanged();
+        return result;
+    }
+
+    private bool CanSaveConfig() => HasUnsavedChanges && IsConfigValid;
+    private void MarkDirty()
+    {
+        if (_isPopulatingConfig)
+            return;
+        HasUnsavedChanges = true;
+        _ = RefreshValidationAsync();
+    }
+    private bool SetSettingProperty<T>(ref T field, T value, string? propertyName = null)
+    {
+        if (!SetProperty(ref field, value, propertyName))
+            return false;
+        MarkDirty();
+        return true;
+    }
+
+    private void ApplyDefaultsFromConfig(Meridian.Contracts.Configuration.AppConfigDto defaultConfig)
+    {
+        ThemeIndex = string.Equals(defaultConfig.Settings?.Theme, "Dark", StringComparison.OrdinalIgnoreCase)
+            ? 2
+            : string.Equals(defaultConfig.Settings?.Theme, "Light", StringComparison.OrdinalIgnoreCase)
+                ? 1
+                : 0;
+        AccentColorIndex = 0;
+        SelectedShellDensityMode = defaultConfig.Settings?.CompactMode == true ? ShellDensityMode.Compact : ShellDensityMode.Standard;
+        IsNotificationsEnabled = defaultConfig.Settings?.NotificationsEnabled ?? true;
+        MaxConcurrentDownloads = "4";
+        WriteBufferSize = "64";
+        IsMetricsEnabled = true;
+        IsDebugLoggingEnabled = false;
+        ApiBaseUrl = "http://localhost:8080";
+        StatusRefreshInterval = (defaultConfig.Settings?.StatusRefreshIntervalSeconds ?? 2).ToString();
     }
 
     // ── Test / support ────────────────────────────────────────────────────────
@@ -628,5 +814,92 @@ public sealed class SettingsViewModel : BindableBase
     private static void OpenUrl(string url)
     {
         Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+    }
+
+    private sealed class CapabilityChangeObserver : IObserver<CapabilityChangedEvent>
+    {
+        private readonly SettingsViewModel _owner;
+
+        public CapabilityChangeObserver(SettingsViewModel owner)
+        {
+            _owner = owner;
+        }
+
+        public void OnCompleted()
+        {
+        }
+
+        public void OnError(Exception error)
+        {
+        }
+
+        public void OnNext(CapabilityChangedEvent value)
+        {
+            _owner.OnCapabilityChanged(value);
+        }
+    }
+}
+
+public sealed class FeatureCapabilityToggleViewModel : BindableBase
+{
+    private readonly IFeatureCapabilityGate _gate;
+    private bool _isEnabled;
+
+    public FeatureCapabilityToggleViewModel(
+        FeatureCapabilityDescriptor descriptor,
+        IFeatureCapabilityGate gate)
+    {
+        Descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
+        _gate = gate ?? throw new ArgumentNullException(nameof(gate));
+        _isEnabled = _gate.IsEnabled(descriptor.CapabilityKey);
+    }
+
+    public FeatureCapabilityDescriptor Descriptor { get; }
+
+    public string CapabilityKey => Descriptor.CapabilityKey;
+
+    public string DisplayName => Descriptor.DisplayName;
+
+    public string Description => Descriptor.Description;
+
+    public bool IsPermanent => Descriptor.IsPermanent;
+
+    public bool CanToggle => !Descriptor.IsPermanent;
+
+    public string StateText => IsPermanent
+        ? "Always on"
+        : IsEnabled
+            ? "Enabled"
+            : "Disabled";
+
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set
+        {
+            if (Descriptor.IsPermanent)
+            {
+                value = true;
+            }
+
+            if (!SetProperty(ref _isEnabled, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(StateText));
+            _gate.SetEnabled(CapabilityKey, value);
+        }
+    }
+
+    public void Refresh()
+        => Refresh(_gate.IsEnabled(CapabilityKey));
+
+    public void Refresh(bool isEnabled)
+    {
+        if (SetProperty(ref _isEnabled, isEnabled, nameof(IsEnabled)))
+        {
+            RaisePropertyChanged(nameof(StateText));
+        }
     }
 }

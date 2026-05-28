@@ -51,10 +51,44 @@ module SettlementInstructionCommandsTests =
         | Error e -> failwithf "Unexpected error: %s" e.Code
 
     [<Fact>]
+    let ``rejects null currency`` () =
+        let account = AccountId(Guid.NewGuid())
+        let candidate =
+            { mk account SettlementDetailType.BankWire (DateTimeOffset.Parse("2026-01-10T00:00:00Z")) None false None with
+                Currency = null }
+
+        match addSettlementInstructionCommand [] candidate with
+        | Error e -> e.Code |> should equal "SETTLEMENT_CURRENCY_REQUIRED"
+        | Ok _ -> failwith "Expected currency validation error"
+
+    [<Fact>]
+    let ``rejects whitespace currency`` () =
+        let account = AccountId(Guid.NewGuid())
+        let candidate =
+            { mk account SettlementDetailType.BankWire (DateTimeOffset.Parse("2026-01-10T00:00:00Z")) None false None with
+                Currency = "   " }
+
+        match addSettlementInstructionCommand [] candidate with
+        | Error e -> e.Code |> should equal "SETTLEMENT_CURRENCY_REQUIRED"
+        | Ok _ -> failwith "Expected currency validation error"
+
+    [<Fact>]
     let ``rejects default collision for same scope and overlapping window`` () =
         let account = AccountId(Guid.NewGuid())
         let existing = mk account SettlementDetailType.BankWire (DateTimeOffset.Parse("2026-01-01T00:00:00Z")) None true None
         let candidate = mk account SettlementDetailType.Custody (DateTimeOffset.Parse("2026-02-01T00:00:00Z")) None true None
         match addSettlementInstructionCommand [ existing ] candidate with
+        | Error e -> e.Code |> should equal "SETTLEMENT_DEFAULT_COLLISION"
+        | Ok _ -> failwith "Expected default collision"
+
+    [<Fact>]
+    let ``set default handles historical null currency without null reference`` () =
+        let account = AccountId(Guid.NewGuid())
+        let existingDefault =
+            { mk account SettlementDetailType.BankWire (DateTimeOffset.Parse("2026-01-01T00:00:00Z")) None true None with
+                Currency = null }
+        let target = mk account SettlementDetailType.Custody (DateTimeOffset.Parse("2026-02-01T00:00:00Z")) None false None
+
+        match setDefaultSettlementInstructionCommand [ existingDefault; target ] target.InstructionId with
         | Error e -> e.Code |> should equal "SETTLEMENT_DEFAULT_COLLISION"
         | Ok _ -> failwith "Expected default collision"

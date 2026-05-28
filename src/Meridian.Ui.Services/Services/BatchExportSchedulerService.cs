@@ -543,7 +543,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
         {
             if (File.Exists(_jobStorePath))
             {
-                var json = await File.ReadAllTextAsync(_jobStorePath);
+                var json = await File.ReadAllTextAsync(_jobStorePath, ct);
                 var jobs = JsonSerializer.Deserialize<List<ExportJob>>(json);
                 if (jobs != null)
                 {
@@ -556,9 +556,9 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore load errors
+            System.Diagnostics.Trace.TraceWarning("Failed to load export jobs from {0}: {1}", _jobStorePath, ex.Message);
         }
     }
 
@@ -591,8 +591,9 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
                 .OrderByDescending(job => job.LastRunAt ?? job.CreatedAt)
                 .ToArray();
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Trace.TraceWarning("Failed to read persisted export jobs from {0}: {1}", _jobStorePath, ex.Message);
             return Array.Empty<ExportJob>();
         }
     }
@@ -608,9 +609,9 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
             var json = JsonSerializer.Serialize(_jobs.Values.ToList(), DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(_jobStorePath, json);
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore save errors
+            System.Diagnostics.Trace.TraceWarning("Failed to persist export jobs to {0}: {1}", _jobStorePath, ex.Message);
         }
     }
 

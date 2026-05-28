@@ -78,8 +78,10 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         var runNames = relevantRuns.ToDictionary(run => run.RunId, run => run.StrategyName, StringComparer.OrdinalIgnoreCase);
 
         var breakQueue = await breakQueueTask.ConfigureAwait(false);
-        var breakQueueItems = breakQueue
+        var scopedBreakQueue = breakQueue
             .Where(item => runIds.Contains(item.RunId))
+            .ToArray();
+        var breakQueueItems = scopedBreakQueue
             .Select(item => MapBreakQueueRow(item, runNames))
             .OrderBy(static item => GetBreakQueuePriority(item.Status))
             .ThenByDescending(item => item.Variance)
@@ -92,17 +94,18 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             .ThenByDescending(item => item.SecurityIssueCount)
             .ThenByDescending(item => item.RequestedAt)
             .ToArray();
-        var calibrationProfiles = calibrationSummary?.Profiles
+        var scopedCalibrationSummary = BuildCalibrationSummary(scopedBreakQueue, calibrationSummary);
+        var calibrationProfiles = scopedCalibrationSummary.Profiles
             .Select(MapCalibrationProfileRow)
             .OrderByDescending(item => item.PendingSignoffCount)
             .ThenByDescending(item => item.ActiveBreakCount)
             .ThenBy(item => item.ToleranceProfileId, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.ExceptionRoute, StringComparer.OrdinalIgnoreCase)
-            .ToArray() ?? [];
+            .ToArray();
 
         return new FundReconciliationWorkbenchSnapshot(
             Summary: summary,
-            CalibrationSummary: calibrationSummary,
+            CalibrationSummary: scopedCalibrationSummary,
             CalibrationProfiles: calibrationProfiles,
             BreakQueueItems: breakQueueItems,
             RunRows: runRows,
@@ -202,6 +205,74 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ct);
     }
 
+
+    private static ReconciliationCalibrationSummaryDto BuildCalibrationSummary(
+        IReadOnlyList<ReconciliationBreakQueueItem> items,
+        ReconciliationCalibrationSummaryDto? baseline)
+    {
+        var asOf = baseline?.AsOf ?? DateTimeOffset.UtcNow;
+        var totalBreakCount = items.Count;
+        var openBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open);
+        var inReviewBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview);
+        var resolvedBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved);
+        var dismissedBreakCount = items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed);
+        var activeBreakCount = openBreakCount + inReviewBreakCount;
+        var criticalOpenBreakCount = items.Count(static item =>
+            item.Severity == ReconciliationBreakSeverity.Critical &&
+            (item.Status == ReconciliationBreakQueueStatus.Open || item.Status == ReconciliationBreakQueueStatus.InReview));
+        var pendingSignoffCount = items.Count(static item => IsPendingSignoff(item.SignoffStatus));
+        var signedOffCount = items.Count(static item =>
+            string.Equals(item.SignoffStatus, "SignedOff", StringComparison.OrdinalIgnoreCase));
+        var missingCalibrationMetadataCount = items.Count(static item =>
+            string.IsNullOrWhiteSpace(item.ExceptionRoute) ||
+            string.IsNullOrWhiteSpace(item.ToleranceProfileId));
+
+        var profiles = items
+            .GroupBy(static item => (
+                ToleranceProfileId: string.IsNullOrWhiteSpace(item.ToleranceProfileId) ? "unassigned-profile" : item.ToleranceProfileId!,
+                ExceptionRoute: string.IsNullOrWhiteSpace(item.ExceptionRoute) ? "operations-triage" : item.ExceptionRoute!))
+            .Select(group => new ReconciliationCalibrationProfileSummaryDto(
+                ToleranceProfileId: group.Key.ToleranceProfileId,
+                ExceptionRoute: group.Key.ExceptionRoute,
+                HighestSeverity: group.Max(static item => item.Severity),
+                MaxToleranceBand: group.Max(static item => item.ToleranceBand),
+                TotalBreakCount: group.Count(),
+                OpenBreakCount: group.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open),
+                InReviewBreakCount: group.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview),
+                ResolvedBreakCount: group.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
+                DismissedBreakCount: group.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
+                PendingSignoffCount: group.Count(static item => IsPendingSignoff(item.SignoffStatus)),
+                SignedOffCount: group.Count(static item => string.Equals(item.SignoffStatus, "SignedOff", StringComparison.OrdinalIgnoreCase)),
+                LastUpdatedAt: group.Max(static item => item.LastUpdatedAt)))
+            .OrderByDescending(static profile => profile.HighestSeverity)
+            .ThenBy(static profile => profile.ToleranceProfileId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static profile => profile.ExceptionRoute, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var status = criticalOpenBreakCount > 0
+            ? ReconciliationCalibrationStatusDto.Blocked
+            : pendingSignoffCount > 0 || missingCalibrationMetadataCount > 0
+                ? ReconciliationCalibrationStatusDto.ReviewRequired
+                : ReconciliationCalibrationStatusDto.Ready;
+
+        var summary = $"{activeBreakCount:N0} active break(s) across {profiles.Length:N0} calibration profile(s); {pendingSignoffCount:N0} pending sign-off, {missingCalibrationMetadataCount:N0} missing metadata.";
+
+        return new ReconciliationCalibrationSummaryDto(
+            AsOf: asOf,
+            Status: status,
+            Summary: summary,
+            TotalBreakCount: totalBreakCount,
+            ActiveBreakCount: activeBreakCount,
+            OpenBreakCount: openBreakCount,
+            InReviewBreakCount: inReviewBreakCount,
+            ResolvedBreakCount: resolvedBreakCount,
+            DismissedBreakCount: dismissedBreakCount,
+            CriticalOpenBreakCount: criticalOpenBreakCount,
+            PendingSignoffCount: pendingSignoffCount,
+            SignedOffCount: signedOffCount,
+            MissingCalibrationMetadataCount: missingCalibrationMetadataCount,
+            Profiles: profiles);
+    }
     private static FundReconciliationBreakQueueRow MapBreakQueueRow(
         ReconciliationBreakQueueItem item,
         IReadOnlyDictionary<string, string> runNames)
@@ -258,6 +329,11 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             SignedOffCount: profile.SignedOffCount,
             LastUpdatedAtText: FormatTimestamp(profile.LastUpdatedAt));
     }
+
+    private static bool IsPendingSignoff(string? signoffStatus)
+        => string.Equals(signoffStatus, "Pending", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(signoffStatus, "PendingSignoff", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(signoffStatus, "pending-signoff", StringComparison.OrdinalIgnoreCase);
 
     private static FundReconciliationRunRow MapRunRow(FundReconciliationItem item)
     {

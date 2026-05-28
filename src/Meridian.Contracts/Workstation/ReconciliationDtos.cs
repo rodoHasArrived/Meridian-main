@@ -94,7 +94,11 @@ public sealed record ReconciliationRunSummary(
     int SecurityIssueCount = 0,
     bool HasSecurityCoverageIssues = false,
     int BankTransactionCount = 0,
-    int BankBreakCount = 0);
+    int BankBreakCount = 0,
+    int ExpectedAccountingEventCount = 0,
+    int ExpectedJournalPreviewCount = 0,
+    int SecurityMasterAccountingIssueCount = 0,
+    bool HasSecurityMasterAccountingIssues = false);
 
 /// <summary>
 /// Successful comparison row emitted by the reconciliation engine.
@@ -125,7 +129,8 @@ public sealed record ReconciliationBreakDto(
     ReconciliationBreakSeverity Severity,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
-    DateTimeOffset? ActualAsOf);
+    DateTimeOffset? ActualAsOf,
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null);
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
@@ -134,7 +139,121 @@ public sealed record ReconciliationSecurityCoverageIssueDto(
     string Source,
     string Symbol,
     string? AccountName,
-    string Reason);
+    string Reason,
+    string? Code = null,
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Medium,
+    string? EvidenceLink = null);
+
+/// <summary>
+/// Security Master accounting event type generated from instrument terms and schedules.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ExpectedAccountingEventKindDto>))]
+public enum ExpectedAccountingEventKindDto : byte
+{
+    AccrueInterestIncome = 0,
+    ReversePriorAccrual = 1,
+    RecognizeCouponIncome = 2,
+    ReceiveCashInterest = 3,
+    AmortizePremium = 4,
+    AccreteDiscount = 5,
+    RecognizePrincipalPaydown = 6,
+    ReduceCostBasisForFactorPaydown = 7,
+    RecognizeRealizedGainLoss = 8,
+    RecordMaturityProceeds = 9,
+    RecordCallProceeds = 10,
+    RecordDividendReceivable = 11,
+    RecordDividendIncome = 12,
+    RecordFxRemeasurement = 13
+}
+
+/// <summary>
+/// Deterministic input snapshot used to generate an expected accounting event.
+/// </summary>
+public sealed record AccrualInputSnapshotDto(
+    Guid SecurityId,
+    string Symbol,
+    string AccountId,
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    decimal ParAmount,
+    decimal? CouponRate,
+    string? CouponType,
+    string? DayCountConvention,
+    int? PaymentFrequencyPerYear,
+    decimal? PriorFactor,
+    decimal? CurrentFactor,
+    string SourceHash);
+
+/// <summary>
+/// Result of a Security Master accrual calculation.
+/// </summary>
+public sealed record AccrualCalculationResultDto(
+    string EventId,
+    Guid SecurityId,
+    string Symbol,
+    string AccountId,
+    DateOnly AccrualStartDate,
+    DateOnly AccrualEndDate,
+    int AccrualDays,
+    decimal DayCountFraction,
+    decimal AccruedAmount,
+    string Currency,
+    AccrualInputSnapshotDto InputSnapshot);
+
+/// <summary>
+/// Expected accounting event generated from Security Master accounting rules.
+/// </summary>
+public sealed record ExpectedAccountingEventDto(
+    string EventId,
+    ExpectedAccountingEventKindDto EventKind,
+    Guid SecurityId,
+    string Symbol,
+    string AccountId,
+    DateOnly EventDate,
+    decimal ExpectedAmount,
+    decimal PrincipalAmount,
+    decimal IncomeAmount,
+    string Currency,
+    string IdempotencyKey,
+    string Provenance,
+    AccrualInputSnapshotDto InputSnapshot);
+
+/// <summary>
+/// Preview line for a balanced journal candidate generated from an expected event.
+/// </summary>
+public sealed record ExpectedJournalPreviewLineDto(
+    string AccountName,
+    string AccountType,
+    string? Symbol,
+    decimal Debit,
+    decimal Credit);
+
+/// <summary>
+/// Balanced journal preview candidate. Posting remains a separate approval-gated workflow.
+/// </summary>
+public sealed record ExpectedJournalPreviewDto(
+    string JournalPreviewId,
+    string ExpectedEventId,
+    string Description,
+    DateOnly EventDate,
+    bool IsBalanced,
+    bool RequiresOperatorApproval,
+    string IdempotencyKey,
+    IReadOnlyList<ExpectedJournalPreviewLineDto> Lines);
+
+/// <summary>
+/// Structured posture or reconciliation issue from Security Master-driven accounting.
+/// </summary>
+public sealed record SecurityMasterAccountingIssueDto(
+    string Code,
+    string Source,
+    string Symbol,
+    string? AccountId,
+    string Reason,
+    ReconciliationBreakSeverity Severity,
+    string? EvidenceLink = null,
+    decimal? ExpectedAmount = null,
+    decimal? ActualAmount = null);
 
 /// <summary>
 /// Full detail payload for a single reconciliation run.
@@ -144,13 +263,16 @@ public sealed record ReconciliationRunDetail(
     IReadOnlyList<ReconciliationMatchDto> Matches,
     IReadOnlyList<ReconciliationBreakDto> Breaks,
     IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null,
-    IReadOnlyList<BankTransactionDto>? BankTransactions = null,
     /// <summary>
     /// Security Master classification keyed by ticker symbol, populated for every
     /// symbol resolved at reconciliation time from the shared workstation instrument layer.
     /// Suitable for governance and audit reporting.
     /// </summary>
-    IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null);
+    IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null,
+    IReadOnlyList<ExpectedAccountingEventDto>? ExpectedAccountingEvents = null,
+    IReadOnlyList<AccrualCalculationResultDto>? AccrualCalculations = null,
+    IReadOnlyList<ExpectedJournalPreviewDto>? ExpectedJournalPreviews = null,
+    IReadOnlyList<SecurityMasterAccountingIssueDto>? SecurityMasterAccountingIssues = null);
 
 /// <summary>
 /// Operator queue state for a reconciliation break.
@@ -166,12 +288,12 @@ public enum ReconciliationBreakQueueStatus : byte
 [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseLifecycleState>))]
 public enum ReconciliationCaseLifecycleState : byte
 {
-    Opened = 0,
-    Triaged = 1,
-    Calibrated = 2,
+    Open = 0,
+    InReview = 1,
+    AwaitingApproval = 2,
     Approved = 3,
-    Escalated = 4,
-    Closed = 5,
+    Posted = 4,
+    Reopened = 5,
     Superseded = 6
 }
 
@@ -216,14 +338,19 @@ public sealed record ReconciliationBreakQueueItem(
     string? RoutingTarget = null,
     string? RoutingDetail = null,
     string? RecommendedAction = null,
-    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Opened,
+    ReconciliationCaseLifecycleState LifecycleState = ReconciliationCaseLifecycleState.Open,
     string? LifecycleRationale = null,
     string? ExternalAccountId = null,
     string? CustodianId = null,
     string? UpstreamSyncCursor = null,
     DateTimeOffset? LastUpstreamSyncAt = null,
     IReadOnlyList<ReconciliationCaseSignoffRecord>? SignoffHistory = null,
-    IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null);
+    IReadOnlyList<ReconciliationCaseStateTransition>? StateTransitions = null,
+    string? Team = null,
+    string? Counterparty = null,
+    ReconciliationBreakScore? Score = null,
+    DateTimeOffset? SlaDueAt = null,
+    bool SlaBreached = false);
 
 public sealed record ReconciliationCaseSignoffRecord(
     string Actor,
@@ -234,13 +361,48 @@ public sealed record ReconciliationCaseSignoffRecord(
     string? InvalidatedBySyncCursor = null,
     DateTimeOffset? InvalidatedAt = null);
 
+
+
+public sealed record ReconciliationBreakScore(
+    int SeverityScore,
+    int PriorityScore,
+    decimal MaterialityComponent,
+    double AgeHours,
+    int CounterpartyCriticalityComponent,
+    int RecurringPatternComponent,
+    bool IsHighPriority,
+    DateTimeOffset? SlaDueAt = null,
+    DateTimeOffset? SlaBreachAt = null);
+
 public sealed record ReconciliationCaseStateTransition(
     string TransitionId,
     ReconciliationCaseLifecycleState From,
     ReconciliationCaseLifecycleState To,
     string Actor,
     string? Rationale,
-    DateTimeOffset OccurredAt);
+    DateTimeOffset OccurredAt,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? PreviousHash = null,
+    string? EntryHash = null);
+
+public enum ReconciliationCaseTransitionAction : byte
+{
+    StartReview = 0,
+    RequestApproval = 1,
+    Approve = 2,
+    Post = 3,
+    Reopen = 4,
+    Supersede = 5
+}
+
+public sealed record ReconciliationCaseTransitionCommand(
+    string BreakId,
+    ReconciliationCaseTransitionAction Action,
+    string Actor,
+    string Reason,
+    IReadOnlyList<string> EvidenceReferences,
+    string? Role = null,
+    string? SupersedingBreakId = null);
 
 /// <summary>
 /// Per-profile rollup for reconciliation tolerance calibration and exception routing.
@@ -285,7 +447,8 @@ public sealed record ReviewReconciliationBreakRequest(
     string BreakId,
     string AssignedTo,
     string ReviewedBy,
-    string? ReviewNote = null);
+    string? ReviewNote = null,
+    string? Team = null);
 
 /// <summary>
 /// Request to resolve or dismiss a break with audit metadata.
@@ -296,3 +459,73 @@ public sealed record ResolveReconciliationBreakRequest(
     string ResolvedBy,
     string ResolutionNote,
     string OperatorRationale);
+
+/// <summary>
+/// Canonical schema version metadata for reconciliation ingress/egress payloads.
+/// </summary>
+public sealed record ReconciliationSchemaVersion(
+    string ContractName,
+    int Major,
+    int Minor,
+    int Patch,
+    string ContentType = "application/vnd.meridian.reconciliation+json");
+
+/// <summary>
+/// Cross-workflow correlation metadata stamped on every reconciliation payload.
+/// </summary>
+public sealed record ReconciliationCorrelationContext(
+    string TraceId,
+    string SpanId,
+    string? ParentSpanId,
+    string WorkflowId,
+    string? JobId = null);
+
+/// <summary>
+/// Canonical envelope for inbound/outbound reconciliation payloads.
+/// </summary>
+public sealed record ReconciliationPayloadEnvelope<TPayload>(
+    string PayloadId,
+    ReconciliationSchemaVersion Schema,
+    ReconciliationCorrelationContext Correlation,
+    DateTimeOffset CreatedAt,
+    string Producer,
+    string Direction,
+    string? IdempotencyKey,
+    TPayload Payload);
+
+/// <summary>
+/// Queue orchestration controls and replay metadata for resilient reconciliation jobs.
+/// </summary>
+public sealed record ReconciliationJobControl(
+    string JobId,
+    string IdempotencyKey,
+    int Attempt,
+    int MaxAttempts,
+    bool DeadLettered,
+    string? DeadLetterReason,
+    DateTimeOffset EnqueuedAt,
+    DateTimeOffset? LastAttemptAt,
+    DateTimeOffset? NextAttemptAt,
+    string BackpressureBucket);
+
+/// <summary>
+/// Processing telemetry summary for SLA and throughput observability.
+/// </summary>
+public sealed record ReconciliationProcessingTelemetry(
+    double MatchRate,
+    double BreakRate,
+    int SlaMissCount,
+    double P50LatencyMs,
+    double P95LatencyMs,
+    double P99LatencyMs);
+
+/// <summary>
+/// Scoped rollout flags for phased reconciliation releases.
+/// </summary>
+public sealed record ReconciliationRolloutFlags(
+    bool Enabled,
+    IReadOnlyList<string> ClientIds,
+    IReadOnlyList<string> TeamIds,
+    IReadOnlyList<string> CounterpartyIds,
+    bool AllowReplay,
+    bool AllowBackfill);

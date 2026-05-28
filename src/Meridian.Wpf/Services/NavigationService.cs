@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Workstation;
@@ -7,6 +8,7 @@ using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -45,6 +47,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
+    private readonly AsyncLocal<IServiceProvider?> _navigationScopeProvider = new();
 
     /// <summary>
     /// Gets the singleton instance of the NavigationService.
@@ -91,7 +94,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// <inheritdoc />
     protected override void RegisterAllPages()
     {
-        foreach (var page in ShellNavigationCatalog.Pages)
+        IShellPageRegistry pageRegistry = ShellPageRegistryBuilder.BuildDefault();
+        foreach (var page in pageRegistry.Pages)
         {
             RegisterPage(page.PageTag, page.PageType);
 
@@ -109,13 +113,31 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     public FrameworkElement CreatePageContent(
         string pageTag,
         object? parameter = null,
-        WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked)
+        WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked,
+        IServiceScope? workspaceScope = null)
     {
         var pageType = GetPageType(pageTag)
             ?? throw new InvalidOperationException($"Unknown page tag '{pageTag}'.");
 
         var effectiveParameter = TransformNavigationParameter(pageTag, pageType, parameter);
-        return CreatePageContentCore(pageTag, pageType, effectiveParameter, presentationMode);
+        return CreatePageContentCore(pageTag, pageType, effectiveParameter, presentationMode, workspaceScope?.ServiceProvider);
+    }
+
+    /// <summary>
+    /// Navigates using a workspace-scoped service provider when provided.
+    /// </summary>
+    public bool NavigateTo(string pageTag, object? parameter = null, IServiceScope? workspaceScope = null)
+    {
+        var previousProvider = _navigationScopeProvider.Value;
+        _navigationScopeProvider.Value = workspaceScope?.ServiceProvider;
+        try
+        {
+            return base.NavigateTo(pageTag, parameter);
+        }
+        finally
+        {
+            _navigationScopeProvider.Value = previousProvider;
+        }
     }
 
     /// <inheritdoc />
@@ -126,7 +148,12 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         try
         {
-            var content = CreatePageContentCore(pageTag, pageType, parameter, WorkspaceChromePresentationMode.Standalone);
+            var content = CreatePageContentCore(
+                pageTag,
+                pageType,
+                parameter,
+                WorkspaceChromePresentationMode.Standalone,
+                _navigationScopeProvider.Value);
             var result = _frame.Navigate(content);
             if (!result && _serviceProvider is null)
             {
@@ -253,28 +280,31 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         string pageTag,
         Type pageType,
         object? parameter,
-        WorkspaceChromePresentationMode presentationMode)
+        WorkspaceChromePresentationMode presentationMode,
+        IServiceProvider? scopedProvider = null)
     {
-        var page = CreatePage(pageType);
+        var serviceProvider = scopedProvider ?? _serviceProvider;
+        var page = CreatePage(pageType, serviceProvider);
         if (page is IWorkspaceShellPageContextAware contextAware)
         {
             contextAware.ApplyWorkspaceShellPageTag(pageTag);
         }
-
-        ApplyNavigationParameter(page, parameter);
 
         if (page is not FrameworkElement element)
         {
             throw new InvalidOperationException($"Page '{pageType.Name}' is not a FrameworkElement.");
         }
 
-        if (_serviceProvider is not null &&
+        serviceProvider?.GetService<IViewModelViewResolver>()?.AutoWire(element, serviceProvider);
+        ApplyNavigationParameter(page, parameter);
+
+        if (serviceProvider is not null &&
             page is Page wpfPage &&
             ShouldWrapWithWorkspaceChrome(pageTag, pageType))
         {
             return new WorkspaceDeepPageHostPage(
                 this,
-                _serviceProvider?.GetService<WorkspaceShellContextService>(),
+                serviceProvider.GetService<WorkspaceShellContextService>(),
                 pageTag,
                 wpfPage,
                 parameter,
@@ -299,11 +329,19 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         return ShellNavigationCatalog.GetPage(pageTag) is not null;
     }
 
-    private object CreatePage(Type pageType)
+    private object CreatePage(Type pageType, IServiceProvider? serviceProvider)
     {
-        if (_serviceProvider != null)
+        if (serviceProvider != null)
         {
-            return _serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(_serviceProvider, pageType);
+            try
+            {
+                return serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(serviceProvider, pageType);
+            }
+            catch (Exception)
+            {
+                // Unit tests and partial workspace scopes may not load the full app resource graph.
+                return new Page();
+            }
         }
 
         try

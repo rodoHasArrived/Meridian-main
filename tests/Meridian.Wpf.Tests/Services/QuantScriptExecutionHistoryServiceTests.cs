@@ -71,7 +71,7 @@ public sealed class QuantScriptExecutionHistoryServiceTests
     }
 
     [Fact]
-    public async Task RecordExecutionAsync_WithMultipleBacktests_WritesWarningAndSkipsMirroring()
+    public async Task RecordExecutionAsync_WithMultipleBacktests_MirrorsParentedResearchRuns()
     {
         var dataRoot = Path.Combine(Path.GetTempPath(), "quant-script-history-tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dataRoot);
@@ -106,10 +106,55 @@ public sealed class QuantScriptExecutionHistoryServiceTests
         var history = await service.GetHistoryAsync();
         var runs = await strategyRunService.GetRecordedRunsAsync();
 
-        record.MirroredRunId.Should().BeNull();
-        record.Warning.Should().Contain("skipped");
+        runs.Should().HaveCount(2);
+        runs.Select(run => run.RunId).Should().Contain(record.MirroredRunId);
+        record.Warning.Should().BeNull();
         history.Should().ContainSingle(item => item.ExecutionId == record.ExecutionId);
-        runs.Should().BeEmpty();
+        runs.Should().OnlyContain(run => run.ParentRunId == $"quant-parent-{record.ExecutionId}");
+        runs.Select(run => run.StrategyName).Should().BeEquivalentTo("Backtest Notebook #1", "Backtest Notebook #2");
+    }
+
+    [Fact]
+    public async Task ExportExecutionRecordAsync_WritesExportFile()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "quant-script-history-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+
+        using var scope = new ConfigScope(dataRoot);
+        var strategyRunService = new StrategyRunWorkspaceService(
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new LedgerReadService());
+        var service = new QuantScriptExecutionHistoryService(
+            ConfigService.Instance,
+            strategyRunService,
+            NullLogger<QuantScriptExecutionHistoryService>.Instance);
+
+        var record = await service.RecordExecutionAsync(
+            new QuantScriptExecutionRecordRequest(
+                DocumentTitle: "Export Notebook",
+                DocumentPath: @"C:\temp\export-notebook.qnb",
+                DocumentKind: QuantScriptDocumentKind.Notebook,
+                Success: true,
+                ParameterSnapshot: new Dictionary<string, string>(),
+                RuntimeParameters: [],
+                ConsoleExcerpt: "Export me.",
+                Metrics: [],
+                PlotTitles: [],
+                CapturedBacktests: []));
+
+        var exportPath = await service.ExportExecutionRecordAsync(record);
+
+        File.Exists(exportPath).Should().BeTrue();
+        var exported = JsonSerializer.Deserialize<QuantScriptExecutionRecord>(
+            await File.ReadAllTextAsync(exportPath),
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+        exported.Should().NotBeNull();
+        exported!.ExecutionId.Should().Be(record.ExecutionId);
     }
 
     private static BacktestResult BuildBacktestResult(string dataRoot)

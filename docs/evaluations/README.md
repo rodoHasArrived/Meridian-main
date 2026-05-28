@@ -21,7 +21,7 @@ Use this folder for deep context and implementation rationale. For live prioriti
 ## How To Use This Folder
 
 1. Start with [Evaluations & Audits Summary](../status/EVALUATIONS_AND_AUDITS.md) for the repo-wide consolidation.
-2. Use [Roadmap](../status/ROADMAP.md), [Improvements](../status/IMPROVEMENTS.md), and [Full Implementation TODO](../status/FULL_IMPLEMENTATION_TODO_2026_03_20.md) for active delivery sequencing.
+2. Use [Roadmap](../status/ROADMAP.md), [Improvements](../status/IMPROVEMENTS.md), and [Full Implementation TODO](../status/FULL_IMPLEMENTATION_TODO.md) for active delivery sequencing.
 3. Read the individual evaluation or proposal in this folder only when you need subsystem-specific rationale, design tradeoffs, or historical context.
 
 ---
@@ -43,7 +43,7 @@ Use this folder for deep context and implementation rationale. For live prioriti
 | --- | --- | --- |
 | [Windows Desktop Provider Configurability](windows-desktop-provider-configurability-assessment.md) | Provider-settings assessment and phased implementation rationale | Last reviewed 2026-03-19; infrastructure complete, UI workflow still in progress |
 | [Desktop Platform Improvements Guide](desktop-platform-improvements-implementation-guide.md) | Detailed implementation reference for the desktop improvement program | Original six priorities complete; extended follow-up retained in-file |
-| [QuantScriptEnvironment Blueprint Brainstorm](quant-script-blueprint-brainstorm.md) | Product and UX evaluation for QuantScript design decisions | Updated 2026-04-16; companion to `docs/plans/quant-script-environment-blueprint.md` |
+| [QuantScriptEnvironment Blueprint Brainstorm](quant-script-blueprint-brainstorm.md) | Product and UX evaluation for QuantScript design decisions | Updated 2026-04-16; companion to `archive/docs/plans/quant-script-environment-blueprint.md` |
 
 ## Strategy, Proposal, And Market Context Documents
 
@@ -70,4 +70,4 @@ Use this folder for deep context and implementation rationale. For live prioriti
 - [Code Audits](../audits/README.md) — Code quality audits (see audits/ for targeted hygiene analyses)
 - [Roadmap](../status/ROADMAP.md) — current delivery sequencing informed by these evaluations
 - [Improvements](../status/IMPROVEMENTS.md) — normalized improvement tracker
-- [Full Implementation TODO](../status/FULL_IMPLEMENTATION_TODO_2026_03_20.md) — active execution backlog
+- [Full Implementation TODO](../status/FULL_IMPLEMENTATION_TODO.md) — active execution backlog

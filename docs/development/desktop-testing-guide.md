@@ -1,6 +1,6 @@
 # Desktop Development Testing Guide
 
-This guide helps contributors set up and test the WPF desktop application for Meridian.
+This guide helps contributors set up and test Meridian's active WPF desktop operator surface.
 
 > Migration note: desktop workflow orchestration commands are PowerShell-first as of April 2026. See [desktop-command-surface-migration.md](./desktop-command-surface-migration.md) for deprecated-to-supported command mappings.
 
@@ -10,11 +10,24 @@ This guide helps contributors set up and test the WPF desktop application for Me
 # Environment validation
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 
+# Fast script/profile check without restore, build, or launch smoke
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1 -SkipRestore -SkipBuild -SkipTestBuild -SkipLaunchSmoke -EmitJson
+
+# Inner-loop WPF build plus focused tests
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
+
+# Launch the fixture-backed desktop shell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -Fixture
+
+# Bounded fixture startup proof without keeping the shell open
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -Fixture -StartupSmoke
+
 # Build desktop application
 make desktop-build                # Build WPF desktop app
 
 # Run tests
 make desktop-test                 # Run all desktop-focused tests
+make desktop-test-dev             # Run serialized WPF dev build plus focused tests
 dotnet test tests/Meridian.Wpf.Tests        # WPF service tests (Windows only)
 dotnet test tests/Meridian.Ui.Tests         # Shared UI service tests (Windows only)
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1
@@ -33,15 +46,56 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 
 This script validates:
 
-- ✅ .NET 10 SDK installation
-- ✅ Windows SDK presence (Windows only)
-- ✅ Visual Studio Build Tools
-- ✅ XAML tooling support
-- ✅ Desktop project restore and smoke build
+- .NET 10 SDK selection and installed SDK inventory
+- Windows SDK and Visual Studio Build Tools presence on Windows
+- the selected desktop workflow profile, defaulting to `debug-startup`
+- the WPF desktop project, WPF test project, and shared UI-services project paths
+- isolated restore/build output under `artifacts/bin/<desktop-dev-*>` and `artifacts/obj/<desktop-dev-*>`
+- the WPF desktop shell build and WPF desktop test-project build
+- a bounded fixture startup smoke through `run-desktop.ps1 -Fixture -StartupSmoke` unless `-SkipLaunchSmoke` is supplied
+
+Use `-Configuration Release` to match release build behavior, `-Profile <workflow-name>` to validate a different workflow profile, `-NoIsolation` only when you intentionally want standard `bin/` and `obj/` output, `-SkipLaunchSmoke` when you want a compile-only bootstrap pass, and `-EmitJson` when automation needs machine-readable step results. The script keeps workflow orchestration PowerShell-first; use `run-desktop.ps1` or `run-desktop-workflow.ps1` to launch or drive the shell after bootstrap succeeds.
 
 **Actionable Fix Messages**: The script provides specific instructions for any missing components.
 
-### 2. Run Desktop Tests
+### 2. Run The WPF Development Loop
+
+Use the development validation wrapper when you need the Release WPF build command to be repeatable during active desktop work:
+
+```bash
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
+```
+
+This wrapper encodes the serialized WPF build lane that avoids common shared-output and compiler-server contention:
+
+```bash
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal
+```
+
+The default run builds `src/Meridian.Wpf/Meridian.Wpf.csproj`, builds `tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj`, and runs the focused `DesktopWorkflowScriptTests` slice with `--no-build`. It writes logs plus JSON and Markdown summaries under `artifacts/wpf-validation/dev-loop/<timestamp>/`, uses the existing restored `obj/` graph by default to match the no-restore inner-loop command, and retries once after stopping only stale repo-owned `testhost.exe` processes if a build step fails while one is still running. The wrapper also fails fast when another repo-owned `dotnet`, `MSBuild`, or `testhost` process is active, because overlapping WPF builds commonly produce misleading shared-output failures; pass `-AllowConcurrentDotnet` only when overlap is intentional. Use `-Restore` when packages, generated assets, or intermediate output changed; that path restores first and uses isolated output under `artifacts/bin/<wpf-dev-test-*>` and `artifacts/obj/<wpf-dev-test-*>` unless `-NoIsolation` is also supplied.
+
+Common variants:
+
+```bash
+# Build only, matching the serialized Release shell command
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -BuildOnly
+
+# Restore first when packages or generated assets changed
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
+
+# Run a different focused WPF slice after the build
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Filter "FullyQualifiedName~TradingWorkspaceShellPageTests"
+
+# Proceed even when another repo-owned dotnet build/test is active
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -AllowConcurrentDotnet
+
+# Run the broader non-integration WPF test set through the same serialized build path
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Filter "Category!=Integration&FullyQualifiedName!~Integration"
+```
+
+Use `make desktop-test-dev` for the default wrapper. Keep `desktop-dev.ps1` as the environment/bootstrap check plus bounded fixture launch proof, and use `validate-wpf-dev.ps1` as the faster inner-loop validation after restore has already succeeded.
+
+### 3. Run Desktop Tests
 
 ```bash
 # Run all desktop-focused tests (platform-aware)
@@ -185,9 +239,9 @@ Tests for WPF-specific behavior that genuinely depends on WPF types (`System.Win
    - Fixture banner dismissal and ticker-strip toggle behavior
    - Uses an isolated `workspace-data.json` override so mixed-suite shell runs do not inherit persisted workstation state from neighboring tests
 
-6. **Shell-first workstation regressions** (focused slices)
+6. **Retained shell workstation regressions** (focused slices)
    - `AppServiceRegistrationTests` verifies DI coverage for the shell pages and shell-linked deep pages
-   - `WorkspaceShellPageSmokeTests`, `DataOperationsWorkspaceShellSmokeTests`, and `GovernanceWorkspaceShellSmokeTests` verify the four workspace home pages construct from DI
+   - `WorkspaceShellPageSmokeTests`, `DataOperationsWorkspaceShellSmokeTests`, and `GovernanceWorkspaceShellSmokeTests` verify retained compatibility workspace home pages construct from DI, including the feature-owned Data shell page
    - `WorkstationPageSmokeTests` and `RunMatUiSmokeTests` verify that deep-page navigation now lands inside `WorkspaceDeepPageHostPage` and still exposes the expected hosted inner page
    - `NavigationPageSmokeTests` verifies the dock host wraps WPF `Page` content inside `Frame` containers and can replace shell fallback content on retry
    - `WorkspaceDeepPageChromeTests` verifies the host toggles embedded-shell state on hosted pages and that representative legacy pages, including action-heavy surfaces such as `MessagingHub`, `NotificationCenter`, `SecurityMaster`, `ServiceManager`, and `PositionBlotter`, opt into the shared compact-host styles without losing page-specific command bands
@@ -426,13 +480,13 @@ public void ServiceName_Scenario_ExpectedBehavior()
 Desktop tests run in CI via GitHub Actions:
 
 - **Windows runners**: Run full WPF test suite
-- **Linux/macOS runners**: Skip WPF tests, run integration tests
-- **Reusable solution lanes**: Use `Category!=Integration|FullyQualifiedName!~Integration`
+- **Linux runners**: Build the WPF project as a CI-compatible stub during solution validation
+- **Desktop lane filter**: Use `Category!=Integration&FullyQualifiedName!~Integration`
   so untagged WPF xUnit tests still run while known integration suites stay excluded.
   New integration suites should use both `[Trait("Category", "Integration")]` and an
   `Integration` test class name.
 
-See `.github/workflows/desktop-builds.yml` for CI configuration.
+See `.github/workflows/windows-desktop-build.yml` for CI configuration.
 
 ## Additional Resources
 

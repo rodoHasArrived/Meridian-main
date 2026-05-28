@@ -35,6 +35,7 @@ public static class ServiceCompositionRoot
         new LedgerFeatureRegistration(),
         new CredentialFeatureRegistration(),
         new ProviderFeatureRegistration(),
+        new ProviderRoutingFeatureRegistration(),
         new SymbolManagementFeatureRegistration(),
         new BackfillFeatureRegistration(),
         new EtlFeatureRegistration(),
@@ -87,6 +88,9 @@ public static class ServiceCompositionRoot
         if (options.EnableProviderServices)
             services.RegisterFeature<ProviderFeatureRegistration>(options);
 
+        if (options.EnableProviderServices)
+            services.RegisterFeature<ProviderRoutingFeatureRegistration>(options);
+
         // Symbol management — depends on ProviderFactory/ProviderRegistry
         if (options.EnableSymbolManagement)
             services.RegisterFeature<SymbolManagementFeatureRegistration>(options);
@@ -119,6 +123,8 @@ public static class ServiceCompositionRoot
             services.RegisterFeature<HttpClientFeatureRegistration>(options);
 
         TryRegisterCppTraderIntegration(services, options.ConfigPath);
+
+        ProductionServiceRegistrationPolicy.Validate(services);
 
         // Backtesting services are registered by the host project (Meridian.Backtesting references
         // Meridian.Application, so registration here would create a circular dependency).
@@ -187,18 +193,18 @@ public static class ServiceCompositionRoot
 /// </summary>
 public sealed class PipelinePublisher : IMarketEventPublisher
 {
-    private readonly EventPipeline _pipeline;
+    private readonly IMarketEventPublisher _publisher;
     private readonly IEventMetrics _metrics;
 
-    public PipelinePublisher(EventPipeline pipeline, IEventMetrics? metrics = null)
+    public PipelinePublisher(IMarketEventPublisher publisher, IEventMetrics? metrics = null)
     {
-        _pipeline = pipeline;
+        _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _metrics = metrics ?? new DefaultEventMetrics();
     }
 
     public bool TryPublish(in MarketEvent evt)
     {
-        var ok = _pipeline.TryPublish(evt);
+        var ok = _publisher.TryPublish(evt);
 
         // Integrity tracking lives here because EventPipeline is type-agnostic.
         if (evt.Type == MarketEventType.Integrity)
@@ -298,25 +304,6 @@ public sealed record CompositionOptions
         EnablePipelineServices = true,
         EnableCollectorServices = false,
         EnableHttpClientFactory = true
-    };
-
-    /// <summary>
-    /// Options for the MCP server host. Enables provider discovery and backfill services
-    /// without the streaming pipeline or collector, since the MCP server is query-oriented.
-    /// </summary>
-    public static CompositionOptions McpServer => new()
-    {
-        EnableSymbolManagement = false,
-        EnableBackfillServices = true,
-        EnableEtlServices = true,
-        EnableMaintenanceServices = false,
-        EnableDiagnosticServices = false,
-        EnableCredentialServices = true,
-        EnableProviderServices = true,
-        EnablePipelineServices = false,
-        EnableCollectorServices = false,
-        EnableHttpClientFactory = true,
-        EnableCanonicalizationServices = false
     };
 
     /// <summary>

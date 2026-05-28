@@ -4,7 +4,7 @@ DocFX generates browsable API documentation from XML doc comments in the C# sour
 
 ## Prerequisites
 
-- .NET 9.0 SDK
+- .NET 10 SDK
 - DocFX (installed as a .NET global tool)
 
 ```bash
@@ -28,7 +28,7 @@ docfx docfx.json --serve
 
 Output is generated to `docs/_site/` (gitignored — rebuild each time).
 
-The canonical DocFX configuration now lives at the repository root in `docfx.json`. The `docs/docfx/` folder holds API filters, generated API output, and this guide.
+The canonical DocFX configuration now lives at the repository root in `docfx.json`. The `docs/docfx/` folder holds API filters, the tracked API landing page, and this guide. Generated API metadata under `docs/docfx/api/` is rebuilt by DocFX and ignored by Git.
 
 ## Project Structure
 
@@ -37,7 +37,8 @@ docfx.json              # Canonical DocFX configuration (repo root)
 docs/docfx/
 ├── filterConfig.yml    # API filter rules (exclude private/generated types)
 ├── api/
-│   └── index.md        # API reference landing page
+│   ├── index.md        # API reference landing page
+│   └── *.yml           # Generated API metadata, ignored by Git
 └── README.md           # This file
 ```
 
@@ -46,6 +47,12 @@ The root `docfx.json` configuration pulls from:
 - **API metadata**: All public `.csproj` files under `src/` — generates API reference from XML doc comments
 - **Conceptual docs**: Markdown files under `docs/` — architecture, guides, operations, etc.
 - **Table of contents**: `docs/toc.yml` — top-level navigation structure
+
+Metadata scratch files such as `docfx-log.json`, `temp-metadata-only.json`,
+`docs/docfx/api/.manifest`, and `docs/docfx/api/*.yml` are local generated
+output and should not be committed. If API metadata contains absolute paths from
+an older checkout, delete the generated metadata and regenerate it from
+`C:\Dev\Meridian-main` before publishing documentation.
 
 ### Projects included in API reference
 

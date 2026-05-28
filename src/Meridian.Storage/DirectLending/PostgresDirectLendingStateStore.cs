@@ -1,6 +1,7 @@
 using System.Data;
 using System.Text.Json;
 using Meridian.Contracts.DirectLending;
+using Meridian.Storage.Ledger;
 using Npgsql;
 
 namespace Meridian.Storage.DirectLending;
@@ -10,10 +11,14 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly DirectLendingOptions _options;
+    private readonly ITransactionalLedgerJournalStore? _ledgerJournalStore;
 
-    public PostgresDirectLendingStateStore(DirectLendingOptions options)
+    public PostgresDirectLendingStateStore(
+        DirectLendingOptions options,
+        ILedgerJournalStore? ledgerJournalStore = null)
     {
         _options = options;
+        _ledgerJournalStore = ledgerJournalStore as ITransactionalLedgerJournalStore;
     }
 
     public async Task<LoanContractDetailDto?> LoadContractProjectionAsync(Guid loanId, CancellationToken ct = default)
@@ -266,11 +271,30 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         JsonDocument payload,
         DirectLendingEventWriteMetadata metadata,
         DirectLendingPersistenceBatch? persistenceBatch,
+        IReadOnlyList<LedgerJournalEntryWrite>? ledgerJournalEntries,
         Guid eventId,
         CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+
+        if (metadata.CommandId is Guid commandId)
+        {
+            var duplicateStatus = await GetDuplicateCommandStatusAsync(connection, transaction, loanId, commandId, eventType, payload, ct).ConfigureAwait(false);
+            if (duplicateStatus is DuplicateCommandStatus.Matching)
+            {
+                await transaction.CommitAsync(ct).ConfigureAwait(false);
+                return;
+            }
+
+            if (duplicateStatus is DuplicateCommandStatus.Mismatched)
+            {
+                throw new DirectLendingCommandException(
+                    new DirectLendingCommandError(
+                        DirectLendingErrorCode.Conflict,
+                        $"Direct lending command id {commandId} was already used for a different mutation on loan {loanId}."));
+            }
+        }
 
         var currentVersion = await LoadCurrentVersionAsync(connection, transaction, loanId, ct).ConfigureAwait(false);
         if (currentVersion != expectedVersion)
@@ -285,9 +309,78 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         await UpsertNormalizedProjectionAsync(connection, transaction, loanId, nextVersion, contract, servicing, ct).ConfigureAwait(false);
         await AppendEventAsync(connection, transaction, loanId, nextVersion, eventType, eventSchemaVersion, effectiveDate, payload, metadata, eventId, ct).ConfigureAwait(false);
         await PersistBatchArtifactsAsync(connection, transaction, loanId, eventId, persistenceBatch, ct).ConfigureAwait(false);
+        await AppendLedgerJournalEntriesAsync(connection, transaction, ledgerJournalEntries, ct).ConfigureAwait(false);
         await MaybeInsertSnapshotAsync(connection, transaction, loanId, nextVersion, contract, servicing, forceSnapshot: false, ct).ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<DuplicateCommandStatus> GetDuplicateCommandStatusAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid loanId,
+        Guid commandId,
+        string eventType,
+        JsonDocument payload,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select event_type,
+                   payload::text
+            from {Qualified("loan_event")}
+            where loan_id = @loan_id
+              and command_id = @command_id
+            limit 1;
+            """;
+        command.Parameters.AddWithValue("loan_id", loanId);
+        command.Parameters.AddWithValue("command_id", commandId);
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            return DuplicateCommandStatus.None;
+        }
+
+        var existingEventType = reader.GetString(0);
+        var existingPayloadJson = reader.GetString(1);
+        var incomingPayloadJson = payload.RootElement.GetRawText();
+
+        return string.Equals(existingEventType, eventType, StringComparison.Ordinal) &&
+               string.Equals(existingPayloadJson, incomingPayloadJson, StringComparison.Ordinal)
+            ? DuplicateCommandStatus.Matching
+            : DuplicateCommandStatus.Mismatched;
+    }
+
+    private enum DuplicateCommandStatus
+    {
+        None = 0,
+        Matching = 1,
+        Mismatched = 2
+    }
+
+    private async Task AppendLedgerJournalEntriesAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        IReadOnlyList<LedgerJournalEntryWrite>? ledgerJournalEntries,
+        CancellationToken ct)
+    {
+        if (ledgerJournalEntries is null || ledgerJournalEntries.Count == 0)
+        {
+            return;
+        }
+
+        if (_ledgerJournalStore is null)
+        {
+            throw new InvalidOperationException("Direct lending ledger postings require an ITransactionalLedgerJournalStore registration.");
+        }
+
+        foreach (var entry in ledgerJournalEntries)
+        {
+            await _ledgerJournalStore.AppendAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        }
     }
 
     private async Task UpsertStateAsync(
@@ -561,7 +654,12 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     commitment_fee_rate,
                     default_rate_spread_bps,
                     prepayment_allowed,
-                    covenants_json)
+                    covenants_json,
+                    interest_only_months,
+                    grace_period_days,
+                    effective_rate_floor,
+                    effective_rate_cap,
+                    prepayment_penalty_rate)
                 values (
                     @loan_id,
                     @terms_version,
@@ -585,7 +683,12 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     @commitment_fee_rate,
                     @default_rate_spread_bps,
                     @prepayment_allowed,
-                    cast(@covenants_json as jsonb));
+                    cast(@covenants_json as jsonb),
+                    @interest_only_months,
+                    @grace_period_days,
+                    @effective_rate_floor,
+                    @effective_rate_cap,
+                    @prepayment_penalty_rate);
                 """;
             insert.Parameters.AddWithValue("loan_id", loanId);
             insert.Parameters.AddWithValue("terms_version", termsVersion.VersionNumber);
@@ -610,6 +713,11 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             insert.Parameters.AddWithValue("default_rate_spread_bps", (object?)termsVersion.Terms.DefaultRateSpreadBps ?? DBNull.Value);
             insert.Parameters.AddWithValue("prepayment_allowed", termsVersion.Terms.PrepaymentAllowed);
             insert.Parameters.AddWithValue("covenants_json", (object?)termsVersion.Terms.CovenantsJson ?? "null");
+            insert.Parameters.AddWithValue("interest_only_months", termsVersion.Terms.InterestOnlyMonths);
+            insert.Parameters.AddWithValue("grace_period_days", (object?)termsVersion.Terms.GracePeriodDays ?? DBNull.Value);
+            insert.Parameters.AddWithValue("effective_rate_floor", (object?)termsVersion.Terms.EffectiveRateFloor ?? DBNull.Value);
+            insert.Parameters.AddWithValue("effective_rate_cap", (object?)termsVersion.Terms.EffectiveRateCap ?? DBNull.Value);
+            insert.Parameters.AddWithValue("prepayment_penalty_rate", (object?)termsVersion.Terms.PrepaymentPenaltyRate ?? DBNull.Value);
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -1065,7 +1173,12 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    commitment_fee_rate,
                    default_rate_spread_bps,
                    prepayment_allowed,
-                   covenants_json::text
+                   covenants_json::text,
+                   interest_only_months,
+                   grace_period_days,
+                   effective_rate_floor,
+                   effective_rate_cap,
+                   prepayment_penalty_rate
             from {Qualified("loan_terms_version")}
             where loan_id = @loan_id
             order by terms_version desc;
@@ -1093,7 +1206,12 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 reader.IsDBNull(18) ? null : reader.GetDecimal(18),
                 reader.IsDBNull(19) ? null : reader.GetDecimal(19),
                 reader.GetBoolean(20),
-                NormalizeJsonText(reader.IsDBNull(21) ? null : reader.GetString(21)));
+                NormalizeJsonText(reader.IsDBNull(21) ? null : reader.GetString(21)),
+                reader.GetInt32(22),
+                reader.IsDBNull(23) ? null : reader.GetInt32(23),
+                reader.IsDBNull(24) ? null : reader.GetDecimal(24),
+                reader.IsDBNull(25) ? null : reader.GetDecimal(25),
+                reader.IsDBNull(26) ? null : reader.GetDecimal(26));
 
             results.Add(new LoanTermsVersionDto(
                 reader.GetInt32(0),

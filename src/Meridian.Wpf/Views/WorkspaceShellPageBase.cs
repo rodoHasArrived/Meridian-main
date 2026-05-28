@@ -4,6 +4,7 @@ using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Views;
@@ -111,7 +112,11 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
 
         try
         {
-            var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
+            var pageContent = _navigationService.CreatePageContent(
+                pageTag,
+                parameter,
+                WorkspaceChromePresentationMode.Docked,
+                ResolveWorkspaceScopeForDockedPage(pageTag));
             dockManager.LoadPage(BuildPageKey(pageTag, parameter), ShellNavigationCatalog.GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
         }
         catch (Exception ex)
@@ -168,6 +173,14 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
 
     protected static bool ShouldRestoreSerializedLayout(WorkstationLayoutState layoutState)
         => layoutState.WindowMode != BoundedWindowMode.Focused && !string.IsNullOrWhiteSpace(layoutState.DockLayoutXml);
+
+    private IServiceScope? ResolveWorkspaceScopeForDockedPage(string pageTag)
+    {
+        var workspaceId = _lastState?.WorkspaceId ?? WorkspaceService.InferWorkspaceIdForPageTag(pageTag);
+        return string.IsNullOrWhiteSpace(workspaceId)
+            ? _workspaceService.ActiveWorkspaceScope
+            : _workspaceService.GetOrCreateWorkspaceScope(workspaceId);
+    }
 
     private void LoadDefaultDocking(MeridianDockingManager dockManager, WorkspaceShellState state)
     {
@@ -228,12 +241,12 @@ public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorks
     }
 }
 
-public class DataOperationsWorkspaceShellPageBase : WorkspaceShellPageBase<DataOperationsWorkspaceShellStateProvider, DataOperationsWorkspaceShellViewModel>
+public class DataOperationsWorkspaceShellPageBase : WorkspaceShellPageBase<DataOperationsWorkspaceShellStateProvider, Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel>
 {
     protected DataOperationsWorkspaceShellPageBase(
         NavigationService navigationService,
         DataOperationsWorkspaceShellStateProvider stateProvider,
-        DataOperationsWorkspaceShellViewModel viewModel)
+        Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel viewModel)
         : base(navigationService, stateProvider, viewModel)
     {
     }
@@ -245,6 +258,39 @@ public class GovernanceWorkspaceShellPageBase : WorkspaceShellPageBase<Governanc
         NavigationService navigationService,
         GovernanceWorkspaceShellStateProvider stateProvider,
         GovernanceWorkspaceShellViewModel viewModel)
+        : base(navigationService, stateProvider, viewModel)
+    {
+    }
+}
+
+public class SettingsWorkspaceShellPageBase : WorkspaceShellPageBase<SettingsWorkspaceShellStateProvider, Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel>
+{
+    protected SettingsWorkspaceShellPageBase(
+        NavigationService navigationService,
+        SettingsWorkspaceShellStateProvider stateProvider,
+        Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel viewModel)
+        : base(navigationService, stateProvider, viewModel)
+    {
+    }
+}
+
+public class PortfolioWorkspaceShellPageBase : WorkspaceShellPageBase<PortfolioWorkspaceShellStateProvider, PortfolioWorkspaceShellViewModel>
+{
+    protected PortfolioWorkspaceShellPageBase(
+        NavigationService navigationService,
+        PortfolioWorkspaceShellStateProvider stateProvider,
+        PortfolioWorkspaceShellViewModel viewModel)
+        : base(navigationService, stateProvider, viewModel)
+    {
+    }
+}
+
+public class ReportingWorkspaceShellPageBase : WorkspaceShellPageBase<ReportingWorkspaceShellStateProvider, ReportingWorkspaceShellViewModel>
+{
+    protected ReportingWorkspaceShellPageBase(
+        NavigationService navigationService,
+        ReportingWorkspaceShellStateProvider stateProvider,
+        ReportingWorkspaceShellViewModel viewModel)
         : base(navigationService, stateProvider, viewModel)
     {
     }

@@ -921,6 +921,25 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task RunAsync_WhenRequestedToIsNotReached_EmitsWarnSignal()
+    {
+        var provider = new ControllableProvider("test", (symbol, from, to, ct) =>
+        {
+            IReadOnlyList<HistoricalBar> bars = [new(symbol, new DateOnly(2024, 1, 2), 1m, 1m, 1m, 1m, 10)];
+            return Task.FromResult(bars);
+        });
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest("test", ["SPY"], From: new DateOnly(2024, 1, 1), To: new DateOnly(2024, 1, 31));
+
+        var result = await svc.RunAsync(request, _pipeline);
+
+        var signal = result.SymbolValidationSignals.Should().ContainSingle(s => s.Symbol == "SPY").Which;
+        signal.Status.Should().Be("Warn");
+        signal.Reason.Should().Contain("partial bars");
+    }
+
+    [Fact]
     public async Task RunAsync_FailedSymbol_EmitsFailSignal()
     {
         // Arrange — TSLA always throws
@@ -988,6 +1007,35 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
 
             // AAPL was fetched without a checkpoint-to-request gap: effectiveFrom == original From
             aaplSignal.EffectiveFrom.Should().Be(new DateOnly(2024, 1, 1));
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_SkippedSymbolWithoutBarCount_EmitsWarnSignal()
+    {
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_sig_{Guid.NewGuid():N}");
+        try
+        {
+            var provider = new ControllableProvider("test", (symbol, ct) =>
+                Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) }));
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+            var toDate = new DateOnly(2024, 1, 31);
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", toDate);
+
+            var svc = new HistoricalBackfillService([provider], checkpointStore: checkpointStore);
+            var request = new AppBackfillRequest("test", ["SPY"], From: new DateOnly(2024, 1, 1), To: toDate, ResumeFromCheckpoint: true);
+
+            var result = await svc.RunAsync(request, _pipeline);
+
+            var signal = result.SymbolValidationSignals.Should().ContainSingle(s => s.Symbol == "SPY").Which;
+            signal.Status.Should().Be("Warn");
+            signal.Reason.Should().Contain("bar-count evidence is missing");
         }
         finally
         {

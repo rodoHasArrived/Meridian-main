@@ -27,4 +27,15 @@ public interface IFundAccountStore
     Task InsertReconciliationRunAsync(AccountReconciliationRunDto run, IReadOnlyList<AccountReconciliationResultDto> results, CancellationToken ct = default);
     Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(Guid accountId, CancellationToken ct = default);
     Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default);
+
+    // Sync history
+    Task InsertSyncHistoryAsync(AccountSyncHistoryEntryDto entry, CancellationToken ct = default);
+    Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(Guid accountId, string? capability, CancellationToken ct = default);
+
+    // Margin snapshots
+    Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default);
+    Task<IReadOnlyList<MarginSnapshotDto>> GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default);
+
+    // Emptiness check for import
+    Task<bool> IsEmptyAsync(CancellationToken ct = default);
 }

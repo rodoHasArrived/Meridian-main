@@ -70,6 +70,16 @@ public sealed class CliArgumentsTests
         args.Offline.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData("--quickstart")]
+    [InlineData("--setup")]
+    [InlineData("--first-run")]
+    public void Parse_QuickstartAliases_SetQuickstart(string flag)
+    {
+        var args = CliArguments.Parse(new[] { flag });
+        args.Quickstart.Should().BeTrue();
+    }
+
     [Fact]
     public void Parse_ValidateSchemas_WithStrict_SetsBothFlags()
     {

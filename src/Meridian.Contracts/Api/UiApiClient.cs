@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.Api;
 
@@ -149,6 +150,169 @@ public sealed class UiApiClient
 
     public async Task<OptionsChainResponse?> RefreshOptionsChainAsync(OptionsRefreshRequest request, CancellationToken ct = default)
         => await PostAsync<OptionsChainResponse>(UiApiRoutes.OptionsRefresh, request, ct).ConfigureAwait(false);
+
+    // ============================================================
+    // Operations continuity + governance lifecycle endpoints
+    // ============================================================
+
+    public async Task<List<OperationsContinuityWorkflowSummaryDto>?> GetOperationsContinuityWorkflowsAsync(
+        Guid? fundAccountId = null,
+        string? periodId = null,
+        OperationsWorkflowStatusDto? status = null,
+        CancellationToken ct = default)
+    {
+        var query = new List<string>(3);
+        if (fundAccountId.HasValue)
+        {
+            query.Add($"fundAccountId={Uri.EscapeDataString(fundAccountId.Value.ToString())}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(periodId))
+        {
+            query.Add($"periodId={Uri.EscapeDataString(periodId)}");
+        }
+
+        if (status.HasValue)
+        {
+            query.Add($"status={Uri.EscapeDataString(status.Value.ToString())}");
+        }
+
+        var route = query.Count == 0
+            ? UiApiRoutes.OperationsContinuity
+            : UiApiRoutes.WithQuery(UiApiRoutes.OperationsContinuity, string.Join("&", query));
+
+        return await GetAsync<List<OperationsContinuityWorkflowSummaryDto>>(route, ct).ConfigureAwait(false);
+    }
+
+    public async Task<OperationsContinuityWorkflowDto?> GetOperationsContinuityWorkflowAsync(
+        Guid workflowId,
+        CancellationToken ct = default)
+        => await GetAsync<OperationsContinuityWorkflowDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityById, "workflowId", workflowId.ToString()),
+            ct).ConfigureAwait(false);
+
+    public async Task<List<OperationsTimelineEntryDto>?> GetOperationsContinuityTimelineAsync(
+        Guid workflowId,
+        CancellationToken ct = default)
+        => await GetAsync<List<OperationsTimelineEntryDto>>(
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityTimeline, "workflowId", workflowId.ToString()),
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<OperationsTransitionResultDto>> SubmitOperationsContinuityApprovalAsync(
+        Guid workflowId,
+        OperationsSubmitApprovalRequestDto request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<OperationsTransitionResultDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityApprovalSubmit, "workflowId", workflowId.ToString()),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<OperationsTransitionResultDto>> ApproveOperationsContinuityWorkflowAsync(
+        Guid workflowId,
+        OperationsApprovalDecisionRequestDto request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<OperationsTransitionResultDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityApprovalApprove, "workflowId", workflowId.ToString()),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<OperationsTransitionResultDto>> RejectOperationsContinuityWorkflowAsync(
+        Guid workflowId,
+        OperationsRejectWorkflowRequestDto request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<OperationsTransitionResultDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityApprovalReject, "workflowId", workflowId.ToString()),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<OperationsTransitionResultDto>> CloseOperationsContinuityWorkflowAsync(
+        Guid workflowId,
+        OperationsCloseWorkflowRequestDto request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<OperationsTransitionResultDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityClose, "workflowId", workflowId.ToString()),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<OperationsTransitionResultDto>> ReopenOperationsContinuityWorkflowAsync(
+        Guid workflowId,
+        OperationsReopenWorkflowRequestDto request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<OperationsTransitionResultDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityReopen, "workflowId", workflowId.ToString()),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<List<ReconciliationBreakQueueItem>?> GetReconciliationBreakQueueAsync(CancellationToken ct = default)
+        => await GetAsync<List<ReconciliationBreakQueueItem>>(UiApiRoutes.ReconciliationBreakQueue, ct).ConfigureAwait(false);
+
+    public async Task<ReconciliationCalibrationSummaryDto?> GetReconciliationCalibrationSummaryAsync(CancellationToken ct = default)
+        => await GetAsync<ReconciliationCalibrationSummaryDto>(UiApiRoutes.ReconciliationCalibrationSummary, ct).ConfigureAwait(false);
+
+    public async Task<ReconciliationRunDetail?> GetLatestRunReconciliationAsync(string runId, CancellationToken ct = default)
+        => await GetAsync<ReconciliationRunDetail>(
+            UiApiRoutes.WithParam(UiApiRoutes.RunsReconciliation, "runId", runId),
+            ct).ConfigureAwait(false);
+
+    public async Task<ReconciliationRunDetail?> GetReconciliationRunAsync(string reconciliationRunId, CancellationToken ct = default)
+        => await GetAsync<ReconciliationRunDetail>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationRunById, "reconciliationRunId", reconciliationRunId),
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ReviewReconciliationBreakAsync(
+        string breakId,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakReview, "breakId", breakId),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ResolveReconciliationBreakAsync(
+        string breakId,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakResolve, "breakId", breakId),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<List<FundReportPackHistoryItemDto>?> GetFundReportPackHistoryAsync(
+        string fundProfileId,
+        int limit = 20,
+        CancellationToken ct = default)
+        => await GetAsync<List<FundReportPackHistoryItemDto>>(
+            UiApiRoutes.WithQuery(
+                UiApiRoutes.FundReportPacks,
+                $"fundProfileId={Uri.EscapeDataString(fundProfileId)}&limit={limit}"),
+            ct).ConfigureAwait(false);
+
+    public async Task<FundReportPackSnapshotDto?> GetFundReportPackAsync(Guid reportId, CancellationToken ct = default)
+        => await GetAsync<FundReportPackSnapshotDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.FundReportPackById, "reportId", reportId.ToString()),
+            ct).ConfigureAwait(false);
+
+    public async Task<EvidencePacketDto?> GetEvidencePacketAsync(
+        string subjectKind,
+        string subjectId,
+        CancellationToken ct = default)
+        => await GetAsync<EvidencePacketDto>(
+            UiApiRoutes.WithParam(
+                UiApiRoutes.WithParam(UiApiRoutes.WorkstationEvidenceSubjectPacket, "subjectKind", subjectKind),
+                "subjectId",
+                subjectId),
+            ct).ConfigureAwait(false);
+
+    public async Task<EvidenceGraphDto?> GetEvidenceGraphAsync(
+        string subjectKind,
+        string subjectId,
+        CancellationToken ct = default)
+        => await GetAsync<EvidenceGraphDto>(
+            UiApiRoutes.WithParam(
+                UiApiRoutes.WithParam(UiApiRoutes.WorkstationEvidenceSubjectGraph, "subjectKind", subjectKind),
+                "subjectId",
+                subjectId),
+            ct).ConfigureAwait(false);
 
     // ============================================================
     // Generic HTTP methods

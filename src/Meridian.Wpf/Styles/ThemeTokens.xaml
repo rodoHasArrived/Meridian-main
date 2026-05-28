@@ -177,6 +177,21 @@
     <SolidColorBrush x:Key="ModeHealthyBrush"  Color="{StaticResource ModeHealthyColor}" />
     <SolidColorBrush x:Key="ModeCriticalBrush" Color="{StaticResource ModeCriticalColor}" />
 
+    <SolidColorBrush x:Key="WorkstationSignifierReadyBrush" Color="{StaticResource ConsoleAccentGreenAlpha10}" />
+    <SolidColorBrush x:Key="WorkstationSignifierReadyBorderBrush" Color="{StaticResource ConsoleAccentGreen}" />
+    <SolidColorBrush x:Key="WorkstationSignifierWarningBrush" Color="{StaticResource ConsoleAccentOrangeAlpha10}" />
+    <SolidColorBrush x:Key="WorkstationSignifierWarningBorderBrush" Color="{StaticResource ConsoleAccentOrange}" />
+    <SolidColorBrush x:Key="WorkstationSignifierBlockedBrush" Color="{StaticResource ConsoleAccentRedAlpha10}" />
+    <SolidColorBrush x:Key="WorkstationSignifierBlockedBorderBrush" Color="{StaticResource ConsoleAccentRed}" />
+    <SolidColorBrush x:Key="WorkstationSignifierStaleBrush" Color="{StaticResource ConsoleAccentPurpleAlpha10}" />
+    <SolidColorBrush x:Key="WorkstationSignifierStaleBorderBrush" Color="{StaticResource ConsoleAccentPurple}" />
+    <SolidColorBrush x:Key="WorkstationSignifierSignoffBrush" Color="{StaticResource ConsoleAccentOrangeAlpha10}" />
+    <SolidColorBrush x:Key="WorkstationSignifierSignoffBorderBrush" Color="{StaticResource ConsoleAccentOrange}" />
+    <SolidColorBrush x:Key="WorkstationSignifierRecoveryBrush" Color="{StaticResource ConsoleAccentBlueAlpha10}" />
+    <SolidColorBrush x:Key="WorkstationSignifierRecoveryBorderBrush" Color="{StaticResource ConsoleAccentBlue}" />
+    <SolidColorBrush x:Key="WorkstationSignifierEvidenceBrush" Color="{StaticResource ConsoleAccentBlueAlpha10}" />
+    <SolidColorBrush x:Key="WorkstationSignifierEvidenceBorderBrush" Color="{StaticResource ConsoleBorderStrong}" />
+
     <!-- Goldman blue-to-teal premium gradient (progress bars, accents) -->
     <LinearGradientBrush x:Key="GlowGradientBrush" StartPoint="0,0" EndPoint="1,0">
         <GradientStop Color="{StaticResource ConsoleAccentBlue}" Offset="0" />

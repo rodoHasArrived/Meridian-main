@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
 
@@ -11,12 +13,15 @@ namespace Meridian.Execution;
 public sealed class PaperTradingGateway : IExecutionGateway
 {
     private readonly ILogger<PaperTradingGateway> _logger;
+    private readonly ISecurityMasterQueryService? _securityMaster;
+    private readonly ConcurrentDictionary<string, TradingParametersDto?> _tradingParamsCache = new(StringComparer.OrdinalIgnoreCase);
     private bool _connected;
     private int _fillSequence;
 
-    public PaperTradingGateway(ILogger<PaperTradingGateway> logger)
+    public PaperTradingGateway(ILogger<PaperTradingGateway> logger, ISecurityMasterQueryService? securityMaster = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _securityMaster = securityMaster;
     }
 
     /// <inheritdoc />
@@ -42,9 +47,15 @@ public sealed class PaperTradingGateway : IExecutionGateway
     }
 
     /// <inheritdoc />
-    public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
+    public async Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
         var fillSeq = Interlocked.Increment(ref _fillSequence);
+
+        var lotSizeError = await ValidateLotSizeAsync(request, ct).ConfigureAwait(false);
+        if (lotSizeError is not null)
+        {
+            throw new InvalidOperationException(lotSizeError);
+        }
 
         if (request.Type is OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose)
         {
@@ -73,7 +84,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
             _logger.LogInformation("Paper fill: {Symbol} {Side} {Quantity} @ {Price}",
                 request.Symbol, request.Side, request.Quantity, report.FillPrice);
 
-            return Task.FromResult(report);
+            return report;
         }
 
         // Limit/stop orders are accepted but not immediately filled
@@ -90,7 +101,7 @@ public sealed class PaperTradingGateway : IExecutionGateway
             GatewayOrderId = $"PAPER-{fillSeq}"
         };
 
-        return Task.FromResult(accepted);
+        return accepted;
     }
 
     /// <inheritdoc />
@@ -129,4 +140,63 @@ public sealed class PaperTradingGateway : IExecutionGateway
         await Task.CompletedTask;
         yield break;
     }
+
+    private async Task<string?> ValidateLotSizeAsync(OrderRequest request, CancellationToken ct)
+    {
+        var tradingParams = await TryGetTradingParamsAsync(request.Symbol, ct).ConfigureAwait(false);
+        if (tradingParams?.LotSize is not { } lotSize || lotSize <= 0m)
+        {
+            return null;
+        }
+
+        var absQty = Math.Abs(request.Quantity);
+        return absQty % lotSize == 0m
+            ? null
+            : $"Order quantity {absQty} is not a valid multiple of the lot-size {lotSize} for {request.Symbol}.";
+    }
+
+    private async Task<TradingParametersDto?> TryGetTradingParamsAsync(string symbol, CancellationToken ct)
+    {
+        if (_securityMaster is null || string.IsNullOrWhiteSpace(symbol))
+        {
+            return null;
+        }
+
+        if (_tradingParamsCache.TryGetValue(symbol, out var cached))
+        {
+            return cached;
+        }
+
+        try
+        {
+            var security = await _securityMaster.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker,
+                symbol,
+                provider: null,
+                ct).ConfigureAwait(false);
+
+            if (security is null)
+            {
+                _tradingParamsCache[symbol] = null;
+                return null;
+            }
+
+            var tradingParams = await _securityMaster.GetTradingParametersAsync(
+                security.SecurityId,
+                DateTimeOffset.UtcNow,
+                ct).ConfigureAwait(false);
+
+            _tradingParamsCache[symbol] = tradingParams;
+            return tradingParams;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex,
+                "PaperTradingGateway lot-size validation skipped for {Symbol} due to Security Master lookup failure.",
+                symbol);
+            _tradingParamsCache[symbol] = null;
+            return null;
+        }
+    }
+
 }

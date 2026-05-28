@@ -48,6 +48,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     private readonly DeadLetterSink? _deadLetterSink;
     private readonly PersistentDedupLedger? _dedupLedger;
     private readonly int _consumerCount;
+    private readonly bool _includePerEventLogScopes;
     private int _disposed;
     private int _activeConsumers;
     private int _finalFlushStarted;
@@ -206,6 +207,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
         _capacity = policy.Capacity;
         _fullMode = policy.FullMode;
         _metricsEnabled = policy.EnableMetrics;
+        _includePerEventLogScopes = _logger.IsEnabled(LogLevel.Debug) || _logger.IsEnabled(LogLevel.Trace);
         _highWaterMark80 = (int)(policy.Capacity * 0.8);
         _highWaterMark50 = policy.Capacity / 2;
         _flushInterval = flushInterval ?? TimeSpan.FromSeconds(5);
@@ -291,6 +293,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
 
     /// <summary>Gets the queue capacity utilization as a percentage (0-100).</summary>
     public double QueueUtilization => (double)CurrentQueueSize / _capacity * 100;
+
+    /// <summary>Gets the active bounded-channel full mode for this pipeline.</summary>
+    public BoundedChannelFullMode QueueFullMode => _fullMode;
 
     /// <summary>Gets the average processing time per event in microseconds.</summary>
     public double AverageProcessingTimeUs
@@ -442,14 +447,6 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     /// Attempts to publish an event to the pipeline without blocking.
     /// Returns false if the queue is full (event will be dropped based on FullMode).
     /// </summary>
-    /// <remarks>
-    /// WAL writes are deferred to the consumer task to preserve the non-blocking contract of
-    /// this method. Events enqueued via this path carry <c>WalSequence == 0</c>; the consumer
-    /// detects this and appends the event to the WAL before forwarding it to the storage sink,
-    /// maintaining the same durability guarantee as <see cref="PublishAsync"/> at the cost of a
-    /// slightly larger crash-recovery window. Callers that require the event to be WAL-persisted
-    /// before this call returns should use <see cref="PublishAsync"/> instead.
-    /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryPublish(in MarketEvent evt)
     {
@@ -466,52 +463,16 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
             return false;
         }
 
-        // Capture trace context synchronously — WAL write is deferred to the consumer.
-        // The consumer checks WalSequence == 0 and appends to the WAL before sink persistence.
-        var tracedEvent = CaptureTraceContext(evt);
-
-        var written = _channel.Writer.TryWrite(tracedEvent);
+        var written = _channel.Writer.TryWrite(CaptureTraceContext(evt));
 
         if (written)
         {
             var count = Interlocked.Increment(ref _publishedCount);
             if (_metricsEnabled)
             {
-                _metrics.IncPublished();
+                RecordPublishedMetrics(evt.Type);
             }
-
-            // Sample Reader.Count every 64 events — Reader.Count acquires an internal lock
-            // on BoundedChannel, so reading it on every publish is expensive at high throughput.
-            // Peak tracking and high-water mark warnings tolerate a small sampling delay.
-            if ((count & ReaderCountSampleMask) == 0)
-            {
-                // Read queue size once — avoid calling it multiple times per sample.
-                var currentSize = _channel.Reader.Count;
-
-                // Update peak using a lock-free compare-and-swap loop.
-                var peak = Volatile.Read(ref _peakQueueSize);
-                if (currentSize > peak)
-                {
-                    Interlocked.CompareExchange(ref _peakQueueSize, currentSize, peak);
-                }
-
-                // Use integer comparison instead of floating-point division.
-                // _highWaterMark80 = (int)(capacity * 0.8), _highWaterMark50 = capacity / 2
-                if (currentSize >= _highWaterMark80 && !_highWaterMarkWarned)
-                {
-                    _highWaterMarkWarned = true;
-                    var utilization = (double)currentSize / _capacity;
-                    _logger.LogWarning(
-                        "Pipeline queue utilization at {Utilization:P0} ({CurrentSize}/{Capacity}). Events may be dropped if queue fills. Consider increasing capacity or reducing event rate",
-                        utilization, currentSize, _capacity);
-                }
-                else if (_highWaterMarkWarned && currentSize < _highWaterMark50)
-                {
-                    _highWaterMarkWarned = false;
-                    var utilization = (double)currentSize / _capacity;
-                    _logger.LogInformation("Pipeline queue utilization recovered to {Utilization:P0}", utilization);
-                }
-            }
+            TrackQueueDepthOnPublish(count);
         }
         else
         {
@@ -577,10 +538,48 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
     {
         var tracedEvent = await PrepareTracedEventForPublishAsync(evt, ct).ConfigureAwait(false);
         await _channel.Writer.WriteAsync(tracedEvent, ct).ConfigureAwait(false);
-        Interlocked.Increment(ref _publishedCount);
+        var count = Interlocked.Increment(ref _publishedCount);
         if (_metricsEnabled)
         {
-            _metrics.IncPublished();
+            RecordPublishedMetrics(evt.Type);
+        }
+        TrackQueueDepthOnPublish(count);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void RecordPublishedMetrics(MarketEventType type)
+    {
+        _metrics.IncPublished();
+
+        switch (type)
+        {
+            case MarketEventType.Trade:
+            case MarketEventType.OptionTrade:
+            case MarketEventType.HistoricalTrade:
+                _metrics.IncTrades();
+                break;
+            case MarketEventType.BboQuote:
+            case MarketEventType.Quote:
+            case MarketEventType.OptionQuote:
+            case MarketEventType.HistoricalQuote:
+                _metrics.IncQuotes();
+                break;
+            case MarketEventType.Depth:
+            case MarketEventType.L2Snapshot:
+            case MarketEventType.OrderAdd:
+            case MarketEventType.OrderModify:
+            case MarketEventType.OrderCancel:
+            case MarketEventType.OrderExecute:
+            case MarketEventType.OrderReplace:
+                _metrics.IncDepthUpdates();
+                break;
+            case MarketEventType.HistoricalBar:
+            case MarketEventType.AggregateBar:
+                _metrics.IncHistoricalBars();
+                break;
+            case MarketEventType.Integrity:
+                _metrics.IncIntegrity();
+                break;
         }
     }
 
@@ -674,6 +673,13 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
             AverageProcessingTimeUs: AverageProcessingTimeUs,
             TimeSinceLastFlush: TimeSinceLastFlush,
             Timestamp: DateTimeOffset.UtcNow,
+            RecoveredCount: RecoveredCount,
+            RejectedCount: RejectedCount,
+            DeduplicatedCount: DeduplicatedCount,
+            IsWalEnabled: IsWalEnabled,
+            IsValidationEnabled: IsValidationEnabled,
+            IsDeduplicationEnabled: IsDeduplicationEnabled,
+            QueueFullMode: _fullMode,
             HighWaterMarkWarned: _highWaterMarkWarned
         );
     }
@@ -715,13 +721,14 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
                         var tracedEvent = batchBuffer[i];
                         var evt = tracedEvent.Event;
                         using var processActivity = MarketDataTracing.StartProcessActivity(
-                            evt.Type.ToString(),
+                            GetEventTypeName(evt.Type),
                             evt.EffectiveSymbol,
                             tracedEvent.TraceContext.ParentContext);
                         processActivity?.SetTag("event.source", evt.Source);
                         processActivity?.SetTag("event.sequence", evt.Sequence);
+                        processActivity?.SetTag("event.type", GetEventTypeName(evt.Type));
 
-                        using var logScope = _logger.BeginScope(CreateLogScope(evt, tracedEvent.TraceContext, processActivity));
+                        using var logScope = BeginEventLogScope(evt, tracedEvent.TraceContext, processActivity);
 
                         // Deduplication check (when a dedup ledger is configured)
                         if (_dedupLedger != null)
@@ -762,7 +769,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
                             _sink.GetType().Name,
                             evt.EffectiveSymbol,
                             processActivity?.Context ?? tracedEvent.TraceContext.ParentContext);
-                        storageActivity?.SetTag("event.type", evt.Type.ToString());
+                        storageActivity?.SetTag("event.type", GetEventTypeName(evt.Type));
                         storageActivity?.SetTag("event.source", evt.Source);
 
                         await _sink.AppendAsync(evt, _cts.Token).ConfigureAwait(false);
@@ -1039,11 +1046,52 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
             ["CorrelationId"] = traceContext.CorrelationId ?? activity?.TraceId.ToString(),
             ["TraceId"] = activity?.TraceId.ToString() ?? (traceContext.HasParent ? traceContext.ParentContext.TraceId.ToString() : null),
             ["SpanId"] = activity?.SpanId.ToString(),
-            ["EventType"] = evt.Type.ToString(),
+            ["EventType"] = GetEventTypeName(evt.Type),
             ["EventSource"] = evt.Source,
             ["Symbol"] = evt.EffectiveSymbol,
             ["Sequence"] = evt.Sequence
         };
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private IDisposable? BeginEventLogScope(
+        MarketEvent evt,
+        EventTraceContext traceContext,
+        Activity? activity)
+    {
+        if (!_includePerEventLogScopes)
+            return null;
+
+        return _logger.BeginScope(CreateLogScope(evt, traceContext, activity));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void TrackQueueDepthOnPublish(long publishedCount)
+    {
+        if ((publishedCount & ReaderCountSampleMask) != 0)
+            return;
+
+        var currentSize = _channel.Reader.Count;
+        var peak = Volatile.Read(ref _peakQueueSize);
+        if (currentSize > peak)
+        {
+            Interlocked.CompareExchange(ref _peakQueueSize, currentSize, peak);
+        }
+
+        if (currentSize >= _highWaterMark80 && !_highWaterMarkWarned)
+        {
+            _highWaterMarkWarned = true;
+            var utilization = (double)currentSize / _capacity;
+            _logger.LogWarning(
+                "Pipeline queue utilization at {Utilization:P0} ({CurrentSize}/{Capacity}). Events may be dropped if queue fills. Consider increasing capacity or reducing event rate",
+                utilization, currentSize, _capacity);
+        }
+        else if (_highWaterMarkWarned && currentSize < _highWaterMark50)
+        {
+            _highWaterMarkWarned = false;
+            var utilization = (double)currentSize / _capacity;
+            _logger.LogInformation("Pipeline queue utilization recovered to {Utilization:P0}", utilization);
+        }
     }
 
     private readonly record struct TracedMarketEvent(
@@ -1066,5 +1114,12 @@ public readonly record struct PipelineStatistics(
     double AverageProcessingTimeUs,
     TimeSpan TimeSinceLastFlush,
     DateTimeOffset Timestamp,
+    long RecoveredCount = 0,
+    long RejectedCount = 0,
+    long DeduplicatedCount = 0,
+    bool IsWalEnabled = false,
+    bool IsValidationEnabled = false,
+    bool IsDeduplicationEnabled = false,
+    BoundedChannelFullMode QueueFullMode = BoundedChannelFullMode.Wait,
     bool HighWaterMarkWarned = false
 );

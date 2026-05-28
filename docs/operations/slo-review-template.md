@@ -1,0 +1,71 @@
+# Monthly SLO Review Template
+
+Use this template for monthly reliability reviews driven by the SLO catalog in [Service Level Objectives](./service-level-objectives.md).
+
+- **Review month (UTC):** `YYYY-MM`
+- **Review owner:** `Primary on-call / Reliability lead`
+- **Date published:** `YYYY-MM-DD`
+- **Source window:** `YYYY-MM-01 00:00:00Z` to `<next-month>-01 00:00:00Z`
+- **Report path:** `docs/status/slo-reports/YYYY-MM-slo-review.md`
+
+## 1) Compliance Summary
+
+| SLO ID | Metric | Target | Actual | Status (Met / Breached / At Risk) | Notes |
+|---|---|---|---|---|---|
+| SLO-ING-001 | `mdc_provider_latency_seconds` (P95/P99) | P95 < 2s, P99 < 5s | `...` | `...` | `...` |
+| SLO-ING-002 | Drop rate | < 0.1% daily | `...` | `...` | `...` |
+| SLO-DC-001 | Completeness | >= 95% daily | `...` | `...` | `...` |
+| SLO-DC-002 | Gap duration | No gap > 5m | `...` | `...` | `...` |
+| SLO-AV-001 | Uptime | 99.9% market hours | `...` | `...` | `...` |
+| SLO-AV-002 | Health checks | 99.5% healthy | `...` | `...` | `...` |
+| SLO-DF-001 | Freshness | P95 < 60s | `...` | `...` | `...` |
+| SLO-DF-002 | Backfill freshness | <= 30m after close | `...` | `...` | `...` |
+| SLO-ST-001 | Write reliability | 0 write errors | `...` | `...` | `...` |
+| SLO-ST-002 | Storage capacity | >= 20% free | `...` | `...` | `...` |
+| SLO-PC-001 | Provider availability | 99.5% connected | `...` | `...` | `...` |
+| SLO-PC-002 | Failover time | <= 30s | `...` | `...` | `...` |
+
+## 2) Error Budget and Burn-Rate Review
+
+| SLO ID | Monthly Budget | Budget Consumed | Budget Remaining | Max Burn Rate (1h/6h/24h) | Triggered Thresholds |
+|---|---:|---:|---:|---|---|
+| `SLO-*` | `...` | `...` | `...` | `...` | `...` |
+
+- **Top burn-rate contributor(s):**
+  - `...`
+- **Was a freeze or reliability sprint triggered this month?** `Yes/No`
+- **If yes, reference runbook actions:** `docs/operations/error-budget-policy-runbook.md#...`
+
+## 3) Incident Review Linkage
+
+| Incident ID | Priority (P1/P2) | Related SLO(s) | User impact summary | Postmortem link | Follow-up action IDs |
+|---|---|---|---|---|---|
+| `INC-YYYY-MM-###` | `P1/P2` | `SLO-*` | `...` | `docs/status/incidents/...` | `ACT-...` |
+
+- Confirm every P1/P2 incident has a linked postmortem artifact.
+- Confirm every critical breach has mitigation owner + due date.
+
+## 4) Action Register
+
+| Action ID | Trigger | Owner | Due date | Severity | Status | Evidence link |
+|---|---|---|---|---|---|---|
+| `ACT-YYYY-MM-01` | `SLO critical breach` | `Team/Role` | `YYYY-MM-DD` | `Critical/High/Medium` | `Open/In Progress/Closed` | `...` |
+
+## 5) Launch Gate Check
+
+> **Gate:** 3 consecutive monthly SLO reviews with no unmitigated critical breach.
+
+| Month | Critical breach present? | Mitigated within month? | Counts toward streak? |
+|---|---|---|---|
+| `YYYY-MM` | `Yes/No` | `Yes/No` | `Yes/No` |
+| `YYYY-MM` | `Yes/No` | `Yes/No` | `Yes/No` |
+| `YYYY-MM` | `Yes/No` | `Yes/No` | `Yes/No` |
+
+- **Current streak:** `N / 3`
+- **Launch gate status:** `PASS/FAIL`
+
+## 6) Approvals
+
+- **Reliability lead sign-off:** `Name, date`
+- **Operations lead sign-off:** `Name, date`
+- **Product/Program sign-off (if launch gate affected):** `Name, date`

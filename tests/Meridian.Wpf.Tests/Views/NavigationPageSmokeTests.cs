@@ -3,9 +3,12 @@ using AvalonDock.Layout;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
@@ -27,7 +30,7 @@ public sealed class NavigationPageSmokeTests
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            InvokeConfigureServices(configureServices!, services);
 
             using var serviceProvider = services.BuildServiceProvider();
 
@@ -69,6 +72,67 @@ public sealed class NavigationPageSmokeTests
             finally
             {
                 leanIntegrationHost?.Close();
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData("OrderBook", typeof(OrderBookViewModel))]
+    [InlineData("RunRisk", typeof(RunRiskViewModel))]
+    [InlineData("NotificationCenter", typeof(NotificationCenterViewModel))]
+    [InlineData("SecurityMaster", typeof(SecurityMasterViewModel))]
+    [InlineData("LeanIntegration", typeof(LeanIntegrationViewModel))]
+    public void PrimaryNavigationPages_ShouldKeepExpectedDataContexts(string pageTag, Type expectedViewModelType)
+    {
+        WpfTestThread.Run(() =>
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", null);
+            Environment.SetEnvironmentVariable("POLYGON_API_KEY", null);
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var services = new ServiceCollection();
+            var configureServices = typeof(Meridian.Wpf.App)
+                .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
+
+            configureServices.Should().NotBeNull();
+            InvokeConfigureServices(configureServices!, services);
+
+            using var serviceProvider = services.BuildServiceProvider();
+            var navigationService = NavigationService.Instance;
+            Window? hostWindow = null;
+
+            try
+            {
+                navigationService.ResetForTests();
+                navigationService.SetServiceProvider(serviceProvider);
+
+                var frame = new Frame
+                {
+                    NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden
+                };
+                hostWindow = new Window
+                {
+                    Width = 1280,
+                    Height = 900,
+                    Content = frame
+                };
+
+                hostWindow.Show();
+                navigationService.Initialize(frame);
+
+                navigationService.NavigateTo(pageTag).Should().BeTrue();
+                RunMatUiAutomationFacade.DrainDispatcher();
+                hostWindow.UpdateLayout();
+
+                var page = NavigationHostInspector.ResolveInnermostPage(frame.Content);
+                page.Should().NotBeNull();
+                page!.DataContext.Should().BeOfType(expectedViewModelType);
+            }
+            finally
+            {
+                hostWindow?.Close();
+                navigationService.ResetForTests();
+                RunMatUiAutomationFacade.DrainDispatcher();
             }
         });
     }
@@ -171,5 +235,17 @@ public sealed class NavigationPageSmokeTests
                 window.Close();
             }
         });
+    }
+
+    private static void InvokeConfigureServices(MethodInfo configureServices, IServiceCollection services)
+    {
+        if (configureServices.GetParameters().Length == 1)
+        {
+            configureServices.Invoke(null, [services]);
+            return;
+        }
+
+        var configuration = new ConfigurationBuilder().Build();
+        configureServices.Invoke(null, [services, configuration]);
     }
 }

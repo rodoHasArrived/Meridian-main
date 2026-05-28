@@ -108,7 +108,9 @@ public sealed class TradingWorkspaceShellPageTests
                 LastPersistedFillAt: null,
                 LastPersistedOrderUpdateAt: null,
                 VerificationAuditId: "audit-stale",
-                MismatchReasons: []),
+                MismatchReasons: [],
+                DriftStatus: "Aligned",
+                RequiredNextAction: "No action required."),
             Controls: new TradingControlReadinessDto(
                 CircuitBreakerOpen: false,
                 CircuitBreakerReason: null,
@@ -227,7 +229,9 @@ public sealed class TradingWorkspaceShellPageTests
                 LastPersistedFillAt: null,
                 LastPersistedOrderUpdateAt: null,
                 VerificationAuditId: "audit-17",
-                MismatchReasons: ["Fill sequence mismatch detected for paper replay."]),
+                MismatchReasons: ["Fill sequence mismatch detected for paper replay."],
+                DriftStatus: "DriftDetected",
+                RequiredNextAction: "Run replay verification again."),
             Controls: new TradingControlReadinessDto(
                 CircuitBreakerOpen: false,
                 CircuitBreakerReason: null,
@@ -384,7 +388,9 @@ public sealed class TradingWorkspaceShellPageTests
                 LastPersistedFillAt: null,
                 LastPersistedOrderUpdateAt: null,
                 VerificationAuditId: "audit-41",
-                MismatchReasons: []),
+                MismatchReasons: [],
+                DriftStatus: "Aligned",
+                RequiredNextAction: "No action required."),
             Controls: new TradingControlReadinessDto(
                 CircuitBreakerOpen: false,
                 CircuitBreakerReason: null,
@@ -505,7 +511,9 @@ public sealed class TradingWorkspaceShellPageTests
                 LastPersistedFillAt: null,
                 LastPersistedOrderUpdateAt: null,
                 VerificationAuditId: "audit-31",
-                MismatchReasons: []),
+                MismatchReasons: [],
+                DriftStatus: "Aligned",
+                RequiredNextAction: "No action required."),
             Controls: new TradingControlReadinessDto(
                 CircuitBreakerOpen: false,
                 CircuitBreakerReason: null,
@@ -666,7 +674,9 @@ public sealed class TradingWorkspaceShellPageTests
                 LastPersistedFillAt: null,
                 LastPersistedOrderUpdateAt: null,
                 VerificationAuditId: "audit-52",
-                MismatchReasons: []),
+                MismatchReasons: [],
+                DriftStatus: "Aligned",
+                RequiredNextAction: "No action required."),
             Controls: new TradingControlReadinessDto(
                 CircuitBreakerOpen: false,
                 CircuitBreakerReason: null,
@@ -824,8 +834,8 @@ public sealed class TradingWorkspaceShellPageTests
     [Fact]
     public void TradingWorkspaceShellPageSource_ShouldNotExposePrematureDeepReviewActions()
     {
-        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
-        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
+        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Trading\Shell\TradingWorkspaceShellPage.xaml.cs"));
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Trading\Shell\TradingWorkspaceShellPage.xaml"));
 
         code.Should().NotContain("Id = \"RunDetail\"");
         code.Should().NotContain("Id = \"EventReplay\"");
@@ -844,7 +854,7 @@ public sealed class TradingWorkspaceShellPageTests
     {
         var serviceCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\TradingWorkspaceShellPresentationService.cs"));
         var viewModelCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\TradingWorkspaceShellViewModel.cs"));
-        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Trading\Shell\TradingWorkspaceShellPage.xaml"));
 
         xaml.Should().Contain("Workflow Status");
         xaml.Should().Contain("Handoff");
@@ -876,10 +886,10 @@ public sealed class TradingWorkspaceShellPageTests
     [Fact]
     public void TradingWorkspaceShellPageSource_ShouldExposeDeskBriefingHero()
     {
-        var pageCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+        var pageCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Trading\Shell\TradingWorkspaceShellPage.xaml.cs"));
         var serviceCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\TradingWorkspaceShellPresentationService.cs"));
         var viewModelCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\TradingWorkspaceShellViewModel.cs"));
-        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Trading\Shell\TradingWorkspaceShellPage.xaml"));
 
         xaml.Should().Contain("Desk Briefing");
         xaml.Should().Contain("TradingHeroPrimaryActionButton");
@@ -897,7 +907,7 @@ public sealed class TradingWorkspaceShellPageTests
     [Fact]
     public void TradingWorkspaceShellPageSource_ShouldPlaceDeskActionsAheadOfNarrativeSupportPanels()
     {
-        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Trading\Shell\TradingWorkspaceShellPage.xaml"));
 
         xaml.Should().Contain("Desk Lanes &amp; Supporting Tools");
         xaml.IndexOf("Active Positions", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Paper Runs", StringComparison.Ordinal));

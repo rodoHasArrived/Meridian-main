@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -29,7 +30,7 @@ public sealed class WorkstationPageSmokeTests
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            InvokeConfigureServices(configureServices!, services);
 
             using var serviceProvider = services.BuildServiceProvider();
 
@@ -81,7 +82,7 @@ public sealed class WorkstationPageSmokeTests
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services]);
+            InvokeConfigureServices(configureServices!, services);
 
             using var serviceProvider = services.BuildServiceProvider();
 
@@ -122,5 +123,17 @@ public sealed class WorkstationPageSmokeTests
                 navigationService.ResetForTests();
             }
         });
+    }
+
+    private static void InvokeConfigureServices(MethodInfo configureServices, IServiceCollection services)
+    {
+        if (configureServices.GetParameters().Length == 1)
+        {
+            configureServices.Invoke(null, [services]);
+            return;
+        }
+
+        var configuration = new ConfigurationBuilder().Build();
+        configureServices.Invoke(null, [services, configuration]);
     }
 }

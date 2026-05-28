@@ -9,7 +9,9 @@
 - `MaxAbsoluteVariance`
 - `RequireSecondaryApprovalForWaivers`
 
-The service writes durable audit entries to `artifacts/reconciliation/governance-audit.jsonl`.
+The service writes durable audit entries under the configured execution data root.
+For installed workstation builds this resolves under
+`%LOCALAPPDATA%\Meridian\data\reconciliation\governance-audit.jsonl`.
 
 ## Escalation and Sign-off
 
@@ -26,4 +28,4 @@ Use `ReconciliationGovernanceService.ExportEvidenceAsync(...)` to emit:
 - JSON payload (machine-readable)
 - Markdown summary (operator-readable)
 
-Store outputs under `artifacts/reconciliation/` following run-scoped naming.
+Store outputs under the configured reconciliation data root following run-scoped naming.

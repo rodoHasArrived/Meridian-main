@@ -300,7 +300,7 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
         {
             EnvironmentMode = FixtureModeKind.Fixture,
             ScopeLabel = "Demo review",
-            ScopeSummary = "Review Data Operations with sample telemetry.",
+            ScopeSummary = "Review Data with sample telemetry.",
             RetrievedAt = new DateTimeOffset(2026, 04, 16, 14, 30, 00, TimeSpan.Zero)
         });
 
@@ -308,7 +308,7 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
         presentation.HeroState.FocusText.Should().Be("Demo data");
         presentation.HeroState.BadgeText.Should().Be("Demo");
         presentation.HeroState.BadgeTone.Should().Be(WorkspaceTone.Info);
-        presentation.HeroState.HandoffTitleText.Should().Be("Review the Data Operations flow with sample telemetry");
+        presentation.HeroState.HandoffTitleText.Should().Be("Review the Data flow with sample telemetry");
         presentation.HeroMetrics.Select(metric => metric.Value).Should().ContainInOrder("Demo data", "No active backfill", "No data");
         presentation.HeroMetrics[0].Tone.Should().Be(WorkspaceTone.Info);
         presentation.SummaryProvidersText.Should().Be("Demo data");

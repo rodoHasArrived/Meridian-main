@@ -191,7 +191,7 @@
                                              Maximum="100"
                                              Height="8"
                                              Margin="0,12,0,0"
-                                             Value="{Binding ProgressPercent}"
+                                             Value="{Binding ProgressPercent, Mode=OneWay}"
                                              Foreground="{StaticResource ConsoleAccentBlueAlpha80Brush}"
                                              Background="{StaticResource ConsoleWindowBackgroundBrush}" />
                             </StackPanel>
