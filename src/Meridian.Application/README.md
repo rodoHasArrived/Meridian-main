@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Application
