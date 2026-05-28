@@ -1,9 +1,11 @@
+using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 
 namespace Meridian.Application.Reconciliation;
 
 public sealed class StatementReconciliationService
 {
+    private readonly StatementBreakClassifier _breakClassifier = new();
     private static readonly string[] CanonicalStatementColumns =
     [
         "account",
@@ -211,18 +213,24 @@ public sealed class StatementReconciliationService
                 continue;
             }
 
+            var classification = _breakClassifier.Classify(StatementBreakClassificationRequest.FromStatementRow(row));
+            if (!classification.ShouldCreateCaseQueueItem)
+            {
+                continue;
+            }
+
             cases.Add(new ReconciliationCase(
                 $"case:{row.RowId}",
                 row.Fingerprint,
                 "Open",
-                "No deterministic match candidate met confidence threshold.",
+                classification.WorkflowRationale,
                 0.35m,
-                "No deterministic match candidate met confidence threshold.",
+                classification.WorkflowRationale,
                 DateTimeOffset.UtcNow,
                 [new ReconciliationCaseHistoryEntry(DateTimeOffset.UtcNow, "None", "Open", "Case created from statement reconciliation service.")])
             {
                 Owner = "fund-ops",
-                Priority = row.Kind is StatementRowKind.CashBalance or StatementRowKind.Transaction ? "High" : "Normal",
+                Priority = ToCasePriority(classification.Severity),
                 DueAtUtc = DateTimeOffset.UtcNow.AddBusinessDays(2),
                 CommentThreads =
                 [
@@ -232,7 +240,7 @@ public sealed class StatementReconciliationService
                         [
                             new ReconciliationCaseComment(
                                 Guid.NewGuid().ToString("N"),
-                                $"Created from {row.RawSnapshot.GetValueOrDefault("sourceKind", "external")} statement row {row.RawSnapshot.GetValueOrDefault("rowNumber", row.RowId)}.",
+                                $"Created from {row.RawSnapshot.GetValueOrDefault("sourceKind", "external")} statement row {row.RawSnapshot.GetValueOrDefault("rowNumber", row.RowId)}. Recommended action: {classification.RecommendedActionText}.",
                                 "system",
                                 DateTimeOffset.UtcNow)
                         ])
@@ -244,13 +252,20 @@ public sealed class StatementReconciliationService
                         "ExternalStatementCaseCreated",
                         DateTimeOffset.UtcNow,
                         "system",
-                        "Case created from broker/custodian statement intake.")
+                        $"Case created for {classification.BreakType} with {classification.Severity} severity.")
                 ]
             });
         }
 
         return (matches, cases);
     }
+
+    private static string ToCasePriority(ReconciliationBreakSeverity severity) => severity switch
+    {
+        ReconciliationBreakSeverity.High or ReconciliationBreakSeverity.Critical => "High",
+        ReconciliationBreakSeverity.Medium => "Normal",
+        _ => "Low"
+    };
 }
 
 public sealed record ExternalStatementCaseIntakeResult(

@@ -25,6 +25,8 @@ and UI presentation concerns in their owning layers.
 ## Key folders and files
 
 - `Commands/` - CLI command handlers and operator workflows.
+- `Reconciliation/` - statement intake, canonical matching, materiality-aware break
+  classification, recommended actions, and case creation gates.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
   and approval close lanes. Approval and close commands enforce shared close-checklist control
@@ -44,6 +46,9 @@ application service contracts consumed by host and UI surfaces.
 
 ## API contract notes
 
+- Statement reconciliation classifies broker and custodian breaks before case creation; only
+  material unresolved breaks are promoted into casework, with severity and recommended action
+  stored in the classification result.
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
 
 ## Diagrams
