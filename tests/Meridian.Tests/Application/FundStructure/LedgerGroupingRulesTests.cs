@@ -75,6 +75,41 @@ public sealed class LedgerGroupingRulesTests
         Assert.Equal("FUND.OPS:PRIMARY", normalized);
     }
 
+    [Fact]
+    public void ResolveLedgerGroupMapping_ReportsAssignmentSourceAndGroup()
+    {
+        var account = CreateAccount(ledgerReference: "ACCOUNT-LEDGER");
+        var assignment = new FundStructureAssignmentDto(
+            Guid.NewGuid(),
+            account.AccountId,
+            LedgerGroupingRules.LedgerGroupAssignmentType,
+            "FUND.OPS:PRIMARY",
+            DateTimeOffset.UtcNow,
+            EffectiveTo: null,
+            IsPrimary: true);
+
+        var mapping = LedgerGroupingRules.ResolveLedgerGroupMapping(account, [assignment]);
+
+        Assert.Equal(LedgerGroupId.Create("FUND.OPS:PRIMARY"), mapping.LedgerGroupId);
+        Assert.Equal(LedgerMappingSourceDto.AccountAssignment, mapping.Source);
+        Assert.Equal(FundStructureNodeKindDto.Account, mapping.SourceNodeKind);
+        Assert.False(mapping.RequiresUserMapping);
+        Assert.Empty(mapping.IssueCodes);
+    }
+
+    [Fact]
+    public void ResolveLedgerGroupMapping_InvalidLedgerReferenceRequiresUserMapping()
+    {
+        var account = CreateAccount(ledgerReference: "BAD/GROUP");
+
+        var mapping = LedgerGroupingRules.ResolveLedgerGroupMapping(account, []);
+
+        Assert.Equal(LedgerGroupId.Unassigned, mapping.LedgerGroupId);
+        Assert.Equal(LedgerMappingSourceDto.Unassigned, mapping.Source);
+        Assert.True(mapping.RequiresUserMapping);
+        Assert.Contains("ledger-mapping.invalid-ledger-reference", mapping.IssueCodes);
+    }
+
     private static AccountSummaryDto CreateAccount(Guid? portfolioId = null, string? ledgerReference = null) =>
         new(
             AccountId: Guid.NewGuid(),

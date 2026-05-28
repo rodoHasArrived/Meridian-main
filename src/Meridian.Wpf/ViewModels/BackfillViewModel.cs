@@ -33,7 +33,7 @@ public readonly record struct BackfillStatsPresentation(
 /// the code-behind is thinned to lifecycle wiring and form-input delegation.
 /// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class BackfillViewModel : BindableBase, IPageActivationLifetime, IDisposable, ICommandContextProvider, IPageActionBarProvider
+public sealed partial class BackfillViewModel : BindableBase, IPageActivationLifetime, IDisposable, ICommandContextProvider, IPageActionBarProvider
 {
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.NavigationService _navigationService;
@@ -57,31 +57,28 @@ public sealed class BackfillViewModel : BindableBase, IPageActivationLifetime, I
     private ulong _lastTotalSymbols;
 
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<SymbolProgressInfo> SymbolProgress { get; } = new();
-    public ObservableCollection<ScheduledJobInfo> ScheduledJobs { get; } = new();
-    public ObservableCollection<ResumableJobInfo> ResumableJobs { get; } = new();
-    public ObservableCollection<GapAnalysisItem> GapItems { get; } = new();
+    public ObservableCollection<SymbolProgressInfo> SymbolProgress => WorkbenchSection.SymbolProgress;
+    public ObservableCollection<ScheduledJobInfo> ScheduledJobs => WorkbenchSection.ScheduledJobs;
+    public ObservableCollection<ResumableJobInfo> ResumableJobs => WorkbenchSection.ResumableJobs;
+    public ObservableCollection<GapAnalysisItem> GapItems => WorkbenchSection.GapItems;
 
     // ── Bindable properties ─────────────────────────────────────────────────
-    private string _backfillStatusText = string.Empty;
     public string BackfillStatusText
     {
-        get => _backfillStatusText;
-        private set => SetProperty(ref _backfillStatusText, value);
+        get => WorkbenchSection.BackfillStatusText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.BackfillStatusText, text => WorkbenchSection.BackfillStatusText = text, value);
     }
 
-    private string _overallProgressText = string.Empty;
     public string OverallProgressText
     {
-        get => _overallProgressText;
-        private set => SetProperty(ref _overallProgressText, value);
+        get => WorkbenchSection.OverallProgressText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.OverallProgressText, text => WorkbenchSection.OverallProgressText = text, value);
     }
 
-    private string _pauseButtonContent = "Pause";
     public string PauseButtonContent
     {
-        get => _pauseButtonContent;
-        private set => SetProperty(ref _pauseButtonContent, value);
+        get => WorkbenchSection.PauseButtonContent;
+        private set => SetBackfillSectionProperty(WorkbenchSection.PauseButtonContent, text => WorkbenchSection.PauseButtonContent = text, value);
     }
 
     private bool _isBackfillActive;
@@ -96,25 +93,22 @@ public sealed class BackfillViewModel : BindableBase, IPageActivationLifetime, I
         }
     }
 
-    private bool _isProgressVisible;
     public bool IsProgressVisible
     {
-        get => _isProgressVisible;
-        private set => SetProperty(ref _isProgressVisible, value);
+        get => WorkbenchSection.IsProgressVisible;
+        private set => SetBackfillSectionProperty(WorkbenchSection.IsProgressVisible, visible => WorkbenchSection.IsProgressVisible = visible, value);
     }
 
-    private bool _hasNoScheduledJobs = true;
     public bool HasNoScheduledJobs
     {
-        get => _hasNoScheduledJobs;
-        private set => SetProperty(ref _hasNoScheduledJobs, value);
+        get => WorkbenchSection.HasNoScheduledJobs;
+        private set => SetBackfillSectionProperty(WorkbenchSection.HasNoScheduledJobs, empty => WorkbenchSection.HasNoScheduledJobs = empty, value);
     }
 
-    private bool _hasNoResumableJobs = true;
     public bool HasNoResumableJobs
     {
-        get => _hasNoResumableJobs;
-        private set => SetProperty(ref _hasNoResumableJobs, value);
+        get => WorkbenchSection.HasNoResumableJobs;
+        private set => SetBackfillSectionProperty(WorkbenchSection.HasNoResumableJobs, empty => WorkbenchSection.HasNoResumableJobs = empty, value);
     }
 
     private string _providerPrioritySummaryText = "Priority: No providers selected";
@@ -131,39 +125,34 @@ public sealed class BackfillViewModel : BindableBase, IPageActivationLifetime, I
         private set => SetProperty(ref _granularityHintText, value);
     }
 
-    private string _gapAnalysisSummaryText = string.Empty;
     public string GapAnalysisSummaryText
     {
-        get => _gapAnalysisSummaryText;
-        private set => SetProperty(ref _gapAnalysisSummaryText, value);
+        get => WorkbenchSection.GapAnalysisSummaryText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.GapAnalysisSummaryText, text => WorkbenchSection.GapAnalysisSummaryText = text, value);
     }
 
-    private string _gapActionHintText = string.Empty;
     public string GapActionHintText
     {
-        get => _gapActionHintText;
-        private set => SetProperty(ref _gapActionHintText, value);
+        get => WorkbenchSection.GapActionHintText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.GapActionHintText, text => WorkbenchSection.GapActionHintText = text, value);
     }
 
-    private bool _isGapAnalysisCardVisible;
     public bool IsGapAnalysisCardVisible
     {
-        get => _isGapAnalysisCardVisible;
-        private set => SetProperty(ref _isGapAnalysisCardVisible, value);
+        get => WorkbenchSection.IsGapAnalysisCardVisible;
+        private set => SetBackfillSectionProperty(WorkbenchSection.IsGapAnalysisCardVisible, visible => WorkbenchSection.IsGapAnalysisCardVisible = visible, value);
     }
 
-    private bool _isGapListVisible;
     public bool IsGapListVisible
     {
-        get => _isGapListVisible;
-        private set => SetProperty(ref _isGapListVisible, value);
+        get => WorkbenchSection.IsGapListVisible;
+        private set => SetBackfillSectionProperty(WorkbenchSection.IsGapListVisible, visible => WorkbenchSection.IsGapListVisible = visible, value);
     }
 
-    private bool _isGapActionPanelVisible;
     public bool IsGapActionPanelVisible
     {
-        get => _isGapActionPanelVisible;
-        private set => SetProperty(ref _isGapActionPanelVisible, value);
+        get => WorkbenchSection.IsGapActionPanelVisible;
+        private set => SetBackfillSectionProperty(WorkbenchSection.IsGapActionPanelVisible, visible => WorkbenchSection.IsGapActionPanelVisible = visible, value);
     }
 
     private string _nasdaqKeyStatusText = "No API key stored";

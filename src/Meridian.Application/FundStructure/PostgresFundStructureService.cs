@@ -726,7 +726,14 @@ public sealed class PostgresFundStructureService : IFundStructureService
             })
             .OrderBy(static g => g.DisplayName).ToList();
 
-        return new AccountingStructureViewDto(organization, business, portfolios, accounts, ledgerGroups, sharedDataAccess);
+        return new AccountingStructureViewDto(
+            organization,
+            business,
+            portfolios,
+            accounts,
+            ledgerGroups,
+            sharedDataAccess,
+            scoped.Assignments);
     }
 
     public Task<GovernanceCashFlowViewDto?> GetCashFlowViewAsync(

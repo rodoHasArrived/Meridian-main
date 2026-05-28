@@ -195,6 +195,51 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task LedgerMappingWorkbench_Build_ReportsAssignedAndUnmappedAccounts()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var asOf = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+
+        await fixture.StructureService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            AssignmentId: Guid.NewGuid(),
+            NodeId: fixture.FundAccountId,
+            AssignmentType: LedgerGroupingRules.LedgerGroupAssignmentType,
+            AssignmentReference: "FUND.OPS:PRIMARY",
+            EffectiveFrom: asOf,
+            CreatedBy: "test"));
+        var unassignedAccount = await fixture.AccountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Bank,
+            AccountCode: "FUND-UNMAPPED",
+            DisplayName: "Fund Unmapped Account",
+            BaseCurrency: "USD",
+            EffectiveFrom: asOf,
+            CreatedBy: "test",
+            FundId: fixture.FundId,
+            LedgerReference: "BAD/GROUP"));
+
+        var accountingView = await fixture.StructureService.GetAccountingViewAsync(
+            new AccountingStructureQuery(BusinessId: fixture.FundBusinessId, AsOf: asOf));
+        var workbench = LedgerMappingWorkbenchService.Build(accountingView, asOf);
+
+        Assert.NotNull(accountingView.Assignments);
+        Assert.Contains(accountingView.Assignments!, assignment => assignment.NodeId == fixture.FundAccountId);
+        Assert.Equal(accountingView.Accounts.Count, workbench.AccountCount);
+        Assert.Equal(1, workbench.UnmappedAccountCount);
+
+        var assignedRow = Assert.Single(workbench.Accounts, account => account.AccountId == fixture.FundAccountId);
+        Assert.Equal(LedgerGroupId.Create("FUND.OPS:PRIMARY"), assignedRow.Mapping.LedgerGroupId);
+        Assert.Equal(LedgerMappingSourceDto.AccountAssignment, assignedRow.Mapping.Source);
+        Assert.False(assignedRow.Mapping.RequiresUserMapping);
+
+        var unmappedRow = Assert.Single(workbench.Accounts, account => account.AccountId == unassignedAccount.AccountId);
+        Assert.Equal(LedgerGroupId.Unassigned, unmappedRow.Mapping.LedgerGroupId);
+        Assert.Equal(LedgerMappingSourceDto.Unassigned, unmappedRow.Mapping.Source);
+        Assert.True(unmappedRow.Mapping.RequiresUserMapping);
+        Assert.Contains("ledger-mapping.invalid-ledger-reference", unmappedRow.Mapping.IssueCodes);
+    }
+
+    [Fact]
     public async Task GetAccountingViewAsync_WithBusinessFilter_ExcludesOtherBusinessEntityScopedAccount()
     {
         var fixture = await CreateHybridFixtureAsync();

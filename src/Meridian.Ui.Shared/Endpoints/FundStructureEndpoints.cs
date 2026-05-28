@@ -325,6 +325,33 @@ public static class FundStructureEndpoints
         .WithName("GetAccountingStructureView")
         .Produces<AccountingStructureViewDto>(StatusCodes.Status200OK);
 
+        group.MapGet("/ledger-mapping-view", async (HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+
+            var q = context.Request.Query;
+            var asOf = ParseDateTimeOffset(q["asOf"]) ?? DateTimeOffset.UtcNow;
+            var query = new AccountingStructureQuery(
+                OrganizationId: ParseGuid(q["organizationId"]),
+                BusinessId: ParseGuid(q["businessId"]),
+                ClientId: ParseGuid(q["clientId"]),
+                FundId: ParseGuid(q["fundId"]),
+                SleeveId: ParseGuid(q["sleeveId"]),
+                VehicleId: ParseGuid(q["vehicleId"]),
+                InvestmentPortfolioId: ParseGuid(q["investmentPortfolioId"]),
+                LedgerReference: q["ledgerReference"].FirstOrDefault(),
+                ActiveOnly: ParseActiveOnly(q["activeOnly"]),
+                AsOf: asOf);
+
+            var accountingView = await service.GetAccountingViewAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var result = LedgerMappingWorkbenchService.Build(accountingView, asOf);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetLedgerMappingWorkbench")
+        .Produces<LedgerMappingWorkbenchDto>(StatusCodes.Status200OK);
+
         group.MapGet("/cash-flow-view", async (HttpContext context) =>
         {
             var q = context.Request.Query;

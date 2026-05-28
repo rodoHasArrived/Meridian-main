@@ -155,4 +155,26 @@ public sealed class BackfillViewModelTests
         xaml.Should().NotContain("Text=\"5 years\"");
         xaml.Should().NotContain("Text=\"2 hours ago\"");
     }
+
+    [Fact]
+    public void BackfillWorkbenchSection_ShouldOwnProgressJobsAndGapPresentationWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.cs"));
+
+        sectionSource.Should().Contain("public ObservableCollection<SymbolProgressInfo> SymbolProgress");
+        sectionSource.Should().Contain("public ObservableCollection<ScheduledJobInfo> ScheduledJobs");
+        sectionSource.Should().Contain("public ObservableCollection<ResumableJobInfo> ResumableJobs");
+        sectionSource.Should().Contain("public ObservableCollection<GapAnalysisItem> GapItems");
+        sectionSource.Should().Contain("public string BackfillStatusText");
+        sectionSource.Should().Contain("public string GapAnalysisSummaryText");
+        viewModelSource.Should().Contain("public BackfillWorkbenchSectionViewModel WorkbenchSection");
+        viewModelSource.Should().Contain("public ObservableCollection<SymbolProgressInfo> SymbolProgress => WorkbenchSection.SymbolProgress");
+        viewModelSource.Should().Contain("get => WorkbenchSection.BackfillStatusText");
+        viewModelSource.Should().Contain("get => WorkbenchSection.GapAnalysisSummaryText");
+        viewModelSource.Should().NotContain("_backfillStatusText");
+        viewModelSource.Should().NotContain("_overallProgressText");
+        viewModelSource.Should().NotContain("_hasNoScheduledJobs");
+        viewModelSource.Should().NotContain("_gapAnalysisSummaryText");
+    }
 }

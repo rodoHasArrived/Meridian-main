@@ -75,6 +75,132 @@ public static class LedgerGroupingRules
         return LedgerGroupId.Unassigned;
     }
 
+    public static LedgerMappingResolutionDto ResolveLedgerGroupMapping(
+        AccountSummaryDto account,
+        IReadOnlyList<FundStructureAssignmentDto> assignments)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        ArgumentNullException.ThrowIfNull(assignments);
+
+        if (TryResolveAssignment(
+                account.AccountId,
+                FundStructureNodeKindDto.Account,
+                LedgerMappingSourceDto.AccountAssignment,
+                assignments,
+                out var resolution))
+        {
+            return resolution;
+        }
+
+        if (TryParseGuid(account.PortfolioId, out var portfolioId)
+            && TryResolveAssignment(
+                portfolioId,
+                FundStructureNodeKindDto.InvestmentPortfolio,
+                LedgerMappingSourceDto.InvestmentPortfolioAssignment,
+                assignments,
+                out resolution))
+        {
+            return resolution;
+        }
+
+        if (account.SleeveId is Guid sleeveId
+            && TryResolveAssignment(
+                sleeveId,
+                FundStructureNodeKindDto.Sleeve,
+                LedgerMappingSourceDto.SleeveAssignment,
+                assignments,
+                out resolution))
+        {
+            return resolution;
+        }
+
+        if (account.VehicleId is Guid vehicleId
+            && TryResolveAssignment(
+                vehicleId,
+                FundStructureNodeKindDto.Vehicle,
+                LedgerMappingSourceDto.VehicleAssignment,
+                assignments,
+                out resolution))
+        {
+            return resolution;
+        }
+
+        if (account.FundId is Guid fundId
+            && TryResolveAssignment(
+                fundId,
+                FundStructureNodeKindDto.Fund,
+                LedgerMappingSourceDto.FundAssignment,
+                assignments,
+                out resolution))
+        {
+            return resolution;
+        }
+
+        if (account.EntityId is Guid entityId
+            && TryResolveAssignment(
+                entityId,
+                FundStructureNodeKindDto.Entity,
+                LedgerMappingSourceDto.EntityAssignment,
+                assignments,
+                out resolution))
+        {
+            return resolution;
+        }
+
+        if (LedgerGroupId.TryCreate(account.LedgerReference, out var fromAccount))
+        {
+            return new LedgerMappingResolutionDto(
+                fromAccount,
+                LedgerMappingSourceDto.AccountLedgerReference,
+                account.AccountId,
+                FundStructureNodeKindDto.Account,
+                account.LedgerReference,
+                RequiresUserMapping: false,
+                IssueCodes: []);
+        }
+
+        var issueCode = string.IsNullOrWhiteSpace(account.LedgerReference)
+            ? "ledger-mapping.missing"
+            : "ledger-mapping.invalid-ledger-reference";
+
+        return new LedgerMappingResolutionDto(
+            LedgerGroupId.Unassigned,
+            LedgerMappingSourceDto.Unassigned,
+            account.AccountId,
+            FundStructureNodeKindDto.Account,
+            account.LedgerReference,
+            RequiresUserMapping: true,
+            IssueCodes: [issueCode]);
+    }
+
+    private static bool TryResolveAssignment(
+        Guid nodeId,
+        FundStructureNodeKindDto nodeKind,
+        LedgerMappingSourceDto source,
+        IReadOnlyList<FundStructureAssignmentDto> assignments,
+        out LedgerMappingResolutionDto resolution)
+    {
+        var assignment = assignments.FirstOrDefault(assignment =>
+            assignment.NodeId == nodeId &&
+            IsLedgerGroupAssignmentType(assignment.AssignmentType));
+
+        if (assignment is null)
+        {
+            resolution = default!;
+            return false;
+        }
+
+        resolution = new LedgerMappingResolutionDto(
+            LedgerGroupId.Create(assignment.AssignmentReference),
+            source,
+            nodeId,
+            nodeKind,
+            assignment.AssignmentReference,
+            RequiresUserMapping: false,
+            IssueCodes: []);
+        return true;
+    }
+
     private static bool TryParseGuid(string? value, out Guid guid) =>
         Guid.TryParse(value, out guid);
 }

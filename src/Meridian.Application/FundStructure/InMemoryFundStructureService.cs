@@ -1086,7 +1086,8 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
             portfolios,
             accounts,
             ledgerGroups,
-            sharedDataAccess);
+            sharedDataAccess,
+            scoped.Assignments);
     }
 
     public async Task<GovernanceCashFlowViewDto?> GetCashFlowViewAsync(
