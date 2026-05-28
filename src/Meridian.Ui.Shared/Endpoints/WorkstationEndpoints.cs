@@ -129,21 +129,42 @@ public static partial class WorkstationEndpoints
             IReadOnlyList<CollateralInputRow> rows,
             HttpContext context) =>
         {
+            if (!HasOperationsContinuityMutationPermission(context))
+            {
+                return Results.Forbid();
+            }
+
+            const int maxRowsPerRequest = 1_000;
+            if (rows.Count > maxRowsPerRequest)
+            {
+                return Results.BadRequest(new { error = $"A maximum of {maxRowsPerRequest} collateral rows can be ingested per request." });
+            }
+
             var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
             if (buffer is null)
             {
                 return Results.Accepted(value: new { ingested = 0, buffered = false });
             }
 
+            var ingested = 0;
             foreach (var row in rows)
             {
-                buffer.Ingest(row);
+                if (!buffer.TryIngest(row))
+                {
+                    return Results.StatusCode(StatusCodes.Status429TooManyRequests);
+                }
+
+                ingested++;
             }
 
-            return Results.Accepted(value: new { ingested = rows.Count, buffered = true });
+            return Results.Accepted(value: new { ingested, buffered = true });
         })
         .WithName("IngestCollateralRows")
-        .Produces(202);
+        .Produces(202)
+        .Produces(400)
+        .Produces(403)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet("/workflows/presets", async (HttpContext context) =>
         {
@@ -304,13 +325,19 @@ public static partial class WorkstationEndpoints
 
         group.MapGet("/collateral/exposure", (HttpContext context) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return Results.Forbid();
+            }
+
             var service = context.RequestServices.GetRequiredService<CollateralExposureService>();
             var buffer = context.RequestServices.GetService<CollateralIngestionBuffer>();
             var rows = buffer?.DrainBatch(5_000) ?? [];
             return Results.Json(BuildCollateralExposureSnapshot(service, rows), jsonOptions);
         })
         .WithName("GetWorkstationCollateralExposure")
-        .Produces<ExposureSnapshotDto>(200);
+        .Produces<ExposureSnapshotDto>(200)
+        .Produces(403);
 
         group.MapGet("/operator/inbox", async (Guid? fundAccountId, HttpContext context) =>
         {

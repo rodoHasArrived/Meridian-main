@@ -24,4 +24,24 @@ public sealed class CollateralExposureServiceTests
         breaches.Should().ContainSingle();
         breaches[0].Severity.Should().Be(ThresholdSeverity.HardBreach);
     }
+
+    [Fact]
+    public void CollateralIngestionBuffer_RejectsRowsWhenCapacityReached()
+    {
+        var buffer = new CollateralIngestionBuffer();
+
+        var accepted = 0;
+        for (var index = 0; index < 20_001; index++)
+        {
+            var row = new CollateralInputRow(DateTimeOffset.UtcNow, $"CPTY-{index}", "repo", 1m, 1m, 1m, "cash", 1m, 0m);
+            if (buffer.TryIngest(row))
+            {
+                accepted++;
+            }
+        }
+
+        accepted.Should().Be(20_000);
+        buffer.BufferedCount.Should().Be(20_000);
+    }
+
 }

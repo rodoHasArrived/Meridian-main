@@ -125,9 +125,21 @@ public sealed class CollateralExposureService
 
 public sealed class CollateralIngestionBuffer
 {
+    private const int MaxBufferedRows = 20_000;
     private readonly ConcurrentQueue<CollateralInputRow> _buffer = new();
 
-    public void Ingest(CollateralInputRow row) => _buffer.Enqueue(row);
+    public int BufferedCount => _buffer.Count;
+
+    public bool TryIngest(CollateralInputRow row)
+    {
+        if (_buffer.Count >= MaxBufferedRows)
+        {
+            return false;
+        }
+
+        _buffer.Enqueue(row);
+        return true;
+    }
 
     public IReadOnlyList<CollateralInputRow> DrainBatch(int maxItems = 500)
     {
