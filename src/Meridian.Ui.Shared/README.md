@@ -60,6 +60,9 @@ client-local mapping or posting readiness rules.
 When provider-routing capability metadata is registered, the reconciliation service blocks runs
 that cannot route account balances, account positions, or reconciliation-feed capability for the
 fund account, so unsupported providers fail as accounting break evidence before ledger comparison.
+Positioned accounts also require corporate-action capability as a valuation-readiness signal; if
+that capability is unavailable, reconciliation can still run but records a degradation break for
+controller review.
 
 ## Diagrams
 
