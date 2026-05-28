@@ -33,6 +33,26 @@ instead of introducing one-off screen styling.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
 
+
+## Dense row detail accessibility contract
+
+Dense row lists that drive an adjacent detail panel must use the shared contract in
+`src/components/meridian/dense-row-detail-accessibility.tsx` through `DenseDataTable` and
+`DenseRowDetailPanel` instead of screen-local keyboard or ARIA implementations.
+
+The contract standardizes:
+
+- Arrow Up/Down, Home, and End as row focus plus selection movement.
+- Enter and Space as row activation that selects the focused row and hands focus to the controlled
+  detail panel.
+- Escape from a detail panel as the return path to the selected controlling row.
+- `aria-selected`, `aria-expanded`, and `aria-controls` on selectable rows, with labelled,
+  programmatically focusable detail regions that announce updates politely.
+- A table-scoped live region that announces selection changes and panel refreshes.
+
+Current dense-row detail consumers covered by regression tests include Portfolio positions,
+Portfolio run evidence, Trading recent fills, Data backfill queue rows, and Security Master lots.
+
 ## Important workflows
 
 This is the active operator UI lane; keep shared contract parity with the WPF desktop. Security

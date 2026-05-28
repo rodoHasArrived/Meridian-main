@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { cn } from "@/lib/utils";
@@ -690,11 +691,10 @@ export function PortfolioScreen({
           </CardContent>
         </Card>
 
-        <aside
+        <DenseRowDetailPanel
           id={vm.positionDetailId}
           role="complementary"
-          aria-live="polite"
-          aria-label={vm.selectedPosition?.ariaLabel ?? "Portfolio holding detail"}
+          ariaLabel={vm.selectedPosition?.ariaLabel ?? "Portfolio holding detail"}
           className={cn(
             "panel-surface h-fit min-w-0 overflow-hidden p-4",
             vm.selectedPosition
@@ -735,7 +735,7 @@ export function PortfolioScreen({
               <p className="mt-2">{vm.positionEmptyText}</p>
             </div>
           )}
-        </aside>
+        </DenseRowDetailPanel>
       </section>
 
       <Card className="panel-surface">
@@ -773,11 +773,10 @@ export function PortfolioScreen({
                 ariaLabel={vm.runListLabel}
                 caption="Select a run row to update the run evidence detail panel."
               />
-              <aside
+              <DenseRowDetailPanel
                 id={vm.runDetailId}
                 role="complementary"
-                aria-live="polite"
-                aria-label={vm.selectedRun?.ariaLabel ?? "Run evidence detail"}
+                ariaLabel={vm.selectedRun?.ariaLabel ?? "Run evidence detail"}
                 className={cn(
                   "panel-surface h-fit min-w-0 overflow-hidden p-4",
                   vm.selectedRun
@@ -826,7 +825,7 @@ export function PortfolioScreen({
                     <p className="mt-2">{vm.runEmptyText}</p>
                   </div>
                 )}
-              </aside>
+              </DenseRowDetailPanel>
             </div>
           ) : (
             <div

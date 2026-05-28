@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getOperatorOverrides as defaultGetOperatorOverrides, patchOperatorOverrides as defaultPatchOperatorOverrides } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -515,9 +516,10 @@ function readMarketPriceOverride(securityId: string | null): number | null {
 }
 
 export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps) {
-  const [lots, setLots] = useState<SecurityLot[]>([]);
-  const [marketPriceOverride, setMarketPriceOverride] = useState<number | null>(null);
-  const [selectedLotId, setSelectedLotId] = useState<string | null>(null);
+  const initialLots = useMemo(() => securityId ? loadLots(securityId) : [], [securityId]);
+  const [lots, setLots] = useState<SecurityLot[]>(initialLots);
+  const [marketPriceOverride, setMarketPriceOverride] = useState<number | null>(() => readMarketPriceOverride(securityId));
+  const [selectedLotId, setSelectedLotId] = useState<string | null>(initialLots[0]?.lotId ?? null);
   const [draftDate, setDraftDate] = useState(todayIso());
   const [draftQty, setDraftQty] = useState("");
   const [draftPrice, setDraftPrice] = useState("");
@@ -783,7 +785,11 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
               caption={vm.tableCaption}
             />
             {vm.selectedDetail ? (
-              <div id={vm.selectedDetail.panelId}>
+              <DenseRowDetailPanel
+                id={vm.selectedDetail.panelId}
+                ariaLabel={vm.selectedDetail.ariaLabel}
+                className="min-w-0"
+              >
                 <EntitySummary
                   eyebrow={vm.selectedDetail.eyebrow}
                   title={vm.selectedDetail.title}
@@ -791,9 +797,9 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
                   description={vm.selectedDetail.description}
                   status={<Badge variant={vm.selectedDetail.statusBadgeVariant} dot>{vm.selectedDetail.statusLabel}</Badge>}
                   fields={vm.selectedDetail.fields}
-                  ariaLabel={vm.selectedDetail.ariaLabel}
+                  ariaLabel={`${vm.selectedDetail.ariaLabel} summary`}
                 />
-              </div>
+              </DenseRowDetailPanel>
             ) : null}
           </>
         )}
