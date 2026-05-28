@@ -39,16 +39,45 @@ public sealed class ReconciliationBreakQueueRepositoryTests
 
         var review = await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(item.BreakId, "alice", "alice", "triage"));
         review.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
-        review.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.InReview);
+        review.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
 
         var closed = await repo.ResolveAsync(new ResolveReconciliationBreakRequest(item.BreakId, ReconciliationBreakQueueStatus.Resolved, "bob", "resolved", "evidence packet #42"));
         closed.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
-        closed.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.AwaitingApproval);
+        closed.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
+        closed.Item.ResolutionCode.Should().Be("LegacyResolved");
         closed.Item.SignoffHistory.Should().NotBeNullOrEmpty();
         closed.Item.StateTransitions.Should().HaveCountGreaterThanOrEqualTo(2);
 
         var timestamps = closed.Item.StateTransitions!.Select(t => t.OccurredAt).ToArray();
         timestamps.Should().BeInAscendingOrder();
+    }
+
+    [Fact]
+    public async Task Legacy_states_are_migrated_to_shared_casework_lifecycle()
+    {
+        var repo = CreateRepository(out _);
+        var inReview = CreateItem(status: ReconciliationBreakQueueStatus.InReview) with
+        {
+            LifecycleState = ReconciliationCaseLifecycleState.InReview,
+            AssignedTo = "ops-a"
+        };
+        var dismissed = CreateItem(status: ReconciliationBreakQueueStatus.Dismissed) with
+        {
+            LifecycleState = ReconciliationCaseLifecycleState.Superseded
+        };
+
+        await repo.CreateIfMissingAsync(inReview);
+        await repo.CreateIfMissingAsync(dismissed);
+
+        var migratedReview = await repo.GetByIdAsync(inReview.BreakId);
+        migratedReview!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
+        migratedReview.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+
+        var migratedDismissed = await repo.GetByIdAsync(dismissed.BreakId);
+        migratedDismissed!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
+        migratedDismissed.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        migratedDismissed.RootCauseCode.Should().Be("DismissedFalsePositive");
+        migratedDismissed.ResolutionCode.Should().Be("DismissedFalsePositive");
     }
 
     [Fact]
@@ -61,8 +90,12 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         await repo.ResolveAsync(new ResolveReconciliationBreakRequest(item.BreakId, ReconciliationBreakQueueStatus.Resolved, "ops", "resolved", "packet evidence"));
 
         var history = await repo.GetAuditHistoryAsync(item.BreakId);
-        history.Should().HaveCount(3);
+        history.Should().HaveCount(4);
         history.Select(x => x.OccurredAt).Should().BeInAscendingOrder();
+        history.Select(x => x.EventType).Should().Contain("CaseCreated");
+        history.Select(x => x.EventType).Should().Contain("Assigned");
+        history.Select(x => x.EventType).Should().Contain("ReviewStarted");
+        history.Select(x => x.EventType).Should().Contain("Resolved");
 
         var auditPath = Path.Combine(root, "reconciliation-break-queue-audit.jsonl");
         var lines = await File.ReadAllLinesAsync(auditPath);
@@ -152,7 +185,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         comment.Item.EvidenceCount.Should().Be(1);
 
         var history = await repo.GetAuditHistoryAsync(item.BreakId);
-        history.Should().Contain(e => e.EventType == "AssigneeChanged" && e.CommandId is not null && e.CorrelationId is not null && e.SchemaVersion == 1);
+        history.Should().Contain(e => e.EventType == "Assigned" && e.CommandId is not null && e.CorrelationId is not null && e.SchemaVersion == 1);
         history.Should().Contain(e => e.EventType == "CommentAdded" && e.AfterPayload is not null);
     }
 
@@ -179,6 +212,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         var signoff = await repo.ApplyCaseworkCommandAsync(Command(resolved.Item, ReconciliationCaseworkAction.SignOff) with { Actor = "controller-b", Note = "Independent review complete." });
         signoff.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         signoff.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
+        (await repo.GetAuditHistoryAsync(item.BreakId)).Should().Contain(e => e.EventType == "SignedOff");
 
         var reopenWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(signoff.Item, ReconciliationCaseworkAction.Reopen) with { Actor = "controller-manager", Privileged = true });
         reopenWithoutReason.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingReason);

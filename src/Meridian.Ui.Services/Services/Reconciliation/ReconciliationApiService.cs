@@ -1,3 +1,4 @@
+using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 
@@ -18,6 +19,27 @@ public sealed class ReconciliationApiService(ICanonicalStatementStore importStor
     public async Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(CancellationToken ct = default)
         => (await breakStore.ListOpenAsync(ct)).Select(x => new StatementRunExceptionDto(x.BreakId, x.RunId, x.ImportId, x.SourceReference, x.BreakCode, x.Category, x.Delta, x.Tolerance, x.ToleranceBreached, x.CreatedAtUtc.ToString("O"), x.Status)).ToList();
 
+    public async Task<IReadOnlyList<StatementBreakDto>> ListOpenStatementBreaksAsync(CancellationToken ct = default)
+        => (await breakStore.ListOpenAsync(ct)).Select(x => new StatementBreakDto(
+            BreakId: x.BreakId,
+            BreakType: MapStatementBreakType(x.Category, x.BreakCode),
+            Severity: x.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
+            MatchTier: StatementMatchTier.Manual,
+            StatementReference: x.SourceReference,
+            Description: $"{x.Category} break {x.BreakCode} requires statement reconciliation review.",
+            StatementAmount: x.Delta,
+            BookAmount: null,
+            Delta: x.Delta,
+            Tolerance: x.Tolerance,
+            Currency: null,
+            CreatedAtUtc: x.CreatedAtUtc,
+            Status: x.Status,
+            InternalReference: x.RunId,
+            Owner: null,
+            LastObservedAtUtc: x.CreatedAtUtc,
+            RecommendedAction: "ReviewAndResolve",
+            EvidenceLink: $"/api/workstation/reconciliation/exceptions/{Uri.EscapeDataString(x.BreakId)}")).ToList();
+
     public async Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
         => (await caseStore.ListAsync(ct)).Where(c => c.Status == "Open").Select(c => new ReconciliationCaseSummaryDto(c.CaseId, c.ImportId, c.Status, c.Reason, c.Confidence, c.Rationale, c.CreatedAtUtc.ToString("O"))).ToList();
 
@@ -36,5 +58,29 @@ public sealed class ReconciliationApiService(ICanonicalStatementStore importStor
                 BlockerReason: "Unresolved breaks remain in the reconciliation queue.",
                 EvidenceLinks: group.Select(c => $"/api/workstation/reconciliation/cases/{Uri.EscapeDataString(c.CaseId)}").ToList()))
             .ToList();
+    }
+
+    private static StatementBreakType MapStatementBreakType(string category, string breakCode)
+    {
+        if (category.Equals("position", StringComparison.OrdinalIgnoreCase))
+        {
+            return breakCode.Contains("missing", StringComparison.OrdinalIgnoreCase)
+                ? StatementBreakType.MissingBookPosition
+                : StatementBreakType.PositionQuantityMismatch;
+        }
+
+        if (category.Equals("cash", StringComparison.OrdinalIgnoreCase))
+        {
+            return StatementBreakType.CashBalanceMismatch;
+        }
+
+        if (category.Equals("transaction", StringComparison.OrdinalIgnoreCase))
+        {
+            return breakCode.Contains("missing", StringComparison.OrdinalIgnoreCase)
+                ? StatementBreakType.MissingBookTransaction
+                : StatementBreakType.TransactionAmountMismatch;
+        }
+
+        return StatementBreakType.ValidationFailure;
     }
 }

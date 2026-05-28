@@ -23,7 +23,7 @@ public sealed class ReconciliationCaseWorkflowService : IReconciliationCaseWorkf
             Actor = command.Actor,
             Reason = command.Reason,
             EvidenceReferenceCount = command.EvidenceReferences?.Count ?? 0,
-            ReviewedBy = item.ReviewedBy ?? string.Empty
+            ReviewedBy = item.ResolvedBy ?? item.ReviewedBy ?? string.Empty
         });
 
         if (!decision.IsValid)
