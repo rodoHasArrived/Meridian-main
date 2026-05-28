@@ -1,6 +1,6 @@
 // Storage Architecture Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-23
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the archival-first storage pipeline with WAL,
 // compression profiles, tiered storage, export capabilities, security master
@@ -17,7 +17,7 @@ digraph StorageArchitecture {
 
   // Title
   labelloc="t";
-  label="Meridian - Storage Architecture\nArchival-First Pipeline | v1.7.x";
+  label="Meridian - Storage Architecture\nArchival-First Pipeline";
 
   // Input Events
   subgraph cluster_input {

@@ -1,6 +1,6 @@
 // Strategy Lifecycle Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-23
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the full strategy lifecycle: registration, activation,
 // state machine, portfolio tracking, and promotion from backtest to live.
@@ -16,7 +16,7 @@ digraph StrategyLifecycle {
 
   // Title
   labelloc="t";
-  label="Meridian - Strategy Lifecycle\nRegistration → Backtest → Paper → Live | v1.7.x";
+  label="Meridian - Strategy Lifecycle\nRegistration → Backtest → Paper → Live";
 
   // Strategy SDK
   subgraph cluster_sdk {

@@ -1,6 +1,6 @@
 // Execution Layer Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-23
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the order execution layer including the paper trading
 // gateway, order lifecycle state machine, and position management.
@@ -16,7 +16,7 @@ digraph ExecutionLayer {
 
   // Title
   labelloc="t";
-  label="Meridian - Execution Layer\nPaper Trading Gateway & Order Lifecycle | v1.7.x";
+  label="Meridian - Execution Layer\nPaper Trading Gateway & Order Lifecycle";
 
   // Order Origination
   subgraph cluster_origin {

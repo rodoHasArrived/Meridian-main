@@ -738,7 +738,7 @@ file sealed class BuyFirstBarWithMarketImpactGtcStrategy(string symbol, long qua
             Symbol: symbol,
             Quantity: quantity,
             Type: OrderType.Market,
-            TimeInForce: TimeInForce.Gtc,
+            TimeInForce: TimeInForce.GoodTilCancelled,
             ExecutionModel: ExecutionModel.MarketImpact));
         _submitted = true;
     }

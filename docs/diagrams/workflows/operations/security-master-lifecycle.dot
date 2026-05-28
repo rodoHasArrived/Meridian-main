@@ -1,6 +1,6 @@
 // Security Master Lifecycle Diagram
-// Meridian v1.8.x
-// Last Updated: 2026-04-21
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the current Security Master flow across import, ingest
 // status, conflict triage, projections, cache warmup, and workstation/query
@@ -13,7 +13,7 @@ digraph SecurityMasterLifecycle {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - Security Master Lifecycle\nImport, ingest status, conflict triage, and workstation consumers | v1.8.x";
+  label="Meridian - Security Master Lifecycle\nImport, ingest status, conflict triage, and workstation consumers";
 
   subgraph cluster_inputs {
     label="Inputs and Entry Paths";

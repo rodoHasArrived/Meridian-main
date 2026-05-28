@@ -1,6 +1,6 @@
 // Fund Operations Reconciliation Diagram
-// Meridian v1.8.x
-// Last Updated: 2026-04-07
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the current governance/fund-ops reconciliation loop across
 // workstation views, reconciliation services, the F# reconciliation engine, and
@@ -13,7 +13,7 @@ digraph FundOpsReconciliation {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - Fund Ops and Reconciliation\nGovernance workspace, reconciliation engine, and review loop | v1.8.x";
+  label="Meridian - Fund Ops and Reconciliation\nGovernance workspace, reconciliation engine, and review loop";
 
   subgraph cluster_surfaces {
     label="Governance Surfaces";

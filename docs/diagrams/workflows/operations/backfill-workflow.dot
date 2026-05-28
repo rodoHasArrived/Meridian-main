@@ -1,6 +1,6 @@
 // Backfill Workflow Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-24
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the end-to-end backfill workflow:
 // CLI command parsing → BackfillCoordinator → CompositeHistoricalDataProvider
@@ -17,7 +17,7 @@ digraph BackfillWorkflow {
 
   // Title
   labelloc="t";
-  label="Meridian - Backfill Workflow\nCLI → CompositeProvider → Rate Limiting → Storage | v1.7.x";
+  label="Meridian - Backfill Workflow\nCLI → CompositeProvider → Rate Limiting → Storage";
 
   // 1. Entry Points
   subgraph cluster_entry {

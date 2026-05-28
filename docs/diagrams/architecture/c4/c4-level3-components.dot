@@ -1,5 +1,5 @@
 // C4 Level 3: Component Diagram
-// Meridian v1.6.1
+// Meridian current project state
 // Last Updated: 2026-02-21
 //
 // This diagram shows the internal components of the Meridian Core.
@@ -16,7 +16,7 @@ digraph C4_Components {
 
   // Title
   labelloc="t";
-  label="Meridian - Component Diagram (C4 Level 3)\nCore Collector Internals | v1.6.1";
+  label="Meridian - Component Diagram (C4 Level 3)\nCore Collector Internals";
 
   // External Systems
   subgraph cluster_external {
@@ -33,7 +33,7 @@ digraph C4_Components {
     SS [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
         label="StockSharp\n[Multi-Exchange]"];
     HIST_API [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white",
-              label="Historical APIs\n[10 providers]"];
+              label="Historical APIs\n[15 provider classes]"];
   }
 
   FS [shape=cylinder, style="filled", fillcolor="#718096", fontcolor="white",
@@ -41,7 +41,7 @@ digraph C4_Components {
 
   // Core Collector Container
   subgraph cluster_core {
-    label="Meridian Core [.NET 9 Console App]";
+    label="Meridian Core [.NET 10 Console App]";
     color="#438dd5";
     style="rounded";
     bgcolor="#f0f8ff";

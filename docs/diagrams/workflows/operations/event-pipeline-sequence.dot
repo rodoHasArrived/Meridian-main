@@ -1,6 +1,6 @@
 // Event Pipeline Sequence Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-23
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the sequence of event processing through the pipeline,
 // including the dual-path pipeline, dedup ledger, schema upcasting,
@@ -17,7 +17,7 @@ digraph EventPipelineSequence {
 
   // Title
   labelloc="t";
-  label="Meridian - Event Pipeline Sequence\nAsync Producer-Consumer Pattern | v1.7.x";
+  label="Meridian - Event Pipeline Sequence\nAsync Producer-Consumer Pattern";
 
   // Phase 1: Data Source
   subgraph cluster_source {

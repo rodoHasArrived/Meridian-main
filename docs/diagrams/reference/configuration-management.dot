@@ -1,6 +1,6 @@
 // Configuration Management Diagram
-// Meridian v1.7.x
-// Last Updated: 2026-03-24
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the configuration management architecture:
 // appsettings.json hierarchy, environment variable overrides,
@@ -17,7 +17,7 @@ digraph ConfigurationManagement {
 
   // Title
   labelloc="t";
-  label="Meridian - Configuration Management\nHierarchy, Hot-Reload, and IOptionsMonitor | v1.7.x";
+  label="Meridian - Configuration Management\nHierarchy, Hot-Reload, and IOptionsMonitor";
 
   // Configuration Sources (priority low → high)
   subgraph cluster_sources {

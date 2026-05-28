@@ -1,6 +1,6 @@
 // Deployment Options Diagram
-// Meridian v1.6.1
-// Last Updated: 2026-04-09
+// Meridian current project state
+// Last Updated: 2026-05-28
 //
 // This diagram shows the different deployment options available,
 // from standalone console to distributed Kubernetes clusters.
@@ -16,7 +16,7 @@ digraph DeploymentOptions {
 
   // Title
   labelloc="t";
-  label="Meridian - Deployment Options\nFrom Development to Production | v1.6.1";
+  label="Meridian - Deployment Options\nFrom Development to Production";
 
   // Option 1: Standalone Console
   subgraph cluster_standalone {
