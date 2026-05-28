@@ -329,7 +329,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         command.CommandText =
             $"""
             select event_type,
-                   payload_json::text
+                   payload::text
             from {Qualified("loan_event")}
             where loan_id = @loan_id
               and command_id = @command_id
