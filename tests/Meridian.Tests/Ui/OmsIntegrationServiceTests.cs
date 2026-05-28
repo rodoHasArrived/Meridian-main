@@ -20,6 +20,24 @@ public sealed class OmsIntegrationServiceTests
     }
 
     [Fact]
+    public void Ingest_Replay_DoesNotOverwriteExistingMessage()
+    {
+        var service = new OmsIntegrationService();
+        var first = new OmsInboundMessage("oms-a", "ord-1", "fill", DateTimeOffset.UtcNow, "hash-1", "stable-key", "corr-1");
+        var replay = new OmsInboundMessage("oms-b", "ord-99", "cancel", DateTimeOffset.UtcNow.AddMinutes(1), "hash-2", "stable-key", "corr-2");
+
+        service.Ingest(first);
+        var result = service.Ingest(replay);
+
+        result.ReplayDetected.Should().BeTrue();
+        var snapshot = service.Snapshot().Should().ContainSingle().Subject;
+        snapshot.SourceSystem.Should().Be("oms-a");
+        snapshot.ExternalOrderId.Should().Be("ord-1");
+        snapshot.EventType.Should().Be("fill");
+        snapshot.PayloadHash.Should().Be("hash-1");
+    }
+
+    [Fact]
     public void ResolveSyncConflict_UsesTimestampPrecedence()
     {
         var service = new OmsIntegrationService();
