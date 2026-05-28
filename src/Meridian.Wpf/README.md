@@ -34,6 +34,8 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
+- Fund reconciliation workbench surfaces break queue casework, sign-off posture, and calibration KPIs (break trend, auto-match rate, T+0 closure) without moving matching logic into WPF view models.
+
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext

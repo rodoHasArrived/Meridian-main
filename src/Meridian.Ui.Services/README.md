@@ -71,3 +71,5 @@ shared projections over browser-only or WPF-only product logic.
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/status/contract-compatibility-matrix.md`
 - `docs/source/generated/source-module-index.md`
+
+- Reconciliation API service projections expose statement runs, open breaks, account queue status, case summaries, and calibration KPIs for break trend, auto-match rate, T+0 closure rate, and alert thresholds shared by desktop and browser operators.

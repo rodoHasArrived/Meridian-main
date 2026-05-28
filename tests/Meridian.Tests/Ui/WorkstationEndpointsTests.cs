@@ -3789,6 +3789,10 @@ public sealed partial class WorkstationEndpointsTests
             profile.TotalBreakCount > 0 &&
             profile.PendingSignoffCount > 0);
         summary.Summary.Should().Contain("reconciliation");
+        summary.BreakCountTrend.Should().BeGreaterThanOrEqualTo(0);
+        summary.AutoMatchRate.Should().BeInRange(0m, 1m);
+        summary.T0ClosureRate.Should().BeInRange(0m, 1m);
+        summary.BreakCountAlertThreshold.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -3857,6 +3861,9 @@ public sealed partial class WorkstationEndpointsTests
         summary.SignedOffCount.Should().Be(summary.TotalBreakCount);
         summary.Profiles.Should().OnlyContain(profile => profile.PendingSignoffCount == 0);
         summary.Summary.Should().Contain("ready for governance sign-off");
+        summary.BreakCountTrend.Should().BeLessThanOrEqualTo(0);
+        summary.T0ClosureRate.Should().Be(1m);
+        summary.T0ClosureRateAlertTriggered.Should().BeFalse();
     }
 
     [Fact]

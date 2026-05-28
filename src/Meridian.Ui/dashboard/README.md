@@ -96,6 +96,8 @@ npm --prefix src/Meridian.Ui/dashboard run build
 
 ## Change rules
 
+- Governance reconciliation views include queue actions plus calibration KPI widgets for break trend, auto-match rate, T+0 closure rate, and threshold warnings sourced from shared workstation contracts.
+
 Do not create mobile-first workflows or native mobile clients. Prefer shared read models and
 endpoint contracts for behavior also consumed by WPF or host workflows.
 

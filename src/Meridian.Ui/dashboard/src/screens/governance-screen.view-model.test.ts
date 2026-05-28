@@ -705,6 +705,12 @@ describe("governance-screen view model", () => {
       pendingSignoffCount: 3,
       signedOffCount: 4,
       missingCalibrationMetadataCount: 1,
+      breakCountTrend: 2,
+      autoMatchRate: 0.875,
+      t0ClosureRate: 0.75,
+      breakCountAlertTriggered: false,
+      autoMatchRateAlertTriggered: false,
+      t0ClosureRateAlertTriggered: true,
       profiles: [
         {
           toleranceProfileId: "profile-cash",
@@ -748,6 +754,9 @@ describe("governance-screen view model", () => {
       expect.objectContaining({ id: "critical-open", label: "Critical open", value: 1, tone: "warning" }),
       expect.objectContaining({ id: "pending-signoff", label: "Pending sign-off", value: 3, tone: "warning" }),
       expect.objectContaining({ id: "signed-off", label: "Signed off", value: 4, tone: "default" }),
+      expect.objectContaining({ id: "break-trend", label: "Break trend", value: 2, tone: "default" }),
+      expect.objectContaining({ id: "auto-match", label: "Auto-match %", value: 88, tone: "default" }),
+      expect.objectContaining({ id: "t0-closure", label: "T+0 closure %", value: 75, tone: "warning" }),
       expect.objectContaining({ id: "missing-metadata", label: "Missing metadata", value: 1, tone: "warning" })
     ]);
     expect(state.profileRows[0].ariaLabel).toContain("profile-cash");

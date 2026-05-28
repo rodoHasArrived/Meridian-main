@@ -51,6 +51,8 @@ application service contracts consumed by host and UI surfaces.
 
 ## API contract notes
 
+- Broker/custodian reconciliation now uses canonical feed descriptors, normalized position/cash/transaction records, deterministic exact/tolerance/heuristic match decisions, and an append-only decision journal for unresolved breaks and resolution history.
+
 - Statement reconciliation tolerance profiles are versioned in `Reconciliation/`; match outputs that use a tolerance must carry the tolerance profile ID/version and the exact tolerance rule ID that allowed the match.
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication,
   health lookup, fallback detection, logging, and metrics.

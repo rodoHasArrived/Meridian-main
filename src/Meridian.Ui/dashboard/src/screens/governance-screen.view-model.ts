@@ -4047,6 +4047,9 @@ function buildCalibrationSummaryMetrics(
     buildCalibrationSummaryMetric("critical-open", "Critical open", criticalOpenBreakCount, criticalOpenBreakCount > 0),
     buildCalibrationSummaryMetric("pending-signoff", "Pending sign-off", pendingSignoffCount, pendingSignoffCount > 0),
     buildCalibrationSummaryMetric("signed-off", "Signed off", signedOffCount, false),
+    buildCalibrationSummaryMetric("break-trend", "Break trend", summary?.breakCountTrend ?? 0, summary?.breakCountAlertTriggered ?? false),
+    buildCalibrationSummaryMetric("auto-match", "Auto-match %", Math.round((summary?.autoMatchRate ?? 1) * 100), summary?.autoMatchRateAlertTriggered ?? false),
+    buildCalibrationSummaryMetric("t0-closure", "T+0 closure %", Math.round((summary?.t0ClosureRate ?? 1) * 100), summary?.t0ClosureRateAlertTriggered ?? false),
     buildCalibrationSummaryMetric("missing-metadata", "Missing metadata", missingMetadataCount, missingMetadataCount > 0)
   ];
 }

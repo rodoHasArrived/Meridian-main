@@ -2529,6 +2529,15 @@ export interface ReconciliationCalibrationSummary {
   pendingSignoffCount: number;
   signedOffCount: number;
   missingCalibrationMetadataCount: number;
+  breakCountTrend?: number;
+  autoMatchRate?: number;
+  t0ClosureRate?: number;
+  breakCountAlertThreshold?: number;
+  autoMatchRateAlertThreshold?: number;
+  t0ClosureRateAlertThreshold?: number;
+  breakCountAlertTriggered?: boolean;
+  autoMatchRateAlertTriggered?: boolean;
+  t0ClosureRateAlertTriggered?: boolean;
   profiles: ReconciliationCalibrationProfile[];
 }
 

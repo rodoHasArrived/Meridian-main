@@ -612,7 +612,18 @@ public sealed record ReconciliationCalibrationSummaryDto(
     int PendingSignoffCount,
     int SignedOffCount,
     int MissingCalibrationMetadataCount,
-    IReadOnlyList<ReconciliationCalibrationProfileSummaryDto> Profiles);
+    IReadOnlyList<ReconciliationCalibrationProfileSummaryDto> Profiles)
+{
+    public int BreakCountTrend { get; init; }
+    public decimal AutoMatchRate { get; init; }
+    public decimal T0ClosureRate { get; init; }
+    public int BreakCountAlertThreshold { get; init; } = 25;
+    public decimal AutoMatchRateAlertThreshold { get; init; } = 0.85m;
+    public decimal T0ClosureRateAlertThreshold { get; init; } = 0.90m;
+    public bool BreakCountAlertTriggered => ActiveBreakCount >= BreakCountAlertThreshold;
+    public bool AutoMatchRateAlertTriggered => AutoMatchRate < AutoMatchRateAlertThreshold;
+    public bool T0ClosureRateAlertTriggered => T0ClosureRate < T0ClosureRateAlertThreshold;
+}
 
 /// <summary>
 /// Request to move a break into active review and assign an operator.

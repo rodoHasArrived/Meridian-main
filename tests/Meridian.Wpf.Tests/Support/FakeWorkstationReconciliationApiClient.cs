@@ -176,8 +176,22 @@ internal sealed class FakeWorkstationReconciliationApiClient : IWorkstationRecon
             PendingSignoffCount: pendingSignoffCount,
             SignedOffCount: signedOffCount,
             MissingCalibrationMetadataCount: missingMetadataCount,
-            Profiles: profiles);
+            Profiles: profiles)
+        {
+            BreakCountTrend = activeItems.Length - items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
+            AutoMatchRate = CalculateAutoMatchRate(items.Length, activeItems.Length),
+            T0ClosureRate = CalculateT0ClosureRate(
+                items.Length,
+                items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
+                items.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed))
+        };
     }
+
+    private static decimal CalculateAutoMatchRate(int totalBreakCount, int activeBreakCount)
+        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)Math.Max(0, totalBreakCount - activeBreakCount) / totalBreakCount, 4);
+
+    private static decimal CalculateT0ClosureRate(int totalBreakCount, int resolvedBreakCount, int dismissedBreakCount)
+        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)(resolvedBreakCount + dismissedBreakCount) / totalBreakCount, 4);
 
     private static string BuildCalibrationSummaryText(
         int totalBreakCount,
