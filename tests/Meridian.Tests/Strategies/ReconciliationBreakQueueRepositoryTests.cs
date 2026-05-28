@@ -196,11 +196,24 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { AssignedTo = "controller-a" };
         await repo.CreateIfMissingAsync(item);
         var current = (await repo.GetByIdAsync(item.BreakId))!;
+        var investigating = await repo.ApplyCaseworkCommandAsync(Command(current, ReconciliationCaseworkAction.TransitionStatus) with
+        {
+            Status = ReconciliationCaseLifecycleState.Investigating
+        });
+        investigating.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
 
-        var missingTaxonomy = await repo.ApplyCaseworkCommandAsync(Command(current, ReconciliationCaseworkAction.Resolve));
+        var missingTaxonomy = await repo.ApplyCaseworkCommandAsync(Command(investigating.Item!, ReconciliationCaseworkAction.Resolve));
         missingTaxonomy.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingRootCause);
 
-        var rootCause = await repo.ApplyCaseworkCommandAsync(Command(current, ReconciliationCaseworkAction.SetRootCause) with { RootCauseCode = "BrokerCashTiming" });
+        var invalidTaxonomy = await repo.ApplyCaseworkCommandAsync(Command(investigating.Item!, ReconciliationCaseworkAction.Resolve) with
+        {
+            RootCauseCode = "UnknownBrokerExcuse",
+            ResolutionCode = "LedgerAdjusted",
+            Note = "Invalid taxonomy should not close."
+        });
+        invalidTaxonomy.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy);
+
+        var rootCause = await repo.ApplyCaseworkCommandAsync(Command(investigating.Item!, ReconciliationCaseworkAction.SetRootCause) with { RootCauseCode = "BrokerCashTiming" });
         var resolution = await repo.ApplyCaseworkCommandAsync(Command(rootCause.Item!, ReconciliationCaseworkAction.SetResolution) with { ResolutionCode = "LedgerAdjusted", Note = "Adjusted ledger lot." });
         var resolved = await repo.ApplyCaseworkCommandAsync(Command(resolution.Item!, ReconciliationCaseworkAction.Resolve) with { Note = "Resolved with close packet." });
         resolved.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
@@ -239,6 +252,12 @@ public sealed class ReconciliationBreakQueueRepositoryTests
 
         var retry = await repo.ApplyBulkCaseworkAsync(dryRunRequest with { Priority = ReconciliationCasePriority.Low });
         retry.Should().BeEquivalentTo(dryRun);
+
+        var cachedByBulkId = await repo.GetBulkCaseworkResultAsync(dryRun.BulkActionId);
+        cachedByBulkId.Should().BeEquivalentTo(dryRun);
+
+        var cachedByIdempotencyKey = await repo.GetBulkCaseworkResultAsync(dryRun.IdempotencyKey);
+        cachedByIdempotencyKey.Should().BeEquivalentTo(dryRun);
     }
 
     [Fact]

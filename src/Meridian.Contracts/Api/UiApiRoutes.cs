@@ -611,6 +611,7 @@ public static class UiApiRoutes
     public const string ReconciliationBreakBulkDryRun = "/api/workstation/reconciliation/break-queue/bulk/dry-run";
     public const string ReconciliationBreakBulkExecute = "/api/workstation/reconciliation/break-queue/bulk/execute";
     public const string ReconciliationBreakBulkStatus = "/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}";
+    public const string ReconciliationBreakBulkResult = "/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}/result";
     public const string FundReportPacks = "/api/fund-structure/report-packs";
     public const string FundReportPackById = "/api/fund-structure/report-packs/{reportId}";
 

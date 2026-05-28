@@ -99,4 +99,4 @@ endpoint contracts for behavior also consumed by WPF or host workflows.
 - `docs/plans/web-ui-development-pivot.md`
 - `docs/source/generated/source-module-index.md`
 
-Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, and bulk triage; keep these helpers aligned with `UiApiRoutes` and WPF consumers.
+Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, bulk triage, and bulk status/result lookup; keep these helpers aligned with `UiApiRoutes` and WPF consumers.

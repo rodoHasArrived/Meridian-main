@@ -20,6 +20,9 @@ public interface IReconciliationBreakQueueRepository
 
     Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(string breakId, CancellationToken ct = default);
 
+    Task<ReconciliationBulkCaseworkResult?> GetBulkCaseworkResultAsync(string bulkActionIdOrIdempotencyKey, CancellationToken ct = default)
+        => Task.FromResult<ReconciliationBulkCaseworkResult?>(null);
+
     Task<ReconciliationBreakQueueTransitionResult> ApplyCaseworkCommandAsync(ReconciliationCaseworkCommand command, CancellationToken ct = default)
         => Task.FromResult(new ReconciliationBreakQueueTransitionResult(
             ReconciliationBreakQueueTransitionStatus.ValidationFailed,
@@ -64,7 +67,8 @@ public enum ReconciliationBreakQueueTransitionErrorCode : byte
     MissingRootCause = 7,
     MissingResolutionCode = 8,
     ResolverSignerConflict = 9,
-    ConcurrencyConflict = 10
+    ConcurrencyConflict = 10,
+    InvalidTaxonomy = 11
 }
 
 public sealed record ReconciliationBreakQueueTransitionResult(
