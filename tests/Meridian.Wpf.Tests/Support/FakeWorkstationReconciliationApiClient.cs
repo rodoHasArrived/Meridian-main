@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Support;
@@ -37,6 +38,24 @@ internal sealed class FakeWorkstationReconciliationApiClient : IWorkstationRecon
             _breakQueueById.Values
                 .OrderByDescending(item => item.DetectedAt)
                 .ToArray());
+
+    public Task<IReadOnlyList<StatementRunSummaryDto>> GetStatementRunsAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<StatementRunSummaryDto>>([]);
+
+    public Task<StatementRunSummaryDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
+        => Task.FromResult<StatementRunSummaryDto?>(null);
+
+    public Task<IReadOnlyList<StatementRunExceptionDto>> GetStatementExceptionsAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<StatementRunExceptionDto>>([]);
+
+    public Task<IReadOnlyList<StatementBreakDto>> GetOpenStatementBreaksAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<StatementBreakDto>>([]);
+
+    public Task<IReadOnlyList<ReconciliationCaseSummaryDto>> GetOpenReconciliationCasesAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ReconciliationCaseSummaryDto>>([]);
+
+    public Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> GetReconciliationQueueStatusAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ReconciliationQueueAccountStatusDto>>([]);
 
     public Task<ReconciliationRunDetail?> GetLatestRunDetailAsync(string runId, CancellationToken ct = default)
     {

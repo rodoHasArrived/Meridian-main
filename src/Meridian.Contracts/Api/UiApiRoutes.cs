@@ -573,6 +573,9 @@ public static class UiApiRoutes
     public const string ReconciliationStatementRunBreaks = "/api/workstation/reconciliation/statement-runs/{runId}/breaks";
     public const string ReconciliationStatementRunReconcile = "/api/workstation/reconciliation/statement-runs/{runId}/reconcile";
     public const string ReconciliationStatementExceptions = "/api/workstation/reconciliation/statement-exceptions";
+    public const string ReconciliationStatementBreaks = "/api/workstation/reconciliation/statement-breaks";
+    public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
+    public const string ReconciliationQueueStatus = "/api/workstation/reconciliation/queue-status";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";

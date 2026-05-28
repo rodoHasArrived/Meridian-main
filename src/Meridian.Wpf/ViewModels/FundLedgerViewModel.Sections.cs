@@ -35,9 +35,30 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     public ObservableCollection<FundReconciliationSecurityCoverageRow> SecurityCoverageRows { get; } = [];
     public ObservableCollection<FundReconciliationAuditTrailRow> AuditRows { get; } = [];
     public ObservableCollection<FundReconciliationCalibrationProfileRow> CalibrationProfiles { get; } = [];
+    public ObservableCollection<StatementRunWorkbenchRow> StatementRuns { get; } = [];
+    public ObservableCollection<StatementValidationIssueRow> StatementValidationIssues { get; } = [];
+    public ObservableCollection<StatementUnresolvedBreakRow> StatementUnresolvedBreaks { get; } = [];
+    public ObservableCollection<StatementCaseActionRow> StatementCaseActions { get; } = [];
 
     public IReadOnlyList<FundReconciliationBreakQueueRow> AllBreakQueueItems { get; set; } = [];
     public IReadOnlyList<FundReconciliationRunRow> AllRunItems { get; set; } = [];
+
+    private StatementRunWorkbenchRow? _selectedStatementRun;
+    private StatementUnresolvedBreakRow? _selectedStatementBreak;
+    private string _statementStatusText = "Statement reconciliation evidence has not been loaded yet.";
+    private string _statementRunsText = "0";
+    private string _statementValidationIssuesText = "0";
+    private string _statementUnresolvedBreaksText = "0";
+    private string _statementCasesText = "0";
+    private string _statementLastRefreshText = "-";
+    private string _statementDetailTitle = "Select a statement run";
+    private string _statementDetailSubtitle = "Statement run detail, validation issues, unresolved breaks, and case actions appear after refresh.";
+    private string _statementDisabledReasonText = "Select an unresolved statement break to inspect case actions.";
+    private WorkstationStateModel _statementSignifierState = WorkstationStateModel.Empty(
+        "Select statement evidence",
+        "Choose a statement run or unresolved break to see evidence links, recovery actions, readiness tone, and sign-off posture.",
+        "Select statement",
+        "Statement Reconciliation");
 
     private FundReconciliationQueueView _selectedQueueView = FundReconciliationQueueView.BreakQueue;
     private FundReconciliationBreakQueueFilter _selectedBreakQueueFilter = FundReconciliationBreakQueueFilter.Open;
@@ -126,6 +147,18 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     public string EvidenceLinksText { get => _evidenceLinksText; set => SetProperty(ref _evidenceLinksText, value); }
     public string RunsEmptyStateText { get => _runsEmptyStateText; set => SetProperty(ref _runsEmptyStateText, value); }
     public WorkstationStateModel GovernanceSignifierState { get => _governanceSignifierState; set => SetProperty(ref _governanceSignifierState, value); }
+    public StatementRunWorkbenchRow? SelectedStatementRun { get => _selectedStatementRun; set => SetProperty(ref _selectedStatementRun, value); }
+    public StatementUnresolvedBreakRow? SelectedStatementBreak { get => _selectedStatementBreak; set => SetProperty(ref _selectedStatementBreak, value); }
+    public string StatementStatusText { get => _statementStatusText; set => SetProperty(ref _statementStatusText, value); }
+    public string StatementRunsText { get => _statementRunsText; set => SetProperty(ref _statementRunsText, value); }
+    public string StatementValidationIssuesText { get => _statementValidationIssuesText; set => SetProperty(ref _statementValidationIssuesText, value); }
+    public string StatementUnresolvedBreaksText { get => _statementUnresolvedBreaksText; set => SetProperty(ref _statementUnresolvedBreaksText, value); }
+    public string StatementCasesText { get => _statementCasesText; set => SetProperty(ref _statementCasesText, value); }
+    public string StatementLastRefreshText { get => _statementLastRefreshText; set => SetProperty(ref _statementLastRefreshText, value); }
+    public string StatementDetailTitle { get => _statementDetailTitle; set => SetProperty(ref _statementDetailTitle, value); }
+    public string StatementDetailSubtitle { get => _statementDetailSubtitle; set => SetProperty(ref _statementDetailSubtitle, value); }
+    public string StatementDisabledReasonText { get => _statementDisabledReasonText; set => SetProperty(ref _statementDisabledReasonText, value); }
+    public WorkstationStateModel StatementSignifierState { get => _statementSignifierState; set => SetProperty(ref _statementSignifierState, value); }
 }
 
 public sealed partial class FundLedgerViewModel
