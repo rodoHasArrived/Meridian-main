@@ -170,7 +170,7 @@ public static class WorkstationServiceCollectionExtensions
         services.AddWorkflowLibrary();
         services.AddEvidenceWorkflowFabric();
         services.TryAddSingleton<WorkstationWorkflowSummaryService>();
-        services.TryAddSingleton<OmsIntegrationService>();
+        services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Integrations.IOmsIntegrationApiHandler, OmsIntegrationService>();
         services.AddCoveredCallBacktestServices();
 
         return services;

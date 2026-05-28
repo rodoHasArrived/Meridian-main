@@ -52,6 +52,7 @@
     <ProjectReference Include="..\..\src\Meridian.Core\Meridian.Core.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
   </ItemGroup>
 
 </Project>
