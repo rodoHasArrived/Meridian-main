@@ -443,7 +443,13 @@ public sealed record ReconciliationCaseComment(
     DateTimeOffset CreatedAt,
     DateTimeOffset? EditedAt = null,
     DateTimeOffset? DeletedAt = null,
-    string? DeletedBy = null);
+    string? DeletedBy = null,
+    IReadOnlyList<string>? Mentions = null,
+    IReadOnlyList<string>? LinkedEvidenceIds = null,
+    string? PreviousTextHash = null,
+    string? EditReason = null,
+    string? DeleteReason = null,
+    ReconciliationCaseLifecycleState? StatusTransition = null);
 
 public sealed record ReconciliationSlaPolicy(
     string PolicyId,
@@ -459,7 +465,12 @@ public sealed record ReconciliationSlaPolicy(
     int WarningBusinessHours,
     bool StopOnResolved = true,
     bool StopOnSignedOff = false,
-    bool PauseAwaitingEvidence = true);
+    bool PauseAwaitingEvidence = true,
+    string? BusinessCalendarId = null,
+    IReadOnlyList<string>? HolidayCalendarIds = null,
+    IReadOnlyList<string>? PauseRules = null,
+    IReadOnlyList<string>? StopRules = null,
+    IReadOnlyList<string>? EscalationRules = null);
 
 public sealed record ReconciliationSlaComputationResult(
     string PolicyId,
@@ -469,6 +480,19 @@ public sealed record ReconciliationSlaComputationResult(
     ReconciliationCaseSlaState State,
     string AgeBand,
     double BusinessAgeHours);
+
+
+public sealed record ReconciliationTaxonomyValue(
+    string Code,
+    string DisplayName,
+    int Version,
+    bool IsActive,
+    IReadOnlyList<string>? RequiredEvidencePrefixes = null);
+
+public sealed record ReconciliationTaxonomySnapshot(
+    int Version,
+    IReadOnlyList<ReconciliationTaxonomyValue> RootCauses,
+    IReadOnlyList<ReconciliationTaxonomyValue> ResolutionCodes);
 
 public sealed record ReconciliationCaseworkCommand(
     string BreakId,
@@ -485,11 +509,14 @@ public sealed record ReconciliationCaseworkCommand(
     string? Note = null,
     string? RootCauseCode = null,
     string? ResolutionCode = null,
+    string? CausationId = null,
     string? CommentId = null,
     string? ParentCommentId = null,
     ReconciliationCaseCommentVisibility Visibility = ReconciliationCaseCommentVisibility.Internal,
     IReadOnlyList<string>? EvidenceLinks = null,
-    bool Privileged = false);
+    bool Privileged = false,
+    ReconciliationCaseLifecycleState? StatusTransition = null,
+    IReadOnlyList<string>? Mentions = null);
 
 public sealed record ReconciliationBulkCaseworkRequest(
     IReadOnlyList<string> BreakIds,

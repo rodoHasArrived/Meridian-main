@@ -242,7 +242,11 @@ public sealed record ReconciliationBreakQueueProjectionItemDto(
     string? ResolutionCode = null,
     int CommentCount = 0,
     int EvidenceCount = 0,
-    DateTimeOffset? LastActivityAt = null);
+    DateTimeOffset? LastActivityAt = null,
+    string? LastCommentExcerpt = null,
+    int RelatedCaseCount = 0,
+    string? SlaBadgeLabel = null,
+    string? SlaBadgeTone = null);
 
 /// <summary>
 /// Preview of accounting impact if current breaks are submitted/closed with draft ledger entries.

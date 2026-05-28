@@ -752,7 +752,7 @@ public sealed class FundOperationsWorkspaceReadService
             .ToArray();
         var projected = items
             .OrderByDescending(static item => item.LastUpdatedAt)
-            .Select(static item => new ReconciliationBreakQueueProjectionItemDto(
+            .Select(item => new ReconciliationBreakQueueProjectionItemDto(
                 BreakId: item.BreakId,
                 WorkflowId: item.RunId,
                 Severity: item.Severity,
@@ -771,7 +771,15 @@ public sealed class FundOperationsWorkspaceReadService
                 ResolutionCode: item.ResolutionCode,
                 CommentCount: item.CommentCount,
                 EvidenceCount: item.EvidenceCount,
-                LastActivityAt: item.LastActivityAt))
+                LastActivityAt: item.LastActivityAt,
+                LastCommentExcerpt: BuildLastCommentExcerpt(item),
+                RelatedCaseCount: items.Count(candidate =>
+                    !string.Equals(candidate.BreakId, item.BreakId, StringComparison.OrdinalIgnoreCase) &&
+                    (string.Equals(candidate.ExternalAccountId, item.ExternalAccountId, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(candidate.Counterparty, item.Counterparty, StringComparison.OrdinalIgnoreCase) ||
+                     candidate.Category == item.Category)),
+                SlaBadgeLabel: BuildSlaBadgeLabel(item),
+                SlaBadgeTone: BuildSlaBadgeTone(item.SlaState)))
             .ToArray();
 
         return new ReconciliationBreakQueueProjectionDto(
@@ -786,6 +794,37 @@ public sealed class FundOperationsWorkspaceReadService
             AwaitingEvidenceCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview && string.Equals(item.SignoffStatus, "awaiting-evidence", StringComparison.OrdinalIgnoreCase)),
             SignedOffEvidenceCount: projected.Where(static item => item.Status == ReconciliationBreakQueueStatus.SignedOff).Sum(static item => item.EvidenceCount));
     }
+
+
+    private static string? BuildLastCommentExcerpt(ReconciliationBreakQueueItem item)
+    {
+        var body = item.Comments?
+            .Where(static comment => comment.DeletedAt is null && !string.IsNullOrWhiteSpace(comment.Body))
+            .OrderByDescending(static comment => comment.EditedAt ?? comment.CreatedAt)
+            .Select(static comment => comment.Body.Trim())
+            .FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            return null;
+        }
+
+        return body.Length <= 120 ? body : string.Concat(body.AsSpan(0, 117), "...");
+    }
+
+    private static string BuildSlaBadgeLabel(ReconciliationBreakQueueItem item)
+        => item.SlaDueAt.HasValue
+            ? $"SLA {item.SlaState}; due {item.SlaDueAt.Value:O}"
+            : $"SLA {item.SlaState}";
+
+    private static string BuildSlaBadgeTone(ReconciliationCaseSlaState state)
+        => state switch
+        {
+            ReconciliationCaseSlaState.Breached => "danger",
+            ReconciliationCaseSlaState.Warning => "warning",
+            ReconciliationCaseSlaState.Paused => "neutral",
+            ReconciliationCaseSlaState.Stopped => "success",
+            _ => "info"
+        };
 
     private static LedgerImpactPreviewDto BuildLedgerImpactPreview(IReadOnlyList<FundReconciliationItem> items)
     {

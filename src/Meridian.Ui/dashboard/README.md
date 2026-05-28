@@ -77,14 +77,14 @@ resolve locally. Execution-control and promotion-review items carrying the share
 `/api/workstation/trading/readiness` route land on `/trading`, while paper-replay items keep the
 session replay panel hash target so replay verification remains directly actionable.
 Accounting reconciliation break detail preserves shared queue metadata such as exception route,
-tolerance profile, required sign-off role/status, and decision note so browser recovery posture
-matches the retained WPF Fund Ledger detail panel.
+tolerance profile, priority, SLA badge label/tone, age band, root cause, resolution code, last
+comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
+source origin/fingerprint, and decision note so browser recovery posture matches the retained WPF
+Fund Ledger detail panel without reimplementing casework rules.
 Accounting reconciliation statement runs now use the shared statement-run endpoint/client seam for
 broker or custodian, account, period, status, validation, match, break, case, and import timing
 read models; React components only render these values and do not reimplement matching, tolerance,
 validation, or case-state rules.
-tolerance profile, required sign-off role/status, source origin/fingerprint, and decision note so
-browser recovery posture matches the retained WPF Fund Ledger detail panel.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients.

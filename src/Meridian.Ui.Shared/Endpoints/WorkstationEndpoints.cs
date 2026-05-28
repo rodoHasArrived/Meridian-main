@@ -1526,6 +1526,42 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(409);
 
+        group.MapGet("/reconciliation/break-queue/taxonomy", () => Results.Json(FileReconciliationBreakQueueRepository.Taxonomy, jsonOptions))
+        .WithName("GetReconciliationCaseTaxonomy")
+        .Produces<ReconciliationTaxonomySnapshot>(200);
+
+        group.MapGet("/reconciliation/break-queue/{breakId}/comments", async (string breakId, HttpContext context) =>
+        {
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            if (repository is null)
+            {
+                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var item = await repository.GetByIdAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            return item is null ? Results.NotFound() : Results.Json(item.Comments ?? [], jsonOptions);
+        })
+        .WithName("GetReconciliationBreakComments")
+        .Produces<IReadOnlyList<ReconciliationCaseComment>>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/reconciliation/break-queue/{breakId}/rebuilt-snapshot", async (string breakId, HttpContext context) =>
+        {
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            if (repository is null)
+            {
+                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var item = await repository.RebuildSnapshotFromAuditAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
+        })
+        .WithName("RebuildReconciliationBreakSnapshot")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(404)
+        .Produces(501);
+
         group.MapPost("/reconciliation/break-queue/{breakId}/comments", async (string breakId, ReconciliationCaseworkCommand request, HttpContext context) =>
             await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.AddComment }, context, jsonOptions).ConfigureAwait(false))
         .WithName("AddReconciliationBreakComment")
@@ -6523,8 +6559,8 @@ public static partial class WorkstationEndpoints
         {
             ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
             ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
-            ReconciliationBreakQueueTransitionStatus.Conflict => Results.Conflict(new { error = transition.Error ?? "Version conflict." }),
-            _ => Results.BadRequest(new { error = transition.Error ?? "Invalid reconciliation casework command.", code = transition.ErrorCode.ToString() })
+            ReconciliationBreakQueueTransitionStatus.Conflict => Results.Conflict(new { error = transition.Error ?? "Version conflict.", currentState = transition.Item?.LifecycleState.ToString(), currentVersion = transition.Item?.Version }),
+            _ => Results.BadRequest(new { error = transition.Error ?? "Invalid reconciliation casework command.", code = transition.ErrorCode.ToString(), validation = transition.Validation })
         };
     }
 

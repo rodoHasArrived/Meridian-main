@@ -249,6 +249,19 @@ public sealed class UiApiClient
     public async Task<ReconciliationCalibrationSummaryDto?> GetReconciliationCalibrationSummaryAsync(CancellationToken ct = default)
         => await GetAsync<ReconciliationCalibrationSummaryDto>(UiApiRoutes.ReconciliationCalibrationSummary, ct).ConfigureAwait(false);
 
+    public async Task<ReconciliationTaxonomySnapshot?> GetReconciliationCaseTaxonomyAsync(CancellationToken ct = default)
+        => await GetAsync<ReconciliationTaxonomySnapshot>(UiApiRoutes.ReconciliationCaseTaxonomy, ct).ConfigureAwait(false);
+
+    public async Task<List<ReconciliationCaseComment>?> GetReconciliationBreakCommentsAsync(string breakId, CancellationToken ct = default)
+        => await GetAsync<List<ReconciliationCaseComment>>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakComments, "breakId", breakId),
+            ct).ConfigureAwait(false);
+
+    public async Task<ReconciliationBreakQueueItem?> RebuildReconciliationBreakSnapshotAsync(string breakId, CancellationToken ct = default)
+        => await GetAsync<ReconciliationBreakQueueItem>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakRebuiltSnapshot, "breakId", breakId),
+            ct).ConfigureAwait(false);
+
     public async Task<ReconciliationRunDetail?> GetLatestRunReconciliationAsync(string runId, CancellationToken ct = default)
         => await GetAsync<ReconciliationRunDetail>(
             UiApiRoutes.WithParam(UiApiRoutes.RunsReconciliation, "runId", runId),
