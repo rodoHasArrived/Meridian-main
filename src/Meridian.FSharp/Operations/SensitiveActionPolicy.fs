@@ -47,16 +47,18 @@ module SensitiveActionPolicy =
         role = UserRole.Admin || role = UserRole.Developer || role = UserRole.Executive
 
     let evaluate (input: SensitiveActionPolicyInput) =
+        let isAccountingOverride =
+            input.Action = "OverrideApproval"
+            && input.Role = UserRole.Accounting
+            && String.Equals(input.Team, "accounting", StringComparison.OrdinalIgnoreCase)
+
         match requiredPermission input.Action with
         | None -> decision false "Unknown action." false false false
+        | Some _ when isAccountingOverride ->
+            decision false "Segregation-of-duties blocked override approval for accounting actor." true true true
         | Some required when not (RolePermissions.HasPermission(input.Role, required)) ->
             decision false (sprintf "Role %O lacks %O permission." input.Role required) false false false
         | Some _ ->
-            if input.Action = "OverrideApproval"
-               && input.Role = UserRole.Accounting
-               && String.Equals(input.Team, "accounting", StringComparison.OrdinalIgnoreCase) then
-                decision false "Segregation-of-duties blocked override approval for accounting actor." true true true
-            else
                 let dualApproval = input.Action = "PaymentRelease" || input.Action = "OverrideApproval"
                 let privilegedRole = input.Action = "OverrideApproval"
                 let requiresMfa = input.Action = "PaymentRelease" || input.Action = "OverrideApproval"

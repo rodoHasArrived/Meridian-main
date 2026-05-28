@@ -7,6 +7,7 @@ using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
+using FsCheck.Xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -356,6 +357,33 @@ public sealed class OptionsChainServiceTests
         result.Should().BeSameAs(fallbackChain);
     }
 
+    [Property(MaxTest = 200)]
+    public void Scenario_ProviderFailover_GeneratedProviderIdVariantsUseCanonicalHealthLookup(int primaryVariantSeed, int fallbackVariantSeed)
+    {
+        var expiry = new DateOnly(2026, 3, 21);
+        var primaryProviderId = BuildProviderIdVariant("alpaca-options", primaryVariantSeed);
+        var fallbackProviderId = BuildProviderIdVariant("synthetic", fallbackVariantSeed);
+        var primaryChain = CreateChainSnapshot("AAPL", expiry);
+        var fallbackChain = CreateChainSnapshot("AAPL", expiry);
+        var primary = new StubOptionsChainProvider(primaryProviderId, "Alpaca Options", priority: 1, chain: primaryChain);
+        var fallback = new StubOptionsChainProvider(fallbackProviderId, "Synthetic Options", priority: 200, chain: fallbackChain);
+
+        _healthSourceMock
+            .Setup(h => h.GetHealthAsync("alpaca-options", "alpaca-options", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProviderConnectionHealthSnapshot("alpaca-options", "alpaca-options", IsHealthy: false, Status: "degraded"));
+
+        var sut = new OptionsChainService(_collector, _logger, _healthSourceMock.Object, new IOptionsChainProvider[] { primary, fallback });
+        var result = sut.FetchChainSnapshotAsync("AAPL", expiry).GetAwaiter().GetResult();
+
+        result.Should().BeSameAs(fallbackChain);
+        _healthSourceMock.Verify(
+            h => h.GetHealthAsync("alpaca-options", "alpaca-options", It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+        _healthSourceMock.Verify(
+            h => h.GetHealthAsync("synthetic", "synthetic", It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
+    }
+
     [Fact]
     public async Task FetchChainSnapshotAsync_WhenAllProvidersFail_ReturnsNull()
     {
@@ -604,6 +632,20 @@ public sealed class OptionsChainServiceTests
         }).ToList();
 
         return new OptionChainSnapshot(DateTimeOffset.UtcNow, underlying, 155m, expiry, strikes, calls, puts);
+    }
+
+    private static string BuildProviderIdVariant(string providerId, int variantSeed)
+    {
+        var variant = (int)(Math.Abs((long)variantSeed) % 6);
+        return variant switch
+        {
+            0 => providerId,
+            1 => providerId.ToUpperInvariant(),
+            2 => $" {providerId}\t",
+            3 => $"\r\n{providerId.ToUpperInvariant()} ",
+            4 => $"  {providerId.ToLowerInvariant()}  ",
+            _ => $"\t{providerId.ToUpperInvariant()}\r\n",
+        };
     }
 
     #endregion

@@ -19,7 +19,7 @@ This report marks registered source modules whose code or README hashes differ f
 | `SRC-CONTRACTS` | `src/Meridian.Contracts` | `src/Meridian.Contracts/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-CORE` | `src/Meridian.Core` | `src/Meridian.Core/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-DOMAIN` | `src/Meridian.Domain` | `src/Meridian.Domain/README.md` | `source_hash_drift` |
-| `SRC-EXECUTION` | `src/Meridian.Execution` | `src/Meridian.Execution/README.md` | `source_hash_drift` |
+| `SRC-EXECUTION` | `src/Meridian.Execution` | `src/Meridian.Execution/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-FSHARP` | `src/Meridian.FSharp` | `src/Meridian.FSharp/README.md` | `source_hash_drift` |
 | `SRC-FSHARP-LEDGER` | `src/Meridian.FSharp.Ledger` | `src/Meridian.FSharp.Ledger/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-HOST` | `src/Meridian` | `src/Meridian/README.md` | `source_hash_drift`, `readme_hash_drift` |

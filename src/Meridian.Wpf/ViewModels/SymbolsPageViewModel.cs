@@ -43,6 +43,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     private bool _isActive;
     private bool _isStopped = true;
     private bool _suppressFilterApply;
+    private readonly SymbolsPageSectionViewModel _symbolsSection = new();
 
     public static readonly IReadOnlyDictionary<string, string[]> SymbolTemplates =
         new Dictionary<string, string[]>
@@ -54,10 +55,12 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
             ["Financials"] = new[] { "JPM", "BAC", "WFC", "GS", "MS", "C" }
         };
 
+    public SymbolsPageSectionViewModel SymbolsSection => _symbolsSection;
+
     // ── Public collections ──────────────────────────────────────────────────
-    public ObservableCollection<SymbolViewModel> Symbols { get; } = new();
-    public ObservableCollection<SymbolViewModel> FilteredSymbols { get; } = new();
-    public ObservableCollection<WatchlistInfo> Watchlists { get; } = new();
+    public ObservableCollection<SymbolViewModel> Symbols => SymbolsSection.Symbols;
+    public ObservableCollection<SymbolViewModel> FilteredSymbols => SymbolsSection.FilteredSymbols;
+    public ObservableCollection<WatchlistInfo> Watchlists => SymbolsSection.Watchlists;
 
     // ── Bindable properties ─────────────────────────────────────────────────
     private string _symbolCountText = "0 symbols";
@@ -81,6 +84,166 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         private set => SetProperty(ref _canBulkAction, value);
     }
 
+    public string SearchText
+    {
+        get => SymbolsSection.SearchText;
+        set
+        {
+            var next = value ?? string.Empty;
+            if (!string.Equals(SymbolsSection.SearchText, next, StringComparison.Ordinal))
+            {
+                SymbolsSection.SearchText = next;
+                RaisePropertyChanged();
+                if (!_suppressFilterApply)
+                {
+                    ApplyFilters();
+                }
+            }
+        }
+    }
+
+    public string SelectedSubscriptionFilter
+    {
+        get => SymbolsSection.SelectedSubscriptionFilter;
+        set
+        {
+            var next = string.IsNullOrWhiteSpace(value) ? "All" : value;
+            if (!string.Equals(SymbolsSection.SelectedSubscriptionFilter, next, StringComparison.Ordinal))
+            {
+                SymbolsSection.SelectedSubscriptionFilter = next;
+                RaisePropertyChanged();
+                if (!_suppressFilterApply)
+                {
+                    ApplyFilters();
+                }
+            }
+        }
+    }
+
+    public string SelectedExchangeFilter
+    {
+        get => SymbolsSection.SelectedExchangeFilter;
+        set
+        {
+            var next = string.IsNullOrWhiteSpace(value) ? "All" : value;
+            if (!string.Equals(SymbolsSection.SelectedExchangeFilter, next, StringComparison.Ordinal))
+            {
+                SymbolsSection.SelectedExchangeFilter = next;
+                RaisePropertyChanged();
+                if (!_suppressFilterApply)
+                {
+                    ApplyFilters();
+                }
+            }
+        }
+    }
+
+    public string VisibleSymbolScopeText
+    {
+        get => SymbolsSection.VisibleSymbolScopeText;
+        private set
+        {
+            if (!string.Equals(SymbolsSection.VisibleSymbolScopeText, value, StringComparison.Ordinal))
+            {
+                SymbolsSection.VisibleSymbolScopeText = value;
+                RaisePropertyChanged();
+            }
+        }
+    }
+
+    public bool HasActiveFilters
+    {
+        get => SymbolsSection.HasActiveFilters;
+        private set
+        {
+            if (SymbolsSection.HasActiveFilters != value)
+            {
+                SymbolsSection.HasActiveFilters = value;
+                RaisePropertyChanged();
+            }
+        }
+    }
+
+    public bool HasVisibleSymbols
+    {
+        get => SymbolsSection.HasVisibleSymbols;
+        private set
+        {
+            if (SymbolsSection.HasVisibleSymbols != value)
+            {
+                SymbolsSection.HasVisibleSymbols = value;
+                RaisePropertyChanged();
+            }
+        }
+    }
+
+    public bool IsSymbolsEmptyStateVisible
+    {
+        get => SymbolsSection.IsSymbolsEmptyStateVisible;
+        private set
+        {
+            if (SymbolsSection.IsSymbolsEmptyStateVisible != value)
+            {
+                SymbolsSection.IsSymbolsEmptyStateVisible = value;
+                RaisePropertyChanged();
+            }
+        }
+    }
+
+    public string SymbolsEmptyStateTitle
+    {
+        get => SymbolsSection.SymbolsEmptyStateTitle;
+        private set
+        {
+            if (!string.Equals(SymbolsSection.SymbolsEmptyStateTitle, value, StringComparison.Ordinal))
+            {
+                SymbolsSection.SymbolsEmptyStateTitle = value;
+                RaisePropertyChanged();
+            }
+        }
+    }
+
+    public string SymbolsEmptyStateDetail
+    {
+        get => SymbolsSection.SymbolsEmptyStateDetail;
+        private set
+        {
+            if (!string.Equals(SymbolsSection.SymbolsEmptyStateDetail, value, StringComparison.Ordinal))
+            {
+                SymbolsSection.SymbolsEmptyStateDetail = value;
+                RaisePropertyChanged();
+            }
+        }
+    }
+
+    private SymbolViewModel? _selectedItem;
+    public SymbolViewModel? SelectedItem
+    {
+        get => SymbolsSection.SelectedItem;
+        set
+        {
+            if (SymbolsSection.SelectedItem != value)
+            {
+                SymbolsSection.SelectedItem = value;
+                RaisePropertyChanged();
+                SelectedSymbolTicker = value?.Symbol ?? string.Empty;
+                RaisePropertyChanged(nameof(HasSelectedSymbol));
+                NavigateToLiveDataCommand?.NotifyCanExecuteChanged();
+                NavigateToOrderBookCommand?.NotifyCanExecuteChanged();
+                StartBackfillCommand?.NotifyCanExecuteChanged();
+                NavigateToChartCommand?.NotifyCanExecuteChanged();
+                ExportSymbolDataCommand?.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool HasSelectedSymbol => SelectedItem != null;
+
+    /*
+        Previous inline section state has moved to SymbolsPageSectionViewModel.
+        Adapter properties remain here so XAML and command surfaces do not churn.
+    */
+/*
     private string _searchText = string.Empty;
     public string SearchText
     {
@@ -213,6 +376,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     }
 
     public bool HasSelectedSymbol => _selectedItem != null;
+*/
 
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Symbols";

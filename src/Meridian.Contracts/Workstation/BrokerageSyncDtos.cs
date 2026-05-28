@@ -286,6 +286,15 @@ public enum ProviderLedgerReconciliationBreakSignOffStateDto
     SignedOff = 2
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderSecurityMasterPassportStatusDto>))]
+public enum ProviderSecurityMasterPassportStatusDto
+{
+    Resolved = 0,
+    Inferred = 1,
+    Unresolved = 2,
+    Blocked = 3
+}
+
 public sealed record ProviderLedgerReconciliationRequestDto(
     decimal AmountTolerance = 0.01m,
     int ProviderStaleAfterMinutes = 30,
@@ -351,9 +360,32 @@ public sealed record ProviderLedgerReconciliationSummaryDto(
     int SignedOffBreakCount = 0,
     int OldestBreakAgeMinutes = 0);
 
+public sealed record ProviderSecurityMasterPassportDto(
+    string Symbol,
+    string ProviderId,
+    string ExternalAccountId,
+    DateTimeOffset ProviderSyncedAt,
+    bool ProviderIsStale,
+    string AssetClass,
+    string? Currency,
+    string? PositionId,
+    Guid? SecurityId,
+    string? SecurityDisplayName,
+    SecurityStatusDto? SecurityStatus,
+    ProviderSecurityMasterPassportStatusDto Status,
+    decimal ConfidenceScore,
+    string ResolutionSource,
+    IReadOnlyList<string> IdentifierConflicts,
+    IReadOnlyList<string> ValidationIssueCodes,
+    IReadOnlyList<string> OverrideHistory,
+    DateTimeOffset ObservedAt,
+    int FreshnessMinutes,
+    string Reason);
+
 public sealed record ProviderLedgerReconciliationDetailDto(
     ProviderLedgerReconciliationSummaryDto Summary,
     IReadOnlyList<ProviderLedgerReconciliationCheckDto> Checks,
     IReadOnlyList<ProviderLedgerReconciliationBreakDto> Breaks,
     IReadOnlyList<string> Warnings,
-    IReadOnlyList<string> EvidenceLinks);
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<ProviderSecurityMasterPassportDto>? SecurityMasterPassports = null);

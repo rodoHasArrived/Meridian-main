@@ -86,14 +86,15 @@ public sealed class OptionsChainService
                 Message: "No options provider configured.");
         }
 
-        var isFallback = string.Equals(provider.ProviderId, "synthetic", StringComparison.OrdinalIgnoreCase);
+        var providerId = NormalizeProviderId(provider.ProviderId);
+        var isFallback = string.Equals(providerId, "synthetic", StringComparison.Ordinal);
         var mode = isFallback ? "Fallback" : "Configured";
         var message = isFallback
             ? $"{provider.ProviderDisplayName} fallback is active."
             : $"{provider.ProviderDisplayName} is configured.";
 
         return new OptionsProviderStatus(
-            ProviderId: provider.ProviderId,
+            ProviderId: providerId,
             ProviderDisplayName: provider.ProviderDisplayName,
             Mode: mode,
             IsFallback: isFallback,
@@ -325,12 +326,13 @@ public sealed class OptionsChainService
         foreach (var provider in _providers)
         {
             ct.ThrowIfCancellationRequested();
-            var health = await _healthSource.GetHealthAsync(provider.ProviderId, provider.ProviderId, ct).ConfigureAwait(false);
+            var providerId = NormalizeProviderId(provider.ProviderId);
+            var health = await _healthSource.GetHealthAsync(providerId, providerId, ct).ConfigureAwait(false);
             if (!health.IsHealthy)
             {
-                var reason = $"provider {provider.ProviderId} unhealthy ({health.Status})";
+                var reason = $"provider {providerId} unhealthy ({health.Status})";
                 failures.Add(reason);
-                _logger.LogWarning("Skipping options provider {ProviderId} for {Operation}: {Reason}", provider.ProviderId, operation, reason);
+                _logger.LogWarning("Skipping options provider {ProviderId} for {Operation}: {Reason}", providerId, operation, reason);
                 continue;
             }
 
@@ -340,7 +342,7 @@ public sealed class OptionsChainService
                 var result = await query(provider).ConfigureAwait(false);
                 sw.Stop();
                 ProviderLatencyMs.Record(sw.Elapsed.TotalMilliseconds,
-                    new KeyValuePair<string, object?>("provider", provider.ProviderId),
+                    new KeyValuePair<string, object?>("provider", providerId),
                     new KeyValuePair<string, object?>("operation", operation));
                 if (hasResult(result))
                 {
@@ -349,36 +351,36 @@ public sealed class OptionsChainService
                         _logger.LogInformation(
                             "Options provider failover success for {Operation}. Winner={ProviderId}; prior_failures={Failures}",
                             operation,
-                            provider.ProviderId,
+                            providerId,
                             string.Join(" | ", failures));
-                        FailoverCounter.Add(1, new KeyValuePair<string, object?>("provider", provider.ProviderId));
+                        FailoverCounter.Add(1, new KeyValuePair<string, object?>("provider", providerId));
                     }
                     return result;
                 }
 
-                var emptyReason = $"provider {provider.ProviderId} returned incomplete/empty result";
+                var emptyReason = $"provider {providerId} returned incomplete/empty result";
                 failures.Add(emptyReason);
                 _logger.LogDebug(
                     "Options provider {ProviderId} returned no data for {Operation}; trying fallback provider.",
-                    provider.ProviderId,
+                    providerId,
                     operation);
                 FallbackCounter.Add(1,
-                    new KeyValuePair<string, object?>("provider", provider.ProviderId),
+                    new KeyValuePair<string, object?>("provider", providerId),
                     new KeyValuePair<string, object?>("reason", "empty"));
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 var retriable = ex is TimeoutException || ex is HttpRequestException || ex is TaskCanceledException;
-                var reason = $"{provider.ProviderId} failed ({ex.GetType().Name}): {ex.Message}";
+                var reason = $"{providerId} failed ({ex.GetType().Name}): {ex.Message}";
                 failures.Add(reason);
                 _logger.LogWarning(
                     ex,
                     "Options provider {ProviderId} failed while fetching {Operation}; retriable={Retriable}; trying fallback provider.",
-                    provider.ProviderId,
+                    providerId,
                     operation,
                     retriable);
                 FallbackCounter.Add(1,
-                    new KeyValuePair<string, object?>("provider", provider.ProviderId),
+                    new KeyValuePair<string, object?>("provider", providerId),
                     new KeyValuePair<string, object?>("reason", retriable ? "retriable-error" : "error"));
             }
         }
@@ -396,11 +398,14 @@ public sealed class OptionsChainService
             return Array.Empty<IOptionsChainProvider>();
 
         return providers
-            .GroupBy(static provider => provider.ProviderId, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
             .OrderBy(static provider => provider.ProviderPriority)
+            .GroupBy(static provider => NormalizeProviderId(provider.ProviderId), StringComparer.Ordinal)
+            .Select(static group => group.First())
             .ToArray();
     }
+
+    private static string NormalizeProviderId(string providerId)
+        => string.IsNullOrWhiteSpace(providerId) ? string.Empty : providerId.Trim().ToLowerInvariant();
 
     private static IReadOnlyList<DateOnly> FilterExpirations(
         IReadOnlyList<DateOnly> expirations,

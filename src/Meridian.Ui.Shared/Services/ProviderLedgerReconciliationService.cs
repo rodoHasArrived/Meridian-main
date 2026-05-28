@@ -71,6 +71,7 @@ public sealed class ProviderLedgerReconciliationService
         var internalSnapshot = await _fundAccountService.GetLatestBalanceSnapshotAsync(accountId, ct).ConfigureAwait(false);
         var checks = new List<ProviderLedgerReconciliationCheckDto>();
         var breaks = new List<ProviderLedgerReconciliationBreakDto>();
+        var securityMasterPassports = new List<ProviderSecurityMasterPassportDto>();
         var warnings = new List<string>();
         var evidenceLinks = new List<string>();
 
@@ -281,6 +282,8 @@ public sealed class ProviderLedgerReconciliationService
                     request.RequestedBy,
                     checks,
                     breaks,
+                    securityMasterPassports,
+                    createdAt,
                     ct)
                 .ConfigureAwait(false);
         }
@@ -323,7 +326,8 @@ public sealed class ProviderLedgerReconciliationService
             checks,
             breaks,
             warnings,
-            evidenceLinks.Where(static link => !string.IsNullOrWhiteSpace(link)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+            evidenceLinks.Where(static link => !string.IsNullOrWhiteSpace(link)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+            securityMasterPassports);
 
         await PersistAsync(accountId, detail, ct).ConfigureAwait(false);
         _logger.LogInformation(
@@ -357,6 +361,8 @@ public sealed class ProviderLedgerReconciliationService
         string? requestedBy,
         List<ProviderLedgerReconciliationCheckDto> checks,
         List<ProviderLedgerReconciliationBreakDto> breaks,
+        List<ProviderSecurityMasterPassportDto> securityMasterPassports,
+        DateTimeOffset observedAt,
         CancellationToken ct)
     {
         var positions = providerProjection.Positions
@@ -373,6 +379,16 @@ public sealed class ProviderLedgerReconciliationService
 
             if (position.Security is not null)
             {
+                securityMasterPassports.Add(BuildSecurityMasterPassport(
+                    providerProjection,
+                    position,
+                    position.Security,
+                    validation: null,
+                    status: MapPassportStatus(position.Security),
+                    confidenceScore: position.Security.IsInferredMatch ? 85m : 100m,
+                    resolutionSource: "provider-position",
+                    reason: "Provider position already carries a resolved Security Master reference.",
+                    observedAt));
                 AddMatched(
                     checks,
                     checkId,
@@ -402,6 +418,16 @@ public sealed class ProviderLedgerReconciliationService
 
             if (resolved is not null)
             {
+                securityMasterPassports.Add(BuildSecurityMasterPassport(
+                    providerProjection,
+                    position,
+                    resolved,
+                    validation: null,
+                    status: MapPassportStatus(resolved),
+                    confidenceScore: resolved.IsInferredMatch ? 80m : 90m,
+                    resolutionSource: "security-master-lookup",
+                    reason: "Provider position resolved through the shared Security Master lookup.",
+                    observedAt));
                 AddMatched(
                     checks,
                     checkId,
@@ -432,6 +458,16 @@ public sealed class ProviderLedgerReconciliationService
 
                 if (validation.IsResolved && !validation.IsBlocked)
                 {
+                    securityMasterPassports.Add(BuildSecurityMasterPassport(
+                        providerProjection,
+                        position,
+                        security: null,
+                        validation,
+                        status: ProviderSecurityMasterPassportStatusDto.Resolved,
+                        confidenceScore: 80m,
+                        resolutionSource: "security-validation-gate",
+                        reason: "Security Master validation accepted the provider position.",
+                        observedAt));
                     AddMatched(
                         checks,
                         checkId,
@@ -452,6 +488,32 @@ public sealed class ProviderLedgerReconciliationService
                     reason = $"Security Master validation {issue.Code}: {issue.Message}";
                     severity = MapSecurityValidationSeverity(issue.Severity);
                 }
+
+                securityMasterPassports.Add(BuildSecurityMasterPassport(
+                    providerProjection,
+                    position,
+                    security: null,
+                    validation,
+                    status: validation.IsBlocked || validation.Report.HasBlockingIssues
+                        ? ProviderSecurityMasterPassportStatusDto.Blocked
+                        : ProviderSecurityMasterPassportStatusDto.Unresolved,
+                    confidenceScore: 0m,
+                    resolutionSource: "security-validation-gate",
+                    reason,
+                    observedAt));
+            }
+            else
+            {
+                securityMasterPassports.Add(BuildSecurityMasterPassport(
+                    providerProjection,
+                    position,
+                    security: null,
+                    validation: null,
+                    status: ProviderSecurityMasterPassportStatusDto.Unresolved,
+                    confidenceScore: 0m,
+                    resolutionSource: "unresolved",
+                    reason,
+                    observedAt));
             }
 
             AddBreak(
@@ -473,6 +535,56 @@ public sealed class ProviderLedgerReconciliationService
                 symbol,
                 "/workstation/data/security-master");
         }
+    }
+
+    private static ProviderSecurityMasterPassportDto BuildSecurityMasterPassport(
+        FundAccountBrokerageSyncActivityDto providerProjection,
+        FundAccountBrokeragePositionDto position,
+        WorkstationSecurityReference? security,
+        SecurityValidationGateResultDto? validation,
+        ProviderSecurityMasterPassportStatusDto status,
+        decimal confidenceScore,
+        string resolutionSource,
+        string reason,
+        DateTimeOffset observedAt)
+    {
+        var issues = validation?.Report.Issues ?? [];
+        var identifierConflicts = issues
+            .Where(static issue =>
+                issue.Code.Contains("CONFLICT", StringComparison.OrdinalIgnoreCase)
+                || issue.Title.Contains("conflict", StringComparison.OrdinalIgnoreCase)
+                || issue.AffectedFields.Any(static field => field.Contains("identifier", StringComparison.OrdinalIgnoreCase)))
+            .Select(static issue => issue.Code)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var issueCodes = issues
+            .Select(static issue => issue.Code)
+            .Where(static code => !string.IsNullOrWhiteSpace(code))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var freshnessMinutes = Math.Max(0, (int)Math.Floor((observedAt - providerProjection.SyncedAt).TotalMinutes));
+
+        return new ProviderSecurityMasterPassportDto(
+            Symbol: position.Symbol.Trim().ToUpperInvariant(),
+            ProviderId: providerProjection.Link.ProviderId,
+            ExternalAccountId: providerProjection.Link.ExternalAccountId,
+            ProviderSyncedAt: providerProjection.SyncedAt,
+            ProviderIsStale: providerProjection.Status.IsStale,
+            AssetClass: position.AssetClass,
+            Currency: position.Currency,
+            PositionId: position.PositionId,
+            SecurityId: security?.SecurityId ?? validation?.SecurityId,
+            SecurityDisplayName: security?.DisplayName,
+            SecurityStatus: security?.Status,
+            Status: status,
+            ConfidenceScore: confidenceScore,
+            ResolutionSource: resolutionSource,
+            IdentifierConflicts: identifierConflicts,
+            ValidationIssueCodes: issueCodes,
+            OverrideHistory: [],
+            ObservedAt: observedAt,
+            FreshnessMinutes: freshnessMinutes,
+            Reason: reason);
     }
 
     private async Task PersistAsync(
@@ -709,4 +821,9 @@ public sealed class ProviderLedgerReconciliationService
             SecurityValidationSeverityDto.Info => ReconciliationBreakSeverity.Info,
             _ => ReconciliationBreakSeverity.Medium
         };
+
+    private static ProviderSecurityMasterPassportStatusDto MapPassportStatus(WorkstationSecurityReference security)
+        => security.CoverageStatus == WorkstationSecurityCoverageStatus.Resolved && !security.IsInferredMatch
+            ? ProviderSecurityMasterPassportStatusDto.Resolved
+            : ProviderSecurityMasterPassportStatusDto.Inferred;
 }
