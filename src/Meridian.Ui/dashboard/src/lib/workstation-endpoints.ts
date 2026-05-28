@@ -527,8 +527,16 @@ export function reconciliationRunEndpoint(reconciliationRunId: string): string {
   return `${RECONCILIATION_API_ENDPOINTS.runs}/${pathSegment(reconciliationRunId, "reconciliationRunId")}`;
 }
 
-export function reconciliationStatementRunEndpoint(statementRunId: string): string {
-  return `${RECONCILIATION_API_ENDPOINTS.statementRuns}/${pathSegment(statementRunId, "statementRunId")}`;
+export function reconciliationStatementRunsEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.statementRuns;
+}
+
+export function reconciliationStatementRunEndpoint(runId: string): string {
+  return `${RECONCILIATION_API_ENDPOINTS.statementRuns}/${pathSegment(runId, "runId")}`;
+}
+
+export function reconciliationStatementExceptionsEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.statementExceptions;
 }
 
 export function reconciliationBreakQueueEndpoint(options: { status?: string; fundAccountId?: string } = {}): string {
