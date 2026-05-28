@@ -42,14 +42,20 @@ public static class BackfillValidationEndpoints
             try
             {
                 var results = new List<BackfillValidationResult>();
+                var distinctSymbols = symbols.Select(s => s.Symbol).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                var searchResult = await searchService.SearchFilesAsync(
+                    new FileSearchQuery(Symbols: distinctSymbols, Take: 10_000),
+                    ct);
+                var filesBySymbol = searchResult.Results
+                    .GroupBy(r => r.Symbol, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
 
-                foreach (var symbol in symbols.Select(s => s.Symbol).Distinct())
+                foreach (var symbol in distinctSymbols)
                 {
-                    var searchResult = await searchService.SearchFilesAsync(
-                        new FileSearchQuery(Symbols: [symbol], Take: 10_000),
-                        ct);
+                    filesBySymbol.TryGetValue(symbol, out var symbolFiles);
+                    symbolFiles ??= [];
 
-                    if (searchResult.TotalMatches == 0)
+                    if (symbolFiles.Length == 0)
                     {
                         results.Add(new BackfillValidationResult(
                             Symbol: symbol,
@@ -62,9 +68,9 @@ public static class BackfillValidationEndpoints
                         continue;
                     }
 
-                    var tradingDates = GetTradingDates(searchResult.Results);
-                    var completeness = CalculateSymbolCompleteness(searchResult.Results);
-                    var gaps = DetectSymbolGaps(searchResult.Results, symbol);
+                    var tradingDates = GetTradingDates(symbolFiles);
+                    var completeness = CalculateSymbolCompleteness(symbolFiles);
+                    var gaps = DetectSymbolGaps(symbolFiles, symbol);
                     var totalDays = tradingDates.Count == 0
                         ? 0
                         : CalculateExpectedTradingDays(tradingDates.First(), tradingDates.Last());
@@ -179,12 +185,14 @@ public static class BackfillValidationEndpoints
             {
                 try
                 {
-                    foreach (var symbol in symbols.Select(s => s.Symbol))
+                    var distinctSymbols = symbols.Select(s => s.Symbol).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                    var result = await searchService.SearchFilesAsync(
+                        new FileSearchQuery(Symbols: distinctSymbols, Take: 10_000),
+                        ct);
+
+                    foreach (var symbolGroup in result.Results.GroupBy(r => r.Symbol, StringComparer.OrdinalIgnoreCase))
                     {
-                        var result = await searchService.SearchFilesAsync(
-                            new FileSearchQuery(Symbols: [symbol], Take: 10_000),
-                            ct);
-                        allGaps.AddRange(DetectSymbolGaps(result.Results, symbol));
+                        allGaps.AddRange(DetectSymbolGaps(symbolGroup, symbolGroup.Key));
                     }
                 }
                 catch { /* non-critical */ }
@@ -219,12 +227,14 @@ public static class BackfillValidationEndpoints
             {
                 try
                 {
-                    foreach (var symbol in symbols.Select(s => s.Symbol))
+                    var distinctSymbols = symbols.Select(s => s.Symbol).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                    var result = await searchService.SearchFilesAsync(
+                        new FileSearchQuery(Symbols: distinctSymbols, Take: 10_000),
+                        ct);
+
+                    foreach (var symbolGroup in result.Results.GroupBy(r => r.Symbol, StringComparer.OrdinalIgnoreCase))
                     {
-                        var result = await searchService.SearchFilesAsync(
-                            new FileSearchQuery(Symbols: [symbol], Take: 10_000),
-                            ct);
-                        completenessScores[symbol] = CalculateSymbolCompleteness(result.Results);
+                        completenessScores[symbolGroup.Key] = CalculateSymbolCompleteness(symbolGroup);
                     }
                 }
                 catch { /* non-critical */ }
