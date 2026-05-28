@@ -279,6 +279,18 @@ public sealed class PaperSessionPersistenceService
         if (_store is not null)
         {
             await _store.AppendFillAsync(sessionId, fill, ct).ConfigureAwait(false);
+
+            if (session?.Portfolio?.Ledger is { JournalEntryCount: > 0 })
+            {
+                try
+                {
+                    await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to persist ledger journal for session {SessionId} after fill append", sessionId);
+                }
+            }
         }
     }
 
