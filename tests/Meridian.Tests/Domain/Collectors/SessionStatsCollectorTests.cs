@@ -33,6 +33,26 @@ public class SessionStatsCollectorTests
         stats.ChangePercent.Should().Be(0m);
     }
 
+
+    [Fact]
+    public void ChangePercent_WithExtremelySmallOpen_DoesNotThrowAndReturnsNull()
+    {
+        var stats = new SessionStats(
+            Symbol: "AAPL",
+            SessionDate: new DateOnly(2026, 5, 8),
+            Open: 0.0000000000000000000000000001m,
+            High: 1m,
+            Low: 0.0000000000000000000000000001m,
+            Last: 1m,
+            Volume: 1,
+            Vwap: 1m,
+            TradeCount: 2,
+            FirstTradeAt: new DateTimeOffset(2026, 5, 8, 13, 30, 0, TimeSpan.Zero),
+            LastTradeAt: new DateTimeOffset(2026, 5, 8, 13, 31, 0, TimeSpan.Zero));
+
+        stats.ChangePercent.Should().BeNull();
+    }
+
     [Fact]
     public void OnTrade_MultipleTrades_ComputesHighLowVolumeAndVwap()
     {
