@@ -32,7 +32,7 @@ Use this module for domain behavior that should remain stable across providers, 
 
 ## API contract notes
 
-- Broker statement runs carry broker, source institution, fund account, external account, statement period, source path, original file name, mapping profile, tolerance profile, importer, and source file hash metadata. Duplicate statement detection is keyed deterministically from fund account, statement period, and content-derived source file hash rather than the source path.
+- Statement reconciliation domain models include typed normalized positions, cash balances, transactions, security references, and source-row references. Each normalized entity carries `StatementRunId`, `SourceRowNumber`, `SourceRowHash`, and `RawSnapshot` traceability fields so downstream reconciliation evidence can be tied back to the raw statement line.
 
 ## Diagrams
 
