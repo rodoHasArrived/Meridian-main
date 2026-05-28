@@ -48,6 +48,7 @@ posture used by shared workstation continuity endpoints.
 Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
 queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
 note, audit event, and pending close sign-off posture visible in the retained detail panel.
+The Fund Ledger break queue also surfaces shared casework hardening fields (owner, priority, SLA badge, age band, breach state, root cause, resolution code, comment/evidence counts, last activity, and sign-off checklist) from the shared Accounting read model instead of inventing WPF-only state.
 Shared workstation affordance primitives under `Workstation/Models` and `Workstation/Controls`
 standardize action posture, readiness tone, evidence links, recovery actions, and sign-off
 requirements for W4 close/report surfaces. Fund Ledger reconciliation and Report Pack handoff

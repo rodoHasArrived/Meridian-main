@@ -62,7 +62,10 @@ import type {
   RiskRuleConfigUpdateRequest,
   RiskRuleStatus,
   ReconciliationBreakQueueItem,
+  ReconciliationBulkCaseworkRequest,
+  ReconciliationBulkCaseworkResult,
   ReconciliationCalibrationSummary,
+  ReconciliationCaseworkCommand,
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
@@ -148,11 +151,22 @@ import {
   providerRemoveEndpoint,
   providerTestEndpoint,
   qualityAnomalyAcknowledgeEndpoint,
+  reconciliationBreakAssignEndpoint,
   reconciliationBreakAuditEndpoint,
+  reconciliationBreakBulkDryRunEndpoint,
+  reconciliationBreakBulkExecuteEndpoint,
+  reconciliationBreakBulkStatusEndpoint,
+  reconciliationBreakCommentEndpoint,
+  reconciliationBreakCommentsEndpoint,
   reconciliationBreakEndpoint,
   reconciliationBreakQueueEndpoint,
+  reconciliationBreakReopenEndpoint,
+  reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakRootCauseEndpoint,
+  reconciliationBreakSignOffEndpoint,
+  reconciliationBreakTransitionEndpoint,
   reconciliationRunEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
@@ -330,13 +344,15 @@ async function patchJson<T>(path: string, body?: unknown, options: ApiRequestOpt
   return readJsonResponse<T>(path, response);
 }
 
-async function deleteJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+async function deleteJson<T>(path: string, options: ApiRequestOptions = {}, body?: unknown): Promise<T> {
   const response = await fetch(path, {
     method: "DELETE",
     signal: options.signal,
     headers: {
-      Accept: "application/json"
-    }
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
   if (!response.ok) {
@@ -933,6 +949,61 @@ export function resolveReconciliationBreak(request: ResolveReconciliationBreakRe
     reconciliationBreakResolveEndpoint(request.breakId),
     request
   );
+}
+
+export function assignReconciliationBreak(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakAssignEndpoint(request.breakId), request);
+}
+
+export function transitionReconciliationBreak(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakTransitionEndpoint(request.breakId), request);
+}
+
+export function addReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakCommentsEndpoint(request.breakId), request);
+}
+
+export function editReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(
+    reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
+    request
+  );
+}
+
+export function deleteReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
+  return deleteJson<ReconciliationBreakQueueItem>(
+    reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
+    {},
+    request
+  );
+}
+
+export function setReconciliationBreakRootCause(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakRootCauseEndpoint(request.breakId), request);
+}
+
+export function setReconciliationBreakResolution(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakResolutionEndpoint(request.breakId), request);
+}
+
+export function signOffReconciliationBreak(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakSignOffEndpoint(request.breakId), request);
+}
+
+export function reopenReconciliationBreak(request: ReconciliationCaseworkCommand) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakReopenEndpoint(request.breakId), request);
+}
+
+export function dryRunReconciliationBreakBulkAction(request: ReconciliationBulkCaseworkRequest) {
+  return postJson<ReconciliationBulkCaseworkResult>(reconciliationBreakBulkDryRunEndpoint(), request);
+}
+
+export function executeReconciliationBreakBulkAction(request: ReconciliationBulkCaseworkRequest) {
+  return postJson<ReconciliationBulkCaseworkResult>(reconciliationBreakBulkExecuteEndpoint(), request);
+}
+
+export function getReconciliationBreakBulkActionStatus(bulkActionId: string) {
+  return getJson<unknown>(reconciliationBreakBulkStatusEndpoint(bulkActionId));
 }
 
 export function getReconciliationCalibrationSummary() {
