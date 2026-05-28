@@ -1236,8 +1236,8 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         var lastTradingDate = GetOptionalDateOnly(record.AssetSpecificTerms, "lastTradingDt") ?? expiryDate;
         var lifecycleStat =
             record.EffectiveTo.HasValue ? "Retired" :
-            isRollTarget ? "RollTarget" :
             expiryDate.Value < DateOnly.FromDateTime(DateTime.UtcNow) ? "Expired" :
+            isRollTarget ? "RollTarget" :
             "Active";
 
         await using var command = connection.CreateCommand();
