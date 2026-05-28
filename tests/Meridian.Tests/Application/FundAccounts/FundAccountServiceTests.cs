@@ -165,13 +165,22 @@ public sealed class FundAccountServiceTests
         var today = DateOnly.FromDateTime(DateTime.Today);
 
         await svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
-            acct.AccountId, today, "USD", 1_000_000m, "BankStatement", "test"));
+            acct.AccountId,
+            today,
+            "USD",
+            1_000_000m,
+            "BankStatement",
+            "test",
+            UnrealizedPnl: 12_500m,
+            RealizedPnl: 2_250m));
 
         var latest = await svc.GetLatestBalanceSnapshotAsync(acct.AccountId);
 
         Assert.NotNull(latest);
         Assert.Equal(1_000_000m, latest!.CashBalance);
         Assert.Equal("USD", latest.Currency);
+        Assert.Equal(12_500m, latest.UnrealizedPnl);
+        Assert.Equal(2_250m, latest.RealizedPnl);
     }
 
     [Fact]

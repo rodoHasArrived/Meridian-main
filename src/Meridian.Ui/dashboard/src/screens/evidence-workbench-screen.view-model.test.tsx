@@ -68,7 +68,9 @@ const readyNode: EvidenceNode = {
       route: null,
       generatedAt: "2026-05-09T12:01:00Z",
       hash: "sha256:run-detail",
-      retained: true
+      retained: true,
+      canonicalSubjectKind: "run",
+      canonicalSubjectId: "run-1"
     }
   ],
   relatedWorkItemIds: []
@@ -105,7 +107,85 @@ const completeness: EvidenceCompleteness = {
   readyIds: [readyNode.evidenceId],
   missingIds: ["strategy-run:run-1:ledger"],
   staleIds: [staleNode.evidenceId],
-  blockingWorkItemIds: ["provider-trust:sample-review"]
+  blockingWorkItemIds: ["provider-trust:sample-review"],
+  validationIssues: [
+    {
+      code: "orphan-evidence",
+      severity: "Critical",
+      message: "Evidence node 'strategy-run:run-1:unlinked-approval' is not linked into the packet graph.",
+      evidenceId: "strategy-run:run-1:unlinked-approval",
+      evidenceKind: "approval",
+      sourceSystem: "OperationsContinuityWorkflowService"
+    },
+    {
+      code: "evidence-sla-breached",
+      severity: "Warning",
+      message: "Replay evidence is outside the replay freshness window.",
+      evidenceId: staleNode.evidenceId,
+      evidenceKind: staleNode.kind,
+      sourceSystem: staleNode.sourceSystem
+    }
+  ],
+  blockingIssueCount: 1,
+  warningIssueCount: 1,
+  orphanEvidenceIds: ["strategy-run:run-1:unlinked-approval"],
+  slaPolicies: [
+    {
+      policyId: "replay-check-freshness",
+      evidenceKind: "paper-replay",
+      workflowKind: "paper-readiness",
+      freshnessMinutes: 10080,
+      breachSeverity: "Warning",
+      requiredForAssurance: true,
+      description: "Replay checks must be fresh for assurance."
+    }
+  ],
+  slaAssessments: [
+    {
+      policyId: "replay-check-freshness",
+      evidenceId: staleNode.evidenceId,
+      evidenceKind: staleNode.kind,
+      sourceSystem: staleNode.sourceSystem,
+      ageMinutes: 12960,
+      freshnessMinutes: 10080,
+      isBreached: true,
+      severity: "Warning",
+      message: "Replay evidence is outside the replay freshness window."
+    }
+  ],
+  assuranceScore: {
+    score: 45,
+    status: "Stale",
+    components: [
+      {
+        componentId: "replay",
+        label: "Replay freshness",
+        score: 40,
+        status: "Stale",
+        detail: "Paper replay evidence is stale."
+      },
+      {
+        componentId: "ledger",
+        label: "Ledger evidence",
+        score: 0,
+        status: "Missing",
+        detail: "Ledger evidence is missing."
+      }
+    ],
+    slaAssessments: [
+      {
+        policyId: "replay-check-freshness",
+        evidenceId: staleNode.evidenceId,
+        evidenceKind: staleNode.kind,
+        sourceSystem: staleNode.sourceSystem,
+        ageMinutes: 12960,
+        freshnessMinutes: 10080,
+        isBreached: true,
+        severity: "Warning",
+        message: "Replay evidence is outside the replay freshness window."
+      }
+    ]
+  }
 };
 
 const evidenceActions: WorkflowAction[] = [
@@ -192,9 +272,39 @@ describe("Evidence Workbench view model", () => {
     expect(vm.title).toBe("Momentum strategy run");
     expect(vm.scoreLabel).toBe("33% complete");
     expect(vm.statusTone).toBe("danger");
+    expect(vm.assurancePanel).toMatchObject({
+      scoreLabel: "45% assurance",
+      statusLabel: "Stale",
+      statusTone: "warning",
+      summaryLabel: "2 components, 1 SLA breach",
+      orphanSummaryLabel: "1 orphan node",
+      orphanTone: "danger",
+      noOrphanRuleLabel: "No-orphan rule breached",
+      validationIssueLabel: "1 blocking, 1 warning"
+    });
+    expect(vm.assurancePanel.componentRows[0]).toMatchObject({
+      id: "replay",
+      label: "Replay freshness",
+      scoreLabel: "40%",
+      statusLabel: "Stale",
+      statusTone: "warning",
+      detail: "Paper replay evidence is stale."
+    });
+    expect(vm.assurancePanel.breachedSlaRows[0]).toMatchObject({
+      policyLabel: "Replay Check Freshness",
+      evidenceId: staleNode.evidenceId,
+      ageLabel: "12960 min",
+      freshnessLabel: "10080 min limit",
+      severityLabel: "Warning",
+      breached: true,
+      tone: "warning",
+      message: "Replay evidence is outside the replay freshness window."
+    });
     expect(vm.generatedLabel).toBe("May 9, 12:30 UTC");
     expect(vm.missingEvidence).toEqual(["strategy-run:run-1:ledger"]);
     expect(vm.staleEvidence).toEqual([staleNode.evidenceId]);
+    expect(vm.orphanEvidence).toEqual(["strategy-run:run-1:unlinked-approval"]);
+    expect(vm.slaBreaches).toEqual(["Replay evidence is outside the replay freshness window."]);
     expect(vm.relatedWorkItemIds).toEqual(["provider-trust:sample-review"]);
     expect(vm.nodeGroups.map((group) => group.id)).toEqual(["run-lifecycle", "readiness", "provider-trust"]);
     expect(vm.nodeGroups[0]).toMatchObject({
@@ -479,7 +589,8 @@ describe("Evidence Workbench view model", () => {
           kind: "Json",
           target: "artifacts/evidence/strategy-run/run-1/detail.json",
           retainedLabel: "Retained",
-          hashLabel: "sha256:run-detail"
+          hashLabel: "sha256:run-detail",
+          canonicalSubjectLabel: "Run run-1"
         })
       ],
       workItemEmptyText: "No related operator work items are attached to this node."
@@ -720,7 +831,32 @@ describe("Evidence Workbench view model", () => {
         manifestRoute: "/workstation/evidence/fresh-manifest.json",
         evidenceCount: 3,
         warningCount: 1,
-        retained: true
+        retained: true,
+        vaultIdentity: {
+          vaultId: "ev-1234567890abcdef12345678",
+          subjectKind: "strategy-run",
+          subjectId: "run-1",
+          manifestPath: "fresh-manifest.json",
+          manifestRoute: "/workstation/evidence/fresh-manifest.json",
+          retainedAt: "2026-05-09T12:36:00Z",
+          contentHashSha256: "0".repeat(64),
+          schemaVersion: 1,
+          storageKind: "file-bundle",
+          artifacts: [
+            {
+              artifactId: "statement-artifact",
+              kind: "broker-statement",
+              relativePath: "workstation/evidence/_vault/ev-1234567890abcdef12345678/artifacts/broker-statement.csv",
+              contentHashSha256: "a".repeat(64),
+              sizeBytes: 2048,
+              retainedAt: "2026-05-09T12:36:00Z",
+              sourcePath: "C:/statement.csv",
+              sourceRoute: "/api/workstation/reconciliation/statement-runs/import-1",
+              canonicalSubjectKind: "report",
+              canonicalSubjectId: "report-pack-1"
+            }
+          ]
+        }
       });
       await secondExport.promise;
     });
@@ -728,10 +864,25 @@ describe("Evidence Workbench view model", () => {
     expect(result.current.exportResultDetail).toMatchObject({
       title: "Manifest retained",
       manifestPath: "fresh-manifest.json",
-      summaryLabel: "3 nodes, 1 warning",
+      summaryLabel: "3 nodes, 1 warning, 1 retained artifact",
       routeHref: "/workstation/evidence/fresh-manifest.json",
       routeLabel: "Open manifest",
-      routeAriaLabel: "Open retained evidence manifest at fresh-manifest.json"
+      routeAriaLabel: "Open retained evidence manifest at fresh-manifest.json",
+      vaultIdLabel: "ev-1234567890abcdef12345678",
+      storageKindLabel: "File Bundle",
+      artifactSummaryLabel: "1 retained artifact",
+      artifactRows: [
+        expect.objectContaining({
+          id: "statement-artifact",
+          kind: "Broker Statement",
+          relativePath: "workstation/evidence/_vault/ev-1234567890abcdef12345678/artifacts/broker-statement.csv",
+          sizeLabel: "2.0 KiB",
+          hashLabel: "a".repeat(64),
+          sourceLabel: "/api/workstation/reconciliation/statement-runs/import-1",
+          canonicalSubjectLabel: "Report report-pack-1",
+          retainedLabel: "Retained May 9, 12:36 UTC"
+        })
+      ]
     });
     expect(result.current.exportBusy).toBe(false);
   });
@@ -748,7 +899,32 @@ describe("EvidenceWorkbenchScreen", () => {
       manifestRoute: "/workstation/evidence/strategy-run/run-1/manifest.json",
       evidenceCount: 3,
       warningCount: 1,
-      retained: true
+      retained: true,
+      vaultIdentity: {
+        vaultId: "ev-abcdefabcdefabcdefabcdef",
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        manifestPath: "workstation/evidence/strategy-run/run-1/manifest.json",
+        manifestRoute: "/workstation/evidence/strategy-run/run-1/manifest.json",
+        retainedAt: "2026-05-09T12:35:00Z",
+        contentHashSha256: "0".repeat(64),
+        schemaVersion: 1,
+        storageKind: "file-bundle",
+        artifacts: [
+          {
+            artifactId: "statement-artifact",
+            kind: "broker-statement",
+            relativePath: "workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv",
+            contentHashSha256: "b".repeat(64),
+            sizeBytes: 1024,
+            retainedAt: "2026-05-09T12:35:00Z",
+            sourcePath: null,
+            sourceRoute: "/api/workstation/reconciliation/statement-runs/import-1",
+            canonicalSubjectKind: "report",
+            canonicalSubjectId: "report-pack-1"
+          }
+        ]
+      }
     };
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
@@ -760,6 +936,15 @@ describe("EvidenceWorkbenchScreen", () => {
 
     expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
     expect(screen.getByText("Missing evidence")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Meridian Assurance" })).toHaveTextContent("45% assurance");
+    expect(screen.getByRole("region", { name: "Meridian Assurance" })).toHaveTextContent("No-orphan rule breached");
+    expect(screen.getByRole("list", { name: "Assurance score components" })).toHaveTextContent("Replay freshness");
+    expect(screen.getByRole("list", { name: "Evidence SLA assessments" })).toHaveTextContent(
+      "Replay evidence is outside the replay freshness window."
+    );
+    expect(screen.getByText("Orphan evidence")).toBeInTheDocument();
+    expect(screen.getByText("strategy-run:run-1:unlinked-approval")).toBeInTheDocument();
+    expect(screen.getByText("SLA breaches")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open source workflow for momentum strategy run/i })).toHaveAttribute(
       "href",
       "/strategy?runId=run-1"
@@ -786,7 +971,13 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
     expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
-    expect(screen.getByText("3 nodes, 1 warning")).toBeInTheDocument();
+    expect(screen.getByText("3 nodes, 1 warning, 1 retained artifact")).toBeInTheDocument();
+    expect(screen.getByText("ev-abcdefabcdefabcdefabcdef")).toBeInTheDocument();
+    expect(screen.getByText("File Bundle")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Retained vault artifacts" })).toBeInTheDocument();
+    expect(screen.getByText("Broker Statement")).toBeInTheDocument();
+    expect(screen.getByText("workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv")).toBeInTheDocument();
+    expect(screen.getByText("Report report-pack-1")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open retained evidence manifest/i })).toHaveAttribute(
       "href",
       "/workstation/evidence/strategy-run/run-1/manifest.json"

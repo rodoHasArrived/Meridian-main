@@ -123,7 +123,26 @@ const detail: OperationsContinuityWorkflow = {
     blockingReason: "Close workflow has unresolved ledger blockers.",
     evidenceLinks: []
   },
-  closeChecklist: [],
+  closeChecklist: [
+    {
+      taskId: "close-gate-ledgerposting",
+      gate: "LedgerPosting",
+      label: "Ledger posting controller check",
+      owner: "fund-controller",
+      requiredEvidence: "Validated journal draft, retained ledger hash, and controller approval evidence.",
+      dueDate: "2026-05-09",
+      requiredApprovalCount: 2,
+      expiresOn: "2026-05-12",
+      status: "Pending",
+      blockingReason: "Ledger validation is still required.",
+      evidencePointer: "ledger-evidence-1",
+      remediationRoute: "/workstation/accounting/ledger",
+      canAcknowledge: false,
+      acknowledgedAtUtc: null,
+      acknowledgedBy: null
+    }
+  ],
+  closePackage: null,
   closeReadiness: null,
   evidenceLinks: [],
   blockers: gates[1]!.blockers
@@ -145,6 +164,12 @@ describe("OperationsContinuityScreen", () => {
 
     expect(await screen.findByRole("heading", { name: "Gates" })).toBeInTheDocument();
     expect(screen.getByText("Ledger posting requires a balanced and validated journal draft.")).toBeInTheDocument();
+    const checklist = screen.getByRole("table", { name: "Operations continuity close checklist" });
+    expect(within(checklist).getByText("Ledger posting controller check")).toBeInTheDocument();
+    expect(within(checklist).getByText("Validated journal draft, retained ledger hash, and controller approval evidence.")).toBeInTheDocument();
+    expect(within(checklist).getByText("2 control approvals required")).toBeInTheDocument();
+    expect(within(checklist).getByRole("link", { name: "Open remediation for Ledger posting controller check" }))
+      .toHaveAttribute("href", "/accounting/ledger");
     expect(await screen.findByText("Ledger Draft Blocked")).toBeInTheDocument();
 
     const nextAction = screen.getByRole("link", { name: "Open operations continuity next action: Resolve Ledger Posting blockers" });

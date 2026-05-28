@@ -262,6 +262,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             "FundPortfolio" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Portfolio),
             "FundCashFinancing" => new FundOperationsNavigationContext(Tab: FundOperationsTab.CashFinancing),
             "FundLedger" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Journal),
+            "OperationsContinuity" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Overview),
+            "OperationsClose" => new FundOperationsNavigationContext(Tab: FundOperationsTab.ReportPack),
             "FundTrialBalance" => new FundOperationsNavigationContext(Tab: FundOperationsTab.TrialBalance),
             "FundReconciliation" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Reconciliation),
             "FundAuditTrail" => new FundOperationsNavigationContext(Tab: FundOperationsTab.AuditTrail),

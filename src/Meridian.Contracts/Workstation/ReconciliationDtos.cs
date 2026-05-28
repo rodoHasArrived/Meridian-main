@@ -350,7 +350,16 @@ public sealed record ReconciliationBreakQueueItem(
     string? Counterparty = null,
     ReconciliationBreakScore? Score = null,
     DateTimeOffset? SlaDueAt = null,
-    bool SlaBreached = false);
+    bool SlaBreached = false,
+    ReconciliationBreakExplanationDto? BreakExplanation = null);
+
+public sealed record ReconciliationBreakExplanationDto(
+    string Summary,
+    IReadOnlyList<string> SourceSystems,
+    string ProbableCause,
+    string LedgerImpact,
+    string SuggestedNextAction,
+    IReadOnlyList<string> EvidenceLinks);
 
 public sealed record ReconciliationCaseSignoffRecord(
     string Actor,

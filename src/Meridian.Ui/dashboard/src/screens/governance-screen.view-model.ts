@@ -6,6 +6,7 @@ import {
   getReconciliationCalibrationSummary,
   getRunReviewPacketPath,
   getRunTrialBalance,
+  previewInvestmentAccountingTransaction,
   getSecurityConflicts,
   getSecurityIdentity,
   getSecurityTrustSnapshot,
@@ -30,7 +31,10 @@ import type {
   GovernanceCashFlowSummary,
   GovernanceReportingProfile,
   GovernanceReportingSummary,
+  GovernanceReconciliationRecord,
   GovernanceWorkspaceResponse,
+  InvestmentAccountingTransactionLabPreview,
+  InvestmentAccountingTransactionLabRequest,
   LedgerTrialBalanceLine,
   ReconciliationBreakQueueItem,
   ReconciliationCalibrationSummary,
@@ -67,6 +71,7 @@ export interface GovernanceReconciliationServices {
   resolveBreak: (request: ResolveReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
   getTrialBalance: (runId: string) => Promise<LedgerTrialBalanceLine[]>;
   getCalibrationSummary: () => Promise<ReconciliationCalibrationSummary>;
+  previewTransactionLab: (request: InvestmentAccountingTransactionLabRequest) => Promise<InvestmentAccountingTransactionLabPreview>;
 }
 
 export interface GovernanceReportingServices {
@@ -868,6 +873,32 @@ export interface GovernanceTrialBalanceViewState {
   statusAnnouncement: string;
 }
 
+export interface TransactionLabImpactRowViewModel {
+  id: string;
+  label: string;
+  value: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
+export interface TransactionLabPreviewViewState {
+  title: string;
+  description: string;
+  previewButtonLabel: string;
+  previewButtonAriaLabel: string;
+  canPreview: boolean;
+  disabledReason: string | null;
+  busy: boolean;
+  statusText: string;
+  statusRole: "status" | "alert";
+  statusTone: "default" | "success" | "warning" | "danger";
+  journalLineCountLabel: string;
+  ledgerImpactLabel: string;
+  reconciliationLabel: string;
+  evidenceLabel: string;
+  requestSummaryLabel: string;
+  impactRows: TransactionLabImpactRowViewModel[];
+}
+
 const DEFAULT_ACCOUNTING_BASIS: AccountingBasisKind = "Primary";
 const CALIBRATION_PROFILE_DETAIL_PANEL_ID = "calibration-profile-detail-panel";
 
@@ -911,7 +942,8 @@ const defaultGovernanceReconciliationServices: GovernanceReconciliationServices 
   reviewBreak: (request) => reviewReconciliationBreak(request),
   resolveBreak: (request) => resolveReconciliationBreak(request),
   getTrialBalance: (runId) => getRunTrialBalance(runId),
-  getCalibrationSummary: () => getReconciliationCalibrationSummary()
+  getCalibrationSummary: () => getReconciliationCalibrationSummary(),
+  previewTransactionLab: (request) => previewInvestmentAccountingTransaction(request)
 };
 
 const defaultGovernanceReportingServices: GovernanceReportingServices = {
@@ -1685,6 +1717,9 @@ export function useGovernanceReconciliationViewModel(
   const [selectedAccountingBasis, setSelectedAccountingBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
   const [trialBalanceError, setTrialBalanceError] = useState<ApiErrorDisplay | null>(null);
+  const [transactionLabPreview, setTransactionLabPreview] = useState<InvestmentAccountingTransactionLabPreview | null>(null);
+  const [transactionLabLoading, setTransactionLabLoading] = useState(false);
+  const [transactionLabError, setTransactionLabError] = useState<ApiErrorDisplay | null>(null);
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
   const [calibrationLoading, setCalibrationLoading] = useState(false);
   const [calibrationError, setCalibrationError] = useState<ApiErrorDisplay | null>(null);
@@ -1894,6 +1929,32 @@ export function useGovernanceReconciliationViewModel(
     setSelectedAccountingBasis(basis);
     setSelectedTrialBalanceRowId(null);
   }, []);
+  const runTransactionLabPreview = useCallback(async () => {
+    if (!selectedReconciliation) {
+      return;
+    }
+
+    setTransactionLabLoading(true);
+    setTransactionLabError(null);
+    try {
+      const preview = await services.previewTransactionLab(buildTransactionLabPreviewRequest(selectedReconciliation, trialBalance));
+      setTransactionLabPreview(preview);
+    } catch (err) {
+      setTransactionLabError(describeApiError(err, "Transaction Lab preview failed."));
+    } finally {
+      setTransactionLabLoading(false);
+    }
+  }, [selectedReconciliation, services, trialBalance]);
+  const transactionLabView = useMemo(
+    () => buildTransactionLabPreviewViewState({
+      selectedReconciliation,
+      trialBalance,
+      preview: transactionLabPreview,
+      loading: transactionLabLoading,
+      error: transactionLabError
+    }),
+    [selectedReconciliation, transactionLabError, transactionLabLoading, transactionLabPreview, trialBalance]
+  );
   const calibrationViewState = useMemo(
     () => buildCalibrationSummaryViewState(
       calibrationSummary,
@@ -1941,6 +2002,8 @@ export function useGovernanceReconciliationViewModel(
     trialBalanceView,
     selectTrialBalanceRow: setSelectedTrialBalanceRowId,
     selectAccountingBasis,
+    transactionLabView,
+    runTransactionLabPreview,
     breakAction,
     selectBreak: setSelectedBreakId,
     assignBreak,
@@ -2659,6 +2722,7 @@ export function buildReconciliationBreakRows(
 
 function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): ReconciliationBreakDetailViewModel {
   const routingActionHref = buildReconciliationBreakRoutingHref(row.routingTarget);
+  const explanation = row.breakExplanation ?? null;
 
   return {
     id: row.detailPanelId,
@@ -2681,10 +2745,14 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Required sign-off", value: buildReconciliationBreakSignoffText(row) },
       { label: "Decision note", value: formatReconciliationMetadata(row.resolutionNote, "No decision captured") },
       { label: "Routing", value: row.routingTarget ?? "No routing target" },
-      { label: "Fund account", value: row.fundAccountId ?? "Not scoped" }
+      { label: "Fund account", value: row.fundAccountId ?? "Not scoped" },
+      { label: "Source systems", value: explanation?.sourceSystems.length ? explanation.sourceSystems.join(", ") : "Not reported" },
+      { label: "Probable cause", value: formatReconciliationMetadata(explanation?.probableCause, "Not reported") },
+      { label: "Ledger impact", value: formatReconciliationMetadata(explanation?.ledgerImpact, "Not reported") },
+      { label: "Evidence links", value: explanation?.evidenceLinks.length ? explanation.evidenceLinks.join(", ") : "No evidence links reported" }
     ],
-    analysisText: row.explainabilitySummary ?? null,
-    recommendedActionText: row.recommendedAction ?? null,
+    analysisText: explanation?.summary ?? row.explainabilitySummary ?? null,
+    recommendedActionText: explanation?.suggestedNextAction ?? row.recommendedAction ?? null,
     routingActionLabel: routingActionHref ? "Open routing target" : null,
     routingActionHref,
     routingActionAriaLabel: routingActionHref ? `Open routing target for reconciliation break ${row.breakId}` : null
@@ -3341,6 +3409,124 @@ function buildBasisBridgeSourceLabel(line: BasisAwareLedgerTrialBalanceLine | nu
 
 function accountingBasisDisplayName(basis: AccountingBasisKind): string {
   return basis === "Gaap" ? "GAAP" : basis;
+}
+
+export function buildTransactionLabPreviewRequest(
+  reconciliation: GovernanceReconciliationRecord,
+  trialBalanceRows: LedgerTrialBalanceLine[]
+): InvestmentAccountingTransactionLabRequest {
+  const candidate = trialBalanceRows.find((row) => (row.symbol ?? "").trim().length > 0)
+    ?? trialBalanceRows.find((row) => row.accountType === "Asset" || row.accountType === "Cash")
+    ?? trialBalanceRows[0]
+    ?? null;
+  const amount = Math.max(Math.abs(candidate?.balance ?? 1000), 1);
+  const quantity = candidate?.symbol ? 1 : 0;
+
+  return {
+    kind: "Trade",
+    fundAccountId: "browser-ledger-preview",
+    symbol: candidate?.symbol?.trim() || "CASH",
+    eventDate: normalizeTransactionLabEventDate(reconciliation.lastUpdated),
+    currency: "USD",
+    amount,
+    quantity,
+    price: quantity > 0 ? amount / quantity : amount,
+    feeAmount: 0,
+    side: "Buy",
+    sourceRunId: reconciliation.runId,
+    sourceSessionId: reconciliation.mode === "paper" ? reconciliation.runId : null,
+    brokerStatementId: null,
+    reconciliationCaseId: reconciliation.openBreakCount > 0 ? `${reconciliation.runId}:open-breaks` : null,
+    evidenceIds: [
+      `run:${reconciliation.runId}`,
+      `reconciliation:${reconciliation.reconciliationStatus}`
+    ]
+  };
+}
+
+export function buildTransactionLabPreviewViewState({
+  selectedReconciliation,
+  trialBalance,
+  preview,
+  loading,
+  error
+}: {
+  selectedReconciliation: GovernanceReconciliationRecord | null;
+  trialBalance: LedgerTrialBalanceLine[];
+  preview: InvestmentAccountingTransactionLabPreview | null;
+  loading: boolean;
+  error: ApiErrorDisplay | null;
+}): TransactionLabPreviewViewState {
+  const canPreview = selectedReconciliation !== null;
+  const statusTone = error
+    ? "danger"
+    : preview?.ledgerImpact.hasValidationWarnings
+      ? "warning"
+      : preview
+        ? "success"
+        : "default";
+  const statusText = error?.summary
+    ?? (preview
+      ? `${preview.journalPreview.lines.length} journal lines, ${preview.reconciliationExpectation.expectedBreakType} reconciliation expectation.`
+      : canPreview
+        ? "Ready for shared Transaction Lab preview."
+        : "Select a reconciliation run before preview.");
+
+  return {
+    title: "Transaction Lab",
+    description: selectedReconciliation
+      ? `Books Before Broker preview for ${selectedReconciliation.strategyName}.`
+      : "Books Before Broker preview waits for a selected reconciliation run.",
+    previewButtonLabel: loading ? "Previewing" : "Preview books",
+    previewButtonAriaLabel: "Preview Books Before Broker accounting impact",
+    canPreview,
+    disabledReason: canPreview ? null : "Select a reconciliation run before previewing accounting impact.",
+    busy: loading,
+    statusText,
+    statusRole: error ? "alert" : "status",
+    statusTone,
+    journalLineCountLabel: preview ? formatCount(preview.journalPreview.lines.length, "journal line") : "Not previewed",
+    ledgerImpactLabel: preview
+      ? `${formatCurrency(preview.ledgerImpact.netDebitEffect)} debit / ${formatCurrency(preview.ledgerImpact.netCreditEffect)} credit`
+      : "Pending",
+    reconciliationLabel: preview ? preview.reconciliationExpectation.expectedState : "Pending",
+    evidenceLabel: preview
+      ? formatCount(preview.evidenceIds.length, "evidence id")
+      : formatCount(trialBalance.length, "trial row"),
+    requestSummaryLabel: selectedReconciliation
+      ? `${selectedReconciliation.runId} · ${selectedReconciliation.reconciliationStatus}`
+      : "No run selected",
+    impactRows: buildTransactionLabImpactRows(preview)
+  };
+}
+
+function buildTransactionLabImpactRows(
+  preview: InvestmentAccountingTransactionLabPreview | null
+): TransactionLabImpactRowViewModel[] {
+  if (!preview) {
+    return [];
+  }
+
+  return preview.trialBalanceImpact.slice(0, 4).map((impact, index) => ({
+    id: `${impact.accountType}-${impact.accountName}-${impact.symbol ?? "cash"}-${index}`,
+    label: `${impact.accountName}${impact.symbol ? ` · ${impact.symbol}` : ""}`,
+    value: formatSignedCurrency(impact.balanceDelta),
+    tone: impact.balanceDelta > 0 ? "success" : impact.balanceDelta < 0 ? "danger" : "default"
+  }));
+}
+
+function normalizeTransactionLabEventDate(value: string): string {
+  const exactDate = value.match(/\d{4}-\d{2}-\d{2}/)?.[0];
+  if (exactDate) {
+    return exactDate;
+  }
+
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  return "2026-05-28";
 }
 
 function trialBalanceBasisTone(basis: AccountingBasisKind): GovernanceTrialBalanceRowViewModel["basisTone"] {

@@ -470,6 +470,32 @@ public sealed class QuantScriptViewModelTests
         viewModelSource.Should().NotContain("private QuantScriptExecutionRecord? _selectedExecutionRecord");
     }
 
+    [Fact]
+    public void QuantScriptRunStateSection_ShouldOwnExecutionPresentationWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\QuantScriptViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\QuantScriptViewModel.cs"));
+
+        sectionSource.Should().Contain("internal sealed class QuantScriptRunStateSectionViewModel");
+        sectionSource.Should().Contain("public bool IsRunning");
+        sectionSource.Should().Contain("public double ProgressFraction");
+        sectionSource.Should().Contain("public string StatusText");
+        sectionSource.Should().Contain("public string ElapsedText");
+        sectionSource.Should().Contain("public string MemoryText");
+        sectionSource.Should().Contain("public int ActiveResultsTab");
+        viewModelSource.Should().Contain("internal QuantScriptRunStateSectionViewModel RunStateSection");
+        viewModelSource.Should().Contain("get => RunStateSection.IsRunning");
+        viewModelSource.Should().Contain("get => RunStateSection.ProgressFraction");
+        viewModelSource.Should().Contain("get => RunStateSection.StatusText");
+        viewModelSource.Should().Contain("get => RunStateSection.ActiveResultsTab");
+        viewModelSource.Should().NotContain("private bool _isRunning");
+        viewModelSource.Should().NotContain("private double _progressFraction");
+        viewModelSource.Should().NotContain("private string _statusText");
+        viewModelSource.Should().NotContain("private string _elapsedText");
+        viewModelSource.Should().NotContain("private string _memoryText");
+        viewModelSource.Should().NotContain("private int _activeResultsTab");
+    }
+
     private static QuantScriptExecutionRecord MakeHistoryRecord(string? mirroredRunId, int? capturedBacktestCount = null)
         => new(
             ExecutionId: Guid.NewGuid().ToString("N"),

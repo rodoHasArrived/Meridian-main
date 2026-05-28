@@ -107,7 +107,7 @@ const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
   settings: WORKSTATION_ROUTE_CATALOG.settings
 };
 
-const PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> = {
+export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> = {
   AccountPortfolio: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   AccountingShell: WORKSTATION_ROUTE_CATALOG.accounting,
   OperationsContinuity: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
@@ -194,7 +194,7 @@ export function workflowTargetPath(
   targetPageTag: string | null | undefined,
   workspaceId: string | null | undefined
 ) {
-  const tagRoute = targetPageTag ? PAGE_TAG_ROUTES[targetPageTag] : undefined;
+  const tagRoute = targetPageTag ? WORKSTATION_PAGE_TAG_ROUTES[targetPageTag] : undefined;
   if (tagRoute) {
     return tagRoute;
   }

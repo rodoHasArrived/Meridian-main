@@ -389,6 +389,34 @@ public sealed record LedgerMappingWorkbenchDto(
     IReadOnlyList<LedgerMappingAccountDto> Accounts,
     FundStructureSharedDataAccessDto? SharedDataAccess = null);
 
+public sealed record LedgerMappingAssignmentRequestDto(
+    Guid AccountId,
+    string LedgerGroupId,
+    string RequestedBy,
+    string Rationale,
+    DateTimeOffset? EffectiveFrom = null,
+    string? CorrelationId = null,
+    Guid? AssignmentId = null);
+
+public sealed record LedgerMappingAssignmentAuditEventDto(
+    Guid AuditId,
+    string EventType,
+    DateTimeOffset OccurredAtUtc,
+    string Actor,
+    string Rationale,
+    string CorrelationId,
+    Guid AccountId,
+    string AccountCode,
+    string? FromLedgerGroupId,
+    string ToLedgerGroupId,
+    Guid AssignmentId);
+
+public sealed record LedgerMappingAssignmentResultDto(
+    FundStructureAssignmentDto Assignment,
+    LedgerMappingAccountDto Account,
+    LedgerMappingAssignmentAuditEventDto AuditEvent,
+    LedgerMappingWorkbenchDto Workbench);
+
 public sealed record AccountingStructureViewDto(
     OrganizationSummaryDto? Organization,
     BusinessSummaryDto? Business,

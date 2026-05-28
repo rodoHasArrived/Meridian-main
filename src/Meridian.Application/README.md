@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Application
@@ -29,11 +29,46 @@ and UI presentation concerns in their owning layers.
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
   and approval close lanes. Approval and close commands enforce shared close-checklist control
   approvals before the workflow can become ready for close or close against a report pack. Close
-  readiness is scored server-side across Security Master, position, cash, ledger, pricing,
-  reconciliation, report, and approval components.
+  commands also publish governed close-package metadata on the workflow, including signer,
+  sign-off rationale, retained manifest id/route, evidence hash, report pack id, evidence links,
+  and checklist approvals. Close readiness is scored server-side across Security Master, provider-data freshness, position, cash,
+  ledger, pricing, reconciliation, report, and approval components. The provider freshness
+  component uses the same broker-sync stale posture signal that blocks the broker ingest gate, so
+  controller close calendars do not treat stale provider data as merely a UI warning. The approval
+  policy matrix service projects the
+  same server-owned reviewer, permission, report-pack, checklist, and audit-event rules for
+  configuration surfaces and accepts governed rule upserts with rationale, actor, correlation, and
+  storage-root persistence under `governance/operations-approval-policy-rules.json`. The close
+  calendar service projects each workflow's next due close task, owner, readiness score, component
+  breakdown, blocker codes, next actions, and approval counts from the workflow service instead of
+  client-local scheduling rules; governed owner/due-date overrides persist under
+  `governance/operations-close-calendar-items.json` with actor, rationale, and correlation
+  evidence. Ledger posting commands also enforce line-level Security Master symbol, identity,
+  explicit approval reference, provenance, and ledger-mapping evidence for every instrument-bearing
+  journal line before the durable journal can be appended, including securities-style account lines
+  that omit symbol metadata. Candidate and line-level provenance must reference the resolved
+  Security Master id carried by the journal metadata or instrument line, and instrument line
+  symbols must match the journal-level Security Master symbol before posting. Ledger-mapping
+  references must also identify the same resolved symbol or Security Master id instead of using a
+  generic account mapping token.
+- `Reconciliation/` - statement reconciliation orchestration and broker/custodian intake that
+  validates canonical external statement files, creates durable reconciliation cases for unresolved
+  cash/activity rows, and attaches break explanations plus retained statement-row evidence.
+- `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
+  workflows use these capability gates to block missing balance/position/reconciliation feeds and
+  degrade corporate-action or factor-schedule support when the account's provider route cannot
+  supply the required feed.
+- `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
+  passport composition, and the ledger bridge that posts dividends, splits, distributions, and
+  factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
+  valuation evidence.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. Ledger mapping resolution stays server-side and reuses
   fund-structure assignments before falling back to account ledger references.
+- `FundAccounts/` - internal account balance snapshots, statement intake, account readiness, and
+  provider-link history. Balance snapshots preserve optional realized and unrealized P&L values so
+  shared provider-ledger reconciliation can compare broker marks with retained internal book
+  measures without UI-local calculations.
 - `Services/` - application use cases and orchestration services.
 - `Composition/` - application feature registration and service wiring.
 
@@ -45,6 +80,10 @@ application service contracts consumed by host and UI surfaces.
 ## API contract notes
 
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
+- `ExecutionSimulationOrchestrator` backs the `--simulate-execution` CLI path and now emits
+  inferred queue diagnostics, confidence grade, warnings, fill-rate, average-slippage placeholder,
+  and `isInferred` labels in simulation artifacts. This is a baseline L3-style inference path, not
+  exchange-grade per-order L3 replay.
 
 ## Diagrams
 

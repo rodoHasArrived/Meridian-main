@@ -230,6 +230,14 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
     if accounting_route_check is not None:
         results.append(accounting_route_check)
 
+    operations_continuity_route_check = build_operations_continuity_workflow_route_check(repo_root, target_roots)
+    if operations_continuity_route_check is not None:
+        results.append(operations_continuity_route_check)
+
+    reconciliation_explanation_check = build_reconciliation_explanation_parity_check(repo_root, target_roots)
+    if reconciliation_explanation_check is not None:
+        results.append(reconciliation_explanation_check)
+
     trading_route_check = build_trading_workflow_route_check(repo_root, target_roots)
     if trading_route_check is not None:
         results.append(trading_route_check)
@@ -242,7 +250,150 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
     if signifier_check is not None:
         results.append(signifier_check)
 
+    semantic_state_check = build_semantic_state_contract_check(repo_root, target_roots)
+    if semantic_state_check is not None:
+        results.append(semantic_state_check)
+
     return results
+
+
+def build_semantic_state_contract_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Ui/dashboard/src/components/ui/badge.tsx",
+        "src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx",
+        "src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts",
+        "src/Meridian.Wpf/Styles/ThemeTokens.xaml",
+        "src/Meridian.Wpf/Styles/ThemeSurfaces.xaml",
+        "docs/design/design-system-usage.md",
+        "docs/screenshots/README.md",
+        "scripts/dev/validate-screenshot-captures.py",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    badge = read_required_text(repo_root, target_roots, required_paths[0])
+    evidence_screen = read_required_text(repo_root, target_roots, required_paths[1])
+    evidence_view_model = read_required_text(repo_root, target_roots, required_paths[2])
+    theme_tokens = read_required_text(repo_root, target_roots, required_paths[3])
+    theme_surfaces = read_required_text(repo_root, target_roots, required_paths[4])
+    design_docs = read_required_text(repo_root, target_roots, required_paths[5])
+    screenshot_docs = read_required_text(repo_root, target_roots, required_paths[6])
+    screenshot_validator = read_required_text(repo_root, target_roots, required_paths[7])
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"browser badge: {token}"
+        for token in require_all_tokens(
+            badge,
+            [
+                "success:",
+                "warning:",
+                "danger:",
+                "outline:",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"evidence view model: {token}"
+        for token in require_all_tokens(
+            evidence_view_model,
+            [
+                'export type EvidenceStatusTone = "success" | "warning" | "danger" | "muted";',
+                "orphanTone",
+                "freshnessTone",
+                "statusTone",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"evidence screen: {token}"
+        for token in require_all_tokens(
+            evidence_screen,
+            [
+                'Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline">',
+                'muted: "outline"',
+                "badgeVariant[panel.statusTone]",
+                "badgeVariant[row.tone]",
+            ],
+        )
+    )
+
+    for state in ["Success", "Warning", "Danger"]:
+        missing_tokens.extend(
+            f"WPF {state}: {token}"
+            for token in require_all_tokens(
+                theme_tokens,
+                [
+                    f"{state}ColorBrush",
+                ],
+            )
+        )
+        missing_tokens.extend(
+            f"WPF {state}: {token}"
+            for token in require_all_tokens(
+                theme_surfaces,
+                [
+                    f'Binding="{{Binding Tone}}" Value="{state}"',
+                    f"Badge{state}BackgroundBrush",
+                    f"Badge{state}ForegroundBrush",
+                ],
+            )
+        )
+
+    missing_tokens.extend(
+        f"WPF Info: {token}"
+        for token in require_all_tokens(
+            theme_surfaces,
+            [
+                'Binding="{Binding Tone}" Value="Info"',
+                "BadgeInfoBackgroundBrush",
+                "BadgeInfoForegroundBrush",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"design docs: {token}"
+        for token in require_all_tokens(
+            design_docs,
+            [
+                "success, warning, danger, info, and muted",
+                "Browser evidence/readiness surfaces map `Ready` to success",
+                "Screenshot/evidence automation must fail blank, low-entropy, stale",
+                "manifest-orphan captures",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"screenshot docs: {token}"
+        for token in require_all_tokens(
+            screenshot_docs,
+            [
+                "semantic-state evidence",
+                "blank, stale, low-entropy, or wrong-route captures",
+                "stray PNG with no",
+                "matching route/page manifest entry fails validation",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"screenshot validator: {token}"
+        for token in require_all_tokens(
+            screenshot_validator,
+            [
+                "capture is likely blank",
+                "capture is likely low-entropy",
+                "Manifest is missing expected",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="Semantic state contract spans browser, WPF, docs, screenshots",
+        passed=not missing_tokens,
+        detail="Ready/review/blocked/current evidence states map through browser badges, WPF badge tones, docs, and screenshot quality gates."
+        if not missing_tokens
+        else "Missing semantic state contract tokens: " + ", ".join(missing_tokens),
+    )
 
 
 def build_workstation_signifier_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
@@ -319,6 +470,143 @@ def build_workstation_signifier_check(repo_root: Path, target_roots: list[Path])
     )
 
 
+def build_reconciliation_explanation_parity_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
+        "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs",
+        "src/Meridian.Ui/dashboard/src/types.ts",
+        "src/Meridian.Ui/dashboard/src/screens/governance-screen.view-model.ts",
+        "src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs",
+        "src/Meridian.Wpf/Services/FundReconciliationWorkbenchService.cs",
+        "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.Reconciliation.cs",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    contract = read_required_text(repo_root, target_roots, required_paths[0])
+    shared_service = read_required_text(repo_root, target_roots, required_paths[1])
+    browser_types = read_required_text(repo_root, target_roots, required_paths[2])
+    browser_view_model = read_required_text(repo_root, target_roots, required_paths[3])
+    wpf_models = read_required_text(repo_root, target_roots, required_paths[4])
+    wpf_service = read_required_text(repo_root, target_roots, required_paths[5])
+    wpf_view_model = read_required_text(repo_root, target_roots, required_paths[6])
+
+    explanation_tokens = [
+        "SourceSystems",
+        "ProbableCause",
+        "LedgerImpact",
+        "SuggestedNextAction",
+        "EvidenceLinks",
+    ]
+    browser_tokens = [
+        "sourceSystems",
+        "probableCause",
+        "ledgerImpact",
+        "suggestedNextAction",
+        "evidenceLinks",
+    ]
+    wpf_tokens = [
+        "SourceSystemsLabel",
+        "ProbableCauseLabel",
+        "LedgerImpactLabel",
+        "SuggestedNextActionLabel",
+        "EvidenceLinksLabel",
+    ]
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"contract: {token}"
+        for token in require_all_tokens(
+            contract,
+            [
+                "ReconciliationBreakExplanationDto",
+                "BreakExplanation",
+                *explanation_tokens,
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"shared service: {token}"
+        for token in require_all_tokens(
+            shared_service,
+            [
+                "BuildBreakExplanation",
+                "BuildCorporateActionCandidateBreakExplanation",
+                "new ReconciliationBreakExplanationDto",
+                *explanation_tokens,
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"browser types: {token}"
+        for token in require_all_tokens(
+            browser_types,
+            [
+                "ReconciliationBreakExplanation",
+                "breakExplanation",
+                *browser_tokens,
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"browser view model: {token}"
+        for token in require_all_tokens(
+            browser_view_model,
+            [
+                "row.breakExplanation",
+                "explanation?.summary",
+                "explanation?.sourceSystems",
+                "explanation?.probableCause",
+                "explanation?.ledgerImpact",
+                "explanation?.suggestedNextAction",
+                "explanation?.evidenceLinks",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF models: {token}"
+        for token in require_all_tokens(wpf_models, wpf_tokens)
+    )
+    missing_tokens.extend(
+        f"WPF service: {token}"
+        for token in require_all_tokens(
+            wpf_service,
+            [
+                "item.BreakExplanation",
+                "explanation?.Summary",
+                "explanation?.SourceSystems",
+                "explanation?.ProbableCause",
+                "explanation?.LedgerImpact",
+                "explanation?.SuggestedNextAction",
+                "explanation?.EvidenceLinks",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF view model: {token}"
+        for token in require_all_tokens(
+            wpf_view_model,
+            [
+                "SuggestedNextActionLabel",
+                "ProbableCauseLabel",
+                "LedgerImpactLabel",
+                "EvidenceLinksLabel",
+                "Explain the Break evidence",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="Reconciliation Explain-the-Break contract stays shared across browser and WPF",
+        passed=not missing_tokens,
+        detail=(
+            "Structured reconciliation break explanation fields are contract-owned, produced by Ui.Shared, and consumed by both browser governance and WPF Fund Ledger guidance."
+            if not missing_tokens
+            else "Missing reconciliation explanation parity tokens: " + ", ".join(missing_tokens)
+        ),
+    )
+
+
 def build_accounting_workflow_route_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
     required_paths = [
         "src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs",
@@ -378,6 +666,103 @@ def build_accounting_workflow_route_check(repo_root: Path, target_roots: list[Pa
             "Shared accounting workflow actions route to WPF FundOperations tabs and browser accounting routes for reconciliation, ledger continuity, and audit trail."
             if not missing_tokens
             else "Missing route tokens: " + ", ".join(missing_tokens)
+        ),
+    )
+
+
+def build_operations_continuity_workflow_route_check(repo_root: Path, target_roots: list[Path]) -> CheckResult | None:
+    required_paths = [
+        "src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs",
+        "src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs",
+        "src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs",
+        "src/Meridian.Wpf/Services/NavigationService.cs",
+        "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs",
+        "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+    ]
+    if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
+        return None
+
+    action_ids = read_required_text(repo_root, target_roots, required_paths[0])
+    shared_workflows = read_required_text(repo_root, target_roots, required_paths[1])
+    wpf_catalog = read_required_text(repo_root, target_roots, required_paths[2])
+    wpf_navigation = read_required_text(repo_root, target_roots, required_paths[3])
+    wpf_inbox = read_required_text(repo_root, target_roots, required_paths[4])
+    browser_routes = read_required_text(repo_root, target_roots, required_paths[5])
+
+    missing_tokens: list[str] = []
+    missing_tokens.extend(
+        f"shared action id: {token}"
+        for token in require_all_tokens(
+            action_ids,
+            [
+                "AccountingReviewOperationsContinuity",
+                "AccountingReviewCloseReadiness",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"shared workflow: {token}"
+        for token in require_all_tokens(
+            shared_workflows,
+            [
+                "WorkflowActionIds.AccountingReviewOperationsContinuity",
+                '"OperationsContinuity"',
+                "UiApiRoutes.OperationsContinuity",
+                "WorkflowActionIds.AccountingReviewCloseReadiness",
+                '"OperationsClose"',
+                "UiApiRoutes.OperationsContinuityCloseReadiness",
+                '"/close-readiness"',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF catalog: {token}"
+        for token in require_all_tokens(
+            wpf_catalog,
+            [
+                '"OperationsContinuity"',
+                '"OperationsClose"',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF navigation: {token}"
+        for token in require_all_tokens(
+            wpf_navigation,
+            [
+                '"OperationsContinuity" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Overview)',
+                '"OperationsClose" => new FundOperationsNavigationContext(Tab: FundOperationsTab.ReportPack)',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"WPF inbox: {token}"
+        for token in require_all_tokens(
+            wpf_inbox,
+            [
+                "RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.OperationsContinuity)",
+                'return "OperationsContinuity";',
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"browser route: {token}"
+        for token in require_all_tokens(
+            browser_routes,
+            [
+                "OperationsContinuity: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity",
+                "OperationsClose: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity",
+            ],
+        )
+    )
+
+    return CheckResult(
+        name="Operations continuity workflow routes stay shared across WPF and browser",
+        passed=not missing_tokens,
+        detail=(
+            "Shared close-workflow actions resolve to WPF Fund Operations continuity/close aliases and browser /accounting/operations-continuity routes."
+            if not missing_tokens
+            else "Missing operations-continuity parity tokens: " + ", ".join(missing_tokens)
         ),
     )
 

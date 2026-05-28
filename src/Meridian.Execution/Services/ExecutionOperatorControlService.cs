@@ -411,7 +411,7 @@ public sealed class ExecutionOperatorControlService
     /// <summary>
     /// Evaluates a new order against the current operator controls.
     /// </summary>
-    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState)
+    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -422,7 +422,7 @@ public sealed class ExecutionOperatorControlService
 
             var forceBlock = _manualOverrides.Values.FirstOrDefault(overrideEntry =>
                 string.Equals(overrideEntry.Kind, ExecutionManualOverrideKinds.ForceBlockOrders, StringComparison.OrdinalIgnoreCase) &&
-                OverrideMatchesOrder(overrideEntry, request));
+                OverrideMatchesOrder(overrideEntry, request, runId));
 
             if (forceBlock is not null)
             {
@@ -437,7 +437,7 @@ public sealed class ExecutionOperatorControlService
                 ExecutionManualOverrideKinds.BypassOrderControls,
                 request.Symbol,
                 request.StrategyId,
-                runId: null);
+                runId);
 
             if (_circuitBreaker.IsOpen && bypassOverride is null)
             {
@@ -636,9 +636,10 @@ public sealed class ExecutionOperatorControlService
             : _defaultMaxPositionSize;
     }
 
-    private static bool OverrideMatchesOrder(ExecutionManualOverride overrideEntry, OrderRequest request) =>
+    private static bool OverrideMatchesOrder(ExecutionManualOverride overrideEntry, OrderRequest request, string? runId) =>
         MatchesOptionalTarget(overrideEntry.Symbol, request.Symbol) &&
-        MatchesOptionalTarget(overrideEntry.StrategyId, request.StrategyId);
+        MatchesOptionalTarget(overrideEntry.StrategyId, request.StrategyId) &&
+        MatchesOptionalTarget(overrideEntry.RunId, runId);
 
     private static bool MatchesOptionalTarget(string? configuredTarget, string? actualTarget)
     {

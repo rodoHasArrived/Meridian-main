@@ -14,8 +14,11 @@ import type {
   HistoricalBarsResponse,
   OrderBookResponse,
   OperatorInbox,
+  OperationsApprovalPolicyMatrix,
+  OperationsCloseCalendar,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  LedgerMappingWorkbench,
   OperatorOverridesDto,
   PaperSessionDetail,
   PaperSessionReplayVerification,
@@ -34,6 +37,7 @@ import type {
   SecurityMasterConflict,
   SecurityMasterEntry,
   SessionInfo,
+  RolePermissionCatalog,
   StrategyDesignDocument,
   StrategyDesignDraftSummary,
   StrategyDesignFieldCatalogItem,
@@ -50,8 +54,10 @@ import type {
   WorkflowPresetLibrary
 } from "../types";
 import {
+  AUTH_API_ENDPOINTS,
   COVERED_CALL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
+  FUND_STRUCTURE_API_ENDPOINTS,
   MARKET_DATA_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
@@ -684,7 +690,55 @@ const fixtureGovernanceWorkspace: GovernanceWorkspaceResponse = {
       }
     ],
     reportPackTargets: ["board"],
-    summary: "4 export/reporting profiles are available for governance workflows."
+    summary: "4 export/reporting profiles are available for governance workflows.",
+    workflowRecords: [
+      {
+        reportId: "report-restated-demo",
+        fundProfileId: "demo-fund",
+        fundAccountId: "demo-account",
+        period: "2026-05",
+        templateId: { name: "monthly-board-pack", version: 1 },
+        state: "Restated",
+        version: 2,
+        createdAt: "2026-05-27T10:00:00Z",
+        createdBy: "demo.reporter",
+        updatedAt: "2026-05-28T12:00:00Z",
+        auditTrail: [
+          {
+            at: "2026-05-28T12:00:00Z",
+            actor: "demo.approver",
+            action: "restated",
+            fromState: "Published",
+            toState: "Restated",
+            note: "pricing-correction"
+          }
+        ],
+        restatement: {
+          reasonCode: "pricing-correction",
+          approver: "fund-controller",
+          priorVersionReportId: "report-published-demo",
+          changedLines: [
+            {
+              lineKey: "nav.total",
+              previousValue: "1250000",
+              currentValue: "1249500",
+              evidenceLinks: [
+                {
+                  evidenceId: "pricing-evidence-1",
+                  label: "Pricing override",
+                  route: "/reporting/evidence?subject=pricing-evidence-1",
+                  source: "pricing",
+                  capturedAtUtc: "2026-05-28T11:59:00Z"
+                }
+              ]
+            }
+          ],
+          evidenceLinks: null
+        },
+        lineProvenance: [],
+        publication: null
+      }
+    ]
   }
 };
 
@@ -1865,6 +1919,7 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       gate: "BrokerIngest",
       label: "Broker intake close gate",
       owner: "ops-user",
+      requiredEvidence: "Normalized broker statement evidence retained for the close period.",
       dueDate: "2026-05-10",
       requiredApprovalCount: 1,
       expiresOn: "2026-05-15",
@@ -1877,6 +1932,7 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       acknowledgedBy: "ops-user"
     }
   ],
+  closePackage: null,
   closeReadiness: null,
   evidenceLinks: [],
   blockers: [
@@ -1914,6 +1970,155 @@ const fixtureOperationsContinuityWorkflows: OperationsContinuityWorkflowSummary[
   }
 ];
 
+const fixtureRolePermissionCatalog: RolePermissionCatalog = {
+  roles: [
+    {
+      role: "Accounting",
+      displayName: "Accounting",
+      description: "Accounting and fund-operations access for trade records, exports, and direct-lending operations.",
+      isBuiltIn: true,
+      permissions: ["ViewTrades", "ExportData", "ViewDirectLending", "ManageDirectLending"],
+      permissionMask: 0
+    },
+    {
+      role: "Admin",
+      displayName: "Admin",
+      description: "Full platform administration including users, configuration, credentials, storage, trading, and governed operations.",
+      isBuiltIn: true,
+      permissions: ["ManageUsers", "AdminMaintenance", "ModifyConfig", "ManageCredentials"],
+      permissionMask: 0
+    }
+  ],
+  permissions: [
+    { name: "ManageUsers", value: 0, group: "Administration", description: "Create, modify, or delete user accounts." },
+    { name: "AdminMaintenance", value: 0, group: "Administration", description: "Run admin maintenance routines." },
+    { name: "ManageDirectLending", value: 0, group: "Direct lending", description: "Create and service direct-lending contracts." },
+    { name: "ModifySecurityMaster", value: 0, group: "Security Master", description: "Create or update Security Master entries." }
+  ]
+};
+
+const fixtureLedgerMappingWorkbench: LedgerMappingWorkbench = {
+  asOf: "2026-05-28T00:00:00Z",
+  accountCount: 3,
+  mappedAccountCount: 2,
+  unmappedAccountCount: 1,
+  ledgerGroups: [
+    {
+      ledgerGroupId: "lg-direct-lending",
+      displayName: "Direct lending ledger",
+      accountIds: ["fund-account-1"],
+      investmentPortfolioIds: [],
+      clientIds: [],
+      fundIds: [],
+      sleeveIds: [],
+      vehicleIds: []
+    }
+  ],
+  accounts: [
+    {
+      accountId: "fund-account-1",
+      accountCode: "DL-001",
+      displayName: "Direct Lending SMA",
+      accountType: "ManagedAccount",
+      operationalStatus: "Active",
+      baseCurrency: "USD",
+      institution: "Meridian Bank",
+      fundId: null,
+      sleeveId: null,
+      vehicleId: null,
+      entityId: null,
+      portfolioId: null,
+      ledgerReference: "lg-direct-lending",
+      mapping: {
+        ledgerGroupId: "lg-direct-lending",
+        source: "AccountLedgerReference",
+        sourceNodeId: "fund-account-1",
+        sourceNodeKind: "Account",
+        sourceReference: "lg-direct-lending",
+        requiresUserMapping: false,
+        issueCodes: []
+      },
+      recommendedAction: "No mapping action required."
+    },
+    {
+      accountId: "fund-account-2",
+      accountCode: "OPS-REVIEW",
+      displayName: "Close Review Account",
+      accountType: "ManagedAccount",
+      operationalStatus: "Active",
+      baseCurrency: "USD",
+      institution: "Meridian Bank",
+      fundId: null,
+      sleeveId: null,
+      vehicleId: null,
+      entityId: null,
+      portfolioId: null,
+      ledgerReference: null,
+      mapping: {
+        ledgerGroupId: "unassigned",
+        source: "Unassigned",
+        sourceNodeId: null,
+        sourceNodeKind: null,
+        sourceReference: null,
+        requiresUserMapping: true,
+        issueCodes: ["ledger-mapping.missing"]
+      },
+      recommendedAction: "Assign a ledger group before posting close journals."
+    }
+  ]
+};
+
+const fixtureOperationsApprovalPolicyMatrix: OperationsApprovalPolicyMatrix = {
+  policyId: "operations-continuity-close",
+  version: "2026.05",
+  generatedAtUtc: "2026-05-28T00:00:00Z",
+  rows: [
+    {
+      policyKey: "close-checklist-control-approvals",
+      workflowArea: "Account close",
+      action: "Approve close checklist controls",
+      gate: "Approval",
+      trigger: "ReadyForClose",
+      requiredPermission: "AdminMaintenance",
+      submitterRole: "Accounting",
+      reviewerRole: "Admin",
+      requiredDistinctApprovals: 2,
+      requiresIndependentReviewer: true,
+      requiresReportPack: true,
+      requiresChecklistControlApprovals: true,
+      evidenceRequirement: "Checklist control approvals and report pack evidence",
+      auditEventType: "close-checklist-control-approved",
+      route: "/accounting/operations-continuity",
+      severity: "High"
+    }
+  ]
+};
+
+const fixtureOperationsCloseCalendar: OperationsCloseCalendar = {
+  generatedAtUtc: "2026-05-28T00:00:00Z",
+  items: [
+    {
+      workflowId: fixtureOperationsContinuityWorkflow.workflowId,
+      fundAccountId: fixtureOperationsContinuityWorkflow.fundAccountId,
+      periodId: fixtureOperationsContinuityWorkflow.periodId,
+      status: fixtureOperationsContinuityWorkflow.status,
+      version: fixtureOperationsContinuityWorkflow.version,
+      nextDueDate: "2026-05-31",
+      nextDueTaskId: "close-review",
+      nextDueLabel: "Resolve ledger posting blockers",
+      nextDueOwner: "Accounting",
+      readinessSeverity: "Warning",
+      readinessScore: 68,
+      isReadyToClose: false,
+      blockerCount: 1,
+      openChecklistCount: 2,
+      requiredApprovalCount: 2,
+      completedApprovalCount: 1,
+      route: "/accounting/operations-continuity"
+    }
+  ]
+};
+
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
@@ -1926,6 +2131,10 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.workflowLibrary]: fixtureWorkflowLibrary,
   [WORKSTATION_API_ENDPOINTS.workflowPresets]: fixtureWorkflowPresetLibrary,
   [WORKSTATION_API_ENDPOINTS.operationsContinuity]: fixtureOperationsContinuityWorkflows,
+  [WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix]: fixtureOperationsApprovalPolicyMatrix,
+  [WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendar]: fixtureOperationsCloseCalendar,
+  [AUTH_API_ENDPOINTS.roles]: fixtureRolePermissionCatalog,
+  [FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench]: fixtureLedgerMappingWorkbench,
   [EXECUTION_API_ENDPOINTS.sessions]: fixturePaperSessionSummaries,
   [EXECUTION_API_ENDPOINTS.audit]: fixtureExecutionAudit,
   [EXECUTION_API_ENDPOINTS.controls]: fixtureExecutionControls,

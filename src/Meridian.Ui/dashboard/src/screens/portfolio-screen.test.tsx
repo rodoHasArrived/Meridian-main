@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithRouter } from "@/test/render";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
+import * as api from "@/lib/api";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
@@ -237,6 +238,10 @@ const portfolio: PortfolioWorkspaceResponse = {
 };
 
 describe("PortfolioScreen", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders position table with trading data", () => {
     renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
     expect(screen.getByRole("region", { name: /portfolio workbench context/i })).toBeDefined();
@@ -571,6 +576,14 @@ describe("PortfolioScreen", () => {
 
     renderWithRouter(<PortfolioScreen trading={trading} research={researchWithTwoRuns} governance={governance} />);
 
+    const comparison = screen.getByLabelText("Portfolio run comparison summary");
+    expect(comparison).toHaveTextContent("2 strategy runs compared across 2 modes and 2 engines.");
+    expect(comparison).toHaveTextContent("Best P&L");
+    expect(comparison).toHaveTextContent("+4.2%");
+    expect(comparison).toHaveTextContent("Weakest P&L");
+    expect(comparison).toHaveTextContent("-1.2%");
+    expect(comparison).toHaveTextContent("backtest, paper; Native, QuantConnect.");
+
     const volatilityRow = screen.getByRole("row", { name: /inspect volatility carry run evidence/i });
     expect(volatilityRow).toHaveAttribute("aria-controls", "portfolio-run-detail");
     expect(volatilityRow).toHaveAttribute("aria-expanded", "false");
@@ -583,5 +596,68 @@ describe("PortfolioScreen", () => {
     expect(screen.getByText(/drawdown review required/i)).toBeDefined();
     expect(within(detail).getAllByText("Needs Review").length).toBeGreaterThan(0);
     expect(screen.getByText("run-2")).toBeDefined();
+  });
+
+  it("loads shared selected-run portfolio drill-in evidence on demand", async () => {
+    vi.spyOn(api, "getRunAttribution").mockResolvedValue({
+      runId: "run-1",
+      totalRealizedPnl: 120,
+      totalUnrealizedPnl: 80,
+      totalCommissions: 5,
+      bySymbol: []
+    });
+    vi.spyOn(api, "getRunEquityCurve").mockResolvedValue({
+      runId: "run-1",
+      initialEquity: 100000,
+      finalEquity: 101250,
+      maxDrawdown: 1250,
+      maxDrawdownPercent: 0.0125,
+      maxDrawdownRecoveryDays: 3,
+      sharpeRatio: 1.41,
+      sortinoRatio: 1.8,
+      points: [
+        { date: "2026-05-01", totalEquity: 100000, cash: 50000, dailyReturn: 0, drawdownFromPeak: 0, drawdownFromPeakPercent: 0 }
+      ]
+    });
+    vi.spyOn(api, "getRunCashFlows").mockResolvedValue({
+      runId: "run-1",
+      asOf: "2026-05-07T12:00:00Z",
+      currency: "USD",
+      totalEntries: 2,
+      totalInflows: 1500,
+      totalOutflows: 300,
+      netCashFlow: 1200,
+      entries: [],
+      ladder: {
+        asOf: "2026-05-07T12:00:00Z",
+        currency: "USD",
+        bucketDays: 7,
+        totalProjectedInflows: 1500,
+        totalProjectedOutflows: 300,
+        netPosition: 1200,
+        buckets: []
+      }
+    });
+    vi.spyOn(api, "getRunFills").mockResolvedValue({
+      runId: "run-1",
+      totalFills: 2,
+      totalCommissions: 5,
+      fills: []
+    });
+    const user = userEvent.setup();
+
+    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
+
+    await user.click(screen.getByRole("button", { name: "Load portfolio drill-in evidence for Mean Reversion" }));
+
+    const drillIn = await screen.findByLabelText("Selected run portfolio drill-in evidence");
+    expect(drillIn).toHaveTextContent("4/4 drill-in evidence slices loaded for Mean Reversion.");
+    expect(drillIn).toHaveTextContent("Realized +$120; unrealized +$80");
+    expect(drillIn).toHaveTextContent("1.25%");
+    expect(drillIn).toHaveTextContent("+$1,200");
+    expect(api.getRunAttribution).toHaveBeenCalledWith("run-1");
+    expect(api.getRunEquityCurve).toHaveBeenCalledWith("run-1");
+    expect(api.getRunCashFlows).toHaveBeenCalledWith("run-1");
+    expect(api.getRunFills).toHaveBeenCalledWith("run-1");
   });
 });

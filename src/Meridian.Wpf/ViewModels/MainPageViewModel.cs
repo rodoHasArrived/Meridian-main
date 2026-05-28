@@ -40,6 +40,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly WorkflowSummaryStripViewModel _workflowSummaryStrip;
     private readonly ShellRefreshCoordinator _shellRefreshCoordinator;
     private readonly MainPageNavigationSectionViewModel _navigationSection = new();
+    private readonly MainPageChromeSectionViewModel _chromeSection = new();
 
     private bool _suppressNavigation;
     private bool _suppressOperatingContextSelection;
@@ -50,13 +51,6 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private string _currentPageTitle = "Strategy Workspace";
     private string _currentPageSubtitle = "Configure backtests, review runs, and monitor strategy outcomes.";
     private bool _tickerStripVisible;
-    private Visibility _backButtonVisibility = Visibility.Collapsed;
-    private Visibility _recentPagesEmptyVisibility = Visibility.Visible;
-    private Visibility _fixtureModeBannerVisibility = Visibility.Collapsed;
-    private string _fixtureModeBannerText = string.Empty;
-    private string _activeFundName = "Select Fund";
-    private string _activeFundSubtitle = "Fund context required";
-    private Visibility _activeFundVisibility = Visibility.Collapsed;
     private WorkstationOperatingContext? _selectedOperatingContext;
     private BoundedWindowMode _selectedWindowMode = BoundedWindowMode.DockFloat;
     private ShellDensityMode _shellDensityMode = ShellDensityMode.Standard;
@@ -183,6 +177,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     internal MainPageNavigationSectionViewModel NavigationSection => _navigationSection;
 
     internal MainPageWorkflowSectionViewModel WorkflowSection { get; }
+
+    internal MainPageChromeSectionViewModel ChromeSection => _chromeSection;
 
     public IRelayCommand<string> SelectWorkspaceCommand { get; }
 
@@ -501,44 +497,107 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public Visibility BackButtonVisibility
     {
-        get => _backButtonVisibility;
-        private set => SetProperty(ref _backButtonVisibility, value);
+        get => _chromeSection.BackButtonVisibility;
+        private set
+        {
+            if (_chromeSection.BackButtonVisibility == value)
+            {
+                return;
+            }
+
+            _chromeSection.BackButtonVisibility = value;
+            RaisePropertyChanged();
+        }
     }
 
     public Visibility RecentPagesEmptyVisibility
     {
-        get => _recentPagesEmptyVisibility;
-        private set => SetProperty(ref _recentPagesEmptyVisibility, value);
+        get => _chromeSection.RecentPagesEmptyVisibility;
+        private set
+        {
+            if (_chromeSection.RecentPagesEmptyVisibility == value)
+            {
+                return;
+            }
+
+            _chromeSection.RecentPagesEmptyVisibility = value;
+            RaisePropertyChanged();
+        }
     }
 
     public Visibility FixtureModeBannerVisibility
     {
-        get => _fixtureModeBannerVisibility;
-        private set => SetProperty(ref _fixtureModeBannerVisibility, value);
+        get => _chromeSection.FixtureModeBannerVisibility;
+        private set
+        {
+            if (_chromeSection.FixtureModeBannerVisibility == value)
+            {
+                return;
+            }
+
+            _chromeSection.FixtureModeBannerVisibility = value;
+            RaisePropertyChanged();
+        }
     }
 
     public string FixtureModeBannerText
     {
-        get => _fixtureModeBannerText;
-        private set => SetProperty(ref _fixtureModeBannerText, value);
+        get => _chromeSection.FixtureModeBannerText;
+        private set
+        {
+            if (string.Equals(_chromeSection.FixtureModeBannerText, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _chromeSection.FixtureModeBannerText = value;
+            RaisePropertyChanged();
+        }
     }
 
     public string ActiveFundName
     {
-        get => _activeFundName;
-        private set => SetProperty(ref _activeFundName, value);
+        get => _chromeSection.ActiveFundName;
+        private set
+        {
+            if (string.Equals(_chromeSection.ActiveFundName, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _chromeSection.ActiveFundName = value;
+            RaisePropertyChanged();
+        }
     }
 
     public string ActiveFundSubtitle
     {
-        get => _activeFundSubtitle;
-        private set => SetProperty(ref _activeFundSubtitle, value);
+        get => _chromeSection.ActiveFundSubtitle;
+        private set
+        {
+            if (string.Equals(_chromeSection.ActiveFundSubtitle, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _chromeSection.ActiveFundSubtitle = value;
+            RaisePropertyChanged();
+        }
     }
 
     public Visibility ActiveFundVisibility
     {
-        get => _activeFundVisibility;
-        private set => SetProperty(ref _activeFundVisibility, value);
+        get => _chromeSection.ActiveFundVisibility;
+        private set
+        {
+            if (_chromeSection.ActiveFundVisibility == value)
+            {
+                return;
+            }
+
+            _chromeSection.ActiveFundVisibility = value;
+            RaisePropertyChanged();
+        }
     }
 
     public Visibility ContextSelectionHintVisibility => ActiveFundVisibility == Visibility.Visible
@@ -1579,6 +1638,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.ReconciliationBreakQueue))
         {
             return "FundReconciliation";
+        }
+
+        if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.OperationsContinuity))
+        {
+            return "OperationsContinuity";
         }
 
         if (RouteEqualsOrStartsWith(normalizedRoute, UiApiRoutes.WorkstationSecurityMasterSearch))

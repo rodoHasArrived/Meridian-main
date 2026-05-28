@@ -113,7 +113,22 @@ public sealed record EvidenceVaultIdentityDto(
     DateTimeOffset RetainedAt,
     string ContentHashSha256,
     int SchemaVersion,
-    string StorageKind);
+    string StorageKind)
+{
+    public IReadOnlyList<EvidenceVaultArtifactDto> Artifacts { get; init; } = [];
+}
+
+public sealed record EvidenceVaultArtifactDto(
+    string ArtifactId,
+    string Kind,
+    string RelativePath,
+    string ContentHashSha256,
+    long SizeBytes,
+    DateTimeOffset RetainedAt,
+    string? SourcePath,
+    string? SourceRoute,
+    string? CanonicalSubjectKind,
+    string? CanonicalSubjectId);
 
 public sealed record EvidenceLifecycleMetadataDto(
     DateTimeOffset? RetainUntil,

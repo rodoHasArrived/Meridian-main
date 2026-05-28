@@ -1,10 +1,12 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -317,6 +319,49 @@ public static class ExecutionEndpoints
         })
         .WithName("GetExecutionAudit")
         .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);
+
+        group.MapGet("/audit/search", async (
+            string? searchText,
+            string? runId,
+            string? category,
+            string? action,
+            string? outcome,
+            string? actor,
+            string? symbol,
+            string? correlationId,
+            DateTimeOffset? fromUtc,
+            DateTimeOffset? toUtc,
+            int? limit,
+            HttpContext context) =>
+        {
+            var explorer = context.RequestServices.GetService<AuditTrailExplorerService>();
+            if (explorer is null)
+            {
+                var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
+                explorer = auditTrail is null
+                    ? new AuditTrailExplorerService()
+                    : new AuditTrailExplorerService(auditTrail);
+            }
+
+            var result = await explorer.SearchAsync(
+                new AuditTrailExplorerQueryDto(
+                    SearchText: searchText,
+                    RunId: runId,
+                    Category: category,
+                    Action: action,
+                    Outcome: outcome,
+                    Actor: actor,
+                    Symbol: symbol,
+                    CorrelationId: correlationId,
+                    FromUtc: fromUtc,
+                    ToUtc: toUtc,
+                    Limit: limit ?? 100),
+                context.RequestAborted).ConfigureAwait(false);
+
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("SearchExecutionAuditTrail")
+        .Produces<AuditTrailExplorerResultDto>(200);
 
         group.MapGet("/controls", (HttpContext context) =>
         {

@@ -239,7 +239,8 @@ public sealed record FundAccountBrokerageFillDto(
     decimal Price,
     DateTimeOffset FilledAt,
     string? Venue = null,
-    decimal? Commission = null);
+    decimal? Commission = null,
+    decimal? RealizedPnl = null);
 
 public sealed record FundAccountBrokerageCashTransactionDto(
     string TransactionId,
@@ -248,6 +249,18 @@ public sealed record FundAccountBrokerageCashTransactionDto(
     string Currency,
     DateTimeOffset PostedAt,
     string? Symbol = null,
+    string? Description = null);
+
+public sealed record FundAccountBrokerageCorporateActionDto(
+    string EventId,
+    string EventType,
+    string? Symbol,
+    DateOnly? EffectiveDate,
+    DateOnly? ExDate,
+    decimal? Amount = null,
+    decimal? Quantity = null,
+    decimal? Factor = null,
+    string? Currency = null,
     string? Description = null);
 
 public sealed record FundAccountBrokerageSyncActivityDto(
@@ -261,7 +274,8 @@ public sealed record FundAccountBrokerageSyncActivityDto(
     IReadOnlyList<FundAccountBrokerageCashTransactionDto> CashTransactions,
     DateTimeOffset SyncedAt,
     string RawSnapshotPath,
-    string ProjectionPath);
+    string ProjectionPath,
+    IReadOnlyList<FundAccountBrokerageCorporateActionDto>? CorporateActions = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ProviderLedgerReconciliationStatusDto>))]
 public enum ProviderLedgerReconciliationStatusDto
@@ -383,10 +397,177 @@ public sealed record ProviderSecurityMasterPassportDto(
     int FreshnessMinutes,
     string Reason);
 
+public sealed record ProviderShadowBookComparisonLineDto(
+    string Dimension,
+    string Label,
+    string InternalSource,
+    string ProviderSource,
+    decimal? InternalAmount,
+    decimal? ProviderAmount,
+    decimal? Variance,
+    ProviderLedgerReconciliationCheckStatusDto Status,
+    string Reason);
+
+public sealed record ProviderShadowBookComparisonDto(
+    Guid AccountId,
+    DateTimeOffset CreatedAt,
+    string Currency,
+    int ComparableLineCount,
+    int MatchedLineCount,
+    int BreakLineCount,
+    int UnavailableLineCount,
+    IReadOnlyList<ProviderShadowBookComparisonLineDto> Lines);
+
+public sealed record ProviderCorporateActionReadinessLineDto(
+    string Dimension,
+    string Label,
+    ProviderLedgerReconciliationCheckStatusDto Status,
+    string RequiredFeed,
+    string EvidenceSource,
+    int Count,
+    string Reason);
+
+public sealed record ProviderCorporateActionEvidenceCandidateDto(
+    string CandidateId,
+    string CandidateType,
+    string? Symbol,
+    Guid? SecurityId,
+    string? SecurityDisplayName,
+    ProviderLedgerReconciliationCheckStatusDto Status,
+    string RequiredFeed,
+    string EvidenceSource,
+    string ProviderId,
+    string ExternalAccountId,
+    string? ProviderEventId,
+    DateTimeOffset ObservedAt,
+    decimal? Amount,
+    decimal? Quantity,
+    string? Currency,
+    string Reason);
+
+public sealed record ProviderCorporateActionLedgerEffectDto(
+    string CandidateId,
+    string CandidateType,
+    string? Symbol,
+    Guid? SecurityId,
+    string? ProviderEventId,
+    string LedgerEffectKind,
+    DateOnly? EffectiveDate,
+    decimal? Factor,
+    decimal? CashAmount,
+    decimal? PrincipalAmount,
+    decimal? IncomeAmount,
+    string? Currency,
+    ProviderLedgerReconciliationCheckStatusDto Status,
+    string Reason,
+    IReadOnlyList<ExpectedJournalPreviewLineDto> JournalLines);
+
+public sealed record ProviderSecurityMasterScheduleFeedDto(
+    string FeedId,
+    string CandidateId,
+    string CandidateType,
+    string FeedKind,
+    string RequiredFeed,
+    string EvidenceSource,
+    string ProviderId,
+    string ExternalAccountId,
+    string? ProviderEventId,
+    string? Symbol,
+    Guid? SecurityId,
+    DateOnly? EffectiveDate,
+    decimal? Factor,
+    decimal? CashAmount,
+    decimal? PrincipalAmount,
+    decimal? IncomeAmount,
+    string? Currency,
+    string LedgerEffectKind,
+    ProviderLedgerReconciliationCheckStatusDto Status,
+    bool CanUpdateSecurityMaster,
+    bool CanSupportLedgerValuation,
+    string Reason);
+
+public sealed record ProviderCorporateActionReadinessDto(
+    bool ProviderCorporateActionsRoutable,
+    ProviderLedgerReconciliationCheckStatusDto Status,
+    int PositionCount,
+    int SecurityResolvedCount,
+    int EquityPositionCount,
+    int FixedIncomeOrStructuredPositionCount,
+    int FactorScheduleCandidateCount,
+    int IncomeCashTransactionCount,
+    int DividendCashTransactionCount,
+    int InterestCashTransactionCount,
+    IReadOnlyList<string> RequiredFeeds,
+    IReadOnlyList<string> MissingFeeds,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<ProviderCorporateActionReadinessLineDto> Lines,
+    int ProviderCorporateActionEventCount = 0,
+    int FactorScheduleEventCount = 0,
+    bool FactorScheduleRoutable = false,
+    int LoanScheduleEventCount = 0)
+{
+    public IReadOnlyList<ProviderCorporateActionEvidenceCandidateDto> EvidenceCandidates { get; init; } = [];
+
+    public IReadOnlyList<ProviderCorporateActionLedgerEffectDto> LedgerEffects { get; init; } = [];
+
+    public IReadOnlyList<ProviderSecurityMasterScheduleFeedDto> SecurityMasterScheduleFeeds { get; init; } = [];
+
+    public int PrincipalCashTransactionCount { get; init; }
+}
+
 public sealed record ProviderLedgerReconciliationDetailDto(
     ProviderLedgerReconciliationSummaryDto Summary,
     IReadOnlyList<ProviderLedgerReconciliationCheckDto> Checks,
     IReadOnlyList<ProviderLedgerReconciliationBreakDto> Breaks,
     IReadOnlyList<string> Warnings,
     IReadOnlyList<string> EvidenceLinks,
-    IReadOnlyList<ProviderSecurityMasterPassportDto>? SecurityMasterPassports = null);
+    IReadOnlyList<ProviderSecurityMasterPassportDto>? SecurityMasterPassports = null,
+    ProviderShadowBookComparisonDto? ShadowBookComparison = null,
+    ProviderCorporateActionReadinessDto? CorporateActionReadiness = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<FundAccountCloseReadinessStatusDto>))]
+public enum FundAccountCloseReadinessStatusDto
+{
+    Ready = 0,
+    ReviewRequired = 1,
+    Blocked = 2
+}
+
+public sealed record FundAccountCloseReadinessComponentDto(
+    string Key,
+    string Label,
+    FundAccountCloseReadinessStatusDto Status,
+    int Score,
+    int Weight,
+    string Severity,
+    string Reason,
+    string? RouteHint = null,
+    string? EvidenceLink = null);
+
+public sealed record FundAccountCloseReadinessBlockerDto(
+    string Code,
+    string Category,
+    string Severity,
+    string Message,
+    string? RouteHint = null,
+    string? EvidenceLink = null);
+
+public sealed record FundAccountCloseReadinessActionDto(
+    string Code,
+    string Label,
+    string Severity,
+    string? RouteHint = null);
+
+public sealed record FundAccountCloseReadinessDto(
+    Guid AccountId,
+    DateTimeOffset EvaluatedAtUtc,
+    FundAccountCloseReadinessStatusDto Status,
+    bool IsReadyToClose,
+    int Score,
+    DateTimeOffset? LatestProviderSyncedAt,
+    DateOnly? LatestLedgerAsOfDate,
+    Guid? LatestReconciliationRunId,
+    IReadOnlyList<FundAccountCloseReadinessComponentDto> Components,
+    IReadOnlyList<FundAccountCloseReadinessBlockerDto> Blockers,
+    IReadOnlyList<FundAccountCloseReadinessActionDto> NextActions);

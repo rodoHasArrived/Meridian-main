@@ -15,8 +15,11 @@ internal sealed class MarketImpactFillModel(
     ICommissionModel commissionModel,
     decimal impactCoefficient = 0.1m,
     decimal slippageBasisPoints = 5m,
-    int maxPartialFills = 5) : IFillModel
+    int maxPartialFills = 5,
+    decimal maxParticipationRate = 0m) : IFillModel
 {
+    private readonly decimal _maxParticipationRate = Math.Clamp(maxParticipationRate, 0m, 1m);
+
     public OrderFillResult TryFill(Order order, MarketEvent evt)
     {
         if (evt.Payload is not HistoricalBar bar)
@@ -49,10 +52,29 @@ internal sealed class MarketImpactFillModel(
         }
 
         var remainingAbsolute = order.RemainingQuantity;
-        var barVolume = bar.Volume > 0 ? bar.Volume : 1L;
+        var fillableAbsolute = ComputeFillableQuantity(remainingAbsolute, bar.Volume);
+
+        if (fillableAbsolute == 0)
+        {
+            return new OrderFillResult(
+                order with { IsTriggered = triggered },
+                [],
+                RemoveOrder: false,
+                WasTriggered: triggered && !order.IsTriggered);
+        }
+
+        if (fillableAbsolute < remainingAbsolute && !order.AllowPartialFills)
+        {
+            return new OrderFillResult(
+                order with { IsTriggered = triggered },
+                [],
+                RemoveOrder: false,
+                WasTriggered: triggered && !order.IsTriggered);
+        }
 
         // Calculate participation rate and market impact
-        var participationRate = (decimal)remainingAbsolute / barVolume;
+        var barVolume = bar.Volume > 0 ? bar.Volume : 1L;
+        var participationRate = (decimal)fillableAbsolute / barVolume;
         var impactFraction = impactCoefficient * (decimal)Math.Sqrt((double)participationRate);
 
         // Determine number of partial fills based on order size vs. bar volume
@@ -62,8 +84,8 @@ internal sealed class MarketImpactFillModel(
         numFills = Math.Max(numFills, 1);
 
         var fills = new List<FillEvent>();
-        var perSliceQuantity = remainingAbsolute / numFills;
-        var remainder = remainingAbsolute % numFills;
+        var perSliceQuantity = fillableAbsolute / numFills;
+        var remainder = fillableAbsolute % numFills;
 
         for (var i = 0; i < numFills; i++)
         {
@@ -125,6 +147,17 @@ internal sealed class MarketImpactFillModel(
             fills,
             RemoveOrder: updated.IsComplete,
             WasTriggered: triggered && !order.IsTriggered);
+    }
+
+    private long ComputeFillableQuantity(long remainingAbsolute, long barVolume)
+    {
+        if (_maxParticipationRate <= 0m)
+            return remainingAbsolute;
+        if (barVolume <= 0)
+            return 0L;
+
+        var barVolumeCap = (long)(barVolume * _maxParticipationRate);
+        return Math.Min(remainingAbsolute, Math.Max(0L, barVolumeCap));
     }
 
     private bool TryResolveBaseFillPrice(HistoricalBar bar, Order order, OrderType executableType, bool isBuy, out decimal fillPrice)

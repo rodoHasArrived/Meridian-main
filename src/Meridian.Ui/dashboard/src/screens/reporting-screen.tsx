@@ -188,6 +188,70 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             >
               {vm.workflowTaskPanel.selectedSummary}
             </div>
+            <div
+              role="region"
+              aria-label={vm.workflowTaskPanel.restatementReview.regionLabel}
+              className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h4 className="text-sm font-semibold text-foreground">{vm.workflowTaskPanel.restatementReview.title}</h4>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {vm.workflowTaskPanel.restatementReview.description}
+                  </p>
+                </div>
+                <Badge variant={vm.workflowTaskPanel.restatementReview.statusVariant}>
+                  {vm.workflowTaskPanel.restatementReview.statusLabel}
+                </Badge>
+              </div>
+              <p className="mt-3 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-foreground">
+                {vm.workflowTaskPanel.restatementReview.summaryText}
+              </p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {vm.workflowTaskPanel.restatementReview.fields.map((field) => (
+                  <div key={field.label} className="rounded-md border border-border/70 bg-background/40 px-3 py-2">
+                    <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">{field.label}</span>
+                    <span className={cn("mt-1 block break-all font-mono text-xs", field.className)}>{field.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="eyebrow-label">{vm.workflowTaskPanel.restatementReview.changedLinesLabel}</div>
+                <Badge variant="outline">{vm.workflowTaskPanel.restatementReview.evidenceSummary}</Badge>
+              </div>
+              {vm.workflowTaskPanel.restatementReview.hasChangedLines ? (
+                <div role="list" aria-label={vm.workflowTaskPanel.restatementReview.changedLinesLabel} className="mt-2 grid gap-2">
+                  {vm.workflowTaskPanel.restatementReview.changedLines.map((line) => (
+                    <div
+                      key={line.id}
+                      role="listitem"
+                      aria-label={line.ariaLabel}
+                      className="rounded-md border border-border/70 bg-background/40 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-mono text-xs text-foreground">{line.lineKey}</span>
+                        <Badge variant="warning">{line.valueBridge}</Badge>
+                      </div>
+                      {line.evidenceHref ? (
+                        <a
+                          href={line.evidenceHref}
+                          className="mt-2 inline-flex text-xs text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40"
+                          aria-label={`Open evidence for ${line.lineKey}`}
+                        >
+                          {line.evidenceLabel}
+                        </a>
+                      ) : (
+                        <span className="mt-2 block text-xs text-muted-foreground">{line.evidenceLabel}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p role="status" className="mt-2 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-muted-foreground">
+                  {vm.workflowTaskPanel.restatementReview.emptyText}
+                </p>
+              )}
+            </div>
             <div>
               <div className="eyebrow-label">Actions</div>
               {vm.workflowTaskPanel.hasActions ? (

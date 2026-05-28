@@ -91,6 +91,16 @@ jobs:
           scripts/dev/capture-desktop-screenshots.ps1
           -OutputDir "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
 
+      - name: Validate desktop screenshot captures
+        shell: pwsh
+        run: >
+          python scripts/dev/validate-screenshot-captures.py
+          --surface desktop
+          --output-dir "${{ steps.validate_output_dir.outputs.safe_output_dir }}"
+          --desktop-workflows scripts/dev/desktop-workflows.json
+          --desktop-workflow screenshot-catalog
+          --require-fresh
+
       - name: Log desktop screenshot capture status
         if: ${{ always() }}
         shell: pwsh

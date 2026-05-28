@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Media;
+using Meridian.Contracts.Api;
 using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.ViewModels;
@@ -37,11 +40,48 @@ public sealed class BackfillWorkbenchSectionViewModel : BindableBase
     public bool IsGapActionPanelVisible { get => _isGapActionPanelVisible; set => SetProperty(ref _isGapActionPanelVisible, value); }
 }
 
+public sealed class BackfillStatusSectionViewModel : BindableBase
+{
+    private BackfillResultDto? _lastApiStatus;
+    private bool _hasApiStatus;
+    private Visibility _lastStatusVisibility = Visibility.Collapsed;
+    private Visibility _emptyStatusVisibility = Visibility.Visible;
+    private string _lastRunStatusText = string.Empty;
+    private Brush _lastRunStatusBrush = Brushes.Transparent;
+    private string _lastRunProviderText = "Unknown";
+    private string _lastRunSymbolsText = "N/A";
+    private string _lastRunBarsWrittenText = "0";
+    private string _lastRunStartedText = "Unknown";
+    private string _lastRunCompletedText = "N/A";
+    private string _backfillStatsTotalBarsText = "--";
+    private string _backfillStatsSymbolsProcessedText = "--";
+    private string _backfillStatsRunWindowText = "No run loaded";
+    private string _backfillStatsLastSuccessfulRunText = "No successful run loaded";
+
+    public BackfillResultDto? LastApiStatus { get => _lastApiStatus; set => SetProperty(ref _lastApiStatus, value); }
+    public bool HasApiStatus { get => _hasApiStatus; set => SetProperty(ref _hasApiStatus, value); }
+    public Visibility LastStatusVisibility { get => _lastStatusVisibility; set => SetProperty(ref _lastStatusVisibility, value); }
+    public Visibility EmptyStatusVisibility { get => _emptyStatusVisibility; set => SetProperty(ref _emptyStatusVisibility, value); }
+    public string LastRunStatusText { get => _lastRunStatusText; set => SetProperty(ref _lastRunStatusText, value); }
+    public Brush LastRunStatusBrush { get => _lastRunStatusBrush; set => SetProperty(ref _lastRunStatusBrush, value); }
+    public string LastRunProviderText { get => _lastRunProviderText; set => SetProperty(ref _lastRunProviderText, value); }
+    public string LastRunSymbolsText { get => _lastRunSymbolsText; set => SetProperty(ref _lastRunSymbolsText, value); }
+    public string LastRunBarsWrittenText { get => _lastRunBarsWrittenText; set => SetProperty(ref _lastRunBarsWrittenText, value); }
+    public string LastRunStartedText { get => _lastRunStartedText; set => SetProperty(ref _lastRunStartedText, value); }
+    public string LastRunCompletedText { get => _lastRunCompletedText; set => SetProperty(ref _lastRunCompletedText, value); }
+    public string BackfillStatsTotalBarsText { get => _backfillStatsTotalBarsText; set => SetProperty(ref _backfillStatsTotalBarsText, value); }
+    public string BackfillStatsSymbolsProcessedText { get => _backfillStatsSymbolsProcessedText; set => SetProperty(ref _backfillStatsSymbolsProcessedText, value); }
+    public string BackfillStatsRunWindowText { get => _backfillStatsRunWindowText; set => SetProperty(ref _backfillStatsRunWindowText, value); }
+    public string BackfillStatsLastSuccessfulRunText { get => _backfillStatsLastSuccessfulRunText; set => SetProperty(ref _backfillStatsLastSuccessfulRunText, value); }
+}
+
 public sealed partial class BackfillViewModel
 {
     private readonly BackfillWorkbenchSectionViewModel _workbenchSection = new();
+    private readonly BackfillStatusSectionViewModel _statusSection = new();
 
     public BackfillWorkbenchSectionViewModel WorkbenchSection => _workbenchSection;
+    public BackfillStatusSectionViewModel StatusSection => _statusSection;
 
     private bool SetBackfillSectionProperty<T>(
         T current,

@@ -29,6 +29,11 @@ This layer should preserve strategy lineage from research through paper validati
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Paper-to-live promotion requires the live approval checklist plus an active
+`AllowLivePromotion` manual override. Approved and execution-control-blocked live promotion
+attempts are written to the durable execution audit trail with source run, target mode,
+required override kind, checklist count, and control rejection evidence so operations review can
+trace human approval gates even when no live run is created.
 Reconciliation also projects Security Master accounting inputs for Operations Continuity: fixed
 coupon accruals, expected journal previews, and factor-schedule principal paydowns are generated
 from resolved Security Master economic definitions before ledger/reconciliation gate posture is

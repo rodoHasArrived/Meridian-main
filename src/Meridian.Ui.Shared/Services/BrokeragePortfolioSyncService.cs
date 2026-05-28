@@ -621,7 +621,8 @@ public sealed class BrokeragePortfolioSyncService
                     Price: fill.Price,
                     FilledAt: fill.FilledAt,
                     Venue: fill.Venue,
-                    Commission: fill.Commission))
+                    Commission: fill.Commission,
+                    RealizedPnl: fill.RealizedPnl))
                 .ToArray() ?? [],
             CashTransactions: activity?.CashTransactions
                 .Select(static cash => new FundAccountBrokerageCashTransactionDto(
@@ -635,7 +636,20 @@ public sealed class BrokeragePortfolioSyncService
                 .ToArray() ?? [],
             SyncedAt: attemptedAt,
             RawSnapshotPath: rawPath,
-            ProjectionPath: projectionPath);
+            ProjectionPath: projectionPath,
+            CorporateActions: activity?.CorporateActions?
+                .Select(static action => new FundAccountBrokerageCorporateActionDto(
+                    EventId: action.EventId,
+                    EventType: action.EventType,
+                    Symbol: action.Symbol,
+                    EffectiveDate: action.EffectiveDate,
+                    ExDate: action.ExDate,
+                    Amount: action.Amount,
+                    Quantity: action.Quantity,
+                    Factor: action.Factor,
+                    Currency: action.Currency,
+                    Description: action.Description))
+                .ToArray() ?? []);
     }
 
     private async Task PersistFailureProjectionAsync(

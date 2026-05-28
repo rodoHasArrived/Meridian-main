@@ -106,6 +106,18 @@ public sealed class RobinhoodReadOnlyBrokerageSyncAdapterTests
                                                  "symbol": "AAPL",
                                                  "description": "Dividend"
                                                }
+                                             ],
+                                             "corporateActions": [
+                                               {
+                                                 "eventId": "corp-div-1",
+                                                 "eventType": "Dividend",
+                                                 "symbol": "AAPL",
+                                                 "effectiveDate": "2026-05-07",
+                                                 "exDate": "2026-05-05",
+                                                 "amount": 0.24,
+                                                 "currency": "USD",
+                                                 "description": "AAPL dividend"
+                                               }
                                              ]
                                            }
                                            """
@@ -118,6 +130,10 @@ public sealed class RobinhoodReadOnlyBrokerageSyncAdapterTests
         portfolio.Balance.Equity.Should().Be(18200m);
         portfolio.Positions.Should().ContainSingle(position => position.Symbol == "AAPL");
         activity.CashTransactions.Should().ContainSingle(transaction => transaction.TransactionType == "DIV");
+        activity.CorporateActions.Should().NotBeNull().And.ContainSingle(action =>
+            action.EventId == "corp-div-1" &&
+            action.EventType == "Dividend" &&
+            action.Amount == 0.24m);
     }
 
     [Fact]

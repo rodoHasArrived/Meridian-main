@@ -96,6 +96,10 @@ function AppShell() {
     providerRoutingBindings,
     providerRoutingTrustSnapshots,
     providerRoutingRefreshing,
+    rolePermissionCatalog,
+    ledgerMappingWorkbench,
+    operationsApprovalPolicyMatrix,
+    operationsCloseCalendar,
     brokeragePortfolio,
     workflowLibrary,
     workflowPresets,
@@ -390,6 +394,10 @@ function AppShell() {
                       providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
                       providerRoutingRefreshing={providerRoutingRefreshing}
                       featureCapabilities={featureCapabilities}
+                      rolePermissionCatalog={rolePermissionCatalog}
+                      ledgerMappingWorkbench={ledgerMappingWorkbench}
+                      operationsApprovalPolicyMatrix={operationsApprovalPolicyMatrix}
+                      operationsCloseCalendar={operationsCloseCalendar}
                       onFeatureCapabilityToggle={updateFeatureCapability}
                       onRefresh={refresh}
                       onProviderRoutingRefresh={refreshProviderRouting}

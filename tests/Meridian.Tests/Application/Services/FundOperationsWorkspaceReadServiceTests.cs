@@ -7,6 +7,7 @@ using Meridian.Application.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -143,6 +144,95 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.Governance!.DecisionPosture.Should().NotBeNullOrWhiteSpace();
         workspace.Governance.SignoffPosture.Should().NotBeNullOrWhiteSpace();
         workspace.Governance.CloseReadiness.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_WithReportPackWorkflowService_ReturnsRestatementRecordsInReportingSummary()
+    {
+        var fundProfileId = $"fund-{Guid.NewGuid():N}";
+        var fundId = TranslateFundProfileId(fundProfileId);
+        var accountService = new InMemoryFundAccountService();
+        var repository = new StrategyRunStore();
+        var portfolioReadService = new PortfolioReadService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var workflowService = new ReportPackWorkflowService();
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Custody,
+            AccountCode: "CUST-RPT",
+            DisplayName: "Report custody",
+            BaseCurrency: "USD",
+            EffectiveFrom: new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
+            CreatedBy: "test",
+            FundId: fundId,
+            LedgerReference: "RPT-TB"));
+
+        var report = workflowService.Create(
+            fundProfileId,
+            account.AccountId.ToString("D"),
+            "2026-05",
+            new VersionedReportTemplateIdDto("monthly-board-pack", 1),
+            "reporter",
+            [
+                new ReportPackLineProvenanceDto(
+                    "nav.total",
+                    "ledger",
+                    "ledger-entry-1",
+                    "evidence-ledger-1",
+                    RunId: "run-restatement-1",
+                    LedgerEntryId: "ledger-entry-1",
+                    ReportValue: "1250000")
+            ]);
+        workflowService.Transition(report.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
+        workflowService.Transition(report.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        workflowService.Transition(report.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        workflowService.Publish(
+            report.ReportId,
+            "publisher",
+            "publisher",
+            "fund-controller",
+            "sha256:report-pack",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("evidence-ledger-1", "Ledger line", "/reporting/evidence?subject=report-pack", "ledger")]);
+        var restated = workflowService.Restate(
+            report.ReportId,
+            "approver",
+            "approver",
+            "pricing-correction",
+            "fund-controller",
+            report.ReportId,
+            [
+                new ReportPackChangedLineDto(
+                    "nav.total",
+                    "1250000",
+                    "1249500",
+                    [new ReportPackEvidenceLinkDto("pricing-evidence-1", "Pricing override", "/reporting/evidence?subject=pricing", "pricing")])
+            ]);
+        var service = new FundOperationsWorkspaceReadService(
+            accountService,
+            repository,
+            portfolioReadService,
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            reportPackWorkflowService: workflowService);
+
+        var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            FundProfileId: fundProfileId,
+            AsOf: new DateTimeOffset(2026, 5, 28, 16, 0, 0, TimeSpan.Zero),
+            Currency: "USD"));
+
+        workspace.Reporting.WorkflowRecords.Should().ContainSingle();
+        var workflow = workspace.Reporting.WorkflowRecords!.Single();
+        workflow.ReportId.Should().Be(restated.ReportId);
+        workflow.State.Should().Be(ReportPackWorkflowStateDto.Restated);
+        workflow.Restatement.Should().NotBeNull();
+        workflow.Restatement!.ReasonCode.Should().Be("pricing-correction");
+        workflow.Restatement.ChangedLines.Should().ContainSingle(line =>
+            line.LineKey == "nav.total" &&
+            line.PreviousValue == "1250000" &&
+            line.CurrentValue == "1249500" &&
+            line.EvidenceLinks!.Any(link => link.EvidenceId == "pricing-evidence-1"));
     }
 
     [Fact]
@@ -375,6 +465,49 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             snapshot.Provenance.JournalEntryCount.Should().BeGreaterThan(0);
             snapshot.Provenance.LedgerEntryCount.Should().BeGreaterThan(0);
             snapshot.Provenance.SourceSnapshotHash.Should().MatchRegex("^[a-f0-9]{64}$");
+            snapshot.Provenance.LineagePointers.Should().Contain(pointer =>
+                pointer.ScopeType == "report" &&
+                pointer.ScopeKey == "summary" &&
+                pointer.EvidenceType == "run" &&
+                pointer.EvidenceId == "run-report-001" &&
+                pointer.DisplayLabel == "Report Strategy (run-report-001)" &&
+                pointer.Route == UiApiRoutes.WithParam(UiApiRoutes.RunsContinuity, "runId", "run-report-001") &&
+                pointer.SourceSystem == "strategy-run");
+            snapshot.Provenance.LineagePointers.Should().Contain(pointer =>
+                pointer.ScopeType == "line" &&
+                pointer.ScopeKey == "Securities:AAPL" &&
+                pointer.EvidenceType == "ledger-account" &&
+                pointer.DisplayLabel == "Securities / AAPL ledger line" &&
+                pointer.Route == UiApiRoutes.WithQuery(
+                    UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", "run-report-001"),
+                    "accountName=Securities&symbol=AAPL") &&
+                pointer.SourceSystem == "ledger");
+            var securitiesLedgerPointer = snapshot.Provenance.LineagePointers.Should().ContainSingle(pointer =>
+                    pointer.ScopeType == "line" &&
+                    pointer.ScopeKey == "Securities:AAPL" &&
+                    pointer.EvidenceType == "ledger-account")
+                .Which;
+            securitiesLedgerPointer.RelatedEvidenceIds.Should().ContainSingle(id => IsGuidString(id));
+            securitiesLedgerPointer.EvidenceCount.Should().Be(1);
+            securitiesLedgerPointer.Amount.Should().Be(400m);
+            securitiesLedgerPointer.CapturedAt.Should().Be(new DateTimeOffset(2026, 4, 11, 14, 10, 0, TimeSpan.Zero));
+            snapshot.Provenance.LineagePointers.Should().Contain(pointer =>
+                pointer.ScopeType == "line" &&
+                pointer.ScopeKey == "Securities:AAPL" &&
+                pointer.EvidenceType == "security" &&
+                pointer.EvidenceId == "AAPL" &&
+                pointer.DisplayLabel == "AAPL" &&
+                pointer.Route == UiApiRoutes.WithQuery(UiApiRoutes.WorkstationSecurityMasterSearch, "query=AAPL") &&
+                pointer.SourceSystem == "security-master");
+            var securityMasterPointer = snapshot.Provenance.LineagePointers.Should().ContainSingle(pointer =>
+                    pointer.ScopeType == "line" &&
+                    pointer.ScopeKey == "Securities:AAPL" &&
+                    pointer.EvidenceType == "security")
+                .Which;
+            securityMasterPointer.RelatedEvidenceIds.Should().ContainSingle(id => IsGuidString(id));
+            securityMasterPointer.EvidenceCount.Should().Be(1);
+            securityMasterPointer.Amount.Should().Be(400m);
+            securityMasterPointer.CapturedAt.Should().Be(new DateTimeOffset(2026, 4, 11, 14, 10, 0, TimeSpan.Zero));
             snapshot.Artifacts.Should().OnlyContain(artifact =>
                 artifact.SchemaVersion == GovernanceReportPackContract.CurrentSchemaVersion);
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
@@ -832,6 +965,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             .ToArray();
         ledger.Post(new JournalEntry(journalId, timestamp, description, ledgerLines));
     }
+
+    private static bool IsGuidString(string value) => Guid.TryParse(value, out _);
 
     private static Guid TranslateFundProfileId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId)));

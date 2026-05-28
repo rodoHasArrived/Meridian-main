@@ -126,6 +126,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ILedgerJournalStore, RecordingLedgerJournalStore>();
         services.AddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
         services.AddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
+        services.AddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.AddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),

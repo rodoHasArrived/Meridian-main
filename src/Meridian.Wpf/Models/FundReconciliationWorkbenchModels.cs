@@ -76,7 +76,13 @@ public sealed record FundReconciliationBreakQueueRow(
     string ExceptionRouteLabel = "Unrouted",
     string ToleranceProfileLabel = "Unassigned",
     string RequiredSignoffRoleLabel = "Not configured",
-    string SignoffStatusLabel = "Pending");
+    string SignoffStatusLabel = "Pending",
+    string ExplanationSummary = "No structured break explanation reported",
+    string SourceSystemsLabel = "Not reported",
+    string ProbableCauseLabel = "Not reported",
+    string LedgerImpactLabel = "Not reported",
+    string SuggestedNextActionLabel = "Review evidence, assign owner, and move the break through the governed case lifecycle.",
+    string EvidenceLinksLabel = "No evidence links reported");
 
 public sealed record FundReconciliationRunRow(
     string RowKey,

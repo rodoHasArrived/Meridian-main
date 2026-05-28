@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Auth;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -10,6 +11,7 @@ using Meridian.Execution.Services;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -59,6 +61,57 @@ public sealed class ExecutionGovernanceEndpointsTests
         auditEntries!.Should().Contain(entry =>
             entry.Action == "CircuitBreakerOpened" &&
             entry.Actor == "ops-user");
+    }
+
+    [Fact]
+    public async Task AuditSearchEndpoint_ReturnsSharedCrossObjectTimeline()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<AuditTrailExplorerService>();
+        });
+
+        await app.Services.GetRequiredService<ExecutionAuditTrailService>().RecordAsync(new ExecutionAuditEntry(
+            AuditId: "audit-promotion-approved",
+            Category: "Promotion",
+            Action: "LivePromotionApproved",
+            Outcome: "Approved",
+            OccurredAt: DateTimeOffset.Parse("2026-05-28T18:00:00Z"),
+            Actor: "approver",
+            RunId: "run-live",
+            CorrelationId: "corr-promotion",
+            Message: "Approved for live route"));
+        await app.Services.GetRequiredService<ExecutionAuditTrailService>().RecordAsync(new ExecutionAuditEntry(
+            AuditId: "audit-order-submitted",
+            Category: "Order",
+            Action: "OrderSubmitted",
+            Outcome: "Accepted",
+            OccurredAt: DateTimeOffset.Parse("2026-05-28T18:05:00Z"),
+            Actor: "trader",
+            OrderId: "order-live-1",
+            RunId: "run-live",
+            Symbol: "AAPL",
+            CorrelationId: "corr-order",
+            Metadata: new Dictionary<string, string> { ["gateway"] = "alpaca" }));
+
+        var response = await app.GetTestClient().GetAsync("/api/execution/audit/search?searchText=alpaca&runId=run-live");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = JsonSerializer.Deserialize<AuditTrailExplorerResultDto>(
+            await response.Content.ReadAsStringAsync(),
+            JsonOptions());
+
+        result.Should().NotBeNull();
+        result!.TotalMatched.Should().Be(1);
+        result.Entries.Should().ContainSingle(entry =>
+            entry.AuditId == "audit-order-submitted" &&
+            entry.ObjectKind == "Order" &&
+            entry.ObjectId == "order-live-1" &&
+            entry.RelatedObjectIds!.Contains("run-live"));
     }
 
     [Fact]

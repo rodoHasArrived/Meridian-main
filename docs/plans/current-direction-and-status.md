@@ -8,7 +8,7 @@
 - [ ] Prioritize high-traffic page-body workflow outcomes (run -> portfolio -> ledger -> reconciliation and casework/sign-off/reporting) over additional shell framing work.
 - [ ] Keep support evidence and exit claims separate in roadmap/status updates; do not mark exits from support-only proofs.
 - [ ] Keep browser and desktop parity checks coupled to shared endpoint/read-model payloads for every desktop workflow change.
-- [ ] Keep Wave 2 cockpit reliability as the active release gate; do not widen live-readiness language until Lane A criteria stay continuously green.
+- [ ] Preserve W2/W3 as closed evidence baselines while keeping W4 governance as the active release gate; do not widen live-readiness language until W4 close/report criteria are green.
 - [ ] Re-run structured roadmap/source stale-doc and hash checks after docs or source ownership changes.
 
 **Role:** Single planning entry point for current direction, project status, and document roles.

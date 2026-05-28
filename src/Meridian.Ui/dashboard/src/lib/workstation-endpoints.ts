@@ -15,12 +15,27 @@ export const WORKSTATION_API_ENDPOINTS = {
   workflowLibrary: "/api/workstation/workflows",
   workflowPresets: "/api/workstation/workflows/presets",
   operationsContinuity: "/api/workstation/operations/continuity",
+  operationsContinuityApprovalPolicyMatrix: "/api/workstation/operations/continuity/approval-policy-matrix",
+  operationsContinuityApprovalPolicyRules: "/api/workstation/operations/continuity/approval-policy-rules",
+  operationsContinuityCloseCalendar: "/api/workstation/operations/continuity/close-calendar",
+  operationsContinuityCloseCalendarItems: "/api/workstation/operations/continuity/close-calendar-items",
   chiefOfStaff: "/api/workstation/chief-of-staff",
   runHistory: "/api/workstation/runs/history",
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
   evidenceSubjects: "/api/workstation/evidence/subjects",
   evidenceTemplates: "/api/workstation/evidence/templates"
+} as const;
+
+export const AUTH_API_ENDPOINTS = {
+  roles: "/api/auth/roles",
+  roleProfiles: "/api/auth/role-profiles"
+} as const;
+
+export const FUND_STRUCTURE_API_ENDPOINTS = {
+  ledgerMappingWorkbench: "/api/fund-structure/ledger-mapping-view",
+  ledgerMappingAssignments: "/api/fund-structure/ledger-mapping-assignments",
+  transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview"
 } as const;
 
 export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
@@ -260,6 +275,13 @@ export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId:
   return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/ledger-preview`;
 }
 
+export function workstationOperationsContinuityCloseCalendarEndpoint(options: {
+  fundAccountId?: string;
+  periodId?: string;
+} = {}): string {
+  return `${WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendar}${queryString(options)}`;
+}
+
 export function workstationChiefOfStaffSessionsEndpoint(options: {
   workspace?: string;
   fundProfileId?: string;
@@ -457,6 +479,10 @@ export function workstationRunEquityCurveEndpoint(runId: string): string {
   return `${workstationRunBaseEndpoint(runId)}/equity-curve`;
 }
 
+export function portfolioRunCashFlowsEndpoint(runId: string): string {
+  return `/api/portfolio/${pathSegment(runId, "runId")}/cash-flows`;
+}
+
 export function workstationRunLedgerTrialBalanceEndpoint(runId: string, accountType?: string): string {
   return `${workstationRunLedgerEndpoint(runId)}/trial-balance${queryString({ accountType })}`;
 }
@@ -487,6 +513,10 @@ export function workstationSecurityMasterEconomicDefinitionEndpoint(securityId: 
 
 export function workstationSecurityMasterTrustSnapshotEndpoint(securityId: string): string {
   return `${workstationSecurityMasterEntryEndpoint(securityId)}/trust-snapshot`;
+}
+
+export function workstationSecurityMasterInstrumentPassportEndpoint(securityId: string): string {
+  return `${workstationSecurityMasterEntryEndpoint(securityId)}/passport`;
 }
 
 export function securityMasterEntryEndpoint(): string {

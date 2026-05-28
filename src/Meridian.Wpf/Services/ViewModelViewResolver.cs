@@ -63,7 +63,7 @@ public sealed class ViewModelViewResolver : IViewModelViewResolver
             var viewModelType = ResolveViewModelType(page.PageType);
             if (viewModelType is null)
             {
-                _logger?.LogWarning(
+                TryLogWarning(
                     "No matching ViewModel type was found for shell page {PageTag} ({PageType}). Expected convention: {Convention}.",
                     page.PageTag,
                     page.PageType.Name,
@@ -71,14 +71,18 @@ public sealed class ViewModelViewResolver : IViewModelViewResolver
                 continue;
             }
 
-            if (_serviceLookup is not null && !_serviceLookup.IsService(viewModelType))
-            {
-                _logger?.LogWarning(
-                    "Matching ViewModel type {ViewModelType} for shell page {PageTag} ({PageType}) is not registered in the DI container.",
-                    viewModelType.Name,
-                    page.PageTag,
-                    page.PageType.Name);
-            }
+        }
+    }
+
+    private void TryLogWarning(string message, params object?[] args)
+    {
+        try
+        {
+            _logger?.LogWarning(message, args);
+        }
+        catch
+        {
+            // Startup diagnostics must not prevent the desktop shell from opening when a logger sink is unavailable.
         }
     }
 
@@ -87,18 +91,37 @@ public sealed class ViewModelViewResolver : IViewModelViewResolver
         var pageName = pageType.Name;
         var names = GetCandidateNames(pageName).ToArray();
 
-        return GetLoadableTypes(pageType.Assembly)
+        return GetCandidateAssemblies(pageType)
+            .SelectMany(GetLoadableTypes)
             .Where(type => type is { IsClass: true, IsAbstract: false } && names.Contains(type.Name, StringComparer.Ordinal))
             .OrderBy(type => GetNamespaceRank(pageType, type))
             .ThenBy(type => type.FullName, StringComparer.Ordinal)
             .FirstOrDefault();
     }
 
+    private static IEnumerable<Assembly> GetCandidateAssemblies(Type pageType)
+    {
+        yield return pageType.Assembly;
+
+        var resolverAssembly = typeof(ViewModelViewResolver).Assembly;
+        if (!Equals(pageType.Assembly, resolverAssembly))
+        {
+            yield return resolverAssembly;
+        }
+    }
+
     private static IEnumerable<string> GetCandidateNames(string pageName)
     {
         if (pageName.EndsWith("Page", StringComparison.Ordinal) && pageName.Length > "Page".Length)
         {
-            yield return pageName[..^"Page".Length] + "ViewModel";
+            var pageStem = pageName[..^"Page".Length];
+            yield return pageStem + "ViewModel";
+
+            if (pageStem.StartsWith("Run", StringComparison.Ordinal) && pageStem.Length > "Run".Length)
+            {
+                yield return "Strategy" + pageStem + "ViewModel";
+                yield return pageStem["Run".Length..] + "ViewModel";
+            }
         }
 
         yield return pageName + "ViewModel";

@@ -9,12 +9,17 @@ import type {
   BrokerageHouseholdPortfolio,
   DataOperationsWorkspaceResponse,
   GovernanceWorkspaceResponse,
+  FeatureCapabilitySettingsResponse,
+  LedgerMappingWorkbench,
+  OperationsApprovalPolicyMatrix,
+  OperationsCloseCalendar,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
   ResearchWorkspaceResponse,
+  RolePermissionCatalog,
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
@@ -28,6 +33,9 @@ vi.mock("@/lib/api", () => ({
   getDataWorkspace: vi.fn(),
   getGovernanceWorkspace: vi.fn(),
   getAlpacaConnectionStatus: vi.fn(),
+  getLedgerMappingWorkbench: vi.fn(),
+  getOperationsApprovalPolicyMatrix: vi.fn(),
+  getOperationsCloseCalendar: vi.fn(),
   getProviderConnections: vi.fn(),
   getProviderRoutingBindings: vi.fn(),
   getProviderRoutingConnections: vi.fn(),
@@ -41,7 +49,10 @@ vi.mock("@/lib/api", () => ({
   getSystemStatus: vi.fn(),
   getTradingWorkspace: vi.fn(),
   getWorkflowLibrary: vi.fn(),
-  getWorkflowPresets: vi.fn()
+  getWorkflowPresets: vi.fn(),
+  getFeatureCapabilities: vi.fn(),
+  getRolePermissionCatalog: vi.fn(),
+  setFeatureCapability: vi.fn()
 }));
 
 type Deferred<T> = {
@@ -61,6 +72,11 @@ const requests: Record<string, Deferred<unknown>[]> = {
   providerRoutingBindings: [],
   providerRoutingConnections: [],
   providerRoutingTrustSnapshots: [],
+  featureCapabilities: [],
+  rolePermissionCatalog: [],
+  ledgerMappingWorkbench: [],
+  operationsApprovalPolicyMatrix: [],
+  operationsCloseCalendar: [],
   reporting: [],
   research: [],
   session: [],
@@ -89,9 +105,14 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getProviderRoutingConnections).mockImplementation(() => track<ProviderRoutingConnection[]>("providerRoutingConnections"));
     vi.mocked(api.getProviderRoutingBindings).mockImplementation(() => track<ProviderRoutingBinding[]>("providerRoutingBindings"));
     vi.mocked(api.getProviderRoutingTrustSnapshots).mockImplementation(() => track<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots"));
+    vi.mocked(api.getRolePermissionCatalog).mockImplementation(() => track<RolePermissionCatalog>("rolePermissionCatalog"));
+    vi.mocked(api.getLedgerMappingWorkbench).mockImplementation(() => track<LedgerMappingWorkbench>("ledgerMappingWorkbench"));
+    vi.mocked(api.getOperationsApprovalPolicyMatrix).mockImplementation(() => track<OperationsApprovalPolicyMatrix>("operationsApprovalPolicyMatrix"));
+    vi.mocked(api.getOperationsCloseCalendar).mockImplementation(() => track<OperationsCloseCalendar>("operationsCloseCalendar"));
     vi.mocked(api.getBrokerageHouseholdPortfolio).mockImplementation(() => track<BrokerageHouseholdPortfolio>("brokeragePortfolio"));
     vi.mocked(api.getWorkflowLibrary).mockImplementation(() => track<WorkflowLibrary>("workflowLibrary"));
     vi.mocked(api.getWorkflowPresets).mockImplementation(() => track<WorkflowPresetLibrary>("workflowPresets"));
+    vi.mocked(api.getFeatureCapabilities).mockImplementation(() => track<FeatureCapabilitySettingsResponse>("featureCapabilities"));
     vi.mocked(api.hasDevelopmentFixtureUsage).mockReturnValue(false);
   });
 
@@ -185,6 +206,7 @@ describe("useWorkstationData", () => {
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
       resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
       resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
+      resolveSettingsControlRequests(0);
       resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 0, { marker: "brokerage portfolio" } as unknown as BrokerageHouseholdPortfolio);
       resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, { generatedAt: "2026-01-01T00:00:00Z", presets: [] });
@@ -483,6 +505,7 @@ describe("useWorkstationData", () => {
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
       resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
       resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
+      resolveSettingsControlRequests(0);
       rejectRequest("brokeragePortfolio", 0, new Error("Brokerage household sync failed."));
       resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "workflows" } as unknown as WorkflowLibrary);
       resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, {
@@ -658,12 +681,36 @@ function resolveRefreshBatchWithIndexes({
   resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", defaultIndex, []);
   resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", defaultIndex, []);
   resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", defaultIndex, []);
+  resolveSettingsControlRequests(defaultIndex);
   resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", defaultIndex, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
   resolveRequest<WorkflowLibrary>("workflowLibrary", defaultIndex, { marker: `${marker} workflows` } as unknown as WorkflowLibrary);
   resolveRequest<WorkflowPresetLibrary>("workflowPresets", defaultIndex, {
     generatedAt: "2026-01-01T00:00:00Z",
     presets: []
   });
+}
+
+function resolveSettingsControlRequests(index: number) {
+  resolveRequest<RolePermissionCatalog>("rolePermissionCatalog", index, { roles: [], permissions: [] });
+  resolveRequest<LedgerMappingWorkbench>("ledgerMappingWorkbench", index, {
+    asOf: "2026-05-01T00:00:00Z",
+    accountCount: 0,
+    mappedAccountCount: 0,
+    unmappedAccountCount: 0,
+    ledgerGroups: [],
+    accounts: []
+  });
+  resolveRequest<OperationsApprovalPolicyMatrix>("operationsApprovalPolicyMatrix", index, {
+    policyId: "ops-close",
+    version: "v1",
+    generatedAtUtc: "2026-05-01T00:00:00Z",
+    rows: []
+  });
+  resolveRequest<OperationsCloseCalendar>("operationsCloseCalendar", index, {
+    generatedAtUtc: "2026-05-01T00:00:00Z",
+    items: []
+  });
+  resolveRequest<FeatureCapabilitySettingsResponse>("featureCapabilities", index, { capabilities: [] });
 }
 
 function resolveRequest<T>(key: keyof typeof requests, index: number, value: T) {

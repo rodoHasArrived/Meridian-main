@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   buildLinkedRunEvidenceLabel,
+  buildPortfolioRunComparisonSummary,
+  buildPortfolioRunDrillInSummary,
   buildPortfolioScreenViewModel,
   buildPortfolioFallbackMetrics,
   resolveBrokerageAccountFilterKeyCommand
@@ -401,6 +403,151 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(buildLinkedRunEvidenceLabel(0)).toBe("No linked runs");
     expect(buildLinkedRunEvidenceLabel(1)).toBe("1 linked run");
     expect(buildLinkedRunEvidenceLabel(2)).toBe("2 linked runs");
+  });
+
+  it("builds portfolio run comparison summary across strategy runs", () => {
+    const multiRunResearch: ResearchWorkspaceResponse = {
+      ...research,
+      runs: [
+        research.runs[0],
+        {
+          id: "run-2",
+          strategyName: "Volatility Carry",
+          engine: "Lean",
+          mode: "backtest",
+          status: "Completed",
+          dataset: "US Options",
+          window: "180d",
+          pnl: "-1.5%",
+          sharpe: "0.82",
+          lastUpdated: "7m ago",
+          notes: "Drawdown review required.",
+          promotionState: null
+        },
+        {
+          id: "run-3",
+          strategyName: "Cash Bridge",
+          engine: "Native",
+          mode: "live",
+          status: "Completed",
+          dataset: "Broker",
+          window: "30d",
+          pnl: "+2.1%",
+          sharpe: "1.74",
+          lastUpdated: "1m ago",
+          notes: "Live-adjacent comparison.",
+          promotionState: "LiveManaged"
+        }
+      ]
+    };
+
+    const vm = buildPortfolioScreenViewModel({
+      trading,
+      research: multiRunResearch,
+      governance,
+      selectedRunId: "run-3"
+    });
+
+    expect(vm.runComparisonSummary).toMatchObject({
+      ariaLabel: "Portfolio run comparison summary",
+      title: "Run comparison evidence",
+      description: "3 strategy runs compared across 3 modes and 2 engines.",
+      statusTone: "warning"
+    });
+    expect(vm.runComparisonSummary.cards).toEqual([
+      expect.objectContaining({ id: "selected-rank", value: "#2", detail: "Cash Bridge vs 3 linked runs by P&L." }),
+      expect.objectContaining({ id: "best-pnl", value: "+4.2%", detail: "Mean Reversion (paper, Native)" }),
+      expect.objectContaining({ id: "weakest-pnl", value: "-1.5%", tone: "danger" }),
+      expect.objectContaining({ id: "best-sharpe", value: "1.74", detail: "Cash Bridge risk-adjusted lead." }),
+      expect.objectContaining({ id: "coverage", value: "3/2", detail: "backtest, live, paper; Lean, Native." })
+    ]);
+  });
+
+  it("returns empty portfolio run comparison guidance when no runs exist", () => {
+    const summary = buildPortfolioRunComparisonSummary([], null);
+
+    expect(summary.description).toBe("No strategy runs are available for portfolio comparison.");
+    expect(summary.statusTone).toBe("warning");
+    expect(summary.cards[0]).toMatchObject({
+      id: "selected-rank",
+      value: "—",
+      tone: "warning"
+    });
+  });
+
+  it("summarizes selected-run drill-in evidence across attribution drawdown cash-flow and trades", () => {
+    const vm = buildPortfolioScreenViewModel({ trading, research, governance });
+    const summary = buildPortfolioRunDrillInSummary(vm.runRows[0], {
+      runId: "run-1",
+      attribution: {
+        runId: "run-1",
+        totalRealizedPnl: 120,
+        totalUnrealizedPnl: 80,
+        totalCommissions: 5,
+        bySymbol: [
+          {
+            symbol: "AAPL",
+            realizedPnl: 120,
+            unrealizedPnl: 80,
+            totalPnl: 200,
+            tradeCount: 2,
+            commissions: 5,
+            marginInterestAllocated: 0
+          }
+        ]
+      },
+      drawdownProfile: {
+        runId: "run-1",
+        initialEquity: 100000,
+        finalEquity: 101250,
+        maxDrawdown: 1250,
+        maxDrawdownPercent: 0.0125,
+        maxDrawdownRecoveryDays: 3,
+        sharpeRatio: 1.41,
+        sortinoRatio: 1.8,
+        points: [
+          { date: "2026-05-01", totalEquity: 100000, cash: 50000, dailyReturn: 0, drawdownFromPeak: 0, drawdownFromPeakPercent: 0 }
+        ]
+      },
+      cashFlow: {
+        runId: "run-1",
+        asOf: "2026-05-07T12:00:00Z",
+        currency: "USD",
+        totalEntries: 2,
+        totalInflows: 1500,
+        totalOutflows: 300,
+        netCashFlow: 1200,
+        entries: [],
+        ladder: {
+          asOf: "2026-05-07T12:00:00Z",
+          currency: "USD",
+          bucketDays: 7,
+          totalProjectedInflows: 1500,
+          totalProjectedOutflows: 300,
+          netPosition: 1200,
+          buckets: []
+        }
+      },
+      trades: {
+        runId: "run-1",
+        totalFills: 2,
+        totalCommissions: 5,
+        fills: []
+      },
+      isLoading: false,
+      error: null
+    });
+
+    expect(summary).toMatchObject({
+      description: "4/4 drill-in evidence slices loaded for Mean Reversion.",
+      statusTone: "success"
+    });
+    expect(summary.cards).toEqual([
+      expect.objectContaining({ id: "attribution", value: "+$200", detail: "Realized +$120; unrealized +$80; 1 symbol." }),
+      expect.objectContaining({ id: "drawdown", value: "1.25%", detail: "1 equity point; recovery 3 days; final equity $101,250." }),
+      expect.objectContaining({ id: "cash-flow", value: "+$1,200", detail: "2 cash-flow entries; inflows $1,500; outflows $300." }),
+      expect.objectContaining({ id: "trades", value: "2", detail: "0 fills with $5 commissions." })
+    ]);
   });
 
   it("surfaces cash-flow summary from governance data", () => {

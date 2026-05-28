@@ -11,11 +11,18 @@ namespace Meridian.Backtesting.FillModels;
 /// in descending order. Supports partial fills, stop triggers, and time-in-force semantics.
 /// When <paramref name="tickSizes"/> is provided, fill prices are rounded to the
 /// instrument's tick grid before being returned.
+/// When <paramref name="queueAheadFraction"/> is greater than zero, the model infers that
+/// the configured fraction of visible depth at each executable level is queued ahead of
+/// the simulated order. This keeps L3-style queue simulation bounded to the current
+/// snapshot and avoids retaining per-order book state across large replay windows.
 /// </summary>
 internal sealed class OrderBookFillModel(
     ICommissionModel commissionModel,
-    IReadOnlyDictionary<string, decimal>? tickSizes = null) : IFillModel
+    IReadOnlyDictionary<string, decimal>? tickSizes = null,
+    decimal queueAheadFraction = 0m) : IFillModel
 {
+    private readonly decimal _queueAheadFraction = Math.Clamp(queueAheadFraction, 0m, 1m);
+
     public OrderFillResult TryFill(Order order, MarketEvent evt)
     {
         if (evt.Payload is not LOBSnapshot lob)
@@ -46,7 +53,7 @@ internal sealed class OrderBookFillModel(
 
         var executableLevels = FilterExecutableLevels(levels, executableType.Value, order, isBuy);
         if (order.TimeInForce == TimeInForce.FillOrKill &&
-            executableLevels.Sum(static level => (long)level.Size) < remainingAbsolute)
+            SumQueueAdjustedQuantity(executableLevels, _queueAheadFraction) < remainingAbsolute)
         {
             return new OrderFillResult(
                 order with { Status = OrderStatus.Cancelled, IsTriggered = triggered },
@@ -62,7 +69,7 @@ internal sealed class OrderBookFillModel(
             if (remainingAbsolute == 0)
                 break;
 
-            var levelQuantity = (long)Math.Truncate(level.Size);
+            var levelQuantity = CalculateQueueAdjustedQuantity(level, _queueAheadFraction);
             if (levelQuantity <= 0)
                 continue;
 
@@ -124,6 +131,37 @@ internal sealed class OrderBookFillModel(
             fills,
             removeOrder,
             WasTriggered: triggered && !order.IsTriggered);
+    }
+
+    private static long SumQueueAdjustedQuantity(
+        IReadOnlyList<OrderBookLevel> levels,
+        decimal queueAheadFraction)
+    {
+        var total = 0L;
+        foreach (var level in levels)
+        {
+            var quantity = CalculateQueueAdjustedQuantity(level, queueAheadFraction);
+            if (quantity <= 0)
+                continue;
+
+            total += quantity;
+            if (total < 0)
+                return long.MaxValue;
+        }
+
+        return total;
+    }
+
+    private static long CalculateQueueAdjustedQuantity(
+        OrderBookLevel level,
+        decimal queueAheadFraction)
+    {
+        var visibleQuantity = (long)Math.Truncate(level.Size);
+        if (visibleQuantity <= 0 || queueAheadFraction <= 0m)
+            return visibleQuantity;
+
+        var queuedAhead = (long)Math.Ceiling(visibleQuantity * queueAheadFraction);
+        return Math.Max(0L, visibleQuantity - queuedAhead);
     }
 
     private decimal SnapToTick(decimal price, string symbol)

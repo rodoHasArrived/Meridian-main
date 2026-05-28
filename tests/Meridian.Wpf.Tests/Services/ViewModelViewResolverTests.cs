@@ -1,6 +1,8 @@
 using System.Windows.Controls;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -15,6 +17,21 @@ public sealed class ViewModelViewResolverTests
         resolver.ResolveViewModelType(typeof(ConventionProbePage))
             .Should()
             .Be(typeof(ConventionProbeViewModel));
+    }
+
+    [Theory]
+    [InlineData(typeof(RunDetailPage), typeof(StrategyRunDetailViewModel))]
+    [InlineData(typeof(RunPortfolioPage), typeof(StrategyRunPortfolioViewModel))]
+    [InlineData(typeof(RunLedgerPage), typeof(StrategyRunLedgerViewModel))]
+    [InlineData(typeof(RunCashFlowPage), typeof(CashFlowViewModel))]
+    [InlineData(typeof(RunRiskPage), typeof(RunRiskViewModel))]
+    public void ResolveViewModelType_ShouldUseRunInspectorAliases(Type pageType, Type expectedViewModelType)
+    {
+        var resolver = new ViewModelViewResolver();
+
+        resolver.ResolveViewModelType(pageType)
+            .Should()
+            .Be(expectedViewModelType);
     }
 
     [Fact]

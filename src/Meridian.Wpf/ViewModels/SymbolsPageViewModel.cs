@@ -407,9 +407,22 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
             if (!_isStopped)
                 Deactivate();
         }
+        finally
+        {
+            if (!ReferenceEquals(_activationCts, activationCts))
+            {
+                activationCts.Dispose();
+            }
+        }
     }
 
     public void Stop() => Deactivate();
+
+    public void CancelActivation()
+    {
+        CancelWithoutDisposing(Interlocked.Exchange(ref _loadCts, null));
+        CancelWithoutDisposing(Interlocked.Exchange(ref _activationCts, null));
+    }
 
     public void Deactivate()
     {
@@ -417,8 +430,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         _isActive = false;
         _watchlistService.WatchlistsChanged -= OnWatchlistsChanged;
 
-        CancelAndDispose(Interlocked.Exchange(ref _loadCts, null));
-        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
+        CancelActivation();
     }
 
     private void OnWatchlistsChanged(object? sender, WpfServices.WatchlistsChangedEventArgs e)
@@ -432,10 +444,14 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     // ── Data loading ────────────────────────────────────────────────────────
     public async Task LoadSymbolsFromConfigAsync(CancellationToken ct = default)
     {
+        var loadCts = CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct);
+        var previousLoadCts = Interlocked.Exchange(ref _loadCts, loadCts);
+        CancelAndDispose(previousLoadCts);
+
         try
         {
-            var configuredSymbols = await _getConfiguredSymbolsAsync(ct);
-            ct.ThrowIfCancellationRequested();
+            var configuredSymbols = await _getConfiguredSymbolsAsync(loadCts.Token);
+            loadCts.Token.ThrowIfCancellationRequested();
 
             var nextSymbols = configuredSymbols.Select(cfg => new SymbolViewModel
             {
@@ -466,6 +482,15 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load symbols from configuration", ex);
+        }
+        finally
+        {
+            if (ReferenceEquals(_loadCts, loadCts))
+            {
+                Interlocked.Exchange(ref _loadCts, null);
+            }
+
+            loadCts.Dispose();
         }
 
         SymbolCountText = $"{Symbols.Count} symbols";
@@ -1109,6 +1134,20 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         }
 
         cts.Dispose();
+    }
+
+    private static void CancelWithoutDisposing(CancellationTokenSource? cts)
+    {
+        if (cts is null)
+            return;
+
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 
     // ── Security Master integration ──────────────────────────────────────────

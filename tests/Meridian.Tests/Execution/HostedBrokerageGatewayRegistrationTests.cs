@@ -1,0 +1,186 @@
+using System.Net.Http;
+using FluentAssertions;
+using Meridian.Execution.Sdk;
+using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.InteractiveBrokers;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Meridian.Tests.Execution;
+
+public sealed class HostedBrokerageGatewayRegistrationTests
+{
+    [Fact]
+    public async Task AddHostedBrokerageGateways_RegistersAlpacaAndIbRuntimeGatewaySurfaces()
+    {
+        var services = CreateServices();
+
+        services.AddHostedBrokerageGateways();
+
+        await using var provider = services.BuildServiceProvider();
+        var alpaca = provider.GetRequiredKeyedService<IBrokerageGateway>("alpaca");
+        var ib = provider.GetRequiredKeyedService<IBrokerageGateway>("ib");
+        var ibkr = provider.GetRequiredKeyedService<IBrokerageGateway>("ibkr");
+
+        alpaca.Should().BeOfType<AlpacaBrokerageGateway>();
+        ib.Should().BeOfType<IBBrokerageGateway>();
+        ibkr.Should().BeSameAs(ib);
+
+        provider.GetServices<IBrokerageAccountCatalog>()
+            .Select(catalog => catalog.ProviderId)
+            .Should()
+            .Contain(["alpaca", "ibkr"]);
+        provider.GetServices<IBrokeragePortfolioSync>()
+            .Select(sync => sync.ProviderId)
+            .Should()
+            .Contain(["alpaca", "ibkr"]);
+        provider.GetServices<IBrokerageActivitySync>()
+            .Select(sync => sync.ProviderId)
+            .Should()
+            .Contain("alpaca");
+
+        var surfaces = HostedBrokerageGatewayRuntimeSurfaceCatalog.Build(provider);
+        surfaces.Should().Contain(surface =>
+            surface.GatewayId == "alpaca" &&
+            surface.IsRegistered &&
+            surface.GatewayType == typeof(AlpacaBrokerageGateway).FullName &&
+            surface.SupportsAccountCatalog &&
+            surface.SupportsPortfolioSync &&
+            surface.SupportsActivitySync &&
+            surface.SupportsPartialFills);
+        surfaces.Should().Contain(surface =>
+            surface.GatewayId == "ib" &&
+            surface.IsRegistered &&
+            surface.GatewayType == typeof(IBBrokerageGateway).FullName &&
+            surface.SupportsAccountCatalog &&
+            surface.SupportsPortfolioSync &&
+            !surface.SupportsActivitySync);
+        surfaces.Should().Contain(surface =>
+            surface.GatewayId == "ibkr" &&
+            surface.IsRegistered &&
+            surface.GatewayType == typeof(IBBrokerageGateway).FullName &&
+            surface.SupportsAccountCatalog &&
+            surface.SupportsPortfolioSync);
+        surfaces.Should().Contain(surface =>
+            surface.GatewayId == "stocksharp" &&
+            !surface.IsRegistered &&
+            surface.Notes.Any(note => note.Contains("runtime type is not present", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
+    public async Task RegisterOptionalStockSharpGateway_WhenRuntimeTypeExists_RegistersKeyedGatewayAndSyncAdapters()
+    {
+        var services = CreateServices();
+
+        HostedBrokerageGatewayServiceCollectionExtensions.RegisterOptionalStockSharpGateway(
+            services,
+            typeof(FakeStockSharpBrokerageGateway));
+
+        await using var provider = services.BuildServiceProvider();
+        var gateway = provider.GetRequiredKeyedService<IBrokerageGateway>("stocksharp");
+
+        gateway.Should().BeOfType<FakeStockSharpBrokerageGateway>();
+        provider.GetServices<IBrokerageAccountCatalog>()
+            .Select(catalog => catalog.ProviderId)
+            .Should()
+            .Contain("stocksharp");
+        provider.GetServices<IBrokeragePortfolioSync>()
+            .Select(sync => sync.ProviderId)
+            .Should()
+            .Contain("stocksharp");
+        provider.GetServices<IBrokerageActivitySync>()
+            .Select(sync => sync.ProviderId)
+            .Should()
+            .Contain("stocksharp");
+
+        var surfaces = HostedBrokerageGatewayRuntimeSurfaceCatalog.Build(provider);
+        surfaces.Should().Contain(surface =>
+            surface.GatewayId == "stocksharp" &&
+            surface.IsRegistered &&
+            surface.GatewayType == typeof(FakeStockSharpBrokerageGateway).FullName &&
+            surface.SupportsAccountCatalog &&
+            surface.SupportsPortfolioSync &&
+            surface.SupportsActivitySync);
+    }
+
+    [Fact]
+    public async Task RegisterOptionalStockSharpGateway_WhenRuntimeTypeMissing_DoesNotRegisterPlaceholder()
+    {
+        var services = CreateServices();
+
+        HostedBrokerageGatewayServiceCollectionExtensions.RegisterOptionalStockSharpGateway(services, gatewayType: null);
+
+        await using var provider = services.BuildServiceProvider();
+
+        provider.GetKeyedService<IBrokerageGateway>("stocksharp").Should().BeNull();
+        provider.GetServices<IBrokerageAccountCatalog>()
+            .Should()
+            .NotContain(catalog => catalog.ProviderId.Equals("stocksharp", StringComparison.OrdinalIgnoreCase));
+
+        HostedBrokerageGatewayRuntimeSurfaceCatalog.Build(provider)
+            .Should()
+            .Contain(surface => surface.GatewayId == "stocksharp" && !surface.IsRegistered);
+    }
+
+    private static ServiceCollection CreateServices()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<IHttpClientFactory>(new StubHttpClientFactory());
+        return services;
+    }
+
+    private sealed class StubHttpClientFactory : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new();
+    }
+
+    private sealed class FakeStockSharpBrokerageGateway : IBrokerageGateway
+    {
+        public string GatewayId => "stocksharp";
+
+        public bool IsConnected => false;
+
+        public string BrokerDisplayName => "StockSharp";
+
+        public BrokerageCapabilities BrokerageCapabilities { get; } = BrokerageCapabilities.UsEquity();
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public async IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+
+        public Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default) =>
+            Task.FromResult(new AccountInfo { AccountId = "stocksharp-test" });
+
+        public Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<BrokerPosition>>([]);
+
+        public Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<BrokerOrder>>([]);
+
+        public Task<BrokerHealthStatus> CheckHealthAsync(CancellationToken ct = default) =>
+            Task.FromResult(new BrokerHealthStatus
+            {
+                IsHealthy = false,
+                IsConnected = false,
+                Message = "Test gateway is not connected."
+            });
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+}

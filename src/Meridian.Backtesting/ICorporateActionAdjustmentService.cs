@@ -18,6 +18,22 @@ public interface ICorporateActionAdjustmentService
         CancellationToken ct = default);
 
     /// <summary>
+    /// Adjusts a single historical bar without requiring the caller to buffer a replay window.
+    /// </summary>
+    /// <param name="bar">Original historical bar.</param>
+    /// <param name="ticker">Ticker symbol to resolve to security ID.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Adjusted bar, or the original bar if security not found or no actions recorded.</returns>
+    async Task<HistoricalBar> AdjustBarAsync(
+        HistoricalBar bar,
+        string ticker,
+        CancellationToken ct = default)
+    {
+        var adjusted = await AdjustAsync([bar], ticker, ct).ConfigureAwait(false);
+        return adjusted.Count == 0 ? bar : adjusted[0];
+    }
+
+    /// <summary>
     /// Adjusts historical bars as a stream, yielding adjusted bars incrementally.
     /// </summary>
     /// <param name="bars">Source historical bars stream.</param>

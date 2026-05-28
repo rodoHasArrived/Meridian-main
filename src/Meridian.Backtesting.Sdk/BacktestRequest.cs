@@ -67,9 +67,9 @@ public enum BacktestCommissionKind
 /// for Sharpe/Sortino. Dates not present in the series fall back to <see cref="RiskFreeRate"/>.
 /// </param>
 /// <param name="MaxParticipationRate">
-/// Maximum fraction of a bar's traded volume that the <see cref="ExecutionModel.BarMidpoint"/> fill
-/// model is allowed to fill in a single bar. When set to a value greater than zero (e.g. 0.05 for
-/// 5 % participation), large orders will receive partial fills across multiple bars, improving
+/// Maximum fraction of a bar's traded volume that bar-midpoint and market-impact fill models are
+/// allowed to fill in a single bar. When set to a value greater than zero (e.g. 0.05 for 5 %
+/// participation), large orders will receive partial fills across multiple bars, improving
 /// fill-realism for strategies that trade illiquid names or hold large positions. Set to zero
 /// (default) to use the original unconstrained behaviour.
 /// </param>
@@ -77,6 +77,11 @@ public enum BacktestCommissionKind
 /// When <see langword="true"/>, the backtest engine aborts with an error if any symbol in the
 /// discovered universe is absent from the Security Master. When <see langword="false"/>, missing
 /// symbols produce a warning and the run continues.
+/// </param>
+/// <param name="OrderBookQueueAheadFraction">
+/// Fraction of visible order-book depth inferred to be ahead of the simulated order at each executable
+/// price level when <see cref="ExecutionModel.OrderBook"/> is used. Values are clamped to 0..1;
+/// zero keeps the original immediate-depth-walk behavior.
 /// </param>
 public sealed record BacktestRequest(
     DateOnly From,
@@ -102,7 +107,8 @@ public sealed record BacktestRequest(
     double RiskFreeRate = 0.04,
     IReadOnlyDictionary<DateOnly, double>? RiskFreeRateSeries = null,
     decimal MaxParticipationRate = 0m,
-    bool FailOnUnknownSymbols = false)
+    bool FailOnUnknownSymbols = false,
+    decimal OrderBookQueueAheadFraction = 0m)
 {
     /// <summary>
     /// Returns the normalized account list, falling back to a single default brokerage account for

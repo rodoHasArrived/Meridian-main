@@ -838,9 +838,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             eventType: "workflow-closed",
             gate: OperationsGateKeyDto.Approval,
             precondition: workflow => workflow.GetCloseTransitionBlocker(request),
-            command: (workflow, _, now) =>
+            command: (workflow, evidence, now) =>
             {
-                workflow.MarkClosed(now);
+                workflow.MarkClosed(request, evidence, now);
                 return null;
             },
             requireIntactAuditChain: true,
@@ -1075,7 +1075,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             evidenceLinks,
             blockers,
             nextActions,
-            EvaluateCloseReadiness(workflow));
+            EvaluateCloseReadiness(workflow),
+            workflow.ClosePackage);
     }
 
     private static IReadOnlyList<OperationsCloseChecklistTaskDto> BuildChecklist(
@@ -1143,7 +1144,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
 
     private static OperationsCloseReadinessDto EvaluateCloseReadiness(OperationsContinuityWorkflow workflow)
     {
-        var components = new List<OperationsCloseReadinessComponentDto>(capacity: 8);
+        var components = new List<OperationsCloseReadinessComponentDto>(capacity: 9);
         var blockers = new List<OperationsCloseReadinessBlockerDto>();
         AddComponent(components, blockers, "security-master", "Security Master", 15,
             workflow.SecurityMasterGate.Status == OperationsGateStatusDto.Passed &&
@@ -1152,6 +1153,13 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             "Security Master mappings, overrides, and instrument confidence must be complete.",
             OperationsGateKeyDto.SecurityMaster,
             "/workstation/data");
+        AddComponent(components, blockers, "provider-freshness", "Provider data freshness", 10,
+            workflow.BrokerIngestGate.Status == OperationsGateStatusDto.Passed &&
+                !HasBlocker(workflow.BrokerIngestGate, "BROKER_SYNC_STALE"),
+            "BROKER_SYNC_STALE",
+            "Provider data freshness is stale or has not been proven for this close.",
+            OperationsGateKeyDto.BrokerIngest,
+            "/workstation/accounting");
         AddComponent(components, blockers, "positions", "Positions", 10,
             workflow.BrokerIngestGate.Status == OperationsGateStatusDto.Passed &&
                 workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Complete,
@@ -1173,7 +1181,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             "Ledger posting state is not complete for close.",
             OperationsGateKeyDto.LedgerPosting,
             "/workstation/accounting");
-        AddComponent(components, blockers, "pricing", "Pricing", 10,
+        AddComponent(components, blockers, "pricing", "Pricing", 5,
             workflow.SecurityMasterGate.Status == OperationsGateStatusDto.Passed,
             "PRICING_COVERAGE_INCOMPLETE",
             "Pricing and valuation coverage is not complete.",
@@ -1189,7 +1197,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             "Unresolved reconciliation breaks still require disposition.",
             OperationsGateKeyDto.Reconciliation,
             "/workstation/accounting");
-        AddComponent(components, blockers, "reports", "Reports", 15,
+        AddComponent(components, blockers, "reports", "Reports", 10,
             workflow.ReportPackReadiness.IsReady &&
                 !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId),
             "EVIDENCE_INCOMPLETE",
@@ -1209,6 +1217,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         var actions = blockers.Select(static b => new OperationsNextActionDto(b.Code, b.Message, b.RouteHint, b.Gate)).ToArray();
         return new OperationsCloseReadinessDto(score == 100, severity, score, components, blockers, actions);
     }
+
+    private static bool HasBlocker(OperationsGateState gate, string blockerCode) =>
+        gate.Blockers.Any(blocker => string.Equals(blocker.Code, blockerCode, StringComparison.OrdinalIgnoreCase));
 
     private static void AddComponent(
         ICollection<OperationsCloseReadinessComponentDto> components,
@@ -1541,6 +1552,13 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 "Ledger journal candidate requires Security Master security id and provenance before posting.",
                 evidence));
         }
+        else if (!SecurityMasterProvenanceReferences(candidate.SecurityMasterProvenance, candidate.Metadata.SecurityId.Value))
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_JOURNAL_SECURITY_MASTER_PROVENANCE_MISMATCH",
+                "Ledger journal candidate Security Master provenance must reference the candidate security id before posting.",
+                evidence));
+        }
 
         if (candidate.Timestamp == default)
         {
@@ -1571,6 +1589,97 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     $"Ledger journal candidate account type '{line.AccountType}' is invalid.",
                     evidence));
             }
+
+            if (IsInstrumentBearingJournalLine(line))
+            {
+                var lineLabel = string.IsNullOrWhiteSpace(line.Symbol)
+                    ? string.IsNullOrWhiteSpace(line.AccountName)
+                        ? "instrument-bearing line"
+                        : $"account '{line.AccountName.Trim()}'"
+                    : $"symbol '{line.Symbol.Trim()}'";
+                if (string.IsNullOrWhiteSpace(line.Symbol))
+                {
+                    blockers.Add(CreateJournalCandidateBlocker(
+                        "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISSING",
+                        $"Ledger journal candidate line for {lineLabel} requires an explicit Security Master symbol before posting.",
+                        evidence));
+                }
+                else if (!string.IsNullOrWhiteSpace(candidate.Metadata?.Symbol) &&
+                    !string.Equals(line.Symbol.Trim(), candidate.Metadata.Symbol.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    blockers.Add(CreateJournalCandidateBlocker(
+                        "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISMATCH",
+                        $"Ledger journal candidate line for {lineLabel} must use the same Security Master symbol as the journal candidate metadata.",
+                        evidence));
+                }
+
+                if (line.SecurityId.GetValueOrDefault() == Guid.Empty)
+                {
+                    blockers.Add(CreateJournalCandidateBlocker(
+                        "LEDGER_LINE_SECURITY_MASTER_ID_MISSING",
+                        $"Ledger journal candidate line for {lineLabel} requires a resolved Security Master security id before posting.",
+                        evidence));
+                }
+                else
+                {
+                    var lineSecurityId = line.SecurityId.GetValueOrDefault();
+                    if (candidate.Metadata?.SecurityId is Guid candidateSecurityId && candidateSecurityId != lineSecurityId)
+                    {
+                        blockers.Add(CreateJournalCandidateBlocker(
+                            "LEDGER_LINE_SECURITY_MASTER_ID_MISMATCH",
+                            $"Ledger journal candidate line for {lineLabel} must use the same Security Master security id as the journal candidate metadata.",
+                            evidence));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(line.SecurityMasterProvenance) &&
+                        !SecurityMasterProvenanceReferences(line.SecurityMasterProvenance, lineSecurityId))
+                    {
+                        blockers.Add(CreateJournalCandidateBlocker(
+                            "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISMATCH",
+                            $"Ledger journal candidate line for {lineLabel} must carry Security Master provenance that references the resolved security id.",
+                            evidence));
+                    }
+                }
+
+                if (!line.SecurityMasterApproved)
+                {
+                    blockers.Add(CreateJournalCandidateBlocker(
+                        "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED",
+                        $"Ledger journal candidate line for {lineLabel} requires approved Security Master identity before posting.",
+                        evidence));
+                }
+
+                if (string.IsNullOrWhiteSpace(line.SecurityMasterApprovalReference))
+                {
+                    blockers.Add(CreateJournalCandidateBlocker(
+                        "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING",
+                        $"Ledger journal candidate line for {lineLabel} requires Security Master approval evidence before posting.",
+                        evidence));
+                }
+
+                if (string.IsNullOrWhiteSpace(line.SecurityMasterProvenance))
+                {
+                    blockers.Add(CreateJournalCandidateBlocker(
+                        "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISSING",
+                        $"Ledger journal candidate line for {lineLabel} requires Security Master provenance before posting.",
+                        evidence));
+                }
+
+                if (string.IsNullOrWhiteSpace(line.LedgerMappingReference))
+                {
+                    blockers.Add(CreateJournalCandidateBlocker(
+                        "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISSING",
+                        $"Ledger journal candidate line for {lineLabel} requires a Security Master ledger mapping reference before posting.",
+                        evidence));
+                }
+                else if (!LedgerMappingReferencesInstrument(line.LedgerMappingReference, line.Symbol, line.SecurityId))
+                {
+                    blockers.Add(CreateJournalCandidateBlocker(
+                        "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISMATCH",
+                        $"Ledger journal candidate line for {lineLabel} requires a Security Master ledger mapping reference tied to the resolved symbol or security id.",
+                        evidence));
+                }
+            }
         }
 
         var totalDebits = candidate.Lines?.Sum(static line => line.Debit) ?? 0m;
@@ -1594,6 +1703,62 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         string message,
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks) =>
         new(code, message, OperationsGateKeyDto.LedgerPosting, "Critical", evidenceLinks);
+
+    private static bool SecurityMasterProvenanceReferences(string? provenance, Guid securityId)
+    {
+        if (string.IsNullOrWhiteSpace(provenance) || securityId == Guid.Empty)
+        {
+            return false;
+        }
+
+        return provenance.Contains(securityId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+            provenance.Contains(securityId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool LedgerMappingReferencesInstrument(string? mappingReference, string? symbol, Guid? securityId)
+    {
+        if (string.IsNullOrWhiteSpace(mappingReference))
+        {
+            return false;
+        }
+
+        var mapping = mappingReference.Trim();
+        var resolvedSecurityId = securityId.GetValueOrDefault();
+        if (resolvedSecurityId != Guid.Empty &&
+            (mapping.Contains(resolvedSecurityId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+             mapping.Contains(resolvedSecurityId.ToString("N"), StringComparison.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(symbol) &&
+            mapping.Contains(symbol.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsInstrumentBearingJournalLine(OperationsLedgerJournalLineDto line)
+        => !string.IsNullOrWhiteSpace(line.Symbol) ||
+           line.SecurityId.GetValueOrDefault() != Guid.Empty ||
+           !string.IsNullOrWhiteSpace(line.SecurityMasterProvenance) ||
+           !string.IsNullOrWhiteSpace(line.LedgerMappingReference) ||
+           IsInstrumentAccountName(line.AccountName);
+
+    private static bool IsInstrumentAccountName(string? accountName)
+    {
+        if (string.IsNullOrWhiteSpace(accountName))
+        {
+            return false;
+        }
+
+        var normalized = accountName.Trim();
+        return normalized.Equals("Securities", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Dividend Receivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Accrued Interest Receivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Corporate Action Distribution", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Short Securities Payable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Option Premium Asset", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Option Premium Liability", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Futures MTM Settlement", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static JournalEntryMetadata? ToJournalEntryMetadata(OperationsLedgerJournalCandidateDto candidate)
     {
@@ -1622,6 +1787,12 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             tags["securityMasterProvenance"] = candidate.SecurityMasterProvenance.Trim();
         }
 
+        var securityMasterLineage = BuildSecurityMasterLineageTag(candidate.Lines);
+        if (!string.IsNullOrWhiteSpace(securityMasterLineage))
+        {
+            tags["securityMasterLineage"] = securityMasterLineage;
+        }
+
         return new JournalEntryMetadata(
             ActivityType: NormalizeOptional(metadata.ActivityType),
             Symbol: NormalizeOptional(metadata.Symbol),
@@ -1637,6 +1808,33 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             CounterpartyAccountId: NormalizeOptional(metadata.CounterpartyAccountId),
             Institution: NormalizeOptional(metadata.Institution),
             Tags: tags.Count == 0 ? null : tags);
+    }
+
+    private static string? BuildSecurityMasterLineageTag(IReadOnlyList<OperationsLedgerJournalLineDto>? lines)
+    {
+        var mappedLines = (lines ?? [])
+            .Where(static line => !string.IsNullOrWhiteSpace(line.Symbol))
+            .Select(static line =>
+            {
+                var symbol = line.Symbol!.Trim();
+                var securityIdValue = line.SecurityId.GetValueOrDefault();
+                var securityId = securityIdValue == Guid.Empty
+                    ? "missing"
+                    : securityIdValue.ToString("N");
+                var provenance = string.IsNullOrWhiteSpace(line.SecurityMasterProvenance)
+                    ? "missing"
+                    : line.SecurityMasterProvenance.Trim();
+                var mapping = string.IsNullOrWhiteSpace(line.LedgerMappingReference)
+                    ? "missing"
+                    : line.LedgerMappingReference.Trim();
+                var approval = string.IsNullOrWhiteSpace(line.SecurityMasterApprovalReference)
+                    ? "missing"
+                    : line.SecurityMasterApprovalReference.Trim();
+                return $"{symbol}:{securityId}:{mapping}:{approval}:{provenance}";
+            })
+            .ToArray();
+
+        return mappedLines.Length == 0 ? null : string.Join("|", mappedLines);
     }
 
     private static string NormalizePolicy(string value) =>

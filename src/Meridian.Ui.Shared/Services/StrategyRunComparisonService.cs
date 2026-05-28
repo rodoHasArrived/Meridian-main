@@ -89,6 +89,14 @@ public sealed class StrategyRunComparisonService
                 "Modified"))
             .ToArray();
 
+        var comparisonRows = await _readService
+            .CompareRunsAsync([baseDetail.Summary.RunId, targetDetail.Summary.RunId], ct)
+            .ConfigureAwait(false);
+        var baseComparison = comparisonRows.FirstOrDefault(row =>
+            string.Equals(row.RunId, baseDetail.Summary.RunId, StringComparison.Ordinal));
+        var targetComparison = comparisonRows.FirstOrDefault(row =>
+            string.Equals(row.RunId, targetDetail.Summary.RunId, StringComparison.Ordinal));
+
         var parameterChanges = BuildParameterDiff(baseDetail.Parameters, targetDetail.Parameters);
         var metrics = new MetricsDiff(
             NetPnlDelta: (targetDetail.Summary.NetPnl ?? 0m) - (baseDetail.Summary.NetPnl ?? 0m),
@@ -97,11 +105,28 @@ public sealed class StrategyRunComparisonService
             BaseNetPnl: baseDetail.Summary.NetPnl,
             TargetNetPnl: targetDetail.Summary.NetPnl,
             BaseTotalReturn: baseDetail.Summary.TotalReturn,
-            TargetTotalReturn: targetDetail.Summary.TotalReturn);
+            TargetTotalReturn: targetDetail.Summary.TotalReturn,
+            FinalEquityDelta: SubtractNullable(targetDetail.Summary.FinalEquity, baseDetail.Summary.FinalEquity),
+            MaxDrawdownDelta: SubtractNullable(targetComparison?.MaxDrawdown, baseComparison?.MaxDrawdown),
+            SharpeRatioDelta: SubtractNullable(targetComparison?.SharpeRatio, baseComparison?.SharpeRatio),
+            BaseFinalEquity: baseDetail.Summary.FinalEquity,
+            TargetFinalEquity: targetDetail.Summary.FinalEquity,
+            BaseMaxDrawdown: baseComparison?.MaxDrawdown,
+            TargetMaxDrawdown: targetComparison?.MaxDrawdown,
+            BaseSharpeRatio: baseComparison?.SharpeRatio,
+            TargetSharpeRatio: targetComparison?.SharpeRatio);
 
         var baseCompleteness = BuildArtifactCompleteness(baseDetail.Summary, baseDetail);
         var targetCompleteness = BuildArtifactCompleteness(targetDetail.Summary, targetDetail);
-        var compatibilityWarnings = BuildDiffWarnings(baseDetail, targetDetail, baseCompleteness, targetCompleteness);
+        var baseStrategyVersion = ResolveStrategyVersion(baseDetail.Parameters);
+        var targetStrategyVersion = ResolveStrategyVersion(targetDetail.Parameters);
+        var compatibilityWarnings = BuildDiffWarnings(baseDetail, targetDetail, baseCompleteness, targetCompleteness)
+            .ToList();
+        if (!string.Equals(baseStrategyVersion, targetStrategyVersion, StringComparison.Ordinal))
+        {
+            compatibilityWarnings.Add(
+                $"Strategy version comparison active ({baseStrategyVersion ?? "unknown"} vs {targetStrategyVersion ?? "unknown"}); validate parameter and source-code deltas before promotion decisions.");
+        }
 
         return new StrategyRunDiff(
             BaseRunId: baseDetail.Summary.RunId,
@@ -115,8 +140,24 @@ public sealed class StrategyRunComparisonService
             Metrics: metrics,
             CompatibilityWarnings: compatibilityWarnings,
             BaseArtifactCompleteness: baseCompleteness,
-            TargetArtifactCompleteness: targetCompleteness);
+            TargetArtifactCompleteness: targetCompleteness,
+            BaseMode: baseDetail.Summary.Mode,
+            TargetMode: targetDetail.Summary.Mode,
+            BaseEngine: baseDetail.Summary.Engine,
+            TargetEngine: targetDetail.Summary.Engine,
+            BaseStrategyId: baseDetail.Summary.StrategyId,
+            TargetStrategyId: targetDetail.Summary.StrategyId,
+            BaseStrategyVersion: baseStrategyVersion,
+            TargetStrategyVersion: targetStrategyVersion,
+            LineageRelation: ResolveLineageRelation(baseDetail, targetDetail),
+            CompatibilityLevel: ResolveCompatibilityLevel(baseDetail, targetDetail, baseCompleteness, targetCompleteness));
     }
+
+    private static decimal? SubtractNullable(decimal? target, decimal? baseline) =>
+        target.HasValue && baseline.HasValue ? target.Value - baseline.Value : null;
+
+    private static double? SubtractNullable(double? target, double? baseline) =>
+        target.HasValue && baseline.HasValue ? target.Value - baseline.Value : null;
 
     private static IReadOnlyList<ParameterDiff> BuildParameterDiff(
         IReadOnlyDictionary<string, string> baseParams,
@@ -163,5 +204,60 @@ public sealed class StrategyRunComparisonService
             warnings.Add("Ledger evidence is incomplete for at least one run.");
 
         return warnings;
+    }
+
+    private static string? ResolveStrategyVersion(IReadOnlyDictionary<string, string> parameters)
+    {
+        foreach (var key in new[]
+        {
+            "strategyVersion",
+            "strategy.version",
+            "documentVersion",
+            "designVersion",
+            "version",
+            "commit",
+            "commitSha"
+        })
+        {
+            if (parameters.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value))
+                return value.Trim();
+        }
+
+        return null;
+    }
+
+    private static string ResolveLineageRelation(StrategyRunDetail baseRun, StrategyRunDetail targetRun)
+    {
+        if (string.Equals(targetRun.Summary.ParentRunId, baseRun.Summary.RunId, StringComparison.Ordinal))
+            return "DirectChild";
+
+        if (string.Equals(baseRun.Summary.ParentRunId, targetRun.Summary.RunId, StringComparison.Ordinal))
+            return "DirectParent";
+
+        if (string.Equals(baseRun.Summary.StrategyId, targetRun.Summary.StrategyId, StringComparison.Ordinal))
+            return "SameStrategy";
+
+        return "Unrelated";
+    }
+
+    private static string ResolveCompatibilityLevel(
+        StrategyRunDetail baseRun,
+        StrategyRunDetail targetRun,
+        StrategyRunArtifactCompleteness baseCompleteness,
+        StrategyRunArtifactCompleteness targetCompleteness)
+    {
+        if (!string.Equals(baseRun.Summary.StrategyId, targetRun.Summary.StrategyId, StringComparison.Ordinal))
+            return "CrossStrategy";
+
+        if (baseRun.Summary.Engine != targetRun.Summary.Engine)
+            return "CrossEngine";
+
+        if (!baseCompleteness.HasFills || !targetCompleteness.HasFills ||
+            !baseCompleteness.HasLedger || !targetCompleteness.HasLedger)
+        {
+            return "EvidenceLimited";
+        }
+
+        return "Compatible";
     }
 }

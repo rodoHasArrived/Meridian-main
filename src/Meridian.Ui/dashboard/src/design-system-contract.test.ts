@@ -22,6 +22,10 @@ function readReferenceWorkbenchPreview() {
   return readFileSync(resolve(process.cwd(), "../../../Meridian Design System/preview/reference-workbench.html"), "utf8");
 }
 
+function readRepositoryFile(path: string) {
+  return readFileSync(resolve(process.cwd(), "../../..", path), "utf8");
+}
+
 describe("dashboard design-system contract", () => {
   it("keeps the cockpit color tokens aligned with the design-system source", () => {
     const styles = readDashboardStyles();
@@ -162,5 +166,41 @@ describe("dashboard design-system contract", () => {
     expect(viewModel).toContain("Cash-flow and factor schedules");
     expect(viewModel).toContain("statusAnnouncement");
     expect(viewModel).toContain("emptyText");
+  });
+
+  it("keeps evidence semantic states aligned across browser, WPF, docs, and screenshot gates", () => {
+    const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/ui/badge.tsx");
+    const evidenceScreen = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx");
+    const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
+    const wpfThemeTokens = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeTokens.xaml");
+    const wpfThemeSurfaces = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeSurfaces.xaml");
+    const designDocs = readRepositoryFile("docs/design/design-system-usage.md");
+    const screenshotDocs = readRepositoryFile("docs/screenshots/README.md");
+    const screenshotValidator = readRepositoryFile("scripts/dev/validate-screenshot-captures.py");
+
+    for (const variant of ["success", "warning", "danger", "outline"]) {
+      expect(badge).toContain(`${variant}:`);
+    }
+
+    expect(evidenceViewModel).toContain('export type EvidenceStatusTone = "success" | "warning" | "danger" | "muted";');
+    expect(evidenceScreen).toContain('Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline">');
+    expect(evidenceScreen).toContain('muted: "outline"');
+    expect(evidenceScreen).toContain("badgeVariant[panel.statusTone]");
+    expect(evidenceScreen).toContain("badgeVariant[row.tone]");
+
+    for (const state of ["Success", "Warning", "Danger"]) {
+      expect(wpfThemeTokens).toContain(`${state}ColorBrush`);
+      expect(wpfThemeSurfaces).toContain(`Binding=\"{Binding Tone}\" Value=\"${state}\"`);
+      expect(wpfThemeSurfaces).toContain(`Badge${state}BackgroundBrush`);
+      expect(wpfThemeSurfaces).toContain(`Badge${state}ForegroundBrush`);
+    }
+
+    expect(wpfThemeSurfaces).toContain('Binding="{Binding Tone}" Value="Info"');
+    expect(designDocs).toContain("success, warning, danger, info, and muted");
+    expect(designDocs).toContain("manifest-orphan captures");
+    expect(screenshotDocs).toContain("semantic-state evidence");
+    expect(screenshotValidator).toContain("capture is likely blank");
+    expect(screenshotValidator).toContain("capture is likely low-entropy");
+    expect(screenshotValidator).toContain("Manifest is missing expected");
   });
 });

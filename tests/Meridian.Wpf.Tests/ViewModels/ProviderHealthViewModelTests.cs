@@ -136,6 +136,31 @@ public sealed class ProviderHealthViewModelTests
     }
 
     [Fact]
+    public void ProviderHealthManagementSection_ShouldOwnSelectionAndInspectorStateWithAdapterBindings()
+    {
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\ProviderHealthViewModel.cs"));
+        var section = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\ProviderHealthViewModel.Sections.cs"));
+
+        section.Should().Contain("internal sealed class ProviderHealthManagementSectionViewModel");
+        section.Should().Contain("public ProviderManagementRowModel? SelectedProviderManagementRow { get; set; }");
+        section.Should().Contain("public string ProviderManagementStatusText { get; set; } = \"Provider management evidence is loading.\";");
+        section.Should().Contain("public string ProviderVerificationStatusText { get; set; }");
+        section.Should().Contain("public WorkstationCommandGroupModel ProviderManagementCommandGroup { get; set; } = new();");
+        section.Should().Contain("public WorkstationTableModel<ProviderManagementRowModel> ProviderManagementTable { get; set; }");
+        section.Should().Contain("public InspectorPanelModel SelectedProviderInspector { get; set; }");
+        section.Should().Contain("public DiagnosticsChecklistModel SelectedProviderDiagnostics { get; set; }");
+        section.Should().Contain("public RoutingMatrixModel SelectedProviderRoutingMatrix { get; set; }");
+        viewModel.Should().Contain("private readonly ProviderHealthManagementSectionViewModel _managementSection");
+        viewModel.Should().Contain("internal ProviderHealthManagementSectionViewModel ManagementSection => _managementSection;");
+        viewModel.Should().Contain("get => _managementSection.SelectedProviderManagementRow;");
+        viewModel.Should().Contain("get => _managementSection.ProviderManagementTable;");
+        viewModel.Should().Contain("SetProviderHealthSectionProperty(_managementSection.SelectedProviderRoutingMatrix, value, next => _managementSection.SelectedProviderRoutingMatrix = next)");
+        viewModel.Should().NotContain("private ProviderManagementRowModel? _selectedProviderManagementRow");
+        viewModel.Should().NotContain("private string _providerManagementStatusText");
+        viewModel.Should().NotContain("private InspectorPanelModel _selectedProviderInspector");
+    }
+
+    [Fact]
     public void BuildProviderManagementRows_MergesStreamingAndBackfillProvidersWithoutDuplicatingProviderFamilies()
     {
         var streamingProviders = new[]

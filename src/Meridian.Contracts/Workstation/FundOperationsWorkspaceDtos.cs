@@ -113,7 +113,8 @@ public sealed record FundReportingSummaryDto(
     IReadOnlyList<string> RecommendedProfiles,
     IReadOnlyList<string> ReportPackTargets,
     IReadOnlyList<FundReportingProfileDto> Profiles,
-    string Summary);
+    string Summary,
+    IReadOnlyList<ReportPackWorkflowRecordDto>? WorkflowRecords = null);
 
 /// <summary>
 /// Shared governance workspace payload combining ledger, banking, cash, reconciliation,
@@ -214,7 +215,101 @@ public sealed record FundReportPackLineagePointerDto(
     string ScopeType,
     string ScopeKey,
     string EvidenceType,
-    string EvidenceId);
+    string EvidenceId,
+    string? DisplayLabel = null,
+    string? Route = null,
+    string? SourceSystem = null,
+    IReadOnlyList<string>? RelatedEvidenceIds = null,
+    int? EvidenceCount = null,
+    decimal? Amount = null,
+    DateTimeOffset? CapturedAt = null);
+
+public sealed record LedgerAmountProvenanceEvidenceDto(
+    string EvidenceType,
+    string EvidenceId,
+    string? DisplayLabel = null,
+    string? Route = null,
+    string? SourceSystem = null,
+    IReadOnlyList<string>? RelatedEvidenceIds = null,
+    int? EvidenceCount = null,
+    decimal? Amount = null,
+    DateTimeOffset? CapturedAt = null,
+    string? ProviderEventId = null,
+    string? ProviderEventType = null,
+    string? ProviderEvidenceSource = null,
+    string? RequiredFeed = null,
+    string? SecurityId = null,
+    string? LedgerEffectKind = null,
+    decimal? PrincipalAmount = null,
+    decimal? IncomeAmount = null,
+    int? JournalPreviewLineCount = null);
+
+public sealed record LedgerAmountSecurityMasterLinkDto(
+    string Symbol,
+    string? Route,
+    IReadOnlyList<string> RelatedEvidenceIds,
+    int EvidenceCount,
+    DateTimeOffset? CapturedAt = null,
+    Guid? SecurityId = null);
+
+public sealed record LedgerAmountReconciliationCaseDto(
+    string CaseId,
+    string Status,
+    string LifecycleState,
+    string? Owner,
+    string? Team,
+    string? RequiredSignoffRole,
+    string? SignoffStatus,
+    string? ExceptionRoute,
+    string? RecommendedAction,
+    DateTimeOffset DetectedAt,
+    DateTimeOffset LastUpdatedAt);
+
+public sealed record LedgerAmountReconciliationStateDto(
+    int ReconciliationRunCount,
+    int OpenBreakCount,
+    string? Route,
+    IReadOnlyList<string> RelatedCaseIds,
+    IReadOnlyList<LedgerAmountReconciliationCaseDto>? RelatedCases = null);
+
+public sealed record LedgerAmountApprovalStateDto(
+    GovernanceReportPackStatusDto ReportStatus,
+    string? LatestApprovalActor,
+    DateTimeOffset? LatestApprovalAt,
+    int LifecycleEventCount);
+
+public sealed record LedgerAmountReportUsageDto(
+    Guid ReportId,
+    string DisplayName,
+    GovernanceReportKindDto ReportKind,
+    string FundProfileId,
+    DateTimeOffset AsOf,
+    DateTimeOffset GeneratedAt,
+    string Currency,
+    string? ReportRoute);
+
+public sealed record LedgerAmountStrategyRunLinkDto(
+    string RunId,
+    string? DisplayLabel = null,
+    string? Route = null,
+    string? SourceSystem = null,
+    DateTimeOffset? CapturedAt = null,
+    bool IsLineScoped = false);
+
+public sealed record LedgerAmountProvenanceDetailDto(
+    Guid ReportId,
+    string ScopeKey,
+    string AccountName,
+    string? Symbol,
+    decimal Amount,
+    string Currency,
+    IReadOnlyList<LedgerAmountProvenanceEvidenceDto> Evidence,
+    LedgerAmountSecurityMasterLinkDto? SecurityMaster,
+    LedgerAmountReconciliationStateDto Reconciliation,
+    LedgerAmountApprovalStateDto Approval,
+    LedgerAmountReportUsageDto ReportUsage,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<LedgerAmountStrategyRunLinkDto>? StrategyRuns = null);
 
 /// <summary>
 /// Structured readiness issue captured when a governed report pack is generated.
@@ -325,7 +420,10 @@ public sealed record ReportPackLineProvenanceDto(
     string EvidenceId,
     string? RunId = null,
     string? LedgerEntryId = null,
-    string? ReconciliationCaseId = null);
+    string? ReconciliationCaseId = null,
+    string? ReportValue = null,
+    string? SourceSessionId = null,
+    string? ReconciliationRunId = null);
 public sealed record ReportPackPublicationManifestDto(
     string ManifestId,
     string RetainedManifestPath,
@@ -340,12 +438,23 @@ public sealed record ReportPackPublishRequestDto(
     string RetainedManifestPath,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
     string? Note = null);
+public sealed record ReportPackCreateRequestDto(
+    string FundProfileId,
+    string FundAccountId,
+    string Period,
+    VersionedReportTemplateIdDto TemplateId,
+    IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null);
 public sealed record ReportPackRestatementMetadataDto(
     string ReasonCode,
     string Approver,
     Guid PriorVersionReportId,
     IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
     IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+public sealed record ReportPackRestateRequestDto(
+    string ReasonCode,
+    Guid PriorVersionReportId,
+    IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
+    string? Approver = null);
 public sealed record ReportPackWorkflowRecordDto(
     Guid ReportId,
     string FundProfileId,

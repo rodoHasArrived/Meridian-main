@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-27
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Wpf
@@ -47,7 +47,18 @@ cash-flow drill-in presents the same run, portfolio, ledger, cash-flow, reconcil
 posture used by shared workstation continuity endpoints.
 Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
 queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
-note, audit event, and pending close sign-off posture visible in the retained detail panel.
+note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
+visible in the retained detail panel. The WPF queue projection carries the same source systems,
+probable cause, ledger impact, suggested next action, and evidence links as the browser governance
+detail so desktop operators do not rebuild reconciliation narratives locally.
+Shared close-workflow target tags stay explicit in desktop routing: `OperationsContinuity` and
+`OperationsClose` are WPF aliases for the Fund Operations page, with navigation parameters that
+land on the overview and report-pack readiness tabs while the browser resolves both tags to
+`/accounting/operations-continuity`.
+Shared evidence workflow target routing is also explicit: `EvidenceWorkbench` resolves to the WPF
+Fund Audit Trail surface while the browser resolves the same shared tag to `/reporting/evidence`.
+The route-registry parity test covers all built-in workflow entry and action target tags so shared
+workflow catalog updates cannot silently become browser-only or desktop-only.
 Shared workstation affordance primitives under `Workstation/Models` and `Workstation/Controls`
 standardize action posture, readiness tone, evidence links, recovery actions, and sign-off
 requirements for W4 close/report surfaces. Fund Ledger reconciliation and Report Pack handoff

@@ -37,6 +37,64 @@ export interface FeatureCapabilityToggleRequest {
   isEnabled: boolean;
 }
 
+export interface RolePermissionCatalog {
+  roles: RolePermissionProfile[];
+  permissions: PermissionCatalogItem[];
+}
+
+export interface RolePermissionProfile {
+  role: string;
+  displayName: string;
+  description: string;
+  isBuiltIn: boolean;
+  permissions: string[];
+  permissionMask: number;
+  baseRole?: string | null;
+  createdBy?: string | null;
+  createdAtUtc?: string | null;
+  updatedBy?: string | null;
+  updatedAtUtc?: string | null;
+  lastRationale?: string | null;
+  lastAuditId?: string | null;
+}
+
+export interface PermissionCatalogItem {
+  name: string;
+  value: number;
+  group: string;
+  description: string;
+}
+
+export interface RolePermissionProfileUpsertRequest {
+  profileName: string;
+  displayName: string;
+  description?: string | null;
+  baseRole: string;
+  permissionNames: string[];
+  requestedBy: string;
+  rationale: string;
+  correlationId?: string | null;
+}
+
+export interface RolePermissionProfileAuditEvent {
+  auditId: string;
+  eventType: string;
+  occurredAtUtc: string;
+  actor: string;
+  rationale: string;
+  correlationId: string;
+  profileName: string;
+  baseRole: string;
+  permissionNames: string[];
+  permissionMask: number;
+}
+
+export interface RolePermissionProfileUpsertResult {
+  profile: RolePermissionProfile;
+  catalog: RolePermissionCatalog;
+  auditEvent: RolePermissionProfileAuditEvent;
+}
+
 export interface WorkspaceSummary {
   key: WorkspaceKey;
   label: string;
@@ -532,6 +590,7 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   approvals: OperationsApproval[];
   reportPackReadiness: OperationsReportPackReadiness;
   closeChecklist: OperationsCloseChecklistTask[];
+  closePackage: OperationsClosePackagePublication | null;
   closeReadiness: OperationsCloseReadiness | null;
   evidenceLinks: OperationsEvidenceLink[];
   blockers: OperationsWorkflowBlocker[];
@@ -542,6 +601,7 @@ export interface OperationsCloseChecklistTask {
   gate: OperationsGateKey;
   label: string;
   owner: string;
+  requiredEvidence: string;
   dueDate: string | null;
   requiredApprovalCount: number;
   expiresOn: string | null;
@@ -552,6 +612,25 @@ export interface OperationsCloseChecklistTask {
   canAcknowledge: boolean;
   acknowledgedAtUtc: string | null;
   acknowledgedBy: string | null;
+}
+
+export interface OperationsClosePackagePublication {
+  closePackageId: string;
+  reportPackId: string;
+  retainedManifestId: string;
+  retainedManifestRoute: string;
+  evidenceHash: string;
+  publishedAtUtc: string;
+  publishedBy: string;
+  signOffRationale: string;
+  evidenceLinks: OperationsEvidenceLink[];
+  checklistControlApprovals: OperationsChecklistControlApproval[];
+}
+
+export interface OperationsChecklistControlApproval {
+  taskId: string;
+  approvedBy: string;
+  approvedAtUtc: string;
 }
 
 export interface OperationsCloseReadiness {
@@ -568,6 +647,205 @@ export interface OperationsCloseReadinessBlocker {
   message: string;
   gate: OperationsGateKey | null;
   routeHint: string | null;
+}
+
+export interface OperationsApprovalPolicyMatrix {
+  policyId: string;
+  version: string;
+  generatedAtUtc: string;
+  rows: OperationsApprovalPolicyMatrixRow[];
+}
+
+export interface OperationsApprovalPolicyMatrixRow {
+  policyKey: string;
+  workflowArea: string;
+  action: string;
+  gate: OperationsGateKey;
+  trigger: string;
+  requiredPermission: string;
+  submitterRole: string;
+  reviewerRole: string;
+  requiredDistinctApprovals: number;
+  requiresIndependentReviewer: boolean;
+  requiresReportPack: boolean;
+  requiresChecklistControlApprovals: boolean;
+  evidenceRequirement: string;
+  auditEventType: string;
+  route: string;
+  severity: string;
+}
+
+export interface OperationsApprovalPolicyRuleUpsertRequest extends OperationsApprovalPolicyMatrixRow {
+  requestedBy: string;
+  rationale: string;
+  correlationId?: string | null;
+}
+
+export interface OperationsApprovalPolicyRuleAuditEvent {
+  auditId: string;
+  eventType: string;
+  occurredAtUtc: string;
+  actor: string;
+  rationale: string;
+  correlationId: string;
+  policyKey: string;
+  action: string;
+  gate: OperationsGateKey;
+  requiredDistinctApprovals: number;
+  requiresIndependentReviewer: boolean;
+  requiresReportPack: boolean;
+  requiresChecklistControlApprovals: boolean;
+}
+
+export interface OperationsApprovalPolicyRuleUpsertResult {
+  rule: OperationsApprovalPolicyMatrixRow;
+  matrix: OperationsApprovalPolicyMatrix;
+  auditEvent: OperationsApprovalPolicyRuleAuditEvent;
+}
+
+export interface OperationsCloseCalendar {
+  generatedAtUtc: string;
+  items: OperationsCloseCalendarItem[];
+}
+
+export interface OperationsCloseCalendarItem {
+  workflowId: string;
+  fundAccountId: string;
+  periodId: string;
+  status: OperationsWorkflowStatus;
+  version: number;
+  nextDueDate: string | null;
+  nextDueTaskId: string | null;
+  nextDueLabel: string | null;
+  nextDueOwner: string | null;
+  readinessSeverity: string | null;
+  readinessScore: number | null;
+  isReadyToClose: boolean;
+  blockerCount: number;
+  openChecklistCount: number;
+  requiredApprovalCount: number;
+  completedApprovalCount: number;
+  route: string;
+}
+
+export interface OperationsCloseCalendarItemUpsertRequest {
+  workflowId: string;
+  taskId: string;
+  dueDate: string;
+  owner: string;
+  requestedBy: string;
+  rationale: string;
+  correlationId?: string | null;
+}
+
+export interface OperationsCloseCalendarItemAuditEvent {
+  auditId: string;
+  eventType: string;
+  occurredAtUtc: string;
+  actor: string;
+  rationale: string;
+  correlationId: string;
+  workflowId: string;
+  fundAccountId: string;
+  periodId: string;
+  taskId: string;
+  dueDate: string;
+  owner: string;
+}
+
+export interface OperationsCloseCalendarItemUpsertResult {
+  item: OperationsCloseCalendarItem;
+  calendar: OperationsCloseCalendar;
+  auditEvent: OperationsCloseCalendarItemAuditEvent;
+}
+
+export interface LedgerMappingWorkbench {
+  asOf: string;
+  accountCount: number;
+  mappedAccountCount: number;
+  unmappedAccountCount: number;
+  ledgerGroups: LedgerMappingLedgerGroup[];
+  accounts: LedgerMappingAccount[];
+}
+
+export interface LedgerMappingAssignmentRequest {
+  accountId: string;
+  ledgerGroupId: string;
+  requestedBy: string;
+  rationale: string;
+  effectiveFrom?: string | null;
+  correlationId?: string | null;
+  assignmentId?: string | null;
+}
+
+export interface LedgerMappingAssignmentAuditEvent {
+  auditId: string;
+  eventType: string;
+  occurredAtUtc: string;
+  actor: string;
+  rationale: string;
+  correlationId: string;
+  accountId: string;
+  accountCode: string;
+  fromLedgerGroupId: string | null;
+  toLedgerGroupId: string;
+  assignmentId: string;
+}
+
+export interface FundStructureAssignment {
+  assignmentId: string;
+  nodeId: string;
+  assignmentType: string;
+  assignmentReference: string;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  isPrimary: boolean;
+}
+
+export interface LedgerMappingAssignmentResult {
+  assignment: FundStructureAssignment;
+  account: LedgerMappingAccount;
+  auditEvent: LedgerMappingAssignmentAuditEvent;
+  workbench: LedgerMappingWorkbench;
+}
+
+export interface LedgerMappingLedgerGroup {
+  ledgerGroupId: string;
+  displayName: string;
+  accountIds: string[];
+  investmentPortfolioIds: string[];
+  clientIds: string[];
+  fundIds: string[];
+  sleeveIds: string[];
+  vehicleIds: string[];
+}
+
+export interface LedgerMappingAccount {
+  accountId: string;
+  accountCode: string;
+  displayName: string;
+  accountType: string;
+  operationalStatus: string;
+  baseCurrency: string;
+  institution: string | null;
+  fundId: string | null;
+  sleeveId: string | null;
+  vehicleId: string | null;
+  entityId: string | null;
+  portfolioId: string | null;
+  ledgerReference: string | null;
+  mapping: LedgerMappingResolution;
+  recommendedAction: string;
+}
+
+export interface LedgerMappingResolution {
+  ledgerGroupId: string;
+  source: string;
+  sourceNodeId: string | null;
+  sourceNodeKind: string | null;
+  sourceReference: string | null;
+  requiresUserMapping: boolean;
+  issueCodes: string[];
 }
 
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
@@ -595,6 +873,8 @@ export interface EvidenceArtifactRef {
   generatedAt: string;
   hash: string | null;
   retained: boolean;
+  canonicalSubjectKind?: string | null;
+  canonicalSubjectId?: string | null;
 }
 
 export interface EvidenceNode {
@@ -616,6 +896,55 @@ export interface EvidenceEdge {
   reason: string;
 }
 
+export type EvidenceValidationSeverity = "Info" | "Warning" | "Critical";
+
+export interface EvidenceValidationIssue {
+  code: string;
+  severity: EvidenceValidationSeverity;
+  message: string;
+  evidenceId?: string | null;
+  evidenceKind?: string | null;
+  sourceSystem?: string | null;
+  relatedWorkItemId?: string | null;
+}
+
+export interface EvidenceSlaPolicy {
+  policyId: string;
+  evidenceKind: string;
+  workflowKind: string;
+  freshnessMinutes: number;
+  breachSeverity: EvidenceValidationSeverity;
+  requiredForAssurance: boolean;
+  description: string;
+}
+
+export interface EvidenceSlaAssessment {
+  policyId: string;
+  evidenceId: string;
+  evidenceKind: string;
+  sourceSystem: string;
+  ageMinutes: number | null;
+  freshnessMinutes: number;
+  isBreached: boolean;
+  severity: EvidenceValidationSeverity;
+  message: string;
+}
+
+export interface EvidenceAssuranceComponent {
+  componentId: string;
+  label: string;
+  score: number;
+  status: EvidenceStatus;
+  detail: string;
+}
+
+export interface MeridianAssuranceScore {
+  score: number;
+  status: EvidenceStatus;
+  components: EvidenceAssuranceComponent[];
+  slaAssessments: EvidenceSlaAssessment[];
+}
+
 export interface EvidenceCompleteness {
   score: number;
   status: EvidenceStatus;
@@ -624,6 +953,13 @@ export interface EvidenceCompleteness {
   missingIds: string[];
   staleIds: string[];
   blockingWorkItemIds: string[];
+  validationIssues?: EvidenceValidationIssue[];
+  blockingIssueCount?: number;
+  warningIssueCount?: number;
+  orphanEvidenceIds?: string[];
+  slaPolicies?: EvidenceSlaPolicy[];
+  slaAssessments?: EvidenceSlaAssessment[];
+  assuranceScore?: MeridianAssuranceScore;
 }
 
 export interface EvidencePacket {
@@ -664,6 +1000,32 @@ export interface EvidencePacketExportRequest {
   includeWarnings?: boolean;
 }
 
+export interface EvidenceVaultArtifact {
+  artifactId: string;
+  kind: string;
+  relativePath: string;
+  contentHashSha256: string;
+  sizeBytes: number;
+  retainedAt: string;
+  sourcePath: string | null;
+  sourceRoute: string | null;
+  canonicalSubjectKind: string | null;
+  canonicalSubjectId: string | null;
+}
+
+export interface EvidenceVaultIdentity {
+  vaultId: string;
+  subjectKind: string;
+  subjectId: string;
+  manifestPath: string;
+  manifestRoute: string;
+  retainedAt: string;
+  contentHashSha256: string;
+  schemaVersion: number;
+  storageKind: string;
+  artifacts: EvidenceVaultArtifact[];
+}
+
 export interface EvidencePacketExportResponse {
   subjectKind: string;
   subjectId: string;
@@ -673,6 +1035,7 @@ export interface EvidencePacketExportResponse {
   evidenceCount: number;
   warningCount: number;
   retained: boolean;
+  vaultIdentity?: EvidenceVaultIdentity | null;
 }
 
 export type ChiefOfStaffIntentKind =
@@ -1342,12 +1705,98 @@ export interface GovernanceReportingProfile {
   dataDictionary: boolean;
 }
 
+export type ReportPackWorkflowState =
+  | "Draft"
+  | "Validated"
+  | "PendingApproval"
+  | "Approved"
+  | "Published"
+  | "Restated"
+  | "Archived";
+
+export interface VersionedReportTemplateId {
+  name: string;
+  version: number;
+}
+
+export interface ReportPackAuditEvent {
+  at: string;
+  actor: string;
+  action: string;
+  fromState: ReportPackWorkflowState;
+  toState: ReportPackWorkflowState;
+  note: string | null;
+}
+
+export interface ReportPackEvidenceLink {
+  evidenceId: string;
+  label: string;
+  route: string | null;
+  source: string;
+  capturedAtUtc: string | null;
+}
+
+export interface ReportPackChangedLine {
+  lineKey: string;
+  previousValue: string;
+  currentValue: string;
+  evidenceLinks: ReportPackEvidenceLink[] | null;
+}
+
+export interface ReportPackLineProvenance {
+  lineKey: string;
+  sourceKind: string;
+  sourceId: string;
+  evidenceId: string;
+  runId: string | null;
+  ledgerEntryId: string | null;
+  reconciliationCaseId: string | null;
+  reportValue: string | null;
+  sourceSessionId: string | null;
+  reconciliationRunId: string | null;
+}
+
+export interface ReportPackPublicationManifest {
+  manifestId: string;
+  retainedManifestPath: string;
+  evidenceHash: string;
+  signedOffBy: string;
+  signedOffAt: string;
+  evidenceLinks: ReportPackEvidenceLink[];
+}
+
+export interface ReportPackRestatementMetadata {
+  reasonCode: string;
+  approver: string;
+  priorVersionReportId: string;
+  changedLines: ReportPackChangedLine[];
+  evidenceLinks: ReportPackEvidenceLink[] | null;
+}
+
+export interface ReportPackWorkflowRecord {
+  reportId: string;
+  fundProfileId: string;
+  fundAccountId: string;
+  period: string;
+  templateId: VersionedReportTemplateId;
+  state: ReportPackWorkflowState;
+  version: number;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  auditTrail: ReportPackAuditEvent[];
+  restatement: ReportPackRestatementMetadata | null;
+  lineProvenance: ReportPackLineProvenance[] | null;
+  publication: ReportPackPublicationManifest | null;
+}
+
 export interface GovernanceReportingSummary {
   profileCount: number;
   recommendedProfiles: string[];
   profiles: GovernanceReportingProfile[];
   reportPackTargets: string[];
   summary: string;
+  workflowRecords?: ReportPackWorkflowRecord[] | null;
 }
 
 export interface GovernanceWorkspaceResponse {
@@ -1397,6 +1846,15 @@ export interface ExportAnalysisFile {
 
 export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed";
 
+export interface ReconciliationBreakExplanation {
+  summary: string;
+  sourceSystems: string[];
+  probableCause: string;
+  ledgerImpact: string;
+  suggestedNextAction: string;
+  evidenceLinks: string[];
+}
+
 export interface ReconciliationBreakQueueItem {
   breakId: string;
   runId: string;
@@ -1423,6 +1881,7 @@ export interface ReconciliationBreakQueueItem {
   routingTarget?: string | null;
   routingDetail?: string | null;
   recommendedAction?: string | null;
+  breakExplanation?: ReconciliationBreakExplanation | null;
 }
 
 export interface ReviewReconciliationBreakRequest {
@@ -1468,6 +1927,16 @@ export interface RunComparisonRow {
   promotionState: string;
   hasLedger: boolean;
   hasAuditTrail: boolean;
+  compatibilityWarnings?: string[] | null;
+  artifactCompleteness?: StrategyRunArtifactCompleteness | null;
+}
+
+export interface StrategyRunArtifactCompleteness {
+  hasPortfolio: boolean;
+  hasLedger: boolean;
+  hasCashFlow: boolean;
+  hasFills: boolean;
+  hasAuditTrail: boolean;
 }
 
 // --- Run diff types ---
@@ -1495,6 +1964,15 @@ export interface MetricsDiff {
   targetNetPnl: number | null;
   baseTotalReturn: number | null;
   targetTotalReturn: number | null;
+  finalEquityDelta?: number | null;
+  maxDrawdownDelta?: number | null;
+  sharpeRatioDelta?: number | null;
+  baseFinalEquity?: number | null;
+  targetFinalEquity?: number | null;
+  baseMaxDrawdown?: number | null;
+  targetMaxDrawdown?: number | null;
+  baseSharpeRatio?: number | null;
+  targetSharpeRatio?: number | null;
 }
 
 export interface RunDiff {
@@ -1507,6 +1985,19 @@ export interface RunDiff {
   modifiedPositions: PositionDiffEntry[];
   parameterChanges: ParameterDiff[];
   metrics: MetricsDiff;
+  compatibilityWarnings?: string[] | null;
+  baseArtifactCompleteness?: StrategyRunArtifactCompleteness | null;
+  targetArtifactCompleteness?: StrategyRunArtifactCompleteness | null;
+  baseMode?: string | null;
+  targetMode?: string | null;
+  baseEngine?: string | null;
+  targetEngine?: string | null;
+  baseStrategyId?: string | null;
+  targetStrategyId?: string | null;
+  baseStrategyVersion?: string | null;
+  targetStrategyVersion?: string | null;
+  lineageRelation?: string | null;
+  compatibilityLevel?: string | null;
 }
 
 // --- Security reference ---
@@ -1588,6 +2079,95 @@ export interface LedgerJournalLine {
   lineCount: number;
 }
 
+export type InvestmentAccountingTransactionKind =
+  | "Trade"
+  | "Dividend"
+  | "Fee"
+  | "Accrual"
+  | "CorporateAction"
+  | "BrokerReconciliation";
+
+export type InvestmentAccountingTradeSide = "Buy" | "Sell";
+
+export interface InvestmentAccountingTransactionLabRequest {
+  kind: InvestmentAccountingTransactionKind;
+  fundAccountId: string;
+  symbol: string;
+  eventDate: string;
+  currency: string;
+  amount: number;
+  quantity: number;
+  price: number;
+  feeAmount: number;
+  side: InvestmentAccountingTradeSide | null;
+  sourceRunId: string | null;
+  sourceSessionId: string | null;
+  brokerStatementId: string | null;
+  reconciliationCaseId: string | null;
+  evidenceIds: string[] | null;
+}
+
+export interface ExpectedJournalPreviewLine {
+  accountName: string;
+  accountType: string;
+  symbol: string | null;
+  debit: number;
+  credit: number;
+}
+
+export interface ExpectedJournalPreview {
+  journalPreviewId: string;
+  expectedEventId: string;
+  description: string;
+  eventDate: string;
+  isBalanced: boolean;
+  requiresOperatorApproval: boolean;
+  idempotencyKey: string;
+  lines: ExpectedJournalPreviewLine[];
+}
+
+export interface LedgerImpactPreview {
+  draftEntryCount: number;
+  netDebitEffect: number;
+  netCreditEffect: number;
+  netBalanceDelta: number;
+  hasValidationWarnings: boolean;
+  validationFlags: string[];
+}
+
+export interface InvestmentAccountingTrialBalanceImpact {
+  accountName: string;
+  accountType: string;
+  symbol: string | null;
+  balanceDelta: number;
+  explanation: string;
+}
+
+export interface InvestmentAccountingReconciliationExpectation {
+  expectedState: string;
+  expectedBreakType: string;
+  detail: string;
+  evidenceIds: string[];
+  brokerStatementId: string | null;
+  reconciliationCaseId: string | null;
+}
+
+export interface InvestmentAccountingTransactionLabPreview {
+  previewId: string;
+  kind: InvestmentAccountingTransactionKind;
+  fundAccountId: string;
+  symbol: string;
+  eventDate: string;
+  currency: string;
+  journalPreview: ExpectedJournalPreview;
+  ledgerImpact: LedgerImpactPreview;
+  trialBalanceImpact: InvestmentAccountingTrialBalanceImpact[];
+  reconciliationExpectation: InvestmentAccountingReconciliationExpectation;
+  evidenceIds: string[];
+  sourceRunId: string | null;
+  sourceSessionId: string | null;
+}
+
 export interface LedgerSummary {
   ledgerReference: string;
   runId: string;
@@ -1666,6 +2246,50 @@ export interface RunAttributionSummary {
   totalUnrealizedPnl: number;
   totalCommissions: number;
   bySymbol: SymbolAttributionEntry[];
+}
+
+// --- Run cash-flow types ---
+
+export interface CashFlowEntry {
+  timestamp: string;
+  amount: number;
+  eventKind: string;
+  symbol: string | null;
+  currency: string;
+  accountId: string | null;
+  description: string | null;
+}
+
+export interface CashLadderBucket {
+  bucketStart: string;
+  bucketEnd: string;
+  projectedInflows: number;
+  projectedOutflows: number;
+  netFlow: number;
+  currency: string;
+  eventCount: number;
+}
+
+export interface RunCashLadder {
+  asOf: string;
+  currency: string;
+  bucketDays: number;
+  totalProjectedInflows: number;
+  totalProjectedOutflows: number;
+  netPosition: number;
+  buckets: CashLadderBucket[];
+}
+
+export interface RunCashFlowSummary {
+  runId: string;
+  asOf: string;
+  currency: string;
+  totalEntries: number;
+  totalInflows: number;
+  totalOutflows: number;
+  netCashFlow: number;
+  entries: CashFlowEntry[];
+  ladder: RunCashLadder;
 }
 
 // --- Strategy run summary ---
@@ -2016,6 +2640,105 @@ export interface SecurityMasterOpenLotReadModel {
   provenanceHistory: SecurityMasterOpenLotProvenance[];
 }
 
+export interface SecurityMasterProviderSymbolMapping {
+  mappingSource: string;
+  mappingKind: string;
+  value: string;
+  normalizedValue: string;
+  provider: string | null;
+  normalizedProvider: string | null;
+  isPrimary: boolean;
+  isEnabled: boolean;
+  validFrom: string;
+  validTo: string | null;
+  isActive: boolean;
+}
+
+export interface SecurityMasterIdentifierSummary {
+  primaryIdentifierKind: string | null;
+  primaryIdentifierValue: string | null;
+  activeIdentifierCount: number;
+  activeAliasCount: number;
+  providerMappingCount: number;
+  distinctProviderCount: number;
+  hasPrimaryIdentifier: boolean;
+  hasProviderMappings: boolean;
+  summary: string;
+  providerMappings: SecurityMasterProviderSymbolMapping[];
+}
+
+export interface SecurityMasterChangeHistoryItem {
+  changeId: string;
+  streamVersion: number;
+  eventType: string;
+  changedAtUtc: string;
+  effectiveAtUtc: string | null;
+  actor: string;
+  origin: string;
+  sourceSystem: string;
+  sourceRecordId: string | null;
+  reason: string | null;
+  summary: string;
+  changedFields: string[];
+  changedFieldsSummary: string;
+}
+
+export interface SecurityMasterTrustPosture {
+  tone: string;
+  trustScore: number;
+  summary: string;
+  goldenCopySource: string;
+  goldenCopyRule: string;
+  tradingParametersStatus: string;
+  corporateActionReadiness: string;
+  hasOpenConflicts: boolean;
+  openConflictCount: number;
+  tradingParametersComplete: boolean;
+  hasUpcomingCorporateActions: boolean;
+  corporateActionsTrusted: boolean;
+}
+
+export interface SecurityMasterDownstreamImpact {
+  fundProfileId: string | null;
+  isScoped: boolean;
+  severity: string;
+  summary: string;
+  portfolioExposureSummary: string;
+  ledgerExposureSummary: string;
+  reconciliationExposureSummary: string;
+  reportPackExposureSummary: string;
+  matchedRunCount: number;
+  portfolioExposureCount: number;
+  ledgerExposureCount: number;
+  reconciliationExposureCount: number;
+  reportPackExposureCount: number;
+}
+
+export interface InstrumentPassportPricing {
+  status: string;
+  summary: string;
+  tradingParameters: TradingParameters | null;
+  lotSize: number | null;
+  tickSize: number | null;
+  contractMultiplier: number | null;
+  tradingHoursUtc: string | null;
+  circuitBreakerThresholdPct: number | null;
+}
+
+export interface InstrumentPassport {
+  securityId: string;
+  identity: SecurityIdentityDrillIn;
+  economicDefinition: SecurityEconomicDefinitionSummary;
+  identifierSummary: SecurityMasterIdentifierSummary;
+  providerMappings: SecurityMasterProviderSymbolMapping[];
+  lifecycleEvents: SecurityMasterChangeHistoryItem[];
+  corporateActions: CorporateAction[];
+  pricing: InstrumentPassportPricing;
+  usage: SecurityMasterDownstreamImpact;
+  trustPosture: SecurityMasterTrustPosture;
+  retrievedAtUtc: string;
+}
+
 export interface SecurityMasterTrustSnapshot {
   securityId: string;
   retrievedAtUtc: string;
@@ -2023,6 +2746,7 @@ export interface SecurityMasterTrustSnapshot {
   lotModel?: SecurityMasterLotModel | null;
   scheduleBook?: SecurityMasterScheduleBook | null;
   openLotReadModel?: SecurityMasterOpenLotReadModel | null;
+  instrumentPassport?: InstrumentPassport | null;
 }
 
 export interface OperatorOverridesDto {

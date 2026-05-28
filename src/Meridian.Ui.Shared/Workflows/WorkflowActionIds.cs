@@ -21,6 +21,8 @@ public static class WorkflowActionIds
     public const string AccountingReviewLiveHandoff = "workflow.accounting.review-live-handoff";
     public const string AccountingReviewReconciliation = "workflow.accounting.review-reconciliation-breaks";
     public const string AccountingReviewLedgerContinuity = "workflow.accounting.review-ledger-continuity";
+    public const string AccountingReviewOperationsContinuity = "workflow.accounting.review-operations-continuity";
+    public const string AccountingReviewCloseReadiness = "workflow.accounting.review-close-readiness";
     public const string AccountingOpen = "workflow.accounting.open";
     public const string AccountingReviewAuditTrail = "workflow.accounting.review-audit-trail";
 

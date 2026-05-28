@@ -29,7 +29,7 @@ namespace Meridian.Ui.Shared;
 ///
 /// <para>When both are set, <c>MDC_USERS</c> takes precedence.</para>
 /// </summary>
-public sealed class UserProfileRegistry
+public sealed class UserProfileRegistry(IRolePermissionProfileStore? roleProfileStore = null)
 {
     internal const string MultiUserEnvVar = "MDC_USERS";
     internal const string LegacyUsernameEnvVar = "MDC_USERNAME";
@@ -78,6 +78,22 @@ public sealed class UserProfileRegistry
                         PermissionOverride: permissions,
                         RoleProfileName: account.RoleProfileName,
                         InvalidPermissionNames: invalidPermissionNames);
+                }
+
+                if (!string.IsNullOrWhiteSpace(account.RoleProfileName) &&
+                    roleProfileStore is not null &&
+                    roleProfileStore.TryGetProfile(account.RoleProfileName, out var profile) &&
+                    RolePermissions.TryParsePermissionNames(
+                        profile.Permissions,
+                        out var roleProfilePermissions,
+                        out var roleProfileInvalidPermissions))
+                {
+                    return new UserProfile(
+                        account.Username,
+                        account.Role,
+                        PermissionOverride: roleProfilePermissions,
+                        RoleProfileName: profile.Role,
+                        InvalidPermissionNames: roleProfileInvalidPermissions);
                 }
 
                 return new UserProfile(account.Username, account.Role, RoleProfileName: account.RoleProfileName);

@@ -8,6 +8,10 @@ This guide covers the scripted desktop workflows that launch `Meridian.Desktop`,
 - `scripts/dev/summarize-desktop-workflow-bundle.ps1` reads bundle diagnostics and emits `bundle-summary.md` with failure-first triage hints.
 - `scripts/dev/generate-desktop-user-manual.ps1` runs one or more manual workflows and produces a markdown user manual plus screenshot assets.
 - `scripts/dev/capture-desktop-screenshots.ps1` now routes through the shared workflow runner so the screenshot catalog and debugging workflows use the same automation path.
+- `scripts/dev/validate-screenshot-captures.py` validates captured PNGs against the web route or
+  desktop workflow definitions, checks capture freshness, rejects wrong-route or wrong-page-tag
+  manifest entries, and fails blank or low-entropy screenshots before they can be uploaded or
+  committed.
 - `scripts/dev/desktop-workflows.json` is the catalog of named workflows and per-step notes.
 - `scripts/dev/desktop_screen_blueprint_checklist.py` validates the machine-readable desktop screen blueprint checklist and verifies any workflow steps linked through `blueprintChecklistIds`.
 
@@ -27,6 +31,12 @@ pwsh -File scripts/dev/generate-desktop-user-manual.ps1
 
 # Refresh the committed screenshot catalog
 pwsh -File scripts/dev/capture-desktop-screenshots.ps1
+
+# Validate captured desktop screenshots before retaining them
+python ./scripts/dev/validate-screenshot-captures.py --surface desktop --output-dir docs/screenshots/desktop --require-fresh
+
+# Validate captured web screenshots before retaining them
+python ./scripts/dev/validate-screenshot-captures.py --surface web --output-dir docs/screenshots/web --require-fresh
 ```
 
 ## Supported command surface (authoritative)
@@ -94,6 +104,18 @@ Each run writes:
 - `manifest.json` with operating-context confirmation, step timing, capture paths, and step notes
 - `logs/stdout.log` and `logs/stderr.log` for startup diagnostics
 - per-step screenshots
+
+The GitHub desktop and web screenshot capture workflows run
+`validate-screenshot-captures.py` after capture. A retained screenshot set must now satisfy all of
+these checks:
+
+- every configured capture exists and no unexpected PNG appears in the output root
+- web manifest routes match `scripts/dev/web-screenshot-routes.json`, including the actual
+  Playwright browser path recorded after navigation
+- desktop manifest page tags match `scripts/dev/desktop-workflows.json`
+- capture files are fresh for the current run when `--require-fresh` is used
+- PNG dimensions, byte size, sampled color count, and luminance entropy clear the blank and
+  low-entropy thresholds
 
 In addition, every run now produces a fixed debug bundle under:
 

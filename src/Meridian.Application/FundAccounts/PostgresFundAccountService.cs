@@ -142,7 +142,9 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             request.PendingSettlement,
             request.Source,
             DateTimeOffset.UtcNow,
-            request.ExternalReference);
+            request.ExternalReference,
+            request.UnrealizedPnl,
+            request.RealizedPnl);
 
         await _store.InsertBalanceSnapshotAsync(dto, ct).ConfigureAwait(false);
         return dto;

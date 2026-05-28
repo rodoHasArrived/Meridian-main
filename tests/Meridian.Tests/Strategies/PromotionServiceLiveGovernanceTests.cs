@@ -220,19 +220,36 @@ public sealed class PromotionServiceLiveGovernanceTests
             entry.RunId == result.NewRunId &&
             entry.RunType == RunType.Live &&
             entry.ParentRunId == run.RunId);
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Category == "Promotion" &&
+            entry.Action == "PromotionApproved" &&
+            entry.Outcome == "Approved" &&
+            entry.RunId == run.RunId &&
+            entry.Reason == "HumanApprovedLivePromotion" &&
+            entry.Scope == $"source:{run.RunId}/strategy:{run.StrategyId}/target:Live" &&
+            entry.Metadata != null &&
+            entry.Metadata["manualOverrideId"] == manualOverride.OverrideId &&
+            entry.Metadata["requiredManualOverrideKind"] == ExecutionManualOverrideKinds.AllowLivePromotion &&
+            entry.Metadata["approvalChecklistCount"] == PromotionApprovalChecklist.CreateRequiredFor(RunType.Live).Length.ToString(System.Globalization.CultureInfo.InvariantCulture));
     }
 
     [Fact]
     public async Task ApproveAsync_WhenPaperRunMissingManualOverride_IsRejectedByExecutionControls()
     {
         var tempRoot = CreateTempRoot();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
         var controls = new ExecutionOperatorControlService(
             new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
-            NullLogger<ExecutionOperatorControlService>.Instance);
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
         var service = BuildService(
             out var store,
             controls,
-            auditTrail: null,
+            auditTrail,
             brokerageConfiguration: new BrokerageConfiguration
             {
                 Gateway = "alpaca",
@@ -255,6 +272,18 @@ public sealed class PromotionServiceLiveGovernanceTests
         result.Success.Should().BeFalse();
         result.Reason.Should().NotBeNull();
         result.Reason!.Contains("requires an active AllowLivePromotion", StringComparison.OrdinalIgnoreCase).Should().BeTrue();
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Category == "Promotion" &&
+            entry.Action == "PromotionBlocked" &&
+            entry.Outcome == "Blocked" &&
+            entry.RunId == run.RunId &&
+            entry.Reason == "LivePromotionPolicyBlocked" &&
+            entry.Scope == $"source:{run.RunId}/strategy:{run.StrategyId}/target:Live" &&
+            entry.Metadata != null &&
+            entry.Metadata["requiredManualOverrideKind"] == ExecutionManualOverrideKinds.AllowLivePromotion &&
+            entry.Metadata["controlRejectReason"].Contains("requires an active AllowLivePromotion", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

@@ -4206,6 +4206,71 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterInstrumentPassport_ShouldReturnProviderConfidenceRows()
+    {
+        var securityId = Guid.Parse("69696969-6969-6969-6969-696969696969");
+        var effectiveFrom = new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero);
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Apple Inc.", "AAPL"),
+            new SecurityDetailDto(
+                SecurityId: securityId,
+                AssetClass: "Equity",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Apple Inc.",
+                Currency: "USD",
+                CommonTerms: CreateEmptyJson(),
+                AssetSpecificTerms: CreateEmptyJson(),
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Ticker,
+                        "AAPL",
+                        true,
+                        effectiveFrom,
+                        Provider: "alpaca")
+                ],
+                Aliases:
+                [
+                    new SecurityAliasDto(
+                        AliasId: Guid.Parse("F7AA8916-C40E-44F9-B427-9351F09F6C95"),
+                        SecurityId: securityId,
+                        AliasKind: "ProviderSymbol",
+                        AliasValue: "AAPL",
+                        Provider: "alpaca",
+                        Scope: SecurityAliasScope.Execution,
+                        Reason: "Broker symbol mapping",
+                        CreatedBy: "ops",
+                        CreatedAt: effectiveFrom,
+                        ValidFrom: effectiveFrom,
+                        ValidTo: null,
+                        IsEnabled: true)
+                ],
+                Version: 4,
+                EffectiveFrom: effectiveFrom,
+                EffectiveTo: null));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([]));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/passport");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var passport = await response.Content.ReadFromJsonAsync<InstrumentPassportDto>(ServerJsonOptions);
+
+        passport.Should().NotBeNull();
+        passport!.SecurityId.Should().Be(securityId);
+        passport.ProviderConfidence.Should().ContainSingle(item =>
+            item.Provider == "alpaca" &&
+            item.Symbol == "AAPL" &&
+            item.ProviderSource == "Identifier" &&
+            item.ConfidenceScore >= 85m);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnValidationIdentifierAndSchemaProjections()
     {
         var securityId = Guid.Parse("67676767-6767-6767-6767-676767676767");
@@ -5174,18 +5239,25 @@ public sealed partial class WorkstationEndpointsTests
         });
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildRun(
-            runId: "diff-base",
-            strategyId: "s-diff",
-            strategyName: "Diff Base",
-            runType: RunType.Backtest,
-            startedAt: new DateTimeOffset(2026, 3, 20, 10, 0, 0, TimeSpan.Zero)));
-        await store.RecordRunAsync(BuildRun(
-            runId: "diff-target",
-            strategyId: "s-diff-2",
-            strategyName: "Diff Target",
-            runType: RunType.Paper,
-            startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildReconciliationReadyRun("diff-base") with
+        {
+            StrategyId = "diff-strategy",
+            StrategyName = "Diff Base",
+            ParameterSet = new Dictionary<string, string>
+            {
+                ["strategyVersion"] = "v1.0.0"
+            }
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("diff-target", withBreaks: false) with
+        {
+            StrategyId = "diff-strategy",
+            StrategyName = "Diff Target",
+            ParentRunId = "diff-base",
+            ParameterSet = new Dictionary<string, string>
+            {
+                ["strategyVersion"] = "v1.1.0"
+            }
+        });
 
         var client = app.GetTestClient();
         var response = await client.PostAsJsonAsync("/api/workstation/runs/diff",
@@ -5198,9 +5270,26 @@ public sealed partial class WorkstationEndpointsTests
         doc.RootElement.GetProperty("baseStrategyName").GetString().Should().Be("Diff Base");
         doc.RootElement.GetProperty("targetStrategyName").GetString().Should().Be("Diff Target");
         doc.RootElement.GetProperty("metrics").GetProperty("netPnlDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.GetProperty("metrics").GetProperty("finalEquityDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.GetProperty("metrics").GetProperty("maxDrawdownDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.GetProperty("metrics").GetProperty("sharpeRatioDelta").GetDouble().Should().Be(0d);
+        doc.RootElement.GetProperty("baseMode").GetString().Should().Be("Backtest");
+        doc.RootElement.GetProperty("targetMode").GetString().Should().Be("Paper");
+        doc.RootElement.GetProperty("baseEngine").GetString().Should().Be("MeridianNative");
+        doc.RootElement.GetProperty("targetEngine").GetString().Should().Be("BrokerPaper");
+        doc.RootElement.GetProperty("baseStrategyId").GetString().Should().Be("diff-strategy");
+        doc.RootElement.GetProperty("targetStrategyId").GetString().Should().Be("diff-strategy");
+        doc.RootElement.GetProperty("baseStrategyVersion").GetString().Should().Be("v1.0.0");
+        doc.RootElement.GetProperty("targetStrategyVersion").GetString().Should().Be("v1.1.0");
+        doc.RootElement.GetProperty("lineageRelation").GetString().Should().Be("DirectChild");
+        doc.RootElement.GetProperty("compatibilityLevel").GetString().Should().Be("CrossEngine");
         doc.RootElement.TryGetProperty("baseArtifactCompleteness", out _).Should().BeTrue();
         doc.RootElement.TryGetProperty("targetArtifactCompleteness", out _).Should().BeTrue();
         doc.RootElement.TryGetProperty("compatibilityWarnings", out _).Should().BeTrue();
+        doc.RootElement.GetProperty("compatibilityWarnings").EnumerateArray()
+            .Select(static warning => warning.GetString())
+            .Should()
+            .Contain(warning => warning!.Contains("Strategy version comparison active", StringComparison.Ordinal));
     }
 
     [Fact]

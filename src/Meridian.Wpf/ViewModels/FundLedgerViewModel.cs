@@ -19,6 +19,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
     private readonly FundLedgerCollectionsSectionViewModel _collectionsSection = new();
+    private readonly FundLedgerWorkbenchSectionViewModel _workbenchSection = new();
 
     private string _title = "Fund Operations";
     private string _statusText = "Select a fund profile to inspect fund operations.";
@@ -63,24 +64,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _reportPackTrialBalanceLinesText = "0";
     private string _reportPackAssetSectionsText = "0";
     private string _reportPackGeneratedAtText = "-";
-    private string _currentWorkbenchModeText = "Overview Mode";
-    private string _currentWorkbenchTitleText = "Overview Workbench";
-    private string _currentWorkbenchSubtitleText = "Fund-wide operating summary, liquidity posture, and exception pressure.";
-    private string _routeBannerTitleText = string.Empty;
-    private string _routeBannerDetailText = string.Empty;
-    private bool _hasRouteBanner;
-    private string _reconciliationOwnershipText = "Assign an operator before reconciliation sign-off.";
-    private string _reconciliationSnapshotWarningText = "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.";
-    private string _reportPackOwnershipText = "Governance operator sign-off is pending.";
-    private string _reportPackSnapshotWarningText = "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.";
-    private WorkstationStateModel _reportPackReadinessState = WorkstationStateModel.Empty(
-        "Report pack waiting for fund context",
-        "Select a fund profile and refresh the preview before distributing reporting artifacts.",
-        "Refresh Preview",
-        "Report Pack");
-    private bool _isReportPackLoading;
     private GovernanceReportKindDto _selectedReportKind = GovernanceReportKindDto.TrialBalance;
-    private int _selectedTabIndex;
     private string? _routedPageTag;
     private FundAccountSummary? _selectedAccount;
     private FundPortfolioPosition? _selectedPortfolioPosition;
@@ -181,6 +165,24 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections => _collectionsSection.ReportPackAssetSections;
 
     internal FundLedgerCollectionsSectionViewModel CollectionsSection => _collectionsSection;
+
+    internal FundLedgerWorkbenchSectionViewModel WorkbenchSection => _workbenchSection;
+
+    private bool SetFundLedgerSectionProperty<T>(
+        T current,
+        Action<T> apply,
+        T value,
+        [System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(current, value))
+        {
+            return false;
+        }
+
+        apply(value);
+        RaisePropertyChanged(propertyName);
+        return true;
+    }
 
     public IAsyncRelayCommand RefreshCommand { get; }
 
@@ -480,74 +482,74 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public string CurrentWorkbenchModeText
     {
-        get => _currentWorkbenchModeText;
-        private set => SetProperty(ref _currentWorkbenchModeText, value);
+        get => WorkbenchSection.CurrentWorkbenchModeText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.CurrentWorkbenchModeText, text => WorkbenchSection.CurrentWorkbenchModeText = text, value);
     }
 
     public string CurrentWorkbenchTitleText
     {
-        get => _currentWorkbenchTitleText;
-        private set => SetProperty(ref _currentWorkbenchTitleText, value);
+        get => WorkbenchSection.CurrentWorkbenchTitleText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.CurrentWorkbenchTitleText, text => WorkbenchSection.CurrentWorkbenchTitleText = text, value);
     }
 
     public string CurrentWorkbenchSubtitleText
     {
-        get => _currentWorkbenchSubtitleText;
-        private set => SetProperty(ref _currentWorkbenchSubtitleText, value);
+        get => WorkbenchSection.CurrentWorkbenchSubtitleText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.CurrentWorkbenchSubtitleText, text => WorkbenchSection.CurrentWorkbenchSubtitleText = text, value);
     }
 
     public string RouteBannerTitleText
     {
-        get => _routeBannerTitleText;
-        private set => SetProperty(ref _routeBannerTitleText, value);
+        get => WorkbenchSection.RouteBannerTitleText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.RouteBannerTitleText, text => WorkbenchSection.RouteBannerTitleText = text, value);
     }
 
     public string RouteBannerDetailText
     {
-        get => _routeBannerDetailText;
-        private set => SetProperty(ref _routeBannerDetailText, value);
+        get => WorkbenchSection.RouteBannerDetailText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.RouteBannerDetailText, text => WorkbenchSection.RouteBannerDetailText = text, value);
     }
 
     public bool HasRouteBanner
     {
-        get => _hasRouteBanner;
-        private set => SetProperty(ref _hasRouteBanner, value);
+        get => WorkbenchSection.HasRouteBanner;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.HasRouteBanner, visible => WorkbenchSection.HasRouteBanner = visible, value);
     }
 
     public string ReconciliationOwnershipText
     {
-        get => _reconciliationOwnershipText;
-        private set => SetProperty(ref _reconciliationOwnershipText, value);
+        get => WorkbenchSection.ReconciliationOwnershipText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.ReconciliationOwnershipText, text => WorkbenchSection.ReconciliationOwnershipText = text, value);
     }
 
     public string ReconciliationSnapshotWarningText
     {
-        get => _reconciliationSnapshotWarningText;
-        private set => SetProperty(ref _reconciliationSnapshotWarningText, value);
+        get => WorkbenchSection.ReconciliationSnapshotWarningText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.ReconciliationSnapshotWarningText, text => WorkbenchSection.ReconciliationSnapshotWarningText = text, value);
     }
 
     public string ReportPackOwnershipText
     {
-        get => _reportPackOwnershipText;
-        private set => SetProperty(ref _reportPackOwnershipText, value);
+        get => WorkbenchSection.ReportPackOwnershipText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.ReportPackOwnershipText, text => WorkbenchSection.ReportPackOwnershipText = text, value);
     }
 
     public string ReportPackSnapshotWarningText
     {
-        get => _reportPackSnapshotWarningText;
-        private set => SetProperty(ref _reportPackSnapshotWarningText, value);
+        get => WorkbenchSection.ReportPackSnapshotWarningText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.ReportPackSnapshotWarningText, text => WorkbenchSection.ReportPackSnapshotWarningText = text, value);
     }
 
     public WorkstationStateModel ReportPackReadinessState
     {
-        get => _reportPackReadinessState;
-        private set => SetProperty(ref _reportPackReadinessState, value);
+        get => WorkbenchSection.ReportPackReadinessState;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.ReportPackReadinessState, state => WorkbenchSection.ReportPackReadinessState = state, value);
     }
 
     public bool IsReportPackLoading
     {
-        get => _isReportPackLoading;
-        private set => SetProperty(ref _isReportPackLoading, value);
+        get => WorkbenchSection.IsReportPackLoading;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.IsReportPackLoading, loading => WorkbenchSection.IsReportPackLoading = loading, value);
     }
 
     public int SelectedReportKindIndex
@@ -568,10 +570,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public int SelectedTabIndex
     {
-        get => _selectedTabIndex;
+        get => WorkbenchSection.SelectedTabIndex;
         set
         {
-            if (SetProperty(ref _selectedTabIndex, value))
+            if (SetFundLedgerSectionProperty(WorkbenchSection.SelectedTabIndex, tab => WorkbenchSection.SelectedTabIndex = tab, value))
             {
                 UpdateWorkbenchIdentity();
                 UpdateRouteBannerPresentation();

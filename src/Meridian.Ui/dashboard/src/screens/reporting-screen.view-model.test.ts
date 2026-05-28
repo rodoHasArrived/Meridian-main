@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
+  buildRestatementReviewPanel,
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel
 } from "@/screens/reporting-screen.view-model";
@@ -32,6 +33,79 @@ const reporting: GovernanceReportingSummary = {
   ],
   reportPackTargets: ["board", "audit"],
   summary: "2 export profiles available."
+};
+
+const restatedReporting: GovernanceReportingSummary = {
+  ...reporting,
+  workflowRecords: [
+    {
+      reportId: "report-restated-1",
+      fundProfileId: "fund-alpha",
+      fundAccountId: "account-alpha",
+      period: "2026-05",
+      templateId: { name: "monthly-board-pack", version: 1 },
+      state: "Restated",
+      version: 2,
+      createdAt: "2026-05-27T10:00:00Z",
+      createdBy: "reporter",
+      updatedAt: "2026-05-28T12:00:00Z",
+      auditTrail: [
+        {
+          at: "2026-05-28T12:00:00Z",
+          actor: "approver",
+          action: "restated",
+          fromState: "Published",
+          toState: "Restated",
+          note: "pricing-correction"
+        }
+      ],
+      restatement: {
+        reasonCode: "pricing-correction",
+        approver: "fund-controller",
+        priorVersionReportId: "report-published-1",
+        changedLines: [
+          {
+            lineKey: "nav.total",
+            previousValue: "1250000",
+            currentValue: "1249500",
+            evidenceLinks: [
+              {
+                evidenceId: "pricing-evidence-1",
+                label: "Pricing override",
+                route: "/reporting/evidence?subject=pricing",
+                source: "pricing",
+                capturedAtUtc: "2026-05-28T11:59:00Z"
+              }
+            ]
+          }
+        ],
+        evidenceLinks: [
+          {
+            evidenceId: "pricing-evidence-1",
+            label: "Pricing override",
+            route: "/reporting/evidence?subject=pricing",
+            source: "pricing",
+            capturedAtUtc: "2026-05-28T11:59:00Z"
+          }
+        ]
+      },
+      lineProvenance: [
+        {
+          lineKey: "nav.total",
+          sourceKind: "ledger",
+          sourceId: "ledger-entry-1",
+          evidenceId: "ledger-evidence-1",
+          runId: "run-1",
+          ledgerEntryId: "ledger-entry-1",
+          reconciliationCaseId: null,
+          reportValue: "1250000",
+          sourceSessionId: null,
+          reconciliationRunId: null
+        }
+      ],
+      publication: null
+    }
+  ]
 };
 
 function createDeferred<T>() {
@@ -165,6 +239,48 @@ describe("useReportingScreenViewModel", () => {
       isBrowserNavigable: false,
       ariaLabel: "Reference-only POST /api/export/analysis for Excel export analysis"
     });
+  });
+
+  it("projects report-pack restatement metadata from shared workflow records", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(restatedReporting, undefined, "/reporting/report-packs"));
+
+    expect(result.current.workflowTaskPanel?.restatementReview).toMatchObject({
+      regionLabel: "Report-pack restatement review",
+      title: "Restatement review",
+      statusLabel: "Restated",
+      statusVariant: "warning",
+      summaryText: "pricing-correction approved by fund-controller.",
+      evidenceSummary: "1 evidence link",
+      hasChangedLines: true
+    });
+    expect(result.current.workflowTaskPanel?.restatementReview.fields).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: "Report ID", value: "report-restated-1" }),
+      expect.objectContaining({ label: "Prior version", value: "report-published-1" }),
+      expect.objectContaining({ label: "Changed lines", value: "1" })
+    ]));
+    expect(result.current.workflowTaskPanel?.restatementReview.changedLines).toEqual([
+      expect.objectContaining({
+        lineKey: "nav.total",
+        valueBridge: "1250000 -> 1249500",
+        evidenceLabel: "1 evidence link",
+        evidenceHref: "/reporting/evidence?subject=pricing"
+      })
+    ]);
+  });
+
+  it("builds an empty restatement review state when no restated workflow record is loaded", () => {
+    const state = buildRestatementReviewPanel([]);
+
+    expect(state).toMatchObject({
+      statusLabel: "No restatements",
+      statusVariant: "outline",
+      hasChangedLines: false,
+      evidenceSummary: "0 evidence links"
+    });
+    expect(state.fields).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: "Workflow records", value: "0" }),
+      expect.objectContaining({ label: "Restated records", value: "0" })
+    ]));
   });
 
   it("lets operators clear the default report-pack profile selection", () => {

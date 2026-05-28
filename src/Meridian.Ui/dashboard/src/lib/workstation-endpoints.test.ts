@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  AUTH_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   EXPORT_API_ENDPOINTS,
+  FUND_STRUCTURE_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
@@ -80,6 +82,7 @@ import {
   workstationOperationsContinuityBreaksEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
+  workstationOperationsContinuityCloseCalendarEndpoint,
   workstationOperationsContinuityLedgerPreviewEndpoint,
   workstationOperationsContinuityTimelineEndpoint,
   workstationRunAttributionEndpoint,
@@ -101,6 +104,7 @@ import {
   workstationSecurityMasterEntryEndpoint,
   workstationSecurityMasterHistoryEndpoint,
   workstationSecurityMasterIdentityEndpoint,
+  workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
   workstationWorkflowSummaryEndpoint,
@@ -122,6 +126,10 @@ describe("workstation API endpoint catalog", () => {
       reporting: "/api/workstation/reporting",
       workflowSummary: "/api/workstation/workflow-summary",
       operationsContinuity: "/api/workstation/operations/continuity",
+      operationsContinuityApprovalPolicyMatrix: "/api/workstation/operations/continuity/approval-policy-matrix",
+      operationsContinuityApprovalPolicyRules: "/api/workstation/operations/continuity/approval-policy-rules",
+      operationsContinuityCloseCalendar: "/api/workstation/operations/continuity/close-calendar",
+      operationsContinuityCloseCalendarItems: "/api/workstation/operations/continuity/close-calendar-items",
       chiefOfStaff: "/api/workstation/chief-of-staff",
       runHistory: "/api/workstation/runs/history",
       runTimeline: "/api/workstation/runs/timeline",
@@ -179,6 +187,20 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationOperationsContinuityLedgerPreviewEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/ledger-preview"
     );
+    expect(workstationOperationsContinuityCloseCalendarEndpoint()).toBe(
+      "/api/workstation/operations/continuity/close-calendar"
+    );
+    expect(workstationOperationsContinuityCloseCalendarEndpoint({
+      fundAccountId: "fund / 1",
+      periodId: "2026-05"
+    })).toBe(
+      "/api/workstation/operations/continuity/close-calendar?fundAccountId=fund+%2F+1&periodId=2026-05"
+    );
+    expect(AUTH_API_ENDPOINTS.roles).toBe("/api/auth/roles");
+    expect(AUTH_API_ENDPOINTS.roleProfiles).toBe("/api/auth/role-profiles");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench).toBe("/api/fund-structure/ledger-mapping-view");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingAssignments).toBe("/api/fund-structure/ledger-mapping-assignments");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.transactionLabPreview).toBe("/api/fund-structure/accounting/transaction-lab/preview");
   });
 
   it("builds Chief of Staff workstation endpoint routes", () => {
@@ -317,6 +339,9 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(workstationSecurityMasterTrustSnapshotEndpoint("security / 1")).toBe(
       "/api/workstation/security-master/securities/security%20%2F%201/trust-snapshot"
+    );
+    expect(workstationSecurityMasterInstrumentPassportEndpoint("security / 1")).toBe(
+      "/api/workstation/security-master/securities/security%20%2F%201/passport"
     );
     expect(securityMasterEntryEndpoint()).toBe("/api/security-master");
     expect(securityMasterAmendEndpoint()).toBe("/api/security-master/amend");

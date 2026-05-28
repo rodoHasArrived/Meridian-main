@@ -79,7 +79,8 @@ public sealed record BrokerageActivitySnapshotDto(
     DateTimeOffset RetrievedAt,
     IReadOnlyList<BrokerageOrderSnapshotDto> Orders,
     IReadOnlyList<BrokerageFillSnapshotDto> Fills,
-    IReadOnlyList<BrokerageCashTransactionDto> CashTransactions);
+    IReadOnlyList<BrokerageCashTransactionDto> CashTransactions,
+    IReadOnlyList<BrokerageCorporateActionSnapshotDto>? CorporateActions = null);
 
 public sealed record BrokerageOrderSnapshotDto(
     string OrderId,
@@ -104,7 +105,8 @@ public sealed record BrokerageFillSnapshotDto(
     decimal Price,
     DateTimeOffset FilledAt,
     string? Venue = null,
-    decimal? Commission = null);
+    decimal? Commission = null,
+    decimal? RealizedPnl = null);
 
 public sealed record BrokerageCashTransactionDto(
     string TransactionId,
@@ -113,4 +115,16 @@ public sealed record BrokerageCashTransactionDto(
     string Currency,
     DateTimeOffset PostedAt,
     string? Symbol = null,
+    string? Description = null);
+
+public sealed record BrokerageCorporateActionSnapshotDto(
+    string EventId,
+    string EventType,
+    string? Symbol,
+    DateOnly? EffectiveDate,
+    DateOnly? ExDate,
+    decimal? Amount = null,
+    decimal? Quantity = null,
+    decimal? Factor = null,
+    string? Currency = null,
     string? Description = null);

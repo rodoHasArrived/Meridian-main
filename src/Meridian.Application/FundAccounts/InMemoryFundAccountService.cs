@@ -276,7 +276,9 @@ public sealed class InMemoryFundAccountService : INonProductionOnlyService, IFun
             request.PendingSettlement,
             request.Source,
             DateTimeOffset.UtcNow,
-            request.ExternalReference);
+            request.ExternalReference,
+            request.UnrealizedPnl,
+            request.RealizedPnl);
 
         (long Version, string Json)? snapshot = null;
         lock (_gate)

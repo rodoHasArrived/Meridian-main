@@ -39,6 +39,13 @@ public sealed class WorkflowLibraryEndpointTests
         registry.ResolveTargetPageTag(WorkflowActionIds.AccountingReviewLedgerContinuity, "Fallback")
             .Should()
             .Be("FundTrialBalance");
+        registry.ResolveTargetPageTag(WorkflowActionIds.AccountingReviewOperationsContinuity, "Fallback")
+            .Should()
+            .Be("OperationsContinuity");
+        registry.ResolveRoute($"{UiApiRoutes.OperationsContinuity}/00000000-0000-0000-0000-000000000001/close-readiness")!
+            .TargetPageTag
+            .Should()
+            .Be("OperationsClose");
         registry.ResolveOperatorWorkItem(new OperatorWorkItemDto(
                 WorkItemId: "sync-1",
                 Kind: OperatorWorkItemKindDto.BrokerageSync,
@@ -78,6 +85,12 @@ public sealed class WorkflowLibraryEndpointTests
         library.Actions.Should().Contain(action =>
             action.ActionId == WorkflowActionIds.AccountingReviewLedgerContinuity &&
             action.TargetPageTag == "FundTrialBalance");
+        library.Actions.Should().Contain(action =>
+            action.ActionId == WorkflowActionIds.AccountingReviewOperationsContinuity &&
+            action.TargetPageTag == "OperationsContinuity");
+        library.Actions.Should().Contain(action =>
+            action.ActionId == WorkflowActionIds.AccountingReviewCloseReadiness &&
+            action.TargetPageTag == "OperationsClose");
     }
 
     [Fact]

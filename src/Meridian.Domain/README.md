@@ -24,7 +24,9 @@ This layer owns domain concepts without depending on application orchestration, 
 - `Collectors/` - market data and ingestion collectors.
 - `Events/` - domain event shapes and event-flow contracts.
 - `Models/` - core domain models.
-- `Reconciliation/` and `Telemetry/` - domain-level reconciliation and observability types.
+- `Reconciliation/` and `Telemetry/` - domain-level reconciliation and observability types,
+  including durable reconciliation cases with owner, SLA, comments, attachments, disposition,
+  aging, and break-explanation metadata.
 
 ## Important workflows
 

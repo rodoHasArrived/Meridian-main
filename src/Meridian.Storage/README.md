@@ -24,6 +24,9 @@ This layer persists durable state and evidence. It should expose storage seams w
 - `Archival/` - write-ahead log and archive package support.
 - `Interfaces/` and `Sinks/` - storage sink contracts and implementations.
 - `Replay/`, `Ledger/`, and `SecurityMaster/` - durable domain-specific stores.
+- `FundAccounts/` - account definitions, balance snapshots, statement batches, reconciliation
+  results, and account readiness persistence. Balance snapshots include optional realized and
+  unrealized P&L columns for provider-ledger shadow-book comparison evidence.
 - `Packaging/`, `Export/`, and `Maintenance/` - operational storage workflows.
 
 ## Important workflows

@@ -130,9 +130,9 @@ SYSTEM_CHECKS = (
     ),
     (
         "claude",
-        (".claude/settings.json", ".claude/agents", ".claude/skills"),
+        (".claude/settings.json", ".claude/agents", ".claude/skills", ".claude/plugins"),
         AI_CONTRACT,
-        ("Claude / Claude Code", ".claude/agents", ".claude/skills"),
+        ("Claude / Claude Code", ".claude/agents", ".claude/skills", ".claude/plugins/"),
     ),
     (
         "github-copilot",
@@ -405,6 +405,46 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                     expected_docs=(AI_CONTRACT,),
                 )
             )
+
+    for path in sorted_files(root, ".claude/plugins/*/.github/plugin/plugin.json"):
+        plugin_name = path.parents[2].name
+        items.append(
+            InventoryItem(
+                surface="claude",
+                kind="plugin-manifest",
+                name=plugin_name,
+                path=repo_relative(root, path),
+                expected_docs=(AI_CONTRACT, SKILLS_README),
+                alternate_markers=(f".claude/plugins/{plugin_name}/",),
+            )
+        )
+
+    for path in sorted_files(root, ".claude/plugins/*/agents/*.md"):
+        plugin_name = path.parents[1].name
+        items.append(
+            InventoryItem(
+                surface="claude",
+                kind="plugin-agent",
+                name=f"{plugin_name}/{path.name}",
+                path=repo_relative(root, path),
+                expected_docs=(AGENTS_README,),
+                alternate_markers=(f".claude/plugins/{plugin_name}/",),
+            )
+        )
+
+    for path in sorted_files(root, ".claude/plugins/*/skills/*/SKILL.md"):
+        plugin_name = path.parents[2].name
+        skill_name = path.parent.name
+        items.append(
+            InventoryItem(
+                surface="claude",
+                kind="plugin-skill",
+                name=f"{plugin_name}/{skill_name}",
+                path=repo_relative(root, path),
+                expected_docs=(SKILLS_README,),
+                alternate_markers=(f".claude/plugins/{plugin_name}/",),
+            )
+        )
 
     for path in sorted_files(root, ".claude/skills/*/SKILL.md"):
         name = path.parent.name

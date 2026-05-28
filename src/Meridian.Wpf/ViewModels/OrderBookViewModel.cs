@@ -209,6 +209,12 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
     /// <summary>Stops the timer and unsubscribes from events.</summary>
     public void Stop() => Deactivate();
 
+    public void CancelActivation()
+    {
+        CancelAndDispose(Interlocked.Exchange(ref _cts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
+    }
+
     public void Deactivate()
     {
         if (!_isActive)
@@ -219,8 +225,7 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
         _isActive = false;
         _connectionService.StateChanged -= OnConnectionStateChanged;
         _refreshTimer.Stop();
-        CancelAndDispose(Interlocked.Exchange(ref _cts, null));
-        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
+        CancelActivation();
     }
 
     public void SetSymbol(string? symbol)

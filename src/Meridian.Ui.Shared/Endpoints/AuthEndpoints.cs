@@ -150,10 +150,63 @@ public static class AuthEndpoints
           .Produces(StatusCodes.Status200OK)
           .Produces(StatusCodes.Status401Unauthorized);
 
-        app.MapGet(UiApiRoutes.AuthApiRoles, () => Results.Ok(RolePermissions.GetCatalog()))
+        app.MapGet(UiApiRoutes.AuthApiRoles, async (IRolePermissionProfileStore roleProfileStore, CancellationToken ct) =>
+                Results.Ok(await roleProfileStore.GetCatalogAsync(ct).ConfigureAwait(false)))
             .WithName("GetRolePermissionCatalog")
-            .WithSummary("Returns built-in roles, permissions, and permission metadata for role configuration surfaces.")
+            .WithSummary("Returns built-in and custom roles, permissions, and permission metadata for role configuration surfaces.")
             .Produces<RolePermissionCatalogDto>(StatusCodes.Status200OK);
+
+        app.MapPost(
+                UiApiRoutes.AuthApiRoleProfiles,
+                async (
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IRolePermissionProfileStore roleProfileStore,
+                    RolePermissionProfileUpsertRequestDto request,
+                    CancellationToken ct) =>
+                {
+                    var currentProfile = ResolveCurrentProfile(context, sessionService);
+                    UserPermission currentPermissions;
+                    var actor = currentProfile?.Username;
+                    if (currentProfile is not null)
+                    {
+                        currentPermissions = currentProfile.Permissions;
+                    }
+                    else if (EndpointAuthorization.TryGetPermissions(context, out var contextPermissions))
+                    {
+                        currentPermissions = contextPermissions;
+                        actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
+                            ? resolvedActor
+                            : request.RequestedBy;
+                    }
+                    else
+                    {
+                        return Results.Unauthorized();
+                    }
+
+                    if ((currentPermissions & UserPermission.ManageUsers) != UserPermission.ManageUsers)
+                    {
+                        return EndpointHelpers.Forbidden();
+                    }
+
+                    try
+                    {
+                        var result = await roleProfileStore
+                            .UpsertAsync(request, actor ?? request.RequestedBy, ct)
+                            .ConfigureAwait(false);
+                        return Results.Ok(result);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        return Results.BadRequest(new { error = ex.Message });
+                    }
+                })
+            .WithName("UpsertRolePermissionProfile")
+            .WithSummary("Creates or updates a governed custom role profile with audit evidence.")
+            .Produces<RolePermissionProfileUpsertResultDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
     }
 
     private static string BuildLoginRedirect(string? returnUrl, bool error)
@@ -185,11 +238,10 @@ public static class AuthEndpoints
         if (ctxUser is null || ctxRole is null)
             return null;
 
-        return new UserProfile(ctxUser, ctxRole.Value)
-        {
-            // Permissions are already computed from Role, but we can cross-check with stored items
-            // if they differ due to future customisation; for now they match the role exactly.
-        };
+        return new UserProfile(
+            ctxUser,
+            ctxRole.Value,
+            PermissionOverride: ctxPerms);
     }
 }
 

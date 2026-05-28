@@ -1,3 +1,4 @@
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -398,7 +399,21 @@ public sealed class StrategyRunReadService
             warnings.Add("Lean run has summary-only coverage; fill and attribution comparisons may be limited.");
         }
 
-        return warnings;
+        var metadata = run.Metrics?.EngineMetadata;
+        if (metadata is not null &&
+            string.Equals(metadata.ResultKind, BacktestResultKinds.SummaryOnly, StringComparison.OrdinalIgnoreCase))
+        {
+            warnings.Add(
+                $"{metadata.EngineId} run uses {metadata.ResultKind} canonical coverage; portfolio, fill, cash-flow, and ledger comparisons may be limited.");
+        }
+
+        foreach (var warning in metadata?.CoverageWarnings ?? Array.Empty<string>())
+        {
+            if (!string.IsNullOrWhiteSpace(warning))
+                warnings.Add(warning);
+        }
+
+        return warnings.Distinct(StringComparer.Ordinal).ToArray();
     }
 
     public async Task<IReadOnlyList<StrategySweepResultGroup>> GetSweepResultGroupsAsync(int limit = 25, CancellationToken ct = default)

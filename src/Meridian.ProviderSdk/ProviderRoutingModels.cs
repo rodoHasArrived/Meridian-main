@@ -23,7 +23,8 @@ public enum ProviderCapabilityKind : byte
     AccountPositions = 12,
     CashTransactions = 13,
     BankStatements = 14,
-    ReconciliationFeed = 15
+    ReconciliationFeed = 15,
+    FactorSchedule = 16
 }
 
 /// <summary>

@@ -57,6 +57,7 @@ public static class WorkstationServiceCollectionExtensions
 
         services.AddHttpClient();
         services.AddMemoryCache();
+        services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
         services.TryAddSingleton<UserProfileRegistry>();
         services.TryAddSingleton<LoginSessionService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
@@ -87,6 +88,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<LedgerReadService>();
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<StrategyRunComparisonService>();
+        services.TryAddSingleton<AuditTrailExplorerService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
@@ -98,6 +100,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
+        services.TryAddSingleton<FundAccountCloseReadinessService>();
 
         services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();
 
@@ -112,6 +115,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
+        services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
         services.TryAddSingleton<ReportPackValidationService>();
         services.TryAddSingleton<ReportTemplateRegistryService>();
         services.TryAddSingleton<ReportPackWorkflowService>();
@@ -120,6 +124,7 @@ public static class WorkstationServiceCollectionExtensions
             var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
             return new FileGovernanceReportPackRepository(ResolveWorkstationDataDirectory(sp), logger);
         });
+        services.TryAddSingleton<LedgerAmountProvenanceService>();
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
         services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
         services.TryAddSingleton<IOperationsContinuityRepository>(sp =>
@@ -143,6 +148,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>()));
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
+        services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
 
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
@@ -158,6 +164,10 @@ public static class WorkstationServiceCollectionExtensions
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
             return new FileReconciliationBreakQueueRepository(ResolveWorkstationDataDirectory(sp), logger);
         });
+        services.TryAddSingleton<SecurityMasterExceptionCaseworkService>(sp =>
+            new SecurityMasterExceptionCaseworkService(
+                sp.GetService<IReconciliationBreakQueueRepository>(),
+                sp.GetRequiredService<ILogger<SecurityMasterExceptionCaseworkService>>()));
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>

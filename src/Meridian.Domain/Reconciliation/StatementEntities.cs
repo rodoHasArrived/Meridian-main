@@ -41,6 +41,10 @@ public sealed record ReconciliationCase(
     public ReconciliationResolutionMetadata? Resolution { get; init; }
     public DateTimeOffset LastUpdatedAtUtc { get; init; } = CreatedAtUtc;
     public string LastUpdatedBy { get; init; } = "system";
+    public string Disposition { get; init; } = "Open";
+    public int AgingDays { get; init; } = 0;
+    public IReadOnlyList<ReconciliationCaseAttachment> Attachments { get; init; } = [];
+    public ReconciliationBreakExplanation? BreakExplanation { get; init; }
 }
 
 public sealed record ReconciliationCaseCommentThread(string ThreadId, string Subject, IReadOnlyList<ReconciliationCaseComment> Comments);
@@ -50,6 +54,24 @@ public sealed record ReconciliationCaseComment(string CommentId, string Body, st
 public sealed record ReconciliationCaseAuditEvent(string EventId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Detail);
 
 public sealed record ReconciliationResolutionMetadata(string ResolutionCode, string Summary, string ResolvedBy, DateTimeOffset ResolvedAtUtc, string? SignedOffBy = null, DateTimeOffset? SignedOffAtUtc = null);
+
+public sealed record ReconciliationCaseAttachment(
+    string AttachmentId,
+    string EvidenceKind,
+    string SourceSystem,
+    string SourceReference,
+    string ContentHash,
+    string? Route,
+    DateTimeOffset AttachedAtUtc);
+
+public sealed record ReconciliationBreakExplanation(
+    string Summary,
+    IReadOnlyList<string> SourceSystems,
+    string ProbableCause,
+    string LedgerImpact,
+    string SuggestedNextAction,
+    string RequiredSignoffRole,
+    IReadOnlyList<string> EvidenceLinks);
 
 public sealed record ReconciliationCaseHistoryEntry(
     DateTimeOffset TimestampUtc,

@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { getRunAttribution, getRunCashFlows, getRunEquityCurve, getRunFills } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
   type PortfolioBrokeragePositionRow,
   type PortfolioPositionRow,
+  type PortfolioRunDrillInData,
   type PortfolioWorkflowTaskAction,
   type PortfolioRunRow,
   usePortfolioScreenViewModel
@@ -253,6 +255,8 @@ export function PortfolioScreen({
   const location = useLocation();
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusBrokerageAccount = useRef(false);
+  const drillInRequestId = useRef(0);
+  const [selectedRunDrillIn, setSelectedRunDrillIn] = useState<PortfolioRunDrillInData | null>(null);
   const vm = usePortfolioScreenViewModel({
     portfolio,
     trading,
@@ -260,6 +264,7 @@ export function PortfolioScreen({
     governance,
     brokerageConnection,
     brokeragePortfolio,
+    selectedRunDrillIn,
     pathname: location.pathname
   });
 
@@ -271,6 +276,53 @@ export function PortfolioScreen({
     shouldFocusBrokerageAccount.current = false;
     brokerageAccountButtonRefs.current[vm.selectedBrokerageAccountKey]?.focus();
   }, [vm.selectedBrokerageAccountKey]);
+
+  useEffect(() => {
+    if (selectedRunDrillIn && selectedRunDrillIn.runId !== vm.selectedRun?.id) {
+      setSelectedRunDrillIn(null);
+    }
+  }, [selectedRunDrillIn, vm.selectedRun?.id]);
+
+  async function loadSelectedRunDrillIn() {
+    const runId = vm.selectedRun?.id;
+    if (!runId) {
+      return;
+    }
+
+    const requestId = ++drillInRequestId.current;
+    setSelectedRunDrillIn({
+      runId,
+      attribution: null,
+      drawdownProfile: null,
+      cashFlow: null,
+      trades: null,
+      isLoading: true,
+      error: null
+    });
+
+    const [attribution, drawdownProfile, cashFlow, trades] = await Promise.allSettled([
+      getRunAttribution(runId),
+      getRunEquityCurve(runId),
+      getRunCashFlows(runId),
+      getRunFills(runId)
+    ]);
+
+    if (drillInRequestId.current !== requestId) {
+      return;
+    }
+
+    const failures = [attribution, drawdownProfile, cashFlow, trades]
+      .filter((result): result is PromiseRejectedResult => result.status === "rejected");
+    setSelectedRunDrillIn({
+      runId,
+      attribution: attribution.status === "fulfilled" ? attribution.value : null,
+      drawdownProfile: drawdownProfile.status === "fulfilled" ? drawdownProfile.value : null,
+      cashFlow: cashFlow.status === "fulfilled" ? cashFlow.value : null,
+      trades: trades.status === "fulfilled" ? trades.value : null,
+      isLoading: false,
+      error: failures.length > 0 ? `${failures.length} drill-in request${failures.length === 1 ? "" : "s"} failed.` : null
+    });
+  }
 
   function handleBrokerageAccountFilterKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveBrokerageAccountFilterKeyCommand(event.key);
@@ -758,7 +810,63 @@ export function PortfolioScreen({
         </CardHeader>
         <CardContent>
           {vm.hasRuns ? (
-            <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+            <div className="space-y-4">
+              <section
+                aria-label={vm.runComparisonSummary.ariaLabel}
+                className={cn("rounded-lg border bg-secondary/15 p-4", cashFlowBorderClass[vm.runComparisonSummary.statusTone])}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="eyebrow-label">{vm.runComparisonSummary.title}</div>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.runComparisonSummary.description}</p>
+                  </div>
+                  <Badge variant={vm.runComparisonSummary.statusTone === "default" ? "outline" : vm.runComparisonSummary.statusTone}>
+                    {vm.runComparisonSummary.cards.length} signals
+                  </Badge>
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                  {vm.runComparisonSummary.cards.map((card) => (
+                    <div key={card.id} className="rounded-md border border-border/60 bg-background/45 px-3 py-3">
+                      <div className="eyebrow-label">{card.label}</div>
+                      <div className={cn("mt-2 font-mono text-sm font-semibold", detailFieldToneClass[card.tone])}>{card.value}</div>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+              <section
+                aria-label={vm.runDrillInSummary.ariaLabel}
+                className={cn("rounded-lg border bg-secondary/15 p-4", cashFlowBorderClass[vm.runDrillInSummary.statusTone])}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="eyebrow-label">{vm.runDrillInSummary.title}</div>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.runDrillInSummary.description}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void loadSelectedRunDrillIn()}
+                    disabled={!vm.selectedRun || vm.runDrillInSummary.actionLabel === "Loading drill-ins..."}
+                    disabledReason={!vm.selectedRun ? "Select a run before loading drill-in evidence." : undefined}
+                    busy={vm.runDrillInSummary.actionLabel === "Loading drill-ins..."}
+                    busyLabel={vm.runDrillInSummary.actionLabel}
+                    aria-label={vm.runDrillInSummary.actionAriaLabel}
+                  >
+                    {vm.runDrillInSummary.actionLabel}
+                  </Button>
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {vm.runDrillInSummary.cards.map((card) => (
+                    <div key={card.id} className="rounded-md border border-border/60 bg-background/45 px-3 py-3">
+                      <div className="eyebrow-label">{card.label}</div>
+                      <div className={cn("mt-2 font-mono text-sm font-semibold", detailFieldToneClass[card.tone])}>{card.value}</div>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+              <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
               <DenseDataTable
                 columns={runColumns}
                 rows={vm.runRows}
@@ -827,6 +935,7 @@ export function PortfolioScreen({
                   </div>
                 )}
               </aside>
+              </div>
             </div>
           ) : (
             <div

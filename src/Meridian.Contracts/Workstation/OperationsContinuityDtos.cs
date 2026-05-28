@@ -225,6 +225,17 @@ public static class OperationsWorkflowContractMatrix
         "LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING",
         "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
         "LEDGER_JOURNAL_PROVENANCE_MISSING",
+        "LEDGER_JOURNAL_SECURITY_MASTER_PROVENANCE_MISMATCH",
+        "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING",
+        "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED",
+        "LEDGER_LINE_SECURITY_MASTER_ID_MISMATCH",
+        "LEDGER_LINE_SECURITY_MASTER_ID_MISSING",
+        "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISSING",
+        "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISMATCH",
+        "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISMATCH",
+        "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISSING",
+        "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISMATCH",
+        "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISSING",
         "LEDGER_SOURCE_ACTIVITY_DUPLICATE",
         "LEDGER_VALIDATED_JOURNAL_REQUIRED",
         "LEDGER_VALIDATION_REQUIRED",
@@ -347,6 +358,17 @@ public static class OperationsWorkflowContractMatrix
         "FACTOR_SCHEDULE_MISSING",
         "FACTOR_STALE",
         "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
+        "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING",
+        "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED",
+        "LEDGER_LINE_SECURITY_MASTER_ID_MISMATCH",
+        "LEDGER_LINE_SECURITY_MASTER_ID_MISSING",
+        "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISSING",
+        "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISMATCH",
+        "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISMATCH",
+        "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISSING",
+        "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISMATCH",
+        "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISSING",
+        "LEDGER_JOURNAL_SECURITY_MASTER_PROVENANCE_MISMATCH",
         "LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING",
         "LEDGER_DRAFT_IMBALANCED",
         "LEDGER_PERIOD_CLOSED",
@@ -521,7 +543,12 @@ public sealed record OperationsLedgerJournalLineDto(
     decimal Debit,
     decimal Credit,
     string? Symbol = null,
-    string? FinancialAccountId = null);
+    string? FinancialAccountId = null,
+    Guid? SecurityId = null,
+    bool SecurityMasterApproved = false,
+    string? SecurityMasterProvenance = null,
+    string? LedgerMappingReference = null,
+    string? SecurityMasterApprovalReference = null);
 
 public sealed record OperationsJournalEntryMetadataDto(
     string? ActivityType = null,
@@ -599,7 +626,11 @@ public sealed record OperationsCloseWorkflowRequestDto(
     string ReportPackId,
     IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    string? ClosePackageId = null,
+    string? ClosePackageManifestId = null,
+    string? ClosePackageEvidenceHash = null,
+    string? ClosePackageRetainedManifestRoute = null);
 
 public sealed record OperationsReopenWorkflowRequestDto(
     long ExpectedVersion,
@@ -641,6 +672,101 @@ public sealed record OperationsApprovalPolicyMatrixRowDto(
     string AuditEventType,
     string Route,
     string Severity);
+
+public sealed record OperationsApprovalPolicyRuleUpsertRequestDto(
+    string PolicyKey,
+    string WorkflowArea,
+    string Action,
+    OperationsGateKeyDto Gate,
+    string Trigger,
+    string RequiredPermission,
+    string SubmitterRole,
+    string ReviewerRole,
+    int RequiredDistinctApprovals,
+    bool RequiresIndependentReviewer,
+    bool RequiresReportPack,
+    bool RequiresChecklistControlApprovals,
+    string EvidenceRequirement,
+    string AuditEventType,
+    string Route,
+    string Severity,
+    string RequestedBy,
+    string Rationale,
+    string? CorrelationId = null);
+
+public sealed record OperationsApprovalPolicyRuleUpsertResultDto(
+    OperationsApprovalPolicyMatrixRowDto Rule,
+    OperationsApprovalPolicyMatrixDto Matrix,
+    OperationsApprovalPolicyRuleAuditEventDto AuditEvent);
+
+public sealed record OperationsApprovalPolicyRuleAuditEventDto(
+    string AuditId,
+    string EventType,
+    DateTimeOffset OccurredAtUtc,
+    string Actor,
+    string Rationale,
+    string CorrelationId,
+    string PolicyKey,
+    string Action,
+    OperationsGateKeyDto Gate,
+    int RequiredDistinctApprovals,
+    bool RequiresIndependentReviewer,
+    bool RequiresReportPack,
+    bool RequiresChecklistControlApprovals);
+
+public sealed record OperationsCloseCalendarDto(
+    DateTimeOffset GeneratedAtUtc,
+    IReadOnlyList<OperationsCloseCalendarItemDto> Items);
+
+public sealed record OperationsCloseCalendarItemDto(
+    Guid WorkflowId,
+    Guid FundAccountId,
+    string PeriodId,
+    OperationsWorkflowStatusDto Status,
+    long Version,
+    DateOnly? NextDueDate,
+    string? NextDueTaskId,
+    string? NextDueLabel,
+    string? NextDueOwner,
+    string? ReadinessSeverity,
+    int? ReadinessScore,
+    bool IsReadyToClose,
+    int BlockerCount,
+    int OpenChecklistCount,
+    int RequiredApprovalCount,
+    int CompletedApprovalCount,
+    string Route,
+    IReadOnlyList<OperationsCloseReadinessComponentDto>? ReadinessComponents = null,
+    IReadOnlyList<OperationsCloseReadinessBlockerDto>? ReadinessBlockers = null,
+    IReadOnlyList<OperationsNextActionDto>? ReadinessNextActions = null);
+
+public sealed record OperationsCloseCalendarItemUpsertRequestDto(
+    Guid WorkflowId,
+    string TaskId,
+    DateOnly DueDate,
+    string Owner,
+    string RequestedBy,
+    string Rationale,
+    string? CorrelationId = null);
+
+public sealed record OperationsCloseCalendarItemUpsertResultDto(
+    OperationsCloseCalendarItemDto Item,
+    OperationsCloseCalendarDto Calendar,
+    OperationsCloseCalendarItemAuditEventDto AuditEvent);
+
+public sealed record OperationsCloseCalendarItemAuditEventDto(
+    string AuditId,
+    string EventType,
+    DateTimeOffset OccurredAtUtc,
+    string Actor,
+    string Rationale,
+    string CorrelationId,
+    Guid WorkflowId,
+    Guid FundAccountId,
+    string PeriodId,
+    string TaskId,
+    DateOnly DueDate,
+    string Owner);
 
 public sealed record OperationsTransitionResultDto(
     bool Success,
@@ -690,7 +816,8 @@ public sealed record OperationsContinuityWorkflowDto(
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
     IReadOnlyList<OperationsNextActionDto> NextActions,
-    OperationsCloseReadinessDto? CloseReadiness = null);
+    OperationsCloseReadinessDto? CloseReadiness = null,
+    OperationsClosePackagePublicationDto? ClosePackage = null);
 
 public sealed record OperationsCloseChecklistTaskDto(
     string TaskId,
@@ -708,6 +835,18 @@ public sealed record OperationsCloseChecklistTaskDto(
     bool CanAcknowledge,
     DateTimeOffset? AcknowledgedAtUtc,
     string? AcknowledgedBy);
+
+public sealed record OperationsClosePackagePublicationDto(
+    string ClosePackageId,
+    string ReportPackId,
+    string RetainedManifestId,
+    string RetainedManifestRoute,
+    string EvidenceHash,
+    DateTimeOffset PublishedAtUtc,
+    string PublishedBy,
+    string SignOffRationale,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<OperationsChecklistControlApprovalDto> ChecklistControlApprovals);
 
 public sealed record OperationsChecklistAcknowledgeRequestDto(
     long ExpectedVersion,
@@ -856,7 +995,10 @@ public sealed record OperationsNextActionDto(
     string Code,
     string Label,
     string? Route,
-    OperationsGateKeyDto? Gate);
+    OperationsGateKeyDto? Gate)
+{
+    public string? RouteHint { get; init; } = Route;
+}
 
 public sealed record OperationsEvidenceLinkDto(
     string EvidenceId,

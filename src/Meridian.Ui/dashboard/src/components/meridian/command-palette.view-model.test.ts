@@ -415,19 +415,25 @@ describe("command palette view model", () => {
     expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-reconciliation-breaks")).toMatchObject({
       kind: "workflow",
       route: "/accounting/reconciliation",
-      statusLabel: "Workflow",
+      statusLabel: "Review",
+      statusTone: "review",
+      statusVisible: true,
       presetId: null
     });
     expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-ledger-continuity")).toMatchObject({
       kind: "workflow",
       route: "/accounting/ledger",
-      statusLabel: "Workflow",
+      statusLabel: "Ready",
+      statusTone: "ready",
+      statusVisible: true,
       presetId: null
     });
     expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-audit-trail")).toMatchObject({
       kind: "workflow",
       route: "/accounting",
-      statusLabel: "Workflow",
+      statusLabel: "Ready",
+      statusTone: "ready",
+      statusVisible: true,
       presetId: null
     });
     expect(model.items.find((item) => item.id === "preset:preset-1")).toMatchObject({
@@ -476,6 +482,67 @@ describe("command palette view model", () => {
       kind: "workflow",
       route: "/reporting/report-packs",
       routeLabel: "/reporting/report-packs"
+    });
+  });
+
+  it("routes operations-continuity workflow actions to the close workflow panel", () => {
+    const model = buildCommandPaletteViewModel("/accounting", undefined, {
+      workflowLibrary: {
+        generatedAt: "2026-01-01T00:00:00Z",
+        actions: [],
+        workflows: [
+          {
+            workflowId: "accounting-reconciliation-review",
+            title: "Accounting Reconciliation Review",
+            summary: "Work close workflow gates and recovery actions.",
+            workspaceId: "accounting",
+            workspaceTitle: "Accounting",
+            entryPageTag: "AccountingShell",
+            tone: "Warning",
+            evidenceTags: ["close checklist"],
+            marketPatternTags: ["period close"],
+            actions: [
+              {
+                actionId: "workflow.accounting.review-operations-continuity",
+                label: "Review Close Workflow",
+                detail: "Open the governed close workflow with gates, blockers, checklist, timeline, and evidence.",
+                targetPageTag: "OperationsContinuity",
+                tone: "Warning",
+                workItemKind: null,
+                routePrefixes: ["/api/workstation/operations/continuity"],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.accounting.review-close-readiness",
+                label: "Review Close Readiness",
+                detail: "Inspect close readiness score, blockers, checklist controls, and next recovery actions.",
+                targetPageTag: "OperationsClose",
+                tone: "Warning",
+                workItemKind: null,
+                routePrefixes: ["/api/workstation/operations/continuity/{workflowId:guid}/close-readiness"],
+                routeContains: [],
+                aliases: []
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-operations-continuity")).toMatchObject({
+      kind: "workflow",
+      route: "/accounting/operations-continuity",
+      statusLabel: "Review",
+      statusTone: "review",
+      statusVisible: true
+    });
+    expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-close-readiness")).toMatchObject({
+      kind: "workflow",
+      route: "/accounting/operations-continuity",
+      statusLabel: "Review",
+      statusTone: "review",
+      statusVisible: true
     });
   });
 

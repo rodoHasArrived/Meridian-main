@@ -79,6 +79,37 @@ public sealed class EvidenceTemplateRegistry
                 "provider-trust"
             ],
             NoOrphanRule: true,
+            ExportSettings: ManifestOnlyV1),
+
+        new EvidenceTemplateDto(
+            WorkflowId: "security-master-conflict-review",
+            RequiredEvidenceKinds:
+            [
+                "security-master-conflict-queue",
+                "security-master-conflict"
+            ],
+            OptionalEvidenceKinds:
+            [
+                "break-queue",
+                "audit-history"
+            ],
+            NoOrphanRule: true,
+            ExportSettings: ManifestOnlyV1),
+
+        new EvidenceTemplateDto(
+            WorkflowId: "operations-approval-review",
+            RequiredEvidenceKinds:
+            [
+                "approval"
+            ],
+            OptionalEvidenceKinds:
+            [
+                "approval-audit",
+                "approval-policy",
+                "close-checklist",
+                "report-pack"
+            ],
+            NoOrphanRule: true,
             ExportSettings: ManifestOnlyV1)
     ];
 

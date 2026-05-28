@@ -68,6 +68,7 @@ public sealed record SecurityMasterTrustSnapshotDto(
     public SecurityMasterLotModelDto? LotModel { get; init; }
     public SecurityMasterScheduleBookDto? ScheduleBook { get; init; }
     public SecurityMasterOpenLotReadModelDto? OpenLotReadModel { get; init; }
+    public InstrumentPassportDto? InstrumentPassport { get; init; }
 }
 
 public sealed record SecurityMasterEconomicDefinitionDrillInDto(
@@ -344,6 +345,52 @@ public sealed record SecurityMasterRecommendedActionDto(
     bool IsEnabled,
     Guid? ConflictId = null,
     string? Target = null);
+
+/// <summary>
+/// Governed instrument passport that combines identifiers, mappings, lifecycle,
+/// corporate-action, pricing, and downstream usage evidence for a Security Master record.
+/// </summary>
+public sealed record InstrumentPassportProviderConfidenceDto(
+    string Provider,
+    string ProviderSource,
+    string MappingKind,
+    string Symbol,
+    string NormalizedSymbol,
+    bool IsPrimary,
+    bool IsActive,
+    DateTimeOffset? FreshnessAsOf,
+    int? FreshnessMinutes,
+    decimal ConfidenceScore,
+    string ConfidenceReason,
+    IReadOnlyList<Guid> IdentifierConflictIds,
+    IReadOnlyList<string> IdentifierConflictSummaries,
+    IReadOnlyList<SecurityMasterChangeHistoryItemDto> OverrideHistory);
+
+public sealed record InstrumentPassportDto(
+    Guid SecurityId,
+    SecurityIdentityDrillInDto Identity,
+    SecurityMasterEconomicDefinitionDrillInDto EconomicDefinition,
+    SecurityMasterIdentifierSummaryDto IdentifierSummary,
+    IReadOnlyList<SecurityMasterProviderSymbolMappingDto> ProviderMappings,
+    IReadOnlyList<SecurityMasterChangeHistoryItemDto> LifecycleEvents,
+    IReadOnlyList<CorporateActionDto> CorporateActions,
+    InstrumentPassportPricingDto Pricing,
+    SecurityMasterDownstreamImpactDto Usage,
+    SecurityMasterTrustPostureDto TrustPosture,
+    DateTimeOffset RetrievedAtUtc)
+{
+    public IReadOnlyList<InstrumentPassportProviderConfidenceDto> ProviderConfidence { get; init; } = [];
+}
+
+public sealed record InstrumentPassportPricingDto(
+    string Status,
+    string Summary,
+    TradingParametersDto? TradingParameters,
+    decimal? LotSize,
+    decimal? TickSize,
+    decimal? ContractMultiplier,
+    string? TradingHoursUtc,
+    decimal? CircuitBreakerThresholdPct);
 
 public sealed record BulkResolveSecurityMasterConflictsRequest(
     IReadOnlyList<Guid> ConflictIds,

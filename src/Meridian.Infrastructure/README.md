@@ -40,6 +40,14 @@ registry can hold multiple adapter contracts for one provider family ID. This al
 such as `alpaca` to resolve independently for streaming, backfill, and symbol-search contracts
 without dropping one registration because another adapter uses the same family ID.
 
+Brokerage adapter mappers preserve explicit provider fill realized P&L when a venue payload
+supplies it, while adapters without a native realized-P&L field leave the SDK value null so
+accounting reconciliation can distinguish source evidence from inferred values.
+Read-only normalized brokerage adapters can also pass through provider corporate-action and factor
+events in activity snapshots, allowing downstream reconciliation to retain split, dividend,
+amortization, paydown, and factor evidence without storing provider credentials or rebuilding
+vendor-specific payloads in the workstation layer.
+
 Streaming failover state is updated from explicit success, failure, and latency signals in addition
 to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider
 failure. Backfill orchestration stores dependency job IDs on each job so chained jobs resume only

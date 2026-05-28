@@ -62,18 +62,24 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
     {
         const string stockSharpGatewayTypeName = "Meridian.Infrastructure.Adapters.StockSharp.StockSharpBrokerageGateway, Meridian.Infrastructure";
         var gatewayType = Type.GetType(stockSharpGatewayTypeName, throwOnError: false);
+        RegisterOptionalStockSharpGateway(services, gatewayType);
+    }
+
+    internal static void RegisterOptionalStockSharpGateway(IServiceCollection services, Type? gatewayType)
+    {
         if (gatewayType is null || !typeof(IBrokerageGateway).IsAssignableFrom(gatewayType))
         {
             return;
         }
 
+        services.TryAddSingleton(gatewayType);
         services.AddBrokerageGateway("stocksharp", sp => (IBrokerageGateway)sp.GetRequiredService(gatewayType));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IBrokerageAccountCatalog), sp =>
-            new DelegatingBrokerageSyncAdapter((IBrokerageGateway)sp.GetRequiredService(gatewayType), "stocksharp")));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IBrokeragePortfolioSync), sp =>
-            new DelegatingBrokerageSyncAdapter((IBrokerageGateway)sp.GetRequiredService(gatewayType), "stocksharp")));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IBrokerageActivitySync), sp =>
-            new DelegatingBrokerageSyncAdapter((IBrokerageGateway)sp.GetRequiredService(gatewayType), "stocksharp")));
+        services.TryAddSingleton(sp => new StockSharpBrokerageGatewayAccessor(sp, gatewayType));
+        services.TryAddSingleton(sp =>
+            new StockSharpBrokerageSyncAdapter(sp.GetRequiredService<StockSharpBrokerageGatewayAccessor>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, StockSharpBrokerageSyncAdapter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync, StockSharpBrokerageSyncAdapter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync, StockSharpBrokerageSyncAdapter>());
     }
 
     private sealed class AlpacaBrokerageSyncAdapter(AlpacaBrokerageGateway gateway) :
@@ -161,13 +167,18 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
         }
     }
 
-    private sealed class DelegatingBrokerageSyncAdapter(IBrokerageGateway gateway, string providerId) :
+    private sealed class StockSharpBrokerageGatewayAccessor(IServiceProvider services, Type gatewayType)
+    {
+        public IBrokerageGateway GetGateway() => (IBrokerageGateway)services.GetRequiredService(gatewayType);
+    }
+
+    private sealed class StockSharpBrokerageSyncAdapter(StockSharpBrokerageGatewayAccessor gatewayAccessor) :
         IBrokerageAccountCatalog,
         IBrokeragePortfolioSync,
         IBrokerageActivitySync
     {
-        public string ProviderId { get; } = providerId;
-        public string ProviderDisplayName => providerId;
+        public string ProviderId => "stocksharp";
+        public string ProviderDisplayName => gatewayAccessor.GetGateway().BrokerDisplayName;
         public Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct) => Task.FromResult<IReadOnlyList<BrokerageExternalAccountDto>>([]);
         public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct) => throw new NotSupportedException();
         public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, CancellationToken ct) => throw new NotSupportedException();

@@ -151,7 +151,7 @@ public sealed class EvidencePacketValidationService
             linked.Add(edge.ToId);
         }
 
-        foreach (var orphan in nodes.Where(node => !linked.Contains(node.EvidenceId)).Skip(1))
+        foreach (var orphan in nodes.Where(node => !linked.Contains(node.EvidenceId)))
         {
             var message = $"Evidence node '{orphan.EvidenceId}' is not linked into the packet graph.";
             warnings.Add(message);

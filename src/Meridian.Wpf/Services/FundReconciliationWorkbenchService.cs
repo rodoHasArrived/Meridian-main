@@ -280,6 +280,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         var strategyName = string.IsNullOrWhiteSpace(item.StrategyName) && runNames.TryGetValue(item.RunId, out var resolvedName)
             ? resolvedName
             : item.StrategyName;
+        var explanation = item.BreakExplanation;
 
         return new FundReconciliationBreakQueueRow(
             BreakId: item.BreakId,
@@ -309,7 +310,30 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ExceptionRouteLabel: string.IsNullOrWhiteSpace(item.ExceptionRoute) ? "Unrouted" : item.ExceptionRoute,
             ToleranceProfileLabel: string.IsNullOrWhiteSpace(item.ToleranceProfileId) ? "Unassigned" : item.ToleranceProfileId,
             RequiredSignoffRoleLabel: string.IsNullOrWhiteSpace(item.RequiredSignoffRole) ? "Not configured" : item.RequiredSignoffRole,
-            SignoffStatusLabel: Humanize(item.SignoffStatus));
+            SignoffStatusLabel: Humanize(item.SignoffStatus),
+            ExplanationSummary: string.IsNullOrWhiteSpace(explanation?.Summary)
+                ? item.ExplainabilitySummary ?? item.Reason
+                : explanation.Summary,
+            SourceSystemsLabel: JoinOrDefault(explanation?.SourceSystems, "Not reported"),
+            ProbableCauseLabel: string.IsNullOrWhiteSpace(explanation?.ProbableCause) ? "Not reported" : explanation.ProbableCause,
+            LedgerImpactLabel: string.IsNullOrWhiteSpace(explanation?.LedgerImpact) ? "Not reported" : explanation.LedgerImpact,
+            SuggestedNextActionLabel: string.IsNullOrWhiteSpace(explanation?.SuggestedNextAction)
+                ? item.RecommendedAction ?? "Review evidence, assign owner, and move the break through the governed case lifecycle."
+                : explanation.SuggestedNextAction,
+            EvidenceLinksLabel: JoinOrDefault(explanation?.EvidenceLinks, "No evidence links reported"));
+    }
+
+    private static string JoinOrDefault(IReadOnlyList<string>? values, string fallback)
+    {
+        var nonBlankValues = values?
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .ToArray();
+        if (nonBlankValues is null || nonBlankValues.Length == 0)
+        {
+            return fallback;
+        }
+
+        return string.Join(", ", nonBlankValues);
     }
 
     private static FundReconciliationCalibrationProfileRow MapCalibrationProfileRow(

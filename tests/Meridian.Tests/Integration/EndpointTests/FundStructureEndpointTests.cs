@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.FundStructure;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
@@ -336,6 +337,58 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
+    public async Task AssignLedgerMapping_WithAuditEvidence_UpdatesWorkbenchMapping()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+        var request = new LedgerMappingAssignmentRequestDto(
+            AccountId: seed.BankAccountId,
+            LedgerGroupId: "ENDPOINT-ALT",
+            RequestedBy: "fund-ops",
+            Rationale: "Move the operating cash account to the reviewed close ledger.",
+            EffectiveFrom: new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
+            CorrelationId: "ledger-map-endpoint-test",
+            AssignmentId: Guid.NewGuid());
+
+        var response = await _client.PostAsJsonAsync(
+            "/api/fund-structure/ledger-mapping-assignments",
+            request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var result = await response.Content.ReadFromJsonAsync<LedgerMappingAssignmentResultDto>();
+
+        result.Should().NotBeNull();
+        result!.Assignment.NodeId.Should().Be(seed.BankAccountId);
+        result.Assignment.AssignmentType.Should().Be("LedgerGroup");
+        result.Assignment.AssignmentReference.Should().Be("ENDPOINT-ALT");
+        result.Account.Mapping.LedgerGroupId.Value.Should().Be("ENDPOINT-ALT");
+        result.Account.Mapping.Source.Should().Be(LedgerMappingSourceDto.AccountAssignment);
+        result.AuditEvent.Should().Match<LedgerMappingAssignmentAuditEventDto>(audit =>
+            audit.EventType == "ledger-mapping-assigned" &&
+            audit.Actor == "fund-ops" &&
+            audit.Rationale == "Move the operating cash account to the reviewed close ledger." &&
+            audit.CorrelationId == "ledger-map-endpoint-test" &&
+            audit.FromLedgerGroupId == "ENDPOINT-TB" &&
+            audit.ToLedgerGroupId == "ENDPOINT-ALT");
+        result.Workbench.Accounts.Should().Contain(account =>
+            account.AccountId == seed.BankAccountId &&
+            account.Mapping.LedgerGroupId.Value == "ENDPOINT-ALT");
+    }
+
+    [Fact]
+    public async Task AssignLedgerMapping_WithoutRationale_ReturnsBadRequest()
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/fund-structure/ledger-mapping-assignments",
+            new LedgerMappingAssignmentRequestDto(
+                AccountId: Guid.NewGuid(),
+                LedgerGroupId: "ENDPOINT-ALT",
+                RequestedBy: "fund-ops",
+                Rationale: ""));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task AccountReadinessAndSyncHistoryEndpoints_ReturnSharedAccountSyncState()
     {
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
@@ -429,7 +482,38 @@ public sealed class FundStructureEndpointTests
         var fundId = TranslateFundProfileId(fundProfileId);
 
         var accountService = _fixture.Services.GetRequiredService<IFundAccountService>();
+        var structureService = _fixture.Services.GetRequiredService<IFundStructureService>();
         var repository = _fixture.Services.GetRequiredService<IStrategyRepository>();
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var effectiveFrom = new DateTimeOffset(2026, 4, 10, 0, 0, 0, TimeSpan.Zero);
+
+        await structureService.CreateOrganizationAsync(new CreateOrganizationRequest(
+            organizationId,
+            $"ORG-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Endpoint Organization",
+            "USD",
+            effectiveFrom,
+            "endpoint-test"));
+
+        await structureService.CreateBusinessAsync(new CreateBusinessRequest(
+            businessId,
+            organizationId,
+            BusinessKindDto.FundManager,
+            $"BUS-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Endpoint Business",
+            "USD",
+            effectiveFrom,
+            "endpoint-test"));
+
+        await structureService.CreateFundAsync(new CreateFundRequest(
+            fundId,
+            $"FND-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            displayName,
+            "USD",
+            effectiveFrom,
+            "endpoint-test",
+            BusinessId: businessId));
 
         var bankAccount = await accountService.CreateAccountAsync(new CreateAccountRequest(
             AccountId: Guid.NewGuid(),
@@ -437,7 +521,7 @@ public sealed class FundStructureEndpointTests
             AccountCode: $"BANK-{Guid.NewGuid():N}"[..13].ToUpperInvariant(),
             DisplayName: "Endpoint Operating Cash",
             BaseCurrency: "USD",
-            EffectiveFrom: new DateTimeOffset(2026, 4, 10, 0, 0, 0, TimeSpan.Zero),
+            EffectiveFrom: effectiveFrom,
             CreatedBy: "endpoint-test",
             FundId: fundId,
             LedgerReference: "ENDPOINT-TB",

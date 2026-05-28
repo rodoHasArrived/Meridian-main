@@ -42,6 +42,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH",
             "LEDGER_JOURNAL_PERIOD_ID_MISMATCH",
             "LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING",
+            "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISMATCH",
+            "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISMATCH",
             "RECONCILIATION_EXTERNAL_EVIDENCE_MISSING_LEDGER_POSTING",
             "APPROVAL_METADATA_REQUIRED",
             "REPORT_PACK_ID_MISMATCH"
@@ -417,8 +419,18 @@ public sealed class OperationsContinuityWorkflowServiceTests
         closed.Workflow.CloseReadiness.Should().NotBeNull();
         closed.Workflow.CloseReadiness!.IsReadyToClose.Should().BeTrue();
         closed.Workflow.CloseReadiness.Score.Should().Be(100);
-        closed.Workflow.CloseReadiness.Components.Should().HaveCount(8);
+        closed.Workflow.CloseReadiness.Components.Should().HaveCount(9);
         closed.Workflow.CloseReadiness.Components.Should().OnlyContain(component => component.IsReady);
+        closed.Workflow.ClosePackage.Should().NotBeNull();
+        closed.Workflow.ClosePackage!.ReportPackId.Should().Be("report-pack-1");
+        closed.Workflow.ClosePackage.ClosePackageId.Should().StartWith("close-package-");
+        closed.Workflow.ClosePackage.RetainedManifestId.Should().EndWith("-manifest");
+        closed.Workflow.ClosePackage.RetainedManifestRoute.Should().Contain($"/operations-continuity/{workflowId:D}/close-package/");
+        closed.Workflow.ClosePackage.EvidenceHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        closed.Workflow.ClosePackage.PublishedBy.Should().Be("ops-user");
+        closed.Workflow.ClosePackage.SignOffRationale.Should().Be("Close accounting period");
+        closed.Workflow.ClosePackage.EvidenceLinks.Should().Contain(link => link.EvidenceId == "report-pack-1");
+        closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
 
         var timeline = await auditStore.GetTimelineAsync(workflowId);
         timeline.Select(entry => entry.EventType).Should().ContainInOrder(
@@ -434,6 +446,41 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "approval-submitted",
             "approval-approved",
             "workflow-closed");
+    }
+
+    [Fact]
+    public async Task RefreshGatePostureAsync_ProviderSyncStale_ShouldReduceCloseReadiness()
+    {
+        var service = CreateService(out _, out _);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            SecurityMasterSnapshotId: Guid.NewGuid(),
+            BrokerSource: "custodian",
+            Actor: "ops-user",
+            Rationale: "Open monthly operations close workflow"));
+
+        var posture = await service.RefreshGatePostureAsync(start.Workflow!.WorkflowId, new OperationsGatePostureRequestDto(
+            start.Workflow.Version,
+            "ops-user",
+            Rationale: "Provider sync failed freshness policy.",
+            ProviderAccountLinked: true,
+            ProviderSyncStale: true));
+
+        posture.Success.Should().BeTrue();
+        posture.Workflow.Should().NotBeNull();
+        posture.Workflow!.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.BrokerIngest)
+            .Status.Should().Be(OperationsGateStatusDto.Blocked);
+        posture.Workflow.CloseReadiness.Should().NotBeNull();
+        posture.Workflow.CloseReadiness!.Components.Should().Contain(component =>
+            component.Key == "provider-freshness" &&
+            component.Weight == 10 &&
+            component.IsReady == false &&
+            component.BlockingReason!.Contains("Provider data freshness", StringComparison.OrdinalIgnoreCase));
+        posture.Workflow.CloseReadiness.Blockers.Should().Contain(blocker =>
+            blocker.Code == "BROKER_SYNC_STALE" &&
+            blocker.Gate == OperationsGateKeyDto.BrokerIngest);
+        posture.Workflow.CloseReadiness.Score.Should().BeLessThan(100);
     }
 
     [Fact]
@@ -856,6 +903,312 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectJournalCandidateWhoseProvenanceDoesNotReferenceMetadataSecurityId()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var mismatchedSecurityId = Guid.Parse("A0F5F7BD-B091-4C0F-9EE5-CB2700C10E43");
+        var candidate = CreateInstrumentJournalCandidate(workflow.FundAccountId) with
+        {
+            SecurityMasterProvenance = $"security-master:{mismatchedSecurityId:N};snapshot:test-source-hash;approved:true"
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-journal-provenance-mismatch",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_JOURNAL_SECURITY_MASTER_PROVENANCE_MISMATCH");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectInstrumentLinesWithoutSecurityMasterGateEvidence()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateInstrumentJournalCandidate(
+            workflow.FundAccountId,
+            includeLineSecurityMasterEvidence: false);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-missing-line-security-master",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_ID_MISSING");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISSING");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISSING");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectInstrumentLineWhoseSecurityMasterIdDiffersFromJournalMetadata()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var lineSecurityId = Guid.Parse("C5FC0731-CC8A-4719-97D2-4719C4B9D43D");
+        var candidate = CreateInstrumentJournalCandidate(workflow.FundAccountId);
+        candidate = candidate with
+        {
+            Lines =
+            [
+                candidate.Lines[0] with
+                {
+                    SecurityId = lineSecurityId,
+                    SecurityMasterProvenance = $"security-master:{lineSecurityId:N};snapshot:test-source-hash;approved:true"
+                },
+                candidate.Lines[1]
+            ]
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-line-security-id-mismatch",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_LINE_SECURITY_MASTER_ID_MISMATCH");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectInstrumentLineWhoseSymbolDiffersFromJournalMetadata()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateInstrumentJournalCandidate(workflow.FundAccountId);
+        candidate = candidate with
+        {
+            Lines =
+            [
+                candidate.Lines[0] with { Symbol = "MSFT" },
+                candidate.Lines[1]
+            ]
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-line-symbol-mismatch",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISMATCH");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectInstrumentLineWhoseProvenanceDoesNotReferenceLineSecurityId()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var mismatchedSecurityId = Guid.Parse("DA8597C1-BE48-499C-BE0F-0E55E0E75C53");
+        var candidate = CreateInstrumentJournalCandidate(workflow.FundAccountId);
+        candidate = candidate with
+        {
+            Lines =
+            [
+                candidate.Lines[0] with
+                {
+                    SecurityMasterProvenance = $"security-master:{mismatchedSecurityId:N};snapshot:test-source-hash;approved:true"
+                },
+                candidate.Lines[1]
+            ]
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-line-provenance-mismatch",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISMATCH");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectInstrumentLineWhoseLedgerMappingDoesNotReferenceInstrument()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateInstrumentJournalCandidate(workflow.FundAccountId);
+        candidate = candidate with
+        {
+            Lines =
+            [
+                candidate.Lines[0] with { LedgerMappingReference = "ledger-map:generic-securities" },
+                candidate.Lines[1]
+            ]
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-line-mapping-mismatch",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISMATCH");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectInstrumentAccountLinesWithoutExplicitSecurityMasterLineage()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateJournalCandidate(workflow.FundAccountId) with
+        {
+            Lines =
+            [
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Securities",
+                    AccountType: nameof(LedgerAccountType.Asset),
+                    Debit: 100m,
+                    Credit: 0m),
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Cash",
+                    AccountType: nameof(LedgerAccountType.Asset),
+                    Debit: 0m,
+                    Credit: 100m)
+            ]
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-instrument-account-without-lineage",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISSING");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_ID_MISSING");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISSING");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISSING");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectApprovedInstrumentLineWithoutApprovalEvidence()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateInstrumentJournalCandidate(
+            workflow.FundAccountId,
+            includeSecurityMasterApprovalReference: false);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-missing-approval-reference",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldPersistInstrumentLineSecurityMasterLineage()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out _, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateInstrumentJournalCandidate(workflow.FundAccountId);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-instrument-lineage",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeTrue();
+        var journal = journalStore.Appended.Should().ContainSingle().Which.Entry;
+        journal.Metadata.Tags.Should().ContainKey("securityMasterLineage");
+        journal.Metadata.Tags!["securityMasterLineage"].Should().Contain("AAPL");
+        journal.Metadata.Tags!["securityMasterLineage"].Should().Contain("ledger-map:aapl-gaap-securities");
+        journal.Metadata.Tags!["securityMasterLineage"].Should().Contain("sm-approval:aapl-controller");
+        journal.Metadata.Tags!["securityMasterLineage"].Should().Contain(candidate.Lines[0].SecurityId!.Value.ToString("N"));
     }
 
     [Fact]
@@ -1923,6 +2276,62 @@ public sealed class OperationsContinuityWorkflowServiceTests
                 LedgerBook: "fund-close"),
             IdempotencyKey: idempotencyKey,
             SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+    }
+
+    private static OperationsLedgerJournalCandidateDto CreateInstrumentJournalCandidate(
+        Guid? aggregateId = null,
+        Guid? periodId = null,
+        bool includeLineSecurityMasterEvidence = true,
+        bool includeSecurityMasterApprovalReference = true)
+    {
+        var securityId = Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1");
+        var provenance = $"security-master:{securityId:N};snapshot:test-source-hash;approved:true";
+        var approvalReference = "sm-approval:aapl-controller";
+        var idempotencyKey = $"{securityId:N}:fund-close:20260531:BuySecurity:test-source-hash";
+        return new OperationsLedgerJournalCandidateDto(
+            JournalEntryId: null,
+            AggregateId: aggregateId ?? Guid.NewGuid(),
+            PeriodId: periodId ?? Guid.NewGuid(),
+            Timestamp: DateTimeOffset.Parse("2026-05-31T21:15:00Z"),
+            Description: "Operations continuity instrument posting",
+            Lines:
+            [
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Securities",
+                    AccountType: nameof(LedgerAccountType.Asset),
+                    Debit: 100m,
+                    Credit: 0m,
+                    Symbol: "AAPL",
+                    SecurityId: includeLineSecurityMasterEvidence ? securityId : null,
+                    SecurityMasterApproved: includeLineSecurityMasterEvidence,
+                    SecurityMasterProvenance: includeLineSecurityMasterEvidence ? provenance : null,
+                    LedgerMappingReference: includeLineSecurityMasterEvidence ? "ledger-map:aapl-gaap-securities" : null,
+                    SecurityMasterApprovalReference: includeLineSecurityMasterEvidence && includeSecurityMasterApprovalReference
+                        ? approvalReference
+                        : null),
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Cash",
+                    AccountType: nameof(LedgerAccountType.Asset),
+                    Debit: 0m,
+                    Credit: 100m)
+            ],
+            CommandId: Guid.NewGuid(),
+            SourceEventId: Guid.NewGuid(),
+            AccountingBasis: AccountingBasisKindDto.Primary,
+            AccountingPolicyId: "legacy-v1",
+            AccountingPolicyVersion: "legacy-v1",
+            RuleId: "operations-continuity-instrument-posting",
+            RuleVersion: "v1",
+            PostingKind: LedgerPostingKindDto.Originating,
+            Metadata: new OperationsJournalEntryMetadataDto(
+                ActivityType: "operations-continuity",
+                Symbol: "AAPL",
+                SecurityId: securityId,
+                LedgerBook: "fund-close"),
+            IdempotencyKey: idempotencyKey,
+            SecurityMasterProvenance: provenance);
     }
 
     private static OperationsWorkflowAuditDraft CreateAuditDraft(

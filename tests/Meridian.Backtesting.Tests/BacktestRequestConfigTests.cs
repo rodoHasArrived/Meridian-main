@@ -29,6 +29,8 @@ public sealed class BacktestRequestConfigTests
         request.CommissionMinimum.Should().Be(1.00m);
         request.CommissionMaximum.Should().Be(decimal.MaxValue);
         request.MarketImpactCoefficient.Should().Be(0.1m);
+        request.MaxParticipationRate.Should().Be(0m);
+        request.OrderBookQueueAheadFraction.Should().Be(0m);
     }
 
     // -------------------------------------------------------------------------
@@ -142,6 +144,19 @@ public sealed class BacktestRequestConfigTests
             MarketImpactCoefficient: 0.5m);
 
         request.MarketImpactCoefficient.Should().Be(0.5m);
+    }
+
+    [Fact]
+    public void OrderBookQueueAheadFraction_CanBeSetForQueueAwareReplay()
+    {
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 1),
+            To: new DateOnly(2024, 3, 31),
+            DefaultExecutionModel: ExecutionModel.OrderBook,
+            OrderBookQueueAheadFraction: 0.35m);
+
+        request.DefaultExecutionModel.Should().Be(ExecutionModel.OrderBook);
+        request.OrderBookQueueAheadFraction.Should().Be(0.35m);
     }
 
     // -------------------------------------------------------------------------

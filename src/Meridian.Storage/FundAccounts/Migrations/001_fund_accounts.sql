@@ -56,10 +56,18 @@ create table if not exists __SCHEMA__.account_balance_snapshot (
     securities_market_value numeric(24,6),
     accrued_interest        numeric(24,6),
     pending_settlement      numeric(24,6),
+    unrealized_pnl          numeric(24,6),
+    realized_pnl            numeric(24,6),
     source                  text        not null,
     recorded_at             timestamptz not null default now(),
     external_reference      text
 );
+
+alter table __SCHEMA__.account_balance_snapshot
+    add column if not exists unrealized_pnl numeric(24,6);
+
+alter table __SCHEMA__.account_balance_snapshot
+    add column if not exists realized_pnl numeric(24,6);
 
 create index if not exists ix_balance_snapshot_account_date
     on __SCHEMA__.account_balance_snapshot (account_id, as_of_date desc);

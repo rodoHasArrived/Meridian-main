@@ -1,14 +1,19 @@
 # L3 Inference & Queue-Aware Execution Backtesting: Implementation Plan
 
 **Version:** 1.2
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-28
 
 ## TODO Checklist (Concrete Implementation Items)
-- [ ] Define scope boundaries for **l3 inference implementation plan** and document explicit in-scope vs out-of-scope items.
-- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
-- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
-- [ ] Add/update operator runbook steps and rollback procedure for the l3 inference implementation plan workflow.
-- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+- [x] Define scope boundaries for **l3 inference implementation plan** and document explicit in-scope vs out-of-scope items.
+- [x] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [x] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [x] Add/update operator runbook steps and rollback procedure for the l3 inference implementation plan workflow.
+- [x] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
+**2026-05-28 milestone evidence:** `ExecutionSimulationOrchestrator` now emits baseline inferred
+queue diagnostics and confidence metadata through the existing `--simulate-execution` artifact
+surface. Focused validation:
+`dotnet test tests\Meridian.Tests\Meridian.Tests.csproj --no-restore --filter "FullyQualifiedName~ExecutionSimulationOrchestratorTests|FullyQualifiedName~SimulationCommandsTests" /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false /nr:false -m:1 --logger "console;verbosity=minimal"` (4 passed). Scope remains Phase 1 baseline inference only: no true exchange L3 order IDs, venue micro-priority, calibration command, parquet export, or WPF Simulation Explorer yet.
 
 **Audience:** Quantitative researchers, execution analysts, core contributors
 

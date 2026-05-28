@@ -9,10 +9,14 @@ import {
 } from "@/screens/settings-screen.view-model";
 import type {
   BrokerageConnectionStatus,
+  LedgerMappingWorkbench,
+  OperationsApprovalPolicyMatrix,
+  OperationsCloseCalendar,
   ProviderConnectionRow,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
+  RolePermissionCatalog,
   SessionInfo,
   SystemOverviewResponse
 } from "@/types";
@@ -183,6 +187,129 @@ const providerRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] = [
   }
 ];
 
+const rolePermissionCatalog: RolePermissionCatalog = {
+  roles: [
+    {
+      role: "Accounting",
+      displayName: "Accounting",
+      description: "Accounting and fund-operations access for trade records, exports, and direct-lending operations.",
+      isBuiltIn: true,
+      permissions: ["ViewTrades", "ExportData", "ManageDirectLending"],
+      permissionMask: 0
+    },
+    {
+      role: "Admin",
+      displayName: "Admin",
+      description: "Full platform administration including governed operations.",
+      isBuiltIn: true,
+      permissions: ["ManageUsers", "AdminMaintenance", "ModifyConfig"],
+      permissionMask: 0
+    }
+  ],
+  permissions: [
+    { name: "ManageUsers", value: 0, group: "Administration", description: "Create users." },
+    { name: "AdminMaintenance", value: 0, group: "Administration", description: "Run maintenance." },
+    { name: "ManageDirectLending", value: 0, group: "Direct lending", description: "Manage direct lending." }
+  ]
+};
+
+const ledgerMappingWorkbench: LedgerMappingWorkbench = {
+  asOf: "2026-05-28T00:00:00Z",
+  accountCount: 2,
+  mappedAccountCount: 1,
+  unmappedAccountCount: 1,
+  ledgerGroups: [
+    {
+      ledgerGroupId: "lg-1",
+      displayName: "Direct lending",
+      accountIds: ["account-1"],
+      investmentPortfolioIds: [],
+      clientIds: [],
+      fundIds: [],
+      sleeveIds: [],
+      vehicleIds: []
+    }
+  ],
+  accounts: [
+    {
+      accountId: "account-2",
+      accountCode: "OPS-2",
+      displayName: "Operations account",
+      accountType: "ManagedAccount",
+      operationalStatus: "Active",
+      baseCurrency: "USD",
+      institution: null,
+      fundId: null,
+      sleeveId: null,
+      vehicleId: null,
+      entityId: null,
+      portfolioId: null,
+      ledgerReference: null,
+      mapping: {
+        ledgerGroupId: "unassigned",
+        source: "Unassigned",
+        sourceNodeId: null,
+        sourceNodeKind: null,
+        sourceReference: null,
+        requiresUserMapping: true,
+        issueCodes: ["ledger-mapping.missing"]
+      },
+      recommendedAction: "Assign a ledger group before close."
+    }
+  ]
+};
+
+const approvalPolicyMatrix: OperationsApprovalPolicyMatrix = {
+  policyId: "ops-close",
+  version: "2026.05",
+  generatedAtUtc: "2026-05-28T00:00:00Z",
+  rows: [
+    {
+      policyKey: "ready-for-close",
+      workflowArea: "Account close",
+      action: "Approve close",
+      gate: "Approval",
+      trigger: "ReadyForClose",
+      requiredPermission: "AdminMaintenance",
+      submitterRole: "Accounting",
+      reviewerRole: "Admin",
+      requiredDistinctApprovals: 2,
+      requiresIndependentReviewer: true,
+      requiresReportPack: true,
+      requiresChecklistControlApprovals: true,
+      evidenceRequirement: "Report pack and checklist controls",
+      auditEventType: "close-approved",
+      route: "/accounting/operations-continuity",
+      severity: "High"
+    }
+  ]
+};
+
+const closeCalendar: OperationsCloseCalendar = {
+  generatedAtUtc: "2026-05-28T00:00:00Z",
+  items: [
+    {
+      workflowId: "workflow-1",
+      fundAccountId: "fund-1",
+      periodId: "2026-05",
+      status: "Blocked",
+      version: 4,
+      nextDueDate: "2026-05-31",
+      nextDueTaskId: "task-1",
+      nextDueLabel: "Resolve ledger mapping",
+      nextDueOwner: "Accounting",
+      readinessSeverity: "Warning",
+      readinessScore: 70,
+      isReadyToClose: false,
+      blockerCount: 1,
+      openChecklistCount: 2,
+      requiredApprovalCount: 2,
+      completedApprovalCount: 1,
+      route: "/accounting/operations-continuity"
+    }
+  ]
+};
+
 describe("buildSettingsScreenViewModel", () => {
   it("builds session items from session data", () => {
     const vm = buildSettingsScreenViewModel(session, null);
@@ -218,6 +345,42 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems.some((i) => i.label === "Active runs" && i.value === "2")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Symbols monitored" && i.value === "120")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "May 1, 00:00 UTC")).toBe(true);
+  });
+
+  it("builds fund operations control cards from configuration payloads", () => {
+    const vm = buildSettingsScreenViewModel({
+      session: { ...session, role: "Accounting" },
+      overview,
+      rolePermissionCatalog,
+      ledgerMappingWorkbench,
+      operationsApprovalPolicyMatrix: approvalPolicyMatrix,
+      operationsCloseCalendar: closeCalendar
+    });
+
+    expect(vm.operationsControlCenter.statusLabel).toBe("2 review");
+    expect(vm.operationsControlCenter.loadedCountLabel).toBe("4 / 4");
+    expect(vm.operationsControlCenter.cards.map((card) => card.title)).toEqual([
+      "Ledger Mapping Workbench",
+      "Role and Permission Studio",
+      "Approval Policy Matrix",
+      "Account Close Calendar"
+    ]);
+    expect(vm.operationsControlCenter.cards.find((card) => card.id === "ledger-mapping")).toMatchObject({
+      statusLabel: "1 unmapped",
+      endpointHref: "/api/fund-structure/ledger-mapping-view"
+    });
+    expect(vm.operationsControlCenter.cards.find((card) => card.id === "role-permissions")).toMatchObject({
+      statusLabel: "Accounting active",
+      endpointHref: "/api/auth/roles"
+    });
+    expect(vm.operationsControlCenter.cards.find((card) => card.id === "approval-policy")).toMatchObject({
+      statusLabel: "1 rules",
+      endpointHref: "/api/workstation/operations/continuity/approval-policy-matrix"
+    });
+    expect(vm.operationsControlCenter.cards.find((card) => card.id === "close-calendar")).toMatchObject({
+      statusLabel: "1 blocked",
+      endpointHref: "/api/workstation/operations/continuity/close-calendar"
+    });
   });
 
   it("builds provider connection center rows with exact repair anchors", () => {

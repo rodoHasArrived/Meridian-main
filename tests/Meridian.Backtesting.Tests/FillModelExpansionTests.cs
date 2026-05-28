@@ -304,6 +304,45 @@ public sealed class FillModelExpansionTests
         result.RemoveOrder.Should().BeFalse();
     }
 
+    [Fact]
+    public void OrderBookFillModel_QueueAheadFraction_ReducesVisibleLiquidityAndLeavesOrderWorking()
+    {
+        var model = new OrderBookFillModel(
+            new FixedCommissionModel(0m),
+            queueAheadFraction: 0.50m);
+        var order = new Order(
+            Guid.NewGuid(), "SPY", OrderType.Market, 100L, null, null, DateTimeOffset.UtcNow,
+            AllowPartialFills: true);
+        var evt = MakeLobEvent("SPY", 410m, 100L);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().HaveCount(1);
+        result.Fills[0].FilledQuantity.Should().Be(50L);
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.PartiallyFilled);
+        result.UpdatedOrder.RemainingQuantity.Should().Be(50L);
+        result.RemoveOrder.Should().BeFalse();
+    }
+
+    [Fact]
+    public void OrderBookFillModel_QueueAheadFraction_CancelsFillOrKillWhenAdjustedDepthIsInsufficient()
+    {
+        var model = new OrderBookFillModel(
+            new FixedCommissionModel(0m),
+            queueAheadFraction: 0.50m);
+        var order = new Order(
+            Guid.NewGuid(), "SPY", OrderType.Market, 100L, null, null, DateTimeOffset.UtcNow,
+            TimeInForce: TimeInForce.FillOrKill,
+            AllowPartialFills: true);
+        var evt = MakeLobEvent("SPY", 410m, 100L);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().BeEmpty();
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Cancelled);
+        result.RemoveOrder.Should().BeTrue();
+    }
+
     // =========================================================================
     // Commission model tests
     // =========================================================================

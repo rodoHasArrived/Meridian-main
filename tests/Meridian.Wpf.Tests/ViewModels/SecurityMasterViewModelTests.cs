@@ -481,6 +481,29 @@ public sealed class SecurityMasterViewModelTests
     }
 
     [Fact]
+    public void SecurityMasterPrintSection_ShouldOwnCorporateActionFormStateWithAdapterBindings()
+    {
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.cs"));
+        var sections = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SecurityMasterViewModel.Sections.cs"));
+
+        sections.Should().Contain("public bool IsRecordCorpActionVisible { get; set; }");
+        sections.Should().Contain("public string CorpActType { get; set; } = \"Dividend\";");
+        sections.Should().Contain("public string CorpActExDate { get; set; } = string.Empty;");
+        sections.Should().Contain("public decimal CorpActAmount { get; set; }");
+        sections.Should().Contain("public string CorpActCurrency { get; set; } = \"USD\";");
+        viewModel.Should().Contain("get => _printSection.IsRecordCorpActionVisible;");
+        viewModel.Should().Contain("get => _printSection.CorpActType;");
+        viewModel.Should().Contain("get => _printSection.CorpActExDate;");
+        viewModel.Should().Contain("get => _printSection.CorpActAmount;");
+        viewModel.Should().Contain("get => _printSection.CorpActCurrency;");
+        viewModel.Should().NotContain("private bool _isRecordCorpActionVisible");
+        viewModel.Should().NotContain("private string _corpActType");
+        viewModel.Should().NotContain("private string _corpActExDate");
+        viewModel.Should().NotContain("private decimal _corpActAmount");
+        viewModel.Should().NotContain("private string _corpActCurrency");
+    }
+
+    [Fact]
     public void LoadSelectedTrustSnapshotAsync_WithOpenConflicts_ShouldSurfaceBlockedTrustPosture()
     {
         WpfTestThread.Run(async () =>

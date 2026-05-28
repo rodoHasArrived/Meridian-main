@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Auth;
+using Meridian.Storage;
+using Meridian.Testing;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -188,6 +190,181 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
             profile.RoleProfileName.Should().Be("Ledger Admin");
             profile.Permissions.Should().HaveFlag(UserPermission.ModifyConfig);
             profile.Permissions.Should().NotHaveFlag(UserPermission.ManageDirectLending);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
+    [Fact]
+    public async Task RolePermissionProfileStore_Upsert_AddsCustomProfileToCatalogAndLookup()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(RolePermissionProfileStore_Upsert_AddsCustomProfileToCatalogAndLookup));
+        var store = new Meridian.Ui.Shared.FileRolePermissionProfileStore(new StorageOptions { RootPath = artifacts.RootPath });
+
+        var result = await store.UpsertAsync(
+            new RolePermissionProfileUpsertRequestDto(
+                ProfileName: "Close Reviewer",
+                DisplayName: "Close Reviewer",
+                Description: "Can review close evidence without changing user accounts.",
+                BaseRole: nameof(UserRole.Accounting),
+                PermissionNames: [nameof(UserPermission.ViewTrades), nameof(UserPermission.ViewAnalytics), nameof(UserPermission.ExportData)],
+                RequestedBy: "ops-admin",
+                Rationale: "Delegate month-end review without full administration."),
+            actor: "ops-admin");
+
+        result.Profile.Role.Should().Be("Close Reviewer");
+        result.Profile.IsBuiltIn.Should().BeFalse();
+        result.AuditEvent.Actor.Should().Be("ops-admin");
+        result.Catalog.Roles.Should().Contain(role => role.Role == "Close Reviewer" && !role.IsBuiltIn);
+        store.TryGetProfile("close reviewer", out var profile).Should().BeTrue();
+        profile.Permissions.Should().Contain(nameof(UserPermission.ExportData));
+    }
+
+    [Fact]
+    public void UserProfileRegistry_MultiUser_RoleProfileNameLoadsStoredCustomPermissions()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(UserProfileRegistry_MultiUser_RoleProfileNameLoadsStoredCustomPermissions));
+        var store = new Meridian.Ui.Shared.FileRolePermissionProfileStore(new StorageOptions { RootPath = artifacts.RootPath });
+        store.UpsertAsync(
+            new RolePermissionProfileUpsertRequestDto(
+                ProfileName: "Ledger Reviewer",
+                DisplayName: "Ledger Reviewer",
+                Description: "Review-only ledger close profile.",
+                BaseRole: nameof(UserRole.Accounting),
+                PermissionNames: [nameof(UserPermission.ViewTrades), nameof(UserPermission.ExportData)],
+                RequestedBy: "ops-admin",
+                Rationale: "Bind stored role profile to configured user."),
+            actor: "ops-admin").GetAwaiter().GetResult();
+
+        const string usersJson = """
+            [{"username":"ledger-reviewer","password":"pw","role":"Accounting","roleProfileName":"Ledger Reviewer"}]
+            """;
+        Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
+
+        try
+        {
+            var registry = new Meridian.Ui.Shared.UserProfileRegistry(store);
+
+            var profile = registry.Authenticate("ledger-reviewer", "pw");
+
+            profile.Should().NotBeNull();
+            profile!.Role.Should().Be(UserRole.Accounting);
+            profile.RoleProfileName.Should().Be("Ledger Reviewer");
+            profile.Permissions.Should().HaveFlag(UserPermission.ExportData);
+            profile.Permissions.Should().NotHaveFlag(UserPermission.ManageDirectLending);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
+    [Fact]
+    public async Task AuthRoleProfiles_WithManageUsers_CreatesCustomProfileAndPreservesSessionPermissions()
+    {
+        var profileName = $"Close Reviewer {Guid.NewGuid():N}";
+        Environment.SetEnvironmentVariable("MDC_USERS", """[{"username":"admin","password":"pw","role":"Admin"}]""");
+        try
+        {
+            using var cookieClient = Fixture.CreateNoRedirectClient();
+            var loginResp = await cookieClient.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var sessionCookie = loginResp.Headers
+                .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(header => header.Value)
+                .First(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
+
+            using var createRequest = new HttpRequestMessage(HttpMethod.Post, "/api/auth/role-profiles")
+            {
+                Content = JsonContent.Create(new RolePermissionProfileUpsertRequestDto(
+                    ProfileName: profileName,
+                    DisplayName: profileName,
+                    Description: "Close review authority profile.",
+                    BaseRole: nameof(UserRole.Accounting),
+                    PermissionNames: [nameof(UserPermission.ViewTrades), nameof(UserPermission.ExportData)],
+                    RequestedBy: "admin",
+                    Rationale: "Create scoped close-review authority.",
+                    CorrelationId: "role-profile-test"))
+            };
+            createRequest.Headers.Add("Cookie", sessionCookie);
+
+            var createResp = await cookieClient.SendAsync(createRequest);
+
+            createResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var body = await createResp.Content.ReadFromJsonAsync<RolePermissionProfileUpsertResultDto>(JsonOptions);
+            body.Should().NotBeNull();
+            body!.Profile.Role.Should().Be(profileName);
+            body.AuditEvent.CorrelationId.Should().Be("role-profile-test");
+            body.Catalog.Roles.Should().Contain(role => role.Role == profileName && !role.IsBuiltIn);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+
+        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"reviewer","password":"pw","role":"Accounting","roleProfileName":"{{profileName}}"}]""");
+        try
+        {
+            using var reviewerClient = Fixture.CreateNoRedirectClient();
+            var loginResp = await reviewerClient.PostAsJsonAsync("/api/auth/login", new { Username = "reviewer", Password = "pw" });
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var sessionCookie = loginResp.Headers
+                .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(header => header.Value)
+                .First(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
+
+            using var meRequest = new HttpRequestMessage(HttpMethod.Get, "/api/auth/me");
+            meRequest.Headers.Add("Cookie", sessionCookie);
+            var meResp = await reviewerClient.SendAsync(meRequest);
+
+            meResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var meBody = await meResp.Content.ReadFromJsonAsync<JsonElement>(JsonOpts);
+            meBody.TryGetProperty("roleProfileName", out var roleProfileName).Should().BeTrue();
+            roleProfileName.GetString().Should().Be(profileName);
+            var permissionNames = meBody.GetProperty("permissionNames")
+                .EnumerateArray()
+                .Select(item => item.GetString())
+                .ToList();
+            permissionNames.Should().Contain(nameof(UserPermission.ExportData));
+            permissionNames.Should().NotContain(nameof(UserPermission.ManageDirectLending));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
+    [Fact]
+    public async Task AuthRoleProfiles_InvalidPermission_ReturnsBadRequest()
+    {
+        Environment.SetEnvironmentVariable("MDC_USERS", """[{"username":"admin","password":"pw","role":"Admin"}]""");
+        try
+        {
+            using var cookieClient = Fixture.CreateNoRedirectClient();
+            var loginResp = await cookieClient.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
+            var sessionCookie = loginResp.Headers
+                .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(header => header.Value)
+                .First(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
+
+            using var createRequest = new HttpRequestMessage(HttpMethod.Post, "/api/auth/role-profiles")
+            {
+                Content = JsonContent.Create(new RolePermissionProfileUpsertRequestDto(
+                    ProfileName: $"Bad Profile {Guid.NewGuid():N}",
+                    DisplayName: "Bad Profile",
+                    Description: "Invalid permission test.",
+                    BaseRole: nameof(UserRole.Accounting),
+                    PermissionNames: ["NoSuchPermission"],
+                    RequestedBy: "admin",
+                    Rationale: "Reject bad permission."))
+            };
+            createRequest.Headers.Add("Cookie", sessionCookie);
+
+            var createResp = await cookieClient.SendAsync(createRequest);
+
+            createResp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
         finally
         {

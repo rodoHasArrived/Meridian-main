@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Ui.Shared.Services;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -474,17 +475,13 @@ public static class SecurityMasterEndpoints
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
-            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
-            {
-                return Results.Unauthorized();
-            }
-
-            if ((permissions & UserPermission.ViewSecurityMaster) != UserPermission.ViewSecurityMaster)
-            {
-                return Results.Forbid();
-            }
-
             var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
+            if (context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
+            {
+                var actor = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
+                await casework.SeedOpenConflictCasesAsync(conflicts, actor, ct).ConfigureAwait(false);
+            }
+
             return Results.Json(conflicts, jsonOptions);
         })
         .WithName("GetSecurityMasterConflicts")
@@ -518,6 +515,12 @@ public static class SecurityMasterEndpoints
             var serverRequest = request with { ResolvedBy = resolvedBy };
 
             var updated = await conflictService.ResolveAsync(serverRequest, ct).ConfigureAwait(false);
+            if (updated is not null &&
+                context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
+            {
+                await casework.ApplyResolvedConflictAsync(updated, serverRequest, ct).ConfigureAwait(false);
+            }
+
             return updated is null
                 ? Results.NotFound()
                 : Results.Json(updated, jsonOptions);
@@ -619,6 +622,11 @@ public static class SecurityMasterEndpoints
         {
             var actor = ResolveActor(context);
             var updated = await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false);
+            if (context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
+            {
+                await casework.SeedOperatorOverrideCaseAsync(updated, actor, ct).ConfigureAwait(false);
+            }
+
             return Results.Json(updated, jsonOptions);
         })
         .WithName("PatchSecurityMasterOperatorOverrides")

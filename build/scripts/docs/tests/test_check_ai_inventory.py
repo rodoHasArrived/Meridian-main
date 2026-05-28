@@ -80,6 +80,17 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".claude" / "settings.json")
             write(root / ".claude" / "settings.local.json")
             write(root / ".claude" / "agents" / "meridian-test.md")
+            write(root / ".claude" / "plugins" / "csharp-dotnet-development" / ".github" / "plugin" / "plugin.json")
+            write(root / ".claude" / "plugins" / "csharp-dotnet-development" / "agents" / "plugin-agent.md")
+            write(
+                root
+                / ".claude"
+                / "plugins"
+                / "csharp-dotnet-development"
+                / "skills"
+                / "plugin-skill"
+                / "SKILL.md"
+            )
             write(root / ".github" / "copilot-instructions.md")
             write(root / ".github" / "prompts" / "sample.prompt.yml")
             write(root / ".github" / "instructions" / "sample.instructions.md")
@@ -103,6 +114,9 @@ class CheckAiInventoryTests(unittest.TestCase):
             self.assertIn(("codex-tool", "resource-review.ps1"), pairs)
             self.assertIn(("config", "settings.json"), pairs)
             self.assertIn(("config", "settings.local.json"), pairs)
+            self.assertIn(("plugin-manifest", "csharp-dotnet-development"), pairs)
+            self.assertIn(("plugin-agent", "csharp-dotnet-development/plugin-agent.md"), pairs)
+            self.assertIn(("plugin-skill", "csharp-dotnet-development/plugin-skill"), pairs)
             self.assertIn(("instruction-entrypoint", "copilot-instructions.md"), pairs)
             self.assertIn(("skill", "meridian-test"), pairs)
             self.assertIn(("agent", "meridian-test.md"), pairs)
@@ -271,6 +285,41 @@ class CheckAiInventoryTests(unittest.TestCase):
                 )
             )
 
+    def test_check_catalog_drift_reports_undocumented_claude_plugin_package(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            plugin_root = root / ".claude" / "plugins" / "csharp-dotnet-development"
+            write(plugin_root / ".github" / "plugin" / "plugin.json")
+            write(plugin_root / "agents" / "expert-dotnet-software-engineer.md")
+            write(plugin_root / "skills" / "csharp-xunit" / "SKILL.md")
+            write_required_docs(root, "Claude / Claude Code .claude/settings.json .claude/agents .claude/skills")
+
+            inventory = check_ai_inventory.collect_inventory(root)
+            findings = check_ai_inventory.check_catalog_drift(root, inventory)
+
+            self.assertTrue(
+                any(
+                    finding.kind == "plugin-manifest"
+                    and finding.name == "csharp-dotnet-development"
+                    and finding.expected_doc == "docs/ai/assistant-workflow-contract.md"
+                    for finding in findings
+                )
+            )
+            self.assertTrue(
+                any(
+                    finding.kind == "plugin-agent"
+                    and finding.expected_doc == "docs/ai/agents/README.md"
+                    for finding in findings
+                )
+            )
+            self.assertTrue(
+                any(
+                    finding.kind == "plugin-skill"
+                    and finding.expected_doc == "docs/ai/skills/README.md"
+                    for finding in findings
+                )
+            )
+
     def test_check_catalog_drift_reports_missing_workflow_reference(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -348,6 +397,24 @@ class CheckAiInventoryTests(unittest.TestCase):
             write(root / ".codex" / "skills" / "meridian-test" / "SKILL.md")
             write(root / ".claude" / "settings.json")
             write(root / ".claude" / "skills" / "meridian-test" / "SKILL.md")
+            write(root / ".claude" / "plugins" / "csharp-dotnet-development" / ".github" / "plugin" / "plugin.json")
+            write(
+                root
+                / ".claude"
+                / "plugins"
+                / "csharp-dotnet-development"
+                / "agents"
+                / "expert-dotnet-software-engineer.md"
+            )
+            write(
+                root
+                / ".claude"
+                / "plugins"
+                / "csharp-dotnet-development"
+                / "skills"
+                / "csharp-xunit"
+                / "SKILL.md"
+            )
             write(
                 root / ".github" / "copilot-instructions.md",
                 policy,
@@ -367,7 +434,8 @@ class CheckAiInventoryTests(unittest.TestCase):
                     "Root assistant compatibility AGENTS.md CLAUDE.md",
                     "Codex .codex/config.toml .codex/agents/ .codex/AGENTS.md .codex/environments/ .codex/skills "
                     ".codex/prompts/ .codex/checklists/ OpenAI/Codex meridian-test",
-                    "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills meridian-test",
+                    "Claude / Claude Code .claude/settings.json .claude/settings.local.json .claude/agents .claude/skills .claude/plugins/ meridian-test",
+                    ".claude/plugins/csharp-dotnet-development/",
                     "GitHub Copilot .github/copilot-instructions.md .github/agents .github/prompts .github/instructions new-agent.md sample.prompt.yml sample.instructions.md",
                     "MCP-compatible clients src/Meridian.Mcp",
                     "AI automation workflows prompt-generation.yml skill-evals.yml .github/workflows/copilot-*",

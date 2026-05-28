@@ -204,6 +204,23 @@ public sealed class CorporateActionAdjustmentServiceTests
     }
 
     [Fact]
+    public async Task AdjustBarAsync_ReusesCachedCorporateActionsPerTicker()
+    {
+        var securityId = Guid.NewGuid();
+        _mockResolver.SetResolveResult(securityId);
+        _mockQueryService.SetCorporateActions([]);
+
+        var bar = CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m);
+
+        _ = await _service.AdjustBarAsync(bar, "SPY");
+        _ = await _service.AdjustBarAsync(bar, "SPY");
+        _ = await _service.AdjustBarAsync(bar, "SPY");
+
+        _mockResolver.ResolveCallCount.Should().Be(1);
+        _mockQueryService.GetCorporateActionsCallCount.Should().Be(1);
+    }
+
+    [Fact]
     public async Task AdjustAsync_StreamedLargeHistory_IsEquivalentToBatch()
     {
         var securityId = Guid.NewGuid();

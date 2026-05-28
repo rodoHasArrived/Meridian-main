@@ -72,6 +72,23 @@ public sealed class SecurityMasterLedgerBridgeTests
             SubscriptionPricePerShare: null,
             RightsPerShare: null);
 
+    private static CorporateActionDto MakePrincipalPaydown(decimal factorDelta, DateOnly exDate)
+        => new(
+            CorpActId: Guid.NewGuid(),
+            SecurityId: SecurityId,
+            EventType: "PrincipalPaydown",
+            ExDate: exDate,
+            PayDate: exDate.AddDays(2),
+            DividendPerShare: null,
+            Currency: "USD",
+            SplitRatio: null,
+            NewSecurityId: null,
+            DistributionRatio: factorDelta,
+            AcquirerSecurityId: null,
+            ExchangeRatio: null,
+            SubscriptionPricePerShare: null,
+            RightsPerShare: null);
+
     [Fact]
     public async Task PostCorporateActionsAsync_Dividend_PostsBalancedDrDividendReceivableCrDividendIncome()
     {
@@ -162,6 +179,31 @@ public sealed class SecurityMasterLedgerBridgeTests
         var distribution = LedgerAccounts.CorpActionDistribution(Ticker);
         ledger.GetBalance(LedgerAccounts.Cash).Should().Be(0.5m);
         ledger.GetBalance(distribution).Should().Be(0.5m);
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_PrincipalPaydown_PostsCashAndReducesSecurityAsset()
+    {
+        var paydown = MakePrincipalPaydown(0.0085m, new DateOnly(2026, 5, 25));
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { paydown });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger);
+
+        ledger.Journal.Should().ContainSingle();
+        var entry = ledger.Journal[0];
+        entry.JournalEntryId.Should().Be(paydown.CorpActId);
+        entry.IsBalanced.Should().BeTrue();
+        entry.Metadata.ActivityType.Should().Be("PrincipalPaydown");
+        entry.Metadata.SecurityId.Should().Be(SecurityId);
+        entry.Metadata.LedgerView.Should().Be(LedgerViewKind.SecurityMaster);
+
+        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(0.0085m);
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-0.0085m);
     }
 
     [Fact]

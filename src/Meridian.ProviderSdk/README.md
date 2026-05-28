@@ -27,6 +27,9 @@ This layer is the plugin contract for provider adapters. It should expose stable
 ## Important workflows
 
 Use this module when a provider abstraction must be consumed by multiple adapters or higher-level services.
+Provider routing capabilities are contract-level workflow gates; `FactorSchedule` is distinct from
+generic `CorporateActions` so accounting workflows can degrade fixed-income, structured-credit,
+amortization, and paydown evidence when a provider cannot route the required factor/coupon feed.
 
 ## Diagrams
 

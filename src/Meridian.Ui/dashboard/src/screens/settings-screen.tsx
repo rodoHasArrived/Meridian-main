@@ -1,5 +1,5 @@
 import { Activity, ArrowRight, ExternalLink, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { deleteProviderCredentials, putProviderCredentials, testProviderConnection, verifyProviderConnection } from "@/lib/api";
+import { assignLedgerMapping, createRolePermissionProfile, deleteProviderCredentials, putProviderCredentials, testProviderConnection, upsertOperationsApprovalPolicyRule, upsertOperationsCloseCalendarItem, verifyProviderConnection } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import {
@@ -30,6 +30,12 @@ import type {
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
+  LedgerMappingWorkbench,
+  OperationsApprovalPolicyMatrix,
+  OperationsApprovalPolicyMatrixRow,
+  OperationsCloseCalendar,
+  OperationsCloseCalendarItem,
+  RolePermissionCatalog,
   ResearchWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -52,6 +58,10 @@ interface SettingsScreenProps {
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
   featureCapabilities?: FeatureCapabilitySettingsResponse | null;
+  rolePermissionCatalog?: RolePermissionCatalog | null;
+  ledgerMappingWorkbench?: LedgerMappingWorkbench | null;
+  operationsApprovalPolicyMatrix?: OperationsApprovalPolicyMatrix | null;
+  operationsCloseCalendar?: OperationsCloseCalendar | null;
   providerRoutingRefreshing?: boolean;
   onFeatureCapabilityToggle?: (capabilityKey: string, isEnabled: boolean) => Promise<void> | void;
   onRefresh?: () => Promise<void> | void;
@@ -63,6 +73,59 @@ interface SettingsScreenProps {
 
 type ProviderInlineField = "apiKey" | "apiSecret" | "endpoint";
 type ProviderInlineBusyAction = "test" | "save" | "verify" | "clear" | null;
+
+interface LedgerMappingAssignmentState {
+  accountId: string;
+  ledgerGroupId: string;
+  rationale: string;
+  busy: boolean;
+  message: string | null;
+  details: string[];
+  tone: "default" | "success" | "danger";
+}
+
+interface RolePermissionProfileState {
+  profileName: string;
+  displayName: string;
+  description: string;
+  baseRole: string;
+  permissionNames: string[];
+  rationale: string;
+  busy: boolean;
+  message: string | null;
+  details: string[];
+  tone: "default" | "success" | "danger" | "warning";
+}
+
+interface ApprovalPolicyRuleState {
+  policyKey: string;
+  requiredPermission: string;
+  submitterRole: string;
+  reviewerRole: string;
+  requiredDistinctApprovals: number;
+  requiresIndependentReviewer: boolean;
+  requiresReportPack: boolean;
+  requiresChecklistControlApprovals: boolean;
+  evidenceRequirement: string;
+  severity: string;
+  rationale: string;
+  busy: boolean;
+  message: string | null;
+  details: string[];
+  tone: "default" | "success" | "danger" | "warning";
+}
+
+interface CloseCalendarItemState {
+  workflowId: string;
+  taskId: string;
+  dueDate: string;
+  owner: string;
+  rationale: string;
+  busy: boolean;
+  message: string | null;
+  details: string[];
+  tone: "default" | "success" | "danger" | "warning";
+}
 
 interface ProviderInlineFieldDefinition {
   field: ProviderInlineField;
@@ -228,6 +291,10 @@ export function SettingsScreen({
   providerRoutingBindings = null,
   providerRoutingTrustSnapshots = null,
   featureCapabilities = null,
+  rolePermissionCatalog = null,
+  ledgerMappingWorkbench = null,
+  operationsApprovalPolicyMatrix = null,
+  operationsCloseCalendar = null,
   providerRoutingRefreshing = false,
   onFeatureCapabilityToggle,
   onRefresh,
@@ -251,6 +318,10 @@ export function SettingsScreen({
     providerRoutingBindings,
     providerRoutingTrustSnapshots,
     featureCapabilities,
+    rolePermissionCatalog,
+    ledgerMappingWorkbench,
+    operationsApprovalPolicyMatrix,
+    operationsCloseCalendar,
     providerRoutingRefreshing,
     loading,
     error,
@@ -267,6 +338,93 @@ export function SettingsScreen({
   const [providerVerificationFilter, setProviderVerificationFilter] = useState<"all" | "verified" | "unverified">("all");
   const [providerSort, setProviderSort] = useState<"risk" | "name">("risk");
   const [providerInlineState, setProviderInlineState] = useState<Record<string, ProviderInlineState>>({});
+  const ledgerMappingDraft = useMemo(
+    () => buildLedgerMappingAssignmentDraft(ledgerMappingWorkbench),
+    [ledgerMappingWorkbench]
+  );
+  const roleProfileDraft = useMemo(
+    () => buildRolePermissionProfileDraft(rolePermissionCatalog),
+    [rolePermissionCatalog]
+  );
+  const approvalPolicyDraft = useMemo(
+    () => buildApprovalPolicyRuleDraft(operationsApprovalPolicyMatrix),
+    [operationsApprovalPolicyMatrix]
+  );
+  const closeCalendarDraft = useMemo(
+    () => buildCloseCalendarItemDraft(operationsCloseCalendar),
+    [operationsCloseCalendar]
+  );
+  const ledgerMappingDraftSignature = `${ledgerMappingDraft.accountOptions.map((option) => option.value).join("|")}::${ledgerMappingDraft.ledgerGroupOptions.map((option) => option.value).join("|")}`;
+  const roleProfileDraftSignature = `${roleProfileDraft.baseRoleOptions.map((option) => option.value).join("|")}::${roleProfileDraft.permissionOptions.map((option) => option.value).join("|")}`;
+  const approvalPolicyDraftSignature = approvalPolicyDraft.rows.map((row) => [
+    row.policyKey,
+    row.requiredPermission,
+    row.submitterRole,
+    row.reviewerRole,
+    row.requiredDistinctApprovals,
+    row.requiresIndependentReviewer,
+    row.requiresReportPack,
+    row.requiresChecklistControlApprovals,
+    row.evidenceRequirement,
+    row.severity
+  ].join(":")).join("|");
+  const closeCalendarDraftSignature = closeCalendarDraft.items.map((item) => [
+    item.workflowId,
+    item.nextDueTaskId ?? "",
+    item.nextDueDate ?? "",
+    item.nextDueOwner ?? "",
+    item.periodId,
+    item.version
+  ].join(":")).join("|");
+  const [ledgerMappingAssignment, setLedgerMappingAssignment] = useState<LedgerMappingAssignmentState>(() => ({
+    accountId: "",
+    ledgerGroupId: "",
+    rationale: "Assign ledger group for governed posting, reconciliation, reporting, and close control.",
+    busy: false,
+    message: null,
+    details: [],
+    tone: "default"
+  }));
+  const [rolePermissionProfile, setRolePermissionProfile] = useState<RolePermissionProfileState>(() => ({
+    profileName: "",
+    displayName: "",
+    description: "",
+    baseRole: "",
+    permissionNames: [],
+    rationale: "Create a scoped authority profile for governed fund operations.",
+    busy: false,
+    message: null,
+    details: [],
+    tone: "default"
+  }));
+  const [approvalPolicyRule, setApprovalPolicyRule] = useState<ApprovalPolicyRuleState>(() => ({
+    policyKey: "",
+    requiredPermission: "",
+    submitterRole: "",
+    reviewerRole: "",
+    requiredDistinctApprovals: 1,
+    requiresIndependentReviewer: true,
+    requiresReportPack: true,
+    requiresChecklistControlApprovals: true,
+    evidenceRequirement: "",
+    severity: "Critical",
+    rationale: "Update approval policy for governed fund-operations close control.",
+    busy: false,
+    message: null,
+    details: [],
+    tone: "default"
+  }));
+  const [closeCalendarItem, setCloseCalendarItem] = useState<CloseCalendarItemState>(() => ({
+    workflowId: "",
+    taskId: "",
+    dueDate: "",
+    owner: "",
+    rationale: "Update account close calendar ownership and due-date governance.",
+    busy: false,
+    message: null,
+    details: [],
+    tone: "default"
+  }));
   const providerInlineFlag = featureCapabilities?.capabilities.find((capability) => (
     capability.capabilityKey === "desktop.settings.provider-connection-center-inline-management"
   ));
@@ -287,6 +445,102 @@ export function SettingsScreen({
     () => Object.fromEntries(allProviderRows.map((row) => [row.providerId, providerRiskScore(row)])),
     [allProviderRows]
   );
+
+  useEffect(() => {
+    setLedgerMappingAssignment((current) => ({
+      ...current,
+      accountId: ledgerMappingDraft.accountOptions.some((option) => option.value === current.accountId)
+        ? current.accountId
+        : ledgerMappingDraft.accountOptions[0]?.value ?? "",
+      ledgerGroupId: ledgerMappingDraft.ledgerGroupOptions.some((option) => option.value === current.ledgerGroupId)
+        ? current.ledgerGroupId
+        : ledgerMappingDraft.ledgerGroupOptions[0]?.value ?? "",
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  }, [ledgerMappingDraftSignature]);
+
+  useEffect(() => {
+    setRolePermissionProfile((current) => {
+      const currentBaseRole = roleProfileDraft.baseRoleOptions.some((option) => option.value === current.baseRole)
+        ? current.baseRole
+        : roleProfileDraft.defaultBaseRole;
+      const validPermissions = new Set(roleProfileDraft.permissionOptions.map((option) => option.value));
+      const retainedPermissions = current.permissionNames.filter((permission) => validPermissions.has(permission));
+      return {
+        ...current,
+        baseRole: currentBaseRole,
+        permissionNames: retainedPermissions.length > 0 ? retainedPermissions : roleProfileDraft.defaultPermissionNames,
+        message: null,
+        details: [],
+        tone: "default"
+      };
+    });
+  }, [roleProfileDraftSignature]);
+
+  useEffect(() => {
+    setApprovalPolicyRule((current) => {
+      const selected = approvalPolicyDraft.rows.find((row) => row.policyKey === current.policyKey) ??
+        approvalPolicyDraft.rows[0];
+      if (!selected) {
+        return {
+          ...current,
+          policyKey: "",
+          message: null,
+          details: [],
+          tone: "default"
+        };
+      }
+
+      return {
+        ...current,
+        policyKey: selected.policyKey,
+        requiredPermission: selected.requiredPermission,
+        submitterRole: selected.submitterRole,
+        reviewerRole: selected.reviewerRole,
+        requiredDistinctApprovals: selected.requiredDistinctApprovals,
+        requiresIndependentReviewer: selected.requiresIndependentReviewer,
+        requiresReportPack: selected.requiresReportPack,
+        requiresChecklistControlApprovals: selected.requiresChecklistControlApprovals,
+        evidenceRequirement: selected.evidenceRequirement,
+        severity: selected.severity,
+        message: null,
+        details: [],
+        tone: "default"
+      };
+    });
+  }, [approvalPolicyDraftSignature]);
+
+  useEffect(() => {
+    setCloseCalendarItem((current) => {
+      const selected = closeCalendarDraft.items.find((item) => item.workflowId === current.workflowId) ??
+        closeCalendarDraft.items[0];
+      if (!selected) {
+        return {
+          ...current,
+          workflowId: "",
+          taskId: "",
+          dueDate: "",
+          owner: "",
+          message: null,
+          details: [],
+          tone: "default"
+        };
+      }
+
+      return {
+        ...current,
+        workflowId: selected.workflowId,
+        taskId: selected.nextDueTaskId ?? "",
+        dueDate: selected.nextDueDate ?? "",
+        owner: selected.nextDueOwner ?? "",
+        message: null,
+        details: [],
+        tone: "default"
+      };
+    });
+  }, [closeCalendarDraftSignature]);
 
   useEffect(() => {
     if (!inlineProviderManagementEnabled) {
@@ -564,6 +818,301 @@ export function SettingsScreen({
     }
   };
 
+  const submitLedgerMappingAssignment = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!ledgerMappingAssignment.accountId || !ledgerMappingAssignment.ledgerGroupId) {
+      setLedgerMappingAssignment((current) => ({
+        ...current,
+        message: "Choose an account and ledger group before saving.",
+        details: [],
+        tone: "danger"
+      }));
+      return;
+    }
+
+    setLedgerMappingAssignment((current) => ({
+      ...current,
+      busy: true,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+
+    try {
+      const result = await assignLedgerMapping({
+        accountId: ledgerMappingAssignment.accountId,
+        ledgerGroupId: ledgerMappingAssignment.ledgerGroupId,
+        requestedBy: session?.displayName ?? "settings-screen",
+        rationale: ledgerMappingAssignment.rationale,
+        correlationId: `settings-ledger-map-${Date.now()}`
+      });
+      await onRefresh?.();
+      setLedgerMappingAssignment((current) => ({
+        ...current,
+        busy: false,
+        message: `Ledger mapping saved for ${result.account.accountCode}.`,
+        details: [
+          `Audit ${result.auditEvent.auditId}`,
+          `Correlation ${result.auditEvent.correlationId}`
+        ],
+        tone: "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Ledger mapping assignment failed.");
+      setLedgerMappingAssignment((current) => ({
+        ...current,
+        busy: false,
+        message: display.summary,
+        details: display.details,
+        tone: "danger"
+      }));
+    }
+  };
+
+  const toggleRoleProfilePermission = (permissionName: string, checked: boolean) => {
+    setRolePermissionProfile((current) => ({
+      ...current,
+      permissionNames: checked
+        ? Array.from(new Set([...current.permissionNames, permissionName]))
+        : current.permissionNames.filter((name) => name !== permissionName),
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  };
+
+  const submitRolePermissionProfile = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const profileName = rolePermissionProfile.profileName.trim();
+    const displayName = rolePermissionProfile.displayName.trim() || profileName;
+    if (!roleProfileDraft.canSave || !profileName || !displayName || rolePermissionProfile.permissionNames.length === 0) {
+      setRolePermissionProfile((current) => ({
+        ...current,
+        message: "Profile name, display name, base role, and at least one permission are required.",
+        details: roleProfileDraft.disabledReason ? [roleProfileDraft.disabledReason] : [],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    setRolePermissionProfile((current) => ({
+      ...current,
+      busy: true,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+
+    try {
+      const result = await createRolePermissionProfile({
+        profileName,
+        displayName,
+        description: rolePermissionProfile.description.trim() || null,
+        baseRole: rolePermissionProfile.baseRole,
+        permissionNames: rolePermissionProfile.permissionNames,
+        requestedBy: session?.displayName ?? "settings-screen",
+        rationale: rolePermissionProfile.rationale,
+        correlationId: `settings-role-profile-${Date.now()}`
+      });
+      await onRefresh?.();
+      setRolePermissionProfile((current) => ({
+        ...current,
+        busy: false,
+        message: `Role profile saved for ${result.profile.displayName}.`,
+        details: [
+          `Audit ${result.auditEvent.auditId}`,
+          `Correlation ${result.auditEvent.correlationId}`
+        ],
+        tone: "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Role profile save failed.");
+      setRolePermissionProfile((current) => ({
+        ...current,
+        busy: false,
+        message: display.summary,
+        details: display.details,
+        tone: "danger"
+      }));
+    }
+  };
+
+  const selectApprovalPolicyRule = (policyKey: string) => {
+    const selected = approvalPolicyDraft.rows.find((row) => row.policyKey === policyKey);
+    if (!selected) {
+      return;
+    }
+
+    setApprovalPolicyRule((current) => ({
+      ...current,
+      policyKey: selected.policyKey,
+      requiredPermission: selected.requiredPermission,
+      submitterRole: selected.submitterRole,
+      reviewerRole: selected.reviewerRole,
+      requiredDistinctApprovals: selected.requiredDistinctApprovals,
+      requiresIndependentReviewer: selected.requiresIndependentReviewer,
+      requiresReportPack: selected.requiresReportPack,
+      requiresChecklistControlApprovals: selected.requiresChecklistControlApprovals,
+      evidenceRequirement: selected.evidenceRequirement,
+      severity: selected.severity,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  };
+
+  const submitApprovalPolicyRule = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const selected = approvalPolicyDraft.rows.find((row) => row.policyKey === approvalPolicyRule.policyKey);
+    if (!approvalPolicyDraft.canSave || !selected) {
+      setApprovalPolicyRule((current) => ({
+        ...current,
+        message: "Choose an approval policy rule before saving.",
+        details: approvalPolicyDraft.disabledReason ? [approvalPolicyDraft.disabledReason] : [],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    if (approvalPolicyRule.requiredDistinctApprovals < 1) {
+      setApprovalPolicyRule((current) => ({
+        ...current,
+        message: "Required approvals must be at least 1.",
+        details: [],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    setApprovalPolicyRule((current) => ({
+      ...current,
+      busy: true,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+
+    try {
+      const result = await upsertOperationsApprovalPolicyRule({
+        ...selected,
+        requiredPermission: approvalPolicyRule.requiredPermission,
+        submitterRole: approvalPolicyRule.submitterRole,
+        reviewerRole: approvalPolicyRule.reviewerRole,
+        requiredDistinctApprovals: approvalPolicyRule.requiredDistinctApprovals,
+        requiresIndependentReviewer: approvalPolicyRule.requiresIndependentReviewer,
+        requiresReportPack: approvalPolicyRule.requiresReportPack,
+        requiresChecklistControlApprovals: approvalPolicyRule.requiresChecklistControlApprovals,
+        evidenceRequirement: approvalPolicyRule.evidenceRequirement,
+        severity: approvalPolicyRule.severity,
+        requestedBy: session?.displayName ?? "settings-screen",
+        rationale: approvalPolicyRule.rationale,
+        correlationId: `settings-approval-policy-${Date.now()}`
+      });
+      await onRefresh?.();
+      setApprovalPolicyRule((current) => ({
+        ...current,
+        busy: false,
+        message: `Approval policy saved for ${result.rule.action}.`,
+        details: [
+          `Audit ${result.auditEvent.auditId}`,
+          `Correlation ${result.auditEvent.correlationId}`
+        ],
+        tone: "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Approval policy save failed.");
+      setApprovalPolicyRule((current) => ({
+        ...current,
+        busy: false,
+        message: display.summary,
+        details: display.details,
+        tone: "danger"
+      }));
+    }
+  };
+
+  const selectCloseCalendarItem = (workflowId: string) => {
+    const selected = closeCalendarDraft.items.find((item) => item.workflowId === workflowId);
+    if (!selected) {
+      return;
+    }
+
+    setCloseCalendarItem((current) => ({
+      ...current,
+      workflowId: selected.workflowId,
+      taskId: selected.nextDueTaskId ?? "",
+      dueDate: selected.nextDueDate ?? "",
+      owner: selected.nextDueOwner ?? "",
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  };
+
+  const submitCloseCalendarItem = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const selected = closeCalendarDraft.items.find((item) => item.workflowId === closeCalendarItem.workflowId);
+    if (!closeCalendarDraft.canSave || !selected) {
+      setCloseCalendarItem((current) => ({
+        ...current,
+        message: "Choose an account close workflow before saving.",
+        details: closeCalendarDraft.disabledReason ? [closeCalendarDraft.disabledReason] : [],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    if (!closeCalendarItem.taskId.trim() || !closeCalendarItem.dueDate || !closeCalendarItem.owner.trim()) {
+      setCloseCalendarItem((current) => ({
+        ...current,
+        message: "Task, due date, owner, and rationale are required.",
+        details: [],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    setCloseCalendarItem((current) => ({
+      ...current,
+      busy: true,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+
+    try {
+      const result = await upsertOperationsCloseCalendarItem({
+        workflowId: selected.workflowId,
+        taskId: closeCalendarItem.taskId,
+        dueDate: closeCalendarItem.dueDate,
+        owner: closeCalendarItem.owner,
+        requestedBy: session?.displayName ?? "settings-screen",
+        rationale: closeCalendarItem.rationale,
+        correlationId: `settings-close-calendar-${Date.now()}`
+      });
+      await onRefresh?.();
+      setCloseCalendarItem((current) => ({
+        ...current,
+        busy: false,
+        message: `Close calendar saved for ${result.item.periodId}.`,
+        details: [
+          `Audit ${result.auditEvent.auditId}`,
+          `Correlation ${result.auditEvent.correlationId}`
+        ],
+        tone: "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Close calendar save failed.");
+      setCloseCalendarItem((current) => ({
+        ...current,
+        busy: false,
+        message: display.summary,
+        details: display.details,
+        tone: "danger"
+      }));
+    }
+  };
+
   return (
     <div className="space-y-8">
       <section
@@ -719,6 +1268,566 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+
+      <Card id="fund-operations-control-center" className="panel-surface scroll-mt-6 border border-border/70">
+        <CardHeader>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="eyebrow-label">Configurable operations</div>
+              <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                {vm.operationsControlCenter.title}
+              </CardTitle>
+              <CardDescription className="mt-2">{vm.operationsControlCenter.summary}</CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <SettingsChip label="Loaded" value={vm.operationsControlCenter.loadedCountLabel} />
+              <SettingsChip label="Review" value={vm.operationsControlCenter.reviewCountLabel} />
+              <Badge
+                variant={vm.operationsControlCenter.statusVariant}
+                dot={vm.operationsControlCenter.statusVariant === "success"}
+              >
+                {vm.operationsControlCenter.statusLabel}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid gap-3 xl:grid-cols-4" role="list" aria-label={vm.operationsControlCenter.listLabel}>
+            {vm.operationsControlCenter.cards.map((card) => (
+              <article
+                key={card.id}
+                role="listitem"
+                className={cn(
+                  "grid gap-3 rounded-md border px-3 py-3",
+                  diagnosticToneClass[capabilityTone(card.statusVariant === "default" ? "outline" : card.statusVariant)]
+                )}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground">{card.title}</h3>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.description}</p>
+                  </div>
+                  <Badge variant={card.statusVariant} className="shrink-0">
+                    {card.statusLabel}
+                  </Badge>
+                </div>
+                <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                  {card.metrics.map((metric) => (
+                    <SettingsFieldRow key={`${card.id}-${metric.label}`} label={metric.label} value={metric.value} tone={metric.tone} />
+                  ))}
+                </dl>
+                <p className="text-xs leading-5 text-foreground/75">{card.detail}</p>
+                <div className="mt-auto flex flex-wrap gap-2">
+                  {card.routeHref.startsWith("/api/") ? (
+                    <Button asChild variant="outline" size="sm">
+                      <a href={card.routeHref} target="_blank" rel="noreferrer" aria-label={card.routeAriaLabel}>
+                        {card.routeLabel}
+                        <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button asChild variant="outline" size="sm">
+                      <Link to={card.routeHref} aria-label={card.routeAriaLabel}>
+                        {card.routeLabel}
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Link>
+                    </Button>
+                  )}
+                  <a
+                    href={card.endpointHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-md border border-border/60 px-2 py-1 text-[11px] font-mono text-muted-foreground transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    aria-label={`Open raw endpoint for ${card.title}`}
+                  >
+                    GET
+                    <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+          <form
+            className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3"
+            onSubmit={submitLedgerMappingAssignment}
+            aria-label="Assign ledger mapping"
+          >
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground">Assign ledger mapping</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Save an account-level ledger group assignment with actor, rationale, and correlation evidence.
+                </p>
+              </div>
+              <Badge variant={ledgerMappingDraft.canAssign ? "warning" : "outline"}>
+                {ledgerMappingDraft.statusLabel}
+              </Badge>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_auto]">
+              <FilterSelect
+                label="Account"
+                value={ledgerMappingAssignment.accountId}
+                onChange={(value) => setLedgerMappingAssignment((current) => ({ ...current, accountId: value, message: null }))}
+                options={ledgerMappingDraft.accountOptions}
+                disabled={!ledgerMappingDraft.canAssign || ledgerMappingAssignment.busy}
+              />
+              <FilterSelect
+                label="Ledger group"
+                value={ledgerMappingAssignment.ledgerGroupId}
+                onChange={(value) => setLedgerMappingAssignment((current) => ({ ...current, ledgerGroupId: value, message: null }))}
+                options={ledgerMappingDraft.ledgerGroupOptions}
+                disabled={!ledgerMappingDraft.canAssign || ledgerMappingAssignment.busy}
+              />
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Rationale
+                <Input
+                  value={ledgerMappingAssignment.rationale}
+                  onChange={(event) => setLedgerMappingAssignment((current) => ({ ...current, rationale: event.target.value, message: null }))}
+                  placeholder="Reason for the ledger mapping change"
+                  disabled={!ledgerMappingDraft.canAssign || ledgerMappingAssignment.busy}
+                  aria-label="Ledger mapping rationale"
+                />
+              </label>
+              <div className="flex items-end">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={!ledgerMappingDraft.canAssign || ledgerMappingAssignment.busy}
+                  busy={ledgerMappingAssignment.busy}
+                  busyLabel="Saving mapping"
+                  disabledReason={ledgerMappingDraft.disabledReason}
+                >
+                  <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                  Save mapping
+                </Button>
+              </div>
+            </div>
+            {ledgerMappingAssignment.message ? (
+              <div
+                role={ledgerMappingAssignment.tone === "danger" ? "alert" : "status"}
+                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[ledgerMappingAssignment.tone])}
+              >
+                <div className="font-semibold text-foreground">{ledgerMappingAssignment.message}</div>
+                {ledgerMappingAssignment.details.length > 0 ? (
+                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
+                    {ledgerMappingAssignment.details.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
+          </form>
+          <form
+            className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3"
+            onSubmit={submitRolePermissionProfile}
+            aria-label="Create role profile"
+          >
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground">Create role profile</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Save a reusable authority profile with base role, explicit grants, actor, rationale, and audit evidence.
+                </p>
+              </div>
+              <Badge variant={roleProfileDraft.canSave ? "warning" : "outline"}>
+                {roleProfileDraft.statusLabel}
+              </Badge>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,0.9fr)_minmax(0,0.75fr)]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Profile name
+                <Input
+                  value={rolePermissionProfile.profileName}
+                  onChange={(event) => setRolePermissionProfile((current) => ({
+                    ...current,
+                    profileName: event.target.value,
+                    displayName: !current.displayName || current.displayName === current.profileName
+                      ? event.target.value
+                      : current.displayName,
+                    message: null
+                  }))}
+                  placeholder="Month-end Close Reviewer"
+                  disabled={!roleProfileDraft.canSave || rolePermissionProfile.busy}
+                  aria-label="Role profile name"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Display name
+                <Input
+                  value={rolePermissionProfile.displayName}
+                  onChange={(event) => setRolePermissionProfile((current) => ({
+                    ...current,
+                    displayName: event.target.value,
+                    message: null
+                  }))}
+                  placeholder="Close Reviewer"
+                  disabled={!roleProfileDraft.canSave || rolePermissionProfile.busy}
+                  aria-label="Role profile display name"
+                />
+              </label>
+              <FilterSelect
+                label="Base role"
+                value={rolePermissionProfile.baseRole}
+                onChange={(value) => setRolePermissionProfile((current) => {
+                  const baseRole = rolePermissionCatalog?.roles.find((role) => role.role === value);
+                  return {
+                    ...current,
+                    baseRole: value,
+                    permissionNames: baseRole?.permissions ?? current.permissionNames,
+                    message: null
+                  };
+                })}
+                options={roleProfileDraft.baseRoleOptions}
+                disabled={!roleProfileDraft.canSave || rolePermissionProfile.busy}
+              />
+            </div>
+            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              Description
+              <Input
+                value={rolePermissionProfile.description}
+                onChange={(event) => setRolePermissionProfile((current) => ({
+                  ...current,
+                  description: event.target.value,
+                  message: null
+                }))}
+                placeholder="Scope this profile to close review and fund operations evidence."
+                disabled={!roleProfileDraft.canSave || rolePermissionProfile.busy}
+                aria-label="Role profile description"
+              />
+            </label>
+            <fieldset
+              className="grid gap-2 rounded-md border border-border/60 bg-secondary/15 px-3 py-3"
+              disabled={!roleProfileDraft.canSave || rolePermissionProfile.busy}
+            >
+              <legend className="px-1 text-xs font-semibold text-foreground">Permissions</legend>
+              <div className="grid max-h-56 gap-2 overflow-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
+                {roleProfileDraft.permissionOptions.map((permission) => (
+                  <label
+                    key={permission.value}
+                    className="flex min-w-0 items-start gap-2 rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs text-muted-foreground"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={rolePermissionProfile.permissionNames.includes(permission.value)}
+                      onChange={(event) => toggleRoleProfilePermission(permission.value, event.target.checked)}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
+                    />
+                    <span className="min-w-0">
+                      <span className="block font-medium text-foreground">{permission.label}</span>
+                      <span className="block break-words text-[11px] leading-4">{permission.group}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Rationale
+                <Input
+                  value={rolePermissionProfile.rationale}
+                  onChange={(event) => setRolePermissionProfile((current) => ({ ...current, rationale: event.target.value, message: null }))}
+                  placeholder="Reason for the authority-profile change"
+                  disabled={!roleProfileDraft.canSave || rolePermissionProfile.busy}
+                  aria-label="Role profile rationale"
+                />
+              </label>
+              <div className="flex items-end">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={!roleProfileDraft.canSave || rolePermissionProfile.busy}
+                  busy={rolePermissionProfile.busy}
+                  busyLabel="Saving role profile"
+                  disabledReason={roleProfileDraft.disabledReason}
+                >
+                  <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                  Save profile
+                </Button>
+              </div>
+            </div>
+            {rolePermissionProfile.message ? (
+              <div
+                role={rolePermissionProfile.tone === "danger" ? "alert" : "status"}
+                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[rolePermissionProfile.tone])}
+              >
+                <div className="font-semibold text-foreground">{rolePermissionProfile.message}</div>
+                {rolePermissionProfile.details.length > 0 ? (
+                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
+                    {rolePermissionProfile.details.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
+          </form>
+          <form
+            className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3"
+            onSubmit={submitApprovalPolicyRule}
+            aria-label="Configure approval policy rule"
+          >
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground">Configure approval policy</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Update close approval rules with reviewer separation, required evidence, distinct approvals, and audit rationale.
+                </p>
+              </div>
+              <Badge variant={approvalPolicyDraft.canSave ? "warning" : "outline"}>
+                {approvalPolicyDraft.statusLabel}
+              </Badge>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.55fr)]">
+              <FilterSelect
+                label="Policy rule"
+                value={approvalPolicyRule.policyKey}
+                onChange={selectApprovalPolicyRule}
+                options={approvalPolicyDraft.policyOptions}
+                disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+              />
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Required permission
+                <Input
+                  value={approvalPolicyRule.requiredPermission}
+                  onChange={(event) => setApprovalPolicyRule((current) => ({ ...current, requiredPermission: event.target.value, message: null }))}
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  aria-label="Approval policy required permission"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Reviewer role
+                <Input
+                  value={approvalPolicyRule.reviewerRole}
+                  onChange={(event) => setApprovalPolicyRule((current) => ({ ...current, reviewerRole: event.target.value, message: null }))}
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  aria-label="Approval policy reviewer role"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Approvals
+                <Input
+                  type="number"
+                  min={1}
+                  value={String(approvalPolicyRule.requiredDistinctApprovals)}
+                  onChange={(event) => setApprovalPolicyRule((current) => ({
+                    ...current,
+                    requiredDistinctApprovals: Math.max(0, Number.parseInt(event.target.value, 10) || 0),
+                    message: null
+                  }))}
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  aria-label="Approval policy required distinct approvals"
+                />
+              </label>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,1.2fr)]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Submitter role
+                <Input
+                  value={approvalPolicyRule.submitterRole}
+                  onChange={(event) => setApprovalPolicyRule((current) => ({ ...current, submitterRole: event.target.value, message: null }))}
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  aria-label="Approval policy submitter role"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Severity
+                <Input
+                  value={approvalPolicyRule.severity}
+                  onChange={(event) => setApprovalPolicyRule((current) => ({ ...current, severity: event.target.value, message: null }))}
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  aria-label="Approval policy severity"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Evidence requirement
+                <Input
+                  value={approvalPolicyRule.evidenceRequirement}
+                  onChange={(event) => setApprovalPolicyRule((current) => ({ ...current, evidenceRequirement: event.target.value, message: null }))}
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  aria-label="Approval policy evidence requirement"
+                />
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {([
+                {
+                  key: "requiresIndependentReviewer",
+                  label: "Independent reviewer",
+                  checked: approvalPolicyRule.requiresIndependentReviewer
+                },
+                {
+                  key: "requiresReportPack",
+                  label: "Report pack",
+                  checked: approvalPolicyRule.requiresReportPack
+                },
+                {
+                  key: "requiresChecklistControlApprovals",
+                  label: "Checklist control approvals",
+                  checked: approvalPolicyRule.requiresChecklistControlApprovals
+                }
+              ] satisfies Array<{
+                key: "requiresIndependentReviewer" | "requiresReportPack" | "requiresChecklistControlApprovals";
+                label: string;
+                checked: boolean;
+              }>).map((option) => (
+                <label
+                  key={option.key}
+                  className="flex items-center gap-2 rounded-md border border-border/60 bg-secondary/20 px-2 py-2 text-xs text-muted-foreground"
+                >
+                  <input
+                    type="checkbox"
+                    checked={option.checked}
+                    onChange={(event) => setApprovalPolicyRule((current) => ({
+                      ...current,
+                      [option.key]: event.target.checked,
+                      message: null
+                    }))}
+                    className="h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
+                    disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Rationale
+                <Input
+                  value={approvalPolicyRule.rationale}
+                  onChange={(event) => setApprovalPolicyRule((current) => ({ ...current, rationale: event.target.value, message: null }))}
+                  placeholder="Reason for the approval policy change"
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  aria-label="Approval policy rationale"
+                />
+              </label>
+              <div className="flex items-end">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  busy={approvalPolicyRule.busy}
+                  busyLabel="Saving approval policy"
+                  disabledReason={approvalPolicyDraft.disabledReason}
+                >
+                  <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                  Save policy
+                </Button>
+              </div>
+            </div>
+            {approvalPolicyRule.message ? (
+              <div
+                role={approvalPolicyRule.tone === "danger" ? "alert" : "status"}
+                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[approvalPolicyRule.tone])}
+              >
+                <div className="font-semibold text-foreground">{approvalPolicyRule.message}</div>
+                {approvalPolicyRule.details.length > 0 ? (
+                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
+                    {approvalPolicyRule.details.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
+          </form>
+          <form
+            className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3"
+            onSubmit={submitCloseCalendarItem}
+            aria-label="Configure account close calendar"
+          >
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground">Configure account close calendar</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Assign the next close task owner and due date with an audit rationale.
+                </p>
+              </div>
+              <Badge variant={closeCalendarDraft.canSave ? "warning" : "outline"}>
+                {closeCalendarDraft.statusLabel}
+              </Badge>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_minmax(0,0.65fr)_minmax(0,0.85fr)]">
+              <FilterSelect
+                label="Close workflow"
+                value={closeCalendarItem.workflowId}
+                onChange={selectCloseCalendarItem}
+                options={closeCalendarDraft.workflowOptions}
+                disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy}
+              />
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Task
+                <Input
+                  value={closeCalendarItem.taskId}
+                  onChange={(event) => setCloseCalendarItem((current) => ({ ...current, taskId: event.target.value, message: null }))}
+                  disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy}
+                  aria-label="Close calendar task"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Due date
+                <Input
+                  type="date"
+                  value={closeCalendarItem.dueDate}
+                  onChange={(event) => setCloseCalendarItem((current) => ({ ...current, dueDate: event.target.value, message: null }))}
+                  disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy}
+                  aria-label="Close calendar due date"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Owner
+                <Input
+                  value={closeCalendarItem.owner}
+                  onChange={(event) => setCloseCalendarItem((current) => ({ ...current, owner: event.target.value, message: null }))}
+                  disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy}
+                  aria-label="Close calendar owner"
+                />
+              </label>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Rationale
+                <Input
+                  value={closeCalendarItem.rationale}
+                  onChange={(event) => setCloseCalendarItem((current) => ({ ...current, rationale: event.target.value, message: null }))}
+                  placeholder="Reason for the calendar change"
+                  disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy}
+                  aria-label="Close calendar rationale"
+                />
+              </label>
+              <div className="flex items-end">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy}
+                  busy={closeCalendarItem.busy}
+                  busyLabel="Saving close calendar"
+                  disabledReason={closeCalendarDraft.disabledReason}
+                >
+                  <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                  Save calendar
+                </Button>
+              </div>
+            </div>
+            {closeCalendarItem.message ? (
+              <div
+                role={closeCalendarItem.tone === "danger" ? "alert" : "status"}
+                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[closeCalendarItem.tone])}
+              >
+                <div className="font-semibold text-foreground">{closeCalendarItem.message}</div>
+                {closeCalendarItem.details.length > 0 ? (
+                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
+                    {closeCalendarItem.details.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
+          </form>
+        </CardContent>
+      </Card>
 
       <Card id="provider-connection-center" className="panel-surface scroll-mt-6 border border-border/70">
         <CardHeader>
@@ -1569,16 +2678,224 @@ function SettingsFieldRow({
   );
 }
 
+function buildLedgerMappingAssignmentDraft(workbench: LedgerMappingWorkbench | null): {
+  canAssign: boolean;
+  statusLabel: string;
+  disabledReason: string | null;
+  accountOptions: Array<{ value: string; label: string }>;
+  ledgerGroupOptions: Array<{ value: string; label: string }>;
+} {
+  if (!workbench) {
+    return {
+      canAssign: false,
+      statusLabel: "Workbench unavailable",
+      disabledReason: "Ledger mapping workbench payload has not loaded.",
+      accountOptions: [],
+      ledgerGroupOptions: []
+    };
+  }
+
+  const accountOptions = workbench.accounts
+    .filter((account) => account.mapping.requiresUserMapping)
+    .map((account) => ({
+      value: account.accountId,
+      label: `${account.accountCode} - ${account.displayName}`
+    }));
+  const ledgerGroupOptions = workbench.ledgerGroups
+    .filter((group) => group.ledgerGroupId.toLowerCase() !== "unassigned")
+    .map((group) => ({
+      value: group.ledgerGroupId,
+      label: group.displayName ? `${group.displayName} (${group.ledgerGroupId})` : group.ledgerGroupId
+    }));
+
+  if (accountOptions.length === 0) {
+    return {
+      canAssign: false,
+      statusLabel: "No unmapped accounts",
+      disabledReason: "All accounts in the loaded workbench already have ledger mappings.",
+      accountOptions,
+      ledgerGroupOptions
+    };
+  }
+
+  if (ledgerGroupOptions.length === 0) {
+    return {
+      canAssign: false,
+      statusLabel: "No ledger groups",
+      disabledReason: "Create or load at least one ledger group before assigning an account mapping.",
+      accountOptions,
+      ledgerGroupOptions
+    };
+  }
+
+  return {
+    canAssign: true,
+    statusLabel: `${accountOptions.length} ready`,
+    disabledReason: null,
+    accountOptions,
+    ledgerGroupOptions
+  };
+}
+
+function buildRolePermissionProfileDraft(catalog: RolePermissionCatalog | null): {
+  canSave: boolean;
+  statusLabel: string;
+  disabledReason: string | null;
+  baseRoleOptions: Array<{ value: string; label: string }>;
+  permissionOptions: Array<{ value: string; label: string; group: string }>;
+  defaultBaseRole: string;
+  defaultPermissionNames: string[];
+} {
+  if (!catalog) {
+    return {
+      canSave: false,
+      statusLabel: "Catalog unavailable",
+      disabledReason: "Role and permission catalog payload has not loaded.",
+      baseRoleOptions: [],
+      permissionOptions: [],
+      defaultBaseRole: "",
+      defaultPermissionNames: []
+    };
+  }
+
+  const builtInRoles = catalog.roles.filter((role) => role.isBuiltIn);
+  const defaultRole = builtInRoles.find((role) => role.role === "Accounting") ?? builtInRoles[0];
+  const baseRoleOptions = builtInRoles.map((role) => ({
+    value: role.role,
+    label: `${role.displayName} (${role.role})`
+  }));
+  const permissionOptions = catalog.permissions.map((permission) => ({
+    value: permission.name,
+    label: permission.name,
+    group: permission.group
+  }));
+
+  if (baseRoleOptions.length === 0) {
+    return {
+      canSave: false,
+      statusLabel: "No base roles",
+      disabledReason: "At least one built-in base role is required before creating a custom profile.",
+      baseRoleOptions,
+      permissionOptions,
+      defaultBaseRole: "",
+      defaultPermissionNames: []
+    };
+  }
+
+  if (permissionOptions.length === 0) {
+    return {
+      canSave: false,
+      statusLabel: "No permissions",
+      disabledReason: "At least one permission is required before creating a custom profile.",
+      baseRoleOptions,
+      permissionOptions,
+      defaultBaseRole: defaultRole?.role ?? "",
+      defaultPermissionNames: []
+    };
+  }
+
+  return {
+    canSave: true,
+    statusLabel: `${permissionOptions.length} grants`,
+    disabledReason: null,
+    baseRoleOptions,
+    permissionOptions,
+    defaultBaseRole: defaultRole?.role ?? baseRoleOptions[0]?.value ?? "",
+    defaultPermissionNames: defaultRole?.permissions ?? []
+  };
+}
+
+function buildApprovalPolicyRuleDraft(matrix: OperationsApprovalPolicyMatrix | null): {
+  canSave: boolean;
+  statusLabel: string;
+  disabledReason: string | null;
+  rows: OperationsApprovalPolicyMatrixRow[];
+  policyOptions: Array<{ value: string; label: string }>;
+} {
+  if (!matrix) {
+    return {
+      canSave: false,
+      statusLabel: "Matrix unavailable",
+      disabledReason: "Approval policy matrix payload has not loaded.",
+      rows: [],
+      policyOptions: []
+    };
+  }
+
+  if (matrix.rows.length === 0) {
+    return {
+      canSave: false,
+      statusLabel: "No rules",
+      disabledReason: "At least one approval policy rule is required before configuration can be saved.",
+      rows: [],
+      policyOptions: []
+    };
+  }
+
+  return {
+    canSave: true,
+    statusLabel: `${matrix.rows.length} rules`,
+    disabledReason: null,
+    rows: matrix.rows,
+    policyOptions: matrix.rows.map((row) => ({
+      value: row.policyKey,
+      label: `${row.action} (${row.policyKey})`
+    }))
+  };
+}
+
+function buildCloseCalendarItemDraft(calendar: OperationsCloseCalendar | null): {
+  canSave: boolean;
+  statusLabel: string;
+  disabledReason: string | null;
+  items: OperationsCloseCalendarItem[];
+  workflowOptions: Array<{ value: string; label: string }>;
+} {
+  if (!calendar) {
+    return {
+      canSave: false,
+      statusLabel: "Calendar unavailable",
+      disabledReason: "Account close calendar payload has not loaded.",
+      items: [],
+      workflowOptions: []
+    };
+  }
+
+  const configurableItems = calendar.items.filter((item) => item.nextDueTaskId && item.nextDueDate);
+  if (configurableItems.length === 0) {
+    return {
+      canSave: false,
+      statusLabel: "No open tasks",
+      disabledReason: "At least one account close workflow with a next due task is required before the calendar can be configured.",
+      items: [],
+      workflowOptions: []
+    };
+  }
+
+  return {
+    canSave: true,
+    statusLabel: `${configurableItems.length} workflows`,
+    disabledReason: null,
+    items: configurableItems,
+    workflowOptions: configurableItems.map((item) => ({
+      value: item.workflowId,
+      label: `${item.periodId}: ${item.nextDueLabel ?? item.nextDueTaskId}`
+    }))
+  };
+}
+
 function FilterSelect({
   label,
   value,
   onChange,
-  options
+  options,
+  disabled = false
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   options: Array<{ value: string; label: string }>;
+  disabled?: boolean;
 }) {
   return (
     <label className="grid gap-1 text-xs font-medium text-muted-foreground">
@@ -1586,6 +2903,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
         className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
         aria-label={label}
       >

@@ -299,6 +299,7 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                 ProviderCapabilityKind.ReferenceData or
                 ProviderCapabilityKind.SecurityMasterSeed or
                 ProviderCapabilityKind.CorporateActions or
+                ProviderCapabilityKind.FactorSchedule or
                 ProviderCapabilityKind.OptionsChain,
 
             _ => false
@@ -524,6 +525,7 @@ internal sealed class ProviderFamilyCatalogService : IProviderFamilyCatalogServi
         {
             var family = GetOrCreate(families, corporateActions.ProviderId, corporateActions.ProviderId, "Corporate action provider");
             family.RegisterCapability(new ProviderCapabilityDescriptor(ProviderCapabilityKind.CorporateActions, "Corporate action provider"), () => corporateActions);
+            family.RegisterCapability(new ProviderCapabilityDescriptor(ProviderCapabilityKind.FactorSchedule, "Factor schedule provider"), () => corporateActions);
         }
 
         return families.Values.Cast<IProviderFamilyAdapter>().ToArray();
@@ -563,6 +565,7 @@ internal sealed class ProviderFamilyCatalogService : IProviderFamilyCatalogServi
 
         if (entry.Capabilities.SupportsDividends || entry.Capabilities.SupportsSplits)
             yield return new ProviderCapabilityDescriptor(ProviderCapabilityKind.CorporateActions, "Catalog-derived corporate actions");
+
     }
 
     private static async Task<ProviderConnectionTestResult> TestAvailabilityAsync(

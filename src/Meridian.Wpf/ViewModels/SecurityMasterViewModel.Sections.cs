@@ -53,6 +53,11 @@ internal sealed class SecurityMasterScheduleAndOpenLotSectionViewModel
 
 internal sealed class SecurityMasterPrintSectionViewModel
 {
+    public bool IsRecordCorpActionVisible { get; set; }
+    public string CorpActType { get; set; } = "Dividend";
+    public string CorpActExDate { get; set; } = string.Empty;
+    public decimal CorpActAmount { get; set; }
+    public string CorpActCurrency { get; set; } = "USD";
     public ObservableCollection<CorporateActionDto> CorporateActions { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields { get; } = new();

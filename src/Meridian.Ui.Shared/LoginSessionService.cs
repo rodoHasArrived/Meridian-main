@@ -42,7 +42,12 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
             return null;
 
         var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
-        _sessions[token] = new SessionEntry(profile.Username, profile.Role, DateTimeOffset.UtcNow + SessionDuration);
+        _sessions[token] = new SessionEntry(
+            profile.Username,
+            profile.Role,
+            profile.PermissionOverride,
+            profile.RoleProfileName,
+            DateTimeOffset.UtcNow + SessionDuration);
         PruneExpiredSessions();
         return token;
     }
@@ -79,7 +84,11 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
             return null;
         }
 
-        return new UserProfile(entry.Username, entry.Role);
+        return new UserProfile(
+            entry.Username,
+            entry.Role,
+            PermissionOverride: entry.PermissionOverride,
+            RoleProfileName: entry.RoleProfileName);
     }
 
     /// <summary>
@@ -97,5 +106,10 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
         }
     }
 
-    private sealed record SessionEntry(string Username, UserRole Role, DateTimeOffset ExpiresAt);
+    private sealed record SessionEntry(
+        string Username,
+        UserRole Role,
+        UserPermission? PermissionOverride,
+        string? RoleProfileName,
+        DateTimeOffset ExpiresAt);
 }

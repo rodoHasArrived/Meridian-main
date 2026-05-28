@@ -83,7 +83,8 @@ public sealed class OrderManagementSystemGovernanceTests
             Reason: "Operator approved emergency close",
             CreatedBy: "ops",
             Symbol: "AAPL",
-            StrategyId: "strategy-1"));
+            StrategyId: "strategy-1",
+            RunId: "run-override-approved"));
 
         await controls.SetCircuitBreakerAsync(
             isOpen: true,
@@ -108,7 +109,8 @@ public sealed class OrderManagementSystemGovernanceTests
             {
                 ["actor"] = "ops",
                 ["correlationId"] = "act-002",
-                ["manualOverrideId"] = manualOverride.OverrideId
+                ["manualOverrideId"] = manualOverride.OverrideId,
+                ["runId"] = "run-override-approved"
             }
         });
 
@@ -120,7 +122,74 @@ public sealed class OrderManagementSystemGovernanceTests
         entries.Should().Contain(entry =>
             entry.Action == "OrderSubmitted" &&
             entry.OrderId == result.OrderId &&
-            entry.CorrelationId == "act-002");
+            entry.CorrelationId == "act-002" &&
+            entry.RunId == "run-override-approved" &&
+            entry.Reason == "ManualOverrideApplied" &&
+            entry.Scope == "run:run-override-approved/strategy:strategy-1/symbol:AAPL" &&
+            entry.Metadata != null &&
+            entry.Metadata["manualOverrideId"] == manualOverride.OverrideId);
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WithBypassOverrideForDifferentRun_RejectsOrderWhileCircuitBreakerIsOpen()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.BypassOrderControls,
+            Reason: "Run-specific closeout",
+            CreatedBy: "ops",
+            Symbol: "AAPL",
+            StrategyId: "strategy-1",
+            RunId: "run-allowed"));
+
+        await controls.SetCircuitBreakerAsync(
+            isOpen: true,
+            reason: "Operator halt",
+            changedBy: "ops");
+
+        using var oms = new OrderManagementSystem(
+            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            NullLogger<OrderManagementSystem>.Instance,
+            operatorControls: controls,
+            auditTrail: auditTrail,
+            portfolioState: new StaticPortfolioState());
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            StrategyId = "strategy-1",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["actor"] = "ops",
+                ["correlationId"] = "act-003",
+                ["manualOverrideId"] = manualOverride.OverrideId,
+                ["runId"] = "run-blocked"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Operator halt");
+
+        var entries = await auditTrail.GetRecentAsync(10);
+        entries.Should().Contain(entry =>
+            entry.Action == "OrderRejected" &&
+            entry.Outcome == "Rejected" &&
+            entry.RunId == "run-blocked" &&
+            entry.CorrelationId == "act-003" &&
+            entry.Symbol == "AAPL");
     }
 
     private static string CreateTempRoot()

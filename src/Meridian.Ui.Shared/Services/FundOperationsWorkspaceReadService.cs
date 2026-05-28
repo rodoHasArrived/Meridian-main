@@ -6,6 +6,7 @@ using Meridian.Application.OperationsContinuity;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
@@ -66,6 +67,7 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly ReportPackValidationService _reportPackValidationService;
     private readonly ISecurityValidationGateService? _securityValidationGate;
     private readonly IOperationsContinuityWorkflowService? _operationsContinuityWorkflowService;
+    private readonly ReportPackWorkflowService? _reportPackWorkflowService;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -79,7 +81,8 @@ public sealed class FundOperationsWorkspaceReadService
         IGovernanceReportPackRepository? reportPackRepository = null,
         ReportPackValidationService? reportPackValidationService = null,
         ISecurityValidationGateService? securityValidationGate = null,
-        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null)
+        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null,
+        ReportPackWorkflowService? reportPackWorkflowService = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -93,6 +96,7 @@ public sealed class FundOperationsWorkspaceReadService
         _reportPackValidationService = reportPackValidationService ?? new ReportPackValidationService();
         _securityValidationGate = securityValidationGate;
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
+        _reportPackWorkflowService = reportPackWorkflowService;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -161,7 +165,7 @@ public sealed class FundOperationsWorkspaceReadService
         var cashFinancing = await cashTask.ConfigureAwait(false);
         var reconciliation = await reconciliationTask.ConfigureAwait(false);
         var nav = await navTask.ConfigureAwait(false);
-        var reporting = BuildReportingSummary();
+        var reporting = BuildReportingSummary(accountSummaries, asOf);
         var governance = await BuildGovernanceLifecycleProjectionAsync(
             normalizedFundProfileId,
             accountSummaries,
@@ -327,7 +331,7 @@ public sealed class FundOperationsWorkspaceReadService
             OpenReconciliationBreakCount: reconciliation.OpenBreakCount,
             SecurityResolvedCount: securityResolvedCount,
             SecurityMissingCount: securityMissingCount,
-            LineagePointers: BuildLineagePointers(report, runs, reconciliation),
+            LineagePointers: BuildLineagePointers(report, ledgerBook, runs, reconciliation, asOf),
             SourceSnapshotHash: ComputeSourceSnapshotHash(
                 normalizedFundProfileId,
                 asOf,
@@ -1313,13 +1317,23 @@ public sealed class FundOperationsWorkspaceReadService
 
     private static IReadOnlyList<FundReportPackLineagePointerDto> BuildLineagePointers(
         ReportPack report,
+        FundLedgerBook ledgerBook,
         IReadOnlyList<StrategyRunEntry> runs,
-        ReconciliationSummary reconciliation)
+        ReconciliationSummary reconciliation,
+        DateTimeOffset asOf)
     {
         var pointers = new List<FundReportPackLineagePointerDto>();
+        var ledgerEvidence = BuildLedgerLineEvidence(ledgerBook, asOf);
         foreach (var run in runs)
         {
-            pointers.Add(new FundReportPackLineagePointerDto("report", "summary", "run", run.RunId));
+            pointers.Add(new FundReportPackLineagePointerDto(
+                "report",
+                "summary",
+                "run",
+                run.RunId,
+                DisplayLabel: $"{run.StrategyName} ({run.RunId})",
+                Route: UiApiRoutes.WithParam(UiApiRoutes.RunsContinuity, "runId", run.RunId),
+                SourceSystem: "strategy-run"));
         }
 
         foreach (var line in report.TrialBalance)
@@ -1327,20 +1341,128 @@ public sealed class FundOperationsWorkspaceReadService
             var lineKey = string.IsNullOrWhiteSpace(line.Symbol)
                 ? line.AccountName
                 : $"{line.AccountName}:{line.Symbol}";
-            pointers.Add(new FundReportPackLineagePointerDto("line", lineKey, "ledger-account", line.AccountName));
+            var evidenceKey = BuildLedgerEvidenceKey(line.AccountName, line.Symbol);
+            ledgerEvidence.TryGetValue(evidenceKey, out var lineEvidence);
+            pointers.Add(new FundReportPackLineagePointerDto(
+                "line",
+                lineKey,
+                "ledger-account",
+                line.AccountName,
+                DisplayLabel: BuildLedgerLineLabel(line),
+                Route: BuildLedgerLineRoute(runs, line.AccountName, line.Symbol),
+                SourceSystem: "ledger",
+                RelatedEvidenceIds: lineEvidence?.LedgerEntryIds,
+                EvidenceCount: lineEvidence?.LedgerEntryIds.Count,
+                Amount: line.NetBalance,
+                CapturedAt: lineEvidence?.LatestTimestamp));
             if (!string.IsNullOrWhiteSpace(line.Symbol))
             {
-                pointers.Add(new FundReportPackLineagePointerDto("line", lineKey, "security", line.Symbol));
+                var symbol = line.Symbol.Trim();
+                pointers.Add(new FundReportPackLineagePointerDto(
+                    "line",
+                    lineKey,
+                    "security",
+                    symbol,
+                    DisplayLabel: BuildSecurityLineLabel(line),
+                    Route: BuildSecurityMasterSearchRoute(symbol),
+                    SourceSystem: "security-master",
+                    RelatedEvidenceIds: lineEvidence?.JournalEntryIds,
+                    EvidenceCount: lineEvidence?.JournalEntryIds.Count,
+                    Amount: line.NetBalance,
+                    CapturedAt: lineEvidence?.LatestTimestamp));
             }
         }
 
         if (reconciliation.RunCount > 0)
         {
-            pointers.Add(new FundReportPackLineagePointerDto("section", "reconciliation", "reconciliation-summary", $"runs:{reconciliation.RunCount};open-breaks:{reconciliation.OpenBreakCount}"));
+            pointers.Add(new FundReportPackLineagePointerDto(
+                "section",
+                "reconciliation",
+                "reconciliation-summary",
+                $"runs:{reconciliation.RunCount};open-breaks:{reconciliation.OpenBreakCount}",
+                DisplayLabel: $"{reconciliation.RunCount} reconciliation run(s), {reconciliation.OpenBreakCount} open break(s)",
+                Route: UiApiRoutes.ReconciliationRuns,
+                SourceSystem: "reconciliation"));
         }
 
         return pointers;
     }
+
+    private static IReadOnlyDictionary<string, LedgerLineEvidence> BuildLedgerLineEvidence(
+        FundLedgerBook ledgerBook,
+        DateTimeOffset asOf)
+        => ledgerBook
+            .ConsolidatedJournalEntries()
+            .Where(entry => entry.Timestamp <= asOf)
+            .SelectMany(entry => entry.Lines.Select(line => new { entry.JournalEntryId, entry.Timestamp, Line = line }))
+            .GroupBy(item => BuildLedgerEvidenceKey(item.Line.Account.Name, item.Line.Account.Symbol), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group =>
+                {
+                    var ordered = group
+                        .OrderBy(static item => item.Timestamp)
+                        .ThenBy(static item => item.Line.EntryId)
+                        .ToArray();
+                    return new LedgerLineEvidence(
+                        ordered.Select(static item => item.Line.EntryId.ToString("D")).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+                        ordered.Select(static item => item.JournalEntryId.ToString("D")).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+                        ordered.Length == 0 ? null : ordered[^1].Timestamp);
+                },
+                StringComparer.OrdinalIgnoreCase);
+
+    private static string BuildLedgerEvidenceKey(string accountName, string? symbol)
+        => string.IsNullOrWhiteSpace(symbol)
+            ? accountName.Trim()
+            : $"{accountName.Trim()}:{symbol.Trim()}";
+
+    private static string BuildLedgerLineRoute(
+        IReadOnlyList<StrategyRunEntry> runs,
+        string accountName,
+        string? symbol)
+    {
+        var baseRoute = runs.Count == 1
+            ? UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", runs[0].RunId)
+            : UiApiRoutes.FundReportPacks;
+        var queryParts = new List<string>
+        {
+            $"accountName={Uri.EscapeDataString(accountName.Trim())}"
+        };
+        if (!string.IsNullOrWhiteSpace(symbol))
+        {
+            queryParts.Add($"symbol={Uri.EscapeDataString(symbol.Trim())}");
+        }
+
+        return UiApiRoutes.WithQuery(baseRoute, string.Join("&", queryParts));
+    }
+
+    private static string BuildSecurityMasterSearchRoute(string symbol)
+        => UiApiRoutes.WithQuery(
+            UiApiRoutes.WorkstationSecurityMasterSearch,
+            $"query={Uri.EscapeDataString(symbol.Trim())}");
+
+    private static string BuildLedgerLineLabel(EnrichedLedgerRow line)
+        => string.IsNullOrWhiteSpace(line.Symbol)
+            ? $"{line.AccountName} ledger line"
+            : $"{line.AccountName} / {line.Symbol.Trim()} ledger line";
+
+    private static string BuildSecurityLineLabel(EnrichedLedgerRow line)
+    {
+        var symbol = line.Symbol?.Trim();
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return "Security Master lookup";
+        }
+
+        return string.IsNullOrWhiteSpace(line.DisplayName)
+            ? symbol
+            : $"{line.DisplayName.Trim()} ({symbol})";
+    }
+
+    private sealed record LedgerLineEvidence(
+        IReadOnlyList<string> LedgerEntryIds,
+        IReadOnlyList<string> JournalEntryIds,
+        DateTimeOffset? LatestTimestamp);
 
     private static decimal SumBalance(IEnumerable<FundTrialBalanceLine> lines, LedgerAccountType accountType)
         => lines
@@ -1556,7 +1678,9 @@ public sealed class FundOperationsWorkspaceReadService
         return lookup;
     }
 
-    private static FundReportingSummaryDto BuildReportingSummary()
+    private FundReportingSummaryDto BuildReportingSummary(
+        IReadOnlyList<FundAccountSummary> accounts,
+        DateTimeOffset asOf)
     {
         var profiles = ExportProfile.GetBuiltInProfiles()
             .Select(static profile => new FundReportingProfileDto(
@@ -1574,13 +1698,33 @@ public sealed class FundOperationsWorkspaceReadService
             .Where(static profile => profile.Id is "excel" or "python-pandas" or "postgresql" or "arrow-feather")
             .Select(static profile => profile.Id)
             .ToArray();
+        var workflowRecords = BuildReportPackWorkflowRecords(accounts, asOf);
 
         return new FundReportingSummaryDto(
             ProfileCount: profiles.Length,
             RecommendedProfiles: recommended,
             ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
             Profiles: profiles,
-            Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.");
+            Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.",
+            WorkflowRecords: workflowRecords);
+    }
+
+    private IReadOnlyList<ReportPackWorkflowRecordDto> BuildReportPackWorkflowRecords(
+        IReadOnlyList<FundAccountSummary> accounts,
+        DateTimeOffset asOf)
+    {
+        if (_reportPackWorkflowService is null || accounts.Count == 0)
+        {
+            return [];
+        }
+
+        var period = asOf.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        return accounts
+            .SelectMany(account => _reportPackWorkflowService.GetHistory(period, account.AccountId.ToString("D")))
+            .OrderByDescending(static record => record.UpdatedAt)
+            .ThenByDescending(static record => record.Version)
+            .Take(8)
+            .ToArray();
     }
 
     private static string ResolveDisplayName(

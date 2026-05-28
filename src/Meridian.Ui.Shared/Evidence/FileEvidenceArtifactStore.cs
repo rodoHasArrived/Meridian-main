@@ -41,6 +41,29 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 {
     private const string ManifestRelativeRoot = "workstation/evidence/";
     private const string FileManifestStorageKind = "file-manifest";
+    private const string FileBundleStorageKind = "file-bundle";
+    private const long MaxRetainedArtifactBytes = 100 * 1024 * 1024;
+    private static readonly HashSet<string> SupportedCanonicalSubjectKinds = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "run",
+        "account",
+        "fund",
+        "strategy",
+        "instrument",
+        "reconciliation",
+        "reconciliation-case",
+        "report",
+        "report-pack",
+        "approval",
+        EvidenceSubjectResolver.StrategyRunKind,
+        EvidenceSubjectResolver.PaperReadinessKind,
+        EvidenceSubjectResolver.ReconciliationReviewKind,
+        EvidenceSubjectResolver.ReportPackKind,
+        EvidenceSubjectResolver.ProviderTrustKind,
+        EvidenceSubjectResolver.AnalysisExportKind,
+        EvidenceSubjectResolver.SecurityMasterConflictKind,
+        EvidenceSubjectResolver.ApprovalKind
+    };
 
     private readonly string _rootDirectory;
     private readonly ILogger<FileEvidenceArtifactStore> _logger;
@@ -91,8 +114,10 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Linkage: request.Linkage);
         var retainedExportJson = JsonSerializer.Serialize(manifest, _jsonOptions);
         var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(retainedExportJson))).ToLowerInvariant();
+        var vaultId = $"ev-{contentHash[..24]}";
+        var retainedArtifacts = await RetainLocalArtifactsAsync(packet, vaultId, generatedAt, ct).ConfigureAwait(false);
         var vaultIdentity = new EvidenceVaultIdentityDto(
-            VaultId: $"ev-{contentHash[..24]}",
+            VaultId: vaultId,
             SubjectKind: packet.Subject.SubjectKind,
             SubjectId: packet.Subject.SubjectId,
             ManifestPath: relativePath.Replace(Path.DirectorySeparatorChar, '/'),
@@ -100,7 +125,10 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             RetainedAt: generatedAt,
             ContentHashSha256: contentHash,
             SchemaVersion: 1,
-            StorageKind: FileManifestStorageKind);
+            StorageKind: retainedArtifacts.Count == 0 ? FileManifestStorageKind : FileBundleStorageKind)
+        {
+            Artifacts = retainedArtifacts
+        };
         manifest = manifest with { VaultIdentity = vaultIdentity };
 
         await AtomicFileWriter
@@ -383,7 +411,8 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
     {
         if (!string.Equals(identity.VaultId, expectedVaultId, StringComparison.OrdinalIgnoreCase) ||
             identity.SchemaVersion <= 0 ||
-            !string.Equals(identity.StorageKind, FileManifestStorageKind, StringComparison.OrdinalIgnoreCase))
+            !string.Equals(identity.StorageKind, FileManifestStorageKind, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(identity.StorageKind, FileBundleStorageKind, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
@@ -444,6 +473,133 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             "application/json",
             info.Name,
             new DateTimeOffset(info.LastWriteTimeUtc));
+    }
+
+    private async Task<IReadOnlyList<EvidenceVaultArtifactDto>> RetainLocalArtifactsAsync(
+        EvidencePacketDto packet,
+        string vaultId,
+        DateTimeOffset retainedAt,
+        CancellationToken ct)
+    {
+        var retainedArtifacts = packet.Nodes
+            .SelectMany(static node => node.ArtifactRefs)
+            .Where(static artifact => artifact.Retained && !string.IsNullOrWhiteSpace(artifact.Path))
+            .GroupBy(static artifact => artifact.ArtifactId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .ToArray();
+        if (retainedArtifacts.Length == 0)
+        {
+            return [];
+        }
+
+        var artifactDirectory = Path.Combine(_rootDirectory, "_vault", vaultId, "artifacts");
+        var copied = new List<EvidenceVaultArtifactDto>(retainedArtifacts.Length);
+        foreach (var artifact in retainedArtifacts)
+        {
+            ct.ThrowIfCancellationRequested();
+            ValidateRetainedArtifactLinkage(artifact);
+            var sourcePath = ResolveRetainableArtifactSourcePath(artifact.Path);
+            if (sourcePath is null)
+            {
+                throw new InvalidOperationException($"Retained artifact '{artifact.ArtifactId}' has an invalid source path.");
+            }
+
+            if (!File.Exists(sourcePath))
+            {
+                throw new FileNotFoundException($"Retained artifact '{artifact.ArtifactId}' source file was not found.", sourcePath);
+            }
+
+            var fileInfo = new FileInfo(sourcePath);
+            if (fileInfo.Length > MaxRetainedArtifactBytes)
+            {
+                throw new InvalidOperationException($"Retained artifact '{artifact.ArtifactId}' exceeds the 100 MB vault artifact limit.");
+            }
+
+            var bytes = await File.ReadAllBytesAsync(sourcePath, ct).ConfigureAwait(false);
+            var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+            if (!string.IsNullOrWhiteSpace(artifact.Hash) &&
+                !string.Equals(NormalizeHash(artifact.Hash), hash, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Retained artifact '{artifact.ArtifactId}' hash does not match source content.");
+            }
+
+            var safeFileName = BuildArtifactFileName(artifact, sourcePath);
+            var targetPath = Path.Combine(artifactDirectory, safeFileName);
+            await AtomicFileWriter.WriteAsync(targetPath, bytes, ct).ConfigureAwait(false);
+            copied.Add(new EvidenceVaultArtifactDto(
+                ArtifactId: artifact.ArtifactId,
+                Kind: artifact.Kind,
+                RelativePath: Path.Combine("workstation", "evidence", "_vault", vaultId, "artifacts", safeFileName)
+                    .Replace(Path.DirectorySeparatorChar, '/'),
+                ContentHashSha256: hash,
+                SizeBytes: bytes.LongLength,
+                RetainedAt: retainedAt,
+                SourcePath: sourcePath,
+                SourceRoute: artifact.Route,
+                CanonicalSubjectKind: artifact.CanonicalSubjectKind,
+                CanonicalSubjectId: artifact.CanonicalSubjectId));
+        }
+
+        return copied
+            .OrderBy(static artifact => artifact.RelativePath, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static void ValidateRetainedArtifactLinkage(EvidenceArtifactRefDto artifact)
+    {
+        if (string.IsNullOrWhiteSpace(artifact.CanonicalSubjectKind) ||
+            string.IsNullOrWhiteSpace(artifact.CanonicalSubjectId))
+        {
+            throw new InvalidOperationException(
+                $"Retained artifact '{artifact.ArtifactId}' is missing canonical subject linkage.");
+        }
+
+        if (!SupportedCanonicalSubjectKinds.Contains(artifact.CanonicalSubjectKind.Trim()))
+        {
+            throw new InvalidOperationException(
+                $"Retained artifact '{artifact.ArtifactId}' links to unsupported canonical subject kind '{artifact.CanonicalSubjectKind}'.");
+        }
+    }
+
+    private static string? ResolveRetainableArtifactSourcePath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            return Path.GetFullPath(path.Trim());
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            return null;
+        }
+    }
+
+    private static string BuildArtifactFileName(EvidenceArtifactRefDto artifact, string sourcePath)
+    {
+        var extension = Path.GetExtension(sourcePath);
+        if (string.IsNullOrWhiteSpace(extension) || extension.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+        {
+            extension = ".bin";
+        }
+
+        var stem = SanitizePathSegment(string.IsNullOrWhiteSpace(artifact.Kind) ? artifact.ArtifactId : artifact.Kind);
+        var artifactHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(artifact.ArtifactId))).ToLowerInvariant()[..12];
+        return $"{stem}-{artifactHash}{extension}";
+    }
+
+    private static string NormalizeHash(string hash)
+    {
+        var trimmed = hash.Trim();
+        var separator = trimmed.IndexOf(':', StringComparison.Ordinal);
+        return separator >= 0 ? trimmed[(separator + 1)..] : trimmed;
     }
 
     private static string? ValidateVaultId(string value)

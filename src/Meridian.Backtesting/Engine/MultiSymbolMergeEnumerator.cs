@@ -26,6 +26,20 @@ internal static class MultiSymbolMergeEnumerator
         IReadOnlyList<IAsyncEnumerable<MarketEvent>> streams,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
+        if (streams.Count == 0)
+            yield break;
+
+        if (streams.Count == 1)
+        {
+            await foreach (var evt in streams[0].WithCancellation(ct).ConfigureAwait(false))
+            {
+                ct.ThrowIfCancellationRequested();
+                yield return evt;
+            }
+
+            yield break;
+        }
+
         // Initialise enumerators and prime the heap.
         // Heap priority is (timestampMs, streamIndex), so equal timestamps are deterministically
         // ordered by stream index.

@@ -177,4 +177,25 @@ public sealed class BackfillViewModelTests
         viewModelSource.Should().NotContain("_hasNoScheduledJobs");
         viewModelSource.Should().NotContain("_gapAnalysisSummaryText");
     }
+
+    [Fact]
+    public void BackfillStatusSection_ShouldOwnApiStatusAndStatsPresentationWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.cs"));
+
+        sectionSource.Should().Contain("public sealed class BackfillStatusSectionViewModel");
+        sectionSource.Should().Contain("public BackfillResultDto? LastApiStatus");
+        sectionSource.Should().Contain("public Visibility LastStatusVisibility");
+        sectionSource.Should().Contain("public string LastRunStatusText");
+        sectionSource.Should().Contain("public string BackfillStatsTotalBarsText");
+        sectionSource.Should().Contain("public BackfillStatusSectionViewModel StatusSection");
+        viewModelSource.Should().Contain("get => StatusSection.LastApiStatus");
+        viewModelSource.Should().Contain("get => StatusSection.LastRunStatusText");
+        viewModelSource.Should().Contain("get => StatusSection.BackfillStatsTotalBarsText");
+        viewModelSource.Should().NotContain("_lastApiStatus");
+        viewModelSource.Should().NotContain("_lastStatusVisibility");
+        viewModelSource.Should().NotContain("_lastRunStatusText");
+        viewModelSource.Should().NotContain("_backfillStatsTotalBarsText");
+    }
 }

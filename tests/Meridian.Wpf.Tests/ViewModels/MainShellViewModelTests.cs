@@ -535,6 +535,37 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void MainPageChromeSection_ShouldOwnBannerAndFundStateWithAdapterBindings()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            using var vm = CreateMainPageViewModel(fundContext);
+
+            try
+            {
+                vm.ChromeSection.ActiveFundName.Should().Be(vm.ActiveFundName);
+                vm.ChromeSection.ActiveFundSubtitle.Should().Be(vm.ActiveFundSubtitle);
+                vm.ChromeSection.ActiveFundVisibility.Should().Be(vm.ActiveFundVisibility);
+
+                FixtureModeDetector.Instance.SetFixtureMode(true);
+
+                vm.ChromeSection.FixtureModeBannerText.Should().Be(vm.FixtureModeBannerText);
+                vm.ChromeSection.FixtureModeBannerVisibility.Should().Be(vm.FixtureModeBannerVisibility);
+
+                vm.NavigationService.NavigateTo("Backtest");
+
+                vm.ChromeSection.BackButtonVisibility.Should().Be(vm.BackButtonVisibility);
+                vm.ChromeSection.RecentPagesEmptyVisibility.Should().Be(vm.RecentPagesEmptyVisibility);
+            }
+            finally
+            {
+                FixtureModeDetector.Instance.SetFixtureMode(false);
+            }
+        });
+    }
+
+    [Fact]
     public void MainWindowXaml_BindsStartupExperienceBanner()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\MainWindow.xaml"));

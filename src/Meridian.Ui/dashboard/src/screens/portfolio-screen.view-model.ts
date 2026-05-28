@@ -11,6 +11,10 @@ import type {
   MetricSnapshot,
   PortfolioWorkspaceResponse,
   ResearchWorkspaceResponse,
+  RunAttributionSummary,
+  RunCashFlowSummary,
+  RunFillSummary,
+  EquityCurveSummary,
   StrategyRunContinuityDto,
   StrategyRunContinuityWarningSeverity,
   TradingWorkspaceResponse
@@ -224,6 +228,42 @@ export interface PortfolioRunDetail {
   fields: PortfolioDetailField[];
 }
 
+export interface PortfolioRunComparisonSummary {
+  ariaLabel: string;
+  title: string;
+  description: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  cards: PortfolioRunComparisonCard[];
+}
+
+export interface PortfolioRunComparisonCard {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
+export interface PortfolioRunDrillInData {
+  runId: string;
+  attribution: RunAttributionSummary | null;
+  drawdownProfile: EquityCurveSummary | null;
+  cashFlow: RunCashFlowSummary | null;
+  trades: RunFillSummary | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface PortfolioRunDrillInSummary {
+  ariaLabel: string;
+  title: string;
+  description: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  actionLabel: string;
+  actionAriaLabel: string;
+  cards: PortfolioRunComparisonCard[];
+}
+
 export interface PortfolioBrokeragePositionDetail {
   id: string;
   title: string;
@@ -312,6 +352,8 @@ export interface PortfolioScreenViewModel {
   runDetailEmptyTitle: string;
   runEmptyText: string;
   selectedRun: PortfolioRunDetail | null;
+  runComparisonSummary: PortfolioRunComparisonSummary;
+  runDrillInSummary: PortfolioRunDrillInSummary;
   selectRun: (id: string) => void;
   cashFlowSummary: string | null;
   cashVarianceLabel: string | null;
@@ -329,6 +371,7 @@ export function buildPortfolioScreenViewModel({
   selectedPositionId = null,
   selectedRunId = null,
   selectedRunContinuity = null,
+  selectedRunDrillIn = null,
   selectedBrokeragePositionId = null,
   selectedBrokerageAccountKey = "all",
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio,
@@ -346,6 +389,7 @@ export function buildPortfolioScreenViewModel({
   selectedPositionId?: string | null;
   selectedRunId?: string | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
+  selectedRunDrillIn?: PortfolioRunDrillInData | null;
   selectedBrokeragePositionId?: string | null;
   selectedBrokerageAccountKey?: string;
   pathname?: string;
@@ -469,6 +513,8 @@ export function buildPortfolioScreenViewModel({
   const selectedRun = selectedRunRow
     ? buildSelectedRunDetail(selectedRunRow, selectedContinuity)
     : null;
+  const runComparisonSummary = buildPortfolioRunComparisonSummary(runRows, selectedRunRow);
+  const runDrillInSummary = buildPortfolioRunDrillInSummary(selectedRunRow, selectedRunDrillIn);
   const brokeragePositionRows = brokeragePositions.map((position) =>
     toBrokeragePositionRow(position, brokerageAccounts, selectedBrokerageStableId)
   );
@@ -587,6 +633,8 @@ export function buildPortfolioScreenViewModel({
         ? "No runs available in the Portfolio workspace."
         : "Strategy workspace data unavailable.",
     selectedRun,
+    runComparisonSummary,
+    runDrillInSummary,
     selectRun,
     cashFlowSummary: cashFlow?.summary ?? null,
     cashVarianceLabel,
@@ -749,6 +797,164 @@ export function buildLinkedRunEvidenceLabel(runCount: number): string {
   return `${runCount} linked run${runCount === 1 ? "" : "s"}`;
 }
 
+export function buildPortfolioRunComparisonSummary(
+  runs: PortfolioRunRow[],
+  selectedRun: PortfolioRunRow | null
+): PortfolioRunComparisonSummary {
+  const rankedByPnl = runs
+    .map((run) => ({ run, pnl: parseNumericValue(run.pnl), sharpe: parseNumericValue(run.sharpe) }))
+    .filter((item) => item.pnl !== null || item.sharpe !== null);
+  const bestPnl = rankedByPnl
+    .filter((item) => item.pnl !== null)
+    .sort((a, b) => (b.pnl ?? Number.NEGATIVE_INFINITY) - (a.pnl ?? Number.NEGATIVE_INFINITY))[0] ?? null;
+  const weakestPnl = rankedByPnl
+    .filter((item) => item.pnl !== null)
+    .sort((a, b) => (a.pnl ?? Number.POSITIVE_INFINITY) - (b.pnl ?? Number.POSITIVE_INFINITY))[0] ?? null;
+  const bestSharpe = rankedByPnl
+    .filter((item) => item.sharpe !== null)
+    .sort((a, b) => (b.sharpe ?? Number.NEGATIVE_INFINITY) - (a.sharpe ?? Number.NEGATIVE_INFINITY))[0] ?? null;
+  const modeSet = distinctNormalizedValues(runs.map((run) => run.mode));
+  const engineSet = distinctNormalizedValues(runs.map((run) => run.engine));
+  const selectedPnl = selectedRun ? parseNumericValue(selectedRun.pnl) : null;
+  const selectedRank = selectedRun && selectedPnl !== null
+    ? rankedByPnl
+      .filter((item) => item.pnl !== null)
+      .sort((a, b) => (b.pnl ?? Number.NEGATIVE_INFINITY) - (a.pnl ?? Number.NEGATIVE_INFINITY))
+      .findIndex((item) => item.run.id === selectedRun.id) + 1
+    : 0;
+  const hasCrossMode = modeSet.length > 1;
+  const hasCrossEngine = engineSet.length > 1;
+
+  return {
+    ariaLabel: "Portfolio run comparison summary",
+    title: "Run comparison evidence",
+    description: runs.length > 0
+      ? `${formatCountLabel(runs.length, "strategy run")} compared across ${formatCountLabel(modeSet.length, "mode")} and ${formatCountLabel(engineSet.length, "engine")}.`
+      : "No strategy runs are available for portfolio comparison.",
+    statusTone: runs.length === 0 ? "warning" : hasCrossMode || hasCrossEngine ? "warning" : "success",
+    cards: [
+      {
+        id: "selected-rank",
+        label: "Selected rank",
+        value: selectedRun && selectedRank > 0 ? `#${selectedRank}` : "—",
+        detail: selectedRun
+          ? `${selectedRun.strategyName} vs ${formatCountLabel(runs.length, "linked run")} by P&L.`
+          : "Select a run to compare it against the portfolio run set.",
+        tone: selectedRank === 1 ? "success" : selectedRank > 0 ? "default" : "warning"
+      },
+      {
+        id: "best-pnl",
+        label: "Best P&L",
+        value: bestPnl ? bestPnl.run.pnl : "—",
+        detail: bestPnl ? `${bestPnl.run.strategyName} (${bestPnl.run.mode}, ${bestPnl.run.engine})` : "No comparable P&L values.",
+        tone: bestPnl ? comparisonToneForPnl(bestPnl.run.pnl) : "warning"
+      },
+      {
+        id: "weakest-pnl",
+        label: "Weakest P&L",
+        value: weakestPnl ? weakestPnl.run.pnl : "—",
+        detail: weakestPnl ? `${weakestPnl.run.strategyName} (${weakestPnl.run.mode}, ${weakestPnl.run.engine})` : "No comparable P&L values.",
+        tone: weakestPnl ? comparisonToneForPnl(weakestPnl.run.pnl) : "warning"
+      },
+      {
+        id: "best-sharpe",
+        label: "Best Sharpe",
+        value: bestSharpe ? bestSharpe.run.sharpe : "—",
+        detail: bestSharpe ? `${bestSharpe.run.strategyName} risk-adjusted lead.` : "No comparable Sharpe values.",
+        tone: bestSharpe ? "success" : "warning"
+      },
+      {
+        id: "coverage",
+        label: "Coverage",
+        value: `${modeSet.length}/${engineSet.length}`,
+        detail: `${modeSet.join(", ") || "No modes"}; ${engineSet.join(", ") || "no engines"}.`,
+        tone: hasCrossMode || hasCrossEngine ? "warning" : runs.length > 0 ? "success" : "warning"
+      }
+    ]
+  };
+}
+
+export function buildPortfolioRunDrillInSummary(
+  selectedRun: PortfolioRunRow | null,
+  drillIn: PortfolioRunDrillInData | null
+): PortfolioRunDrillInSummary {
+  const hasSelectedRun = selectedRun !== null;
+  const isCurrentRun = hasSelectedRun && drillIn?.runId === selectedRun.id;
+  const isLoading = isCurrentRun && drillIn?.isLoading === true;
+  const error = isCurrentRun ? drillIn?.error ?? null : null;
+  const attribution = isCurrentRun ? drillIn?.attribution ?? null : null;
+  const drawdown = isCurrentRun ? drillIn?.drawdownProfile ?? null : null;
+  const cashFlow = isCurrentRun ? drillIn?.cashFlow ?? null : null;
+  const trades = isCurrentRun ? drillIn?.trades ?? null : null;
+  const loadedCount = [attribution, drawdown, cashFlow, trades].filter(Boolean).length;
+  const statusTone = error
+    ? "danger"
+    : isLoading
+      ? "default"
+      : loadedCount === 4
+        ? "success"
+        : loadedCount > 0
+          ? "warning"
+          : "warning";
+
+  return {
+    ariaLabel: "Selected run portfolio drill-in evidence",
+    title: "Portfolio drill-ins",
+    description: !hasSelectedRun
+      ? "Select a run to load attribution, drawdown, cash-flow, and trade-level evidence."
+      : error
+        ? `Drill-in evidence failed for ${selectedRun.strategyName}: ${error}`
+        : isLoading
+          ? `Loading drill-in evidence for ${selectedRun.strategyName}.`
+          : loadedCount > 0
+            ? `${loadedCount}/4 drill-in evidence slices loaded for ${selectedRun.strategyName}.`
+            : `Load shared drill-in evidence for ${selectedRun.strategyName}.`,
+    statusTone,
+    actionLabel: isLoading ? "Loading drill-ins..." : "Load drill-in evidence",
+    actionAriaLabel: hasSelectedRun
+      ? `Load portfolio drill-in evidence for ${selectedRun.strategyName}`
+      : "Load portfolio drill-in evidence unavailable: no run selected",
+    cards: [
+      {
+        id: "attribution",
+        label: "Attribution",
+        value: attribution ? formatSignedCurrency(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl) : "—",
+        detail: attribution
+          ? `Realized ${formatSignedCurrency(attribution.totalRealizedPnl)}; unrealized ${formatSignedCurrency(attribution.totalUnrealizedPnl)}; ${formatCountLabel(attribution.bySymbol.length, "symbol")}.`
+          : "Run attribution has not been loaded.",
+        tone: attribution ? numericPnlTone(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl) : "warning"
+      },
+      {
+        id: "drawdown",
+        label: "Drawdown",
+        value: drawdown ? formatPercent(drawdown.maxDrawdownPercent) : "—",
+        detail: drawdown
+          ? `${formatCountLabel(drawdown.points.length, "equity point")}; recovery ${drawdown.maxDrawdownRecoveryDays} days; final equity ${formatCurrency(drawdown.finalEquity)}.`
+          : "Equity curve and drawdown profile have not been loaded.",
+        tone: drawdown ? drawdown.maxDrawdownPercent > 0.1 ? "danger" : drawdown.maxDrawdownPercent > 0.03 ? "warning" : "success" : "warning"
+      },
+      {
+        id: "cash-flow",
+        label: "Cash-flow",
+        value: cashFlow ? formatSignedCurrency(cashFlow.netCashFlow) : "—",
+        detail: cashFlow
+          ? `${cashFlow.totalEntries} cash-flow ${cashFlow.totalEntries === 1 ? "entry" : "entries"}; inflows ${formatCurrency(cashFlow.totalInflows)}; outflows ${formatCurrency(cashFlow.totalOutflows)}.`
+          : "Cash-flow projection has not been loaded.",
+        tone: cashFlow ? numericPnlTone(cashFlow.netCashFlow) : "warning"
+      },
+      {
+        id: "trades",
+        label: "Trades",
+        value: trades ? trades.totalFills.toLocaleString() : "—",
+        detail: trades
+          ? `${formatCountLabel(trades.fills.length, "fill")} with ${formatCurrency(trades.totalCommissions)} commissions.`
+          : "Trade-level fill evidence has not been loaded.",
+        tone: trades ? trades.totalFills > 0 ? "success" : "warning" : "warning"
+      }
+    ]
+  };
+}
+
 function buildPortfolioHeaderChips({
   openPositionCount,
   totalExposure,
@@ -794,6 +1000,7 @@ export function usePortfolioScreenViewModel({
   brokerageConnection,
   brokeragePortfolio,
   selectedRunContinuity = null,
+  selectedRunDrillIn = null,
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -803,6 +1010,7 @@ export function usePortfolioScreenViewModel({
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
+  selectedRunDrillIn?: PortfolioRunDrillInData | null;
   pathname?: string;
 }): PortfolioScreenViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
@@ -818,6 +1026,7 @@ export function usePortfolioScreenViewModel({
     brokerageConnection,
     brokeragePortfolio,
     selectedRunContinuity,
+    selectedRunDrillIn,
     pathname,
     selectedPositionId,
     selectedRunId,
@@ -1652,6 +1861,25 @@ function pnlTone(value: string): "success" | "danger" | "default" {
   return "default";
 }
 
+function parseNumericValue(value: string): number | null {
+  const normalizedPercent = value.trim().endsWith("%");
+  const cleaned = value.replace(/[$+,%]/g, "").trim();
+  if (!cleaned || cleaned === "—") {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(cleaned);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return normalizedPercent ? parsed / 100 : parsed;
+}
+
+function distinctNormalizedValues(values: string[]): string[] {
+  return [...new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))].sort();
+}
+
 function numericPnlTone(value: number): "success" | "danger" | "default" {
   if (value > 0) return "success";
   if (value < 0) return "danger";
@@ -1870,6 +2098,13 @@ function pnlFieldTone(value: string): PortfolioDetailField["tone"] {
   return "default";
 }
 
+function comparisonToneForPnl(value: string): PortfolioRunComparisonCard["tone"] {
+  const tone = pnlTone(value);
+  if (tone === "success") return "success";
+  if (tone === "danger") return "danger";
+  return "default";
+}
+
 function runStatusTone(
   status: string,
   pnl: PortfolioRunRow["pnlTone"]
@@ -1919,6 +2154,10 @@ function formatSignedCurrency(value: number): string {
 function formatCurrencyPrecise(value: number): string {
   const prefix = value >= 0 ? "$" : "-$";
   return `${prefix}${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatPercent(value: number): string {
+  return `${(value * 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
 }
 
 function formatNumber(value: number): string {

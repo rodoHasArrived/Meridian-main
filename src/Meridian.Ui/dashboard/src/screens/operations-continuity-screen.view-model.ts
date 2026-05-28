@@ -9,6 +9,7 @@ import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
 import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  OperationsCloseChecklistTask,
   OperationsGate,
   OperationsGateKey,
   OperationsGateStatus,
@@ -73,6 +74,24 @@ export interface OperationsContinuityTimelineRow {
   ariaLabel: string;
 }
 
+export interface OperationsContinuityChecklistRow {
+  id: string;
+  label: string;
+  gateLabel: string;
+  ownerLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  dueLabel: string;
+  expiresLabel: string;
+  requiredEvidence: string;
+  approvalLabel: string;
+  evidenceLabel: string;
+  remediationHref: string | null;
+  remediationLabel: string;
+  acknowledgementLabel: string;
+  ariaLabel: string;
+}
+
 export interface OperationsContinuityNextActionViewModel {
   title: string;
   detail: string;
@@ -122,6 +141,9 @@ export interface OperationsContinuityScreenViewModel {
   blockersLabel: string;
   blockersEmptyText: string;
   blockers: OperationsContinuityBlockerRow[];
+  checklistLabel: string;
+  checklistEmptyText: string;
+  checklist: OperationsContinuityChecklistRow[];
   timelineLabel: string;
   timelineEmptyText: string;
   timeline: OperationsContinuityTimelineRow[];
@@ -315,6 +337,7 @@ export function buildOperationsContinuityScreenViewModel({
     detailError
   });
   const blockers = buildBlockerRows(effectiveDetail?.blockers ?? collectGateBlockers(gateSource));
+  const checklist = buildChecklistRows(effectiveDetail?.closeChecklist ?? []);
   const timeline = buildTimelineRows(effectiveDetail?.timeline ?? []);
   const gates = gateSource.map(mapGateRow);
   const rows = workflows.map((workflow) => mapWorkflowRow(workflow, selectedSummary?.workflowId ?? null));
@@ -353,6 +376,9 @@ export function buildOperationsContinuityScreenViewModel({
     blockersLabel: "Blockers",
     blockersEmptyText: detailLoading ? "Loading selected workflow blockers..." : "No blockers are surfaced for the selected workflow.",
     blockers,
+    checklistLabel: "Close checklist",
+    checklistEmptyText: detailLoading ? "Loading selected workflow checklist..." : "No close checklist tasks are available for the selected workflow.",
+    checklist,
     timelineLabel: "Timeline",
     timelineEmptyText: detailLoading ? "Loading workflow timeline." : "Open workflow detail to inspect the hash-chained timeline.",
     timeline,
@@ -586,6 +612,37 @@ function buildTimelineRows(timeline: OperationsTimelineEntry[]): OperationsConti
     }));
 }
 
+function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsContinuityChecklistRow[] {
+  return tasks.map((task) => {
+    const remediationHref = normalizeLocalWorkstationRoute(task.remediationRoute) ?? null;
+    const acknowledged = task.acknowledgedAtUtc
+      ? `Acknowledged by ${task.acknowledgedBy?.trim() || "unknown"} at ${formatDate(task.acknowledgedAtUtc)}`
+      : task.canAcknowledge
+        ? "Ready for acknowledgement"
+        : task.blockingReason?.trim() || "Acknowledgement blocked until required evidence is complete";
+
+    return {
+      id: task.taskId,
+      label: task.label || gateLabel(task.gate),
+      gateLabel: gateLabel(task.gate),
+      ownerLabel: task.owner?.trim() || "Owner pending",
+      statusLabel: splitEnumLabel(task.status || "Unknown"),
+      statusTone: checklistStatusTone(task.status),
+      dueLabel: task.dueDate ? formatDate(task.dueDate) : "No due date",
+      expiresLabel: task.expiresOn ? formatDate(task.expiresOn) : "No expiration",
+      requiredEvidence: task.requiredEvidence?.trim() || "Required evidence pending",
+      approvalLabel: task.requiredApprovalCount === 0
+        ? "No control approvals required"
+        : `${task.requiredApprovalCount} control approval${task.requiredApprovalCount === 1 ? "" : "s"} required`,
+      evidenceLabel: task.evidencePointer?.trim() || "Evidence pointer pending",
+      remediationHref,
+      remediationLabel: remediationHref ? "Open remediation" : "No remediation route",
+      acknowledgementLabel: acknowledged,
+      ariaLabel: `${task.label || gateLabel(task.gate)} checklist task, ${splitEnumLabel(task.status || "Unknown")}, ${task.owner?.trim() || "owner pending"}`
+    };
+  });
+}
+
 function collectGateBlockers(gates: OperationsGate[]): OperationsWorkflowBlocker[] {
   return gates.flatMap((gate) => gate.blockers ?? []);
 }
@@ -649,6 +706,23 @@ function severityTone(severity: string | null | undefined): OperationsContinuity
   }
 
   if (normalized === "warning" || normalized === "warn") {
+    return "review";
+  }
+
+  return "neutral";
+}
+
+function checklistStatusTone(status: string | null | undefined): OperationsContinuityTone {
+  const normalized = status?.trim().toLowerCase() ?? "";
+  if (normalized === "done" || normalized === "complete" || normalized === "completed" || normalized === "acknowledged") {
+    return "ready";
+  }
+
+  if (normalized === "blocked" || normalized === "expired") {
+    return "blocked";
+  }
+
+  if (normalized === "review" || normalized === "reviewrequired" || normalized === "pending" || normalized === "open") {
     return "review";
   }
 

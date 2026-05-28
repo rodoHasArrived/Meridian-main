@@ -105,9 +105,16 @@ public sealed class BacktestEngine(
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
-        var orderBookFillModel = new OrderBookFillModel(commissionModel, tickSizes);
+        var orderBookFillModel = new OrderBookFillModel(
+            commissionModel,
+            tickSizes,
+            request.OrderBookQueueAheadFraction);
         var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes: tickSizes, maxParticipationRate: request.MaxParticipationRate);
-        var marketImpactFillModel = new MarketImpactFillModel(commissionModel, request.MarketImpactCoefficient, request.SlippageBasisPoints);
+        var marketImpactFillModel = new MarketImpactFillModel(
+            commissionModel,
+            request.MarketImpactCoefficient,
+            request.SlippageBasisPoints,
+            maxParticipationRate: request.MaxParticipationRate);
 
         var pendingOrders = new List<Order>();
         var allSnapshots = new List<PortfolioSnapshot>();
@@ -224,7 +231,7 @@ public sealed class BacktestEngine(
             // Apply corporate action adjustments if enabled
             if (request.AdjustForCorporateActions && corporateActionAdjustment != null)
             {
-                symbolStream = ApplyCorporateActionAdjustmentsAsync(symbolStream, symbol, ct);
+                symbolStream = ApplyCorporateActionAdjustmentsAsync(symbolStream, symbol, corporateActionAdjustment, ct);
             }
 
             streams.Add(symbolStream);
@@ -235,69 +242,26 @@ public sealed class BacktestEngine(
     /// <summary>
     /// Wraps a symbol stream to apply corporate action adjustments incrementally to HistoricalBar events.
     /// </summary>
-    private async IAsyncEnumerable<MarketEvent> ApplyCorporateActionAdjustmentsAsync(
+    internal static async IAsyncEnumerable<MarketEvent> ApplyCorporateActionAdjustmentsAsync(
         IAsyncEnumerable<MarketEvent> source,
         string symbol,
+        ICorporateActionAdjustmentService adjustmentService,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        const int barWindowSize = 4096;
-        var windowEvents = new List<MarketEvent>(barWindowSize * 2);
-        var windowBars = new List<HistoricalBar>(barWindowSize);
-
         await foreach (var evt in source.WithCancellation(ct))
         {
-            windowEvents.Add(evt);
             if (evt.Payload is HistoricalBar bar)
             {
-                windowBars.Add(bar);
-                if (windowBars.Count >= barWindowSize)
-                {
-                    foreach (var adjustedEvent in await FlushAdjustedWindowAsync(windowEvents, windowBars, symbol, ct).ConfigureAwait(false))
-                    {
-                        yield return adjustedEvent;
-                    }
-                }
-            }
-        }
-
-        foreach (var adjustedEvent in await FlushAdjustedWindowAsync(windowEvents, windowBars, symbol, ct).ConfigureAwait(false))
-        {
-            yield return adjustedEvent;
-        }
-    }
-
-    private async Task<IReadOnlyList<MarketEvent>> FlushAdjustedWindowAsync(
-        List<MarketEvent> windowEvents,
-        List<HistoricalBar> windowBars,
-        string symbol,
-        CancellationToken ct)
-    {
-        if (windowEvents.Count == 0)
-        {
-            return [];
-        }
-
-        var adjustedBars = windowBars.Count == 0
-            ? []
-            : await corporateActionAdjustment!.AdjustAsync(windowBars, symbol, ct).ConfigureAwait(false);
-
-        var output = new List<MarketEvent>(windowEvents.Count);
-        var adjustedIndex = 0;
-        foreach (var evt in windowEvents)
-        {
-            if (evt.Payload is HistoricalBar)
-            {
-                output.Add(MarketEvent.HistoricalBar(evt.Timestamp, symbol, adjustedBars[adjustedIndex++]));
+                // Hot replay path: adjust one bar at a time so large mixed streams do not retain
+                // MarketEvent windows while waiting for corporate-action batch flushes.
+                var adjustedBar = await adjustmentService.AdjustBarAsync(bar, symbol, ct).ConfigureAwait(false);
+                yield return evt with { Symbol = symbol, Payload = adjustedBar };
             }
             else
             {
-                output.Add(evt);
+                yield return evt;
             }
         }
-
-        windowEvents.Clear();
-        windowBars.Clear();
-        return output;
     }
 
     private static Dictionary<DateOnly, List<AssetEvent>> BuildAssetEventIndex(

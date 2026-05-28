@@ -147,7 +147,7 @@ It should be read with:
 12. Detailed W3/W4 pre-work definition is mandatory even during Wave 2/DK2 execution windows so downstream work can start without contract drift.
 13. Desktop/WPF delivery is measured by [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md); support evidence is not an exit claim unless the row's happy/blocker/recovery evidence is complete.
 14. For desktop work, prioritize high-traffic page-body workflow outcomes before additional shell chrome or framing polish.
-15. Do not widen live-readiness language while Wave 2 cockpit reliability remains non-green in Lane A acceptance and pilot-readiness stage posture.
+15. Do not widen live-readiness language while W4 close/report governance remains non-green in pilot-readiness stage posture and desktop/browser parity evidence.
 
 ---
 
@@ -155,8 +155,8 @@ It should be read with:
 
 ### Objective
 
-Turn the current paper-trading cockpit from "visible" into "dependable" by making session continuity, replay proof, promotion review, and operator triage durable and explainable.
-Wave 2 closure remains the first desktop-forward gate; W3 and W4 scope should not dilute cockpit reliability completion.
+Preserve the closed paper-trading cockpit baseline by keeping session continuity, replay proof, promotion review, and operator triage durable and explainable.
+Wave 2 is Done as of 2026-05-27; W4 scope should not dilute or redefine the cockpit reliability baseline.
 
 ### W2-A: Paper Cockpit Reliability Gate
 
@@ -383,6 +383,7 @@ Finish governance and fund-operations productization by making casework, report 
 - **Repo anchors:** `tests/`, `docs/status/provider-validation-matrix.md`, `docs/plans/paper-trading-cockpit-reliability-sprint.md`
 - **Deliverables:**
   - named scenario suites for `Backtest -> Paper`, paper-session restore, promotion review, run continuity, brokerage divergence, reconciliation break review, and report publish
+  - W4 close-workflow acceptance coverage through `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs`, including Operations Continuity happy path, blocker path, and rejected-approval recovery path
   - command matrix that maps each scenario to the narrowest useful validation command
   - Wave 4 evidence records that use a deterministic template requiring scenario name, fixture window, API assertions, workstation assertions, artifact location, and regression owner (tracked in [`../status/evidence/wave4-evidence-template.md`](../status/evidence/wave4-evidence-template.md))
 - **Exit criteria:**

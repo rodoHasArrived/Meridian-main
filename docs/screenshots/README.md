@@ -11,3 +11,15 @@ For scripted capture workflows, see
 [docs/development/desktop-workflow-automation.md](../development/desktop-workflow-automation.md)
 and `npm run screenshots` from `src/Meridian.Ui/dashboard`.
 
+Captured screenshot sets are validated by
+`scripts/dev/validate-screenshot-captures.py` before workflow upload or commit. The validator
+checks expected files, capture freshness, manifest route/page identity, PNG dimensions, sampled
+color diversity, and luminance entropy so blank, stale, low-entropy, or wrong-route captures do not
+become durable documentation evidence.
+
+Manifest coverage is part of the semantic-state evidence gate: every expected browser route or WPF
+workflow step must appear in the capture manifest before the retained PNG can count as evidence for
+design-system state review. Browser captures also record the actual Playwright URL path after
+navigation and fail validation when it differs from the expected route path. A stray PNG with no
+matching route/page manifest entry fails validation instead of being accepted as a fresh-looking but
+unproven capture.

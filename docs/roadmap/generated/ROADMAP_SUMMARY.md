@@ -23,9 +23,9 @@ Snapshot date: 2026-05-20
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
 | W1-DATA-001 | Provider trust gate and data confidence baseline | done | green | critical | Data Confidence and Validation |
-| W2-PROMO-001 | Paper promotion evidence and operator acceptance | planned | yellow | high | Execution and Fund Accounts |
-| W2-TRD-001 | Paper trading cockpit reliability | in_progress | yellow | critical | Execution and Fund Accounts |
-| W3-CONT-001 | Research to paper continuity | planned | green | high | Strategy and Research |
+| W2-PROMO-001 | Paper promotion evidence and operator acceptance | done | green | high | Execution and Fund Accounts |
+| W2-TRD-001 | Paper trading cockpit reliability | done | green | critical | Execution and Fund Accounts |
+| W3-CONT-001 | Research to paper continuity | done | green | high | Strategy and Research |
 | W4-RECON-001 | Portfolio ledger reconciliation readiness | planned | yellow | high | Governance and Ledger |
 | W4-RPT-001 | Governed report pack readiness | planned | yellow | high | Governance and Ledger |
 | W5-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy and Research |

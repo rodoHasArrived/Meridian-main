@@ -91,6 +91,15 @@ public sealed class ReportPackWorkflowService
     {
         if (string.IsNullOrWhiteSpace(reasonCode)) throw new ArgumentException("reasonCode is required");
         if (changedLines.Count == 0) throw new ArgumentException("changedLines are required");
+        var linesWithoutEvidence = changedLines
+            .Where(static line => line.EvidenceLinks is null || line.EvidenceLinks.Count == 0 || line.EvidenceLinks.All(static link => string.IsNullOrWhiteSpace(link.EvidenceId)))
+            .Select(static line => line.LineKey)
+            .ToArray();
+        if (linesWithoutEvidence.Length > 0)
+        {
+            throw new ArgumentException($"Restatement changed lines require evidence links: {string.Join(", ", linesWithoutEvidence)}.");
+        }
+
         var transitioned = Transition(reportId, ReportPackWorkflowStateDto.Restated, actor, role, note: reasonCode);
         var evidenceLinks = changedLines
             .SelectMany(static line => line.EvidenceLinks ?? [])
@@ -132,6 +141,7 @@ public sealed class ReportPackWorkflowService
             throw new KeyNotFoundException("report pack not found");
         }
 
+        EnsureLineProvenanceTraceable(record.LineProvenance ?? []);
         EnsureNoOrphanEvidence(record.LineProvenance ?? [], evidenceLinks);
         var transitioned = TransitionCore(reportId, ReportPackWorkflowStateDto.Published, actor, role, note);
         var next = transitioned with
@@ -182,7 +192,10 @@ public sealed class ReportPackWorkflowService
                 EvidenceId = item.EvidenceId.Trim(),
                 RunId = string.IsNullOrWhiteSpace(item.RunId) ? null : item.RunId.Trim(),
                 LedgerEntryId = string.IsNullOrWhiteSpace(item.LedgerEntryId) ? null : item.LedgerEntryId.Trim(),
-                ReconciliationCaseId = string.IsNullOrWhiteSpace(item.ReconciliationCaseId) ? null : item.ReconciliationCaseId.Trim()
+                ReconciliationCaseId = string.IsNullOrWhiteSpace(item.ReconciliationCaseId) ? null : item.ReconciliationCaseId.Trim(),
+                ReportValue = string.IsNullOrWhiteSpace(item.ReportValue) ? null : item.ReportValue.Trim(),
+                SourceSessionId = string.IsNullOrWhiteSpace(item.SourceSessionId) ? null : item.SourceSessionId.Trim(),
+                ReconciliationRunId = string.IsNullOrWhiteSpace(item.ReconciliationRunId) ? null : item.ReconciliationRunId.Trim()
             })
             .ToArray() ?? [];
 
@@ -202,6 +215,36 @@ public sealed class ReportPackWorkflowService
                 };
             })
             .ToArray();
+
+    private static void EnsureLineProvenanceTraceable(IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance)
+    {
+        var missingValues = lineProvenance
+            .Where(static line => string.IsNullOrWhiteSpace(line.ReportValue))
+            .Select(static line => line.LineKey)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (missingValues.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"Report pack line provenance requires report values for: {string.Join(", ", missingValues.Order(StringComparer.OrdinalIgnoreCase))}.");
+        }
+
+        var missingSourcePointers = lineProvenance
+            .Where(static line =>
+                string.IsNullOrWhiteSpace(line.RunId) &&
+                string.IsNullOrWhiteSpace(line.SourceSessionId) &&
+                string.IsNullOrWhiteSpace(line.LedgerEntryId) &&
+                string.IsNullOrWhiteSpace(line.ReconciliationCaseId) &&
+                string.IsNullOrWhiteSpace(line.ReconciliationRunId))
+            .Select(static line => line.LineKey)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (missingSourcePointers.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"Report pack line provenance requires run, session, ledger, or reconciliation source pointers for: {string.Join(", ", missingSourcePointers.Order(StringComparer.OrdinalIgnoreCase))}.");
+        }
+    }
 
     private static void EnsureNoOrphanEvidence(
         IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance,

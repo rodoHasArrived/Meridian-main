@@ -357,6 +357,22 @@ public static class FundAccountEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        group.MapGet("/{accountId:guid}/close-readiness", async (Guid accountId, HttpContext context) =>
+        {
+            var closeReadiness = ResolveFundAccountCloseReadinessService(context);
+            if (closeReadiness is null)
+                return FundAccountCloseReadinessUnavailable();
+
+            var result = await closeReadiness.GetAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            return result is null
+                ? Results.NotFound()
+                : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetFundAccountCloseReadiness")
+        .Produces<FundAccountCloseReadinessDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         group.MapGet("/{accountId:guid}/performance", async (Guid accountId, HttpContext context) =>
         {
             if (!await CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false))
@@ -658,6 +674,9 @@ public static class FundAccountEndpoints
     private static ProviderLedgerReconciliationService? ResolveProviderLedgerReconciliationService(HttpContext context) =>
         context.RequestServices.GetService<ProviderLedgerReconciliationService>();
 
+    private static FundAccountCloseReadinessService? ResolveFundAccountCloseReadinessService(HttpContext context) =>
+        context.RequestServices.GetService<FundAccountCloseReadinessService>();
+
     private static Guid? TryParseGuidFilter(string? raw)
     {
         return Guid.TryParse(raw, out var parsed) ? parsed : null;
@@ -689,6 +708,9 @@ public static class FundAccountEndpoints
 
     private static IResult ProviderLedgerReconciliationUnavailable() =>
         Results.Problem("Provider-ledger reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static IResult FundAccountCloseReadinessUnavailable() =>
+        Results.Problem("Fund account close readiness service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
     private static bool HasBrokerageSyncAccess(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades);

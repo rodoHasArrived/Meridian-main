@@ -248,8 +248,11 @@ public sealed class BacktestViewModel : BindableBase, IPageActivationLifetime, I
         _backtestService.BacktestCompleted -= OnBacktestCompleted;
         _backtestService.BacktestCancelled -= OnBacktestCancelled;
         CancelCoverageRefresh();
-        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
+        CancelActivation();
     }
+
+    public void CancelActivation()
+        => CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
 
     // ── Command implementations ───────────────────────────────────────────────
 

@@ -136,7 +136,26 @@ const detail: OperationsContinuityWorkflow = {
       }
     ]
   },
-  closeChecklist: [],
+  closeChecklist: [
+    {
+      taskId: "close-gate-ledgerposting",
+      gate: "LedgerPosting",
+      label: "Ledger posting controller check",
+      owner: "fund-controller",
+      requiredEvidence: "Validated journal draft, retained ledger hash, and controller approval evidence.",
+      dueDate: "2026-05-09",
+      requiredApprovalCount: 2,
+      expiresOn: "2026-05-12",
+      status: "Pending",
+      blockingReason: "Ledger validation is still required.",
+      evidencePointer: "ledger-evidence-1",
+      remediationRoute: "/workstation/accounting/ledger",
+      canAcknowledge: false,
+      acknowledgedAtUtc: null,
+      acknowledgedBy: null
+    }
+  ],
+  closePackage: null,
   closeReadiness: null,
   evidenceLinks: [
     {
@@ -196,6 +215,21 @@ describe("Operations Continuity view model", () => {
     expect(vm.blockers[0]).toMatchObject({
       code: "LEDGER_VALIDATION_REQUIRED",
       severityTone: "blocked"
+    });
+    expect(vm.checklist).toHaveLength(1);
+    expect(vm.checklist[0]).toMatchObject({
+      id: "close-gate-ledgerposting",
+      label: "Ledger posting controller check",
+      gateLabel: "Ledger Posting",
+      ownerLabel: "fund-controller",
+      requiredEvidence: "Validated journal draft, retained ledger hash, and controller approval evidence.",
+      approvalLabel: "2 control approvals required",
+      evidenceLabel: "ledger-evidence-1",
+      remediationHref: "/accounting/ledger",
+      remediationLabel: "Open remediation",
+      acknowledgementLabel: "Ledger validation is still required.",
+      statusLabel: "Pending",
+      statusTone: "review"
     });
     expect(vm.timeline[0]).toMatchObject({
       title: "Ledger Draft Blocked",
@@ -384,6 +418,7 @@ describe("Operations Continuity view model", () => {
     expect(vm.workflowsEmptyText).toBe("Loading operations continuity workflows...");
     expect(vm.gatesEmptyText).toBe("Loading selected workflow gates...");
     expect(vm.blockersEmptyText).toBe("Loading selected workflow blockers...");
+    expect(vm.checklistEmptyText).toBe("Loading selected workflow checklist...");
     expect(vm.timelineEmptyText).toBe("Loading workflow timeline.");
   });
 

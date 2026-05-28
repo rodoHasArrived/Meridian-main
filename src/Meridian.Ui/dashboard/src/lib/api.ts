@@ -33,6 +33,9 @@ import type {
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
+  InvestmentAccountingTransactionLabPreview,
+  InvestmentAccountingTransactionLabRequest,
+  InstrumentPassport,
   LedgerJournalLine,
   LedgerSummary,
   LedgerTrialBalanceLine,
@@ -70,6 +73,7 @@ import type {
   StrategyRunSummaryApiRecord,
   ResearchWorkspaceResponse,
   RunAttributionSummary,
+  RunCashFlowSummary,
   RunComparisonRow,
   RunDiff,
   RunFillSummary,
@@ -105,12 +109,26 @@ import type {
   WorkflowPresetSaveRequest,
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride,
-  FeatureCapabilitySettingsResponse
+  FeatureCapabilitySettingsResponse,
+  LedgerMappingAssignmentRequest,
+  LedgerMappingAssignmentResult,
+  LedgerMappingWorkbench,
+  OperationsApprovalPolicyMatrix,
+  OperationsApprovalPolicyRuleUpsertRequest,
+  OperationsApprovalPolicyRuleUpsertResult,
+  OperationsCloseCalendar,
+  OperationsCloseCalendarItemUpsertRequest,
+  OperationsCloseCalendarItemUpsertResult,
+  RolePermissionCatalog,
+  RolePermissionProfileUpsertRequest,
+  RolePermissionProfileUpsertResult
 } from "@/types";
 import {
+  AUTH_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   EXPORT_API_ENDPOINTS,
+  FUND_STRUCTURE_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
   PROVIDER_ROUTING_API_ENDPOINTS,
@@ -141,6 +159,7 @@ import {
   marketDataQuotesSnapshotEndpoint,
   marketDataTradesEndpoint,
   portfolioHouseholdEndpoint,
+  portfolioRunCashFlowsEndpoint,
   portfolioSymbolExposureEndpoint,
   promotionEvaluateEndpoint,
   providerCredentialEndpoint,
@@ -177,6 +196,7 @@ import {
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
+  workstationOperationsContinuityCloseCalendarEndpoint,
   workstationChiefOfStaffDecisionEndpoint,
   workstationChiefOfStaffHealthEndpoint,
   workstationChiefOfStaffSessionEndpoint,
@@ -202,6 +222,7 @@ import {
   workstationSecurityMasterEntryEndpoint,
   workstationSecurityMasterHistoryEndpoint,
   workstationSecurityMasterIdentityEndpoint,
+  workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
   workstationTradingReadinessEndpoint,
@@ -462,6 +483,40 @@ export function getFeatureCapabilities(options: ApiRequestOptions = {}) {
   return getJson<FeatureCapabilitySettingsResponse>(WORKSTATION_API_ENDPOINTS.featureCapabilities, options);
 }
 
+export function getRolePermissionCatalog(options: ApiRequestOptions = {}) {
+  return getJson<RolePermissionCatalog>(AUTH_API_ENDPOINTS.roles, options);
+}
+
+export function createRolePermissionProfile(
+  request: RolePermissionProfileUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<RolePermissionProfileUpsertResult>(AUTH_API_ENDPOINTS.roleProfiles, request, options);
+}
+
+export function getLedgerMappingWorkbench(options: ApiRequestOptions = {}) {
+  return getJson<LedgerMappingWorkbench>(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench, options);
+}
+
+export function assignLedgerMapping(request: LedgerMappingAssignmentRequest, options: ApiRequestOptions = {}) {
+  return postJson<LedgerMappingAssignmentResult>(
+    FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingAssignments,
+    request,
+    options
+  );
+}
+
+export function previewInvestmentAccountingTransaction(
+  request: InvestmentAccountingTransactionLabRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<InvestmentAccountingTransactionLabPreview>(
+    FUND_STRUCTURE_API_ENDPOINTS.transactionLabPreview,
+    request,
+    options
+  );
+}
+
 export function setFeatureCapability(capabilityKey: string, isEnabled: boolean, options: ApiRequestOptions = {}) {
   return putJson<FeatureCapabilitySettingsResponse>(
     `${WORKSTATION_API_ENDPOINTS.featureCapabilities}/${encodeURIComponent(capabilityKey)}`,
@@ -479,6 +534,39 @@ export function getOperationsContinuityWorkflows(
 
 export function getOperationsContinuityWorkflow(workflowId: string, options: ApiRequestOptions = {}) {
   return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
+}
+
+export function getOperationsApprovalPolicyMatrix(options: ApiRequestOptions = {}) {
+  return getJson<OperationsApprovalPolicyMatrix>(WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix, options);
+}
+
+export function upsertOperationsApprovalPolicyRule(
+  request: OperationsApprovalPolicyRuleUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsApprovalPolicyRuleUpsertResult>(
+    WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyRules,
+    request,
+    options
+  );
+}
+
+export function getOperationsCloseCalendar(
+  filters: { fundAccountId?: string; periodId?: string } = {},
+  options: ApiRequestOptions = {}
+) {
+  return getJson<OperationsCloseCalendar>(workstationOperationsContinuityCloseCalendarEndpoint(filters), options);
+}
+
+export function upsertOperationsCloseCalendarItem(
+  request: OperationsCloseCalendarItemUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsCloseCalendarItemUpsertResult>(
+    WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendarItems,
+    request,
+    options
+  );
 }
 
 export function getChiefOfStaffSessions(query: ChiefOfStaffSessionQuery = {}, options: ApiRequestOptions = {}) {
@@ -774,6 +862,10 @@ export function getRunEquityCurve(runId: string) {
   return getJson<EquityCurveSummary>(workstationRunEquityCurveEndpoint(runId));
 }
 
+export function getRunCashFlows(runId: string) {
+  return getJson<RunCashFlowSummary>(portfolioRunCashFlowsEndpoint(runId));
+}
+
 export function getRunLedger(runId: string) {
   return getJson<LedgerSummary>(workstationRunLedgerEndpoint(runId));
 }
@@ -852,6 +944,10 @@ export function getSecurityEconomicDefinition(securityId: string) {
 
 export function getSecurityTrustSnapshot(securityId: string) {
   return getJson<SecurityMasterTrustSnapshot>(workstationSecurityMasterTrustSnapshotEndpoint(securityId));
+}
+
+export function getSecurityInstrumentPassport(securityId: string) {
+  return getJson<InstrumentPassport>(workstationSecurityMasterInstrumentPassportEndpoint(securityId));
 }
 
 export function createSecurityMasterEntry(request: Record<string, unknown>) {

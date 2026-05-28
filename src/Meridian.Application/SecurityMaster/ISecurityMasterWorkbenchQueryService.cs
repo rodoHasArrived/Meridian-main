@@ -9,6 +9,11 @@ public interface ISecurityMasterWorkbenchQueryService
         string? fundProfileId,
         CancellationToken ct = default);
 
+    Task<InstrumentPassportDto?> GetInstrumentPassportAsync(
+        Guid securityId,
+        string? fundProfileId,
+        CancellationToken ct = default);
+
     Task<BulkResolveSecurityMasterConflictsResult> BulkResolveConflictsAsync(
         BulkResolveSecurityMasterConflictsRequest request,
         CancellationToken ct = default);

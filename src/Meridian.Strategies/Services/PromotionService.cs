@@ -234,9 +234,37 @@ public sealed class PromotionService
                 Reason: "Live runs cannot be promoted further.");
         }
 
+        var targetRunType = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
+        var approvalChecklist = PromotionApprovalChecklist.Normalize(request.ApprovalChecklist);
+        var auditReference = Guid.NewGuid().ToString("N");
+
         var evaluation = await EvaluateAsync(run.RunId, ct: ct).ConfigureAwait(false);
         if (!evaluation.IsEligible)
         {
+            if (targetRunType == RunType.Live)
+            {
+                var reason = evaluation.BlockingReasons?.FirstOrDefault()
+                    ?? evaluation.Reason
+                    ?? "Promotion gate is blocked.";
+                await RecordPromotionAuditAsync(
+                    action: "PromotionBlocked",
+                    outcome: "Blocked",
+                    actor: request.ApprovedBy,
+                    runId: run.RunId,
+                    promotionId: null,
+                    message: reason,
+                    reason: "LivePromotionPolicyBlocked",
+                    scope: BuildPromotionAuditScope(run, targetRunType),
+                    metadata: BuildPromotionControlMetadata(
+                        run,
+                        targetRunType,
+                        request.ManualOverrideId,
+                        approvalChecklist,
+                        auditReference,
+                        reason),
+                    ct).ConfigureAwait(false);
+            }
+
             return new PromotionDecisionResult(
                 Success: false,
                 PromotionId: null,
@@ -246,8 +274,6 @@ public sealed class PromotionService
                     ?? "Promotion gate is blocked.");
         }
 
-        var targetRunType = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
-        var approvalChecklist = PromotionApprovalChecklist.Normalize(request.ApprovalChecklist);
         var missingChecklistItems = PromotionApprovalChecklist.GetMissingRequiredItems(targetRunType, approvalChecklist);
         if (missingChecklistItems.Length > 0)
         {
@@ -259,13 +285,30 @@ public sealed class PromotionService
         }
 
         var newRunId = Guid.NewGuid().ToString("N");
-        var auditReference = Guid.NewGuid().ToString("N");
 
         if (targetRunType == RunType.Live && _operatorControls is not null)
         {
             var controlDecision = _operatorControls.EvaluateLivePromotion(run.RunId, run.StrategyId, request.ManualOverrideId);
             if (!controlDecision.IsAllowed)
             {
+                await RecordPromotionAuditAsync(
+                    action: "PromotionBlocked",
+                    outcome: "Blocked",
+                    actor: request.ApprovedBy,
+                    runId: run.RunId,
+                    promotionId: null,
+                    message: controlDecision.RejectReason ?? "Promotion blocked by execution controls.",
+                    reason: "ExecutionControlsBlocked",
+                    scope: BuildPromotionAuditScope(run, targetRunType),
+                    metadata: BuildPromotionControlMetadata(
+                        run,
+                        targetRunType,
+                        request.ManualOverrideId,
+                        approvalChecklist,
+                        auditReference,
+                        controlDecision.RejectReason),
+                    ct).ConfigureAwait(false);
+
                 return new PromotionDecisionResult(
                     Success: false,
                     PromotionId: null,
@@ -324,28 +367,17 @@ public sealed class PromotionService
 
         if (_auditTrail is not null)
         {
-            await _auditTrail.RecordAsync(new ExecutionAuditEntry(
-                AuditId: Guid.NewGuid().ToString("N"),
-                Category: "Promotion",
-                Action: "PromotionApproved",
-                Outcome: "Approved",
-                OccurredAt: DateTimeOffset.UtcNow,
-                Actor: request.ApprovedBy,
-                RunId: request.RunId,
-                CorrelationId: promotionRecord.PromotionId,
-                Message: request.ApprovalReason,
-                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["decision"] = promotionRecord.Decision,
-                    ["sourceRunId"] = promotionRecord.SourceRunId,
-                    ["sourceRunType"] = promotionRecord.SourceRunType.ToString(),
-                    ["targetRunId"] = promotionRecord.TargetRunId ?? string.Empty,
-                    ["targetRunType"] = promotionRecord.TargetRunType.ToString(),
-                    ["manualOverrideId"] = promotionRecord.ManualOverrideId ?? string.Empty,
-                    ["reviewNotes"] = promotionRecord.ReviewNotes ?? string.Empty,
-                    ["approvalChecklist"] = string.Join(",", promotionRecord.ApprovalChecklist ?? []),
-                    ["auditReference"] = promotionRecord.AuditReference ?? string.Empty
-                }), ct).ConfigureAwait(false);
+            await RecordPromotionAuditAsync(
+                action: "PromotionApproved",
+                outcome: "Approved",
+                actor: request.ApprovedBy,
+                runId: request.RunId,
+                promotionId: promotionRecord.PromotionId,
+                message: request.ApprovalReason,
+                reason: targetRunType == RunType.Live ? "HumanApprovedLivePromotion" : "HumanApprovedPromotion",
+                scope: BuildPromotionAuditScope(run, targetRunType),
+                metadata: BuildPromotionRecordMetadata(promotionRecord),
+                ct).ConfigureAwait(false);
         }
 
         return new PromotionDecisionResult(
@@ -356,6 +388,85 @@ public sealed class PromotionService
             AuditReference: auditReference,
             ApprovedBy: request.ApprovedBy);
     }
+
+    private async Task RecordPromotionAuditAsync(
+        string action,
+        string outcome,
+        string? actor,
+        string runId,
+        string? promotionId,
+        string? message,
+        string reason,
+        string scope,
+        IReadOnlyDictionary<string, string> metadata,
+        CancellationToken ct)
+    {
+        if (_auditTrail is null)
+        {
+            return;
+        }
+
+        await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+            AuditId: Guid.NewGuid().ToString("N"),
+            Category: "Promotion",
+            Action: action,
+            Outcome: outcome,
+            OccurredAt: DateTimeOffset.UtcNow,
+            Actor: actor,
+            RunId: runId,
+            CorrelationId: promotionId,
+            Message: message,
+            Reason: reason,
+            Scope: scope,
+            Metadata: metadata), ct).ConfigureAwait(false);
+    }
+
+    private static string BuildPromotionAuditScope(StrategyRunEntry run, RunType targetRunType)
+        => $"source:{run.RunId}/strategy:{run.StrategyId}/target:{targetRunType}";
+
+    private static Dictionary<string, string> BuildPromotionRecordMetadata(StrategyPromotionRecord promotionRecord)
+    {
+        var checklist = promotionRecord.ApprovalChecklist ?? [];
+        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["decision"] = promotionRecord.Decision,
+            ["sourceRunId"] = promotionRecord.SourceRunId,
+            ["sourceRunType"] = promotionRecord.SourceRunType.ToString(),
+            ["targetRunId"] = promotionRecord.TargetRunId ?? string.Empty,
+            ["targetRunType"] = promotionRecord.TargetRunType.ToString(),
+            ["manualOverrideId"] = promotionRecord.ManualOverrideId ?? string.Empty,
+            ["requiredManualOverrideKind"] = promotionRecord.TargetRunType == RunType.Live
+                ? ExecutionManualOverrideKinds.AllowLivePromotion
+                : string.Empty,
+            ["reviewNotes"] = promotionRecord.ReviewNotes ?? string.Empty,
+            ["approvalChecklist"] = string.Join(",", checklist),
+            ["approvalChecklistCount"] = checklist.Length.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["auditReference"] = promotionRecord.AuditReference ?? string.Empty
+        };
+    }
+
+    private static Dictionary<string, string> BuildPromotionControlMetadata(
+        StrategyRunEntry run,
+        RunType targetRunType,
+        string? manualOverrideId,
+        string[] approvalChecklist,
+        string auditReference,
+        string? rejectReason)
+        => new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["decision"] = PromotionDecisionKinds.Rejected,
+            ["sourceRunId"] = run.RunId,
+            ["sourceRunType"] = run.RunType.ToString(),
+            ["targetRunType"] = targetRunType.ToString(),
+            ["manualOverrideId"] = manualOverrideId ?? string.Empty,
+            ["requiredManualOverrideKind"] = targetRunType == RunType.Live
+                ? ExecutionManualOverrideKinds.AllowLivePromotion
+                : string.Empty,
+            ["approvalChecklist"] = string.Join(",", approvalChecklist),
+            ["approvalChecklistCount"] = approvalChecklist.Length.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["auditReference"] = auditReference,
+            ["controlRejectReason"] = rejectReason ?? string.Empty
+        };
 
     /// <summary>
     /// Rejects a promotion with a recorded reason.

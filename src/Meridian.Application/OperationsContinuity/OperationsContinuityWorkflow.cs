@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Application.OperationsContinuity;
@@ -26,6 +28,7 @@ public sealed class OperationsContinuityWorkflow
     public OperationsLedgerPreviewDto? LedgerPreview { get; set; }
     public OperationsReportPackReadinessDto ReportPackReadiness { get; set; } =
         new(false, null, "Report pack evidence has not been linked.", []);
+    public OperationsClosePackagePublicationDto? ClosePackage { get; set; }
     public List<OperationsBreakCaseDto> BreakCases { get; set; } = [];
     public List<OperationsApprovalDto> Approvals { get; set; } = [];
 
@@ -1023,10 +1026,94 @@ public sealed class OperationsContinuityWorkflow
         return null;
     }
 
-    public void MarkClosed(DateTimeOffset now)
+    public void MarkClosed(
+        OperationsCloseWorkflowRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
         EnsureUtc(now);
         IsClosed = true;
+        ClosePackage = BuildClosePackagePublication(request, evidenceLinks, now);
+    }
+
+    private OperationsClosePackagePublicationDto BuildClosePackagePublication(
+        OperationsCloseWorkflowRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
+    {
+        var packageId = NormalizeClosePackageValue(
+            request.ClosePackageId,
+            $"close-package-{FundAccountId:N}-{SanitizePackagePart(PeriodId)}");
+        var manifestId = NormalizeClosePackageValue(
+            request.ClosePackageManifestId,
+            $"{packageId}-manifest");
+        var manifestRoute = NormalizeClosePackageValue(
+            request.ClosePackageRetainedManifestRoute,
+            $"/workstation/accounting/operations-continuity/{WorkflowId:D}/close-package/{manifestId}");
+        var approvals = request.ChecklistControlApprovals?.ToArray() ?? [];
+        var evidence = evidenceLinks
+            .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var hash = NormalizeClosePackageValue(
+            request.ClosePackageEvidenceHash,
+            ComputeClosePackageEvidenceHash(packageId, request.ReportPackId, manifestId, evidence, approvals));
+
+        return new OperationsClosePackagePublicationDto(
+            packageId,
+            request.ReportPackId.Trim(),
+            manifestId,
+            manifestRoute,
+            hash,
+            now,
+            request.Actor.Trim(),
+            request.Rationale.Trim(),
+            evidence,
+            approvals);
+    }
+
+    private static string ComputeClosePackageEvidenceHash(
+        string packageId,
+        string reportPackId,
+        string manifestId,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        IReadOnlyList<OperationsChecklistControlApprovalDto> approvals)
+    {
+        var builder = new StringBuilder()
+            .Append(packageId).Append('|')
+            .Append(reportPackId.Trim()).Append('|')
+            .Append(manifestId);
+
+        foreach (var link in evidenceLinks.OrderBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase))
+        {
+            builder.Append('|')
+                .Append(link.EvidenceId.Trim()).Append(':')
+                .Append(link.Source.Trim()).Append(':')
+                .Append(link.Route?.Trim());
+        }
+
+        foreach (var approval in approvals.OrderBy(static item => item.TaskId, StringComparer.OrdinalIgnoreCase)
+                     .ThenBy(static item => item.ApprovedBy, StringComparer.OrdinalIgnoreCase))
+        {
+            builder.Append('|')
+                .Append(approval.TaskId.Trim()).Append(':')
+                .Append(approval.ApprovedBy.Trim()).Append(':')
+                .Append(approval.ApprovedAtUtc.UtcDateTime.ToString("O"));
+        }
+
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+    }
+
+    private static string NormalizeClosePackageValue(string? value, string fallback) =>
+        string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+
+    private static string SanitizePackagePart(string value)
+    {
+        var sanitized = new string(value.Trim().Select(static ch =>
+            char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-').ToArray());
+        return string.IsNullOrWhiteSpace(sanitized) ? "period" : sanitized;
     }
 
     private bool IsRequestedReportPackReady(string? reportPackId) =>

@@ -183,109 +183,94 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         private set => SetProperty(ref _isOpenFigiKeyClearVisible, value);
     }
 
-    private Meridian.Contracts.Api.BackfillResultDto? _lastApiStatus;
     public Meridian.Contracts.Api.BackfillResultDto? LastApiStatus
     {
-        get => _lastApiStatus;
-        private set => SetProperty(ref _lastApiStatus, value);
+        get => StatusSection.LastApiStatus;
+        private set => SetBackfillSectionProperty(StatusSection.LastApiStatus, status => StatusSection.LastApiStatus = status, value);
     }
 
-    private bool _hasApiStatus;
     public bool HasApiStatus
     {
-        get => _hasApiStatus;
-        private set => SetProperty(ref _hasApiStatus, value);
+        get => StatusSection.HasApiStatus;
+        private set => SetBackfillSectionProperty(StatusSection.HasApiStatus, hasStatus => StatusSection.HasApiStatus = hasStatus, value);
     }
 
-    private Visibility _lastStatusVisibility = Visibility.Collapsed;
     public Visibility LastStatusVisibility
     {
-        get => _lastStatusVisibility;
-        private set => SetProperty(ref _lastStatusVisibility, value);
+        get => StatusSection.LastStatusVisibility;
+        private set => SetBackfillSectionProperty(StatusSection.LastStatusVisibility, visibility => StatusSection.LastStatusVisibility = visibility, value);
     }
 
-    private Visibility _emptyStatusVisibility = Visibility.Visible;
     public Visibility EmptyStatusVisibility
     {
-        get => _emptyStatusVisibility;
-        private set => SetProperty(ref _emptyStatusVisibility, value);
+        get => StatusSection.EmptyStatusVisibility;
+        private set => SetBackfillSectionProperty(StatusSection.EmptyStatusVisibility, visibility => StatusSection.EmptyStatusVisibility = visibility, value);
     }
 
-    private string _lastRunStatusText = string.Empty;
     public string LastRunStatusText
     {
-        get => _lastRunStatusText;
-        private set => SetProperty(ref _lastRunStatusText, value);
+        get => StatusSection.LastRunStatusText;
+        private set => SetBackfillSectionProperty(StatusSection.LastRunStatusText, text => StatusSection.LastRunStatusText = text, value);
     }
 
-    private Brush _lastRunStatusBrush = Brushes.Transparent;
     public Brush LastRunStatusBrush
     {
-        get => _lastRunStatusBrush;
-        private set => SetProperty(ref _lastRunStatusBrush, value);
+        get => StatusSection.LastRunStatusBrush;
+        private set => SetBackfillSectionProperty(StatusSection.LastRunStatusBrush, brush => StatusSection.LastRunStatusBrush = brush, value);
     }
 
-    private string _lastRunProviderText = "Unknown";
     public string LastRunProviderText
     {
-        get => _lastRunProviderText;
-        private set => SetProperty(ref _lastRunProviderText, value);
+        get => StatusSection.LastRunProviderText;
+        private set => SetBackfillSectionProperty(StatusSection.LastRunProviderText, text => StatusSection.LastRunProviderText = text, value);
     }
 
-    private string _lastRunSymbolsText = "N/A";
     public string LastRunSymbolsText
     {
-        get => _lastRunSymbolsText;
-        private set => SetProperty(ref _lastRunSymbolsText, value);
+        get => StatusSection.LastRunSymbolsText;
+        private set => SetBackfillSectionProperty(StatusSection.LastRunSymbolsText, text => StatusSection.LastRunSymbolsText = text, value);
     }
 
-    private string _lastRunBarsWrittenText = "0";
     public string LastRunBarsWrittenText
     {
-        get => _lastRunBarsWrittenText;
-        private set => SetProperty(ref _lastRunBarsWrittenText, value);
+        get => StatusSection.LastRunBarsWrittenText;
+        private set => SetBackfillSectionProperty(StatusSection.LastRunBarsWrittenText, text => StatusSection.LastRunBarsWrittenText = text, value);
     }
 
-    private string _lastRunStartedText = "Unknown";
     public string LastRunStartedText
     {
-        get => _lastRunStartedText;
-        private set => SetProperty(ref _lastRunStartedText, value);
+        get => StatusSection.LastRunStartedText;
+        private set => SetBackfillSectionProperty(StatusSection.LastRunStartedText, text => StatusSection.LastRunStartedText = text, value);
     }
 
-    private string _lastRunCompletedText = "N/A";
     public string LastRunCompletedText
     {
-        get => _lastRunCompletedText;
-        private set => SetProperty(ref _lastRunCompletedText, value);
+        get => StatusSection.LastRunCompletedText;
+        private set => SetBackfillSectionProperty(StatusSection.LastRunCompletedText, text => StatusSection.LastRunCompletedText = text, value);
     }
 
-    private string _backfillStatsTotalBarsText = "--";
     public string BackfillStatsTotalBarsText
     {
-        get => _backfillStatsTotalBarsText;
-        private set => SetProperty(ref _backfillStatsTotalBarsText, value);
+        get => StatusSection.BackfillStatsTotalBarsText;
+        private set => SetBackfillSectionProperty(StatusSection.BackfillStatsTotalBarsText, text => StatusSection.BackfillStatsTotalBarsText = text, value);
     }
 
-    private string _backfillStatsSymbolsProcessedText = "--";
     public string BackfillStatsSymbolsProcessedText
     {
-        get => _backfillStatsSymbolsProcessedText;
-        private set => SetProperty(ref _backfillStatsSymbolsProcessedText, value);
+        get => StatusSection.BackfillStatsSymbolsProcessedText;
+        private set => SetBackfillSectionProperty(StatusSection.BackfillStatsSymbolsProcessedText, text => StatusSection.BackfillStatsSymbolsProcessedText = text, value);
     }
 
-    private string _backfillStatsRunWindowText = "No run loaded";
     public string BackfillStatsRunWindowText
     {
-        get => _backfillStatsRunWindowText;
-        private set => SetProperty(ref _backfillStatsRunWindowText, value);
+        get => StatusSection.BackfillStatsRunWindowText;
+        private set => SetBackfillSectionProperty(StatusSection.BackfillStatsRunWindowText, text => StatusSection.BackfillStatsRunWindowText = text, value);
     }
 
-    private string _backfillStatsLastSuccessfulRunText = "No successful run loaded";
     public string BackfillStatsLastSuccessfulRunText
     {
-        get => _backfillStatsLastSuccessfulRunText;
-        private set => SetProperty(ref _backfillStatsLastSuccessfulRunText, value);
+        get => StatusSection.BackfillStatsLastSuccessfulRunText;
+        private set => SetBackfillSectionProperty(StatusSection.BackfillStatsLastSuccessfulRunText, text => StatusSection.BackfillStatsLastSuccessfulRunText = text, value);
     }
 
     private string _startReadinessTitle = "Backfill setup incomplete";
@@ -524,6 +509,12 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
 
     public void Stop() => Deactivate();
 
+    public void CancelActivation()
+    {
+        CancelAndDispose(Interlocked.Exchange(ref _backfillCts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
+    }
+
     public void Deactivate()
     {
         if (!_isActive)
@@ -535,8 +526,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         _progressPollTimer.Stop();
         _backfillService.ProgressUpdated -= OnBackfillProgressUpdated;
         _backfillService.BackfillCompleted -= OnBackfillCompleted;
-        CancelAndDispose(Interlocked.Exchange(ref _backfillCts, null));
-        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
+        CancelActivation();
     }
 
     // ── Data loading ────────────────────────────────────────────────────────
