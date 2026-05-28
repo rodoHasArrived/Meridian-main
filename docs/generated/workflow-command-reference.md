@@ -17,10 +17,10 @@
 ## desktop-screenshot-catalog
 
 - Owners: @desktop-shell, @operator-experience
-- Expected artifacts: docs/screenshots/desktop, artifacts/desktop-workflows
+- Expected artifacts: docs/screenshots/desktop, artifacts/desktop-workflows, artifacts/desktop-screenshot-capture/all-screenshots
 - Owner lane: Workstation Shell and UX
 - Refresh trigger: desktop screenshot capture workflow or manual screenshot refresh
-- Canonical output roots: docs/screenshots/desktop, artifacts/desktop-workflows
+- Canonical output roots: docs/screenshots/desktop, artifacts/desktop-workflows, artifacts/desktop-screenshot-capture/all-screenshots
 - Retention: timestamped-run-retention (maxAgeDays=14, retainLatest=10)
 - Commands:
   - `pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow screenshot-catalog -ScreenshotDirectory docs/screenshots/desktop`
