@@ -73,7 +73,7 @@ public sealed class ProviderGoldenPathTransactionLedgerReconciliationTests
 
         var sourceDocs = metadata.GetProperty("sourceDocs").EnumerateArray().Select(e => e.GetString()).ToList();
         sourceDocs.Should().NotBeEmpty();
-        sourceDocs.Should().OnlyContain(url => url is not null && (url.Contains("docs.alpaca.markets", StringComparison.OrdinalIgnoreCase) || url.Contains("interactivebrokers.com/campus", StringComparison.OrdinalIgnoreCase)));
+        sourceDocs.Should().OnlyContain(url => url != null && (url.Contains("docs.alpaca.markets", StringComparison.OrdinalIgnoreCase) || url.Contains("interactivebrokers.com/campus", StringComparison.OrdinalIgnoreCase)));
 
         root.GetProperty("providerMessages").ValueKind.Should().Be(JsonValueKind.Object);
         root.GetProperty("expectedCanonicalEvents").ValueKind.Should().Be(JsonValueKind.Object);

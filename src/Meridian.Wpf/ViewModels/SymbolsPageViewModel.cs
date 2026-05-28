@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
@@ -33,6 +34,9 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     private readonly SymbolManagementService _symbolManagementService;
     private readonly CommandPaletteService _commandPaletteService;
     private readonly HttpClient _httpClient = new();
+    private readonly Func<CancellationToken, Task<SymbolConfigDto[]>> _getConfiguredSymbolsAsync;
+    private readonly Func<SymbolConfigDto[], CancellationToken, Task> _saveSymbolsAsync;
+    private readonly Func<CancellationToken, Task<IReadOnlyList<WpfServices.Watchlist>>> _getAllWatchlistsAsync;
 
     private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _loadCts;
@@ -234,6 +238,31 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         WpfServices.NavigationService navigationService,
         SymbolManagementService symbolManagementService,
         CommandPaletteService commandPaletteService)
+        : this(
+            configService,
+            watchlistService,
+            loggingService,
+            notificationService,
+            navigationService,
+            symbolManagementService,
+            commandPaletteService,
+            null,
+            null,
+            null)
+    {
+    }
+
+    internal SymbolsPageViewModel(
+        WpfServices.ConfigService configService,
+        WpfServices.WatchlistService watchlistService,
+        WpfServices.LoggingService loggingService,
+        WpfServices.NotificationService notificationService,
+        WpfServices.NavigationService navigationService,
+        SymbolManagementService symbolManagementService,
+        CommandPaletteService commandPaletteService,
+        Func<CancellationToken, Task<SymbolConfigDto[]>>? getConfiguredSymbolsAsync,
+        Func<SymbolConfigDto[], CancellationToken, Task>? saveSymbolsAsync,
+        Func<CancellationToken, Task<IReadOnlyList<WpfServices.Watchlist>>>? getAllWatchlistsAsync)
     {
         _configService = configService;
         _watchlistService = watchlistService;
@@ -242,6 +271,9 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         _navigationService = navigationService;
         _symbolManagementService = symbolManagementService;
         _commandPaletteService = commandPaletteService;
+        _getConfiguredSymbolsAsync = getConfiguredSymbolsAsync ?? configService.GetConfiguredSymbolsAsync;
+        _saveSymbolsAsync = saveSymbolsAsync ?? configService.SaveSymbolsAsync;
+        _getAllWatchlistsAsync = getAllWatchlistsAsync ?? watchlistService.GetAllWatchlistsAsync;
 
         // Initialize Security Master commands
         AddToSecurityMasterCommand = new RelayCommand(
@@ -306,8 +338,16 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         Actions.Add(new ActionEntry("Import", new RelayCommand(() => _notificationService.NotifyInfo("Import", "Symbol import started")), "\uE8B5", "Import symbols"));
         Actions.Add(new ActionEntry("Export", ExportSymbolDataCommand, "\uEDE1", "Export symbols"));
 
-        await LoadSymbolsFromConfigAsync(ActivationToken);
-        await LoadWatchlistsAsync(ActivationToken);
+        try
+        {
+            await LoadSymbolsFromConfigAsync(activationCts.Token);
+            await LoadWatchlistsAsync(activationCts.Token);
+        }
+        catch (OperationCanceledException) when (activationCts.IsCancellationRequested || ct.IsCancellationRequested)
+        {
+            if (!_isStopped)
+                Deactivate();
+        }
     }
 
     public void Stop() => Deactivate();
@@ -333,27 +373,31 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     // ── Data loading ────────────────────────────────────────────────────────
     public async Task LoadSymbolsFromConfigAsync(CancellationToken ct = default)
     {
-        Symbols.Clear();
         try
         {
-            var configuredSymbols = await _configService.GetConfiguredSymbolsAsync();
-            foreach (var cfg in configuredSymbols)
+            var configuredSymbols = await _getConfiguredSymbolsAsync(ct);
+            ct.ThrowIfCancellationRequested();
+
+            var nextSymbols = configuredSymbols.Select(cfg => new SymbolViewModel
             {
-                Symbols.Add(new SymbolViewModel
-                {
-                    Symbol = cfg.Symbol,
-                    SubscribeTrades = cfg.SubscribeTrades,
-                    SubscribeDepth = cfg.SubscribeDepth,
-                    DepthLevels = cfg.DepthLevels,
-                    Exchange = cfg.Exchange,
-                    LocalSymbol = cfg.LocalSymbol,
-                    SecurityType = cfg.SecurityType,
-                    Strike = cfg.Strike,
-                    Right = cfg.Right,
-                    LastTradeDateOrContractMonth = cfg.LastTradeDateOrContractMonth,
-                    OptionStyle = cfg.OptionStyle,
-                    Multiplier = cfg.Multiplier
-                });
+                Symbol = cfg.Symbol,
+                SubscribeTrades = cfg.SubscribeTrades,
+                SubscribeDepth = cfg.SubscribeDepth,
+                DepthLevels = cfg.DepthLevels,
+                Exchange = cfg.Exchange,
+                LocalSymbol = cfg.LocalSymbol,
+                SecurityType = cfg.SecurityType,
+                Strike = cfg.Strike,
+                Right = cfg.Right,
+                LastTradeDateOrContractMonth = cfg.LastTradeDateOrContractMonth,
+                OptionStyle = cfg.OptionStyle,
+                Multiplier = cfg.Multiplier
+            }).ToArray();
+
+            Symbols.Clear();
+            foreach (var symbol in nextSymbols)
+            {
+                Symbols.Add(symbol);
             }
         }
         catch (OperationCanceledException)
@@ -392,7 +436,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
 
         try
         {
-            var watchlists = await _watchlistService.GetAllWatchlistsAsync(nextLoadCts.Token);
+            var watchlists = await _getAllWatchlistsAsync(nextLoadCts.Token);
 
             if (_isStopped || !ReferenceEquals(_loadCts, nextLoadCts))
                 return;
@@ -944,7 +988,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
                     Multiplier = s.Multiplier
                 }).ToArray();
 
-            await _configService.SaveSymbolsAsync(symbolDtos);
+            await _saveSymbolsAsync(symbolDtos, ct);
         }
         catch (OperationCanceledException)
         {

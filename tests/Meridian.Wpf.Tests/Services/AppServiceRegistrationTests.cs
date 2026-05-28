@@ -154,6 +154,20 @@ public sealed class AppServiceRegistrationTests
     }
 
     [Fact]
+    public void RunCashFlowPageSource_ShouldResolveThroughConstructorInjection()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunCashFlowPage.xaml.cs"));
+
+        source.Should().Contain("public RunCashFlowPage(");
+        source.Should().Contain("StrategyRunWorkspaceService workspaceService");
+        source.Should().Contain("WpfNavigationService navigationService");
+        source.Should().Contain("StrategyRunContinuityService? continuityService = null");
+        source.Should().Contain("DataContext = new CashFlowViewModel(workspaceService, navigationService, continuityService)");
+        source.Should().NotContain("App.Services.GetRequiredService<StrategyRunWorkspaceService>()");
+        source.Should().NotContain("App.Services.GetRequiredService<NavigationService>()");
+    }
+
+    [Fact]
     public void ResearchWorkspaceShellPage_ShouldResolveEvenWithoutWorkspaceServiceRegistration()
     {
         WpfTestThread.Run(() =>

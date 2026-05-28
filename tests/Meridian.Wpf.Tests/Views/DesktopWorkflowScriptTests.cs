@@ -274,6 +274,8 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("New-MeridianBuildIsolationKey -Prefix \"wpf-dev-test\"");
         script.Should().Contain("Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot");
         script.Should().Contain("Get-ActiveRepoDotnetProcess");
+        script.Should().Contain("Name = 'dotnet.exe' OR Name = 'MSBuild.exe' OR Name = 'testhost.exe' OR Name = 'csc.exe' OR Name = 'VBCSCompiler.exe'");
+        script.Should().Contain("(build|test|restore|msbuild)");
         script.Should().Contain("active-dotnet-processes.log");
         script.Should().Contain("/m:1");
         script.Should().Contain("/nr:false");
