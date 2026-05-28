@@ -873,6 +873,9 @@ export interface GovernanceTrialBalanceDetailViewState {
   statusVariant: "outline" | "success" | "danger";
   ariaLabel: string;
   fields: Array<{ label: string; value: string }>;
+  auditDrillThroughLabel: string;
+  auditDrillThroughHref: string | null;
+  approvalDrillThroughHref: string | null;
 }
 
 export interface GovernanceBasisBridgeRowViewModel {
@@ -3410,11 +3413,16 @@ function buildTrialBalanceDetail(
   const statusVariant = line.balanceTone === "danger" ? "danger" : line.balanceTone === "success" ? "success" : "outline";
   const statusLabel = line.balanceTone === "danger" ? "Credit / payable" : line.balanceTone === "success" ? "Debit / asset" : "Flat";
 
+  const sourceEventIds = readStringArrayField(line, "sourceEventIds");
+  const approvalIds = readStringArrayField(line, "approvalIds");
+  const firstSourceEventId = sourceEventIds[0] ?? null;
+  const firstApprovalId = approvalIds[0] ?? null;
+
   return {
     eyebrow: "Trial-balance detail",
     title: line.accountLabel,
     subtitle: `${line.accountTypeLabel} · ${financialAccountId}`,
-    description: `${line.accountLabel} contributes ${line.balanceLabel} across ${line.entryCountLabel} ledger entr${line.entryCount === 1 ? "y" : "ies"} for ${runLabel}.`,
+    description: `${line.accountLabel} contributes ${line.balanceLabel} across ${line.entryCountLabel} ledger entr${line.entryCount === 1 ? "y" : "ies"} for ${runLabel}. Source events and approvals stay attached for audit drill-through.`,
     statusLabel,
     statusVariant,
     ariaLabel: `Trial-balance detail for ${line.accountLabel}`,
@@ -3426,9 +3434,29 @@ function buildTrialBalanceDetail(
       { label: "Entries", value: line.entryCountLabel },
       { label: "Financial account", value: financialAccountId },
       { label: "Security", value: securityLabel },
+      { label: "Source events", value: sourceEventIds.length > 0 ? sourceEventIds.join(", ") : "No source events linked" },
+      { label: "Approvals", value: approvalIds.length > 0 ? approvalIds.join(", ") : "No approvals linked" },
       { label: "Run", value: runLabel }
-    ]
+    ],
+    auditDrillThroughLabel: firstSourceEventId ? `Open source event ${firstSourceEventId}` : "No source-event drill-through available",
+    auditDrillThroughHref: firstSourceEventId ? `/accounting/audit?sourceEventId=${encodeURIComponent(firstSourceEventId)}` : null,
+    approvalDrillThroughHref: firstApprovalId ? `/accounting/approvals?approvalId=${encodeURIComponent(firstApprovalId)}` : null
   };
+}
+
+function readStringArrayField(value: unknown, fieldName: string): string[] {
+  if (!value || typeof value !== "object" || !(fieldName in value)) {
+    return [];
+  }
+
+  const field = (value as Record<string, unknown>)[fieldName];
+  if (!Array.isArray(field)) {
+    return [];
+  }
+
+  return field
+    .map((item) => typeof item === "string" ? item.trim() : "")
+    .filter((item) => item.length > 0);
 }
 
 function buildTrialBalanceAnnouncement({

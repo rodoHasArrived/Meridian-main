@@ -1002,6 +1002,34 @@ describe("governance-screen view model", () => {
     });
   });
 
+  it("adds source-event and approval drill-through details to trial-balance selections", () => {
+    const state = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: [
+        {
+          accountName: "Cash",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-cash",
+          balance: 120500,
+          entryCount: 12,
+          security: null,
+          sourceEventIds: ["evt-cash-1"],
+          approvalIds: ["approval-cash-1"]
+        } as unknown as LedgerTrialBalanceLine
+      ],
+      loading: false,
+      error: null
+    });
+
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Source events", value: "evt-cash-1" },
+      { label: "Approvals", value: "approval-cash-1" }
+    ]));
+    expect(state.selectedDetail?.auditDrillThroughHref).toBe("/accounting/audit?sourceEventId=evt-cash-1");
+    expect(state.selectedDetail?.approvalDrillThroughHref).toBe("/accounting/approvals?approvalId=approval-cash-1");
+  });
+
   it("filters trial-balance rows by basis and builds a basis bridge", () => {
     const state = buildGovernanceTrialBalanceViewState({
       runId: "run-42",

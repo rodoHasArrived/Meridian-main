@@ -126,3 +126,7 @@ endpoint contracts for behavior also consumed by WPF or host workflows.
 - `docs/source/generated/source-module-index.md`
 
 Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, bulk triage, and bulk status/result lookup; keep these helpers aligned with `UiApiRoutes` and WPF consumers.
+
+## Accounting close browser surface
+
+The Accounting route reuses governance ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/governance-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.

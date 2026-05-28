@@ -15,6 +15,9 @@ last_reviewed: 2026-05-25
 
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
 
+
+`Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, roll-forward, source-linked audit rows, and close-state evidence gates.
+
 ## Layer responsibility
 
 This module owns backend read-model and workflow surfaces for operator UI clients. Keep endpoint
