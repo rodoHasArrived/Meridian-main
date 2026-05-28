@@ -593,7 +593,19 @@ public sealed class SettingsViewModel : BindableBase
 
         try
         {
-            await _configService.WriteConfigAsync(new AppConfigDto());
+            var existingConfig = await _configService.LoadConfigFromDiskAsync();
+            var defaultConfig = new AppConfigDto();
+            defaultConfig.Symbols = existingConfig.Symbols;
+            defaultConfig.Alpaca = existingConfig.Alpaca;
+            defaultConfig.Polygon = existingConfig.Polygon;
+            defaultConfig.IB = existingConfig.IB;
+            defaultConfig.IBClientPortal = existingConfig.IBClientPortal;
+            defaultConfig.Backfill = existingConfig.Backfill;
+            defaultConfig.DataSources = existingConfig.DataSources;
+            defaultConfig.SymbolGroups = existingConfig.SymbolGroups;
+            defaultConfig.Derivatives = existingConfig.Derivatives;
+
+            await _configService.WriteConfigAsync(defaultConfig);
             await LoadConfigAsync(false);
             _notificationService.ShowNotification("Reset Complete", "Settings have been reset to defaults.", NotificationType.Success);
         }
@@ -665,24 +677,27 @@ public sealed class SettingsViewModel : BindableBase
         }
     }
 
-    private AppConfigDto BuildConfigDtoFromSettings()
+    private AppConfigDto BuildConfigDtoFromSettings(AppConfigDto existingConfig)
     {
+        ArgumentNullException.ThrowIfNull(existingConfig);
+
         var interval = int.TryParse(StatusRefreshInterval, out var parsedInterval) ? parsedInterval : 2;
         var maxReconnect = int.TryParse(MaxConcurrentDownloads, out var parsedMaxReconnect) ? parsedMaxReconnect : 10;
-        return new AppConfigDto
+
+        existingConfig.IBClientPortal ??= new IBClientPortalOptionsDto();
+        existingConfig.IBClientPortal.BaseUrl = ApiBaseUrl;
+        existingConfig.Compress = WriteBufferSize != "0";
+        existingConfig.Settings = new AppSettingsDto
         {
-            IBClientPortal = new IBClientPortalOptionsDto { BaseUrl = ApiBaseUrl },
-            Compress = WriteBufferSize != "0",
-            Settings = new AppSettingsDto
-            {
-                Theme = ThemeIndex switch { 1 => "Light", 2 => "Dark", _ => "System" },
-                NotificationsEnabled = IsNotificationsEnabled,
-                CompactMode = SelectedShellDensityMode == ShellDensityMode.Compact,
-                AutoReconnectEnabled = IsMetricsEnabled,
-                MaxReconnectAttempts = maxReconnect,
-                StatusRefreshIntervalSeconds = interval
-            }
+            Theme = ThemeIndex switch { 1 => "Light", 2 => "Dark", _ => "System" },
+            NotificationsEnabled = IsNotificationsEnabled,
+            CompactMode = SelectedShellDensityMode == ShellDensityMode.Compact,
+            AutoReconnectEnabled = IsMetricsEnabled,
+            MaxReconnectAttempts = maxReconnect,
+            StatusRefreshIntervalSeconds = interval
         };
+
+        return existingConfig;
     }
 
     private async Task SaveConfigAsync() => await SaveOrApplyConfigAsync("Configuration Saved");
@@ -696,7 +711,9 @@ public sealed class SettingsViewModel : BindableBase
             return;
         }
 
-        await _configService.WriteConfigAsync(BuildConfigDtoFromSettings());
+        var existingConfig = await _configService.LoadConfigFromDiskAsync();
+        var updatedConfig = BuildConfigDtoFromSettings(existingConfig);
+        await _configService.WriteConfigAsync(updatedConfig);
         HasUnsavedChanges = false;
         _notificationService.ShowNotification(messageTitle, "Settings have been written to disk.", NotificationType.Success);
     }
