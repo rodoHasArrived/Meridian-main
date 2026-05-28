@@ -10,6 +10,80 @@ public sealed record CanonicalStatementImport(
     int RawRowCount,
     int NormalizedRowCount);
 
+public sealed record StatementSourceRowReference(
+    string StatementRunId,
+    int SourceRowNumber,
+    string SourceRowHash,
+    IReadOnlyDictionary<string, string> RawSnapshot);
+
+public sealed record StatementSecurityReference(
+    string StatementRunId,
+    int SourceRowNumber,
+    string SourceRowHash,
+    IReadOnlyDictionary<string, string> RawSnapshot,
+    string? SecurityId,
+    string? UnresolvedIdentifier,
+    string Currency);
+
+public sealed record StatementPosition(
+    string StatementRunId,
+    int SourceRowNumber,
+    string SourceRowHash,
+    IReadOnlyDictionary<string, string> RawSnapshot,
+    string AccountId,
+    string ExternalAccountId,
+    string? SecurityId,
+    string? UnresolvedIdentifier,
+    string Currency,
+    decimal Quantity,
+    decimal Price,
+    decimal MarketValue,
+    DateOnly TradeDate,
+    DateOnly? SettlementDate);
+
+public sealed record StatementCashBalance(
+    string StatementRunId,
+    int SourceRowNumber,
+    string SourceRowHash,
+    IReadOnlyDictionary<string, string> RawSnapshot,
+    string AccountId,
+    string ExternalAccountId,
+    string Currency,
+    decimal Amount,
+    DateOnly TradeDate,
+    DateOnly? SettlementDate);
+
+public sealed record StatementTransaction(
+    string StatementRunId,
+    int SourceRowNumber,
+    string SourceRowHash,
+    IReadOnlyDictionary<string, string> RawSnapshot,
+    string AccountId,
+    string ExternalAccountId,
+    string? SecurityId,
+    string? UnresolvedIdentifier,
+    string Currency,
+    decimal Quantity,
+    decimal Price,
+    decimal MarketValue,
+    DateOnly TradeDate,
+    DateOnly? SettlementDate,
+    decimal Amount,
+    decimal FeesCommission,
+    string TransactionType,
+    string? ExternalReference);
+
+public sealed record NormalizedStatementImportResult(
+    string ImportId,
+    string SourceKind,
+    string SourcePath,
+    int RowCount,
+    IReadOnlyList<StatementPosition> Positions,
+    IReadOnlyList<StatementCashBalance> CashBalances,
+    IReadOnlyList<StatementTransaction> Transactions,
+    IReadOnlyList<StatementSecurityReference> Securities,
+    IReadOnlyList<StatementSourceRowReference> SourceRows);
+
 public sealed record CanonicalStatementRow(
     string ImportId,
     int SourceRowNumber,
