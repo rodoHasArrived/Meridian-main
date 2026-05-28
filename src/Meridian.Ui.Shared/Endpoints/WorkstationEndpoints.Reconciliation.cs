@@ -15,7 +15,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class WorkstationEndpoints
 {
-    private sealed record ReconciliationBreakBulkActionRequest(
+    private sealed record LegacyReconciliationBreakBulkActionRequest(
         IReadOnlyList<string> BreakIds,
         string Action,
         string? Actor = null,
@@ -311,8 +311,156 @@ public static partial class WorkstationEndpoints
         .Produces(404);
 
 
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakAssign), async (
+            string breakId,
+            ReconciliationAssignRequest request,
+            HttpContext context,
+            [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase)) return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            return ReconciliationTransitionHttpResult(await RequireRepository(repository).AssignAsync(request, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("AssignReconciliationBreak")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403)
+        .Produces(404)
+        .Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakTransition), async (
+            string breakId,
+            ReconciliationStatusTransitionRequest request,
+            HttpContext context,
+            [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase)) return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            return ReconciliationTransitionHttpResult(await RequireRepository(repository).TransitionStatusAsync(request, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("TransitionReconciliationBreak")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403)
+        .Produces(404)
+        .Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakComments), async (
+            string breakId,
+            ReconciliationCommentMutationRequest request,
+            HttpContext context,
+            [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase)) return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            return ReconciliationTransitionHttpResult(await RequireRepository(repository).AddCommentAsync(request, currentUser, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("AddReconciliationBreakComment")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403)
+        .Produces(404)
+        .Produces(409);
+
+        group.MapPut(WorkstationSubroute(UiApiRoutes.ReconciliationBreakCommentById), async (
+            string breakId,
+            string commentId,
+            ReconciliationCommentMutationRequest request,
+            HttpContext context,
+            [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase)) return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            return ReconciliationTransitionHttpResult(await RequireRepository(repository).EditCommentAsync(request with { CommentId = commentId }, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("EditReconciliationBreakComment")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403)
+        .Produces(404)
+        .Produces(409);
+
+        group.MapDelete(WorkstationSubroute(UiApiRoutes.ReconciliationBreakCommentById), async (
+            string breakId,
+            string commentId,
+            HttpContext context,
+            [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            var request = new ReconciliationCommentMutationRequest(breakId, commentId, null, string.Empty, ReconciliationCommentVisibility.Internal, Reason: "Comment deleted.");
+            return ReconciliationTransitionHttpResult(await RequireRepository(repository).DeleteCommentAsync(request, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("DeleteReconciliationBreakComment")
+        .Produces<ReconciliationBreakQueueItem>(200)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403)
+        .Produces(404)
+        .Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakRootCause), async (string breakId, ReconciliationTaxonomyRequest request, HttpContext context, [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase)) return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            return ReconciliationTransitionHttpResult(await RequireRepository(repository).SetRootCauseAsync(request, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        }).WithName("SetReconciliationBreakRootCause").Produces<ReconciliationBreakQueueItem>(200).Produces(400).Produces(401).Produces(403).Produces(404).Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakResolution), async (string breakId, ReconciliationTaxonomyRequest request, HttpContext context, [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase)) return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            return ReconciliationTransitionHttpResult(await RequireRepository(repository).SetResolutionAsync(request, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        }).WithName("SetReconciliationBreakResolution").Produces<ReconciliationBreakQueueItem>(200).Produces(400).Produces(401).Produces(403).Produces(404).Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakSignOff), async (string breakId, ReconciliationSignOffRequest request, HttpContext context, [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase)) return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            return ReconciliationTransitionHttpResult(await RequireRepository(repository).SignOffAsync(request, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        }).WithName("SignOffReconciliationBreak").Produces<ReconciliationBreakQueueItem>(200).Produces(400).Produces(401).Produces(403).Produces(404).Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakReopen), async (string breakId, ReconciliationReopenRequest request, HttpContext context, [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase)) return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
+            return ReconciliationTransitionHttpResult(await RequireRepository(repository).ReopenAsync(request, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        }).WithName("ReopenReconciliationBreak").Produces<ReconciliationBreakQueueItem>(200).Produces(400).Produces(401).Produces(403).Produces(404).Produces(409);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkDryRun), async (ReconciliationBulkActionRequest request, HttpContext context, [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            return Results.Json(await RequireRepository(repository).BulkActionAsync(request with { DryRun = true }, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        }).WithName("DryRunReconciliationBreakBulkAction").Produces<ReconciliationBulkActionResult>(200).Produces(401).Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkExecute), async (ReconciliationBulkActionRequest request, HttpContext context, [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
+            if (!TryResolveCurrentUser(context, out var currentUser)) return Results.Unauthorized();
+            return Results.Json(await RequireRepository(repository).BulkActionAsync(request with { DryRun = false }, currentUser, ResolveCorrelationId(context), source: "workstation-api", ct: context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        }).WithName("ExecuteReconciliationBreakBulkAction").Produces<ReconciliationBulkActionResult>(200).Produces(401).Produces(403);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakBulkResult), async (string bulkActionId, HttpContext context, [FromServices] IReconciliationBreakQueueRepository? repository) =>
+        {
+            var result = await RequireRepository(repository).GetBulkActionResultAsync(bulkActionId, context.RequestAborted).ConfigureAwait(false);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        }).WithName("GetReconciliationBreakBulkActionResult").Produces<ReconciliationBulkActionResult>(200).Produces(404);
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue) + "/bulk", async (
-            ReconciliationBreakBulkActionRequest request,
+            LegacyReconciliationBreakBulkActionRequest request,
             HttpContext context,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
@@ -360,6 +508,24 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200)
         .Produces(403)
         .Produces(501);
+
+    }
+
+    private static IReconciliationBreakQueueRepository RequireRepository(IReconciliationBreakQueueRepository? repository)
+        => repository ?? throw new InvalidOperationException("Reconciliation break queue repository is not registered.");
+
+    private static string? ResolveCorrelationId(HttpContext context)
+        => context.TraceIdentifier;
+
+    private static IResult ReconciliationTransitionHttpResult(ReconciliationBreakQueueTransitionResult transition, JsonSerializerOptions jsonOptions)
+        => transition.Status switch
+        {
+            ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
+            ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
+            ReconciliationBreakQueueTransitionStatus.Conflict => Results.Conflict(new { error = transition.Error ?? "Case version conflict.", code = transition.ErrorCode.ToString() }),
+            ReconciliationBreakQueueTransitionStatus.Unauthorized => Results.Unauthorized(),
+            _ => Results.BadRequest(new { error = transition.Error ?? "Illegal transition.", code = transition.ErrorCode.ToString() })
+        };
 
     }
 }

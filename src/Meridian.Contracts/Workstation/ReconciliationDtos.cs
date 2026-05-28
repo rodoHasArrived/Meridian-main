@@ -282,19 +282,86 @@ public enum ReconciliationBreakQueueStatus : byte
     Open = 0,
     InReview = 1,
     Resolved = 2,
-    Dismissed = 3
+    Dismissed = 3,
+    Investigating = 4,
+    AwaitingEvidence = 5,
+    SignedOff = 6,
+    Reopened = 7,
+    LegacyTerminal = 8
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseLifecycleState>))]
 public enum ReconciliationCaseLifecycleState : byte
 {
     Open = 0,
+    Investigating = 1,
     InReview = 1,
-    AwaitingApproval = 2,
-    Approved = 3,
-    Posted = 4,
+    AwaitingEvidence = 2,
+    Resolved = 3,
+    SignedOff = 4,
     Reopened = 5,
-    Superseded = 6
+    LegacyTerminal = 6,
+    AwaitingApproval = 7,
+    Approved = 8,
+    Posted = 9,
+    Superseded = 10
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCasePriority>))]
+public enum ReconciliationCasePriority : byte
+{
+    Low = 0,
+    Normal = 1,
+    High = 2,
+    Critical = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationSlaState>))]
+public enum ReconciliationSlaState : byte
+{
+    NotStarted = 0,
+    Running = 1,
+    Warning = 2,
+    Breached = 3,
+    Paused = 4,
+    Stopped = 5
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCaseAgeBand>))]
+public enum ReconciliationCaseAgeBand : byte
+{
+    SameDay = 0,
+    OneToTwoBusinessDays = 1,
+    ThreeToFiveBusinessDays = 2,
+    OlderThanFiveBusinessDays = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationCommentVisibility>))]
+public enum ReconciliationCommentVisibility : byte
+{
+    Internal = 0,
+    CloseEvidence = 1,
+    ExternalSummary = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBulkActionType>))]
+public enum ReconciliationBulkActionType : byte
+{
+    Assign = 0,
+    ChangePriority = 1,
+    AddComment = 2,
+    TransitionStatus = 3,
+    SetRootCause = 4,
+    SetResolution = 5,
+    Resolve = 6,
+    SignOff = 7
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationSlaStopPolicy>))]
+public enum ReconciliationSlaStopPolicy : byte
+{
+    StopOnResolved = 0,
+    StopOnSignedOff = 1
 }
 
 /// <summary>
@@ -350,7 +417,72 @@ public sealed record ReconciliationBreakQueueItem(
     string? Counterparty = null,
     ReconciliationBreakScore? Score = null,
     DateTimeOffset? SlaDueAt = null,
-    bool SlaBreached = false);
+    bool SlaBreached = false,
+    string? AssigneeId = null,
+    string? AssigneeDisplayName = null,
+    string? AssignedBy = null,
+    DateTimeOffset? AssignedAt = null,
+    ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal,
+    string? SlaPolicyId = null,
+    DateTimeOffset? SlaWarningAt = null,
+    DateTimeOffset? SlaBreachedAt = null,
+    ReconciliationSlaState SlaState = ReconciliationSlaState.NotStarted,
+    ReconciliationCaseAgeBand AgeBand = ReconciliationCaseAgeBand.SameDay,
+    double BusinessAgeHours = 0,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    string? SignOffBy = null,
+    DateTimeOffset? SignOffAt = null,
+    string? SignOffNote = null,
+    string? ReopenedBy = null,
+    DateTimeOffset? ReopenedAt = null,
+    string? ReopenReason = null,
+    int Version = 0,
+    int CommentCount = 0,
+    int EvidenceCount = 0,
+    DateTimeOffset? LastActivityAt = null,
+    IReadOnlyList<ReconciliationCaseComment>? Comments = null,
+    IReadOnlyList<string>? EvidenceLinks = null);
+
+
+public sealed record ReconciliationCaseComment(
+    string CommentId,
+    string BreakId,
+    string? ParentCommentId,
+    string AuthorId,
+    string? AuthorDisplayName,
+    string Body,
+    ReconciliationCommentVisibility Visibility,
+    IReadOnlyList<string>? EvidenceLinks,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? EditedAt = null,
+    string? EditedBy = null,
+    DateTimeOffset? DeletedAt = null,
+    string? DeletedBy = null,
+    string? DeleteReason = null,
+    int Version = 0);
+
+public sealed record ReconciliationSlaPolicy(
+    string PolicyId,
+    string? FundAccountId,
+    string? BreakType,
+    ReconciliationBreakSeverity? Severity,
+    ReconciliationCasePriority? Priority,
+    string TimeZoneId,
+    int DueBusinessHours,
+    int WarningBusinessHoursBeforeDue,
+    bool PauseAwaitingEvidenceWithRequest,
+    ReconciliationSlaStopPolicy StopPolicy,
+    IReadOnlyList<DayOfWeek>? BusinessDays = null,
+    TimeOnly? BusinessDayStart = null,
+    TimeOnly? BusinessDayEnd = null);
+
+public sealed record ReconciliationCaseworkReadinessDto(
+    int UnresolvedCriticalCaseCount,
+    int BreachedCaseCount,
+    int AwaitingEvidenceCaseCount,
+    int SignedOffCaseEvidenceCount,
+    IReadOnlyList<string> ReportPackExceptionSummary);
 
 public sealed record ReconciliationCaseSignoffRecord(
     string Actor,
@@ -392,7 +524,19 @@ public enum ReconciliationCaseTransitionAction : byte
     Approve = 2,
     Post = 3,
     Reopen = 4,
-    Supersede = 5
+    Supersede = 5,
+    Assign = 6,
+    ChangePriority = 7,
+    TransitionStatus = 8,
+    AwaitEvidence = 9,
+    Resolve = 10,
+    SignOff = 11,
+    SetRootCause = 12,
+    SetResolution = 13,
+    AddComment = 14,
+    EditComment = 15,
+    DeleteComment = 16,
+    LinkEvidence = 17
 }
 
 public sealed record ReconciliationCaseTransitionCommand(
@@ -458,7 +602,10 @@ public sealed record ResolveReconciliationBreakRequest(
     ReconciliationBreakQueueStatus Status,
     string ResolvedBy,
     string ResolutionNote,
-    string OperatorRationale);
+    string OperatorRationale,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    int? ExpectedVersion = null);
 
 /// <summary>
 /// Canonical schema version metadata for reconciliation ingress/egress payloads.
@@ -529,3 +676,86 @@ public sealed record ReconciliationRolloutFlags(
     IReadOnlyList<string> CounterpartyIds,
     bool AllowReplay,
     bool AllowBackfill);
+
+
+public sealed record ReconciliationAssignRequest(
+    string BreakId,
+    string Assignee,
+    string? AssigneeDisplayName,
+    string Reason,
+    int? ExpectedVersion = null);
+
+public sealed record ReconciliationPriorityRequest(
+    string BreakId,
+    ReconciliationCasePriority Priority,
+    string Reason,
+    int? ExpectedVersion = null);
+
+public sealed record ReconciliationStatusTransitionRequest(
+    string BreakId,
+    ReconciliationCaseLifecycleState Status,
+    string Reason,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    int? ExpectedVersion = null);
+
+public sealed record ReconciliationCommentMutationRequest(
+    string BreakId,
+    string? CommentId,
+    string? ParentCommentId,
+    string Body,
+    ReconciliationCommentVisibility Visibility,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? Reason = null,
+    int? ExpectedVersion = null);
+
+public sealed record ReconciliationTaxonomyRequest(
+    string BreakId,
+    string Code,
+    string? Note,
+    string Reason,
+    int? ExpectedVersion = null);
+
+public sealed record ReconciliationSignOffRequest(
+    string BreakId,
+    string Note,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    int? ExpectedVersion = null);
+
+public sealed record ReconciliationReopenRequest(
+    string BreakId,
+    string Reason,
+    bool Privileged = false,
+    int? ExpectedVersion = null);
+
+public sealed record ReconciliationBulkActionRequest(
+    IReadOnlyList<string> BreakIds,
+    ReconciliationBulkActionType Action,
+    string IdempotencyKey,
+    bool DryRun,
+    bool AllowPartialSuccess,
+    int MaxCaseCount = 100,
+    string? Assignee = null,
+    ReconciliationCasePriority? Priority = null,
+    ReconciliationCaseLifecycleState? Status = null,
+    string? Comment = null,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    string? ResolutionNote = null,
+    string? Reason = null,
+    IReadOnlyList<string>? EvidenceLinks = null);
+
+public sealed record ReconciliationBulkCaseResult(
+    string BreakId,
+    bool Success,
+    string? Error,
+    ReconciliationBreakQueueItem? Item = null);
+
+public sealed record ReconciliationBulkActionResult(
+    string BulkActionId,
+    string IdempotencyKey,
+    bool DryRun,
+    bool Accepted,
+    int RequestedCount,
+    int SuccessCount,
+    int FailureCount,
+    IReadOnlyList<ReconciliationBulkCaseResult> Cases);

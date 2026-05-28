@@ -763,16 +763,25 @@ public sealed class FundOperationsWorkspaceReadService
                 RoutingTarget: item.RoutingTarget,
                 RoutingDetail: item.RoutingDetail,
                 EvidenceReference: item.UpstreamSyncCursor ?? item.ExternalAccountId,
-                LastUpdatedAt: item.LastUpdatedAt))
+                LastUpdatedAt: item.LastUpdatedAt,
+                Priority: item.Priority,
+                SlaState: item.SlaState,
+                AgeBand: item.AgeBand,
+                RootCauseCode: item.RootCauseCode,
+                ResolutionCode: item.ResolutionCode,
+                CommentCount: item.CommentCount,
+                EvidenceCount: item.EvidenceCount,
+                LastActivityAt: item.LastActivityAt,
+                SignOffReady: item.LifecycleState == ReconciliationCaseLifecycleState.Resolved && !string.IsNullOrWhiteSpace(item.RootCauseCode) && !string.IsNullOrWhiteSpace(item.ResolutionCode)))
             .ToArray();
 
         return new ReconciliationBreakQueueProjectionDto(
             TotalCount: projected.Length,
             OpenCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open),
-            InReviewCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.InReview),
-            ResolvedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Resolved),
-            DismissedCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Dismissed),
-            CriticalOpenCount: projected.Count(static item => item.Status == ReconciliationBreakQueueStatus.Open && item.Severity == ReconciliationBreakSeverity.Critical),
+            InReviewCount: projected.Count(static item => item.Status is ReconciliationBreakQueueStatus.InReview or ReconciliationBreakQueueStatus.Investigating),
+            ResolvedCount: projected.Count(static item => item.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.SignedOff),
+            DismissedCount: projected.Count(static item => item.Status is ReconciliationBreakQueueStatus.Dismissed or ReconciliationBreakQueueStatus.LegacyTerminal),
+            CriticalOpenCount: projected.Count(static item => (item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.Reopened) && item.Severity == ReconciliationBreakSeverity.Critical),
             Items: projected);
     }
 

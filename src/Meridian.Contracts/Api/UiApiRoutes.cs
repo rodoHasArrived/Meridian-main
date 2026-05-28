@@ -597,6 +597,17 @@ public static class UiApiRoutes
     public const string ReconciliationBreakAudit = "/api/workstation/reconciliation/break-queue/{breakId}/audit";
     public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
+    public const string ReconciliationBreakAssign = "/api/workstation/reconciliation/break-queue/{breakId}/assign";
+    public const string ReconciliationBreakTransition = "/api/workstation/reconciliation/break-queue/{breakId}/transition";
+    public const string ReconciliationBreakComments = "/api/workstation/reconciliation/break-queue/{breakId}/comments";
+    public const string ReconciliationBreakCommentById = "/api/workstation/reconciliation/break-queue/{breakId}/comments/{commentId}";
+    public const string ReconciliationBreakRootCause = "/api/workstation/reconciliation/break-queue/{breakId}/root-cause";
+    public const string ReconciliationBreakResolution = "/api/workstation/reconciliation/break-queue/{breakId}/resolution";
+    public const string ReconciliationBreakSignOff = "/api/workstation/reconciliation/break-queue/{breakId}/sign-off";
+    public const string ReconciliationBreakReopen = "/api/workstation/reconciliation/break-queue/{breakId}/reopen";
+    public const string ReconciliationBreakBulkDryRun = "/api/workstation/reconciliation/break-queue/bulk/dry-run";
+    public const string ReconciliationBreakBulkExecute = "/api/workstation/reconciliation/break-queue/bulk/execute";
+    public const string ReconciliationBreakBulkResult = "/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}";
     public const string FundReportPacks = "/api/fund-structure/report-packs";
     public const string FundReportPackById = "/api/fund-structure/report-packs/{reportId}";
 

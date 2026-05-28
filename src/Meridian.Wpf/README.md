@@ -45,7 +45,9 @@ provenance, and open-lot review sections.
 Run Cash Flow consumes `StrategyRunContinuityService` when the desktop shell provides it, so the
 cash-flow drill-in presents the same run, portfolio, ledger, cash-flow, reconciliation, and warning
 posture used by shared workstation continuity endpoints.
-Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
+Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints for review,
+assignment, status transition, comments, taxonomy, resolution, sign-off, reopen, audit timeline, and
+bulk casework behavior, then refresh the
 queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
 note, audit event, and pending close sign-off posture visible in the retained detail panel.
 Shared workstation affordance primitives under `Workstation/Models` and `Workstation/Controls`

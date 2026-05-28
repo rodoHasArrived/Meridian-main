@@ -148,11 +148,22 @@ import {
   providerRemoveEndpoint,
   providerTestEndpoint,
   qualityAnomalyAcknowledgeEndpoint,
+  reconciliationBreakAssignEndpoint,
   reconciliationBreakAuditEndpoint,
+  reconciliationBreakBulkDryRunEndpoint,
+  reconciliationBreakBulkExecuteEndpoint,
+  reconciliationBreakBulkResultEndpoint,
+  reconciliationBreakCommentEndpoint,
+  reconciliationBreakCommentsEndpoint,
   reconciliationBreakEndpoint,
   reconciliationBreakQueueEndpoint,
+  reconciliationBreakReopenEndpoint,
+  reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakRootCauseEndpoint,
+  reconciliationBreakSignOffEndpoint,
+  reconciliationBreakTransitionEndpoint,
   reconciliationRunEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
@@ -933,6 +944,54 @@ export function resolveReconciliationBreak(request: ResolveReconciliationBreakRe
     reconciliationBreakResolveEndpoint(request.breakId),
     request
   );
+}
+
+export function assignReconciliationBreak(request: { breakId: string; [key: string]: unknown }) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakAssignEndpoint(request.breakId), request);
+}
+
+export function transitionReconciliationBreak(request: { breakId: string; [key: string]: unknown }) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakTransitionEndpoint(request.breakId), request);
+}
+
+export function addReconciliationBreakComment(request: { breakId: string; [key: string]: unknown }) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakCommentsEndpoint(request.breakId), request);
+}
+
+export function editReconciliationBreakComment(request: { breakId: string; commentId: string; [key: string]: unknown }) {
+  return putJson<ReconciliationBreakQueueItem>(reconciliationBreakCommentEndpoint(request.breakId, request.commentId), request);
+}
+
+export function deleteReconciliationBreakComment(breakId: string, commentId: string) {
+  return deleteJson<ReconciliationBreakQueueItem>(reconciliationBreakCommentEndpoint(breakId, commentId));
+}
+
+export function setReconciliationBreakRootCause(request: { breakId: string; [key: string]: unknown }) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakRootCauseEndpoint(request.breakId), request);
+}
+
+export function setReconciliationBreakResolution(request: { breakId: string; [key: string]: unknown }) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakResolutionEndpoint(request.breakId), request);
+}
+
+export function signOffReconciliationBreak(request: { breakId: string; [key: string]: unknown }) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakSignOffEndpoint(request.breakId), request);
+}
+
+export function reopenReconciliationBreak(request: { breakId: string; [key: string]: unknown }) {
+  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakReopenEndpoint(request.breakId), request);
+}
+
+export function dryRunReconciliationBreakBulkAction(request: Record<string, unknown>) {
+  return postJson<unknown>(reconciliationBreakBulkDryRunEndpoint(), request);
+}
+
+export function executeReconciliationBreakBulkAction(request: Record<string, unknown>) {
+  return postJson<unknown>(reconciliationBreakBulkExecuteEndpoint(), request);
+}
+
+export function getReconciliationBreakBulkActionResult(bulkActionId: string) {
+  return getJson<unknown>(reconciliationBreakBulkResultEndpoint(bulkActionId));
 }
 
 export function getReconciliationCalibrationSummary() {

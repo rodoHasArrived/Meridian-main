@@ -51,7 +51,10 @@ Trading readiness work-item actions consume shared route metadata when it is spe
 resolve locally. Execution-control and promotion-review items carrying the shared
 `/api/workstation/trading/readiness` route land on `/trading`, while paper-replay items keep the
 session replay panel hash target so replay verification remains directly actionable.
-Accounting reconciliation break detail preserves shared queue metadata such as exception route,
+Accounting reconciliation break detail consumes the shared accounting casework contract for owner,
+priority, SLA badges, age band, breach state, taxonomy codes, threaded comments, audit timeline,
+sign-off checklist, and bulk triage route helpers; browser code must not fork reconciliation
+lifecycle rules locally. Accounting reconciliation break detail preserves shared queue metadata such as exception route,
 tolerance profile, required sign-off role/status, and decision note so browser recovery posture
 matches the retained WPF Fund Ledger detail panel.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required

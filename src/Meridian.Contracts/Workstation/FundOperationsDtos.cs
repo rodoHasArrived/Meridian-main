@@ -226,7 +226,16 @@ public sealed record ReconciliationBreakQueueProjectionItemDto(
     string? RoutingTarget,
     string? RoutingDetail,
     string? EvidenceReference,
-    DateTimeOffset LastUpdatedAt);
+    DateTimeOffset LastUpdatedAt,
+    ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal,
+    ReconciliationSlaState SlaState = ReconciliationSlaState.NotStarted,
+    ReconciliationCaseAgeBand AgeBand = ReconciliationCaseAgeBand.SameDay,
+    string? RootCauseCode = null,
+    string? ResolutionCode = null,
+    int CommentCount = 0,
+    int EvidenceCount = 0,
+    DateTimeOffset? LastActivityAt = null,
+    bool SignOffReady = false);
 
 /// <summary>
 /// Preview of accounting impact if current breaks are submitted/closed with draft ledger entries.

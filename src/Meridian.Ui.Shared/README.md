@@ -49,6 +49,12 @@ coverage, and retains the latest detail under workstation data for browser and W
 consume later without adding client-specific reconciliation logic. Break records preserve stable
 keys, owner assignment, tolerance, first/last-observed aging, and sign-off state from the previous
 latest detail so repeated provider-ledger variances can be controlled as accounting casework.
+Reconciliation casework hardening also lives in the shared contract/API lane: assignment,
+priority, SLA policy and breach state, lifecycle transition guardrails, threaded comments, taxonomy
+codes, sign-off/reopen metadata, immutable audit events, optimistic concurrency versions, and bulk
+triage endpoints are modeled in `Meridian.Contracts.Workstation` and served from the shared
+workstation reconciliation endpoint family so browser and WPF clients consume the same accounting
+workflow instead of implementing surface-local rules.
 Reconciliation details also emit provider-to-Security-Master confidence passports for every
 provider position, preserving the resolution path, confidence score, validation issue codes, and
 identifier-conflict evidence alongside the persisted accounting detail.

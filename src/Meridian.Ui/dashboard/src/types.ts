@@ -1395,7 +1395,21 @@ export interface ExportAnalysisFile {
   recordCount: number;
 }
 
-export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed";
+export type ReconciliationBreakQueueStatus =
+  | "Open"
+  | "InReview"
+  | "Investigating"
+  | "AwaitingEvidence"
+  | "Resolved"
+  | "Dismissed"
+  | "SignedOff"
+  | "Reopened"
+  | "LegacyTerminal";
+
+export type ReconciliationCasePriority = "Low" | "Normal" | "High" | "Critical";
+export type ReconciliationSlaState = "NotStarted" | "Running" | "Warning" | "Breached" | "Paused" | "Stopped";
+export type ReconciliationCaseAgeBand = "SameDay" | "OneToTwoBusinessDays" | "ThreeToFiveBusinessDays" | "OlderThanFiveBusinessDays";
+export type ReconciliationCommentVisibility = "Internal" | "CloseEvidence" | "ExternalSummary";
 
 export interface ReconciliationBreakQueueItem {
   breakId: string;
@@ -1423,6 +1437,50 @@ export interface ReconciliationBreakQueueItem {
   routingTarget?: string | null;
   routingDetail?: string | null;
   recommendedAction?: string | null;
+  assigneeId?: string | null;
+  assigneeDisplayName?: string | null;
+  assignedBy?: string | null;
+  assignedAt?: string | null;
+  priority?: ReconciliationCasePriority;
+  slaPolicyId?: string | null;
+  slaDueAt?: string | null;
+  slaWarningAt?: string | null;
+  slaBreachedAt?: string | null;
+  slaState?: ReconciliationSlaState;
+  ageBand?: ReconciliationCaseAgeBand;
+  businessAgeHours?: number;
+  rootCauseCode?: string | null;
+  resolutionCode?: string | null;
+  signOffBy?: string | null;
+  signOffAt?: string | null;
+  signOffNote?: string | null;
+  reopenedBy?: string | null;
+  reopenedAt?: string | null;
+  reopenReason?: string | null;
+  version?: number;
+  commentCount?: number;
+  evidenceCount?: number;
+  lastActivityAt?: string | null;
+  comments?: ReconciliationCaseComment[] | null;
+  evidenceLinks?: string[] | null;
+}
+
+export interface ReconciliationCaseComment {
+  commentId: string;
+  breakId: string;
+  parentCommentId: string | null;
+  authorId: string;
+  authorDisplayName: string | null;
+  body: string;
+  visibility: ReconciliationCommentVisibility;
+  evidenceLinks: string[] | null;
+  createdAt: string;
+  editedAt?: string | null;
+  editedBy?: string | null;
+  deletedAt?: string | null;
+  deletedBy?: string | null;
+  deleteReason?: string | null;
+  version: number;
 }
 
 export interface ReviewReconciliationBreakRequest {

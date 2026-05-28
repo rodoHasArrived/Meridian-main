@@ -277,6 +277,27 @@ public sealed class UiApiClient
             request,
             ct).ConfigureAwait(false);
 
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> AssignReconciliationBreakAsync(string breakId, ReconciliationAssignRequest request, CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakAssign, "breakId", breakId), request, ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> TransitionReconciliationBreakAsync(string breakId, ReconciliationStatusTransitionRequest request, CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakTransition, "breakId", breakId), request, ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> AddReconciliationBreakCommentAsync(string breakId, ReconciliationCommentMutationRequest request, CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakComments, "breakId", breakId), request, ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> SetReconciliationBreakRootCauseAsync(string breakId, ReconciliationTaxonomyRequest request, CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakRootCause, "breakId", breakId), request, ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> SetReconciliationBreakResolutionAsync(string breakId, ReconciliationTaxonomyRequest request, CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakResolution, "breakId", breakId), request, ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> SignOffReconciliationBreakAsync(string breakId, ReconciliationSignOffRequest request, CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakSignOff, "breakId", breakId), request, ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ReopenReconciliationBreakAsync(string breakId, ReconciliationReopenRequest request, CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakReopen, "breakId", breakId), request, ct).ConfigureAwait(false);
+
     public async Task<List<FundReportPackHistoryItemDto>?> GetFundReportPackHistoryAsync(
         string fundProfileId,
         int limit = 20,
