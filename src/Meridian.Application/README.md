@@ -63,10 +63,11 @@ application service contracts consumed by host and UI surfaces.
   stored in the classification result.
 - Statement reconciliation imports return typed normalized collections for positions, cash balances, transactions, security references, and source-row references. The import path keeps legacy canonical rows in adapter infrastructure only while application orchestration consumes the typed result shape.
 - Statement reconciliation completion creates evidence links that bind run IDs, source hashes, broker/custodian and account-period metadata, mapping and tolerance profile versions, validation and match summaries, break/case identifiers, actors, and timestamps.
+- Statement reconciliation imports return typed normalized collections for positions, cash balances, transactions, security references, and source-row references. The import path keeps legacy canonical rows in adapter infrastructure only while application orchestration consumes the typed result shape. File-backed statement repositories persist run manifests, validation issues, normalized entities, match results, breaks, and case links under `reconciliation/statement-runs/{runId}/` using atomic JSON writes.
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
 - Statement validation checks source accessibility, account/profile references, duplicate imports,
   invariant date/decimal parsing, currency/activity/security resolution, and statement-period
-  alignment through application-layer DTOs rather than relying only on exceptions.
+  alignment through application-layer DTOs rather than relying only on exceptions. Statement run manifests retain source file hashes plus mapping/tolerance profile versions for reproducibility, and raw broker files are referenced by source path or approved evidence URI instead of being blindly copied into repository storage.
 
 ## Diagrams
 

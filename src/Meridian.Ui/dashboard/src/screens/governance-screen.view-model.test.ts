@@ -18,6 +18,7 @@ import {
   buildReconciliationBreakRows,
   buildReconciliationDetailActions,
   buildReconciliationQueuePanelViewState,
+  buildReconciliationStatementRunsViewState,
   buildReconciliationDetailViewState,
   buildReconciliationNarrative,
   buildReconciliationResolveDialogState,
@@ -532,6 +533,65 @@ describe("governance-screen view model", () => {
     expect(resolveSelectedReconciliation([], null)).toBeNull();
   });
 
+  it("derives statement run rows and detail tabs from endpoint supplied counts", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-1",
+          importId: "import-1",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 8,
+          cashMatches: 3,
+          transactionMatches: 13,
+          openExceptionCount: 2,
+          brokerCustodian: "Northern Trust",
+          account: "Fund A - Prime",
+          period: "2026-04",
+          status: "ReviewRequired",
+          validationIssueCount: 4,
+          breakCount: 2,
+          caseCount: 1,
+          importedAtUtc: "2026-05-01T00:04:00Z"
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: "statement-run-1",
+      loading: false,
+      error: null
+    });
+
+    expect(state).toMatchObject({
+      title: "Statement runs",
+      tableLabel: "Accounting statement runs",
+      hasRows: true,
+      loadingText: null,
+      errorText: null
+    });
+    expect(state.rows[0]).toMatchObject({
+      brokerCustodianLabel: "Northern Trust",
+      accountLabel: "Fund A - Prime",
+      periodLabel: "2026-04",
+      statusLabel: "ReviewRequired",
+      validationIssueCountLabel: "4",
+      matchCountLabel: "24",
+      breakCountLabel: "2",
+      caseCountLabel: "1",
+      importedAtLabel: "2026-05-01T00:04:00Z",
+      unavailableReason: null
+    });
+    expect(state.tabs.map((tab) => tab.label)).toEqual([
+      "Overview",
+      "Validation",
+      "Positions",
+      "Cash",
+      "Transactions",
+      "Breaks & Cases",
+      "Evidence"
+    ]);
+    expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
+  });
+
   it("derives reconciliation detail queue row state and empty inspector copy", () => {
     const state = buildReconciliationQueuePanelViewState(reconciliationQueue, "run-57");
 
@@ -848,7 +908,9 @@ describe("governance-screen view model", () => {
       getTrialBalance: vi.fn().mockResolvedValue([]),
       getCalibrationSummary: vi.fn()
         .mockReturnValueOnce(firstLoad)
-        .mockResolvedValueOnce(retrySummary)
+        .mockResolvedValueOnce(retrySummary),
+      getStatementRuns: vi.fn().mockResolvedValue([]),
+      getStatementRun: vi.fn()
     };
     const bootstrapData = {
       metrics: [],

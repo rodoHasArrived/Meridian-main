@@ -30,6 +30,9 @@ import {
   getReplayStatus,
   getReconciliationBreakAudit,
   getReconciliationRun,
+  getReconciliationStatementExceptions,
+  getReconciliationStatementRun,
+  getReconciliationStatementRuns,
   getRunContinuity,
   getRunHistory,
   getRunLedgerJournal,
@@ -497,6 +500,9 @@ describe("trading endpoint wiring", () => {
     await bulkResolveSecurityConflicts({ conflictIds: ["conflict-1"], resolvedBy: "ops" });
     await runReconciliation({ runId: "run-1" });
     await getReconciliationRun("recon-1");
+    await getReconciliationStatementRuns();
+    await getReconciliationStatementRun("statement-run-1");
+    await getReconciliationStatementExceptions();
     await getReconciliationBreakAudit("break-1");
     await getPortfolioAggregate();
     await getPortfolioExposure();
@@ -531,6 +537,9 @@ describe("trading endpoint wiring", () => {
       expect.objectContaining({ method: "POST" })
     );
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/runs/recon-1", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/statement-runs", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/statement-runs/statement-run-1", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/statement-exceptions", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/reconciliation/break-queue/break-1/audit", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/aggregate", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/exposure", expect.anything());

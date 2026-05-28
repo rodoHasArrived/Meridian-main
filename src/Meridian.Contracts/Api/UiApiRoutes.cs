@@ -569,6 +569,9 @@ public static class UiApiRoutes
     public const string ReconciliationRunById = "/api/workstation/reconciliation/runs/{reconciliationRunId}";
     public const string ReconciliationStatementRuns = "/api/workstation/reconciliation/statement-runs";
     public const string ReconciliationStatementRunById = "/api/workstation/reconciliation/statement-runs/{runId}";
+    public const string ReconciliationStatementRunValidation = "/api/workstation/reconciliation/statement-runs/{runId}/validation";
+    public const string ReconciliationStatementRunBreaks = "/api/workstation/reconciliation/statement-runs/{runId}/breaks";
+    public const string ReconciliationStatementRunReconcile = "/api/workstation/reconciliation/statement-runs/{runId}/reconcile";
     public const string ReconciliationStatementExceptions = "/api/workstation/reconciliation/statement-exceptions";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
@@ -608,6 +611,7 @@ public static class UiApiRoutes
     public const string ReconciliationBreakBulkDryRun = "/api/workstation/reconciliation/break-queue/bulk/dry-run";
     public const string ReconciliationBreakBulkExecute = "/api/workstation/reconciliation/break-queue/bulk/execute";
     public const string ReconciliationBreakBulkStatus = "/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}";
+    public const string ReconciliationBreakBulkResult = "/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}/result";
     public const string FundReportPacks = "/api/fund-structure/report-packs";
     public const string FundReportPackById = "/api/fund-structure/report-packs/{reportId}";
 

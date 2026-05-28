@@ -100,6 +100,8 @@ export const SECURITY_MASTER_API_ENDPOINTS = {
 
 export const RECONCILIATION_API_ENDPOINTS = {
   runs: "/api/workstation/reconciliation/runs",
+  statementRuns: "/api/workstation/reconciliation/statement-runs",
+  statementExceptions: "/api/workstation/reconciliation/statement-exceptions",
   breakQueue: "/api/workstation/reconciliation/break-queue",
   calibrationSummary: "/api/workstation/reconciliation/calibration-summary"
 } as const;
@@ -525,6 +527,18 @@ export function reconciliationRunEndpoint(reconciliationRunId: string): string {
   return `${RECONCILIATION_API_ENDPOINTS.runs}/${pathSegment(reconciliationRunId, "reconciliationRunId")}`;
 }
 
+export function reconciliationStatementRunsEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.statementRuns;
+}
+
+export function reconciliationStatementRunEndpoint(runId: string): string {
+  return `${RECONCILIATION_API_ENDPOINTS.statementRuns}/${pathSegment(runId, "runId")}`;
+}
+
+export function reconciliationStatementExceptionsEndpoint(): string {
+  return RECONCILIATION_API_ENDPOINTS.statementExceptions;
+}
+
 export function reconciliationBreakQueueEndpoint(options: { status?: string; fundAccountId?: string } = {}): string {
   return `${RECONCILIATION_API_ENDPOINTS.breakQueue}${queryString(options)}`;
 }
@@ -587,6 +601,10 @@ export function reconciliationBreakBulkExecuteEndpoint(): string {
 
 export function reconciliationBreakBulkStatusEndpoint(bulkActionId: string): string {
   return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/${pathSegment(bulkActionId, "bulkActionId")}`;
+}
+
+export function reconciliationBreakBulkResultEndpoint(bulkActionId: string): string {
+  return `${reconciliationBreakBulkStatusEndpoint(bulkActionId)}/result`;
 }
 
 export function backfillCheckpointEndpoint(jobId: string): string {
