@@ -843,7 +843,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var trustedRequest = request with { Actor = currentUser, Reviewer = currentUser };
+            var trustedRequest = request with { Actor = currentUser };
             var result = await service.SubmitForApprovalAsync(workflowId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return OperationsTransitionResult(result, jsonOptions);
         })
