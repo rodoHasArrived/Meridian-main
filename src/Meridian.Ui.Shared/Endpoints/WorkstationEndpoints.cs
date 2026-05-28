@@ -1437,9 +1437,40 @@ public static partial class WorkstationEndpoints
         .WithName("ExecuteReconciliationBreakBulkAction")
         .Produces<ReconciliationBulkCaseworkResult>(200);
 
-        group.MapGet("/reconciliation/break-queue/bulk/{bulkActionId}", (string bulkActionId) =>
-            Results.Json(new { bulkActionId, status = "completed", resultEndpoint = $"/api/workstation/reconciliation/break-queue/bulk/{Uri.EscapeDataString(bulkActionId)}" }, jsonOptions))
+        group.MapGet("/reconciliation/break-queue/bulk/{bulkActionId}", async (string bulkActionId, HttpContext context) =>
+        {
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            var result = repository is null
+                ? null
+                : await repository.GetBulkCaseworkResultAsync(bulkActionId, context.RequestAborted).ConfigureAwait(false);
+
+            return Results.Json(new
+            {
+                bulkActionId,
+                status = result is null ? "unknown" : "completed",
+                requestedCount = result?.RequestedCount ?? 0,
+                succeededCount = result?.SucceededCount ?? 0,
+                failedCount = result?.FailedCount ?? 0,
+                resultEndpoint = $"/api/workstation/reconciliation/break-queue/bulk/{Uri.EscapeDataString(bulkActionId)}/result"
+            }, jsonOptions);
+        })
         .WithName("GetReconciliationBreakBulkActionStatus");
+
+        group.MapGet("/reconciliation/break-queue/bulk/{bulkActionId}/result", async (string bulkActionId, HttpContext context) =>
+        {
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            if (repository is null)
+            {
+                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await repository.GetBulkCaseworkResultAsync(bulkActionId, context.RequestAborted).ConfigureAwait(false);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetReconciliationBreakBulkActionResult")
+        .Produces<ReconciliationBulkCaseworkResult>(200)
+        .Produces(404)
+        .Produces(501);
 
         group.MapGet("/runs/{runId}/ledger", async (string runId, HttpContext context) =>
         {

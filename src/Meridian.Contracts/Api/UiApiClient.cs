@@ -277,6 +277,39 @@ public sealed class UiApiClient
             request,
             ct).ConfigureAwait(false);
 
+    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ApplyReconciliationCaseworkAsync(
+        string breakId,
+        string routeTemplate,
+        ReconciliationCaseworkCommand request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+            UiApiRoutes.WithParam(routeTemplate, "breakId", breakId),
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBulkCaseworkResult>> DryRunReconciliationBulkCaseworkAsync(
+        ReconciliationBulkCaseworkRequest request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBulkCaseworkResult>(
+            UiApiRoutes.ReconciliationBreakBulkDryRun,
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ApiResponse<ReconciliationBulkCaseworkResult>> ExecuteReconciliationBulkCaseworkAsync(
+        ReconciliationBulkCaseworkRequest request,
+        CancellationToken ct = default)
+        => await PostWithResponseAsync<ReconciliationBulkCaseworkResult>(
+            UiApiRoutes.ReconciliationBreakBulkExecute,
+            request,
+            ct).ConfigureAwait(false);
+
+    public async Task<ReconciliationBulkCaseworkResult?> GetReconciliationBulkCaseworkResultAsync(
+        string bulkActionId,
+        CancellationToken ct = default)
+        => await GetAsync<ReconciliationBulkCaseworkResult>(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakBulkResult, "bulkActionId", bulkActionId),
+            ct).ConfigureAwait(false);
+
     public async Task<List<FundReportPackHistoryItemDto>?> GetFundReportPackHistoryAsync(
         string fundProfileId,
         int limit = 20,
