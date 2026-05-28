@@ -50,6 +50,7 @@ import {
   reconciliationBreakAuditEndpoint,
   reconciliationBreakBulkDryRunEndpoint,
   reconciliationBreakBulkExecuteEndpoint,
+  reconciliationBreakBulkResultEndpoint,
   reconciliationBreakBulkStatusEndpoint,
   reconciliationBreakCommentEndpoint,
   reconciliationBreakCommentsEndpoint,
@@ -63,6 +64,7 @@ import {
   reconciliationBreakSignOffEndpoint,
   reconciliationBreakTransitionEndpoint,
   reconciliationRunEndpoint,
+  reconciliationStatementRunEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
   securityMasterAliasUpsertEndpoint,
@@ -346,7 +348,12 @@ describe("workstation API endpoint catalog", () => {
       "/api/workstation/security-master/conflicts/bulk-resolve"
     );
     expect(RECONCILIATION_API_ENDPOINTS.runs).toBe("/api/workstation/reconciliation/runs");
+    expect(RECONCILIATION_API_ENDPOINTS.statementRuns).toBe("/api/workstation/reconciliation/statement-runs");
+    expect(RECONCILIATION_API_ENDPOINTS.statementExceptions).toBe("/api/workstation/reconciliation/statement-exceptions");
     expect(reconciliationRunEndpoint("recon / 1")).toBe("/api/workstation/reconciliation/runs/recon%20%2F%201");
+    expect(reconciliationStatementRunEndpoint("statement / 1")).toBe(
+      "/api/workstation/reconciliation/statement-runs/statement%20%2F%201"
+    );
     expect(reconciliationBreakQueueEndpoint({ status: "Open", fundAccountId: "fund / 1" })).toBe(
       "/api/workstation/reconciliation/break-queue?status=Open&fundAccountId=fund+%2F+1"
     );
@@ -395,6 +402,9 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reconciliationBreakBulkStatusEndpoint("bulk / 1")).toBe(
       "/api/workstation/reconciliation/break-queue/bulk/bulk%20%2F%201"
+    );
+    expect(reconciliationBreakBulkResultEndpoint("bulk / 1")).toBe(
+      "/api/workstation/reconciliation/break-queue/bulk/bulk%20%2F%201/result"
     );
   });
 

@@ -65,6 +65,8 @@ import type {
   ReconciliationBulkCaseworkRequest,
   ReconciliationBulkCaseworkResult,
   ReconciliationCalibrationSummary,
+  StatementRunException,
+  StatementRunSummary,
   ReconciliationCaseworkCommand,
   StatementRunException,
   StatementRunSummary,

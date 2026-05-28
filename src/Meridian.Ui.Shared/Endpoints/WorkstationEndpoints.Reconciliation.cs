@@ -112,23 +112,123 @@ public static partial class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
+            HttpContext context,
+            [FromServices] IReconciliationApiService? service) =>
         {
-            if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
             return Results.Json(await service.ListStatementRunsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
         })
         .WithName("ListStatementRuns")
-        .Produces<IReadOnlyList<StatementRunSummaryDto>>(200);
+        .Produces<IReadOnlyList<StatementRunSummaryDto>>(200)
+        .Produces(501);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (string runId, [FromServices] IReconciliationApiService? service, HttpContext context) =>
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRuns), async (
+            StatementRunCreateDto request,
+            HttpContext context,
+            [FromServices] IReconciliationApiService? service) =>
         {
-            if (service is null) return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await service.CreateStatementRunAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
+        })
+        .WithName("CreateStatementRun")
+        .Produces<StatementRunDto>(201)
+        .Produces(403)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (
+            string runId,
+            HttpContext context,
+            [FromServices] IReconciliationApiService? service) =>
+        {
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
             var detail = await service.GetStatementRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
         })
         .WithName("GetStatementRun")
-        .Produces<StatementRunSummaryDto>(200)
-        .Produces(404);
+        .Produces<StatementRunDto>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunValidation), async (
+            string runId,
+            HttpContext context,
+            [FromServices] IReconciliationApiService? service) =>
+        {
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var validation = await service.GetStatementRunValidationAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return validation is null ? Results.NotFound() : Results.Json(validation, jsonOptions);
+        })
+        .WithName("GetStatementRunValidation")
+        .Produces<StatementRunValidationDto>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunBreaks), async (
+            string runId,
+            HttpContext context,
+            [FromServices] IReconciliationApiService? service) =>
+        {
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var breaks = await service.ListStatementRunBreaksAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return breaks is null ? Results.NotFound() : Results.Json(breaks, jsonOptions);
+        })
+        .WithName("ListStatementRunBreaks")
+        .Produces<IReadOnlyList<StatementRunBreakDto>>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunReconcile), async (
+            string runId,
+            StatementRunReconcileRequestDto request,
+            HttpContext context,
+            [FromServices] IReconciliationApiService? service) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await service.ReconcileStatementRunAsync(runId, request, context.RequestAborted).ConfigureAwait(false);
+            return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
+        })
+        .WithName("ReconcileStatementRun")
+        .Produces<StatementRunDto>(200)
+        .Produces(403)
+        .Produces(404)
+        .Produces(501);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementExceptions), async ([FromServices] IReconciliationApiService? service, HttpContext context) =>
         {
@@ -147,9 +247,10 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] StrategyRunReadService? readService,
             [FromServices] IReconciliationRunService? reconciliationService,
+            [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, context.RequestAborted).ConfigureAwait(false);
+            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
             var items = await GetBreakQueueItemsAsync(repository, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
             items = items
                 .Where(item => string.IsNullOrWhiteSpace(team) || string.Equals(item.Team, team, StringComparison.OrdinalIgnoreCase))
@@ -166,9 +267,10 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] StrategyRunReadService? readService,
             [FromServices] IReconciliationRunService? reconciliationService,
+            [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, context.RequestAborted).ConfigureAwait(false);
+            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
             if (repository is null)
             {
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -185,10 +287,11 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] StrategyRunReadService? readService,
             [FromServices] IReconciliationRunService? reconciliationService,
+            [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
             var asOf = DateTimeOffset.UtcNow;
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, context.RequestAborted).ConfigureAwait(false);
+            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
             var items = await GetBreakQueueItemsAsync(repository, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false);
             var summary = BuildReconciliationCalibrationSummary(items, asOf);
             return Results.Json(summary, jsonOptions);
@@ -201,9 +304,10 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] StrategyRunReadService? readService,
             [FromServices] IReconciliationRunService? reconciliationService,
+            [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, context.RequestAborted).ConfigureAwait(false);
+            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
             if (repository is null)
             {
                 return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -225,6 +329,7 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] StrategyRunReadService? readService,
             [FromServices] IReconciliationRunService? reconciliationService,
+            [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
             if (!HasReconciliationMutationPermission(context))
@@ -244,7 +349,7 @@ public static partial class WorkstationEndpoints
 
             var trustedRequest = request with { ReviewedBy = currentUser };
 
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, context.RequestAborted).ConfigureAwait(false);
+            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
             var transition = await ReviewBreakAsync(repository, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {
@@ -266,6 +371,7 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] StrategyRunReadService? readService,
             [FromServices] IReconciliationRunService? reconciliationService,
+            [FromServices] IReconciliationApiService? statementService,
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
             if (!HasReconciliationMutationPermission(context))
@@ -294,7 +400,7 @@ public static partial class WorkstationEndpoints
 
             var trustedRequest = request with { ResolvedBy = currentUser };
 
-            await EnsureBreakQueueSeededAsync(readService, reconciliationService, repository, context.RequestAborted).ConfigureAwait(false);
+            await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
             var transition = await ResolveBreakAsync(repository, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return transition.Status switch
             {

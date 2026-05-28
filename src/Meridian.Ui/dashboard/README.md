@@ -58,6 +58,8 @@ Accounting reconciliation statement runs now use the shared statement-run endpoi
 broker or custodian, account, period, status, validation, match, break, case, and import timing
 read models; React components only render these values and do not reimplement matching, tolerance,
 validation, or case-state rules.
+tolerance profile, required sign-off role/status, source origin/fingerprint, and decision note so
+browser recovery posture matches the retained WPF Fund Ledger detail panel.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients.
@@ -103,4 +105,4 @@ endpoint contracts for behavior also consumed by WPF or host workflows.
 - `docs/plans/web-ui-development-pivot.md`
 - `docs/source/generated/source-module-index.md`
 
-Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, and bulk triage; keep these helpers aligned with `UiApiRoutes` and WPF consumers.
+Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, bulk triage, and bulk status/result lookup; keep these helpers aligned with `UiApiRoutes` and WPF consumers.

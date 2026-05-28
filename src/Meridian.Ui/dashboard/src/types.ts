@@ -1430,6 +1430,32 @@ export interface ExportAnalysisFile {
   recordCount: number;
 }
 
+
+export interface StatementRunSummary {
+  runId: string;
+  importId: string;
+  startedAtUtc: string;
+  completedAtUtc: string;
+  positionMatches: number;
+  cashMatches: number;
+  transactionMatches: number;
+  openExceptionCount: number;
+}
+
+export interface StatementRunException {
+  breakId: string;
+  runId: string;
+  importId: string;
+  sourceReference: string;
+  breakCode: string;
+  category: string;
+  delta: number;
+  tolerance: number;
+  toleranceBreached: boolean;
+  createdAtUtc: string;
+  status: string;
+}
+
 export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed" | "SignedOff";
 export type ReconciliationCaseLifecycleState = "Open" | "Investigating" | "InReview" | "AwaitingEvidence" | "Resolved" | "SignedOff" | "Reopened";
 export type ReconciliationCasePriority = "Low" | "Normal" | "High" | "Critical";
@@ -1487,6 +1513,12 @@ export interface ReconciliationBreakQueueItem {
   commentCount?: number;
   evidenceCount?: number;
   lastActivityAt?: string | null;
+  sourceType?: string | null;
+  sourceSystem?: string | null;
+  sourceReference?: string | null;
+  sourceImportId?: string | null;
+  sourceBreakId?: string | null;
+  sourceFingerprint?: string | null;
 }
 
 export interface ReconciliationCaseComment {

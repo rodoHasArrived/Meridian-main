@@ -603,6 +603,10 @@ export function reconciliationBreakBulkStatusEndpoint(bulkActionId: string): str
   return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/${pathSegment(bulkActionId, "bulkActionId")}`;
 }
 
+export function reconciliationBreakBulkResultEndpoint(bulkActionId: string): string {
+  return `${reconciliationBreakBulkStatusEndpoint(bulkActionId)}/result`;
+}
+
 export function backfillCheckpointEndpoint(jobId: string): string {
   return `${BACKFILL_API_ENDPOINTS.checkpoints}/${pathSegment(jobId, "jobId")}`;
 }
