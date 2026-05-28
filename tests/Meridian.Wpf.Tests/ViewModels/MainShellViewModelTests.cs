@@ -241,7 +241,7 @@ public sealed class MainShellViewModelTests
             navigationService.SetServiceProvider(rootProvider);
             navigationService.CreatePageContent("PortfolioShell")
                 .Should()
-                .BeOfType<Page>();
+                .BeSameAs(rootPage);
 
             var scopedPage = new WorkspaceCapabilityHomePage();
             var workspaceScopeServices = new ServiceCollection();
