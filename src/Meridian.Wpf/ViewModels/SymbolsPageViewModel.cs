@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using WpfServices = Meridian.Wpf.Services;
@@ -22,7 +23,7 @@ namespace Meridian.Wpf.ViewModels;
 /// Includes bridge to Security Master workstation for symbol enrichment.
 /// Provides contextual commands for the command palette when activated.
 /// </summary>
-public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandContextProvider, IPageActionBarProvider
+public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime, IDisposable, ICommandContextProvider, IPageActionBarProvider
 {
     private readonly WpfServices.ConfigService _configService;
     private readonly WpfServices.WatchlistService _watchlistService;
@@ -33,7 +34,9 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     private readonly CommandPaletteService _commandPaletteService;
     private readonly HttpClient _httpClient = new();
 
+    private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _loadCts;
+    private bool _isActive;
     private bool _isStopped = true;
     private bool _suppressFilterApply;
 
@@ -278,9 +281,23 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────────────
-    public async Task StartAsync(CancellationToken ct = default)
+    public bool IsActive => _isActive;
+
+    public CancellationToken ActivationToken => _activationCts?.Token ?? CancellationToken.None;
+
+    public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct);
+
+    public async Task ActivateAsync(CancellationToken ct = default)
     {
+        if (_isActive)
+            return;
+
+        var activationCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, activationCts));
+
         _isStopped = false;
+        _isActive = true;
+        _watchlistService.WatchlistsChanged -= OnWatchlistsChanged;
         _watchlistService.WatchlistsChanged += OnWatchlistsChanged;
 
         // Populate action bar.
@@ -289,28 +306,20 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         Actions.Add(new ActionEntry("Import", new RelayCommand(() => _notificationService.NotifyInfo("Import", "Symbol import started")), "\uE8B5", "Import symbols"));
         Actions.Add(new ActionEntry("Export", ExportSymbolDataCommand, "\uEDE1", "Export symbols"));
 
-        await LoadSymbolsFromConfigAsync();
-        await LoadWatchlistsAsync();
+        await LoadSymbolsFromConfigAsync(ActivationToken);
+        await LoadWatchlistsAsync(ActivationToken);
     }
 
-    public void Stop()
+    public void Stop() => Deactivate();
+
+    public void Deactivate()
     {
         _isStopped = true;
+        _isActive = false;
         _watchlistService.WatchlistsChanged -= OnWatchlistsChanged;
 
-        var loadCts = Interlocked.Exchange(ref _loadCts, null);
-        if (loadCts is null)
-            return;
-
-        try
-        {
-            loadCts.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
-
-        loadCts.Dispose();
+        CancelAndDispose(Interlocked.Exchange(ref _loadCts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
     }
 
     private void OnWatchlistsChanged(object? sender, WpfServices.WatchlistsChangedEventArgs e)
@@ -365,7 +374,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         if (_isStopped)
             return;
 
-        var nextLoadCts = new CancellationTokenSource();
+        var nextLoadCts = CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct);
         var previousLoadCts = Interlocked.Exchange(ref _loadCts, nextLoadCts);
 
         if (previousLoadCts is not null)
@@ -981,7 +990,23 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         }
     }
 
-    public void Dispose() => Stop();
+    public void Dispose() => Deactivate();
+
+    private static void CancelAndDispose(CancellationTokenSource? cts)
+    {
+        if (cts is null)
+            return;
+
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        cts.Dispose();
+    }
 
     // ── Security Master integration ──────────────────────────────────────────
     /// <summary>

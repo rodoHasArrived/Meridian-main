@@ -185,6 +185,13 @@ are `Ready` with no blockers.
 
 ## Wave 4 — Governance And Fund Operations (In Progress)
 
+2026-05-28 implementation pass: shared W4 close/casework/report-pack/security endpoint lanes are
+green locally, browser parity is green, and WPF/source route-signifier parity is green. Completion
+remains blocked on a fresh WPF build-backed Lane C run: both sandboxed and approved PowerShell 7
+`dotnet build tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj` attempts return
+`LASTEXITCODE=-1` and leave orphaned `dotnet`/`csc` workers before producing a usable WPF test
+binary.
+
 ### Completion Checklist
 
 - [ ] **Desktop Wave 4 work closes Lane C scenarios from the desktop acceptance matrix.**

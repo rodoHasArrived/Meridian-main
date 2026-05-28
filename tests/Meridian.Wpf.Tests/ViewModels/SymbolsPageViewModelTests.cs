@@ -10,6 +10,21 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class SymbolsPageViewModelTests
 {
     [Fact]
+    public void ActivationLifetime_DeactivateCancelsVisiblePageLifetimeWithoutClearingLoadedState()
+    {
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SymbolsPageViewModel.cs"));
+
+        viewModel.Should().Contain("IPageActivationLifetime");
+        viewModel.Should().Contain("public bool IsActive");
+        viewModel.Should().Contain("public CancellationToken ActivationToken");
+        viewModel.Should().Contain("public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct)");
+        viewModel.Should().Contain("public void Stop() => Deactivate()");
+        viewModel.Should().Contain("CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct)");
+        viewModel.Should().Contain("CancelAndDispose(Interlocked.Exchange(ref _loadCts, null))");
+        viewModel.Should().Contain("CancelAndDispose(Interlocked.Exchange(ref _activationCts, null))");
+    }
+
+    [Fact]
     public void ApplyFilters_WithNoConfiguredSymbols_ShowsSetupGuidance()
     {
         using var viewModel = CreateViewModel();
@@ -100,6 +115,7 @@ public sealed class SymbolsPageViewModelTests
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SymbolsPage.xaml"));
         var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SymbolsPage.xaml.cs"));
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\SymbolsPageViewModel.cs"));
 
         xaml.Should().Contain("AutomationProperties.AutomationId=\"SymbolsSearchBox\"");
         xaml.Should().Contain("Text=\"{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\"");
@@ -122,9 +138,17 @@ public sealed class SymbolsPageViewModelTests
         codeBehind.Should().NotContain("Filter_Changed");
         codeBehind.Should().NotContain("ClearFilters_Click");
         codeBehind.Should().NotContain("CallApplyFilters");
+        codeBehind.Should().Contain("await _vm.ActivateAsync()");
+        codeBehind.Should().Contain("_vm.Deactivate()");
+        codeBehind.Should().NotContain("_vm.StartAsync()");
+        codeBehind.Should().NotContain("_vm.Stop()");
         codeBehind.Should().Contain("_vm.SearchText");
         codeBehind.Should().Contain("_vm.SelectedSubscriptionFilter");
         codeBehind.Should().Contain("_vm.SelectedExchangeFilter");
+
+        viewModel.Should().Contain("IPageActivationLifetime");
+        viewModel.Should().Contain("public bool IsActive");
+        viewModel.Should().Contain("public CancellationToken ActivationToken");
     }
 
     private static SymbolsPageViewModel CreateViewModel() =>

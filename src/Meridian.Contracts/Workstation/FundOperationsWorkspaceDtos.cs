@@ -316,8 +316,29 @@ public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto
 public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters);
 
 public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
-public sealed record ReportPackChangedLineDto(string LineKey, string PreviousValue, string CurrentValue);
-public sealed record ReportPackRestatementMetadataDto(string ReasonCode, string Approver, Guid PriorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> ChangedLines);
+public sealed record ReportPackEvidenceLinkDto(string EvidenceId, string Label, string? Route, string Source, DateTimeOffset? CapturedAtUtc = null);
+public sealed record ReportPackChangedLineDto(string LineKey, string PreviousValue, string CurrentValue, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+public sealed record ReportPackLineProvenanceDto(
+    string LineKey,
+    string SourceKind,
+    string SourceId,
+    string EvidenceId,
+    string? RunId = null,
+    string? LedgerEntryId = null,
+    string? ReconciliationCaseId = null);
+public sealed record ReportPackPublicationManifestDto(
+    string ManifestId,
+    string RetainedManifestPath,
+    string EvidenceHash,
+    string SignedOffBy,
+    DateTimeOffset SignedOffAt,
+    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks);
+public sealed record ReportPackRestatementMetadataDto(
+    string ReasonCode,
+    string Approver,
+    Guid PriorVersionReportId,
+    IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
 public sealed record ReportPackWorkflowRecordDto(
     Guid ReportId,
     string FundProfileId,
@@ -330,4 +351,6 @@ public sealed record ReportPackWorkflowRecordDto(
     string CreatedBy,
     DateTimeOffset UpdatedAt,
     IReadOnlyList<ReportPackAuditEventDto> AuditTrail,
-    ReportPackRestatementMetadataDto? Restatement);
+    ReportPackRestatementMetadataDto? Restatement,
+    IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
+    ReportPackPublicationManifestDto? Publication = null);

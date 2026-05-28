@@ -743,7 +743,7 @@ public static class FundStructureEndpoints
         var projectionWindowEnd = asOf.AddDays(forecastDays);
         var scope = new GovernanceCashFlowScopeDto(
             GovernanceCashFlowScopeKindDto.LedgerGroup,
-            "Unassigned ledger group",
+            LedgerGroupId.Unassigned.Value,
             null,
             null,
             null,
