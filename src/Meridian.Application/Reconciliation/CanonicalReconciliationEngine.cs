@@ -82,12 +82,23 @@ public sealed class ReconciliationMatchingEngine
         var breaks = new List<BreakRecord>();
 
         var allPositions = run.SourceSnapshots.SelectMany(s => s.Positions).ToArray();
-        var exactGroups = allPositions.GroupBy(p => (p.InstrumentCanonicalId, p.Quantity, p.Price, p.MarketValue));
-        foreach (var group in exactGroups.Where(g => g.Count() > 1))
+        var groupedByInstrument = allPositions.GroupBy(static p => p.InstrumentCanonicalId);
+        foreach (var instrumentGroup in groupedByInstrument)
         {
-            var ev = new MatchEvidence(Guid.NewGuid().ToString("N"), "exact-position-v1", "Exact", "Exact position tuple match.", 0m, new Dictionary<string, string>());
-            evidence.Add(ev);
-            matches.Add(new MatchGroup(Guid.NewGuid().ToString("N"), BreakClassification.Matched, ev.RuleId, group.Select(p => p.PositionId).ToArray(), Array.Empty<string>(), [ev.EvidenceId]));
+            var exactGroups = instrumentGroup.GroupBy(static p => (p.Quantity, p.Price, p.MarketValue)).ToArray();
+            foreach (var exactGroup in exactGroups.Where(static g => g.Count() > 1))
+            {
+                var exactEvidence = new MatchEvidence(Guid.NewGuid().ToString("N"), "exact-position-v1", "Exact", "Exact position tuple match.", 0m, new Dictionary<string, string>());
+                evidence.Add(exactEvidence);
+                matches.Add(new MatchGroup(Guid.NewGuid().ToString("N"), BreakClassification.Matched, exactEvidence.RuleId, exactGroup.Select(p => p.PositionId).ToArray(), Array.Empty<string>(), [exactEvidence.EvidenceId]));
+            }
+
+            if (exactGroups.Length > 1 || exactGroups[0].Count() == 1)
+            {
+                var breakEvidence = new MatchEvidence(Guid.NewGuid().ToString("N"), "true-break-position-v1", "Exact", "Position has no exact cross-source match.", null, new Dictionary<string, string>());
+                evidence.Add(breakEvidence);
+                breaks.Add(new BreakRecord(Guid.NewGuid().ToString("N"), BreakClassification.TrueBreak, breakEvidence.RuleId, "No exact matching position candidate found.", run.SourceSnapshots.Select(s => s.SnapshotId).ToArray(), [breakEvidence.EvidenceId]));
+            }
         }
 
         var allCash = run.SourceSnapshots.SelectMany(s => s.CashEntries).ToArray();
