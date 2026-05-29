@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Media;
 using Meridian.Contracts.Api;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -26,6 +27,36 @@ public sealed class BackfillWorkbenchSectionViewModel : BindableBase
     public ObservableCollection<ScheduledJobInfo> ScheduledJobs { get; } = new();
     public ObservableCollection<ResumableJobInfo> ResumableJobs { get; } = new();
     public ObservableCollection<GapAnalysisItem> GapItems { get; } = new();
+    public WorkstationTableModel<SymbolProgressInfo> SymbolProgressTable { get; }
+    public WorkstationTableModel<GapAnalysisItem> GapItemsTable { get; }
+
+    public BackfillWorkbenchSectionViewModel()
+    {
+        SymbolProgressTable = new WorkstationTableModel<SymbolProgressInfo>(
+            SymbolProgress,
+            [
+                new("Symbol", nameof(SymbolProgressInfo.Symbol), 90),
+                new("Progress", nameof(SymbolProgressInfo.Progress), 82),
+                new("Bars", nameof(SymbolProgressInfo.BarsText), 112),
+                new("Status", nameof(SymbolProgressInfo.StatusText), 100),
+                new("Elapsed", nameof(SymbolProgressInfo.TimeText), 90)
+            ],
+            "Backfill per-symbol progress",
+            "No active symbols",
+            "Start a backfill run to populate per-symbol progress.");
+
+        GapItemsTable = new WorkstationTableModel<GapAnalysisItem>(
+            GapItems,
+            [
+                new("Symbol", nameof(GapAnalysisItem.Symbol), 90),
+                new("Coverage", nameof(GapAnalysisItem.CoverageText), 100),
+                new("Gap Days", nameof(GapAnalysisItem.GapDaysText), 120),
+                new("Coverage %", nameof(GapAnalysisItem.CoveragePercent), 100)
+            ],
+            "Backfill gap analysis",
+            "No gap scan loaded",
+            "Scan selected symbols to preview coverage gaps.");
+    }
 
     public string BackfillStatusText { get => _backfillStatusText; set => SetProperty(ref _backfillStatusText, value); }
     public string OverallProgressText { get => _overallProgressText; set => SetProperty(ref _overallProgressText, value); }

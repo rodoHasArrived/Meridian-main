@@ -398,6 +398,146 @@ public sealed class SecurityValidationServiceTests
             && issue.AffectedFields.Contains("primaryIdentifierValue"));
     }
 
+    [Fact]
+    public void Scenario_SeededCustomAssetProfiles_AreApprovedAndVersioned()
+    {
+        var catalog = StaticSecurityAssetProfileCatalog.CreateDefault();
+
+        var profiles = catalog.GetProfiles();
+
+        profiles.Should().HaveCount(5);
+        profiles.Should().OnlyContain(static profile =>
+            profile.Version == 1
+            && profile.Status == SecurityAssetProfileStatusDto.Approved
+            && profile.Fields.All(field => !string.IsNullOrWhiteSpace(field.Key)));
+        profiles.Select(static profile => profile.ProfileId).Should().Contain(
+            "structured-credit-io-po",
+            "real-estate-holding",
+            "private-fund-interest",
+            "private-company-equity",
+            "co-invest-spv");
+    }
+
+    [Fact]
+    public void Scenario_ProfileBackedCustomAsset_WithApprovedPinnedVersion_PassesCustomProfileValidation()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "CustomAsset",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "PFI-001", isPrimary: true)],
+            assetSpecificTerms: CreatePrivateFundProfileTerms(includeNavDate: true));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().NotContain(static issue => issue.Code.StartsWith("SM_CUSTOM_PROFILE_", StringComparison.Ordinal));
+        report.Issues.Should().NotContain(static issue => issue.Code == "SM_ASSET_SPECIFIC_SCHEMA_VERSION_UNSUPPORTED");
+    }
+
+    [Fact]
+    public void Scenario_ProfileBackedCustomAsset_MissingRequiredFieldAndIdentifierCoverage_BlocksReadiness()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "CustomAsset",
+            [CreateIdentifier(SecurityIdentifierKind.ProviderSymbol, "PFI-001", isPrimary: true, provider: "manual")],
+            assetSpecificTerms: CreatePrivateFundProfileTerms(includeNavDate: false));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_CUSTOM_PROFILE_FIELD_REQUIRED"
+            && issue.AffectedFields.Contains("assetSpecificTerms.profileFields.navDate"));
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_CUSTOM_PROFILE_IDENTIFIER_COVERAGE_MISSING"
+            && issue.AffectedFields.Contains("identifiers.InternalCode"));
+    }
+
+    [Fact]
+    public void Scenario_StructuredCreditProfile_InvalidFactorRange_ProducesNoCodeRangeIssue()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "CustomAsset",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.CustomAssetProfileTerms,
+                customProfileId = "structured-credit-io-po",
+                profileVersion = 1,
+                category = "StructuredCredit",
+                valuationProfile = new { pricingSource = "Trustee" },
+                accountingClassification = "StructuredCredit",
+                profileApproval = new
+                {
+                    approvedBy = "risk-committee",
+                    approvedAtUtc = Now,
+                    approvalReference = "PROFILE-APPROVAL-1"
+                },
+                profileFields = new
+                {
+                    tranche = "IO-A",
+                    poolId = "POOL-1",
+                    currentFactor = 1.25m,
+                    originalFace = 1000000m,
+                    couponOrIndex = "WAC",
+                    factorSchedule = "monthly-trustee",
+                    collateralType = "MBS"
+                }
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_CUSTOM_PROFILE_FIELD_RANGE_INVALID"
+            && issue.AffectedFields.Contains("assetSpecificTerms.profileFields.currentFactor"));
+    }
+
+    [Fact]
+    public void Scenario_ProfileBackedOtherSecurity_MissingApprovalMetadata_BlocksGovernedUse()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "OtherSecurity",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SPV-001", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.CustomAssetProfileTerms,
+                category = "PrivateFunds",
+                customProfileId = "co-invest-spv",
+                profileVersion = 1,
+                valuationProfile = new { pricingSource = "SponsorReports" },
+                accountingClassification = "PrivateInvestment",
+                profileFields = new
+                {
+                    vehicle = "SPV I",
+                    underlyingCompanyOrSecurity = "ExampleCo",
+                    sponsor = "GP Capital",
+                    commitment = 100000m,
+                    economics = "80/20 carry",
+                    reportingCadence = "Quarterly"
+                }
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_CUSTOM_PROFILE_APPROVAL_METADATA_REQUIRED"
+            && issue.Severity == SecurityValidationSeverityDto.Error);
+    }
+
     private static SecurityProjectionRecord CreateProjection(
         Guid securityId,
         string assetClass,
@@ -449,6 +589,60 @@ public sealed class SecurityValidationServiceTests
             Now.AddDays(-1),
             ValidTo: null,
             Provider: provider);
+
+    private static JsonElement CreatePrivateFundProfileTerms(bool includeNavDate)
+        => includeNavDate
+            ? JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.CustomAssetProfileTerms,
+                customProfileId = "private-fund-interest",
+                profileVersion = 1,
+                category = "PrivateFunds",
+                valuationProfile = new { pricingSource = "AdministratorNAV" },
+                accountingClassification = "PrivateInvestment",
+                profileApproval = new
+                {
+                    approvedBy = "risk-committee",
+                    approvedAtUtc = Now,
+                    approvalReference = "PROFILE-APPROVAL-1"
+                },
+                profileFields = new
+                {
+                    gpSponsor = "GP Capital",
+                    strategy = "Private Credit",
+                    vintage = 2025,
+                    commitment = 1000000m,
+                    fundedAmount = 250000m,
+                    unfundedAmount = 750000m,
+                    navDate = "2026-04-30",
+                    lockup = "3 years"
+                }
+            })
+            : JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.CustomAssetProfileTerms,
+                customProfileId = "private-fund-interest",
+                profileVersion = 1,
+                category = "PrivateFunds",
+                valuationProfile = new { pricingSource = "AdministratorNAV" },
+                accountingClassification = "PrivateInvestment",
+                profileApproval = new
+                {
+                    approvedBy = "risk-committee",
+                    approvedAtUtc = Now,
+                    approvalReference = "PROFILE-APPROVAL-1"
+                },
+                profileFields = new
+                {
+                    gpSponsor = "GP Capital",
+                    strategy = "Private Credit",
+                    vintage = 2025,
+                    commitment = 1000000m,
+                    fundedAmount = 250000m,
+                    unfundedAmount = 750000m,
+                    lockup = "3 years"
+                }
+            });
 
     private static class SecurityValidationIssueFactoryForTests
     {
