@@ -197,6 +197,11 @@ shared workflow route parity, and screenshot/evidence route validation guards. T
 support evidence only until the full close/case/report/evidence workflow proof and WPF Lane C
 acceptance lane are green.
 
+Current Security Master custom-asset support also includes a shared asset-profile
+promotion-candidate assessment endpoint. This can identify governed profile-backed assets that may
+deserve first-class UFL package design, but it is not a delivered package-graduation workflow or
+operator acceptance gate.
+
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
 A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server. Loads tools, prompts, and resources from the assembly and communicates over stdio. Intended for repo-navigation and code-review AI tooling. All diagnostic output goes to stderr; stdout is reserved for the MCP protocol.

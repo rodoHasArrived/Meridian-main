@@ -28,12 +28,12 @@ Custom asset profiles are profiles over the shared UFL capability model, not a s
 
 ### Partially Implemented
 
-- Profile definitions and deterministic validation now have seeded starter profiles plus a persistence-backed governance service for draft, approval, rollback, and lineage. Create/amend can round-trip pinned profile-backed security terms, canonical read surfaces can list approved profiles, inspect lineage, and filter profile-backed securities by pinned profile metadata or typed field value, and the browser Settings workspace can draft/approve/rollback profiles and create profile-backed `CustomAsset` records pinned to the approved profile version. Indexed profile-field projections, promotion workflow, and first-class package graduation remain future work.
+- Profile definitions and deterministic validation now have seeded starter profiles plus a persistence-backed governance service for draft, approval, rollback, and lineage. Create/amend can round-trip pinned profile-backed security terms, canonical read surfaces can list approved profiles, inspect lineage, and filter profile-backed securities by pinned profile metadata or typed field value, and the browser Settings workspace can draft/approve/rollback profiles and create profile-backed `CustomAsset` records pinned to the approved profile version. Shared promotion-candidate assessment now scores approved profiles and recommends candidate first-class package ids, but indexed profile-field projections, operator promotion workflow, and actual first-class package graduation remain future work.
 
 ### Target-State Only
 
 - Broader workstation amend wizard surfaces beyond the current browser Settings profile-draft/create flow.
-- Promotion workflows that graduate high-volume profiles into dedicated UFL packages.
+- Operator promotion workflows that graduate high-volume profiles into dedicated UFL packages after the current assessment signal.
 - Indexed profile-field projections and profile-version lineage beyond the current Security Master projection payload.
 
 ### Explicitly Out of Scope
@@ -56,7 +56,7 @@ Custom asset profiles are profiles over the shared UFL capability model, not a s
 
 ## Current Maturity
 
-`L1- governed-reference baseline`: governed profile contracts, seeded approved profile definitions, persistence-backed profile draft/approval/rollback lineage, Security Master validation, create/amend round-tripping for pinned profile-backed records, the profile catalog endpoint, profile lineage endpoint, profile-aware Security Master search, and browser Settings profile-draft/create workflows exist. The lane has not reached full L1 until broader amend workflows and indexed projection lineage are evidenced.
+`L1- governed-reference baseline`: governed profile contracts, seeded approved profile definitions, persistence-backed profile draft/approval/rollback lineage, Security Master validation, create/amend round-tripping for pinned profile-backed records, the profile catalog endpoint, profile lineage endpoint, profile-aware Security Master search, promotion-candidate assessment endpoint, and browser Settings profile-draft/create workflows exist. The lane has not reached full L1 until broader amend workflows and indexed projection lineage are evidenced.
 
 ## Next Milestone Contract
 
@@ -77,7 +77,7 @@ Custom asset profiles are profiles over the shared UFL capability model, not a s
 - endpoint tests for profile definitions and profile-backed securities.
 - rebuild metadata tests proving profile version and source event are projected.
 
-**Exit criteria:** users can configure a governed profile and create a profile-backed security without bypassing canonical identity, validation, lineage, or provider-payload isolation. Current evidence covers seeded approved definitions, persistence-backed draft/approval/rollback lineage, create/amend round-tripping, canonical profile read/search surfaces, and the browser Settings profile governance/create UI; broader amend UI, indexed profile-field projection lineage, and promotion workflows are still pending.
+**Exit criteria:** users can configure a governed profile and create a profile-backed security without bypassing canonical identity, validation, lineage, or provider-payload isolation. Current evidence covers seeded approved definitions, persistence-backed draft/approval/rollback lineage, create/amend round-tripping, canonical profile read/search surfaces, promotion-candidate assessment, and the browser Settings profile governance/create UI; broader amend UI, indexed profile-field projection lineage, and package-graduation workflows are still pending.
 
 ## Provider Payload Boundary
 

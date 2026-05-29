@@ -1,6 +1,6 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 **Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active browser and WPF workstation lanes, the web Research run-library, Quant Notebook helpers, Quant Lab support slices, shared Strategy Engine pre-run validation, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio dense-table detail selection and brokerage-sync next actions plus Portfolio/Reporting/Settings/Data task panels, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection, Watchlist no-quote/empty-state copy, and quick-trade readiness handoffs, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, provider-setup validation handoffs, seeded no-host quote-demo fixtures, simplified browser rail/header chrome, browser Security Master search-result selection and details/lots/operator-override support with identity drill-ins, lot-detail, and conflict refresh state, UFL/reference-data projection endpoints, read-only/paper-first brokerage connection evidence, crash-safe shared UI persistence, WPF shell support evidence including the Data shell feature module, desktop workflow automation hardening, scheduled/manual WPF screenshot evidence capture, provider capability matrix governance, additive workstation continuity guards, and structured roadmap/source documentation controls
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
@@ -53,6 +53,11 @@ report-pack workflow/provenance, browser Accounting/Reporting parity, Investment
 Transaction Lab previews, report restatement review, run comparison/drill-in depth, shared route
 parity, and screenshot/evidence route validation. The best near-term opportunity is converting
 that support into full W4 close/case/report/evidence acceptance without pulling W5/W6 forward.
+
+2026-05-29 custom-asset note: Security Master asset-profile promotion-candidate assessment is now
+shared-service and endpoint support, not just target-state prose. The opportunity is to use those
+signals to prioritize first-class UFL package design only after W4 close/report evidence remains
+green; do not let package graduation distract from the active W4 acceptance gate.
 
 ---
 
@@ -222,14 +227,17 @@ The current repo state shows a product that is beyond foundations but not yet be
 3. keep shared read models and Security Master as the center of gravity
 4. avoid splitting web, WPF, governance, and research work into parallel subsystems
 
-That is why Wave 2 cockpit hardening now outranks additional surface expansion, while the closed Wave 1 trust gate should still be treated as the evidence boundary for the core product path.
+That is why preserving the closed Wave 2 cockpit and Wave 3 shared-continuity baselines now matters
+more than additional surface expansion, while W4 close/report/evidence acceptance remains the
+active opportunity and the closed Wave 1 trust gate remains the evidence boundary for the core
+product path.
 
 ---
 
 ## Recommended Next Steps
 
 1. Keep the closed Wave 1 provider-confidence gate as the first release gate, with the validation matrix, emitted DK1 `pilotReplaySampleSet`, signed 2026-04-27 parity packet, packet-bound sign-off evidence, generated evidence attachments, and repo tests treated as the source of truth until new evidence requires a fresh packet.
-2. Define the paper-trading cockpit in operator terms: session persistence, replay confidence, audit trail visibility, and promotion review should be the acceptance center, not additional page count.
-3. Use shared run, portfolio, ledger, and reconciliation seams as the required integration boundary for both workstation and governance work.
-4. Treat WPF shell consolidation as successful only when it reduces workflow friction in active Wave 2-4 paths; the Trading desk briefing hero, Trading Hours session and holiday-calendar guidance, OrderBook order-flow posture, operator queue attention, and Position Blotter selection-review rail should continue consuming shared execution/readiness/calendar/depth/inbox state, the Research desk briefing hero plus StrategyRuns recovery and comparison guidance should continue consuming shared run/portfolio/promotion state, Activity Log export/clear actions should remain support-triage affordances, QuantScript run-history actions should hand off to shared Research surfaces when mirrored runs exist, and Fund Accounts should continue consuming shared account/provider-routing/balance-history/shared-data state rather than becoming a separate shell-local model.
-5. Keep Wave 5, Wave 6, and optional advanced tracks explicitly deferred until the Wave 2-4 operator-readiness path is materially closed on top of the preserved Wave 1 gate.
+2. Keep paper-trading cockpit regressions framed as baseline preservation: session persistence, replay confidence, audit trail visibility, and promotion review remain the evidence center, but new delivery should not reopen W2 completion.
+3. Preserve shared run, portfolio, ledger, and reconciliation seams as the required integration boundary for both workstation and governance work, without redefining the closed W3 baseline.
+4. Treat WPF shell consolidation as successful only when it reduces workflow friction in the active W4 path or preserves the closed W2/W3 baselines; the Trading desk briefing hero, Trading Hours session and holiday-calendar guidance, OrderBook order-flow posture, operator queue attention, and Position Blotter selection-review rail should continue consuming shared execution/readiness/calendar/depth/inbox state, the Research desk briefing hero plus StrategyRuns recovery and comparison guidance should continue consuming shared run/portfolio/promotion state, Activity Log export/clear actions should remain support-triage affordances, QuantScript run-history actions should hand off to shared Research surfaces when mirrored runs exist, and Fund Accounts should continue consuming shared account/provider-routing/balance-history/shared-data state rather than becoming a separate shell-local model.
+5. Keep Wave 5, Wave 6, and optional advanced tracks explicitly deferred until the active W4 operator-readiness gate is materially closed on top of the preserved Wave 1, W2, and W3 baselines.

@@ -111,7 +111,7 @@ Use this document and `FULL_IMPLEMENTATION_TODO.md` as the active normalized bac
 | 8 | G2 remainder, J8 canary | Full trace propagation and canonicalization drift detection/reporting land | ✅ Done |
 | 9 | K0, route/health reliability | WPF Fluent theme, SVG icons, LiveCharts2 charting, Synthetic provider default, workflow guide, CI screenshots, duplicate route/registration fixes | ✅ Done |
 | 10 | K1 shell consolidation, page-level redesign, Wave 1 provider confidence | `ShellNavigationCatalog`, workspace shell pages, and current WPF shell consolidation plus high-traffic page redesign (Live Data, Provider, Backfill, Data Quality); active Wave 1 gate closed around Alpaca/Robinhood/Yahoo plus checkpoint and Parquet evidence closure | ✅ Done |
-| 11 | Wave 2 cockpit hardening, governance/reporting follow-ons | Existing web paper-trading cockpit hardened across positions, orders, fills, P&L, risk, replay, sessions, and promotion; governance cash-flow/report-pack follow-ons on top of delivered Security Master productization | 🔄 Active |
+| 11 | Closed Wave 2 cockpit baseline, active governance/reporting follow-ons | Existing web paper-trading cockpit hardened across positions, orders, fills, P&L, risk, replay, sessions, and promotion; remaining active work is governance cash-flow/report-pack follow-ons on top of delivered Security Master productization | 🔄 Active |
 
 ---
 

@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
 **Last Updated:** 2026-05-29
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, closed W1/W2/W3 baselines, active W4 governance/fund-operations acceptance, the active browser and WPF workstation lanes, and May 28 support evidence for operations-continuity close routing, reconciliation casework, governed report-pack workflow/provenance, browser Accounting/Reporting parity, Investment Accounting Transaction Lab previews, report restatement review, richer run comparison/drill-in support, shared workflow route parity, and screenshot/evidence validation guards. These advances preserve the closed W2/W3 baselines and move W4 forward, but they are not full W4 close/report, Evidence Vault/report-line-provenance product, Backtest Studio, or live-readiness exits.
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, closed W1/W2/W3 baselines, active W4 governance/fund-operations acceptance, the active browser and WPF workstation lanes, May 28 support evidence for operations-continuity close routing, reconciliation casework, governed report-pack workflow/provenance, browser Accounting/Reporting parity, Investment Accounting Transaction Lab previews, report restatement review, richer run comparison/drill-in support, shared workflow route parity, screenshot/evidence validation guards, and May 29 Security Master asset-profile promotion-candidate assessment support. These advances preserve the closed W2/W3 baselines and move W4/UFL support forward, but they are not full W4 close/report, Evidence Vault/report-line-provenance product, Backtest Studio, first-class UFL package graduation, or live-readiness exits.
 
 **Derived from:** [`ROADMAP.md`](ROADMAP.md) + [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) + [`TARGET_END_PRODUCT.md`](TARGET_END_PRODUCT.md) — do not update independently.
 
@@ -82,6 +82,11 @@ Accounting Transaction Lab previews, report restatement review, richer run compa
 drill-in evidence, shared route parity, and screenshot/evidence wrong-route validation. Keep these
 as W4 support evidence until the build-backed WPF Lane C lane and full close/case/report/evidence
 acceptance proof are green.
+
+2026-05-29 support evidence adds Security Master asset-profile promotion-candidate assessment for
+approved custom profiles. The shared service and endpoint can identify candidates and recommended
+first-class package ids, but package graduation, operator promotion workflow, and indexed
+projection lineage remain open UFL/custom-asset work.
 
 ---
 

@@ -1,6 +1,6 @@
 # Meridian Current Direction And Status
 
-**Last Reviewed:** 2026-05-28
+**Last Reviewed:** 2026-05-29
 
 ## Current Planning TODOs
 
@@ -96,8 +96,8 @@ environment, warning, and trust-snapshot refresh state into Data and Settings. S
 backend actions now mark GET endpoints as browser-openable and POST validation/preview/backtest
 commands as reference-only, and Reporting export commands carry abort signals so superseded profile
 exports cannot publish stale status under the wrong selection. These reduce operator confusion and
-late-response races, but they do not close W2 cockpit acceptance, W3 continuity, W4 report-pack
-lifecycle, Backtest Studio, or live-readiness gates.
+late-response races. They preserve the closed W2 cockpit and W3 continuity baselines, but they do
+not close W4 report-pack lifecycle, Backtest Studio, or live-readiness gates.
 
 May 20 hardening evidence remains support evidence: brokerage order placement fails closed without
 required validation/sign-off artifacts, ledger and promotion write routes have explicit
@@ -126,6 +126,14 @@ previews, report restatement review, richer run comparison and portfolio drill-i
 workflow route parity, and screenshot/evidence wrong-route validation. These preserve W2/W3 and
 advance W4 support; they do not close W4 until Lane C close/case/report/evidence acceptance is
 green, including the build-backed WPF lane.
+
+May 29 documentation review: Security Master custom-asset profile governance now has shared
+promotion-candidate assessment support through `SecurityAssetProfileGovernanceService`,
+`SecurityAssetProfilePromotionCandidateDto`, and
+`/api/security-master/asset-profiles/promotion-candidates`. Treat this as W4/UFL support evidence
+for identifying profile-backed assets that may justify a first-class package; actual package
+graduation, operator promotion workflow, indexed profile-field projections, and broader acceptance
+remain open.
 
 W2/W3/W4 claim discipline: every new roadmap or status claim for these waves must either map to a
 `pilot-readiness.*` stage gate that turns green in the latest harness output or name the blocker in

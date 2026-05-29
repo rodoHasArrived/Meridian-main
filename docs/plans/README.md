@@ -1,6 +1,6 @@
 # Plans
 
-**Last Reviewed:** 2026-05-28
+**Last Reviewed:** 2026-05-29
 
 
 ## Immediate Plan TODOs
@@ -64,6 +64,11 @@ workflow/provenance, browser Accounting/Reporting parity, Investment Accounting 
 previews, report restatement review, run comparison/drill-in depth, shared route parity, and
 screenshot/evidence validation guards. These do not close W4 until the full Lane C close/case/report
 acceptance proof is green.
+
+2026-05-29 planning follow-up: the UFL custom-asset composability plan now has partial shared
+promotion-candidate assessment evidence through the Security Master governance service and endpoint.
+Keep that evidence inside the UFL/custom-asset plan lane; it does not create a new active wave or
+replace the W4 close/report/evidence acceptance gate.
 
 ## Core Operator-Ready Path
 

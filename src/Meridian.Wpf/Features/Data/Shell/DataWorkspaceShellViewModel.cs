@@ -1,3 +1,4 @@
+using System.Windows;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -81,8 +82,23 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
     public DataOperationsHeroState HeroState
     {
         get => _heroState;
-        private set => SetProperty(ref _heroState, value);
+        private set
+        {
+            if (SetProperty(ref _heroState, value))
+            {
+                RaisePropertyChanged(nameof(HeroPrimaryActionVisibility));
+                RaisePropertyChanged(nameof(HeroSecondaryActionVisibility));
+            }
+        }
     }
+
+    public Visibility HeroPrimaryActionVisibility => HasHeroAction(HeroState.PrimaryActionLabel, HeroState.PrimaryActionId)
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    public Visibility HeroSecondaryActionVisibility => HasHeroAction(HeroState.SecondaryActionLabel, HeroState.SecondaryActionId)
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
     public IReadOnlyList<DataOperationsHeroMetric> HeroMetrics
     {
@@ -135,20 +151,65 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
     public WorkspaceQueueRegionState ProviderQueueState
     {
         get => _providerQueueState;
-        private set => SetProperty(ref _providerQueueState, value);
+        private set
+        {
+            if (SetProperty(ref _providerQueueState, value))
+            {
+                RaisePropertyChanged(nameof(ProviderQueueListVisibility));
+                RaisePropertyChanged(nameof(ProviderQueueStateVisibility));
+            }
+        }
     }
+
+    public Visibility ProviderQueueListVisibility => ProviderQueueState.IsVisible
+        ? Visibility.Collapsed
+        : Visibility.Visible;
+
+    public Visibility ProviderQueueStateVisibility => ProviderQueueState.IsVisible
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
     public WorkspaceQueueRegionState BackfillQueueState
     {
         get => _backfillQueueState;
-        private set => SetProperty(ref _backfillQueueState, value);
+        private set
+        {
+            if (SetProperty(ref _backfillQueueState, value))
+            {
+                RaisePropertyChanged(nameof(BackfillQueueListVisibility));
+                RaisePropertyChanged(nameof(BackfillQueueStateVisibility));
+            }
+        }
     }
+
+    public Visibility BackfillQueueListVisibility => BackfillQueueState.IsVisible
+        ? Visibility.Collapsed
+        : Visibility.Visible;
+
+    public Visibility BackfillQueueStateVisibility => BackfillQueueState.IsVisible
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
     public WorkspaceQueueRegionState StorageQueueState
     {
         get => _storageQueueState;
-        private set => SetProperty(ref _storageQueueState, value);
+        private set
+        {
+            if (SetProperty(ref _storageQueueState, value))
+            {
+                RaisePropertyChanged(nameof(StorageQueueListVisibility));
+                RaisePropertyChanged(nameof(StorageQueueStateVisibility));
+            }
+        }
     }
+
+    public Visibility StorageQueueListVisibility => StorageQueueState.IsVisible
+        ? Visibility.Collapsed
+        : Visibility.Visible;
+
+    public Visibility StorageQueueStateVisibility => StorageQueueState.IsVisible
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
     public string OperationsSummaryTitleText
     {
@@ -361,6 +422,9 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
         var normalized = value.Trim();
         return normalized is "Loading" or "Loading..." or "-" ? fallback : normalized;
     }
+
+    private static bool HasHeroAction(string label, string actionId)
+        => !string.IsNullOrWhiteSpace(label) && !string.IsNullOrWhiteSpace(actionId);
 
     private static PaneDropAction ResolveDockAction(string actionId) => actionId switch
     {

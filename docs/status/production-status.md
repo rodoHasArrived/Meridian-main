@@ -3,7 +3,7 @@
 <!-- auto-sync:tests -->
 **Version:** 1.7.9
 **Last Updated:** 2026-05-29
-**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Wave 2 paper-trading cockpit and Wave 3 shared-run continuity baselines are closed as of 2026-05-27; Wave 4 governance/fund-operations close and report acceptance remains in progress. Browser and WPF are both active operator UI lanes and must continue to consume shared contracts, endpoints, and read models. Current May 28 support evidence includes W4 operations-continuity endpoint/workflow coverage, reconciliation casework, governed report-pack workflow/provenance, browser Accounting/Reporting parity, explicit operations-continuity workflow targets, Explain-the-Break parity through shared DTO/browser/WPF consumers, Investment Accounting Transaction Lab previews, report restatement review, richer run comparison/drill-in support, shared workflow route parity, and screenshot/evidence route validation guards. These preserve the closed W2/W3 baselines and advance W4 support; they are not full W4 close/report, Evidence Vault/report-line-provenance product, Backtest Studio, or live-readiness exits.
+**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Wave 2 paper-trading cockpit and Wave 3 shared-run continuity baselines are closed as of 2026-05-27; Wave 4 governance/fund-operations close and report acceptance remains in progress. Browser and WPF are both active operator UI lanes and must continue to consume shared contracts, endpoints, and read models. Current support evidence includes W4 operations-continuity endpoint/workflow coverage, reconciliation casework, governed report-pack workflow/provenance, browser Accounting/Reporting parity, explicit operations-continuity workflow targets, Explain-the-Break parity through shared DTO/browser/WPF consumers, Investment Accounting Transaction Lab previews, report restatement review, richer run comparison/drill-in support, shared workflow route parity, screenshot/evidence route validation guards, and Security Master asset-profile promotion-candidate assessment. These preserve the closed W2/W3 baselines and advance W4/UFL support; they are not full W4 close/report, Evidence Vault/report-line-provenance product, Backtest Studio, first-class UFL package graduation, or live-readiness exits.
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
 Readiness claim wording in this document must follow [`readiness-claim-language-policy.md`](readiness-claim-language-policy.md).
@@ -53,6 +53,11 @@ operations-continuity, governance, and reporting surfaces, and route-parity chec
 workflow targets aligned across browser and WPF. This is material W4 support evidence, but the
 readiness posture stays `In Progress` until the WPF build-backed Lane C acceptance lane and the
 full close/case/report/evidence workflow proof are green.
+
+2026-05-29 Security Master note: custom asset profile governance now exposes promotion-candidate
+assessment through the shared service and `/api/security-master/asset-profiles/promotion-candidates`.
+This is useful UFL support evidence for identifying candidate first-class packages, but package
+graduation and operator promotion acceptance remain open.
 
 ---
 

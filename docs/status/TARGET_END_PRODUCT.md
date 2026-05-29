@@ -1,6 +1,6 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 **Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, signed DK1 parity-packet evidence with packet-bound sign-off validation, cockpit readiness projection, the active browser and WPF workstation lanes, the web Research run-library, Quant Notebook helpers, gated Quant Lab support slices, shared Strategy Engine pre-run validation, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio/Reporting/Settings/Data task panels plus Portfolio brokerage-sync next actions, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, the browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection and Watchlist no-quote/empty-state copy, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, browser Security Master search-result selection, identity drill-ins, details/lots/operator-override support, UFL/reference-data projection endpoints, paper-first Alpaca connection verification plus provider-setup next-validation handoffs, read-only Robinhood brokerage aggregation support, stable route-aware run review-packet work items surfaced through operator inbox when actionable, seeded reconciliation exception-route/tolerance/sign-off metadata plus calibration-summary rollups, crash-safe shared UI persistence, WPF shell support evidence including the Data shell feature module, workflow automation hardening, scheduled/manual WPF screenshot evidence capture, simplified browser rail/header chrome, demo-data fixture semantics with seeded market-data demo paths, provider capability matrix governance, additive workstation continuity guards, and structured roadmap/source documentation controls
 
 ---
@@ -63,6 +63,12 @@ previews, report restatement review, richer run comparison and portfolio drill-i
 workflow route parity, and screenshot/evidence route validation now exist as support evidence. The
 target product still needs the full close/case/report/evidence acceptance proof, including the WPF
 Lane C path, before W4 or Evidence OS can be described as delivered.
+
+Current May 29 Security Master evidence narrows the UFL/custom-asset path without completing it:
+approved custom asset profiles can be assessed as promotion candidates for first-class package
+design through a shared service and endpoint. The target product still needs operator promotion
+workflow, projection lineage, package authoring, migration controls, and acceptance evidence before
+custom profiles can be described as graduated into delivered first-class UFL packages.
 
 For the release-level scenario that ties those workspaces together, use [`../plans/meridian-pilot-workflow.md`](../plans/meridian-pilot-workflow.md).
 For the product-category filter and documentation archive rule, use [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md).

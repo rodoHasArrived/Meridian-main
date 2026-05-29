@@ -1,8 +1,8 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-05-28
-**Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, Wave 2 paper-trading cockpit and Wave 3 shared-run continuity baselines are closed as of 2026-05-27, and Wave 4 governance/fund-operations close/report acceptance is now the active release gate. Browser and WPF operator UI development are both active: the browser workstation lives in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`, and the Windows desktop workstation lives in `src/Meridian.Wpf/`. New product behavior should land behind shared contracts, local/web API endpoints, or shared read models before either client composes it. Current May 28 deltas add W4 support evidence for operations-continuity close routing, reconciliation casework, report-pack lifecycle/provenance, browser Accounting/Reporting parity, Investment Accounting Transaction Lab previews, report restatement review, run comparison/drill-in depth, shared workflow route parity, and screenshot/evidence validation guards. These preserve the closed W2/W3 baselines and advance W4 support, but they do not close the full W4 close/report gate, Evidence Vault/report-line provenance as a product claim, Backtest Studio unification, or live-readiness.
-**Repository Snapshot (2026-05-28 current repo):** solution/build/test project files: 52 | `src/` project files: 37 | test projects: 8 | workflow files: 19
+**Last Updated:** 2026-05-29
+**Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, Wave 2 paper-trading cockpit and Wave 3 shared-run continuity baselines are closed as of 2026-05-27, and Wave 4 governance/fund-operations close/report acceptance is now the active release gate. Browser and WPF operator UI development are both active: the browser workstation lives in `src/Meridian.Ui/dashboard/` with built assets served from `src/Meridian.Ui/wwwroot/workstation/`, and the Windows desktop workstation lives in `src/Meridian.Wpf/`. New product behavior should land behind shared contracts, local/web API endpoints, or shared read models before either client composes it. Current support deltas add W4 evidence for operations-continuity close routing, reconciliation casework, report-pack lifecycle/provenance, browser Accounting/Reporting parity, Investment Accounting Transaction Lab previews, report restatement review, run comparison/drill-in depth, shared workflow route parity, screenshot/evidence validation guards, and Security Master asset-profile promotion-candidate assessment via the shared governance service and endpoint. These preserve the closed W2/W3 baselines and advance W4 support, but they do not close the full W4 close/report gate, Evidence Vault/report-line provenance as a product claim, Backtest Studio unification, first-class UFL package graduation, or live-readiness.
+**Repository Snapshot (2026-05-29 current repo):** solution/build/test project files: 52 | `src/` project files: 37 | test projects: 8 | workflow files: 19
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains strong market-data, storage, replay, backtesting, execution, ledger, workstation, and Security Master foundations. The remaining delivery problem is now narrower and more product-shaped: prove operator trust, close workflow gaps, and deepen governance in one shared-contract-first operator workflow across browser and desktop UI surfaces without letting the product split into parallel subsystems.
 
@@ -534,9 +534,9 @@ Dashboard requirements:
 
 DK1 and DK2 are **execution wrappers** for existing Waves 2-4, not new parallel scope:
 
-- Wave 2 cockpit hardening work is planned and reported through DK1
-- Wave 3 shared-model continuity is split: trust-dependent scope in DK1, promotion/export/reconciliation continuity in DK2
-- Wave 4 governance productization readiness gates are tracked through DK2 exit criteria
+- Wave 2 cockpit hardening is a closed baseline preserved through DK1 regression evidence; new work should keep it green rather than reopen the wave.
+- Wave 3 shared-model continuity is a closed baseline preserved through shared-contract and interop evidence; promotion/export/reconciliation follow-ons now belong to W4/DK2 unless the roadmap explicitly reopens W3.
+- Wave 4 governance productization readiness gates are the active DK2 exit criteria.
 
 Any proposed work item that cannot map to Wave 2, 3, or 4 plus DK1/DK2 gates should be treated as optional or deferred work, not core operator-readiness path.
 

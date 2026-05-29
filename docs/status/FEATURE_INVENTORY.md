@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
-**Version:** 1.7.18
-**Date:** 2026-05-28
+**Version:** 1.7.19
+**Date:** 2026-05-29
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) (consolidated current direction, status, and plan-file roles), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) (consolidated non-assembly execution backlog).
@@ -623,6 +623,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, Security Master coverage issue detection, and a file-backed reconciliation break queue now exist. The queue seeds run-scoped breaks and supports review, resolve/dismiss, audit-history, and calibration-summary routes with profile rollups for tolerance/sign-off posture; the browser Accounting surface now projects run selection through shared dense rows, keyboard-accessible selected/expanded row state, open-break copy, and no-run detail guidance from a view model. Broader non-run, external-statement/custodian, SLA, and operator-approved calibrated exception workflows remain. |
 | Security Master platform baseline | Complete | The current Security Master mechanics are delivered and workstation productization is live: hardened WPF activation, search/runtime recovery, canonical `WorkstationSecurityReference` coverage/provenance, shared research/trading/governance/portfolio/ledger propagation, browser search-result selection, identity drill-ins, details/lots tracking, server-side operator overrides, and UFL/reference-data projection support across bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit |
 | Security Master — UFL reference-data projections | ✅ | Asset-class-specific projection services, DTOs, Postgres stores, migrations, reference-data endpoints, and tests now exist for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit. Full instrument passport/confidence-score workflows remain planned commercial modules. |
+| Security Master — custom asset profile promotion candidates | ⚠️ | Shared governance support can score approved custom asset profiles, return promotion readiness, recommended first-class package ids, and explanatory signals through `/api/security-master/asset-profiles/promotion-candidates`. This is assessment support only; operator promotion workflow, indexed profile-field projection lineage, and actual UFL package graduation remain open. |
 | Security Master — browser details and overrides | ⚠️ | Browser Security Master now includes selectable search-result rows that open identity drill-ins and keep corporate-action/trading-parameter/detail panels tied to the selected security, an extended details panel, local lots tracker with selectable dense rows and lot-detail state, server-side operator override GET/PATCH support, and a view-model-owned conflict refresh/retry command for recoverable identifier-conflict loads. Pending operator overrides now seed durable Security Master steward casework in the shared break queue when that repository is registered. Governed override approval UX and broader acceptance remain open. |
 | Security Master — bond term richness | ✅ | Extended `SecurityEconomicDefinition` with coupon rate, maturity, day-count convention, seniority, callable flag, and issue price |
 | Security Master — trading parameters | ✅ | Per-instrument lot size, tick size; `PaperTradingGateway` lot-size validation and `BacktestEngine` tick-size rounding wired; `GET /api/security-master/{id}/trading-parameters` |
@@ -735,4 +736,4 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-_Last Updated: 2026-05-28_
+_Last Updated: 2026-05-29_
