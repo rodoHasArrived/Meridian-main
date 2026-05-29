@@ -1727,8 +1727,29 @@ public static partial class WorkstationEndpoints
         .WithName("EditReconciliationBreakComment")
         .Produces<ReconciliationBreakQueueItem>(200);
 
-        group.MapDelete("/reconciliation/break-queue/{breakId}/comments/{commentId}", async (string breakId, string commentId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.DeleteComment, CommentId = commentId }, context, jsonOptions).ConfigureAwait(false))
+        group.MapDelete("/reconciliation/break-queue/{breakId}/comments/{commentId}", async (
+            string breakId,
+            string commentId,
+            [FromQuery] long expectedVersion,
+            [FromQuery] string? reason,
+            [FromQuery] string? commandId,
+            [FromQuery] string? correlationId,
+            [FromQuery] string? source,
+            HttpContext context) =>
+            await ApplyReconciliationCaseworkEndpointAsync(
+                breakId,
+                new ReconciliationCaseworkCommand(
+                    breakId,
+                    ReconciliationCaseworkAction.DeleteComment,
+                    Actor: string.Empty,
+                    CommandId: string.IsNullOrWhiteSpace(commandId) ? Guid.NewGuid().ToString("N") : commandId,
+                    CorrelationId: string.IsNullOrWhiteSpace(correlationId) ? Guid.NewGuid().ToString("N") : correlationId,
+                    Source: string.IsNullOrWhiteSpace(source) ? "workstation-api" : source,
+                    ExpectedVersion: expectedVersion,
+                    Reason: reason,
+                    CommentId: commentId),
+                context,
+                jsonOptions).ConfigureAwait(false))
         .WithName("DeleteReconciliationBreakComment")
         .Produces<ReconciliationBreakQueueItem>(200);
 
