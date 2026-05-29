@@ -347,8 +347,7 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
 
         var rejected = svc.Reject(
             created.ReportId,
@@ -379,8 +378,7 @@ public sealed class ReportPackWorkflowServiceTests
 
         if (startingState == ReportPackWorkflowStateDto.Published)
         {
-            svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-            svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+            svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
             svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
             svc.Publish(
                 created.ReportId,
@@ -404,8 +402,7 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
 
         Action act = () => svc.Reject(created.ReportId, "needs reviewer remediation", "operator", "operator");
 
@@ -418,15 +415,14 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
 
         var rejected = svc.Reject(created.ReportId, "missing controller sign-off evidence", "senior-reviewer", "reviewer");
 
         rejected.AuditTrail.Should().ContainSingle(entry =>
             entry.Actor == "senior-reviewer" &&
             entry.Action == "rejected" &&
-            entry.FromState == ReportPackWorkflowStateDto.PendingApproval &&
+            entry.FromState == ReportPackWorkflowStateDto.InReview &&
             entry.ToState == ReportPackWorkflowStateDto.Rejected &&
             entry.Note == "missing controller sign-off evidence");
     }
@@ -436,8 +432,7 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Reject(created.ReportId, "missing controller sign-off evidence", "senior-reviewer", "reviewer");
 
         Action publishRejected = () => svc.Publish(
@@ -454,8 +449,7 @@ public sealed class ReportPackWorkflowServiceTests
             .WithMessage("invalid transition Rejected -> Published");
 
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Draft, "author", "operator");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         var published = svc.Publish(
             created.ReportId,
