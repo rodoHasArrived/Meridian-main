@@ -44,6 +44,11 @@ target tags instead of inventing client-local close-workflow routes.
 Run comparison endpoints consume contract-owned compare and diff payloads from
 `Meridian.Contracts.Workstation`; keep request/result schema additions in contracts and let this
 layer focus on endpoint validation, dependency resolution, and service orchestration.
+Single-family-office workstation contracts live in `Contracts/FamilyOfficeContracts.cs` with a
+matching `Serialization/FamilyOfficeJsonContext.cs` source-generated JSON context. Family-office
+financial summaries must carry source-system, source-document, as-of, valuation, evidence
+completeness, reconciliation, and review metadata so browser and WPF operators can trace values
+back to governed evidence without client-local schema forks.
 Diff responses now include strategy id/version metadata, lineage relation, compatibility level,
 engine/mode context, artifact completeness, and warnings so operators can compare strategy
 versions and execution engines without inferring risk from run names alone.
