@@ -1,6 +1,7 @@
 /* =====================================================================
-   Meridian Design System — Colors & Type  v2.1
-   Source of truth: src/Meridian.Ui/dashboard/src/styles/index.css
+   Meridian Design System — Colors & Type  v2.2
+   Source of truth: shared Institutional Ops tokens used by
+   src/Meridian.Ui/dashboard/src/styles/index.css and WPF theme resources.
    ===================================================================== */
 
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap");
@@ -132,7 +133,7 @@
 
   /* ================================================
      SHADOWS — 1-2px max. Inset highlight + soft drop.
-     No glow. No elevation theatre.
+     No hard-offset poster shadows. No glow. No elevation theatre.
      ================================================ */
   --shadow-workstation:
     0 1px 0 rgba(255,255,255,0.02) inset,
@@ -178,12 +179,13 @@
   --chart-dd:          rgba(222,88,120,0.35); /* drawdown fill */
 
   /* ================================================
-     AMBIENT BACKGROUND — 2 faint radial glows max.
-     Decorative only. Never animate.
+     AMBIENT BACKGROUND — 2 faint static radial glows max.
+     Institutional Ops keeps the workstation calm: no dominant grids,
+     animated glow, or decorative gradients beyond this base layer.
      ================================================ */
   --bg-ambient:
-    radial-gradient(ellipse at 6% 0%,   rgba(42,178,212,0.08) 0%, transparent 40%),
-    radial-gradient(ellipse at 96% 96%, rgba(96,165,250,0.05)  0%, transparent 38%),
+    radial-gradient(ellipse at 6% 0%,   rgba(42,178,212,0.06) 0%, transparent 38%),
+    radial-gradient(ellipse at 96% 96%, rgba(96,165,250,0.04)  0%, transparent 36%),
     linear-gradient(180deg, rgba(8,16,26,1) 0%, rgba(8,16,26,1) 100%);
   --grid-lines:
     linear-gradient(hsl(var(--border) / 0.10) 1px, transparent 1px) 0 0 / 100% 40px,

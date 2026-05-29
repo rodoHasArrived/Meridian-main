@@ -66,22 +66,22 @@
        Tailwind palette. Token architecture aligned with cash-flow-factor-sch.
        Changes here do NOT automatically update Track B.
     ──────────────────────────────────────────────────────────────────────────*/
-    --background: 220 10% 6%;
-    --foreground: 210 18% 94%;
-    --card: 220 9% 9%;
-    --card-foreground: 210 18% 94%;
-    --popover: 220 10% 8%;
-    --popover-foreground: 210 18% 94%;
+    --background: 215 42% 6%;
+    --foreground: 210 30% 92%;
+    --card: 215 34% 9%;
+    --card-foreground: 210 30% 92%;
+    --popover: 215 36% 8%;
+    --popover-foreground: 210 30% 92%;
     --primary: 198 72% 50%;
     --primary-foreground: 213 54% 7%;
-    --secondary: 220 9% 15%;
+    --secondary: 213 32% 16%;
     --secondary-foreground: 207 44% 90%;
-    --muted: 220 8% 14%;
+    --muted: 213 28% 15%;
     --muted-foreground: 210 22% 62%;
     --accent: 36 80% 58%;
     --accent-foreground: 213 52% 8%;
-    --border: 205 34% 29%;
-    --input: 205 34% 29%;
+    --border: 208 38% 22%;
+    --input: 208 38% 22%;
     --ring: 198 72% 50%;
     --paper: 214 82% 68%;
     --live: 198 72% 50%;
@@ -89,20 +89,20 @@
     --warning: 36 80% 58%;
     --success: 158 66% 44%;
     --danger: 354 68% 62%;
-    --panel-strong: 220 10% 12%;
-    --panel-soft: 220 9% 15%;
-    --surface-raise: 215 14% 18%;
+    --panel-strong: 213 48% 12%;
+    --panel-soft: 213 36% 15%;
+    --surface-raise: 213 40% 18%;
     /* ─── Sidebar tokens — aligned with cash-flow-factor-sch ─────────────────
        Maps the operator rail surface to the same sidebar token contract used
        in the reference app. Consumed by sidebar.tsx and rail components.
     ──────────────────────────────────────────────────────────────────────────*/
-    --sidebar: 220 12% 5%;
+    --sidebar: 215 42% 6%;
     --sidebar-foreground: 210 18% 94%;
     --sidebar-primary: 198 72% 50%;
     --sidebar-primary-foreground: 213 54% 7%;
-    --sidebar-accent: 220 9% 15%;
+    --sidebar-accent: 213 32% 16%;
     --sidebar-accent-foreground: 207 44% 90%;
-    --sidebar-border: 205 34% 29%;
+    --sidebar-border: 208 38% 22%;
     --sidebar-ring: 198 72% 50%;
     /* ─── Chart tokens — aligned with cash-flow-factor-sch naming ────────────
        Named --chart-1…5 to match the reference app's token contract.
@@ -129,28 +129,28 @@
        Separate from the layered Meridian workstation shadows in Track B.
     ──────────────────────────────────────────────────────────────────────────*/
     --shadow-color: 215 30% 0%;
-    --shadow-opacity: 0.5;
-    --shadow-blur: 0px;
+    --shadow-opacity: 0.24;
+    --shadow-blur: 2px;
     --shadow-spread: 0px;
-    --shadow-offset-x: 3px;
-    --shadow-offset-y: 3px;
+    --shadow-offset-x: 0px;
+    --shadow-offset-y: 1px;
     /* ─── Track B: Hex / custom CSS ───────────────────────────────────────────
        Raw hex values consumed by hand-authored .workstation-*, .operator-*,
        .toolbar-*, and .workbench classes. NOT referenced by Tailwind utilities.
        Must be kept in sync with Track A manually when the palette changes.
        Add new surfaces here (not as Tailwind utilities) to stay on this track.
     ──────────────────────────────────────────────────────────────────────────*/
-    --bg: #0d0e10;              /* mirrors hsl(--background) */
-    --fg: #e8edf2;              /* mirrors hsl(--foreground) */
+    --bg: #08101a;              /* mirrors hsl(--background) */
+    --fg: #dee6ef;              /* mirrors hsl(--foreground) */
     --fg-muted: #7c8a9b;        /* mirrors hsl(--muted-foreground) */
-    --card-bg: #141619;         /* mirrors hsl(--card) */
-    --panel-strong-bg: #1a1d21;
-    --panel-soft-bg: #20242a;
-    --surface-raise-bg: #26303a;
-    --border-color: #31536d;    /* mirrors hsl(--border) */
-    --border-hi: #477089;
-    --surface-topbar: #0a0c0f;  /* masthead chrome and top-bar gradient */
-    --surface-input: #11151a;   /* workstation search / command input surface */
+    --card-bg: #0d1722;         /* mirrors hsl(--card) */
+    --panel-strong-bg: #101c2b;
+    --panel-soft-bg: #162334;
+    --surface-raise-bg: #1b2a3c;
+    --border-color: #1f344c;    /* mirrors hsl(--border) */
+    --border-hi: #2a4566;
+    --surface-topbar: #05101b;  /* masthead chrome */
+    --surface-input: #0b1520;   /* workstation search / command input surface */
     --cyan-primary: #2ab2d4;
     --cyan-focus: #20d3f7;
     --cyan-pressed: #2d9cdb;
@@ -189,12 +189,14 @@
     --chart-crosshair: #2ab2d4;
     --chart-dd: rgba(222, 88, 120, 0.35);
     --shadow-workstation:
-      3px 3px 0 rgba(0, 0, 0, 0.72);
+      0 1px 0 rgba(255, 255, 255, 0.02) inset,
+      0 1px 2px rgba(0, 0, 0, 0.30);
     --shadow-panel:
-      2px 2px 0 rgba(0, 0, 0, 0.58);
+      0 1px 0 rgba(255, 255, 255, 0.02) inset,
+      0 1px 1px rgba(0, 0, 0, 0.25);
     --shadow-float:
-      5px 5px 0 rgba(0, 0, 0, 0.72),
-      0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+      0 2px 8px rgba(0, 0, 0, 0.40),
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   }
 
   * {
@@ -206,10 +208,10 @@
     font-size: 13px;
     line-height: 1.5;
     background-image:
-      linear-gradient(rgba(49, 83, 109, 0.18) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(49, 83, 109, 0.14) 1px, transparent 1px),
-      linear-gradient(180deg, #0d0e10 0%, #11151a 100%);
-    background-size: 48px 48px, 48px 48px, auto;
+      radial-gradient(ellipse at 6% 0%, rgba(42, 178, 212, 0.06) 0%, transparent 38%),
+      radial-gradient(ellipse at 96% 96%, rgba(96, 165, 250, 0.04) 0%, transparent 36%),
+      linear-gradient(180deg, #08101a 0%, #08101a 100%);
+    background-size: auto;
   }
 
   #root {
@@ -2444,8 +2446,8 @@
   .workstation-masthead,
   .workspace-header-shell {
     background: var(--surface-topbar);
-    border-color: var(--border-hi);
-    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.78);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-panel);
   }
 
   .workstation-search,
@@ -2459,9 +2461,9 @@
   }
 
   .operator-rail {
-    background: #0a0c0f;
-    border-right-color: var(--border-hi);
-    box-shadow: 3px 0 0 rgba(0, 0, 0, 0.72);
+    background: #08131f;
+    border-right-color: var(--border-color);
+    box-shadow: 1px 0 0 rgba(255, 255, 255, 0.02) inset;
   }
 
   .operator-nav-item {
@@ -2476,9 +2478,9 @@
   }
 
   .operator-nav-item.active {
-    border-color: var(--cyan-primary);
-    background: #142232;
-    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.62);
+    border-color: rgba(42, 178, 212, 0.35);
+    background: rgba(42, 178, 212, 0.10);
+    box-shadow: inset 3px 0 0 var(--cyan-primary);
   }
 
   .panel-surface,
@@ -2514,8 +2516,8 @@
   .workflow-continuity-evidence-route {
     border-color: var(--border-color);
     border-radius: var(--radius-xs);
-    background: #11151a;
-    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.54);
+    background: #0b1520;
+    box-shadow: var(--shadow-panel);
   }
 
   .meridian-toolbar-chip.active,
@@ -2526,9 +2528,9 @@
   }
 
   .workflow-continuity-dock {
-    border-bottom-color: var(--border-hi);
-    background: #0d0e10;
-    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.62);
+    border-bottom-color: var(--border-color);
+    background: #08101a;
+    box-shadow: var(--shadow-panel);
   }
 
   .workflow-continuity-disclosure,
@@ -2538,14 +2540,14 @@
   .workflow-continuity-evidence-item {
     border-color: var(--border-color);
     border-radius: var(--radius-sm);
-    background: #11151a;
-    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.52);
+    background: #0b1520;
+    box-shadow: var(--shadow-panel);
   }
 
   .dense-data-table-wrap {
-    border-color: var(--border-hi);
+    border-color: var(--border-color);
     border-radius: var(--radius-md);
-    background: #0d0e10;
+    background: #08101a;
     box-shadow: var(--shadow-panel);
   }
 
@@ -2555,7 +2557,7 @@
   }
 
   .dense-data-table thead {
-    background: #20242a;
+    background: #101c2b;
   }
 
   .dense-data-table th {
