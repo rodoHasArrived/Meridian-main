@@ -14,6 +14,10 @@ namespace Meridian.Ui.Shared.Serialization;
     PropertyNameCaseInsensitive = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(FamilyOfficeOverviewDto))]
+[JsonSerializable(typeof(FamilyOfficeEndpointStateDto))]
+[JsonSerializable(typeof(FamilyOfficeBalanceSheetResponseDto))]
+[JsonSerializable(typeof(FamilyOfficeEntitiesResponseDto))]
+[JsonSerializable(typeof(FamilyOfficeOwnershipGraphResponseDto))]
 [JsonSerializable(typeof(FamilyBalanceSheetDto))]
 [JsonSerializable(typeof(FamilyEntityDto))]
 [JsonSerializable(typeof(IReadOnlyList<FamilyEntityDto>))]
