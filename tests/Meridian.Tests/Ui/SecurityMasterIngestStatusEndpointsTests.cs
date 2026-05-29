@@ -155,6 +155,36 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
     }
 
     [Fact]
+    public async Task MapSecurityMasterEndpoints_AssetProfilePromotionCandidatesRoute_ReturnsPackagePromotionAssessments()
+    {
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        using var app = CreateApp(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            importService,
+            eventStore);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(UiApiRoutes.SecurityMasterAssetProfilePromotionCandidates);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<SecurityAssetProfilePromotionCandidateDto[]>(
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        payload.Should().NotBeNull();
+        var structuredCredit = payload!.Should()
+            .ContainSingle(candidate => candidate.ProfileId == "structured-credit-io-po")
+            .Subject;
+        structuredCredit.Readiness.Should().Be(SecurityAssetProfilePromotionReadinessDto.ReadyForFirstClassPackage);
+        structuredCredit.RecommendedPackageId.Should().Be("fixed-income.structured-credit");
+        structuredCredit.Signals.Should().Contain(signal => signal.Code == "projection.factor-schedule");
+    }
+
+    [Fact]
     public async Task MapSecurityMasterEndpoints_AssetProfileGovernanceRoutes_DraftApproveAndExposeLineage()
     {
         var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
