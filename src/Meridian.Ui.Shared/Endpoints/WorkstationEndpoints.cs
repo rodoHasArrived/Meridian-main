@@ -87,6 +87,7 @@ public static partial class WorkstationEndpoints
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);
         MapFeatureCapabilityEndpoints(group, jsonOptions);
+        MapFamilyOfficeEndpoints(group);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,
