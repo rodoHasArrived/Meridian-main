@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -42,6 +43,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             "LEDGER_JOURNAL_AGGREGATE_ID_MISMATCH",
             "LEDGER_JOURNAL_PERIOD_ID_MISMATCH",
             "LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING",
+            "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED",
             "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISMATCH",
             "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISMATCH",
             "RECONCILIATION_EXTERNAL_EVIDENCE_MISSING_LEDGER_POSTING",
@@ -420,6 +422,18 @@ public sealed class OperationsContinuityWorkflowServiceTests
         closed.Workflow.CloseReadiness!.IsReadyToClose.Should().BeTrue();
         closed.Workflow.CloseReadiness.Score.Should().Be(100);
         closed.Workflow.CloseReadiness.Components.Should().HaveCount(9);
+        closed.Workflow.CloseReadiness.Components.Select(component => component.Key).Should().BeEquivalentTo(
+        [
+            "security-master",
+            "provider-freshness",
+            "positions",
+            "cash",
+            "ledger",
+            "pricing",
+            "reconciliation",
+            "reports",
+            "approvals"
+        ], "the W4 close score must stay grounded in the shared evidence domains");
         closed.Workflow.CloseReadiness.Components.Should().OnlyContain(component => component.IsReady);
         closed.Workflow.ClosePackage.Should().NotBeNull();
         closed.Workflow.ClosePackage!.ReportPackId.Should().Be("report-pack-1");
@@ -569,6 +583,36 @@ public sealed class OperationsContinuityWorkflowServiceTests
             blocker.Code == "BROKER_PROVIDER_CAPABILITY_DEGRADED" &&
             blocker.Severity == "Warning");
         posture.Workflow.CloseReadiness.Score.Should().BeLessThan(100);
+    }
+
+    [Fact]
+    public async Task CloseReadiness_ShouldOnlyEmitSharedContractBlockerCodes()
+    {
+        var service = CreateService(out _, out _);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            SecurityMasterSnapshotId: Guid.NewGuid(),
+            BrokerSource: "custodian",
+            Actor: "ops-user",
+            Rationale: "Open monthly operations close workflow"));
+
+        start.Workflow!.CloseReadiness.Should().NotBeNull();
+        start.Workflow.CloseReadiness!.Blockers.Select(blocker => blocker.Code)
+            .Should().OnlyContain(code => OperationsWorkflowContractMatrix.BlockerCodes.Contains(code),
+                "browser and WPF close-readiness consumers depend on shared blocker-code routing");
+        start.Workflow.CloseReadiness.Components.Select(component => component.Key).Should().BeEquivalentTo(
+        [
+            "security-master",
+            "provider-freshness",
+            "positions",
+            "cash",
+            "ledger",
+            "pricing",
+            "reconciliation",
+            "reports",
+            "approvals"
+        ]);
     }
 
     [Fact]
@@ -1045,6 +1089,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         result.ErrorCode.Should().Be("VALIDATION_FAILED");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_ID_MISSING");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISSING");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISSING");
@@ -1237,6 +1282,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISSING");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_ID_MISSING");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED");
+        result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_PROVENANCE_MISSING");
         result.Blockers.Should().Contain(blocker => blocker.Code == "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISSING");
@@ -1275,6 +1321,34 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectInstrumentLineWithoutActiveSecurityMasterStatus()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateInstrumentJournalCandidate(
+            workflow.FundAccountId,
+            securityMasterStatus: SecurityStatusDto.Inactive);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-inactive-security-master",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
     public async Task PostLedgerEntriesAsync_ShouldPersistInstrumentLineSecurityMasterLineage()
     {
         var journalStore = new RecordingLedgerJournalStore();
@@ -1296,6 +1370,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         journal.Metadata.Tags!["securityMasterLineage"].Should().Contain("AAPL");
         journal.Metadata.Tags!["securityMasterLineage"].Should().Contain("ledger-map:aapl-gaap-securities");
         journal.Metadata.Tags!["securityMasterLineage"].Should().Contain("sm-approval:aapl-controller");
+        journal.Metadata.Tags!["securityMasterLineage"].Should().Contain("security-status:Active");
         journal.Metadata.Tags!["securityMasterLineage"].Should().Contain(candidate.Lines[0].SecurityId!.Value.ToString("N"));
     }
 
@@ -2370,7 +2445,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
         Guid? aggregateId = null,
         Guid? periodId = null,
         bool includeLineSecurityMasterEvidence = true,
-        bool includeSecurityMasterApprovalReference = true)
+        bool includeSecurityMasterApprovalReference = true,
+        SecurityStatusDto? securityMasterStatus = SecurityStatusDto.Active)
     {
         var securityId = Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1");
         var provenance = $"security-master:{securityId:N};snapshot:test-source-hash;approved:true";
@@ -2397,7 +2473,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
                     LedgerMappingReference: includeLineSecurityMasterEvidence ? "ledger-map:aapl-gaap-securities" : null,
                     SecurityMasterApprovalReference: includeLineSecurityMasterEvidence && includeSecurityMasterApprovalReference
                         ? approvalReference
-                        : null),
+                        : null,
+                    SecurityMasterStatus: includeLineSecurityMasterEvidence ? securityMasterStatus : null),
                 new OperationsLedgerJournalLineDto(
                     EntryId: null,
                     AccountName: "Cash",

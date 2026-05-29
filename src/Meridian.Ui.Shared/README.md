@@ -253,6 +253,9 @@ status.
 expose closed-period ledger reports from the shared ledger book service. They keep trial balance,
 revenue, expense, net income, prior-period variance, open-break count, and signoff posture
 server-derived for browser and WPF accounting surfaces.
+`/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` aggregate those
+closed-period summaries across a selected book, fund, node, accounting basis, and date range for
+regulatory, investor, and internal reporting surfaces.
 Closed Operations Continuity workflow detail payloads include the governed close-package
 publication manifest metadata produced by the close command: signer, sign-off rationale, retained
 manifest id/route, evidence hash, report pack id, linked evidence, and checklist approvals.

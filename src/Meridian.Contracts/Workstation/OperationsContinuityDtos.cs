@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -230,6 +231,7 @@ public static class OperationsWorkflowContractMatrix
         "LEDGER_JOURNAL_SECURITY_MASTER_PROVENANCE_MISMATCH",
         "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING",
         "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED",
+        "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED",
         "LEDGER_LINE_SECURITY_MASTER_ID_MISMATCH",
         "LEDGER_LINE_SECURITY_MASTER_ID_MISSING",
         "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISSING",
@@ -364,6 +366,7 @@ public static class OperationsWorkflowContractMatrix
         "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
         "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING",
         "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED",
+        "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED",
         "LEDGER_LINE_SECURITY_MASTER_ID_MISMATCH",
         "LEDGER_LINE_SECURITY_MASTER_ID_MISSING",
         "LEDGER_LINE_SECURITY_MASTER_SYMBOL_MISSING",
@@ -554,7 +557,8 @@ public sealed record OperationsLedgerJournalLineDto(
     bool SecurityMasterApproved = false,
     string? SecurityMasterProvenance = null,
     string? LedgerMappingReference = null,
-    string? SecurityMasterApprovalReference = null);
+    string? SecurityMasterApprovalReference = null,
+    SecurityStatusDto? SecurityMasterStatus = null);
 
 public sealed record OperationsJournalEntryMetadataDto(
     string? ActivityType = null,

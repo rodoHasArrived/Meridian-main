@@ -32,9 +32,11 @@ and UI presentation concerns in their owning layers.
   commands also publish governed close-package metadata on the workflow, including signer,
   sign-off rationale, retained manifest id/route, evidence hash, report pack id, evidence links,
   and checklist approvals. Close readiness is scored server-side across Security Master, provider-data freshness, position, cash,
-  ledger, pricing, reconciliation, report, and approval components. The provider freshness
-  component uses the same broker-sync stale posture signal that blocks the broker ingest gate, so
-  controller close calendars do not treat stale provider data as merely a UI warning. Gate posture
+  ledger, pricing, reconciliation, report, and approval components. Readiness blockers use the
+  shared Operations Continuity blocker-code matrix so browser and WPF routes do not need
+  client-local close-readiness codes. The provider freshness component uses the same broker-sync
+  stale posture signal that blocks the broker ingest gate, so controller close calendars do not
+  treat stale provider data as merely a UI warning. Gate posture
   also accepts required and degraded provider capability gaps from the provider routing matrix:
   required balance, position, reconciliation, or account-scoped gaps block broker ingest, while
   quote-history, corporate-action, factor-schedule, or asset-class degradation moves broker ingest
@@ -51,10 +53,10 @@ and UI presentation concerns in their owning layers.
   explicit approval reference, provenance, and ledger-mapping evidence for every instrument-bearing
   journal line before the durable journal can be appended, including securities-style account lines
   that omit symbol metadata. Candidate and line-level provenance must reference the resolved
-  Security Master id carried by the journal metadata or instrument line, and instrument line
-  symbols must match the journal-level Security Master symbol before posting. Ledger-mapping
-  references must also identify the same resolved symbol or Security Master id instead of using a
-  generic account mapping token.
+  Security Master id carried by the journal metadata or instrument line, line status must still be
+  active, and instrument line symbols must match the journal-level Security Master symbol before
+  posting. Ledger-mapping references must also identify the same resolved symbol or Security Master
+  id instead of using a generic account mapping token.
 - `Reconciliation/` - statement reconciliation orchestration and broker/custodian intake that
   validates canonical external statement files, creates durable reconciliation cases for unresolved
   cash/activity rows, requires row currency equality before broker/custodian auto-match, appends

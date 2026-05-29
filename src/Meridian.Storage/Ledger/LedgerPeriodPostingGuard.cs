@@ -139,6 +139,12 @@ public static class LedgerPeriodPostingGuard
                 $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without approved Security Master evidence.");
         }
 
+        if (!HasActiveSecurityMasterStatus(provenance, lineage))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without active Security Master status evidence.");
+        }
+
         if (!HasLedgerMappingEvidence(lineage))
         {
             throw new LedgerValidationException(
@@ -206,6 +212,15 @@ public static class LedgerPeriodPostingGuard
         provenance.Contains("approved:true", StringComparison.OrdinalIgnoreCase) ||
         lineage.Contains("sm-approval:", StringComparison.OrdinalIgnoreCase) ||
         lineage.Contains("approval:", StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasActiveSecurityMasterStatus(string provenance, string lineage) =>
+        ContainsActiveSecurityMasterStatus(provenance) ||
+        ContainsActiveSecurityMasterStatus(lineage);
+
+    private static bool ContainsActiveSecurityMasterStatus(string value) =>
+        value.Contains("security-status:active", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("securitystatus:active", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("status:active", StringComparison.OrdinalIgnoreCase);
 
     private static bool HasLedgerMappingEvidence(string lineage) =>
         lineage.Contains("ledger-map:", StringComparison.OrdinalIgnoreCase) ||

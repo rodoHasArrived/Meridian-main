@@ -46,13 +46,13 @@ clients to infer close readiness from provider metadata. Closed operations workf
 publish `OperationsClosePackagePublicationDto` with close-package id, retained manifest id/route,
 evidence hash, sign-off actor/rationale, report pack id, evidence links, and checklist approvals so
 clients can inspect close-package publication without rebuilding package metadata locally. Ledger
-journal line DTOs carry optional Security Master identity, approval reference, provenance, and
-ledger-mapping evidence, and the shared blocker vocabulary includes the posting gate failures used
-when an instrument-bearing posting lacks that proof or when journal/line provenance does not
-reference the resolved Security Master id. The vocabulary also includes symbol mismatch blockers
-for journal candidates whose instrument line symbol diverges from the journal-level Security Master
-symbol and mapping mismatch blockers for generic ledger-mapping references that do not name the
-resolved symbol or Security Master id.
+journal line DTOs carry optional Security Master identity, active status, approval reference,
+provenance, and ledger-mapping evidence, and the shared blocker vocabulary includes the posting
+gate failures used when an instrument-bearing posting lacks that proof or when journal/line
+provenance does not reference the resolved Security Master id. The vocabulary also includes symbol
+mismatch blockers for journal candidates whose instrument line symbol diverges from the
+journal-level Security Master symbol and mapping mismatch blockers for generic ledger-mapping
+references that do not name the resolved symbol or Security Master id.
 
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
@@ -188,9 +188,10 @@ passports to open global Security Master casework for the same held securities, 
 identifier-conflict or operator-override cases remain visible in the controller score.
 
 Report-line provenance payloads live with the fund-operations workstation contracts.
-Ledger period reporting DTOs expose closed-period trial-balance rows and P&L summary totals with
-accounting-basis, policy, prior-period variance, open-break count, and signoff posture so clients
-can render period close reports without recomputing ledger semantics locally.
+Ledger period and cross-period reporting DTOs expose closed-period trial-balance rows and P&L
+summary totals with accounting-basis, policy, prior-period variance, open-break count, and signoff
+posture so clients can render period close and cross-period reports without recomputing ledger
+semantics locally.
 `LedgerAmountProvenanceDetailDto` is the shared click-through contract for a retained report-pack
 ledger amount: it carries the ledger amount, provider/source evidence pointers, Security Master
 link, reconciliation run and case state, compact related-case owner/status/sign-off routing,

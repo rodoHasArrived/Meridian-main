@@ -232,6 +232,20 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_InstrumentEntry_RequiresActiveSecurityMasterStatus()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            includeActiveSecurityMasterStatus: false);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without active Security Master status evidence*");
+    }
+
+    [Fact]
     public void PostingGuard_InstrumentEntry_RequiresSecurityMasterLedgerMapping()
     {
         var period = BuildAccountingPeriod("Open");
@@ -374,6 +388,7 @@ public sealed class LedgerJournalStoreTests
         Guid periodId,
         bool includeSecurityMasterProvenance = true,
         bool includeApprovalEvidence = true,
+        bool includeActiveSecurityMasterStatus = true,
         bool includeLedgerMapping = true,
         string? instrumentLineSymbol = "AAPL")
     {
@@ -384,12 +399,13 @@ public sealed class LedgerJournalStoreTests
         const string description = "Approved Security Master instrument posting";
         var mapping = includeLedgerMapping ? "ledger-map:aapl-gaap-securities" : "missing";
         var approval = includeApprovalEvidence ? "sm-approval:aapl-controller" : "missing";
+        var activeStatus = includeActiveSecurityMasterStatus ? "status:active" : "missing";
         var provenance = includeApprovalEvidence
-            ? $"security-master:{securityId:N};snapshot:test-source-hash;approved:true"
+            ? $"security-master:{securityId:N};snapshot:test-source-hash;approved:true;{activeStatus}"
             : $"security-master:{securityId:N};snapshot:test-source-hash";
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["securityMasterLineage"] = $"{symbol}:{securityId:N}:{mapping}:{approval}:{provenance}"
+            ["securityMasterLineage"] = $"{symbol}:{securityId:N}:{mapping}:{approval}:{activeStatus}:{provenance}"
         };
         if (includeSecurityMasterProvenance)
         {

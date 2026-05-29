@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -1179,7 +1180,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         AddComponent(components, blockers, "ledger", "Ledger", 15,
             workflow.LedgerPostingGate.Status == OperationsGateStatusDto.Passed &&
                 workflow.LedgerPostingState is OperationsLedgerPostingStateDto.Posted or OperationsLedgerPostingStateDto.Complete,
-            "POSTING_INCOMPLETE",
+            "LEDGER_POSTING_REQUIRED",
             "Ledger posting state is not complete for close.",
             OperationsGateKeyDto.LedgerPosting,
             "/workstation/accounting");
@@ -1195,21 +1196,21 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 workflow.BreakCases.All(static item =>
                     string.Equals(item.Status, "closed", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(item.Status, "resolved", StringComparison.OrdinalIgnoreCase)),
-            "RECONCILIATION_BREAKS_OPEN",
+            "RECONCILIATION_CRITICAL_BREAKS_OPEN",
             "Unresolved reconciliation breaks still require disposition.",
             OperationsGateKeyDto.Reconciliation,
             "/workstation/accounting");
         AddComponent(components, blockers, "reports", "Reports", 10,
             workflow.ReportPackReadiness.IsReady &&
                 !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId),
-            "EVIDENCE_INCOMPLETE",
+            "REPORT_PACK_REQUIRED",
             "Close evidence is incomplete or report pack is missing.",
             OperationsGateKeyDto.Approval,
             "/workstation/reporting");
         AddComponent(components, blockers, "approvals", "Approvals", 10,
             workflow.ApprovalGate.Status == OperationsGateStatusDto.Passed &&
                 workflow.ApprovalState == OperationsApprovalStateDto.Approved,
-            "APPROVAL_MISSING",
+            "APPROVAL_REQUIRED",
             "Close requires final approval before execution.",
             OperationsGateKeyDto.Approval,
             "/workstation/accounting");
@@ -1664,6 +1665,14 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                         evidence));
                 }
 
+                if (line.SecurityMasterStatus != SecurityStatusDto.Active)
+                {
+                    blockers.Add(CreateJournalCandidateBlocker(
+                        "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED",
+                        $"Ledger journal candidate line for {lineLabel} requires active Security Master status evidence before posting.",
+                        evidence));
+                }
+
                 if (string.IsNullOrWhiteSpace(line.SecurityMasterApprovalReference))
                 {
                     blockers.Add(CreateJournalCandidateBlocker(
@@ -1845,7 +1854,10 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 var approval = string.IsNullOrWhiteSpace(line.SecurityMasterApprovalReference)
                     ? "missing"
                     : line.SecurityMasterApprovalReference.Trim();
-                return $"{symbol}:{securityId}:{mapping}:{approval}:{provenance}";
+                var status = line.SecurityMasterStatus is null
+                    ? "missing"
+                    : $"security-status:{line.SecurityMasterStatus.Value}";
+                return $"{symbol}:{securityId}:{mapping}:{approval}:{status}:{provenance}";
             })
             .ToArray();
 
