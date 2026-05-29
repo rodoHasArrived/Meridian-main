@@ -160,7 +160,8 @@ public sealed partial class WorkstationEndpointsTests
                 SecurityMasterSnapshotId: null,
                 BrokerSource: "custodian",
                 Actor: "local-actor"));
-        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var startBody = await startResponse.Content.ReadAsStringAsync();
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK, startBody);
         var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
 
         using var calendarResponse = await client.GetAsync($"{UiApiRoutes.OperationsContinuityCloseCalendar}?fundAccountId={fundAccountId}&periodId=2026-07");
