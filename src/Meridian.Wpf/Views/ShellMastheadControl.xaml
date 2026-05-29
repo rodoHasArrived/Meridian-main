@@ -1,0 +1,119 @@
+<UserControl x:Class="Meridian.Wpf.Views.ShellMastheadControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Shell Masthead">
+    <Border Height="44"
+            Background="{StaticResource TopBarBackgroundBrush}"
+            BorderBrush="{StaticResource TopBarBorderBrush}"
+            BorderThickness="0,0,0,1">
+        <DockPanel Margin="16,0" LastChildFill="False">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{StaticResource IconChart}"
+                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                           FontSize="16"
+                           Foreground="{StaticResource TopBarIconAccentBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0" />
+                <TextBlock Text="Meridian"
+                           FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource TopBarTextBrush}"
+                           VerticalAlignment="Center" />
+                <TextBlock Text="Operator Workstation"
+                           FontFamily="{StaticResource MeridianBodyFontFamily}"
+                           FontSize="12"
+                           Foreground="#6B7280"
+                           VerticalAlignment="Center"
+                           Margin="12,0,0,0" />
+            </StackPanel>
+
+            <StackPanel x:Name="TopBarContextChrome"
+                        DockPanel.Dock="Right"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding DataWorkspaceHomeChromeVisibility}">
+                <Border Background="{StaticResource TopBarBorderBrush}"
+                        CornerRadius="3"
+                        Padding="8,3"
+                        Margin="0,0,12,0"
+                        Visibility="{Binding ActiveFundVisibility}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE8B7;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="11"
+                                   Foreground="#F59E0B"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding ActiveFundName}"
+                                   Margin="6,0,0,0"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TopBarTextBrush}" />
+                        <TextBlock Text="{Binding ActiveFundSubtitle}"
+                                   Margin="6,0,0,0"
+                                   FontSize="11"
+                                   Foreground="#9CA3AF" />
+                    </StackPanel>
+                </Border>
+                <ComboBox Width="220"
+                          Margin="0,0,8,0"
+                          ItemsSource="{Binding OperatingContexts}"
+                          SelectedItem="{Binding SelectedOperatingContext, Mode=TwoWay}"
+                          DisplayMemberPath="DisplayName"
+                          Background="{StaticResource TopBarBorderBrush}"
+                          Foreground="{StaticResource TopBarTextBrush}"
+                          BorderBrush="{StaticResource SidebarBorderBrush}"
+                          Padding="6,2"
+                          ToolTip="Switch operating context"
+                          AutomationProperties.Name="Operating Context Switcher" />
+                <Button Style="{StaticResource IconButtonStyle}"
+                        Command="{Binding SwitchFundCommand}"
+                        ToolTip="Choose Operating Context"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="{StaticResource TopBarTextBrush}"
+                        Width="28" Height="28" Padding="4"
+                        Margin="0,0,8,0"
+                        AutomationProperties.Name="Choose Operating Context">
+                    <TextBlock Text="&#xE777;"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="14"
+                               Foreground="#9CA3AF" />
+                </Button>
+                <ComboBox Width="132"
+                          Margin="0,0,8,0"
+                          ItemsSource="{Binding WindowModes}"
+                          SelectedItem="{Binding SelectedWindowMode, Mode=TwoWay}"
+                          Background="{StaticResource TopBarBorderBrush}"
+                          Foreground="{StaticResource TopBarTextBrush}"
+                          BorderBrush="{StaticResource SidebarBorderBrush}"
+                          Padding="6,2"
+                          ToolTip="Select bounded window mode"
+                          AutomationProperties.Name="Window Mode Switcher" />
+                <Border Background="{StaticResource TopBarBorderBrush}"
+                        CornerRadius="3"
+                        Padding="8,3"
+                        Margin="0,0,12,0">
+                    <TextBlock Text="{Binding CurrentModeName}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="#60A5FA" />
+                </Border>
+                <Button Style="{StaticResource IconButtonStyle}"
+                        Command="{Binding ShowCommandPaletteCommand}"
+                        ToolTip="Search (Ctrl+K)"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="{StaticResource TopBarTextBrush}"
+                        Width="28" Height="28" Padding="4"
+                        AutomationProperties.Name="Search">
+                    <TextBlock Text="{StaticResource IconSearch}"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="14"
+                               Foreground="#9CA3AF" />
+                </Button>
+            </StackPanel>
+        </DockPanel>
+    </Border>
+</UserControl>
+

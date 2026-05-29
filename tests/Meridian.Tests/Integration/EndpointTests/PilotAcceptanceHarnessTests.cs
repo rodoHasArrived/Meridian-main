@@ -370,7 +370,10 @@ public sealed class PilotAcceptanceHarnessTests
                 Path.Combine(root, "promotions"),
                 NullLogger<JsonlPromotionRecordStore>.Instance));
 
-        builder.Services.AddUiSharedServices(configPath);
+        using (InMemoryGovernanceFixtureProfile.Enable())
+        {
+            builder.Services.AddUiSharedServices(configPath);
+        }
 
         builder.Services.AddSingleton(_ => new ExecutionAuditTrailService(
             new ExecutionAuditTrailOptions(Path.Combine(root, "audit")),
@@ -1204,6 +1207,33 @@ public sealed class PilotAcceptanceHarnessTests
         public async ValueTask DisposeAsync()
         {
             await App.DisposeAsync();
+        }
+    }
+
+    private sealed class InMemoryGovernanceFixtureProfile : IDisposable
+    {
+        private readonly string? _originalAspNetCoreEnvironment;
+        private readonly string? _originalDotnetEnvironment;
+        private readonly string? _originalUseInMemoryGovernance;
+
+        private InMemoryGovernanceFixtureProfile()
+        {
+            _originalAspNetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            _originalDotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+            _originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
+
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
+            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        }
+
+        public static InMemoryGovernanceFixtureProfile Enable() => new();
+
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", _originalAspNetCoreEnvironment);
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", _originalDotnetEnvironment);
+            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", _originalUseInMemoryGovernance);
         }
     }
 

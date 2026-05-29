@@ -1,0 +1,431 @@
+<UserControl x:Class="Meridian.Wpf.Views.ShellRailControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Shell Rail">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <Style x:Key="ShellNavItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,1,0,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Grid Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Rectangle x:Name="ActiveIndicator"
+                                       Grid.Column="0"
+                                       Fill="{StaticResource SidebarActiveIndicatorBrush}"
+                                       Visibility="Collapsed" />
+                            <Border x:Name="ItemContent"
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    Padding="12,9">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemContent" Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource NavItemForegroundHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemContent" Property="Background" Value="{StaticResource SidebarActiveBrush}" />
+                                <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible" />
+                                <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ShellNavIconStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Width" Value="18" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="ShellNavLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="10,0,0,0" />
+        </Style>
+
+        <Style x:Key="ShellNavTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource ShellNavLabelStyle}">
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="ShellNavSubtitleStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
+            <Setter Property="Opacity" Value="0.78" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="SidebarShellSectionLabelStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource ShellSectionLabelStyle}">
+            <Setter Property="Foreground" Value="{StaticResource NavSectionLabelBrush}" />
+        </Style>
+
+        <Style x:Key="WorkspaceTileStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource SidebarTileBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SidebarBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="MinHeight" Value="52" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template" Value="{StaticResource SidebarButtonTemplate}" />
+        </Style>
+
+        <Style x:Key="RecentPageButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{StaticResource SidebarBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="0,0,6,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template" Value="{StaticResource SidebarButtonTemplate}" />
+        </Style>
+
+        <Style x:Key="FooterNavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template" Value="{StaticResource SidebarButtonTemplate}" />
+        </Style>
+
+        <DataTemplate x:Key="ShellNavigationItemTemplate">
+            <Grid Margin="0,2,0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="{Binding Glyph}"
+                           Style="{StaticResource ShellNavIconStyle}"
+                           VerticalAlignment="Top" />
+
+                <StackPanel Grid.Column="1"
+                            Margin="10,0,0,0">
+                    <TextBlock Text="{Binding Title}"
+                               Style="{StaticResource ShellNavTitleStyle}" />
+                    <TextBlock Text="{Binding Subtitle}"
+                               Style="{StaticResource ShellNavSubtitleStyle}"
+                               Margin="0,2,0,0" />
+                    <TextBlock Text="{Binding MetaLine}"
+                               Style="{StaticResource SidebarShellSectionLabelStyle}"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Border Width="220"
+            Background="{StaticResource SidebarBackgroundBrush}"
+            BorderBrush="{StaticResource SidebarBorderBrush}"
+            BorderThickness="0,0,1,0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Padding="12,10"
+                    BorderBrush="{StaticResource SidebarBorderBrush}"
+                    BorderThickness="0,0,0,1">
+                <StackPanel>
+                    <TextBlock Text="Workspaces"
+                               Style="{StaticResource SidebarShellSectionLabelStyle}"
+                               Margin="4,0,0,4"/>
+                    <ItemsControl ItemsSource="{Binding WorkspaceTiles}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Width="94"
+                                        MinHeight="68"
+                                        Command="{Binding DataContext.NavigateToPageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding HomePageTag}"
+                                        Margin="0,0,4,4"
+                                        AutomationProperties.AutomationId="{Binding AutomationId}"
+                                        AutomationProperties.Name="{Binding AutomationName}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource SidebarActiveBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding TileSummary}"
+                                                   Margin="0,2,0,0" FontSize="10"
+                                                   Opacity="0.75" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="1"
+                    Padding="16,8"
+                    BorderBrush="{StaticResource SidebarBorderBrush}"
+                    BorderThickness="0,0,0,1">
+                <StackPanel>
+                    <TextBlock Text="{Binding ActiveNavigationLabel}"
+                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                </StackPanel>
+            </Border>
+
+            <ScrollViewer Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="0,6,0,12">
+                <StackPanel>
+                    <TextBlock Text="{Binding WorkspaceSummary}"
+                               Style="{StaticResource CardDescriptionStyle}"
+                               Margin="16,0,16,10"
+                               TextWrapping="Wrap" />
+
+                    <TextBlock Text="Home"
+                               Style="{StaticResource SidebarShellSectionLabelStyle}"
+                               Margin="16,0,0,6" />
+                    <ListBox x:Name="WorkspacePrimaryNavList"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                             ItemTemplate="{StaticResource ShellNavigationItemTemplate}"
+                             ItemsSource="{Binding PrimaryNavigationItems}"
+                             SelectedValuePath="PageTag"
+                             SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                             SelectionChanged="WorkspaceNavigationList_SelectionChanged"
+                             AutomationProperties.AutomationId="WorkspacePrimaryNavList"
+                             AutomationProperties.Name="Home Navigation" />
+
+                    <StackPanel Visibility="{Binding HasSecondaryNavigation, Converter={StaticResource BoolToVisibility}}">
+                        <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
+                        <TextBlock Text="Active Work"
+                                   Style="{StaticResource SidebarShellSectionLabelStyle}"
+                                   Margin="16,0,0,6" />
+                        <ListBox x:Name="WorkspaceSecondaryNavList"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                                 ItemTemplate="{StaticResource ShellNavigationItemTemplate}"
+                                 ItemsSource="{Binding SecondaryNavigationItems}"
+                                 SelectedValuePath="PageTag"
+                                 SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                 SelectionChanged="WorkspaceNavigationList_SelectionChanged"
+                                 AutomationProperties.AutomationId="WorkspaceSecondaryNavList"
+                                 AutomationProperties.Name="Active Work Navigation" />
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding HasOverflowNavigation, Converter={StaticResource BoolToVisibility}}">
+                        <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
+                        <TextBlock Text="Review / Alerts"
+                                   Style="{StaticResource SidebarShellSectionLabelStyle}"
+                                   Margin="16,0,0,6" />
+                        <ListBox x:Name="WorkspaceOverflowNavList"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                                 ItemTemplate="{StaticResource ShellNavigationItemTemplate}"
+                                 ItemsSource="{Binding OverflowNavigationItems}"
+                                 SelectedValuePath="PageTag"
+                                 SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                 SelectionChanged="WorkspaceNavigationList_SelectionChanged"
+                                 AutomationProperties.AutomationId="WorkspaceOverflowNavList"
+                                 AutomationProperties.Name="Review and Alerts Navigation" />
+                    </StackPanel>
+
+                    <StackPanel Visibility="{Binding HasRelatedWorkflows, Converter={StaticResource BoolToVisibility}}">
+                        <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
+                        <TextBlock Text="Support"
+                                   Style="{StaticResource SidebarShellSectionLabelStyle}"
+                                   Margin="16,0,0,6" />
+                        <ListBox x:Name="RelatedWorkflowNavList"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                                 ItemTemplate="{StaticResource ShellNavigationItemTemplate}"
+                                 ItemsSource="{Binding RelatedWorkflowItems}"
+                                 SelectedValuePath="PageTag"
+                                 SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                 SelectionChanged="WorkspaceNavigationList_SelectionChanged"
+                                 AutomationProperties.AutomationId="RelatedWorkflowNavList"
+                                 AutomationProperties.Name="Support Navigation" />
+                    </StackPanel>
+
+                    <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
+
+                    <DockPanel Margin="16,0,16,6" LastChildFill="False">
+                        <TextBlock Text="Recent"
+                                   Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                        <Border DockPanel.Dock="Right"
+                                Style="{StaticResource NeutralBadgeStyle}">
+                            <TextBlock x:Name="RecentPagesSummaryText"
+                                       Text="{Binding RecentPagesSummaryText}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       AutomationProperties.AutomationId="RecentPagesSummaryText" />
+                        </Border>
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding RecentPages}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Margin="12,0" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource RecentPageButtonStyle}"
+                                        Command="{Binding DataContext.NavigateToPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding PageTag}"
+                                        Content="{Binding DisplayName}"
+                                        AutomationProperties.AutomationId="{Binding PageTag, StringFormat=RecentPage{0}}"
+                                        AutomationProperties.Name="{Binding DisplayName}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Border x:Name="RecentPagesEmptyState"
+                            Margin="16,0,16,0"
+                            Padding="14"
+                            Visibility="{Binding RecentPagesEmptyVisibility}"
+                            Style="{StaticResource CompactCardStyle}"
+                            AutomationProperties.AutomationId="RecentPagesEmptyState"
+                            AutomationProperties.Name="Recent Pages Empty State">
+                        <StackPanel>
+                            <TextBlock x:Name="RecentPagesEmptyText"
+                                       Text="No recent pages yet."
+                                       AutomationProperties.AutomationId="RecentPagesEmptyText"
+                                       AutomationProperties.Name="Recent Pages Empty Title"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       FontSize="14" />
+                            <TextBlock Margin="0,6,0,0"
+                                       Text="{Binding RecentPagesHintText}"
+                                       Style="{StaticResource CardDescriptionStyle}" />
+                            <Button x:Name="RecentPagesEmptyActionButton"
+                                    Margin="0,10,0,0"
+                                    HorizontalAlignment="Left"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding ShowCommandPaletteCommand}"
+                                    AutomationProperties.AutomationId="RecentPagesEmptyActionButton"
+                                    AutomationProperties.Name="Open Command Palette From Recent Empty State">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{StaticResource IconSearch}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="12"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Open Command Palette"
+                                               Margin="8,0,0,0"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Row="3"
+                    Padding="12,10"
+                    BorderBrush="{StaticResource SidebarBorderBrush}"
+                    BorderThickness="0,1,0,0">
+                <StackPanel>
+                    <Button Style="{StaticResource FooterNavButtonStyle}"
+                            Command="{Binding ShowCommandPaletteCommand}"
+                            AutomationProperties.Name="Open Command Palette"
+                            ToolTip="Quick Command (Ctrl+K)">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconSearch}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="12" VerticalAlignment="Center" />
+                            <TextBlock Text="Command Palette"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource FooterNavButtonStyle}"
+                            Margin="0,4,0,0"
+                            Command="{Binding OpenNotificationsCommand}"
+                            ToolTip="Notifications">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconBell}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="12" VerticalAlignment="Center" />
+                            <TextBlock Text="Notifications"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource FooterNavButtonStyle}"
+                            Margin="0,4,0,0"
+                            Command="{Binding OpenHelpCommand}"
+                            AutomationProperties.Name="Help and Support">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconHelp}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="12" VerticalAlignment="Center" />
+                            <TextBlock Text="Help"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="TickerStripToggleButton"
+                            Style="{StaticResource FooterNavButtonStyle}"
+                            Margin="0,4,0,0"
+                            Command="{Binding ToggleTickerStripCommand}"
+                            AutomationProperties.AutomationId="TickerStripToggleButton"
+                            AutomationProperties.Name="Toggle Ticker Strip"
+                            ToolTip="Toggle live ticker strip">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#x1F4C8;" FontSize="11" VerticalAlignment="Center" />
+                            <TextBlock x:Name="TickerStripToggleLabelText"
+                                       Text="{Binding TickerStripLabel}"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>
+

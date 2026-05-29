@@ -372,6 +372,21 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public Visibility DataWorkspaceHomeChromeVisibility
         => IsDataWorkspaceHomePageActive ? Visibility.Collapsed : Visibility.Visible;
 
+    public WorkspaceShellLayoutDescriptor CurrentShellLayoutDescriptor
+        => ShellNavigationCatalog.GetWorkspaceLayoutDescriptor(CurrentWorkspace);
+
+    public ShellPosture CurrentShellPosture => CurrentShellLayoutDescriptor.Posture;
+
+    public string CurrentShellPostureName => CurrentShellPosture.ToString();
+
+    public string WorkspaceHomeTemplateAutomationId => CurrentShellLayoutDescriptor.HomeTemplateAutomationId;
+
+    public string WorkspaceEvidenceStripAutomationId => CurrentShellLayoutDescriptor.EvidenceStripAutomationId;
+
+    public string WorkspaceCommandSurfaceAutomationId => CurrentShellLayoutDescriptor.CommandSurfaceAutomationId;
+
+    public string WorkspaceInspectorHostAutomationId => CurrentShellLayoutDescriptor.InspectorHostAutomationId;
+
     public bool IsWorkflowPageActive => !IsWorkspaceHomePageActive;
 
     public bool IsStrategyWorkspaceActive => string.Equals(_currentWorkspace, "strategy", StringComparison.OrdinalIgnoreCase);
@@ -777,6 +792,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
+            RaiseShellLayoutPropertiesChanged();
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
             RaisePropertyChanged(nameof(IsStrategyWorkspaceActive));
@@ -1825,6 +1841,17 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         {
             target.Add(item);
         }
+    }
+
+    private void RaiseShellLayoutPropertiesChanged()
+    {
+        RaisePropertyChanged(nameof(CurrentShellLayoutDescriptor));
+        RaisePropertyChanged(nameof(CurrentShellPosture));
+        RaisePropertyChanged(nameof(CurrentShellPostureName));
+        RaisePropertyChanged(nameof(WorkspaceHomeTemplateAutomationId));
+        RaisePropertyChanged(nameof(WorkspaceEvidenceStripAutomationId));
+        RaisePropertyChanged(nameof(WorkspaceCommandSurfaceAutomationId));
+        RaisePropertyChanged(nameof(WorkspaceInspectorHostAutomationId));
     }
 
     private static void DispatchToUi(Action action)

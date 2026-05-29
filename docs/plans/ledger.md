@@ -29,9 +29,10 @@ adjustment lines. Account-level tax-lot relief now has deterministic FIFO/LIFO/H
 lot selection and realized gain/loss line projection. Automated journal drafts now have an
 in-memory governed approval-to-posting handoff that requires approval evidence and carries audit
 tags into the posted ledger journal. Ledger-specific period and cross-period reporting endpoints
-now expose trial-balance and P&L summaries from closed accounting periods. Durable accrual
-persistence, operator approval queues, tax-lot policy/lot persistence, and richer file-based
-ledger report exports remain open.
+now expose trial-balance and P&L summaries from closed accounting periods. The PostgreSQL ledger
+store now persists account-level tax-lot policies and open tax lots for ledger-book/account relief
+inputs. Durable accrual persistence, operator approval queues, tax-reporting exports, and richer
+file-based ledger report exports remain open.
 
 ## Overview
 
@@ -125,8 +126,9 @@ null. The dashboard treats a missing or non-route-only ledger artifact ref as a 
 | `Migrations/V_ledger_002__accounting_periods.sql` | `ledger.accounting_periods` plus `period_close_events` audit history and optimistic versioning |
 | `Migrations/V_ledger_003__ledger_books.sql` | `ledger.ledger_books`, fund-structure scope, and book-scoped accounting periods |
 | `Migrations/V_ledger_006__journal_posting_kind.sql` | `posting_kind` columns for originating vs. adjustment journal writes |
-| `ILedgerJournalStore.cs` | Journal, period, close-event, and ledger-book persistence contract |
-| `PostgresLedgerJournalStore.cs` | Npgsql implementation using serializable transactions and optimistic period version guards |
+| `Migrations/V_ledger_009__tax_lot_persistence.sql` | Account-level tax-lot policies plus open-lot persistence for FIFO/LIFO/HIFO/SpecificId relief inputs |
+| `ILedgerJournalStore.cs` | Journal, period, close-event, ledger-book, tax-lot policy, and open-lot persistence contract |
+| `PostgresLedgerJournalStore.cs` | Npgsql implementation using serializable transactions, optimistic period version guards, and tax-lot policy/open-lot upserts |
 | `LedgerPeriodPostingGuard.cs` | Central posting-date and period-status guard for durable ledger writes |
 | `LedgerJournalStoreOptions.cs` | Connection string, schema name, and period-locking configuration |
 | `LedgerStoreExtensions.cs` | DI registration for `ILedgerJournalStore` and `ILedgerBookService` |
@@ -205,7 +207,7 @@ say "basis per configured policy" until accountant review.
 
 ### Out of Scope
 
-- Durable tax-lot policy/lot persistence and tax-reporting exports (reporting/storage layer work)
+- Tax-reporting exports (reporting layer work; durable tax-lot policy/open-lot persistence exists)
 - Durable mark-to-market / GAAP fair-value adjustment posting (storage/workflow layer work)
 - Full XBRL/iXBRL output (reporting layer, not core ledger kernel)
 - Non-direct-lending instrument accrual templates (future UFL package work)

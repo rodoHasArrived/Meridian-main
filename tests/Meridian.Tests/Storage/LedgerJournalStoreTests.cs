@@ -350,6 +350,67 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("ux_operations_continuity_open_workflow");
     }
 
+    [Fact]
+    public void LedgerTaxLotPersistenceMigration_DefinesPoliciesLotsAndOpenLotIndexes()
+    {
+        var sql = ReadMigration("V_ledger_009__tax_lot_persistence.sql");
+
+        sql.Should().Contain("create table if not exists __SCHEMA__.tax_lot_policies");
+        sql.Should().Contain("relief_method text not null");
+        sql.Should().Contain("ck_tax_lot_policies_relief_method");
+        sql.Should().Contain("ux_tax_lot_policies_book_account_effective");
+        sql.Should().Contain("create table if not exists __SCHEMA__.tax_lots");
+        sql.Should().Contain("original_quantity numeric(38, 12) not null");
+        sql.Should().Contain("open_quantity numeric(38, 12) not null");
+        sql.Should().Contain("ck_tax_lots_quantity");
+        sql.Should().Contain("ux_tax_lots_book_account_lot");
+        sql.Should().Contain("ix_tax_lots_book_account_open");
+        sql.Should().Contain("ix_tax_lots_source_journal_entry");
+    }
+
+    [Fact]
+    public async Task SaveTaxLotPolicyAsync_RejectsInvalidPolicyBeforeOpeningConnection()
+    {
+        var store = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions());
+        var policy = new LedgerAccountTaxLotPolicyRecord(
+            PolicyRecordId: Guid.Empty,
+            LedgerBookId: Guid.NewGuid(),
+            Account: new LedgerAccount("Assets:Securities", LedgerAccountType.Asset, "AAPL"),
+            ReliefMethod: LedgerTaxLotReliefMethod.Hifo,
+            PolicyId: "tax-lot-policy-aapl-hifo",
+            EffectiveDate: new DateOnly(2026, 1, 1),
+            CreatedAt: DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            UpdatedAt: DateTimeOffset.Parse("2026-01-01T00:00:00Z"));
+
+        var act = () => store.SaveTaxLotPolicyAsync(policy);
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*policy record id*");
+    }
+
+    [Fact]
+    public async Task SaveTaxLotAsync_RejectsInvalidLotQuantityBeforeOpeningConnection()
+    {
+        var store = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions());
+        var lot = new LedgerTaxLotRecord(
+            TaxLotRecordId: Guid.NewGuid(),
+            LedgerBookId: Guid.NewGuid(),
+            Account: new LedgerAccount("Assets:Securities", LedgerAccountType.Asset, "AAPL"),
+            LotId: "lot-aapl-1",
+            AcquiredDate: new DateOnly(2026, 1, 5),
+            OriginalQuantity: 100m,
+            OpenQuantity: 125m,
+            UnitCost: 145m,
+            Currency: "USD",
+            CreatedAt: DateTimeOffset.Parse("2026-01-05T00:00:00Z"),
+            UpdatedAt: DateTimeOffset.Parse("2026-01-05T00:00:00Z"));
+
+        var act = () => store.SaveTaxLotAsync(lot);
+
+        await act.Should().ThrowAsync<ArgumentOutOfRangeException>()
+            .WithMessage("*Open tax-lot quantity*");
+    }
+
     private static LedgerJournalEntryWrite BuildBalancedJournalWrite(
         Guid periodId,
         DateTimeOffset? timestamp = null)

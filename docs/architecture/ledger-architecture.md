@@ -173,6 +173,13 @@ realized gain or loss to the scoped gain/loss account. It is intentionally deter
 in-memory; persistence, approval, and tax-reporting export remain responsibilities of the storage,
 workflow, and reporting layers.
 
+The PostgreSQL ledger store now owns the durable inputs for this projection. `ILedgerJournalStore`
+persists account-scoped tax-lot policies and open tax lots by ledger book/account, including
+FIFO/LIFO/HIFO/SpecificId method, effective-date policy evidence, original/open quantity, unit cost,
+currency, optional source journal entry, and evidence reference. The store does not perform relief
+selection or approve tax outcomes; application/workflow code must load the policy and open lots,
+run the ledger projector, and route the resulting journal through the governed posting path.
+
 ### `AutomatedJournalDraftProjector`
 
 `AutomatedJournalDraftProjector` turns normalized recurring/lifecycle events into balanced journal

@@ -1846,7 +1846,9 @@ export interface LedgerTrialBalanceLine {
   ruleId?: string | null;
   ruleVersion?: string | null;
   sourceEventId?: string | null;
+  sourceEventIds?: string[];
   sourceJournalEntryId?: string | null;
+  approvalIds?: string[];
 }
 
 export interface LedgerJournalLine {

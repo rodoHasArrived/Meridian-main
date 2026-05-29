@@ -1,0 +1,72 @@
+<UserControl x:Class="Meridian.Wpf.Views.WorkspaceInspectorHostControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinWidth="260"
+             AutomationProperties.AutomationId="{Binding WorkspaceInspectorHostAutomationId}"
+             AutomationProperties.Name="Workspace Inspector Host">
+    <Border Padding="12"
+            Background="{StaticResource ConsoleBackgroundLightBrush}"
+            BorderBrush="{StaticResource ConsoleBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Grid>
+            <StackPanel x:Name="EmptyStatePanel"
+                        AutomationProperties.AutomationId="WorkspaceInspectorEmptyState"
+                        AutomationProperties.Name="Workspace Inspector Empty State">
+                <TextBlock Text="{Binding EmptyTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Style="{StaticResource CardHeaderStyle}" />
+                <TextBlock Text="{Binding EmptyDetail, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Margin="0,6,0,0"
+                           Style="{StaticResource CardDescriptionStyle}" />
+            </StackPanel>
+
+            <StackPanel x:Name="SelectedStatePanel"
+                        Visibility="Collapsed"
+                        AutomationProperties.AutomationId="WorkspaceInspectorSelectedState"
+                        AutomationProperties.Name="Workspace Inspector Selected State">
+                <TextBlock Text="{Binding SelectedTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Style="{StaticResource CardHeaderStyle}" />
+                <TabControl Margin="0,10,0,0"
+                            AutomationProperties.AutomationId="WorkspaceInspectorTabs"
+                            AutomationProperties.Name="Workspace Inspector Tabs">
+                    <TabItem Header="Evidence">
+                        <TextBlock Text="{Binding SelectedDetail, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   Margin="8"
+                                   TextWrapping="Wrap"
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </TabItem>
+                    <TabItem Header="Actions">
+                        <TextBlock Text="{Binding SelectedActionDetail, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   Margin="8"
+                                   TextWrapping="Wrap"
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </TabItem>
+                </TabControl>
+            </StackPanel>
+
+            <StackPanel x:Name="LoadingStatePanel"
+                        Visibility="Collapsed"
+                        AutomationProperties.AutomationId="WorkspaceInspectorLoadingState"
+                        AutomationProperties.Name="Workspace Inspector Loading State">
+                <TextBlock Text="Loading inspector"
+                           Style="{StaticResource CardHeaderStyle}" />
+                <TextBlock Text="{Binding LoadingDetail, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Margin="0,6,0,0"
+                           Style="{StaticResource CardDescriptionStyle}" />
+            </StackPanel>
+
+            <StackPanel x:Name="ErrorStatePanel"
+                        Visibility="Collapsed"
+                        AutomationProperties.AutomationId="WorkspaceInspectorErrorState"
+                        AutomationProperties.Name="Workspace Inspector Error State">
+                <TextBlock Text="{Binding ErrorTitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Foreground="{StaticResource ErrorColorBrush}"
+                           Style="{StaticResource CardHeaderStyle}" />
+                <TextBlock Text="{Binding ErrorDetail, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                           Margin="0,6,0,0"
+                           Style="{StaticResource CardDescriptionStyle}" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
+

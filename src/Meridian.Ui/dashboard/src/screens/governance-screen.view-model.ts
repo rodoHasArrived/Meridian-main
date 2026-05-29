@@ -3437,7 +3437,7 @@ function buildTrialBalanceDetail(
   const statusVariant = line.balanceTone === "danger" ? "danger" : line.balanceTone === "success" ? "success" : "outline";
   const statusLabel = line.balanceTone === "danger" ? "Credit / payable" : line.balanceTone === "success" ? "Debit / asset" : "Flat";
 
-  const sourceEventIds = readStringArrayField(line, "sourceEventIds");
+  const sourceEventIds = readSourceEventIds(line);
   const approvalIds = readStringArrayField(line, "approvalIds");
   const firstSourceEventId = sourceEventIds[0] ?? null;
   const firstApprovalId = approvalIds[0] ?? null;
@@ -3481,6 +3481,39 @@ function readStringArrayField(value: unknown, fieldName: string): string[] {
   return field
     .map((item) => typeof item === "string" ? item.trim() : "")
     .filter((item) => item.length > 0);
+}
+
+function readSourceEventIds(value: unknown): string[] {
+  return uniqueStrings([
+    ...readStringArrayField(value, "sourceEventIds"),
+    ...readStringScalarField(value, "sourceEventId")
+  ]);
+}
+
+function readStringScalarField(value: unknown, fieldName: string): string[] {
+  if (!value || typeof value !== "object" || !(fieldName in value)) {
+    return [];
+  }
+
+  const field = (value as Record<string, unknown>)[fieldName];
+  if (typeof field !== "string") {
+    return [];
+  }
+
+  const trimmed = field.trim();
+  return trimmed.length > 0 ? [trimmed] : [];
+}
+
+function uniqueStrings(values: string[]): string[] {
+  const seen = new Set<string>();
+  return values.filter((value) => {
+    if (seen.has(value)) {
+      return false;
+    }
+
+    seen.add(value);
+    return true;
+  });
 }
 
 function buildTrialBalanceAnnouncement({
@@ -3617,7 +3650,7 @@ function buildBasisBridgeViewState(
 }
 
 function basisBridgeKey(line: BasisAwareLedgerTrialBalanceLine): string {
-  const sourceEventId = "sourceEventId" in line ? String(line.sourceEventId ?? "") : "";
+  const sourceEventId = readSourceEventIds(line).join(",");
   const ruleId = "ruleId" in line ? String(line.ruleId ?? "") : "";
   return [
     sourceEventId,
@@ -3634,11 +3667,11 @@ function buildBasisBridgeSourceLabel(line: BasisAwareLedgerTrialBalanceLine | nu
     return "Missing source group";
   }
 
-  const sourceEventId = "sourceEventId" in line ? String(line.sourceEventId ?? "").trim() : "";
+  const sourceEventIds = readSourceEventIds(line);
   const ruleId = "ruleId" in line ? String(line.ruleId ?? "").trim() : "";
-  if (sourceEventId || ruleId) {
+  if (sourceEventIds.length > 0 || ruleId) {
     return [
-      sourceEventId ? `Source ${sourceEventId}` : null,
+      sourceEventIds.length > 0 ? `Source ${sourceEventIds.join(", ")}` : null,
       ruleId ? `Rule ${ruleId}` : null
     ].filter(Boolean).join(" / ");
   }

@@ -41,6 +41,11 @@ lineage that includes active Security Master status and a ledger mapping referen
 so entry-level Security Master metadata cannot mask an unattributed securities, receivable, option,
 futures, or short-position posting.
 
+Ledger tax-lot state is persisted as account-scoped policy records plus open-lot records in the
+ledger schema. `ILedgerJournalStore` owns durable FIFO/LIFO/HIFO/SpecificId policy lookup inputs and
+open-lot balances for a ledger book/account, while relief projection, approval workflow, and
+tax-reporting exports remain outside the storage layer.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
