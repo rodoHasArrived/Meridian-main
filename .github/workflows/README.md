@@ -23,7 +23,7 @@ automation outside the current build/test/publish scope.
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
 | CI | `ci.yml` | Pull requests, pushes to `main`, manual | Restores `Meridian.sln`, verifies formatting, validates warning-suppression inventory, builds the focused `Meridian.WebWorkstation.slnf` lane, reports build warning counts, runs non-integration .NET tests, then tests and builds `src/Meridian.Ui/dashboard`. | .NET TRX results on failure |
-| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract changes, manual | Runs `PilotAcceptanceHarnessTests`, writes `pilot-readiness.json` plus `pilot-readiness.md`, validates the pilot readiness dashboard renderer, generates `artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md`, and uploads the acceptance evidence bundle. | `pilot-acceptance-evidence` |
+| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Blocks pilot acceptance on browser `test:w4` parity and Windows `Category=W4Acceptance` desktop coverage before running `PilotAcceptanceHarnessTests`, writing `pilot-readiness.json` plus `pilot-readiness.md`, validating the pilot readiness dashboard renderer, generating `artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md`, and uploading the evidence bundles. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
 | Windows Desktop Build | `windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Builds the real WPF app on Windows, runs WPF tests, and smoke-publishes the desktop executable. | WPF TRX results on failure |
 | Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime and uploads the generated standalone output. | Publish output |
 | Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual | Builds signed (or temporary-cert) MSIX installer packages for `win-x64` and `win-arm64`, uploads them as workflow artifacts, and attaches package assets to GitHub releases for tag runs. | Desktop installer packages (`.msix`, `.msixbundle`, `.appinstaller`) |
@@ -45,6 +45,8 @@ npm --prefix src/Meridian.Ui/dashboard run build
 Golden-path pilot acceptance:
 
 ```powershell
+npm --prefix src/Meridian.Ui/dashboard run test:w4
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter "Category=W4Acceptance" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
 python build/scripts/docs/generate-pilot-readiness-dashboard.py --output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md --json-output artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.json
 python -m unittest build/scripts/docs/tests/test_pilot_readiness_dashboard.py

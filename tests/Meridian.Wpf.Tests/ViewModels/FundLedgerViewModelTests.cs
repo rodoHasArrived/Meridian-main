@@ -838,8 +838,12 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackTrialBalanceLinesText.Should().NotBe("0");
                 viewModel.ReportPackGeneratedAtText.Should().NotBe("-");
                 viewModel.ReportPackAssetSections.Should().NotBeEmpty();
-                viewModel.ReportPackOwnershipText.Should().Contain("sign-off");
-                viewModel.ReportPackSnapshotWarningText.Should().NotBeNullOrWhiteSpace();
+                viewModel.ReportPackStatusText.Should().Contain("preview is ready for operator handoff");
+                viewModel.ReportPackOwnershipText.Should().Contain("final report-pack sign-off");
+                viewModel.ReportPackOwnershipText.Should().Contain("Close readiness remains blocked");
+                viewModel.ReportPackSnapshotWarningText.Should().Contain("Traceability is backed");
+                viewModel.CurrentWorkbenchSubtitleText.Should().Contain("handoff readiness");
+                viewModel.CurrentWorkbenchSubtitleText.Should().Contain("sign-off posture");
                 viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
                 viewModel.ReportPackReadinessState.Title.Should().Be("Report pack evidence linked");
                 viewModel.ReportPackReadinessState.Detail.Should().Contain("preview is ready for operator handoff");
