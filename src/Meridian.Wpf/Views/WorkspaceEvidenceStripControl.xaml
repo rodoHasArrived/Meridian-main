@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root"
              Visibility="{Binding DataWorkspaceHomeChromeVisibility}"
-             AutomationProperties.AutomationId="{Binding ElementName=Root, Path=StripAutomationId}"
+             AutomationProperties.AutomationId="{Binding StripAutomationId, RelativeSource={RelativeSource Self}}"
              AutomationProperties.Name="Workspace Evidence Strip">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />

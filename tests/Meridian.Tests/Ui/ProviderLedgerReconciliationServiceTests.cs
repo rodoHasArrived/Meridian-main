@@ -1228,7 +1228,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
             dividendCase.ExplainabilitySummary.Should().Contain("providerEventId=cash-dividend-aapl");
             dividendCase.ExplainabilitySummary.Should().Contain("evidenceSource=provider-activity");
             dividendCase.ExplainabilitySummary.Should().Contain("ledgerEffect=DividendIncomeRecognition");
+            dividendCase.ExplainabilitySummary.Should().Contain("effectiveDate=");
+            dividendCase.ExplainabilitySummary.Should().Contain("cashAmount=125");
             dividendCase.ExplainabilitySummary.Should().Contain("incomeAmount=125");
+            dividendCase.ExplainabilitySummary.Should().Contain("currency=USD");
             dividendCase.ExplainabilitySummary.Should().Contain("journalLines=0");
         }
         finally
@@ -1271,7 +1274,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
             principalCase.ExplainabilitySummary.Should().Contain("providerEventId=principal-paydown-ust10y");
             principalCase.ExplainabilitySummary.Should().Contain("requiredFeed=principal-cash-activity,factor-schedule");
             principalCase.ExplainabilitySummary.Should().Contain("ledgerEffect=PrincipalReturnRecognition");
+            principalCase.ExplainabilitySummary.Should().Contain("effectiveDate=");
+            principalCase.ExplainabilitySummary.Should().Contain("cashAmount=250");
             principalCase.ExplainabilitySummary.Should().Contain("principalAmount=250");
+            principalCase.ExplainabilitySummary.Should().Contain("currency=USD");
             principalCase.ExplainabilitySummary.Should().Contain("journalLines=0");
         }
         finally

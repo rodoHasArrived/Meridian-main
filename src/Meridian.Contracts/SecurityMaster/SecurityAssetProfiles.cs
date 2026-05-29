@@ -144,3 +144,40 @@ public sealed record SecurityAssetProfileGovernanceResultDto(
     SecurityAssetProfileDefinitionDto Profile,
     SecurityAssetProfileLineageDto Lineage,
     SecurityAssetProfileGovernanceAuditEventDto AuditEvent);
+
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityAssetProfilePromotionReadinessDto>))]
+public enum SecurityAssetProfilePromotionReadinessDto
+{
+    Watchlist,
+    Candidate,
+    ReadyForFirstClassPackage
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<SecurityAssetProfilePromotionSignalSeverityDto>))]
+public enum SecurityAssetProfilePromotionSignalSeverityDto
+{
+    Info,
+    Advisory,
+    Strong
+}
+
+public sealed record SecurityAssetProfilePromotionSignalDto(
+    string Code,
+    string Label,
+    string Detail,
+    SecurityAssetProfilePromotionSignalSeverityDto Severity);
+
+public sealed record SecurityAssetProfilePromotionCandidateDto(
+    string ProfileId,
+    int Version,
+    string Name,
+    string Category,
+    string? SubType,
+    SecurityAssetProfilePromotionReadinessDto Readiness,
+    int Score,
+    bool IsCandidate,
+    string RecommendedPackageId,
+    string RecommendedPackageName,
+    IReadOnlyList<string> DedicatedBehaviorNeeds,
+    IReadOnlyList<SecurityAssetProfilePromotionSignalDto> Signals,
+    string PromotionRationale);
