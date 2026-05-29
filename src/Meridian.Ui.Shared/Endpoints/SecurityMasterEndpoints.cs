@@ -81,6 +81,18 @@ public static class SecurityMasterEndpoints
         .Produces<IReadOnlyList<SecurityAssetProfileDefinitionDto>>(StatusCodes.Status200OK);
 
         /// <summary>
+        /// Lists approved custom asset profile promotion assessments for first-class UFL package design.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterAssetProfilePromotionCandidates, (
+            [FromServices] AppSecurityMaster.ISecurityAssetProfileGovernanceService governanceService) =>
+        {
+            var candidates = governanceService.GetPromotionCandidates();
+            return Results.Json(candidates, jsonOptions);
+        })
+        .WithName("ListSecurityMasterAssetProfilePromotionCandidates")
+        .Produces<IReadOnlyList<SecurityAssetProfilePromotionCandidateDto>>(StatusCodes.Status200OK);
+
+        /// <summary>
         /// Retrieves all versions and governance audit events for one custom asset profile.
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterAssetProfileLineage, (

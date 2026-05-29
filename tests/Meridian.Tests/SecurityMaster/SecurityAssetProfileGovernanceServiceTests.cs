@@ -125,6 +125,54 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
         report.Issues.Should().NotContain(issue => issue.Code == "SM_CUSTOM_PROFILE_NOT_APPROVED");
     }
 
+    [Fact]
+    public void GetPromotionCandidates_FlagsStructuredCreditForFirstClassFixedIncomePackage()
+    {
+        var service = new SecurityAssetProfileGovernanceService();
+
+        var candidates = service.GetPromotionCandidates();
+
+        var structuredCredit = candidates.Should()
+            .ContainSingle(candidate => candidate.ProfileId == "structured-credit-io-po")
+            .Subject;
+        structuredCredit.Readiness.Should().Be(SecurityAssetProfilePromotionReadinessDto.ReadyForFirstClassPackage);
+        structuredCredit.IsCandidate.Should().BeTrue();
+        structuredCredit.RecommendedPackageId.Should().Be("fixed-income.structured-credit");
+        structuredCredit.DedicatedBehaviorNeeds.Should().Contain(new[]
+        {
+            "factor schedule projection",
+            "income accrual",
+            "typed projection"
+        });
+        structuredCredit.Signals.Should().Contain(signal => signal.Code == "projection.factor-schedule");
+        structuredCredit.PromotionRationale.Should().Contain("without breaking existing Security Master IDs");
+    }
+
+    [Fact]
+    public async Task GetPromotionCandidates_KeepsLowComplexityProfilesOnWatchlist()
+    {
+        var service = new SecurityAssetProfileGovernanceService();
+        var draft = await service.DraftProfileAsync(CreateLowComplexityDraftRequest(), "settings-admin");
+        await service.ApproveProfileAsync(
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-watchlist-note",
+                draft.Profile.Version,
+                new DateOnly(2026, 6, 1),
+                "AP-WATCHLIST",
+                null,
+                "Approve simple watchlist profile.",
+                "corr-watchlist-approve"),
+            "controller");
+
+        var watchlist = service.GetPromotionCandidates()
+            .Single(candidate => candidate.ProfileId == "custom-watchlist-note");
+
+        watchlist.Readiness.Should().Be(SecurityAssetProfilePromotionReadinessDto.Watchlist);
+        watchlist.IsCandidate.Should().BeFalse();
+        watchlist.Signals.Should().ContainSingle(signal => signal.Code == "profile-watchlist.low-complexity");
+        watchlist.PromotionRationale.Should().Contain("should remain a governed custom profile");
+    }
+
     private static SecurityAssetProfileDraftRequestDto CreateDraftRequest(
         string profileId,
         string fieldKey = "navDate",
@@ -165,6 +213,34 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
             RequestedBy: null,
             Rationale: "Stage governed private credit profile.",
             CorrelationId: "corr-draft");
+
+    private static SecurityAssetProfileDraftRequestDto CreateLowComplexityDraftRequest()
+        => new(
+            ProfileId: "custom-watchlist-note",
+            Name: "Custom Watchlist Note",
+            Category: "ReferenceOnly",
+            SubType: null,
+            Fields:
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "note",
+                    "Note",
+                    SecurityAssetProfileFieldTypeDto.Text,
+                    IsRequired: true,
+                    AllowedValues: [],
+                    Description: "Reference-only note.",
+                    MinValue: null,
+                    MaxValue: null,
+                    IsProjected: false,
+                    IsSearchable: false)
+            ],
+            IdentifierPreferences: [],
+            LifecycleStates: ["Active"],
+            AccountingImpactHints: [],
+            DateOrderRules: [],
+            RequestedBy: null,
+            Rationale: "Stage simple reference-only profile.",
+            CorrelationId: "corr-watchlist-draft");
 
     private static SecurityProjectionRecord CreateProfileBackedRecord(int profileVersion)
         => new(

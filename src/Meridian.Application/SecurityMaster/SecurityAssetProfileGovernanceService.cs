@@ -10,6 +10,7 @@ public interface ISecurityAssetProfileGovernanceService : ISecurityAssetProfileC
 {
     IReadOnlyList<SecurityAssetProfileDefinitionDto> GetAllProfiles();
     SecurityAssetProfileLineageDto GetLineage(string profileId);
+    IReadOnlyList<SecurityAssetProfilePromotionCandidateDto> GetPromotionCandidates();
 
     Task<SecurityAssetProfileGovernanceResultDto> DraftProfileAsync(
         SecurityAssetProfileDraftRequestDto request,
@@ -111,6 +112,13 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
 
         return new SecurityAssetProfileLineageDto(normalizedProfileId, versions, auditEvents);
     }
+
+    public IReadOnlyList<SecurityAssetProfilePromotionCandidateDto> GetPromotionCandidates()
+        => GetProfiles()
+            .Select(BuildPromotionCandidate)
+            .OrderByDescending(static candidate => candidate.Score)
+            .ThenBy(static candidate => candidate.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     public async Task<SecurityAssetProfileGovernanceResultDto> DraftProfileAsync(
         SecurityAssetProfileDraftRequestDto request,
@@ -437,6 +445,229 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
             Status: profile.Status,
             PreviousVersion: previousVersion,
             ApprovalReference: approvalReference);
+
+    private static SecurityAssetProfilePromotionCandidateDto BuildPromotionCandidate(
+        SecurityAssetProfileDefinitionDto profile)
+    {
+        var signals = new List<SecurityAssetProfilePromotionSignalDto>();
+        var dedicatedBehaviorNeeds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var score = 0;
+
+        AddAccountingSignals(profile, signals, dedicatedBehaviorNeeds, ref score);
+
+        var projectedFields = profile.Fields.Count(static field => field.IsProjected);
+        if (projectedFields >= 3)
+        {
+            score += Math.Min(projectedFields, 8) * 4;
+            dedicatedBehaviorNeeds.Add("typed projection");
+            signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                "profile-fields.projected",
+                "Projected field surface",
+                $"{projectedFields} profile fields are projected and should become typed read-model columns if usage grows.",
+                projectedFields >= 6
+                    ? SecurityAssetProfilePromotionSignalSeverityDto.Strong
+                    : SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
+        }
+
+        var searchableFields = profile.Fields.Count(static field => field.IsSearchable);
+        if (searchableFields >= 2)
+        {
+            score += Math.Min(searchableFields, 6) * 3;
+            dedicatedBehaviorNeeds.Add("indexed search");
+            signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                "profile-fields.searchable",
+                "Searchable field coverage",
+                $"{searchableFields} fields are searchable and may need indexed package-specific lookup support.",
+                SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
+        }
+
+        if (profile.Fields.Any(static field => field.FieldType == SecurityAssetProfileFieldTypeDto.SecurityLink))
+        {
+            score += 14;
+            dedicatedBehaviorNeeds.Add("security-link reconciliation");
+            signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                "profile-fields.security-link",
+                "Security-link fields",
+                "Security-link fields indicate cross-instrument reconciliation or exposure behavior that should not remain generic JSON.",
+                SecurityAssetProfilePromotionSignalSeverityDto.Strong));
+        }
+
+        if (profile.DateOrderRules.Count > 0)
+        {
+            score += 8;
+            dedicatedBehaviorNeeds.Add("lifecycle validation");
+            signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                "profile-rules.date-order",
+                "Date-order rules",
+                $"{profile.DateOrderRules.Count} date-order rule(s) should be carried into first-class package validation.",
+                SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
+        }
+
+        if (profile.LifecycleStates.Count >= 4)
+        {
+            score += 8;
+            dedicatedBehaviorNeeds.Add("lifecycle state model");
+            signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                "profile-lifecycle.states",
+                "Lifecycle state coverage",
+                $"{profile.LifecycleStates.Count} lifecycle states indicate workflow-specific state transitions.",
+                SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
+        }
+
+        var requiredCloseIdentifiers = profile.IdentifierPreferences.Count(static preference => preference.IsRequiredForClose);
+        if (requiredCloseIdentifiers > 0)
+        {
+            score += requiredCloseIdentifiers * 6;
+            dedicatedBehaviorNeeds.Add("close/readiness identity coverage");
+            signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                "profile-identifiers.close-required",
+                "Close identifier requirements",
+                $"{requiredCloseIdentifiers} identifier preference(s) are required for close readiness.",
+                SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
+        }
+
+        if (signals.Count == 0)
+        {
+            signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                "profile-watchlist.low-complexity",
+                "Low complexity profile",
+                "No dedicated accounting, reconciliation, lifecycle, or projection behavior is visible yet.",
+                SecurityAssetProfilePromotionSignalSeverityDto.Info));
+        }
+
+        var readiness = score >= 72
+            ? SecurityAssetProfilePromotionReadinessDto.ReadyForFirstClassPackage
+            : score >= 40
+                ? SecurityAssetProfilePromotionReadinessDto.Candidate
+                : SecurityAssetProfilePromotionReadinessDto.Watchlist;
+        var package = ResolveRecommendedPackage(profile);
+
+        return new SecurityAssetProfilePromotionCandidateDto(
+            ProfileId: profile.ProfileId,
+            Version: profile.Version,
+            Name: profile.Name,
+            Category: profile.Category,
+            SubType: profile.SubType,
+            Readiness: readiness,
+            Score: Math.Min(score, 100),
+            IsCandidate: readiness != SecurityAssetProfilePromotionReadinessDto.Watchlist,
+            RecommendedPackageId: package.PackageId,
+            RecommendedPackageName: package.PackageName,
+            DedicatedBehaviorNeeds: dedicatedBehaviorNeeds.Order(StringComparer.OrdinalIgnoreCase).ToArray(),
+            Signals: signals
+                .OrderByDescending(static signal => signal.Severity)
+                .ThenBy(static signal => signal.Code, StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            PromotionRationale: BuildPromotionRationale(readiness, profile, package.PackageName));
+    }
+
+    private static void AddAccountingSignals(
+        SecurityAssetProfileDefinitionDto profile,
+        List<SecurityAssetProfilePromotionSignalDto> signals,
+        HashSet<string> dedicatedBehaviorNeeds,
+        ref int score)
+    {
+        foreach (var hint in profile.AccountingImpactHints.Distinct())
+        {
+            switch (hint)
+            {
+                case SecurityAssetProfileAccountingImpactHintDto.CommitmentAccounting:
+                    score += 24;
+                    dedicatedBehaviorNeeds.Add("commitment accounting");
+                    signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                        "accounting.commitment",
+                        "Commitment accounting",
+                        "Commitment, funded, and unfunded balances usually need package-specific accounting and close controls.",
+                        SecurityAssetProfilePromotionSignalSeverityDto.Strong));
+                    break;
+                case SecurityAssetProfileAccountingImpactHintDto.NavBasedValuation:
+                    score += 18;
+                    dedicatedBehaviorNeeds.Add("NAV valuation");
+                    signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                        "valuation.nav",
+                        "NAV-based valuation",
+                        "NAV dates and stale valuation checks should become first-class package validation when volume grows.",
+                        SecurityAssetProfilePromotionSignalSeverityDto.Strong));
+                    break;
+                case SecurityAssetProfileAccountingImpactHintDto.FactorSchedule:
+                    score += 26;
+                    dedicatedBehaviorNeeds.Add("factor schedule projection");
+                    signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                        "projection.factor-schedule",
+                        "Factor schedule projection",
+                        "Factor schedules, original face, and current factor need dedicated projections for fixed-income operations.",
+                        SecurityAssetProfilePromotionSignalSeverityDto.Strong));
+                    break;
+                case SecurityAssetProfileAccountingImpactHintDto.IncomeAccrual:
+                    score += 18;
+                    dedicatedBehaviorNeeds.Add("income accrual");
+                    signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                        "accounting.income-accrual",
+                        "Income accrual",
+                        "Income accrual requires package-specific ledger and report-pack behavior before live fund operations depend on it.",
+                        SecurityAssetProfilePromotionSignalSeverityDto.Strong));
+                    break;
+                case SecurityAssetProfileAccountingImpactHintDto.OwnershipPercentage:
+                    score += 12;
+                    dedicatedBehaviorNeeds.Add("ownership roll-forward");
+                    signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                        "valuation.ownership",
+                        "Ownership roll-forward",
+                        "Ownership percentages affect exposure, valuation, and reporting projections.",
+                        SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
+                    break;
+                case SecurityAssetProfileAccountingImpactHintDto.LedgerClassification:
+                    score += 10;
+                    dedicatedBehaviorNeeds.Add("ledger classification");
+                    signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                        "accounting.ledger-classification",
+                        "Ledger classification",
+                        "Ledger classification hints should be promoted when the profile needs dedicated posting behavior.",
+                        SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
+                    break;
+                case SecurityAssetProfileAccountingImpactHintDto.Valuation:
+                    score += 10;
+                    dedicatedBehaviorNeeds.Add("valuation projection");
+                    signals.Add(new SecurityAssetProfilePromotionSignalDto(
+                        "valuation.generic",
+                        "Valuation projection",
+                        "Valuation fields should be reviewed for package-specific projection once profile usage is high.",
+                        SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
+                    break;
+            }
+        }
+    }
+
+    private static (string PackageId, string PackageName) ResolveRecommendedPackage(SecurityAssetProfileDefinitionDto profile)
+    {
+        var key = $"{profile.ProfileId} {profile.Category} {profile.SubType} {profile.Name}".ToLowerInvariant();
+        if (key.Contains("structured", StringComparison.Ordinal) || key.Contains("io/po", StringComparison.Ordinal))
+            return ("fixed-income.structured-credit", "Structured Credit Fixed-Income Package");
+        if (key.Contains("real-estate", StringComparison.Ordinal) || key.Contains("realassets", StringComparison.Ordinal))
+            return ("alternatives.real-estate", "Real Estate Alternatives Package");
+        if (key.Contains("private-fund", StringComparison.Ordinal) || key.Contains("privatefund", StringComparison.Ordinal))
+            return ("alternatives.private-funds", "Private Funds Package");
+        if (key.Contains("private-company", StringComparison.Ordinal) || key.Contains("privateequity", StringComparison.Ordinal))
+            return ("alternatives.private-company-equity", "Private Company Equity Package");
+        if (key.Contains("co-invest", StringComparison.Ordinal) || key.Contains("spv", StringComparison.Ordinal))
+            return ("alternatives.co-invest-spv", "Co-invest and SPV Package");
+
+        return ($"custom.{profile.ProfileId}", $"{profile.Name} Package");
+    }
+
+    private static string BuildPromotionRationale(
+        SecurityAssetProfilePromotionReadinessDto readiness,
+        SecurityAssetProfileDefinitionDto profile,
+        string packageName)
+        => readiness switch
+        {
+            SecurityAssetProfilePromotionReadinessDto.ReadyForFirstClassPackage =>
+                $"{profile.Name} has enough accounting, projection, identifier, or lifecycle signals to open a {packageName} design without breaking existing Security Master IDs.",
+            SecurityAssetProfilePromotionReadinessDto.Candidate =>
+                $"{profile.Name} should stay configurable while operators collect usage evidence and package-specific accounting or projection requirements.",
+            _ =>
+                $"{profile.Name} should remain a governed custom profile until usage or dedicated behavior justifies a first-class package."
+        };
 
     private static IReadOnlyList<SecurityAssetProfileFieldDefinitionDto> NormalizeFields(
         IReadOnlyList<SecurityAssetProfileFieldDefinitionDto>? fields)

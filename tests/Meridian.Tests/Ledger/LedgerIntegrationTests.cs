@@ -770,7 +770,6 @@ public sealed class LedgerIntegrationTests
         var investorCapital = chart.Register("Equity:Partners:Capital", LedgerAccountType.Equity);
         var feeRevenue = chart.Register("Revenue:Management Fees", LedgerAccountType.Revenue);
         var commissionExpense = chart.Register("Expenses:Commissions", LedgerAccountType.Expense);
-        var aaplSecurity = chart.Register("Assets:Investments:AAPL", LedgerAccountType.Asset, "AAPL", "broker-1");
         var ledger = new Meridian.Ledger.Ledger();
         var ts = new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero);
 
