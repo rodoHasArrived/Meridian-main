@@ -17,7 +17,7 @@ The original browser-workstation pivot remains important because it established 
 
 This pivot is interpreted through the consolidated current-direction entry point in
 [`current-direction-and-status.md`](current-direction-and-status.md). It is a current delivery
-policy for operator UI work, not a separate roadmap from the active Wave 2-4 path.
+policy for operator UI work, not a separate roadmap from the closed W2/W3 baselines and active W4 path.
 
 New product behavior should land behind shared contracts, local/web API endpoints, or shared read
 models before any client-specific workflow is expanded. Browser and desktop are both supported

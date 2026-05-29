@@ -17,6 +17,69 @@
       AutomationProperties.AutomationId="DataOperationsWorkspaceShellPage">
 
     <Page.Resources>
+        <Style x:Key="DataShellHeroBadgeBorderStyle"
+               TargetType="Border"
+               BasedOn="{StaticResource NeutralBadgeStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Info">
+                    <Setter Property="Background" Value="{StaticResource BadgeInfoBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource BadgeInfoBorderBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Success">
+                    <Setter Property="Background" Value="{StaticResource BadgeSuccessBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource BadgeSuccessBorderBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Warning">
+                    <Setter Property="Background" Value="{StaticResource BadgeWarningBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource BadgeWarningBorderBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Danger">
+                    <Setter Property="Background" Value="{StaticResource BadgeDangerBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource BadgeDangerBorderBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DataShellHeroBadgeTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Info">
+                    <Setter Property="Foreground" Value="{StaticResource BadgeInfoForegroundBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Success">
+                    <Setter Property="Foreground" Value="{StaticResource BadgeSuccessForegroundBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Warning">
+                    <Setter Property="Foreground" Value="{StaticResource BadgeWarningForegroundBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Danger">
+                    <Setter Property="Foreground" Value="{StaticResource BadgeDangerForegroundBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DataShellSummaryMetricValueTextStyle" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,6,0,0" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Info">
+                    <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Success">
+                    <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Warning">
+                    <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Danger">
+                    <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <DataTemplate x:Key="QueueRegionStateTemplate" DataType="{x:Type models:WorkspaceQueueRegionState}">
             <Border Style="{StaticResource WorkspaceQueueStateCardStyle}">
                 <StackPanel>
@@ -179,13 +242,13 @@
                                        FontSize="18"
                                        FontWeight="SemiBold"
                                        Foreground="White"
-                                       Text="Provider and storage health" />
+                                       Text="{Binding HeroScopeText}" />
                             <TextBlock x:Name="OperationsHeroSummaryText"
                                        Margin="0,4,0,0"
                                        FontSize="12"
                                        Foreground="#A8BED7"
                                        TextWrapping="Wrap"
-                                       Text="Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell." />
+                                       Text="{Binding HeroSummaryText}" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -205,11 +268,12 @@
                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
                             <Border x:Name="OperationsHeroBadgeBorder"
                                     DockPanel.Dock="Right"
-                                    Style="{StaticResource NeutralBadgeStyle}">
+                                    Style="{StaticResource DataShellHeroBadgeBorderStyle}"
+                                    Tag="{Binding HeroState.BadgeTone}">
                                 <TextBlock x:Name="OperationsHeroBadgeText"
-                                           FontSize="10"
-                                           Foreground="{StaticResource InfoColorBrush}"
-                                           Text="Loading"
+                                           Style="{StaticResource DataShellHeroBadgeTextStyle}"
+                                           Tag="{Binding HeroState.BadgeTone}"
+                                           Text="{Binding HeroState.BadgeText}"
                                            AutomationProperties.AutomationId="OperationsHeroBadgeText" />
                             </Border>
                         </DockPanel>
@@ -218,17 +282,18 @@
                                    FontSize="16"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                   Text="Operational posture"
+                                   Text="{Binding HeroState.FocusText}"
                                    AutomationProperties.AutomationId="OperationsHeroFocusText" />
                         <TextBlock x:Name="OperationsHeroActionSummaryText"
                                    Margin="0,6,0,0"
                                    FontSize="12"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                    TextWrapping="Wrap"
-                                   Text="Refreshing provider, backfill, storage, and export posture."
+                                   Text="{Binding HeroState.SummaryText}"
                                    AutomationProperties.AutomationId="OperationsHeroActionSummaryText" />
                         <ItemsControl x:Name="OperationsHeroMetricsList"
                                       Margin="0,12,0,0"
+                                      ItemsSource="{Binding HeroMetrics}"
                                       ItemTemplate="{StaticResource HeroMetricTemplate}"
                                       AutomationProperties.AutomationId="OperationsHeroMetricsList">
                             <ItemsControl.ItemsPanel>
@@ -242,34 +307,38 @@
                                    FontSize="14"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                   Text="Telemetry refresh in progress"
+                                   Text="{Binding HeroState.HandoffTitleText}"
                                    AutomationProperties.AutomationId="OperationsHeroHandoffTitleText" />
                         <TextBlock x:Name="OperationsHeroHandoffDetailText"
                                    Margin="0,6,0,0"
                                    FontSize="12"
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                    TextWrapping="Wrap"
-                                   Text="The Data shell is collecting current readiness signals."
+                                   Text="{Binding HeroState.HandoffDetailText}"
                                    AutomationProperties.AutomationId="OperationsHeroHandoffDetailText" />
                         <WrapPanel Margin="0,12,0,0">
                             <Button x:Name="OperationsHeroPrimaryActionButton"
+                                    Content="{Binding HeroState.PrimaryActionLabel}"
+                                    Tag="{Binding HeroState.PrimaryActionId}"
                                     Click="OnOperationsHeroPrimaryActionClick"
                                     Style="{StaticResource SecondaryButtonStyle}"
                                     Margin="0,0,8,8"
-                                    Visibility="Collapsed"
+                                    Visibility="{Binding HeroPrimaryActionVisibility}"
                                     AutomationProperties.AutomationId="OperationsHeroPrimaryActionButton" />
                             <Button x:Name="OperationsHeroSecondaryActionButton"
+                                    Content="{Binding HeroState.SecondaryActionLabel}"
+                                    Tag="{Binding HeroState.SecondaryActionId}"
                                     Click="OnOperationsHeroSecondaryActionClick"
                                     Style="{StaticResource GhostButtonStyle}"
                                     Margin="0,0,8,8"
-                                    Visibility="Collapsed"
+                                    Visibility="{Binding HeroSecondaryActionVisibility}"
                                     AutomationProperties.AutomationId="OperationsHeroSecondaryActionButton" />
                         </WrapPanel>
                         <TextBlock x:Name="OperationsHeroTargetText"
                                    Margin="0,10,0,0"
                                    FontSize="10"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   Text="Target: Current shell"
+                                   Text="{Binding HeroState.TargetText}"
                                    AutomationProperties.AutomationId="OperationsHeroTargetText" />
                     </StackPanel>
                 </Border>
@@ -278,6 +347,7 @@
 
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
                                           Grid.Row="1"
+                                          CommandGroup="{Binding CommandGroup}"
                                           CommandInvoked="OnCommandBarCommandInvoked"
                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceData" />
 
@@ -307,7 +377,7 @@
                                        Margin="0,6,0,0"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Provider posture, backfill priority, and storage follow-up stay in one fixed shell." />
+                                       Text="{Binding QueueSummaryText}" />
                         </StackPanel>
                         <Border Grid.Column="1"
                                 Style="{StaticResource NeutralBadgeStyle}"
@@ -316,7 +386,7 @@
                             <TextBlock x:Name="QueueScopeBadgeText"
                                        FontSize="11"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Provider posture" />
+                                       Text="{Binding QueueScopeBadgeText}" />
                         </Border>
                     </Grid>
 
@@ -330,11 +400,14 @@
                             <Grid>
                                 <views:WorkspaceDecisionQueueControl x:Name="ProviderQueueList"
                                                                      Columns="1"
+                                                                     ItemsSource="{Binding ProviderQueueItems}"
+                                                                     Visibility="{Binding ProviderQueueListVisibility}"
                                                                      QueueAutomationId="DataProviderDecisionQueue"
                                                                      DecisionInvoked="OnDataDecisionInvoked" />
                                 <ContentControl x:Name="ProviderQueueStateContainer"
+                                                Content="{Binding ProviderQueueState}"
                                                 ContentTemplate="{StaticResource QueueRegionStateTemplate}"
-                                                Visibility="Collapsed" />
+                                                Visibility="{Binding ProviderQueueStateVisibility}" />
                             </Grid>
 
                             <TextBlock Text="Backfill"
@@ -343,11 +416,14 @@
                             <Grid>
                                 <views:WorkspaceDecisionQueueControl x:Name="BackfillQueueList"
                                                                      Columns="1"
+                                                                     ItemsSource="{Binding BackfillQueueItems}"
+                                                                     Visibility="{Binding BackfillQueueListVisibility}"
                                                                      QueueAutomationId="DataBackfillDecisionQueue"
                                                                      DecisionInvoked="OnDataDecisionInvoked" />
                                 <ContentControl x:Name="BackfillQueueStateContainer"
+                                                Content="{Binding BackfillQueueState}"
                                                 ContentTemplate="{StaticResource QueueRegionStateTemplate}"
-                                                Visibility="Collapsed" />
+                                                Visibility="{Binding BackfillQueueStateVisibility}" />
                             </Grid>
 
                             <TextBlock Text="Storage"
@@ -356,11 +432,14 @@
                             <Grid>
                                 <views:WorkspaceDecisionQueueControl x:Name="StorageQueueList"
                                                                      Columns="1"
+                                                                     ItemsSource="{Binding StorageQueueItems}"
+                                                                     Visibility="{Binding StorageQueueListVisibility}"
                                                                      QueueAutomationId="DataStorageDecisionQueue"
                                                                      DecisionInvoked="OnDataDecisionInvoked" />
                                 <ContentControl x:Name="StorageQueueStateContainer"
+                                                Content="{Binding StorageQueueState}"
                                                 ContentTemplate="{StaticResource QueueRegionStateTemplate}"
-                                                Visibility="Collapsed" />
+                                                Visibility="{Binding StorageQueueStateVisibility}" />
                             </Grid>
                         </StackPanel>
                     </ScrollViewer>

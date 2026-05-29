@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -47,105 +46,7 @@ public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBa
     }
 
     private async Task RefreshShellAsync()
-    {
-        await DataViewModel.RefreshAsync();
-        ApplyViewModelState();
-    }
-
-    private void ApplyViewModelState()
-    {
-        var viewModel = DataViewModel;
-
-        CommandBar.CommandGroup = viewModel.CommandGroup;
-        OperationsHeroScopeText.Text = viewModel.HeroScopeText;
-        OperationsHeroSummaryText.Text = viewModel.HeroSummaryText;
-        ApplyHeroState(viewModel.HeroState);
-        OperationsHeroMetricsList.ItemsSource = viewModel.HeroMetrics;
-        QueueScopeBadgeText.Text = viewModel.QueueScopeBadgeText;
-        QueueSummaryText.Text = viewModel.QueueSummaryText;
-        ProviderQueueList.ItemsSource = viewModel.ProviderQueueItems;
-        BackfillQueueList.ItemsSource = viewModel.BackfillQueueItems;
-        StorageQueueList.ItemsSource = viewModel.StorageQueueItems;
-        ApplyQueueState(ProviderQueueList, ProviderQueueStateContainer, viewModel.ProviderQueueState);
-        ApplyQueueState(BackfillQueueList, BackfillQueueStateContainer, viewModel.BackfillQueueState);
-        ApplyQueueState(StorageQueueList, StorageQueueStateContainer, viewModel.StorageQueueState);
-        OperationsSummaryTitleText.Text = viewModel.OperationsSummaryTitleText;
-        OperationsSummaryDetailText.Text = viewModel.OperationsSummaryDetailText;
-        SummaryProvidersText.Text = viewModel.SummaryProvidersText;
-        SummaryProvidersText.Foreground = ResolveToneBrush(viewModel.SummaryProvidersTone);
-        SummaryBackfillText.Text = viewModel.SummaryBackfillText;
-        SummaryBackfillText.Foreground = ResolveToneBrush(viewModel.SummaryBackfillTone);
-        SummaryStorageText.Text = viewModel.SummaryStorageText;
-        SummaryStorageText.Foreground = ResolveToneBrush(viewModel.SummaryStorageTone);
-        RecentOperationsList.ItemsSource = viewModel.RecentOperations;
-    }
-
-    private void ApplyHeroState(DataOperationsHeroState heroState)
-    {
-        OperationsHeroBadgeText.Text = heroState.BadgeText;
-        OperationsHeroBadgeText.Foreground = ResolveToneBrush(heroState.BadgeTone);
-        OperationsHeroBadgeBorder.BorderBrush = ResolveToneBrush(heroState.BadgeTone);
-        OperationsHeroBadgeBorder.Background = ResolveToneBackgroundBrush(heroState.BadgeTone);
-        OperationsHeroFocusText.Text = heroState.FocusText;
-        OperationsHeroActionSummaryText.Text = heroState.SummaryText;
-        OperationsHeroHandoffTitleText.Text = heroState.HandoffTitleText;
-        OperationsHeroHandoffDetailText.Text = heroState.HandoffDetailText;
-        OperationsHeroTargetText.Text = heroState.TargetText;
-        ApplyHeroActionButton(OperationsHeroPrimaryActionButton, heroState.PrimaryActionLabel, heroState.PrimaryActionId);
-        ApplyHeroActionButton(OperationsHeroSecondaryActionButton, heroState.SecondaryActionLabel, heroState.SecondaryActionId);
-    }
-
-    private static void ApplyHeroActionButton(Button button, string label, string actionId)
-    {
-        button.Tag = actionId;
-        button.Content = label;
-        button.Visibility = string.IsNullOrWhiteSpace(label) || string.IsNullOrWhiteSpace(actionId)
-            ? Visibility.Collapsed
-            : Visibility.Visible;
-    }
-
-    private Brush ResolveToneBrush(string tone)
-    {
-        var resourceKey = tone switch
-        {
-            WorkspaceTone.Success => "SuccessColorBrush",
-            WorkspaceTone.Warning => "WarningColorBrush",
-            WorkspaceTone.Danger => "ErrorColorBrush",
-            WorkspaceTone.Info => "InfoColorBrush",
-            _ => "ConsoleTextPrimaryBrush"
-        };
-
-        return TryFindResource(resourceKey) as Brush ?? Brushes.White;
-    }
-
-    private Brush ResolveToneBackgroundBrush(string tone)
-    {
-        var resourceKey = tone switch
-        {
-            WorkspaceTone.Success => "ConsoleAccentGreenAlpha10Brush",
-            WorkspaceTone.Warning => "ConsoleAccentOrangeAlpha10Brush",
-            WorkspaceTone.Danger => "ConsoleAccentRedAlpha10Brush",
-            WorkspaceTone.Info => "ConsoleAccentBlueAlpha10Brush",
-            _ => "ConsoleBackgroundMediumBrush"
-        };
-
-        return TryFindResource(resourceKey) as Brush ?? Brushes.Transparent;
-    }
-
-    private void ApplyQueueState(FrameworkElement queueList, ContentControl stateContainer, WorkspaceQueueRegionState state)
-    {
-        if (state.IsVisible)
-        {
-            queueList.Visibility = Visibility.Collapsed;
-            stateContainer.Visibility = Visibility.Visible;
-            stateContainer.Content = state;
-            return;
-        }
-
-        queueList.Visibility = Visibility.Visible;
-        stateContainer.Visibility = Visibility.Collapsed;
-        stateContainer.Content = null;
-    }
+        => DataViewModel.RefreshAsync();
 
     private async void OnQueueStateActionClick(object sender, RoutedEventArgs e)
     {
@@ -189,10 +90,7 @@ public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBa
     }
 
     private async Task ExecuteActionAsync(string actionId, bool navigate)
-    {
-        await DataViewModel.ExecuteActionAsync(actionId, navigate);
-        ApplyViewModelState();
-    }
+        => await DataViewModel.ExecuteActionAsync(actionId, navigate);
 
     private void OnActionRequested(object? sender, DataWorkspaceShellActionRequestedEventArgs e)
     {

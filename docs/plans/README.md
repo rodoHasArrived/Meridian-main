@@ -7,7 +7,7 @@
 
 - [ ] Keep Strategy Engine, run comparison, and portfolio drill-in improvements framed as W3 baseline maintenance or W5 prep unless they produce accepted W4 governance/report lineage evidence.
 - [ ] Attach every non-`complete` provider capability-matrix row to an owner, target sprint, and adapter-readiness evidence packet.
-- [ ] Keep the active W2-W4 blocker list in [`wave-implementation-checklists.md`](wave-implementation-checklists.md) aligned with the latest pilot-readiness stage gates.
+- [ ] Keep the W4 blocker list and W2/W3 baseline-maintenance checks in [`wave-implementation-checklists.md`](wave-implementation-checklists.md) aligned with the latest pilot-readiness stage gates.
 - [ ] Use [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) before accepting WPF work as Wave 2, Wave 3, or Wave 4 workflow progress.
 - [ ] Prove the operations-continuity close lane through browser/operator acceptance with external statement or custodian inputs before describing close readiness as delivered.
 - [ ] Run stale-doc/hash validation after roadmap, source registry, or generated documentation changes and record failures as TODOs instead of prose caveats.
@@ -28,14 +28,14 @@ Active planning direction:
 
 All active plan and roadmap files in this directory were reviewed for their current role. The
 consolidated current-direction document is now the first planning stop; the classification below
-remains the source of truth for detailed follow-up: core Wave 2-4 operator-readiness plans come
-first, later-wave productization follows, UFL asset profiles remain reference designs, and
+remains the source of truth for detailed follow-up: closed W2/W3 baseline-maintenance plans and
+active W4 operator-readiness plans come first, later-wave productization follows, UFL asset profiles remain reference designs, and
 technical/optional tracks must not compete with the core operator-ready path unless a current
 roadmap decision pulls them forward.
 
 2026-05-19 follow-up: release/distribution cleanup remains technical support work. Publish-size
 investigation, generated-output ignore rules, and TODO-scan cache hygiene do not change the current
-plan-file classification or move W2-W4 wave status.
+plan-file classification or move W2/W3/W4 wave status.
 
 2026-05-19 browser-workstation follow-up: provider setup now exposes provider-routing connection,
 binding, credential-source, environment, warning, and trust-snapshot refresh state in Data and
@@ -47,11 +47,11 @@ reclassification or wave exits.
 2026-05-21 planning-control follow-up: the active docs mesh now has structured roadmap and source
 documentation registries plus stale-doc/hash validation. The new adapter completion plan and
 provider capability matrix should guide provider-readiness cleanup, but they do not reopen Wave 1
-or change W2-W4 gate status. Strategy Engine definitions and pre-run validation are Wave 3/W5
+or change W2/W3/W4 gate status. Strategy Engine definitions and pre-run validation are Wave 3/W5
 support evidence for safer strategy execution, not a Backtest Studio exit.
 
 2026-05-21 plan cleanup follow-up: the wave implementation checklist stays active because it is
-the current TODO ledger for W2-W4 blockers. The Approach B+ v2 documentation-system plan and the
+the current TODO ledger for W4 blockers and W2/W3 maintenance checks. The Approach B+ v2 documentation-system plan and the
 Covered Call Slice 1 blueprint moved to `archive/docs/plans/` because their active roles are now
 covered by the structured docs mesh, Strategy Engine support evidence, the options roadmap, and
 the Backtest Studio plans.
@@ -72,16 +72,16 @@ replace the W4 close/report/evidence acceptance gate.
 
 ## Core Operator-Ready Path
 
-These are the active documents for Waves 2-4 and the current short-horizon execution lane.
+These are the active documents for W2/W3 baseline preservation, W4 delivery, and the current short-horizon execution lane.
 
 | Document | Current role |
 | --- | --- |
 | [current-direction-and-status.md](current-direction-and-status.md) | Single consolidated planning entry point for current direction, project status, and document roles |
 | [evidence-backed-investment-operations-plan.md](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the active investment-operations direction |
-| [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current time-boxed execution slice for Waves 2-4 and trust-gate maintenance |
-| [wave-implementation-checklists.md](wave-implementation-checklists.md) | Concrete W1 maintenance and W2-W4 readiness TODO checklist tied to stage-gate blockers |
+| [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current time-boxed execution slice for W2/W3 preservation, active W4 delivery, and trust-gate maintenance |
+| [wave-implementation-checklists.md](wave-implementation-checklists.md) | Concrete W1 maintenance, W2/W3 baseline checks, and W4 readiness TODO checklist tied to stage-gate blockers |
 | [desktop-ui-workflow-acceptance-matrix.md](desktop-ui-workflow-acceptance-matrix.md) | Desktop/WPF acceptance matrix that maps W2 cockpit, W3 continuity, and W4 governance scenarios to shared checks, focused WPF tests, browser parity checks, and release blockers |
-| [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for Waves 2-4 |
+| [waves-2-4-operator-readiness-addendum.md](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, baseline-preservation rules, and active W4 exit criteria |
 | [web-ui-development-pivot.md](web-ui-development-pivot.md) | Browser workstation foundation and desktop/browser coexistence history |
 | [meridian-pilot-workflow.md](meridian-pilot-workflow.md) | Golden-path pilot workflow and productization filter |
 | [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Wave 2 paper-session, replay, risk, promotion, and cockpit reliability plan |
@@ -96,7 +96,7 @@ These are the active documents for Waves 2-4 and the current short-horizon execu
 
 ## Later-Wave Productization
 
-These plans remain useful, but they normally follow the Wave 2-4 operator-readiness path unless explicitly pulled forward.
+These plans remain useful, but they normally follow the active W4 operator-readiness path and the preserved W2/W3 baselines unless explicitly pulled forward.
 
 | Document | Current role |
 | --- | --- |
