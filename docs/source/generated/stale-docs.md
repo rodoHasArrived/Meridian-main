@@ -8,7 +8,7 @@ do_not_edit: true
 
 This report marks registered source modules whose code or README hashes differ from the reviewed baseline.
 
-- Stale modules: 23
+- Stale modules: 28
 - Removed module hash entries: 1
 
 | Module | Path | README | Reason |
@@ -22,13 +22,18 @@ This report marks registered source modules whose code or README hashes differ f
 | `SRC-EXECUTION` | `src/Meridian.Execution` | `src/Meridian.Execution/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-EXECUTION-SDK` | `src/Meridian.Execution.Sdk` | `src/Meridian.Execution.Sdk/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-FSHARP` | `src/Meridian.FSharp` | `src/Meridian.FSharp/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-FSHARP-DIRECTLENDING` | `src/Meridian.FSharp.DirectLending.Aggregates` | `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | `source_hash_drift` |
 | `SRC-FSHARP-LEDGER` | `src/Meridian.FSharp.Ledger` | `src/Meridian.FSharp.Ledger/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-FSHARP-TRADING` | `src/Meridian.FSharp.Trading` | `src/Meridian.FSharp.Trading/README.md` | `source_hash_drift` |
 | `SRC-HOST` | `src/Meridian` | `src/Meridian/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-IBAPI-SMOKESTUB` | `src/Meridian.IbApi.SmokeStub` | `src/Meridian.IbApi.SmokeStub/README.md` | `source_hash_drift` |
 | `SRC-INFRASTRUCTURE` | `src/Meridian.Infrastructure` | `src/Meridian.Infrastructure/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-INFRASTRUCTURE-CPPTRADER` | `src/Meridian.Infrastructure.CppTrader` | `src/Meridian.Infrastructure.CppTrader/README.md` | `source_hash_drift` |
 | `SRC-LEDGER` | `src/Meridian.Ledger` | `src/Meridian.Ledger/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-MCP` | `src/Meridian.Mcp` | `src/Meridian.Mcp/README.md` | `source_hash_drift` |
 | `SRC-PROVIDER-SDK` | `src/Meridian.ProviderSdk` | `src/Meridian.ProviderSdk/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-QUANTSCRIPT` | `src/Meridian.QuantScript` | `src/Meridian.QuantScript/README.md` | `source_hash_drift` |
+| `SRC-RISK` | `src/Meridian.Risk` | `src/Meridian.Risk/README.md` | `source_hash_drift` |
 | `SRC-STORAGE` | `src/Meridian.Storage` | `src/Meridian.Storage/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-STRATEGIES` | `src/Meridian.Strategies` | `src/Meridian.Strategies/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-UI` | `src/Meridian.Ui` | `src/Meridian.Ui/README.md` | `source_hash_drift` |
