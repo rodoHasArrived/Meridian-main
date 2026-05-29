@@ -78,7 +78,9 @@ evidence hash, retained manifest metadata, and retained evidence links for every
 provenance pointer so browser and WPF clients do not invent local lifecycle or no-orphan-evidence
 rules. The shared W4 acceptance filter keeps governed report-pack acceptance evidence separate from
 evidence-vault manifest/export support so pilot readiness cannot mark W4 done from support
-artifacts alone. The shared fund-structure endpoints expose report-pack workflow creation,
+artifacts alone, and pilot artifacts should pass through that filter before serialization so the
+`GovernedReportPack` stage gate reflects the shared acceptance/support split. The shared
+fund-structure endpoints expose report-pack workflow creation,
 validation, submission, approval, review rejection, publication, restatement, history, and archival
 routes backed by shared contracts; review rejection records the reason, actor/role metadata, and
 optional evidence links, and rejected packs must return through draft, validation, submission, and
