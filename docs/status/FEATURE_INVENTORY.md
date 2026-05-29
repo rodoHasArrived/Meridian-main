@@ -310,6 +310,8 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 
 > **Status:** Code present in `src/Meridian.Wpf/` and `tests/Meridian.Wpf.Tests/`, both included in the solution build. Builds full WPF desktop app on Windows; produces a CI-compatible stub on Linux/macOS.
 
+The registry-backed WPF screen inventory is maintained in [`desktop-application-screens.md`](desktop-application-screens.md), with workspace/page tag, visibility tier, related tags, implementation status, known gaps, and retained screenshot evidence where available.
+
 ### Shell & Navigation (Complete baseline)
 
 - Workspace model now persists built-in `Research`, `Trading`, `Data Operations`, and `Governance` workspaces, including legacy workspace ID migration for older saved sessions.
@@ -402,14 +404,19 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 
 ### Trading workstation migration target (Implemented baseline / workflow acceptance in progress)
 
-The current WPF app exposes broad capability coverage and the active shell baseline now organizes those capabilities into four workflow workspaces:
+The current WPF app exposes broad capability coverage and the active shell baseline now organizes those capabilities into seven canonical operator workspaces:
 
-- **Research** - backtests, Lean engine flows, charts, replay, experiment comparison
-- **Trading** - live monitoring, orders, fills, positions, strategy operation
-- **Data Operations** - providers, provider health, symbols, backfills, schedules, storage, exports
-- **Governance** - portfolio, ledger, diagnostics, retention, notifications, and settings
+- **Trading** - live monitoring, orders, fills, positions, and strategy operation
+- **Portfolio** - account, aggregate, fund, lending, and import workflows
+- **Accounting** - ledger, cash, reconciliation, trial balance, and audit workflows
+- **Reporting** - report packs, dashboards, analysis exports, and export presets
+- **Strategy** - backtests, Lean engine flows, charts, replay, experiment comparison, and run workflows
+- **Data** - providers, provider health, symbols, backfills, schedules, storage, exports, and quality
+- **Settings** - preferences, credentials, diagnostics, services, alerts, help, and workspace layouts
 
-This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) and [`ROADMAP.md`](ROADMAP.md) Waves 1-4. The remaining work is workflow acceptance and deeper cockpit/shared-model/governance continuity, not a new shell taxonomy migration.
+Legacy Research, Data Operations, and Governance names remain compatibility aliases for the corresponding canonical roots.
+
+This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md), [`ROADMAP.md`](ROADMAP.md) Waves 1-4, and the current registry inventory in [`desktop-application-screens.md`](desktop-application-screens.md). The remaining work is workflow acceptance and deeper cockpit/shared-model/governance continuity, not a new shell taxonomy migration.
 
 ### Shared run / portfolio / ledger / reconciliation baseline (In progress)
 

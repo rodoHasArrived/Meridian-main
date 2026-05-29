@@ -137,6 +137,7 @@ behavior into view models. Do not duplicate product logic that belongs in shared
 
 ## Related docs
 
+- `docs/status/desktop-application-screens.md` - registry-backed screen inventory for the WPF desktop application.
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/development/wpf-implementation-notes.md`
 - `docs/source/generated/source-module-index.md`
