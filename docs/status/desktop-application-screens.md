@@ -9,10 +9,23 @@ Generated manually from the current descriptors in:
 - [`src/Meridian.Wpf/Features/Data/DataFeatureModule.cs`](../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs)
 - [`src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs`](../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs)
 - [`src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs`](../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs)
+- [`src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs`](../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs)
 - [`src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs`](../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs)
 - [`src/Meridian.Wpf/Models/ShellNavigationCatalog.Research.cs`](../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Research.cs)
 
 Implementation status is conservative: a screen is marked registered when the source declares a `ShellPageDescriptor` for a WPF page type. Known gaps are limited to registry-visible gaps, hidden palette routing, or missing screenshot evidence; deeper page-specific product gaps remain tracked in the WPF README and feature inventory.
+
+## Aliases and canonical workspace names
+
+The desktop shell keeps the visible root navigation aligned to canonical workspace names while preserving legacy route and page-tag aliases for existing automation, deep links, and operator habits. Use the canonical workspace column for inventory, roadmap, and visible-navigation language.
+
+| Alias or legacy name | Canonical workspace / name | Relevant page tag | Page tags / search tags carried by the descriptor | Where the alias is resolved |
+| --- | --- | --- | --- | --- |
+| `Research` / `ResearchWorkspace` | `Strategy` | `StrategyShell` | `ResearchShell`, `ResearchWorkspace`; search tags include `strategy`, `research`, `home`, `workspace`, `monitor` | Page aliases are declared on the `StrategyShell` descriptor in `ShellNavigationCatalog.Research.cs`; layout fallback maps the `research` workspace id to `strategy` in `ShellNavigationCatalog.Layouts.cs`. |
+| `Governance` / `GovernanceWorkspace` | `Accounting` | `AccountingShell` | `GovernanceShell`, `GovernanceWorkspace`; search tags include `accounting`, `ledger`, `workspace`, `control` | Page aliases are declared on the `AccountingShell` descriptor in `ShellNavigationCatalog.Governance.cs`; layout fallback maps the `governance` workspace id to `accounting` in `ShellNavigationCatalog.Layouts.cs`. |
+| `DataOperations` / `Data Operations` | `Data` | `DataShell` | `DataOperationsShell`, `DataOperationsWorkspace`; search tags include `data`, `data operations`, `home`, `workspace` | Page aliases are declared on the `DataShell` descriptor in `DataFeatureModule.cs`; layout fallback maps `data-operations` and `data operations` workspace ids to `data` in `ShellNavigationCatalog.Layouts.cs`. |
+| `OperationsContinuity` / `OperationsClose` | `Fund operations` | `FundLedger` | `FundOperations`, `OperationsContinuity`, `OperationsClose`; search tags include `fund ledger`, `journal`, `operations`, `continuity`, `close readiness` | Page aliases are declared on the `FundLedger` descriptor in `ShellNavigationCatalog.Governance.cs`. |
+| `EvidenceWorkbench` | `Fund audit trail` | `FundAuditTrail` | `EvidenceWorkbench`; search tags include `audit`, `approvals`, `evidence` | Page aliases are declared on the `FundAuditTrail` descriptor in `ShellNavigationCatalog.Governance.cs`. |
 
 ## Summary
 
