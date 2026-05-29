@@ -118,6 +118,7 @@ public sealed class ReportPackWorkflowService
 
     public ReportPackWorkflowRecordDto Restate(Guid reportId, string actor, string role, string reasonCode, string approver, Guid priorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> changedLines)
     {
+        ArgumentNullException.ThrowIfNull(changedLines);
         if (string.IsNullOrWhiteSpace(reasonCode)) throw new ArgumentException("reasonCode is required");
         if (changedLines.Count == 0) throw new ArgumentException("changedLines are required");
         var linesWithoutEvidence = changedLines
@@ -129,8 +130,9 @@ public sealed class ReportPackWorkflowService
             throw new ArgumentException($"Restatement changed lines require evidence links: {string.Join(", ", linesWithoutEvidence)}.");
         }
 
+        var normalizedChangedLines = NormalizeChangedLines(changedLines);
         var transitioned = Transition(reportId, ReportPackWorkflowStateDto.Restated, actor, role, note: reasonCode);
-        var evidenceLinks = changedLines
+        var evidenceLinks = normalizedChangedLines
             .SelectMany(static line => line.EvidenceLinks ?? [])
             .GroupBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
@@ -138,7 +140,7 @@ public sealed class ReportPackWorkflowService
         var next = transitioned with
         {
             Version = transitioned.Version + 1,
-            Restatement = new ReportPackRestatementMetadataDto(reasonCode, approver, priorVersionReportId, changedLines, evidenceLinks)
+            Restatement = new ReportPackRestatementMetadataDto(reasonCode, approver, priorVersionReportId, normalizedChangedLines, evidenceLinks)
         };
         _records[reportId] = next;
         return next;
@@ -238,6 +240,17 @@ public sealed class ReportPackWorkflowService
             })
             .ToArray() ?? [];
 
+    private static IReadOnlyList<ReportPackChangedLineDto> NormalizeChangedLines(IReadOnlyList<ReportPackChangedLineDto> changedLines) =>
+        changedLines
+            .Select(static line => line with
+            {
+                LineKey = line.LineKey.Trim(),
+                PreviousValue = line.PreviousValue.Trim(),
+                CurrentValue = line.CurrentValue.Trim(),
+                EvidenceLinks = NormalizeEvidenceLinks(line.EvidenceLinks ?? [])
+            })
+            .ToArray();
+
     private static IReadOnlyList<ReportPackEvidenceLinkDto> NormalizeEvidenceLinks(IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks) =>
         evidenceLinks
             .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
@@ -249,11 +262,29 @@ public sealed class ReportPackWorkflowService
                 {
                     EvidenceId = link.EvidenceId.Trim(),
                     Label = string.IsNullOrWhiteSpace(link.Label) ? link.EvidenceId.Trim() : link.Label.Trim(),
-                    Route = string.IsNullOrWhiteSpace(link.Route) ? null : link.Route.Trim(),
+                    Route = NormalizeEvidenceRoute(link.Route),
                     Source = string.IsNullOrWhiteSpace(link.Source) ? "report-pack" : link.Source.Trim()
                 };
             })
             .ToArray();
+
+    private static string? NormalizeEvidenceRoute(string? route)
+    {
+        if (string.IsNullOrWhiteSpace(route))
+        {
+            return null;
+        }
+
+        var trimmed = route.Trim();
+        if (!trimmed.StartsWith('/', StringComparison.Ordinal) ||
+            trimmed.StartsWith("//", StringComparison.Ordinal) ||
+            !Uri.TryCreate(trimmed, UriKind.Relative, out _))
+        {
+            throw new ArgumentException("Evidence link routes must be same-origin absolute paths.", nameof(route));
+        }
+
+        return trimmed;
+    }
 
     private static void EnsureLineProvenanceTraceable(IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance)
     {

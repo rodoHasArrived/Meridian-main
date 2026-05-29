@@ -69,7 +69,8 @@ validation, submission, approval, review rejection, publication, restatement, hi
 routes backed by shared contracts; review rejection records the reason, actor/role metadata, and
 optional evidence links, and rejected packs must return through draft, validation, submission, and
 approval before publication. Restatement changed lines must carry evidence links before the workflow
-can advance. Publication also rejects line provenance that omits the reported value or lacks a run,
+can advance, and evidence routes are normalized to same-origin absolute paths before those links are
+stored. Publication also rejects line provenance that omits the reported value or lacks a run,
 source-session, ledger-entry, reconciliation-case, or reconciliation-run pointer, and each retained
 line must carry ledger, provider-event, Security Master definition, reconciliation-outcome, and
 approval references before publication. That keeps value-level report lineage enforceable in the

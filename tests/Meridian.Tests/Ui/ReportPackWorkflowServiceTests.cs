@@ -458,6 +458,40 @@ public sealed class ReportPackWorkflowServiceTests
             .WithMessage("Restatement changed lines require evidence links: line-1.");
     }
 
+    [Theory]
+    [InlineData("javascript:fetch('/api/reporting/packs',{credentials:'include'})")]
+    [InlineData("data:text/html,<script>alert(1)</script>")]
+    [InlineData("https://evil.example/reporting/evidence")]
+    [InlineData("//evil.example/reporting/evidence")]
+    public void Restate_RejectsUnsafeEvidenceRoutes(string route)
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        svc.Publish(
+            created.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+
+        Action act = () => svc.Restate(
+            created.ReportId,
+            "approver",
+            "approver",
+            "pricing-correction",
+            "chief-approver",
+            created.ReportId,
+            [new ReportPackChangedLineDto("line-1", "100", "125", [new ReportPackEvidenceLinkDto("pricing-evidence-1", "Pricing correction", route, "pricing")])]);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Evidence link routes must be same-origin absolute paths.*");
+    }
+
     [Fact]
     public void Transition_ArchivesPublishedOrRestatedPacksOnly()
     {

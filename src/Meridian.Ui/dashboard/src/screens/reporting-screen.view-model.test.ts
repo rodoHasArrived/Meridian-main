@@ -313,6 +313,38 @@ describe("useReportingScreenViewModel", () => {
     ]);
   });
 
+  it("drops unsafe restatement evidence routes before rendering anchor hrefs", () => {
+    const state = buildRestatementReviewPanel([
+      {
+        ...restatedReporting.workflowRecords![0],
+        restatement: {
+          ...restatedReporting.workflowRecords![0].restatement!,
+          changedLines: [
+            {
+              ...restatedReporting.workflowRecords![0].restatement!.changedLines[0],
+              evidenceLinks: [
+                {
+                  evidenceId: "pricing-evidence-1",
+                  label: "Pricing override",
+                  route: "javascript:fetch('/api/reporting/packs',{credentials:'include'})",
+                  source: "pricing"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]);
+
+    expect(state.changedLines).toEqual([
+      expect.objectContaining({
+        lineKey: "nav.total",
+        evidenceLabel: "1 evidence link",
+        evidenceHref: null
+      })
+    ]);
+  });
+
   it("builds an empty restatement review state when no restated workflow record is loaded", () => {
     const state = buildRestatementReviewPanel([]);
 

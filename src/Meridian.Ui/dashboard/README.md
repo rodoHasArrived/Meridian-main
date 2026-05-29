@@ -88,7 +88,11 @@ validation, or case-state rules.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients.
-Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
+Reporting workspace status rows consume shared template metadata and recent run projections for
+investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry
+attempts, audit actions, and lineage completeness rather than reimplementing report orchestration
+rules. Restatement evidence links are rendered only after the view model confirms the shared route is
+a same-origin absolute path.
 
 ## Diagrams
 

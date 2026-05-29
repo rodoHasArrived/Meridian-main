@@ -575,9 +575,23 @@ function buildRestatementChangedLineRow(line: ReportingWorkflowChangedLine, inde
     lineKey: line.lineKey,
     valueBridge: `${line.previousValue} -> ${line.currentValue}`,
     evidenceLabel: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
-    evidenceHref: firstEvidence?.route ?? null,
+    evidenceHref: normalizeSameOriginEvidenceHref(firstEvidence?.route),
     ariaLabel: `${line.lineKey} changed from ${line.previousValue} to ${line.currentValue} with ${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
   };
+}
+
+function normalizeSameOriginEvidenceHref(route: string | null | undefined): string | null {
+  const trimmed = route?.trim();
+  if (!trimmed || !trimmed.startsWith("/") || trimmed.startsWith("//")) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(trimmed, "https://meridian.local");
+    return parsed.origin === "https://meridian.local" ? `${parsed.pathname}${parsed.search}${parsed.hash}` : null;
+  } catch {
+    return null;
+  }
 }
 
 function countRestatementEvidence(selected: ReportingWorkflowRecord | null, changedLines: ReportingWorkflowChangedLine[]): number {
