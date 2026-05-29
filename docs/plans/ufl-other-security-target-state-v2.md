@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-28
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl other security target state v2** and document explicit in-scope vs out-of-scope items.
@@ -29,8 +29,9 @@ It assumes:
 - governed review, classification, and promotion views modeled as projections
 - replay-safe rebuilds across category, subtype, maturity, issuer, and settlement metadata
 - `OtherSecurity` used as a controlled onboarding path rather than an unbounded catch-all
+- custom asset profiles used when users need repeatable, governed configuration rather than one-off generic classification
 
-This package turns the existing `OtherSecurityTerms` support into an implementation-ready plan for governed onboarding, review workflows, migration paths, and APIs.
+This package turns the existing `OtherSecurityTerms` support into an implementation-ready plan for governed onboarding, review workflows, migration paths, and APIs. It works with the [UFL Custom Asset Composability](ufl-custom-asset-composability.md) lane: `OtherSecurity` handles generic fallback cases, while custom profiles handle repeatable user-configured asset shapes.
 
 ## Repo Fit
 
@@ -45,7 +46,7 @@ This package turns the existing `OtherSecurityTerms` support into an implementat
 
 - review-status and promotion-candidate projections
 - category/subtype taxonomy views
-- migration planning records to graduate repeated categories into dedicated asset packages
+- migration planning records to graduate repeated categories or custom profiles into dedicated asset packages
 - `OtherSecurity`-specific query and governance endpoints
 
 ### Suggested Meridian mapping if implemented in-place
@@ -58,7 +59,7 @@ This package turns the existing `OtherSecurityTerms` support into an implementat
 
 ## Scope
 
-**In Scope:** canonical generic-security identity, governed category/subtype metadata, issuer and settlement hints, review state, promotion candidate tracking, replay-safe rebuilds, and controlled review and reference APIs.
+**In Scope:** canonical generic-security identity, governed category/subtype metadata, issuer and settlement hints, review state, custom-profile handoff signals, promotion candidate tracking, replay-safe rebuilds, and controlled review and reference APIs.
 
 **Out of Scope:** bypasses around modeling discipline, provider-specific payload dumping, and permanent reliance on `OtherSecurity` for asset types that should have dedicated packages.
 
@@ -113,7 +114,8 @@ flowchart TD
 2. Category and subtype metadata must be explicit, searchable, and reviewable.
 3. Promotion to a dedicated asset package should preserve identity and lineage where possible.
 4. Fund-ops workstation views should make repeated `OtherSecurity` usage visible and actionable.
-5. Replay must deterministically rebuild review and promotion states from event history.
+5. Repeatable user-configured asset shapes should move to approved custom profiles before they become permanent generic records.
+6. Replay must deterministically rebuild review and promotion states from event history.
 
 ## 2. F# Aggregate and Domain Shapes
 
@@ -283,7 +285,7 @@ Deliver governed `OtherSecurity` identity, taxonomy and review projections, and 
 
 ### 7.4 Phase 2 goals
 
-- explicit migration workflows into dedicated asset packages
+- explicit migration workflows into custom profiles or dedicated asset packages
 - stronger operational controls on unreviewed generic securities
 - cross-package promotion dashboards
 
@@ -339,14 +341,15 @@ tests/
 7. Add taxonomy normalization tests.
 8. Add promotion-candidate detection coverage.
 9. Add rebuild orchestration coverage.
-10. Add fund-ops workstation dashboards for `OtherSecurity` usage and promotion tracking.
+10. Add fund-ops workstation dashboards for `OtherSecurity` usage, custom-profile handoff, and promotion tracking.
 
 ## 11. Final Target State
 
-Meridian treats `OtherSecurity` as a disciplined, reviewable onboarding path with explicit taxonomy, review state, and promotion planning. The platform gains flexibility without allowing generic instruments to become a silent long-term dumping ground.
+Meridian treats `OtherSecurity` as a disciplined, reviewable onboarding path with explicit taxonomy, review state, custom-profile handoff, and promotion planning. The platform gains flexibility without allowing generic instruments to become a silent long-term dumping ground.
 
 ## Related Documents
 
 - [UFL Supported Asset Packages](ufl-supported-assets-index.md)
 - [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Custom Asset Composability](ufl-custom-asset-composability.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

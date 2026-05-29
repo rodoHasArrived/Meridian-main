@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-28
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl supported assets index** and document explicit in-scope vs out-of-scope items.
@@ -43,6 +43,12 @@ All new F# types and C# DTOs proposed in these packages must follow the
 | Status discriminated unions | `XxxStat` | `CorpActStat`, `SecurityStat` |
 | Boolean fields | `Is`/`Has` prefix | `IsCallable`, `HasVoting`, `IsBullet` |
 | Date fields (new F# code) | `Dt` suffix | `MaturityDt`, `IssueDt`, `ExpiryDt` |
+
+## Custom Asset Composability
+
+UFL should include a user-configurable custom-asset lane for repeatable instruments that do not yet justify a compiled asset package. The custom lane must be composable, governed, versioned, and promotion-ready: users configure approved capability profiles and typed fields, while Meridian preserves canonical Security Master identity, lineage, validation, projection rebuild safety, and review controls. See [UFL Custom Asset Composability](ufl-custom-asset-composability.md).
+
+Custom assets are not a bypass around modeling discipline. One-off generic instruments can still use `OtherSecurity`, but repeated profile-backed instruments should be reviewed for promotion into dedicated packages when their usage becomes operationally important.
 
 ## Asset Packages
 
