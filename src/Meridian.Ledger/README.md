@@ -32,6 +32,8 @@ Use this module for books, ledger behavior, reconciliation evidence, and account
 fund/accounting reports.
 `LedgerFinancialStatementBuilder` projects current or point-in-time trial balances into
 income-statement and balance-sheet rows with net-income and accounting-equation checks.
+`MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares
+balanced unrealized FX revaluation journal lines for monetary asset/liability accounts.
 
 ## Diagrams
 

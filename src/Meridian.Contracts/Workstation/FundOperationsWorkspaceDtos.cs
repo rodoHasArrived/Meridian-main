@@ -400,12 +400,12 @@ public enum ReportPackWorkflowStateDto
     Draft = 0,
     Validated = 1,
     InReview = 2,
-    PendingApproval = 2,
     Approved = 3,
     Published = 4,
     Restated = 5,
     Archived = 6,
-    Rejected = 7
+    Rejected = 7,
+    PendingApproval = 8
 }
 
 public sealed record VersionedReportTemplateIdDto(string Name, int Version);

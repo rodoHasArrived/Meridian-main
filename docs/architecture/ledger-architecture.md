@@ -96,6 +96,14 @@ income-statement rows, balance-sheet rows, net income, ending equity, and an acc
 variance. Totals are computed from the flat trial balance to avoid double-counting parent rollups;
 rows use the chart hierarchy for operator-facing statement sections.
 
+### `MultiCurrencyLedgerTranslator`
+
+`MultiCurrencyLedgerTranslator` converts local-currency account balances into a reporting/base
+currency using explicit FX rates. Currency comes from account-level configuration or ISO-style
+account symbols such as the `EUR` symbol on `LedgerAccounts.CashInCurrency("EUR")`. When carrying
+base balances are supplied, it can produce balanced unrealized FX revaluation lines against the
+monetary asset or liability account and the scoped unrealized FX gain/loss accounts.
+
 ---
 
 ## How backtesting posts to the ledger

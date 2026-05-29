@@ -104,6 +104,12 @@ public static class LedgerAccounts
     public static LedgerAccount RetainedEarningsFor(string financialAccountId) =>
         CreateScoped("Retained Earnings", LedgerAccountType.Equity, financialAccountId);
 
+    public static LedgerAccount UnrealizedFxGainFor(string financialAccountId) =>
+        CreateScoped("Unrealized FX Gain", LedgerAccountType.Revenue, financialAccountId);
+
+    public static LedgerAccount UnrealizedFxLossFor(string financialAccountId) =>
+        CreateScoped("Unrealized FX Loss", LedgerAccountType.Expense, financialAccountId);
+
     /// <summary>Dividend expense owed on short positions or other negative dividend adjustments.</summary>
     public static readonly LedgerAccount DividendExpense =
         new("Dividend Expense", LedgerAccountType.Expense);

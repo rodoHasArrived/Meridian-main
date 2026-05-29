@@ -838,6 +838,64 @@ public sealed class LedgerIntegrationTests
         afterFee.AccountingEquationVariance.Should().Be(0m);
     }
 
+    [Fact]
+    public void MultiCurrencyLedgerTranslator_TranslatesLocalCurrencyBalancesToBaseCurrency()
+    {
+        var eurCash = LedgerAccounts.CashInCurrency("eur", "broker-1");
+        var usdCapital = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity, FinancialAccountId: "broker-1");
+        var ledger = new Meridian.Ledger.Ledger();
+        var ts = new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero);
+
+        ledger.PostLines(ts, "EUR subscription translated to USD capital", new[]
+        {
+            (eurCash, 1_000m, 0m),
+            (usdCapital, 0m, 1_100m),
+        });
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            ledger,
+            "USD",
+            new Dictionary<string, decimal> { ["EUR"] = 1.1m },
+            financialAccountId: "broker-1");
+
+        translation.BaseCurrency.Should().Be("USD");
+        translation.TranslatedTrialBalance[eurCash].Should().Be(1_100m);
+        translation.Total(LedgerAccountType.Asset).Should().Be(1_100m);
+        translation.Total(LedgerAccountType.Equity).Should().Be(1_100m);
+        translation.Exposures.Single(exposure => exposure.Account == eurCash).LocalCurrency.Should().Be("EUR");
+    }
+
+    [Fact]
+    public void MultiCurrencyLedgerTranslator_BuildsBalancedUnrealizedFxRevaluationLines()
+    {
+        var eurCash = LedgerAccounts.CashInCurrency("EUR", "broker-1");
+        var trialBalance = new Dictionary<LedgerAccount, decimal>
+        {
+            [eurCash] = 1_000m,
+        };
+        var carryingBaseBalances = new Dictionary<LedgerAccount, decimal>
+        {
+            [eurCash] = 1_050m,
+        };
+
+        var translation = MultiCurrencyLedgerTranslator.Translate(
+            trialBalance,
+            "USD",
+            new Dictionary<string, decimal> { ["EUR"] = 1.1m },
+            carryingBaseBalances: carryingBaseBalances);
+        var lines = MultiCurrencyLedgerTranslator.BuildUnrealizedFxRevaluationLines(translation, "broker-1");
+
+        lines.Should().HaveCount(2);
+        lines.Sum(line => line.debit).Should().Be(50m);
+        lines.Sum(line => line.credit).Should().Be(50m);
+        lines.Should().Contain(line => line.account == eurCash && line.debit == 50m && line.credit == 0m);
+        lines.Should().Contain(line =>
+            line.account.Name == "Unrealized FX Gain" &&
+            line.account.FinancialAccountId == "broker-1" &&
+            line.debit == 0m &&
+            line.credit == 50m);
+    }
+
     private static JournalEntry BuildGeneratedBalancedJournal(
         int lineCountSeed,
         int amountSeed,
