@@ -24,3 +24,9 @@ navigation and fail validation when it differs from the expected route path. A s
 matching route/page manifest entry fails validation instead of being accepted as a fresh-looking but
 unproven capture. Manifest capture paths must also resolve to the requested output PNG, so an older
 or different run cannot satisfy the evidence gate by reusing the expected filename.
+
+## Desktop WPF screenshot index
+
+The maintained desktop WPF coverage index lives at
+[`docs/screenshots/desktop/README.md`](desktop/README.md). It maps active registered WPF page
+tags to committed screenshot paths, fixture/data mode, refresh dates, and TBI coverage gaps.
