@@ -271,9 +271,7 @@
   }
 
   .startup-status-panel {
-    background:
-      linear-gradient(90deg, rgba(42, 178, 212, 0.12), transparent 38%),
-      rgba(13, 23, 34, 0.96);
+    background: rgba(13, 23, 34, 0.96);
     box-shadow: var(--shadow-workstation);
   }
 
@@ -404,7 +402,7 @@
   }
 
   .security-master-print-preview {
-    @apply rounded-xl border border-border/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))] p-3;
+    @apply rounded-xl border border-border/60 bg-card p-3;
   }
 
   .security-master-print-sheet {
@@ -1890,9 +1888,7 @@
   .command-palette-shell {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
-    background:
-      linear-gradient(180deg, rgba(246, 251, 255, 0.03), rgba(246, 251, 255, 0)),
-      rgba(13, 23, 34, 0.98);
+    background: rgba(13, 23, 34, 0.98);
     padding: 1rem;
     box-shadow: var(--shadow-float);
   }
@@ -1915,7 +1911,7 @@
     padding: 0.75rem 0.875rem;
     border: 1px solid rgba(31, 52, 76, 0.95);
     border-radius: var(--radius-lg);
-    background: linear-gradient(180deg, rgba(11, 21, 32, 0.96) 0%, rgba(8, 16, 26, 0.92) 100%);
+    background: rgba(11, 21, 32, 0.96);
     box-shadow: var(--shadow-panel);
   }
 
@@ -2105,9 +2101,7 @@
   .entity-summary {
     border: 1px solid rgba(31, 52, 76, 0.95);
     border-radius: var(--radius-xl);
-    background:
-      linear-gradient(180deg, rgba(246, 251, 255, 0.03), rgba(246, 251, 255, 0)),
-      rgba(13, 23, 34, 0.9);
+    background: rgba(13, 23, 34, 0.9);
     padding: 1rem;
     box-shadow: var(--shadow-panel);
   }
@@ -2190,10 +2184,7 @@
   .plottool-chart-shell {
     border: 1px solid rgba(31, 52, 76, 0.95);
     border-radius: var(--radius-xl);
-    background:
-      radial-gradient(circle at top right, rgba(42, 178, 212, 0.12), transparent 28%),
-      linear-gradient(180deg, rgba(246, 251, 255, 0.02), rgba(246, 251, 255, 0)),
-      #05101b;
+    background: #05101b;
     padding: 0.875rem;
     box-shadow: var(--shadow-panel);
   }
@@ -2311,9 +2302,7 @@
   .command-palette-shell {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
-    background:
-      linear-gradient(180deg, rgba(246, 251, 255, 0.03), rgba(246, 251, 255, 0)),
-      rgba(13, 23, 34, 0.98);
+    background: rgba(13, 23, 34, 0.98);
     padding: 1rem;
     box-shadow: var(--shadow-float);
     animation: cmdPanelIn 160ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
