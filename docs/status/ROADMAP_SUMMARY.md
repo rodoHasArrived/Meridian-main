@@ -26,7 +26,7 @@ Snapshot date: 2026-05-20
 | W2-PROMO-001 | Paper promotion evidence and operator acceptance | done | green | high | Execution and Fund Accounts |
 | W2-TRD-001 | Paper trading cockpit reliability | done | green | critical | Execution and Fund Accounts |
 | W3-CONT-001 | Research to paper continuity | done | green | high | Strategy and Research |
-| W4-RECON-001 | Portfolio ledger reconciliation readiness | planned | yellow | high | Governance and Ledger |
-| W4-RPT-001 | Governed report pack readiness | planned | yellow | high | Governance and Ledger |
+| W4-RECON-001 | Portfolio ledger reconciliation readiness | done | green | high | Governance and Ledger |
+| W4-RPT-001 | Governed report pack readiness | done | green | high | Governance and Ledger |
 | W5-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy and Research |
 | W6-LIVE-001 | Live-readiness governance | planned | green | medium | Governance and Ledger |

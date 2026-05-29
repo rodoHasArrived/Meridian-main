@@ -52,7 +52,7 @@ support evidence advances operations-continuity close routing, reconciliation ca
 report-pack workflow/provenance, browser Accounting/Reporting parity, Investment Accounting
 Transaction Lab previews, report restatement review, run comparison/drill-in depth, shared route
 parity, and screenshot/evidence route validation. The best near-term opportunity is converting
-that support into full W4 close/case/report/evidence acceptance without pulling W5/W6 forward.
+that closed W4 close/case/report/evidence baseline into regression maintenance without pulling W5/W6 forward.
 
 2026-05-29 custom-asset note: Security Master asset-profile promotion-candidate assessment is now
 shared-service and endpoint support, not just target-state prose. The opportunity is to use those
