@@ -226,6 +226,53 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("Manifest is missing expected web capture entries: web-a.", result.stderr)
 
+    def test_web_validation_fails_when_manifest_path_does_not_match_output_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "screens"
+            output.mkdir()
+            self.write_png(output / "web-a.png")
+            config = root / "routes.json"
+            config.write_text(
+                json.dumps({"captures": [{"name": "web-a", "path": "/strategy"}]}),
+                encoding="utf-8",
+            )
+            manifest = root / "manifest.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
+                        "status": "passed",
+                        "captures": [
+                            {
+                                "name": "web-a",
+                                "route": "/strategy",
+                                "path": str(root / "other-run" / "web-a.png"),
+                                "url": "http://127.0.0.1:5173/workstation/strategy",
+                                "expectedPath": "/workstation/strategy",
+                                "actualPath": "/workstation/strategy",
+                                "status": "passed",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = self.run_validator(
+                "--surface",
+                "web",
+                "--output-dir",
+                str(output),
+                "--web-routes",
+                str(config),
+                "--manifest",
+                str(manifest),
+            )
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("web-a manifest capture path does not match the requested output file", result.stderr)
+
     def test_web_validation_fails_when_manifest_status_failed(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -369,6 +416,57 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
 
         self.assertNotEqual(0, result.returncode)
         self.assertIn("Manifest is missing expected desktop capture entries: wpf-a.", result.stderr)
+
+    def test_desktop_validation_fails_when_manifest_path_does_not_match_output_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "screens"
+            output.mkdir()
+            self.write_png(output / "wpf-a.png")
+            workflows = root / "desktop-workflows.json"
+            workflows.write_text(
+                json.dumps(
+                    {
+                        "workflows": [
+                            {
+                                "name": "screenshot-catalog",
+                                "steps": [{"captureName": "wpf-a", "pageTag": "ExpectedPage"}],
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            manifest = root / "manifest.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "run": {"startedAt": datetime.now(timezone.utc).isoformat()},
+                        "steps": [
+                            {
+                                "capturePath": str(root / "other-run" / "wpf-a.png"),
+                                "observedPageTag": "ExpectedPage",
+                                "status": "ok",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = self.run_validator(
+                "--surface",
+                "desktop",
+                "--output-dir",
+                str(output),
+                "--desktop-workflows",
+                str(workflows),
+                "--manifest",
+                str(manifest),
+            )
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("wpf-a manifest capture path does not match the requested output file", result.stderr)
 
 
 if __name__ == "__main__":

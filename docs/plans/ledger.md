@@ -28,8 +28,10 @@ policy-backed valuation projection with price-source/evidence audit rows and bal
 adjustment lines. Account-level tax-lot relief now has deterministic FIFO/LIFO/HIFO/SpecificId
 lot selection and realized gain/loss line projection. Automated journal drafts now have an
 in-memory governed approval-to-posting handoff that requires approval evidence and carries audit
-tags into the posted ledger journal. Durable accrual persistence, operator approval queues,
-tax-lot policy/lot persistence, and cross-period ledger report export endpoints remain open.
+tags into the posted ledger journal. Ledger-specific period and cross-period reporting endpoints
+now expose trial-balance and P&L summaries from closed accounting periods. Durable accrual
+persistence, operator approval queues, tax-lot policy/lot persistence, and richer file-based
+ledger report exports remain open.
 
 ## Overview
 
@@ -322,7 +324,7 @@ accrual schedule) that can be exported and attached to the operator report pack.
   per-account detail rows
 - [ ] `PeriodPnlSummaryDto` — realized income/expense P&L with prior-period comparatives and
   accrual-basis adjustments
-- [ ] `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` endpoints
+- [x] `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` endpoints
 - [x] Ledger-domain signed report-pack artifact builder for trial balance, P&L, balance sheet, and
   manifest checksums from point-in-time statements
 - [x] `FundOperationsWorkspaceReadService` includes `FundLedgerSummary`,
@@ -410,7 +412,7 @@ Implemented period reporting endpoints:
 - `GET /api/ledger/periods/{id}/trial-balance` — trial balance for a specific period
 - `GET /api/ledger/periods/{id}/pnl-summary` — P&L summary with prior-period comparatives
 
-Planned cross-period reporting endpoints:
+Implemented cross-period reporting endpoints:
 
 - `GET /api/ledger/reports/trial-balance` — cross-period trial-balance export
 - `GET /api/ledger/reports/pnl-summary` — governed P&L summary export
@@ -425,7 +427,7 @@ Planned cross-period reporting endpoints:
 | L-04 | Period-close work items and operator inbox routing | Complete | L-03 | `src/Meridian.Storage/Ledger`, `src/Meridian.Ui.Shared`, `tests/Meridian.Tests/Storage` |
 | L-05 | Accrual tracking and direct-lending ledger integration | Open | L-03 | `src/Meridian.Application/DirectLending`, `src/Meridian.FSharp.Ledger`, `src/Meridian.Storage/Ledger` |
 | L-06A | Governed report-pack trial-balance artifact slice | Complete | L-03 | `src/Meridian.Ui.Shared`, `src/Meridian.Application`, `tests/Meridian.Tests/Application` |
-| L-06B | Ledger-specific reporting endpoints and P&L summaries | In progress: period-scoped trial-balance and P&L routes implemented; cross-period exports remain open | L-04, L-05 | `src/Meridian.Ui.Shared`, `src/Meridian.Application`, `src/Meridian.Contracts` |
+| L-06B | Ledger-specific reporting endpoints and P&L summaries | Complete for API reporting: period-scoped and cross-period trial-balance/P&L routes implemented; richer retained file exports remain future reporting work | L-04, L-05 | `src/Meridian.Ui.Shared`, `src/Meridian.Application`, `src/Meridian.Contracts` |
 
 ## Validation Commands
 

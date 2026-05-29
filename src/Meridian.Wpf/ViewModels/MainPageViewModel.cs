@@ -294,11 +294,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
     }
 
-    public Visibility ShellContextVisibility => HasShellContextContent(ShellContext)
-        && IsWorkflowPageActive
-        && !IsCompactShellDensity
-        ? Visibility.Visible
-        : Visibility.Collapsed;
+    /// <summary>
+    /// Hosted pages and workspace homes own the page-level context strip; MainPage keeps its copy hidden to avoid duplicate banners.
+    /// </summary>
+    public Visibility ShellContextVisibility => Visibility.Collapsed;
 
     public string ShellStatusText => _fixtureModeDetector.ModeKind switch
     {
@@ -1677,18 +1676,6 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var normalizedKnownRoute = knownRoute.TrimEnd('/');
         return string.Equals(route, normalizedKnownRoute, StringComparison.OrdinalIgnoreCase) ||
                route.StartsWith($"{normalizedKnownRoute}/", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool HasShellContextContent(WorkspaceShellContext? shellContext)
-    {
-        if (shellContext is null)
-        {
-            return false;
-        }
-
-        return !string.IsNullOrWhiteSpace(shellContext.WorkspaceTitle)
-               || !string.IsNullOrWhiteSpace(shellContext.WorkspaceSubtitle)
-               || shellContext.Badges.Count > 0;
     }
 
     private void UpdateCommandPalettePresentation(string query)

@@ -286,7 +286,7 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
-    public void MainPage_CompactDensity_ShouldCollapseRepeatedContextOnWorkflowPages()
+    public void MainPage_WorkflowPages_ShouldKeepShellContextStripCollapsedAcrossDensities()
     {
         WpfTestThread.Run(async () =>
         {
@@ -303,7 +303,12 @@ public sealed class MainPageUiWorkflowTests
                 using var facade = new MainPageUiAutomationFacade();
 
                 facade.OpenCommandPalettePage("Backtest");
-                await WaitForConditionAsync(() => facade.ViewModel.ShellContextVisibility == Visibility.Visible).ConfigureAwait(true);
+                await WaitForConditionAsync(() => facade.ViewModel.IsWorkflowPageActive).ConfigureAwait(true);
+
+                facade.ViewModel.ShellDensityMode.Should().Be(ShellDensityMode.Standard);
+                facade.ViewModel.ShellContextVisibility.Should().Be(Visibility.Collapsed);
+                facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Collapsed);
+
                 facade.Click(facade.ShellDensityToggleButton);
 
                 facade.ViewModel.IsWorkflowPageActive.Should().BeTrue();
@@ -408,7 +413,7 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
-    public void MainPage_ShellContextStrip_ShouldSurfaceCurrentPageAndAttentionState()
+    public void MainPage_ShellContextStrip_ShouldStayCollapsedOnWorkflowPages()
     {
         WpfTestThread.Run(async () =>
         {
@@ -422,18 +427,11 @@ public sealed class MainPageUiWorkflowTests
             facade.OpenCommandPalettePage("SecurityMaster");
 
             await WaitForConditionAsync(() =>
-                facade.ViewModel.ShellContextVisibility == Visibility.Visible &&
-                string.Equals(facade.WorkspaceContextTitleText.Text, "Security master", StringComparison.Ordinal)).ConfigureAwait(true);
+                string.Equals(facade.ViewModel.ShellContext.WorkspaceTitle, "Security master", StringComparison.Ordinal)).ConfigureAwait(true);
 
-            facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Visible);
-            facade.WorkspaceContextTitleText.Text.Should().Be("Security master");
-            facade.WorkspaceContextSubtitleText.Text.Should().Be(facade.ViewModel.CurrentPageSubtitle);
-            facade.WorkspaceContextAttentionBanner.Visibility.Should().Be(Visibility.Visible);
-            facade.WorkspaceContextAttentionTitleText.Text.Should().NotBeNullOrWhiteSpace();
-            var attentionDetail = facade.WorkspaceContextAttentionDetailText.Text;
-            attentionDetail.Should().NotBeNullOrWhiteSpace();
-            (attentionDetail.Contains("Environment", StringComparison.Ordinal)
-                || attentionDetail.Contains("Operating Context", StringComparison.Ordinal)).Should().BeTrue();
+            facade.ViewModel.IsWorkflowPageActive.Should().BeTrue();
+            facade.ViewModel.ShellContextVisibility.Should().Be(Visibility.Collapsed);
+            facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Collapsed);
         });
     }
 

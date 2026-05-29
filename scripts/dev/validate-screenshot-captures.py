@@ -274,6 +274,26 @@ def validate_quality(
     return errors
 
 
+def validate_manifest_capture_path(name: str, capture_path: Any, expected_path: Path) -> list[str]:
+    manifest_path = str(capture_path or "").strip()
+    if not manifest_path:
+        return [f"{name} manifest path is missing."]
+
+    if Path(manifest_path).name != expected_path.name:
+        return [f"{name} manifest path does not point to {expected_path.name}."]
+
+    resolved_capture = repo_path(manifest_path)
+    try:
+        matches_expected_output = resolved_capture.resolve() == expected_path.resolve()
+    except OSError:
+        matches_expected_output = False
+
+    if not matches_expected_output:
+        return [f"{name} manifest capture path does not match the requested output file."]
+
+    return []
+
+
 def find_latest_desktop_manifest() -> Path | None:
     root = REPO_ROOT / "artifacts/desktop-workflows"
     if not root.exists():
@@ -320,11 +340,9 @@ def validate_manifest_routes(
             actual_path = str(capture.get("actualPath") or urlparse(str(capture.get("actualUrl") or "")).path or "").strip()
             if expected_path and actual_path and actual_path != expected_path:
                 errors.append(f"{name} actual browser path {actual_path!r}, expected {expected_path!r}.")
-            if Path(str(capture.get("path", ""))).name != configured.filename:
-                errors.append(f"{name} manifest path does not point to {configured.filename}.")
-            resolved_capture = repo_path(str(capture.get("path") or ""))
-            if resolved_capture.exists() and resolved_capture.resolve() != (output_dir / configured.filename).resolve():
-                errors.append(f"{name} manifest capture path is outside the requested output file.")
+            errors.extend(
+                validate_manifest_capture_path(name, capture.get("path"), output_dir / configured.filename)
+            )
 
     if surface == "desktop":
         observed_names = {
@@ -347,11 +365,7 @@ def validate_manifest_routes(
             observed = step.get("observedPageTag")
             if configured.page_tag and observed != configured.page_tag:
                 errors.append(f"{name} observed page tag {observed!r}, expected {configured.page_tag!r}.")
-            if Path(capture_path).name != configured.filename:
-                errors.append(f"{name} manifest path does not point to {configured.filename}.")
-            resolved_capture = repo_path(capture_path)
-            if resolved_capture.exists() and resolved_capture.resolve() != (output_dir / configured.filename).resolve():
-                errors.append(f"{name} manifest capture path is outside the requested output file.")
+            errors.extend(validate_manifest_capture_path(name, capture_path, output_dir / configured.filename))
 
     return errors, started_at
 

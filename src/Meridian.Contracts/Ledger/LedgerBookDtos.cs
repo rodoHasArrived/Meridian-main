@@ -226,6 +226,55 @@ public sealed record LedgerPeriodPnlSummaryDto(
     string AccountingPolicyId = "legacy-v1",
     string AccountingPolicyVersion = "legacy-v1");
 
+public sealed record LedgerCrossPeriodTrialBalanceLineDto(
+    Guid PeriodId,
+    Guid LedgerBookId,
+    int FiscalYear,
+    int PeriodNo,
+    string PeriodLabel,
+    string AccountName,
+    string AccountType,
+    string? Symbol,
+    string? FinancialAccountId,
+    decimal DebitTotal,
+    decimal CreditTotal,
+    decimal Balance,
+    int EntryCount,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1",
+    string? RuleId = null,
+    string? RuleVersion = null,
+    string? SourceEventId = null,
+    Guid? SourceJournalEntryId = null);
+
+public sealed record LedgerCrossPeriodTrialBalanceReportDto(
+    DateTimeOffset GeneratedAtUtc,
+    Guid? LedgerBookId,
+    string? FundProfileId,
+    Guid? FundStructureNodeId,
+    AccountingBasisKindDto? AccountingBasis,
+    DateOnly? StartDate,
+    DateOnly? EndDate,
+    IReadOnlyList<LedgerPeriodDto> Periods,
+    IReadOnlyList<LedgerCrossPeriodTrialBalanceLineDto> Lines,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    decimal NetIncome);
+
+public sealed record LedgerCrossPeriodPnlReportDto(
+    DateTimeOffset GeneratedAtUtc,
+    Guid? LedgerBookId,
+    string? FundProfileId,
+    Guid? FundStructureNodeId,
+    AccountingBasisKindDto? AccountingBasis,
+    DateOnly? StartDate,
+    DateOnly? EndDate,
+    IReadOnlyList<LedgerPeriodPnlSummaryDto> Periods,
+    decimal TotalRevenue,
+    decimal TotalExpenses,
+    decimal NetIncome);
+
 public sealed record LedgerPeriodCloseResultDto(
     LedgerPeriodDto Period,
     LedgerPeriodSummaryDto Summary,

@@ -501,6 +501,8 @@ Ledger book, period, and closed-period reporting endpoints are exposed under `/a
 | `POST /api/ledger/periods/{periodId}/close` | Performs soft-close or hard-close, computes close summary, and contributes a FundReconciliation operator-inbox work item |
 | `GET /api/ledger/periods/{periodId}/trial-balance` | Returns closed-period trial-balance rows with accounting-basis and policy metadata |
 | `GET /api/ledger/periods/{periodId}/pnl-summary` | Returns closed-period revenue, expense, net-income, prior-period variance, open-break count, and signoff posture |
+| `GET /api/ledger/reports/trial-balance` | Returns cross-period closed-period trial-balance rows filtered by book, fund, node, accounting basis, and date range |
+| `GET /api/ledger/reports/pnl-summary` | Returns cross-period closed-period revenue, expense, net-income totals, and per-period P&L summaries |
 
 These endpoints are implemented in `WorkstationEndpoints.cs` and `LedgerEndpoints.cs`, then map to route constants in `UiApiRoutes`.
 

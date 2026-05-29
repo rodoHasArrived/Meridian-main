@@ -417,14 +417,18 @@ These records establish the minimum acceptance payload for Wave 4 readiness proo
 
 ## Recommended Delivery Order
 
-1. W2-A Paper Cockpit Reliability Gate
-2. W2-B Durable Promotion Trace and Review Packet
-3. X1 Scenario Acceptance Harness baseline for Wave 2
-4. W2-C Operator Triage Queue v1
-5. W3-A Shared Run Continuity as System of Record
-6. W3-B Projection-Layer Extraction and Consumer Alignment
-7. W3-C Brokerage and Custodian Sync Control Plane
-8. W3-D Structure-Aware Operating Context and Shell Handoff
+W2 and W3 are now closed baselines in `PROGRAM_STATE.md`; the sequence below is retained as the
+historical dependency shape and as the maintenance order for regression evidence. New delivery
+claims in this addendum should start at W4 unless the canonical program state changes.
+
+1. Maintain W2-A Paper Cockpit Reliability Gate evidence
+2. Maintain W2-B Durable Promotion Trace and Review Packet evidence
+3. Maintain X1 Scenario Acceptance Harness baseline for Wave 2
+4. Maintain W2-C Operator Triage Queue v1 evidence
+5. Maintain W3-A Shared Run Continuity as System of Record evidence
+6. Maintain W3-B Projection-Layer Extraction and Consumer Alignment evidence
+7. Maintain W3-C Brokerage and Custodian Sync Control Plane evidence
+8. Maintain W3-D Structure-Aware Operating Context and Shell Handoff evidence
 9. W4-A Durable Governance Casework
 10. W4-B Governed Report-Pack Generation and Publishing
 11. W4-C Fund-Operations Workspace Consolidation
@@ -432,15 +436,15 @@ These records establish the minimum acceptance payload for Wave 4 readiness proo
 
 ### Controlled parallel pre-work allowance
 
-Limited parallel W3 pre-work is allowed before DK2 is fully green when all constraints below hold:
+Limited W2/W3 maintenance work may run in parallel with W4 delivery when all constraints below hold:
 
-- scope is restricted to contract-first shaping, projection extraction, read-only continuity seams, and deterministic scenario harnesses
-- work items are explicitly tagged as `release-neutral pre-work` and cannot be used for Wave 3/Wave 4 completion claims
-- no pre-work item may change DK2 gate definitions, bypass reconciliation calibration/sign-off requirements, or weaken promotion/export parity checks
-- each parallel item must keep rollback-safe boundaries and document unresolved DK2 dependencies in the PR description
+- scope is restricted to regression evidence, contract compatibility, projection repair, read-only continuity seams, and deterministic scenario harnesses
+- work items are explicitly tagged as closed-baseline maintenance and cannot be used for new Wave 4 completion claims
+- no maintenance item may change W2/W3 gate definitions, bypass reconciliation calibration/sign-off requirements, or weaken promotion/export parity checks
+- each parallel item must keep rollback-safe boundaries and document whether it preserves W2/W3 evidence or supports a separate W4 claim
 
 This ordering keeps the work honest:
 
-- Wave 2 proves the operator lane.
-- Wave 3 turns that lane into the shared system of record.
-- Wave 4 builds durable governance workflows on top of the same seams.
+- Wave 2 remains the closed operator-lane baseline.
+- Wave 3 remains the closed shared-system-of-record baseline.
+- Wave 4 builds durable governance workflows on top of the same seams without reopening W2/W3.

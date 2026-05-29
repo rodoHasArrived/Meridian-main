@@ -22,4 +22,5 @@ workflow step must appear in the capture manifest before the retained PNG can co
 design-system state review. Browser captures also record the actual Playwright URL path after
 navigation and fail validation when it differs from the expected route path. A stray PNG with no
 matching route/page manifest entry fails validation instead of being accepted as a fresh-looking but
-unproven capture.
+unproven capture. Manifest capture paths must also resolve to the requested output PNG, so an older
+or different run cannot satisfy the evidence gate by reusing the expected filename.

@@ -27,8 +27,8 @@ Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-re
 Implementation stance for this plan:
 
 - keep this artifact as a **technical dependency plan**, not owner-assigned sprint slices
-- include detailed W3/W4 pre-work even when the execution horizon is six weeks
-- allow limited parallel W3 pre-work before DK2 is fully green, while keeping DK2 entry and exit criteria as the release-claim gate
+- preserve W2 and W3 as closed maintenance baselines and route new acceptance work to W4 unless the canonical program state changes
+- keep detailed W4 pre-work in this horizon so close, report, reconciliation, and evidence-governance slices can land without reopening W2/W3
 
 ---
 
@@ -141,16 +141,12 @@ This plan starts from the current repo state:
 - **Wave 6:** live integration readiness, except where Wave 1-2 work clarifies prerequisites
 - optional advanced research / scale tracks
 
-### Detailed pre-work beyond this six-week window (required planning depth)
+### Detailed W4 pre-work beyond this six-week window (required planning depth)
 
-The six-week horizon remains the execution target, but detailed pre-work is required now for W3/W4 so follow-on implementation can start without architectural drift.
-
-#### W3 pre-work package (dependency-first)
-
-- keep shared run-lineage, continuity-warning, and Strategy Engine pre-run payload contracts as the single cross-workspace source
-- finish service-backed projection boundaries that separate operator payload builders from fixture/fallback builders
-- lock brokerage/custodian raw-snapshot versus normalized-projection persistence boundaries and freshness/divergence semantics
-- pre-validate operating-context propagation rules for fund/entity/sleeve/vehicle/account routing across deep links and shell handoffs
+The six-week horizon remains the execution target, but W4 needs deeper planning so follow-on
+implementation can start without architectural drift. W3 shared run / portfolio / ledger continuity
+is a closed baseline; related run, brokerage, ledger, and reconciliation work in this window should
+be described as baseline maintenance or W4 governance support, not as W3 pre-work.
 
 #### W4 pre-work package (dependency-first)
 
@@ -158,12 +154,7 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 - lock governed report-pack lifecycle states and approval/rejection/provenance transitions before wider UI expansion
 - define one fund-operations projection contract that joins account posture, reconciliation posture, and report readiness
 - define inbox-v2 remediation-playbook contract fields (owner, severity, route, next action, evidence link) before multi-surface rollout
-
-#### Parallelism policy for W3 during DK2 entry
-
-- allowed: contract shaping, projection extraction, deterministic scenario harnesses, and read-only continuity seams
-- not allowed: Wave 3 completion claims, governance handoff claims, or UI flows that depend on unresolved DK2 parity/calibration outcomes
-- required: every parallel W3 item must declare its dependency on pending DK2 gates and remain release-neutral until DK2 is green
+- keep any run, brokerage, ledger, or reconciliation continuity changes tied to the closed W3 baseline green while W4 owns new close/report/evidence claims
 
 ---
 
@@ -218,9 +209,9 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 | Week | Focus | Goals | Deliverables |
 | --- | --- | --- | --- |
 | 1 | DK1 / Wave 1 closeout confirmation | preserve the signed trust gate and remove planning contradictions around the active provider set and pilot replay/sample standard | refreshed validation summary with `pilotReplaySampleSet`; signed 2026-04-27 DK1 parity packet; valid packet-bound sign-off evidence; synchronized provider/runtime evidence list; explicit deferred-provider wording; dashboard evidence links; future-review rerun guidance |
-| 2 | Wave 2 entry | keep the trust gate green while starting cockpit hardening | cockpit hardening checklist; operator acceptance targets tied back to the passing Wave 1 gate |
-| 3 | Wave 2 operator lane | tighten the existing trading cockpit into a more dependable operator workflow | session and replay acceptance criteria; promotion approval/rejection rationale checklist; cockpit operator-path checklist |
-| 4 | Wave 3 continuity | reduce cross-workspace seams between Research, Trading, and Governance while validating browser and WPF workflows through shared contracts | run-model continuity backlog; fills/attribution/ledger/reconciliation linkage notes; web/workstation validation targets tied to active flows |
+| 2 | Wave 2 maintenance | keep the closed cockpit baseline green while exercising replay, inbox, and promotion evidence | cockpit maintenance checklist; operator acceptance targets tied back to the closed W1/W2 gates |
+| 3 | Wave 2 operator evidence | preserve the existing trading cockpit acceptance lane through shared contracts and regression evidence | session and replay regression criteria; promotion approval/rejection rationale checklist; cockpit operator-path maintenance checklist |
+| 4 | Wave 3 maintenance / Wave 4 setup | keep shared run / portfolio / ledger continuity green while moving new governance claims into W4 | run-model continuity regression targets; fills/attribution/ledger/reconciliation linkage checks; W4 close/report/evidence validation targets |
 | 5 | Wave 4 governance slice | connect the delivered Security Master baseline to concrete governance product slices | account/entity and strategy-structure targets; first multi-ledger/cash-flow/reconciliation slice decisions; reporting/profile follow-ons |
 | 6 | Hardening and closeout | make the six-week baseline easy to continue from without widening scope | docs/status refresh; acceptance-criteria review; narrowed follow-on backlog that still stays within Waves 1-4 |
 

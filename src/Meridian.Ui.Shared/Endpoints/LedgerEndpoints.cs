@@ -251,6 +251,110 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerReportsTrialBalance, async (
+            Guid? ledgerBookId,
+            string? fundProfileId,
+            Guid? fundStructureNodeId,
+            AccountingBasisKindDto? accountingBasis,
+            DateOnly? startDate,
+            DateOnly? endDate,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!IsValidDateRange(startDate, endDate))
+            {
+                return Results.BadRequest(new { error = "Report start date must be before or equal to the end date." });
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var summaries = await LoadClosedPeriodSummariesAsync(
+                service,
+                ledgerBookId,
+                fundProfileId,
+                fundStructureNodeId,
+                accountingBasis,
+                startDate,
+                endDate,
+                context.RequestAborted).ConfigureAwait(false);
+
+            return Results.Json(
+                BuildTrialBalanceReport(
+                    summaries,
+                    ledgerBookId,
+                    fundProfileId,
+                    fundStructureNodeId,
+                    accountingBasis,
+                    startDate,
+                    endDate),
+                jsonOptions);
+        })
+        .WithName("GetLedgerCrossPeriodTrialBalanceReport")
+        .Produces<LedgerCrossPeriodTrialBalanceReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerReportsPnlSummary, async (
+            Guid? ledgerBookId,
+            string? fundProfileId,
+            Guid? fundStructureNodeId,
+            AccountingBasisKindDto? accountingBasis,
+            DateOnly? startDate,
+            DateOnly? endDate,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!IsValidDateRange(startDate, endDate))
+            {
+                return Results.BadRequest(new { error = "Report start date must be before or equal to the end date." });
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var summaries = await LoadClosedPeriodSummariesAsync(
+                service,
+                ledgerBookId,
+                fundProfileId,
+                fundStructureNodeId,
+                accountingBasis,
+                startDate,
+                endDate,
+                context.RequestAborted).ConfigureAwait(false);
+
+            return Results.Json(
+                BuildPnlReport(
+                    summaries,
+                    ledgerBookId,
+                    fundProfileId,
+                    fundStructureNodeId,
+                    accountingBasis,
+                    startDate,
+                    endDate),
+                jsonOptions);
+        })
+        .WithName("GetLedgerCrossPeriodPnlReport")
+        .Produces<LedgerCrossPeriodPnlReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
     }
 
     private static ILedgerBookService? ResolveService(HttpContext context)
@@ -312,6 +416,131 @@ public static class LedgerEndpoints
             summary.AccountingBasis,
             summary.AccountingPolicyId,
             summary.AccountingPolicyVersion);
+    }
+
+    private static bool IsValidDateRange(DateOnly? startDate, DateOnly? endDate)
+        => !startDate.HasValue || !endDate.HasValue || startDate.Value <= endDate.Value;
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static async Task<IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)>> LoadClosedPeriodSummariesAsync(
+        ILedgerBookService service,
+        Guid? ledgerBookId,
+        string? fundProfileId,
+        Guid? fundStructureNodeId,
+        AccountingBasisKindDto? accountingBasis,
+        DateOnly? startDate,
+        DateOnly? endDate,
+        CancellationToken cancellationToken)
+    {
+        var periods = await service
+            .ListPeriodsAsync(
+                new LedgerPeriodQuery(
+                    ledgerBookId,
+                    fundProfileId,
+                    fundStructureNodeId,
+                    Status: null,
+                    OpenOnly: false,
+                    accountingBasis),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        var closedPeriods = periods
+            .Where(period => period.Status != LedgerPeriodStatusDto.Open)
+            .Where(period => !startDate.HasValue || period.EndDate >= startDate.Value)
+            .Where(period => !endDate.HasValue || period.StartDate <= endDate.Value)
+            .OrderBy(static period => period.StartDate)
+            .ThenBy(static period => period.PeriodNo)
+            .ToArray();
+
+        var summaries = new List<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)>(closedPeriods.Length);
+        foreach (var period in closedPeriods)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var summary = await service.GetPeriodSummaryAsync(period.PeriodId, cancellationToken).ConfigureAwait(false);
+            if (summary is not null)
+            {
+                summaries.Add((period, summary));
+            }
+        }
+
+        return summaries;
+    }
+
+    private static LedgerCrossPeriodTrialBalanceReportDto BuildTrialBalanceReport(
+        IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> summaries,
+        Guid? ledgerBookId,
+        string? fundProfileId,
+        Guid? fundStructureNodeId,
+        AccountingBasisKindDto? accountingBasis,
+        DateOnly? startDate,
+        DateOnly? endDate)
+    {
+        var lines = summaries
+            .SelectMany(static item => item.summary.TrialBalance.Select(line => new LedgerCrossPeriodTrialBalanceLineDto(
+                item.summary.PeriodId,
+                item.summary.LedgerBookId,
+                item.summary.FiscalYear,
+                item.summary.PeriodNo,
+                item.summary.Label,
+                line.AccountName,
+                line.AccountType,
+                line.Symbol,
+                line.FinancialAccountId,
+                line.DebitTotal,
+                line.CreditTotal,
+                line.Balance,
+                line.EntryCount,
+                line.AccountingBasis,
+                line.AccountingPolicyId,
+                line.AccountingPolicyVersion,
+                line.RuleId,
+                line.RuleVersion,
+                line.SourceEventId,
+                line.SourceJournalEntryId)))
+            .ToArray();
+
+        return new LedgerCrossPeriodTrialBalanceReportDto(
+            DateTimeOffset.UtcNow,
+            ledgerBookId,
+            NormalizeOptional(fundProfileId),
+            fundStructureNodeId,
+            accountingBasis,
+            startDate,
+            endDate,
+            summaries.Select(static item => item.period).ToArray(),
+            lines,
+            summaries.Sum(static item => item.summary.TotalDebits),
+            summaries.Sum(static item => item.summary.TotalCredits),
+            summaries.Sum(static item => item.summary.NetIncome));
+    }
+
+    private static LedgerCrossPeriodPnlReportDto BuildPnlReport(
+        IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> summaries,
+        Guid? ledgerBookId,
+        string? fundProfileId,
+        Guid? fundStructureNodeId,
+        AccountingBasisKindDto? accountingBasis,
+        DateOnly? startDate,
+        DateOnly? endDate)
+    {
+        var periods = summaries
+            .Select(static item => BuildPnlSummary(item.summary))
+            .ToArray();
+
+        return new LedgerCrossPeriodPnlReportDto(
+            DateTimeOffset.UtcNow,
+            ledgerBookId,
+            NormalizeOptional(fundProfileId),
+            fundStructureNodeId,
+            accountingBasis,
+            startDate,
+            endDate,
+            periods,
+            periods.Sum(static period => period.TotalRevenue),
+            periods.Sum(static period => period.TotalExpenses),
+            periods.Sum(static period => period.NetIncome));
     }
 
     private static bool TryGetLedgerCloseActor(HttpContext context, out string actor)
