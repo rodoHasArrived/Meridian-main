@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-05-22
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active browser and WPF workstation lanes, the web Research run-library, Quant Notebook helpers, and gated Quant Lab support slices, shared Strategy Engine definitions/validate-run support, shared workflow command-palette commands with grouped/hash-aware browser sections, browser query-string route focus for subject/symbol handoffs, browser Portfolio dense-table detail selection and brokerage-sync next actions plus Portfolio/Reporting/Settings/Data task panels, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, browser Evidence Workbench support backed by shared evidence packet/graph APIs, live quote/order-book/watchlist market-context routes with selectable recent-trade detail inspection, Watchlist no-quote/empty-state copy, and quick-trade readiness handoffs, historical price charts, paper-first Alpaca connection verification plus provider-setup validation handoffs, read-only Robinhood brokerage aggregation support, browser Security Master search-result selection and details/lots/operator-override support with identity drill-ins, lot-detail, and conflict refresh/retry state, UFL/reference-data projection endpoints, browser focus-management and Overview status/refresh hardening, Overview Today panel, `/data/alerts` Price Alerts, `/strategy/designer` Strategy Designer, `/strategy/covered-call` chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills dense detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, Reporting report-pack actions and endpoint-link safety, Quant Lab plot view-model extraction, crash-safe shared UI persistence, simplified browser rail/header chrome, WPF shell support evidence including the Data shell feature module, neutral demo-data fixture semantics with seeded AAPL market-data fixtures, stronger desktop workflow automation evidence, hardened WPF screenshot/manual evidence capture, provider capability matrix governance, additive workstation continuity guards, and structured roadmap/source documentation controls
+**Last Updated:** 2026-05-28
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, closed W1/W2/W3 baselines, active W4 governance/fund-operations acceptance, the active browser and WPF workstation lanes, and May 28 support evidence for operations-continuity close routing, reconciliation casework, governed report-pack workflow/provenance, browser Accounting/Reporting parity, Investment Accounting Transaction Lab previews, report restatement review, richer run comparison/drill-in support, shared workflow route parity, and screenshot/evidence validation guards. These advances preserve the closed W2/W3 baselines and move W4 forward, but they are not full W4 close/report, Evidence Vault/report-line-provenance product, Backtest Studio, or live-readiness exits.
 
 **Derived from:** [`ROADMAP.md`](ROADMAP.md) + [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) + [`TARGET_END_PRODUCT.md`](TARGET_END_PRODUCT.md) — do not update independently.
 
@@ -72,6 +72,16 @@ ledger/reconciliation/strategy read models, a canonical provider capability matr
 roadmap/source registries with stale-doc/hash validation. These strengthen shared-contract and
 documentation governance, but they are not Backtest Studio, cockpit, close/report, or live-readiness
 exit evidence.
+
+2026-05-28 support evidence moves the short summary from W2/W3 closure into W4 hardening. Shared
+and browser evidence now covers operations-continuity, reconciliation casework, report-pack
+workflow/provenance, Security Master endpoint mapping, fund-structure report-pack/cash-flow
+endpoints, browser Accounting/Reporting parity, `FundOpsCloseLaneScenarioTests`, and
+`PilotAcceptanceHarnessTests`. Additional support slices add Explain-the-Break parity, Investment
+Accounting Transaction Lab previews, report restatement review, richer run comparison and portfolio
+drill-in evidence, shared route parity, and screenshot/evidence wrong-route validation. Keep these
+as W4 support evidence until the build-backed WPF Lane C lane and full close/case/report/evidence
+acceptance proof are green.
 
 ---
 

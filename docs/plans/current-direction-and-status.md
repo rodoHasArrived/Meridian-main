@@ -1,6 +1,6 @@
 # Meridian Current Direction And Status
 
-**Last Reviewed:** 2026-05-27
+**Last Reviewed:** 2026-05-28
 
 ## Current Planning TODOs
 
@@ -115,6 +115,17 @@ ledger/reconciliation/strategy read models, provider adapter follow-up is anchor
 matrix, and roadmap/source documentation truth now flows through structured registries plus
 stale-doc and hash validation. These improve execution control, shared-contract discipline, and
 documentation freshness, but they do not change W2-W4 status labels.
+
+May 28 support evidence confirms that active acceptance has shifted to W4 rather than reopening
+W2/W3. Shared/browser/source-route checks now cover operations-continuity close workflow routes,
+reconciliation casework, fund-operations workspace reads, report-pack workflow/provenance, Security
+Master endpoint mapping, fund-structure report-pack and cash-flow endpoints, browser
+Accounting/Reporting W4 parity, `FundOpsCloseLaneScenarioTests`, and `PilotAcceptanceHarnessTests`.
+Additional support slices add Explain-the-Break parity, Investment Accounting Transaction Lab
+previews, report restatement review, richer run comparison and portfolio drill-in support, shared
+workflow route parity, and screenshot/evidence wrong-route validation. These preserve W2/W3 and
+advance W4 support; they do not close W4 until Lane C close/case/report/evidence acceptance is
+green, including the build-backed WPF lane.
 
 W2/W3/W4 claim discipline: every new roadmap or status claim for these waves must either map to a
 `pilot-readiness.*` stage gate that turns green in the latest harness output or name the blocker in
