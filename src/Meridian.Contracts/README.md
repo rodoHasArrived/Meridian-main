@@ -25,6 +25,7 @@ or provider implementations.
 ## Key folders and files
 
 - `Workstation/` - workstation and operator workflow DTOs.
+- `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - Contract DTO files - shared payloads consumed across host, UI services, desktop, and dashboard.
 - Project metadata - serialization and package references for contract consumers.
 

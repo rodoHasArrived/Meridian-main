@@ -23,7 +23,7 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Key folders and files
 
-- `Endpoints/` - shared workstation endpoint mapping and projection helpers.
+- `Endpoints/` - shared workstation endpoint mapping and projection helpers, including fund-structure ownership lifecycle routes.
 - Shared read models - DTOs and compatibility shims consumed by browser and desktop clients.
 - Project metadata - UI shared dependencies and build settings.
 
