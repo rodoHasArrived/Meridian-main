@@ -843,7 +843,7 @@ public static class FundStructureEndpoints
         .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status201Created);
 
         group.MapPost("/reporting/packs/{reportId:guid}/validate", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Validated));
-        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.InReview));
+        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => SubmitPack(context, reportId));
         group.MapPost("/reporting/packs/{reportId:guid}/approve", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Approved));
         group.MapPost("/reporting/packs/{reportId:guid}/reject", (Guid reportId, ReportPackRejectRequestDto request, HttpContext context) =>
         {
@@ -1050,6 +1050,34 @@ public static class FundStructureEndpoints
         .Produces(StatusCodes.Status403Forbidden);
     }
 
+
+    private static IResult SubmitPack(HttpContext context, Guid reportId)
+    {
+        if (!HasReportingWorkflowPermission(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (!TryResolveAuthorizedActorAndRole(context, out var actor, out var role))
+        {
+            return Results.Unauthorized();
+        }
+
+        var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+        if (svc is null)
+        {
+            return WorkspaceServiceUnavailable();
+        }
+
+        try
+        {
+            return Results.Json(svc.Submit(reportId, actor, role), statusCode: StatusCodes.Status200OK);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
 
     private static IResult TransitionPack(HttpContext context, Guid reportId, ReportPackWorkflowStateDto target)
     {

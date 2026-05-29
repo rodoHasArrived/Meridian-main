@@ -63,6 +63,9 @@ public sealed class ReportPackWorkflowService
         return record;
     }
 
+    public ReportPackWorkflowRecordDto Submit(Guid reportId, string actor, string role, string? note = null) =>
+        TransitionCore(reportId, ReportPackWorkflowStateDto.InReview, actor, role, note);
+
     public ReportPackWorkflowRecordDto Transition(Guid reportId, ReportPackWorkflowStateDto target, string actor, string role, string? note = null)
     {
         if (target == ReportPackWorkflowStateDto.Published)
@@ -198,7 +201,7 @@ public sealed class ReportPackWorkflowService
             target == ReportPackWorkflowStateDto.InReview ||
             target == ReportPackWorkflowStateDto.Validated ||
             target == ReportPackWorkflowStateDto.PendingApproval
-                ? normalized is "operator" or "reviewer" or "validator"
+                ? normalized is "operator" or "reviewer" or "validator" or "admin"
                 : target switch
         {
             ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
