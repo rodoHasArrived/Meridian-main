@@ -87,6 +87,60 @@ public sealed class ShellNavigationCatalogTests
         ShellNavigationCatalog.GetDefaultWorkspace().Id.Should().Be("strategy");
     }
 
+    [Theory]
+    [InlineData("trading", ShellPosture.Terminal, "WorkspaceHomeTradingTerminalTemplate")]
+    [InlineData("portfolio", ShellPosture.Cockpit, "WorkspaceHomePortfolioCockpitTemplate")]
+    [InlineData("accounting", ShellPosture.Cockpit, "WorkspaceHomeAccountingCockpitTemplate")]
+    [InlineData("reporting", ShellPosture.Cockpit, "WorkspaceHomeReportingCockpitTemplate")]
+    [InlineData("strategy", ShellPosture.Workbench, "WorkspaceHomeStrategyWorkbenchTemplate")]
+    [InlineData("data", ShellPosture.Terminal, "WorkspaceHomeDataTerminalTemplate")]
+    [InlineData("settings", ShellPosture.Cockpit, "WorkspaceHomeSettingsCockpitTemplate")]
+    public void WorkspaceLayouts_ShouldMapCanonicalRootsToPostures(
+        string workspaceId,
+        ShellPosture expectedPosture,
+        string expectedHomeAutomationId)
+    {
+        var descriptor = ShellNavigationCatalog.GetWorkspaceLayoutDescriptor(workspaceId);
+
+        descriptor.WorkspaceId.Should().Be(workspaceId);
+        descriptor.Posture.Should().Be(expectedPosture);
+        descriptor.HomeTemplateAutomationId.Should().Be(expectedHomeAutomationId);
+        descriptor.EvidenceStripAutomationId.Should().Be($"WorkspaceEvidenceStrip{char.ToUpperInvariant(workspaceId[0])}{workspaceId[1..]}");
+        descriptor.CommandSurfaceAutomationId.Should().Be($"WorkspaceCommandSurface{char.ToUpperInvariant(workspaceId[0])}{workspaceId[1..]}");
+        descriptor.InspectorHostAutomationId.Should().Be($"WorkspaceInspectorHost{char.ToUpperInvariant(workspaceId[0])}{workspaceId[1..]}");
+    }
+
+    [Theory]
+    [InlineData("research", "strategy", ShellPosture.Workbench)]
+    [InlineData("Data Operations", "data", ShellPosture.Terminal)]
+    [InlineData("governance", "accounting", ShellPosture.Cockpit)]
+    public void WorkspaceLayouts_ShouldResolveLegacyAliasesToCanonicalRoots(
+        string legacyWorkspaceId,
+        string expectedWorkspaceId,
+        ShellPosture expectedPosture)
+    {
+        var descriptor = ShellNavigationCatalog.GetWorkspaceLayoutDescriptor(legacyWorkspaceId);
+
+        descriptor.WorkspaceId.Should().Be(expectedWorkspaceId);
+        descriptor.Posture.Should().Be(expectedPosture);
+    }
+
+    [Theory]
+    [InlineData("trading", WorkspaceVisualPriority.Evidence, WorkspaceVisualPriority.Commands, WorkspaceVisualPriority.Inspector)]
+    [InlineData("portfolio", WorkspaceVisualPriority.Commands, WorkspaceVisualPriority.Evidence, WorkspaceVisualPriority.Inspector)]
+    [InlineData("strategy", WorkspaceVisualPriority.Inspector, WorkspaceVisualPriority.Commands, WorkspaceVisualPriority.Evidence)]
+    public void WorkspaceLayouts_ShouldDeclarePostureSpecificVisualPriority(
+        string workspaceId,
+        WorkspaceVisualPriority first,
+        WorkspaceVisualPriority second,
+        WorkspaceVisualPriority third)
+    {
+        ShellNavigationCatalog.GetWorkspaceLayoutDescriptor(workspaceId)
+            .VisualPriority
+            .Should()
+            .Equal(first, second, third);
+    }
+
     [Fact]
     public void ResolveDefaultPanes_AccountingWithoutPrimaryContext_UsesContextlessPanes()
     {

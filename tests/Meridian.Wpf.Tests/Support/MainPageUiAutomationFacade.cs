@@ -157,6 +157,10 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public WorkspaceShellContextStripControl WorkspaceShellContextStrip => GetRequired<WorkspaceShellContextStripControl>("WorkspaceShellContextStrip");
 
+    public InstitutionalCommandPaletteControl CommandPaletteControl => GetRequired<InstitutionalCommandPaletteControl>("CommandPaletteControl");
+
+    public WorkspaceInspectorHostControl WorkspaceInspectorHost => GetRequired<WorkspaceInspectorHostControl>("WorkspaceInspectorHost");
+
     public TextBlock WorkspaceContextTitleText => FindByAutomationId<TextBlock>("WorkspaceContextTitleText");
 
     public TextBlock WorkspaceContextSubtitleText => FindByAutomationId<TextBlock>("WorkspaceContextSubtitleText");
@@ -347,8 +351,21 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     private T GetRequired<T>(string name) where T : FrameworkElement
     {
-        Page.FindName(name).Should().BeOfType<T>($"{name} should be declared on MainPage");
-        return (T)Page.FindName(name)!;
+        if (Page.FindName(name) is T namedElement)
+        {
+            return namedElement;
+        }
+
+        foreach (var descendant in EnumerateSearchRoots().SelectMany(EnumerateDescendants))
+        {
+            if (descendant is T typed &&
+                string.Equals(typed.Name, name, StringComparison.Ordinal))
+            {
+                return typed;
+            }
+        }
+
+        throw new Xunit.Sdk.XunitException($"Unable to locate {typeof(T).Name} named '{name}'.");
     }
 
     private T FindByAutomationId<T>(string automationId) where T : FrameworkElement

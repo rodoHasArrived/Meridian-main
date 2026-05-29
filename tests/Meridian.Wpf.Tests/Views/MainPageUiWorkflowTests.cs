@@ -150,6 +150,28 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_ShouldComposeRouteCompatibleInstitutionalShellPrimitives()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.CommandPaletteControl.Should().NotBeNull();
+            facade.WorkspaceInspectorHost.Should().NotBeNull();
+            facade.WorkspaceInspectorHost.InspectorState.Should().Be(WorkspaceInspectorState.Empty);
+            facade.FindDescendantByAutomationId<WorkspaceCommandSurfaceControl>("WorkspaceCommandSurfaceStrategy")
+                .Should()
+                .NotBeNull();
+            facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripStrategy")
+                .Should()
+                .NotBeNull();
+            facade.FindDescendantByAutomationId<WorkspaceInspectorHostControl>("WorkspaceInspectorHostStrategy")
+                .Should()
+                .NotBeNull();
+        });
+    }
+
+    [Fact]
     public void MainPage_WorkspaceSecondaryNavigationSelection_ShouldNavigateToSecurityMaster()
     {
         WpfTestThread.Run(() =>
