@@ -34,7 +34,7 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
-The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
+The Accounting workspace ownership panel in `FundStructureSetupPage` shows the shared ownership review model, selected-link inspector, validation badges, and edit/expire/replace command posture before operators complete entity setup. The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
 
 
 Keep desktop support aligned with shared contracts and governance posture.

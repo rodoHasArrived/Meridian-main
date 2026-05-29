@@ -33,6 +33,9 @@ export const AUTH_API_ENDPOINTS = {
 } as const;
 
 export const FUND_STRUCTURE_API_ENDPOINTS = {
+  graph: "/api/fund-structure/graph",
+  ownershipReview: "/api/fund-structure/ownership-review",
+  ownershipLinks: "/api/fund-structure/links",
   ledgerMappingWorkbench: "/api/fund-structure/ledger-mapping-view",
   ledgerMappingAssignments: "/api/fund-structure/ledger-mapping-assignments",
   transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview"

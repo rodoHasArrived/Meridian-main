@@ -276,6 +276,7 @@ public partial class App : System.Windows.Application
                 "Meridian",
                 "fund-structure.json")));
         services.AddSingleton<FundStructureSetupWorkflowService>();
+        services.AddSingleton<FundStructureOwnershipReviewService>();
         services.AddSingleton<EnvironmentDesignerService>(_ => new EnvironmentDesignerService(
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

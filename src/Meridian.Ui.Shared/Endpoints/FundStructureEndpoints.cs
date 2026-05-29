@@ -467,6 +467,32 @@ public static class FundStructureEndpoints
         .WithName("GetOrganizationStructureGraph")
         .Produces<OrganizationStructureGraphDto>(StatusCodes.Status200OK);
 
+        group.MapGet("/ownership-review", async (HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+
+            var q = context.Request.Query;
+            var asOf = ParseDateTimeOffset(q["asOf"]) ?? DateTimeOffset.UtcNow;
+            var graph = await service.GetOrganizationStructureAsync(
+                new OrganizationStructureQuery(
+                    OrganizationId: ParseGuid(q["organizationId"]),
+                    BusinessId: ParseGuid(q["businessId"]),
+                    NodeId: ParseGuid(q["nodeId"]),
+                    NodeKind: ParseNodeKind(q["nodeKind"]),
+                    ActiveOnly: ParseActiveOnly(q["activeOnly"]),
+                    AsOf: asOf),
+                context.RequestAborted).ConfigureAwait(false);
+
+            var review = new FundStructureOwnershipReviewService().Project(
+                graph,
+                new OwnershipReviewQueryDto(ParseActiveOnly(q["activeOnly"]), asOf));
+            return Results.Json(review, jsonOptions);
+        })
+        .WithName("GetOwnershipReview")
+        .Produces<OwnershipReviewDto>(StatusCodes.Status200OK);
+
         group.MapGet("/legacy-graph", async (HttpContext context) =>
         {
             var service = ResolveService(context);

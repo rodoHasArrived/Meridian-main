@@ -103,20 +103,59 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <ItemsControl ItemsSource="{Binding PreviewLinks}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock>
-                            <Run Text="{Binding Parent}" />
-                            <Run Text=" → " />
-                            <Run Text="{Binding Child}" />
-                            <Run Text=" (" />
-                            <Run Text="{Binding RelationshipType}" />
-                            <Run Text=")" />
-                        </TextBlock>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+
+            <Border BorderBrush="#334155" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,8,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Operator ownership review" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding OwnershipSummaryText}" TextWrapping="Wrap" Margin="0,4,0,10" />
+                        <ListBox ItemsSource="{Binding OwnershipLinks}" SelectedItem="{Binding SelectedOwnershipLink, Mode=TwoWay}" MinHeight="180">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding NodeDisplayLabel}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding PercentLabel}" Margin="12,0,0,0" FontWeight="SemiBold" />
+                                        <Border Grid.Column="2" BorderBrush="#64748b" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="12,0,0,0">
+                                            <TextBlock Text="{Binding ValidationState}" FontSize="11" />
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Selected-link inspector" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding SelectedOwnershipInspectorText}" TextWrapping="Wrap" Margin="0,4,0,10" />
+                        <TextBlock Text="Blocking messages" FontWeight="SemiBold" />
+                        <ItemsControl ItemsSource="{Binding SelectedOwnershipLink.BlockingMessages}" Margin="0,4,0,10">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="Suggested remediation" FontWeight="SemiBold" />
+                        <ItemsControl ItemsSource="{Binding SelectedOwnershipLink.SuggestedRemediationActions}" Margin="0,4,0,12">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <WrapPanel>
+                            <Button Content="Edit" Command="{Binding EditOwnershipLinkCommand}" Margin="0,0,8,8" Padding="12,6" />
+                            <Button Content="Expire" Command="{Binding ExpireOwnershipLinkCommand}" Margin="0,0,8,8" Padding="12,6" />
+                            <Button Content="Replace" Command="{Binding ReplaceOwnershipLinkCommand}" Margin="0,0,8,8" Padding="12,6" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

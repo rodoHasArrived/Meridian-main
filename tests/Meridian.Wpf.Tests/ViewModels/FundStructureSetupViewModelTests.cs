@@ -16,6 +16,8 @@ public sealed class FundStructureSetupViewModelTests
         Assert.False(viewModel.HasBlockingIssues);
         Assert.True(viewModel.CreateStructureCommand.CanExecute(null));
         Assert.Contains(viewModel.PreviewNodes, node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio);
+        Assert.NotEmpty(viewModel.OwnershipLinks);
+        Assert.True(viewModel.EditOwnershipLinkCommand.CanExecute(null));
     }
 
     [Fact]
@@ -39,12 +41,15 @@ public sealed class FundStructureSetupViewModelTests
 
         Assert.True(viewModel.HasResult);
         Assert.Contains("Core Portfolio", viewModel.ResultSummary, StringComparison.Ordinal);
+        Assert.Contains("Ownership", viewModel.OwnershipSummaryText, StringComparison.Ordinal);
     }
 
     private static FundStructureSetupViewModel CreateViewModel()
     {
         var accountService = new InMemoryFundAccountService();
         var structureService = new InMemoryFundStructureService(accountService);
-        return new FundStructureSetupViewModel(new FundStructureSetupWorkflowService(structureService));
+        return new FundStructureSetupViewModel(
+            new FundStructureSetupWorkflowService(structureService),
+            new FundStructureOwnershipReviewService(structureService));
     }
 }

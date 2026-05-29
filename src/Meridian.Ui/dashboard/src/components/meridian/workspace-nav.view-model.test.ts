@@ -56,6 +56,7 @@ describe("workspace nav view model", () => {
 
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
       "/accounting/operations-continuity",
+      "/accounting/ownership",
       "/accounting/ledger",
       "/accounting/reconciliation",
       "/accounting/security-master",
@@ -68,6 +69,11 @@ describe("workspace nav view model", () => {
       ariaLabel: "Open Continuity"
     });
     expect(accounting?.subItems[1]).toMatchObject({
+      label: "Ownership",
+      active: false,
+      ariaLabel: "Open Ownership"
+    });
+    expect(accounting?.subItems[2]).toMatchObject({
       label: "Ledger",
       active: true,
       ariaCurrent: "page",

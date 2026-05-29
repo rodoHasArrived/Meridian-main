@@ -70,6 +70,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
   ],
   accounting: [
     { label: "Continuity", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
+    { label: "Ownership", route: WORKSTATION_ROUTE_CATALOG.accountingOwnershipReview },
     { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accountingLedger },
     { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation },
     { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },

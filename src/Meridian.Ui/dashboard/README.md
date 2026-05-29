@@ -55,7 +55,7 @@ Portfolio run evidence, Trading recent fills, Data backfill queue rows, and Secu
 
 ## Important workflows
 
-The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
+The browser workstation exposes `/accounting/ownership` for the shared fund-structure ownership graph/table, active/as-of filtering, invalid-link warnings, selected-link inspection, lifecycle command posture, and ownership rollup summary backed by `/api/fund-structure/graph`. The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
 
 
 This is the active operator UI lane; keep shared contract parity with the WPF desktop. Security

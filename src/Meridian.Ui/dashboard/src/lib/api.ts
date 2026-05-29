@@ -1711,6 +1711,71 @@ function quantDataIntervalMinutes(interval: DataFetchRequest["interval"]): numbe
   }
 }
 
+
+export interface FundStructureGraphNode {
+  nodeId: string;
+  kind: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isActive: boolean;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+}
+
+export interface FundStructureOwnershipLink {
+  ownershipLinkId: string;
+  parentNodeId: string;
+  childNodeId: string;
+  relationshipType: string;
+  ownershipPercent?: number | null;
+  isPrimary: boolean;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+  notes?: string | null;
+}
+
+export interface FundStructureGraph {
+  nodes: FundStructureGraphNode[];
+  ownershipLinks: FundStructureOwnershipLink[];
+  assignments?: unknown[];
+}
+
+export interface OwnershipLifecycleRequest {
+  ownershipLinkId?: string;
+  replacementOwnershipLinkId?: string;
+  parentNodeId?: string;
+  childNodeId?: string;
+  relationshipType?: string;
+  requestedBy: string;
+  rationale?: string;
+  effectiveTo?: string;
+  effectiveFrom?: string;
+  ownershipPercent?: number | null;
+  isPrimary?: boolean;
+  notes?: string | null;
+}
+
+export async function getFundStructureGraph(params: { activeOnly?: boolean; asOf?: string | null } = {}, options: ApiRequestOptions = {}): Promise<FundStructureGraph> {
+  const search = new URLSearchParams();
+  if (params.activeOnly !== undefined) search.set("activeOnly", String(params.activeOnly));
+  if (params.asOf) search.set("asOf", params.asOf);
+  const query = search.toString();
+  return getJson<FundStructureGraph>(`${FUND_STRUCTURE_API_ENDPOINTS.graph}${query ? `?${query}` : ""}`, options);
+}
+
+export async function updateOwnershipLink(ownershipLinkId: string, request: OwnershipLifecycleRequest, options: ApiRequestOptions = {}) {
+  return putJson<FundStructureOwnershipLink>(`${FUND_STRUCTURE_API_ENDPOINTS.ownershipLinks}/${ownershipLinkId}`, request, options);
+}
+
+export async function expireOwnershipLink(ownershipLinkId: string, request: OwnershipLifecycleRequest, options: ApiRequestOptions = {}) {
+  return postJson<FundStructureOwnershipLink>(`${FUND_STRUCTURE_API_ENDPOINTS.ownershipLinks}/${ownershipLinkId}/expire`, request, options);
+}
+
+export async function replaceOwnershipLink(ownershipLinkId: string, request: OwnershipLifecycleRequest, options: ApiRequestOptions = {}) {
+  return postJson<FundStructureOwnershipLink>(`${FUND_STRUCTURE_API_ENDPOINTS.ownershipLinks}/${ownershipLinkId}/replace`, request, options);
+}
+
 export interface FundStructureSetupDraft {
   organization: { organizationId?: string | null; code: string; name: string; baseCurrency: string; description?: string | null };
   businessLane: { businessId?: string | null; businessKind: string; code: string; name: string; baseCurrency: string; description?: string | null };

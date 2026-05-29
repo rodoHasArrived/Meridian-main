@@ -161,6 +161,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
   },
   {
+    id: "accounting-ownership-review",
+    label: "Ownership review",
+    description: "Review fund-structure ownership links, invalid states, and lifecycle actions.",
+    route: WORKSTATION_ROUTE_CATALOG.accountingOwnershipReview
+  },
+  {
     id: "reporting-report-packs",
     label: "Report packs",
     description: "Open approval-ready report packet review and governed outputs.",

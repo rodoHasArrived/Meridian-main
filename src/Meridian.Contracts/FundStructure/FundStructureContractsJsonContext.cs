@@ -77,4 +77,11 @@ namespace Meridian.Contracts.FundStructure;
 [JsonSerializable(typeof(FundAccountsDto))]
 [JsonSerializable(typeof(AccountSummaryDto))]
 [JsonSerializable(typeof(IReadOnlyList<AccountSummaryDto>))]
+[JsonSerializable(typeof(OwnershipReviewValidationStateDto))]
+[JsonSerializable(typeof(OwnershipReviewQueryDto))]
+[JsonSerializable(typeof(OwnershipReviewEffectiveWindowDto))]
+[JsonSerializable(typeof(OwnershipReviewLinkDto))]
+[JsonSerializable(typeof(IReadOnlyList<OwnershipReviewLinkDto>))]
+[JsonSerializable(typeof(OwnershipReviewSummaryDto))]
+[JsonSerializable(typeof(OwnershipReviewDto))]
 public sealed partial class FundStructureContractsJsonContext : JsonSerializerContext;
