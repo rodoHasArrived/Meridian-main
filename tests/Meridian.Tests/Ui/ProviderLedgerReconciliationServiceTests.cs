@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
@@ -100,6 +101,49 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 history.Contains("Approved", StringComparison.OrdinalIgnoreCase) &&
                 history.Contains("reviewer=security-steward", StringComparison.OrdinalIgnoreCase) &&
                 history.Contains("reason=provider-symbol-confirmed", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_AttachesOpenIdentifierConflictsToPassport()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var securityId = Guid.Parse("35D27D8E-4460-4B17-92B8-6E5F53773D1D");
+            var conflictId = Guid.Parse("C3C9D912-4F8D-4C8A-B737-0E015877E3F6");
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                securityMasterConflictService: new StaticSecurityMasterConflictService(
+                    new SecurityMasterConflict(
+                        conflictId,
+                        securityId,
+                        "Identifier",
+                        "cusip",
+                        "alpaca",
+                        "037833100",
+                        "polygon",
+                        "037833101",
+                        DateTimeOffset.UtcNow.AddMinutes(-15),
+                        "Open")));
+
+            var detail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
+
+            var passport = detail.SecurityMasterPassports.Should().ContainSingle(item => item.Symbol == "AAPL").Subject;
+            passport.Status.Should().Be(ProviderSecurityMasterPassportStatusDto.Resolved);
+            passport.ConfidenceScore.Should().Be(60m);
+            passport.IdentifierConflicts.Should().ContainSingle(conflict =>
+                conflict.Contains(conflictId.ToString("N"), StringComparison.OrdinalIgnoreCase) &&
+                conflict.Contains("providers=alpaca/polygon", StringComparison.OrdinalIgnoreCase));
+            passport.ValidationIssueCodes.Should().Contain("SM_IDENTIFIER_CONFLICT");
+            passport.Reason.Should().Contain("open Security Master identifier conflict");
         }
         finally
         {
@@ -1963,6 +2007,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         IBrokeragePortfolioSync? portfolioAdapter = null,
         IBrokerageActivitySync? activityAdapter = null,
         IOperatorOverridesStore? operatorOverridesStore = null,
+        ISecurityMasterConflictService? securityMasterConflictService = null,
         bool recordCustodianPosition = false,
         decimal custodianPositionQuantity = 100m,
         decimal custodianPositionMarketValue = 18_750m,
@@ -1999,6 +2044,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
         if (operatorOverridesStore is not null)
         {
             services.AddSingleton(operatorOverridesStore);
+        }
+        if (securityMasterConflictService is not null)
+        {
+            services.AddSingleton(securityMasterConflictService);
         }
 
         services.AddSingleton<BrokeragePortfolioSyncService>();
@@ -2522,6 +2571,31 @@ public sealed class ProviderLedgerReconciliationServiceTests
             string updatedBy,
             CancellationToken ct = default) =>
             throw new NotSupportedException();
+    }
+
+    private sealed class StaticSecurityMasterConflictService(params SecurityMasterConflict[] conflicts)
+        : ISecurityMasterConflictService
+    {
+        public Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<SecurityMasterConflict>>(
+                conflicts
+                    .Where(static conflict => string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
+                    .ToArray());
+        }
+
+        public Task<SecurityMasterConflict?> GetConflictAsync(Guid conflictId, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(conflicts.FirstOrDefault(conflict => conflict.ConflictId == conflictId));
+        }
+
+        public Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =>
+            Task.CompletedTask;
     }
 
     private sealed record FixedCapabilityRouter(bool IsRoutable) : ICapabilityRouter

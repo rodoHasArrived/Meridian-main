@@ -157,6 +157,10 @@ provider sync cursors and steward sign-off metadata. When the
 Security Master operator override store is registered, the passport also carries the latest override
 audit-history entries for the resolved instrument so controller review can see provider mapping
 confidence and governed override context in the same retained reconciliation record.
+When the Security Master conflict service is registered, resolved provider passports also include
+open identifier conflicts for the resolved instrument, add `SM_IDENTIFIER_CONFLICT`, and cap mapping
+confidence so controller review can distinguish clean resolution from unresolved provider identity
+contention.
 The same retained detail now includes a shadow-book comparison section for controller review. It
 compares internal ledger cash, position market value, total equity, income/accrual amounts, and
 unrealized P&L against provider balances, positions, and activity when both sides are available.

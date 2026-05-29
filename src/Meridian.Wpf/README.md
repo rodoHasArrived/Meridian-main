@@ -75,6 +75,9 @@ High-value workbench pages should migrate through the shared workstation control
 page sweeps; Strategy Runs now uses `DenseDataGridControl` plus tabbed inspector panes for run,
 evidence, comparison, and artifact context while preserving existing page tags and navigation
 commands.
+Settings/Admin cockpit work uses `WorkstationStatePanelControl` for schedule and cleanup readiness
+state so maintenance blockers, confirmation posture, and evidence summaries reuse the same
+`WorkspaceTone` semantics as other operational pages.
 
 ## Diagrams
 

@@ -35,6 +35,7 @@ public sealed class ProviderLedgerReconciliationService
     private readonly ICapabilityRouter? _capabilityRouter;
     private readonly IReconciliationBreakQueueRepository? _breakQueueRepository;
     private readonly IOperatorOverridesStore? _operatorOverridesStore;
+    private readonly ISecurityMasterConflictService? _securityMasterConflictService;
     private readonly ILogger<ProviderLedgerReconciliationService> _logger;
 
     public ProviderLedgerReconciliationService(
@@ -46,7 +47,8 @@ public sealed class ProviderLedgerReconciliationService
         ISecurityValidationGateService? securityValidationGate = null,
         ICapabilityRouter? capabilityRouter = null,
         IReconciliationBreakQueueRepository? breakQueueRepository = null,
-        IOperatorOverridesStore? operatorOverridesStore = null)
+        IOperatorOverridesStore? operatorOverridesStore = null,
+        ISecurityMasterConflictService? securityMasterConflictService = null)
     {
         _brokerageSync = brokerageSync ?? throw new ArgumentNullException(nameof(brokerageSync));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
@@ -57,6 +59,7 @@ public sealed class ProviderLedgerReconciliationService
         _capabilityRouter = capabilityRouter;
         _breakQueueRepository = breakQueueRepository;
         _operatorOverridesStore = operatorOverridesStore;
+        _securityMasterConflictService = securityMasterConflictService;
     }
 
     public async Task<ProviderLedgerReconciliationDetailDto> RunAsync(
@@ -2533,6 +2536,9 @@ public sealed class ProviderLedgerReconciliationService
             .GroupBy(static position => position.Symbol.Trim().ToUpperInvariant(), StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .ToArray();
+        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts = _securityMasterConflictService is null
+            ? Array.Empty<SecurityMasterConflict>()
+            : await _securityMasterConflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
 
         foreach (var position in positions)
         {
@@ -2557,7 +2563,8 @@ public sealed class ProviderLedgerReconciliationService
                     symbol,
                     observedAt,
                     providerStaleAfterMinutes,
-                    overrideHistory))
+                    overrideHistory,
+                    openIdentifierConflicts))
                 {
                     continue;
                 }
@@ -2573,7 +2580,8 @@ public sealed class ProviderLedgerReconciliationService
                     reason: "Provider position already carries a resolved Security Master reference.",
                     observedAt: observedAt,
                     providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: overrideHistory));
+                    overrideHistory: overrideHistory,
+                    openIdentifierConflicts: openIdentifierConflicts));
                 AddMatched(
                     checks,
                     checkId,
@@ -2618,7 +2626,8 @@ public sealed class ProviderLedgerReconciliationService
                     symbol,
                     observedAt,
                     providerStaleAfterMinutes,
-                    overrideHistory))
+                    overrideHistory,
+                    openIdentifierConflicts))
                 {
                     continue;
                 }
@@ -2634,7 +2643,8 @@ public sealed class ProviderLedgerReconciliationService
                     reason: "Provider position resolved through the shared Security Master lookup.",
                     observedAt: observedAt,
                     providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: overrideHistory));
+                    overrideHistory: overrideHistory,
+                    openIdentifierConflicts: openIdentifierConflicts));
                 AddMatched(
                     checks,
                     checkId,
@@ -2678,7 +2688,8 @@ public sealed class ProviderLedgerReconciliationService
                         reason: "Security Master validation accepted the provider position.",
                         observedAt: observedAt,
                         providerStaleAfterMinutes: providerStaleAfterMinutes,
-                        overrideHistory: overrideHistory));
+                        overrideHistory: overrideHistory,
+                        openIdentifierConflicts: openIdentifierConflicts));
                     AddMatched(
                         checks,
                         checkId,
@@ -2713,7 +2724,8 @@ public sealed class ProviderLedgerReconciliationService
                     reason: reason,
                     observedAt: observedAt,
                     providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: []));
+                    overrideHistory: [],
+                    openIdentifierConflicts: openIdentifierConflicts));
             }
             else
             {
@@ -2728,7 +2740,8 @@ public sealed class ProviderLedgerReconciliationService
                     reason: reason,
                     observedAt: observedAt,
                     providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: []));
+                    overrideHistory: [],
+                    openIdentifierConflicts: openIdentifierConflicts));
             }
 
             AddBreak(
@@ -2765,7 +2778,8 @@ public sealed class ProviderLedgerReconciliationService
         string symbol,
         DateTimeOffset observedAt,
         int providerStaleAfterMinutes,
-        IReadOnlyList<string> overrideHistory)
+        IReadOnlyList<string> overrideHistory,
+        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
     {
         if (security.Status == SecurityStatusDto.Active)
         {
@@ -2784,7 +2798,8 @@ public sealed class ProviderLedgerReconciliationService
             reason: reason,
             observedAt: observedAt,
             providerStaleAfterMinutes: providerStaleAfterMinutes,
-            overrideHistory: overrideHistory));
+            overrideHistory: overrideHistory,
+            openIdentifierConflicts: openIdentifierConflicts));
 
         AddBreak(
             runId,
@@ -2835,15 +2850,19 @@ public sealed class ProviderLedgerReconciliationService
         string reason,
         DateTimeOffset observedAt,
         int providerStaleAfterMinutes,
-        IReadOnlyList<string> overrideHistory)
+        IReadOnlyList<string> overrideHistory,
+        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
     {
         var issues = validation?.Report.Issues ?? [];
+        var securityId = security?.SecurityId ?? validation?.SecurityId;
+        var openConflictSummaries = FormatOpenIdentifierConflicts(securityId, openIdentifierConflicts);
         var identifierConflicts = issues
             .Where(static issue =>
                 issue.Code.Contains("CONFLICT", StringComparison.OrdinalIgnoreCase)
                 || issue.Title.Contains("conflict", StringComparison.OrdinalIgnoreCase)
                 || issue.AffectedFields.Any(static field => field.Contains("identifier", StringComparison.OrdinalIgnoreCase)))
             .Select(static issue => issue.Code)
+            .Concat(openConflictSummaries)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var freshnessMinutes = Math.Max(0, (int)Math.Floor((observedAt - providerProjection.SyncedAt).TotalMinutes));
@@ -2852,14 +2871,30 @@ public sealed class ProviderLedgerReconciliationService
             .Select(static issue => issue.Code)
             .Where(static code => !string.IsNullOrWhiteSpace(code))
             .Concat(providerEvidenceStale ? ["PROVIDER_EVIDENCE_STALE"] : [])
+            .Concat(openConflictSummaries.Length > 0 ? ["SM_IDENTIFIER_CONFLICT"] : [])
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var adjustedConfidenceScore = providerEvidenceStale && confidenceScore > 70m
-            ? 70m
-            : confidenceScore;
-        var adjustedReason = providerEvidenceStale
-            ? $"{reason} Provider evidence is stale for this reconciliation run."
-            : reason;
+        var adjustedConfidenceScore = confidenceScore;
+        if (providerEvidenceStale && adjustedConfidenceScore > 70m)
+        {
+            adjustedConfidenceScore = 70m;
+        }
+
+        if (openConflictSummaries.Length > 0 && adjustedConfidenceScore > 60m)
+        {
+            adjustedConfidenceScore = 60m;
+        }
+
+        var reasonParts = new List<string> { reason };
+        if (providerEvidenceStale)
+        {
+            reasonParts.Add("Provider evidence is stale for this reconciliation run.");
+        }
+
+        if (openConflictSummaries.Length > 0)
+        {
+            reasonParts.Add($"{openConflictSummaries.Length} open Security Master identifier conflict(s) involve this resolved instrument.");
+        }
 
         return new ProviderSecurityMasterPassportDto(
             Symbol: position.Symbol.Trim().ToUpperInvariant(),
@@ -2870,7 +2905,7 @@ public sealed class ProviderLedgerReconciliationService
             AssetClass: position.AssetClass,
             Currency: position.Currency,
             PositionId: position.PositionId,
-            SecurityId: security?.SecurityId ?? validation?.SecurityId,
+            SecurityId: securityId,
             SecurityDisplayName: security?.DisplayName,
             SecurityStatus: security?.Status,
             Status: status,
@@ -2881,7 +2916,27 @@ public sealed class ProviderLedgerReconciliationService
             OverrideHistory: overrideHistory,
             ObservedAt: observedAt,
             FreshnessMinutes: freshnessMinutes,
-            Reason: adjustedReason);
+            Reason: string.Join(" ", reasonParts));
+    }
+
+    private static string[] FormatOpenIdentifierConflicts(
+        Guid? securityId,
+        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
+    {
+        var resolvedSecurityId = securityId.GetValueOrDefault();
+        if (resolvedSecurityId == Guid.Empty || openIdentifierConflicts.Count == 0)
+        {
+            return [];
+        }
+
+        return openIdentifierConflicts
+            .Where(conflict =>
+                conflict.SecurityId == resolvedSecurityId &&
+                string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static conflict => conflict.DetectedAt)
+            .Select(static conflict =>
+                $"conflict={conflict.ConflictId:N}; kind={conflict.ConflictKind}; field={conflict.FieldPath}; providers={conflict.ProviderA}/{conflict.ProviderB}")
+            .ToArray();
     }
 
     private async Task<IReadOnlyList<string>> GetSecurityMasterOverrideHistoryAsync(

@@ -38,6 +38,13 @@ public sealed class WorkstationPrimitiveControlsTests
                 GridAutomationId = "TestDenseGrid",
                 EmptyAutomationId = "TestDenseGridEmpty"
             };
+            var statePanel = new WorkstationStatePanelControl
+            {
+                State = WorkstationStateModel.Ready("Provider posture ready", "Coverage is available.", evidenceText: "Provider health evidence."),
+                TitleAutomationId = "TestStateTitle",
+                DetailAutomationId = "TestStateDetail",
+                EvidenceAutomationId = "TestStateEvidence"
+            };
 
             var host = new StackPanel
             {
@@ -53,10 +60,7 @@ public sealed class WorkstationPrimitiveControlsTests
                             ]
                         }
                     },
-                    new WorkstationStatePanelControl
-                    {
-                        State = WorkstationStateModel.Ready("Provider posture ready", "Coverage is available.")
-                    },
+                    statePanel,
                     new MetricTileControl
                     {
                         Metric = new WorkstationMetricModel("Connected", "1", "Streaming ready", "\uE73E", WorkspaceTone.Success)
@@ -117,6 +121,13 @@ public sealed class WorkstationPrimitiveControlsTests
 
                 var emptyPanel = denseGrid.FindName("EmptyPanel").Should().BeOfType<Border>().Subject;
                 AutomationProperties.GetAutomationId(emptyPanel).Should().Be("TestDenseGridEmpty");
+
+                var stateTitle = statePanel.FindName("StateTitleText").Should().BeOfType<TextBlock>().Subject;
+                var stateDetail = statePanel.FindName("StateDetailText").Should().BeOfType<TextBlock>().Subject;
+                var stateEvidence = statePanel.FindName("StateEvidenceText").Should().BeOfType<TextBlock>().Subject;
+                AutomationProperties.GetAutomationId(stateTitle).Should().Be("TestStateTitle");
+                AutomationProperties.GetAutomationId(stateDetail).Should().Be("TestStateDetail");
+                AutomationProperties.GetAutomationId(stateEvidence).Should().Be("TestStateEvidence");
             }
             finally
             {
