@@ -77,10 +77,97 @@ public sealed class FamilyOfficeContractTests
                     LastReviewedBy: "ops@example.com",
                     LastReviewedAtUtc: DateTimeOffset.Parse("2026-05-29T14:30:00Z"))
             ],
-            PublicAssets: [],
-            PrivateAssets: [],
-            CapitalCommitments: [],
-            RecentCapitalActivity: [],
+            PublicAssets:
+            [
+                new FamilyAssetSummaryDto(
+                    AssetId: "asset-aapl",
+                    EntityId: "entity-trust",
+                    AccountId: "acct-1",
+                    DisplayName: "Apple Inc.",
+                    AssetClass: "Equity",
+                    Symbol: "AAPL",
+                    Currency: "USD",
+                    Quantity: 1_000m,
+                    MarketValue: 200_000m,
+                    CostBasis: 150_000m,
+                    UnrealizedGainLoss: 50_000m,
+                    PercentOfNetWorth: 0.17m,
+                    SourceSystem: "portfolio-book",
+                    SourceDocumentId: "position-lot-1",
+                    AsOfDate: new DateOnly(2026, 5, 29),
+                    ValuationDate: new DateOnly(2026, 5, 29),
+                    EvidenceCompleteness: "Complete",
+                    ReconciliationStatus: "Matched",
+                    LastReviewedBy: "portfolio@example.com",
+                    LastReviewedAtUtc: DateTimeOffset.Parse("2026-05-29T14:45:00Z"))
+            ],
+            PrivateAssets:
+            [
+                new PrivateAssetSummaryDto(
+                    PrivateAssetId: "private-fund-1",
+                    EntityId: "entity-trust",
+                    DisplayName: "Example Growth Fund II",
+                    AssetType: "PrivateEquity",
+                    Currency: "USD",
+                    CurrentValue: 5_500_000m,
+                    CommitmentAmount: 10_000_000m,
+                    CalledCapital: 4_000_000m,
+                    DistributedCapital: 750_000m,
+                    ValuationMethod: "ManagerStatement",
+                    SourceSystem: "private-assets",
+                    SourceDocumentId: "capital-account-2026-q1",
+                    AsOfDate: new DateOnly(2026, 5, 29),
+                    ValuationDate: new DateOnly(2026, 3, 31),
+                    EvidenceCompleteness: "Partial",
+                    ReconciliationStatus: "ReviewRequired",
+                    LastReviewedBy: "alts@example.com",
+                    LastReviewedAtUtc: DateTimeOffset.Parse("2026-05-29T13:15:00Z"))
+            ],
+            CapitalCommitments:
+            [
+                new CapitalCommitmentDto(
+                    CommitmentId: "commitment-1",
+                    EntityId: "entity-trust",
+                    VehicleName: "Example Growth Fund II",
+                    Strategy: "Growth Equity",
+                    Currency: "USD",
+                    CommitmentAmount: 10_000_000m,
+                    CalledAmount: 4_000_000m,
+                    UnfundedAmount: 6_000_000m,
+                    DistributedAmount: 750_000m,
+                    CurrentNav: 5_500_000m,
+                    VintageYear: 2024,
+                    SourceSystem: "capital-notices",
+                    SourceDocumentId: "subscription-1",
+                    AsOfDate: new DateOnly(2026, 5, 29),
+                    ValuationDate: new DateOnly(2026, 3, 31),
+                    EvidenceCompleteness: "Complete",
+                    ReconciliationStatus: "Matched",
+                    LastReviewedBy: "alts@example.com",
+                    LastReviewedAtUtc: DateTimeOffset.Parse("2026-05-29T13:20:00Z"))
+            ],
+            RecentCapitalActivity:
+            [
+                new CapitalActivityDto(
+                    ActivityId: "activity-1",
+                    CommitmentId: "commitment-1",
+                    EntityId: "entity-trust",
+                    ActivityType: "CapitalCall",
+                    Currency: "USD",
+                    Amount: 250_000m,
+                    EffectiveDate: new DateOnly(2026, 5, 15),
+                    NoticeDate: new DateOnly(2026, 5, 1),
+                    DueDate: new DateOnly(2026, 5, 20),
+                    Status: "Funded",
+                    SourceSystem: "capital-notices",
+                    SourceDocumentId: "call-notice-2026-05",
+                    AsOfDate: new DateOnly(2026, 5, 29),
+                    ValuationDate: new DateOnly(2026, 5, 15),
+                    EvidenceCompleteness: "Complete",
+                    ReconciliationStatus: "Matched",
+                    LastReviewedBy: "treasury@example.com",
+                    LastReviewedAtUtc: DateTimeOffset.Parse("2026-05-29T13:30:00Z"))
+            ],
             Readiness: new FamilyOfficeReadinessDto(
                 Status: "Ready",
                 EvidenceCompleteness: "Complete",
@@ -121,5 +208,17 @@ public sealed class FamilyOfficeContractTests
         Assert.Equal("controller@example.com", roundTripped.BalanceSheet.LastReviewedBy);
         Assert.Single(roundTripped.Accounts);
         Assert.Equal("custodian-feed", roundTripped.Accounts[0].SourceSystem);
+        Assert.Single(roundTripped.PublicAssets);
+        Assert.Equal("portfolio-book", roundTripped.PublicAssets[0].SourceSystem);
+        Assert.Equal("position-lot-1", roundTripped.PublicAssets[0].SourceDocumentId);
+        Assert.Single(roundTripped.PrivateAssets);
+        Assert.Equal("ReviewRequired", roundTripped.PrivateAssets[0].ReconciliationStatus);
+        Assert.Equal(new DateOnly(2026, 3, 31), roundTripped.PrivateAssets[0].ValuationDate);
+        Assert.Single(roundTripped.CapitalCommitments);
+        Assert.Equal("capital-notices", roundTripped.CapitalCommitments[0].SourceSystem);
+        Assert.Equal("subscription-1", roundTripped.CapitalCommitments[0].SourceDocumentId);
+        Assert.Single(roundTripped.RecentCapitalActivity);
+        Assert.Equal("call-notice-2026-05", roundTripped.RecentCapitalActivity[0].SourceDocumentId);
+        Assert.Equal("treasury@example.com", roundTripped.RecentCapitalActivity[0].LastReviewedBy);
     }
 }

@@ -19,9 +19,17 @@ python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary
 ```
 
 Each checklist row has a stable `desktop-screen-*` ID, root workspace, implementation status,
-source evidence paths, workflow coverage, and the narrow validation command to run when that screen
-changes. Desktop workflow steps can reference those IDs with `blueprintChecklistIds` so screenshot
-and manual automation stay traceable back to the blueprint.
+maturity label, source evidence paths, workflow coverage, and the narrow validation command to run
+when that screen changes. Desktop workflow steps can reference those IDs with
+`blueprintChecklistIds` so screenshot and manual automation stay traceable back to the blueprint.
+
+Maturity labels use a controlled vocabulary: `Ready`, `Active but partial`,
+`Fixture/demo-backed`, `UI shell only`, `TBI`, and `Needs verification`. Every maturity label must
+name evidence from at least one permitted source: WPF view-model/service implementation under
+`src/Meridian.Wpf/`, shared endpoint/read-model contracts under `src/Meridian.Ui.Services/` or
+`src/Meridian.Ui.Shared/`, focused tests under `tests/`, acceptance evidence under `docs/status/`
+or `artifacts/`, or screenshots under `docs/screenshots/desktop/`. Do not treat the existence of a
+XAML page alone as maturity evidence.
 
 The design target is an institutional workstation:
 
@@ -32,6 +40,37 @@ The design target is an institutional workstation:
 - audit-aware
 - multi-workspace oriented
 - ready for docking and future multi-monitor evolution
+
+## Blueprint-to-Shell Reconciliation
+
+Use this table before implementing any screen below. It reconciles the blueprint sections with the
+current active WPF shell registry in `src/Meridian.Wpf/Features/` and
+`src/Meridian.Wpf/Models/ShellNavigationCatalog*.cs`; those files remain the source of truth for
+active routes and workspace ownership. When this table disagrees with the older shell-placement
+summary below, prefer the current registry mapping here.
+
+| Blueprint section | Active root workspace | Reconciliation status | Registry evidence / implementation note |
+| --- | --- | --- | --- |
+| 1. Security Master Workspace | `Data` | Active screen | Registered as `SecurityMaster` in the Data assurance lane. |
+| 2. Live Market Data Workspace | `Trading` | Active screen | Registered as `LiveData` in the Trading market-feed lane. |
+| 3. Watchlist Workspace | `Strategy` | Active screen | Registered as `Watchlist` under Strategy; current taxonomy keeps it out of the Data root. |
+| 4. Historical Replay Workspace | `Strategy` | Active screen | Registered as `EventReplay` under Strategy analysis. |
+| 5. Strategy Research Workspace | `Strategy` | Active capability inside another screen | Covered by the active Strategy shell plus `StrategyRuns`, `Charts`, `AdvancedAnalytics`, and related research pages rather than one page named Strategy Research. |
+| 6. Strategy Builder Workspace | `Strategy` | Planned/TBI | No dedicated strategy-builder route is registered; adjacent active pages include `Backtest`, `QuantScript`, and `RunMat`. |
+| 7. Paper Trading Workspace | `Trading` | Planned/TBI | No dedicated paper-trading screen is registered in the current Trading feature module. |
+| 8. Live Trading Workspace | `Trading` | Planned/TBI | No dedicated live-trading execution ticket screen is registered; Trading currently exposes market feed, order book, position blotter, run risk, and hours. |
+| 9. Portfolio Workspace | `Portfolio` | Active screen | Registered as `PortfolioShell` with account, aggregate, run, fund, accounts, import, and lending pages. |
+| 10. Position & Exposure Workspace | `Portfolio` | Active capability inside another screen | Exposure review is covered by Portfolio pages (`AggregatePortfolio`, `RunPortfolio`, `FundPortfolio`); live position blotter is registered under Trading as `PositionBlotter`. |
+| 11. Risk Management Workspace | `Trading` | Superseded by current shell taxonomy | The active registered route is `RunRisk` in the Trading execution lane, not a Settings-root risk workspace. |
+| 12. Reconciliation Workspace | `Accounting` | Active screen | Registered as `FundReconciliation` in the Accounting fund-ops lane. |
+| 13. Export & Reporting Workspace | `Reporting` | Active screen | Reporting owns `ReportingShell`, `FundReportPack`, `ReportRunStatus`, `AnalysisExport`, and `ExportPresets`; dataset export also exists as `DataExport` in Data. |
+| 14. Backfill & Data Repair Workspace | `Data` | Active screen | Registered as `Backfill`; related repair/assurance work is covered by `DataQuality`, collection sessions, storage, and archive-health screens. |
+| 15. System Health & Diagnostics Workspace | `Settings` | Active screen | Registered as `SystemHealth` and `Diagnostics` in Settings operations. |
+| 16. Workflow Automation Workspace | `Settings` | Active screen | Registered as `WorkflowLibrary` in Settings workspace-layout support. |
+| 17. Audit & Activity Workspace | `Accounting` | Active screen | Registered as `FundAuditTrail` in Accounting; workstation activity history is also registered as `ActivityLog` in Settings. |
+| 18. Notification & Alert Center | `Settings` | Active screen | Registered as `NotificationCenter`, with `MessagingHub` as the related Settings notifications surface. |
+| 19. Order Management Workspace | `Trading` | Planned/TBI | No dedicated order-management route is registered; current Trading routes stop at market feed, order book, position blotter, run risk, and trading hours. |
+| 20. Market Depth / Order Book Workspace | `Trading` | Active screen | Registered as `OrderBook` in the Trading market-feed lane. |
 
 ## Scope
 

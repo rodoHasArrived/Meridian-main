@@ -310,6 +310,8 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 
 > **Status:** Code present in `src/Meridian.Wpf/` and `tests/Meridian.Wpf.Tests/`, both included in the solution build. Builds full WPF desktop app on Windows; produces a CI-compatible stub on Linux/macOS.
 
+The registry-backed WPF screen inventory is maintained in [`desktop-application-screens.md`](desktop-application-screens.md), with workspace/page tag, visibility tier, related tags, implementation status, known gaps, and retained screenshot evidence where available.
+
 ### Shell & Navigation (Complete baseline)
 
 - Workspace model now persists built-in `Research`, `Trading`, `Data Operations`, and `Governance` workspaces, including legacy workspace ID migration for older saved sessions.
@@ -402,17 +404,19 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 
 ### Trading workstation migration target (Implemented baseline / workflow acceptance in progress)
 
-The current WPF app exposes broad capability coverage and the active shell baseline now aligns visible operator navigation around the seven canonical workspaces:
+The current WPF app exposes broad capability coverage and the active shell baseline now organizes those capabilities into seven canonical operator workspaces:
 
-- **Trading** - live monitoring, paper/live readiness, orders, fills, positions, and strategy operation
-- **Portfolio** - account, household, position, run-linked portfolio, and aggregate portfolio review
-- **Accounting** - fund ledger, fund accounts, cash flow, reconciliation, and close-lane work
-- **Reporting** - report-pack readiness, governed output handoff, and evidence/audit trail routes
-- **Strategy** - backtests, Lean engine flows, charts, replay, experiment comparison, and Strategy Runs
-- **Data** - providers, provider health, symbols, backfills, schedules, storage, exports, and data quality
-- **Settings** - administration, runtime capability toggles, provider setup, cleanup, and diagnostics entry points
+- **Trading** - live monitoring, orders, fills, positions, and strategy operation
+- **Portfolio** - account, aggregate, fund, lending, and import workflows
+- **Accounting** - ledger, cash, reconciliation, trial balance, and audit workflows
+- **Reporting** - report packs, dashboards, analysis exports, and export presets
+- **Strategy** - backtests, Lean engine flows, charts, replay, experiment comparison, and run workflows
+- **Data** - providers, provider health, symbols, backfills, schedules, storage, exports, and quality
+- **Settings** - preferences, credentials, diagnostics, services, alerts, help, and workspace layouts
 
-Legacy `Research`, `Data Operations`, and `Governance` names may still resolve as route aliases or historical groupings, but they are no longer the visible root shell taxonomy. This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) and [`ROADMAP.md`](ROADMAP.md) Waves 1-4. The remaining work is workflow acceptance and deeper cockpit/shared-model/governance continuity, not a new shell taxonomy migration.
+Legacy Research, Data Operations, and Governance names remain compatibility aliases for the corresponding canonical roots.
+
+This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md), [`ROADMAP.md`](ROADMAP.md) Waves 1-4, and the current registry inventory in [`desktop-application-screens.md`](desktop-application-screens.md). The remaining work is workflow acceptance and deeper cockpit/shared-model/governance continuity, not a new shell taxonomy migration.
 
 ### Shared run / portfolio / ledger / reconciliation baseline (In progress)
 
@@ -699,6 +703,22 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 ## 18. Trading Workstation Product Surfaces
 
 This section inventories the workflow-centric product model that now sits above the older page inventory.
+
+### Aliases and canonical workspace names
+
+The desktop shell keeps older shell/navigation terms as compatibility aliases while the visible
+workspace model remains `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
+`Settings`. Current alias resolution is registered in the shell page catalog and feature-owned
+Data module; layout lookup also normalizes the legacy workspace ids so deep links and automation
+land on the canonical workspace layout.
+
+| Alias / legacy name | Canonical workspace or page | Relevant page tags | Where the alias is resolved |
+| --- | --- | --- | --- |
+| `Research` / `ResearchWorkspace` | `Strategy` | Canonical `StrategyShell`; aliases `ResearchShell`, `ResearchWorkspace`; workspace id `strategy`; keywords include `strategy` and `research`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Research.cs` registers the Strategy shell page and aliases; `src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs` maps the legacy `research` layout id to `strategy`. |
+| `Governance` / `GovernanceWorkspace` | `Accounting` | Canonical `AccountingShell`; aliases `GovernanceShell`, `GovernanceWorkspace`; workspace id `accounting`; related fund-accounting tags include `FundLedger`, `FundReconciliation`, `FundTrialBalance`, and `FundAuditTrail`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs` registers the Accounting shell page and aliases; `src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs` maps the legacy `governance` layout id to `accounting`. |
+| `DataOperations` / `Data Operations` | `Data` | Canonical `DataShell`; aliases `DataOperationsShell`, `DataOperationsWorkspace`; workspace id `data`; keywords include `data` and `data operations`. | `src/Meridian.Wpf/Features/Data/DataFeatureModule.cs` registers the Data shell page and aliases; `src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs` maps `data-operations` and `data operations` layout ids to `data`. |
+| `OperationsContinuity` / `OperationsClose` | Fund operations | Canonical `FundLedger`; aliases `FundOperations`, `OperationsContinuity`, `OperationsClose`; workspace id `accounting`; title `Fund operations`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs` registers the Fund operations page and close/continuity aliases. |
+| `EvidenceWorkbench` | Fund audit trail | Canonical `FundAuditTrail`; alias `EvidenceWorkbench`; workspace id `accounting`; title `Fund audit trail`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs` registers the Fund audit trail page and Evidence Workbench alias. |
 
 | Surface | Status | Notes |
 | --------- | -------- | ------- |

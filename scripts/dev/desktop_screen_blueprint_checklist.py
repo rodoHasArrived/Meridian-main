@@ -17,6 +17,14 @@ DEFAULT_CHECKLIST_PATH = REPO_ROOT / "docs" / "plans" / "desktop-workstation-scr
 DEFAULT_WORKFLOWS_PATH = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
 VALID_STATUSES = {"planned", "partial", "implemented", "blocked", "deferred"}
 VALID_ROOT_WORKSPACES = {"Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"}
+VALID_MATURITY_LABELS = {
+    "Ready",
+    "Active but partial",
+    "Fixture/demo-backed",
+    "UI shell only",
+    "TBI",
+    "Needs verification",
+}
 ID_PATTERN = re.compile(r"^desktop-screen-[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -28,6 +36,21 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 def _normalize_path(value: str) -> str:
     return value.replace("\\", "/").strip()
+
+
+def _is_allowed_maturity_evidence_path(path_text: str) -> bool:
+    if path_text.startswith("src/Meridian.Wpf/"):
+        return any(segment in path_text for segment in ("/ViewModels/", "/Services/", "/Shell/ViewModels/"))
+    return path_text.startswith(
+        (
+            "src/Meridian.Ui.Services/",
+            "src/Meridian.Ui.Shared/",
+            "tests/",
+            "docs/status/",
+            "artifacts/",
+            "docs/screenshots/desktop/",
+        )
+    )
 
 
 def _workflow_step_index(workflows: dict[str, Any]) -> tuple[dict[tuple[str, str, str], dict[str, Any]], set[str]]:
@@ -69,6 +92,13 @@ def validate_checklist(checklist_path: Path, workflows_path: Path) -> tuple[list
         errors.append("Checklist must contain a non-empty screens array.")
         screens = []
 
+    allowed_maturity_labels = checklist.get("allowedMaturityLabels", [])
+    if set(allowed_maturity_labels) != VALID_MATURITY_LABELS:
+        errors.append(
+            "Checklist allowedMaturityLabels must match the controlled maturity vocabulary: "
+            f"{', '.join(sorted(VALID_MATURITY_LABELS))}."
+        )
+
     workflow_index, workflow_blueprint_ids = _workflow_step_index(workflows)
     ids: set[str] = set()
     titles: set[str] = set()
@@ -79,6 +109,7 @@ def validate_checklist(checklist_path: Path, workflows_path: Path) -> tuple[list
         screen_id = str(screen.get("id", "")).strip()
         title = str(screen.get("title", "")).strip()
         status = str(screen.get("status", "")).strip()
+        maturity = str(screen.get("maturity", "")).strip()
         root_workspace = str(screen.get("rootWorkspace", "")).strip()
         heading = str(screen.get("blueprintHeading", "")).strip()
 
@@ -98,6 +129,9 @@ def validate_checklist(checklist_path: Path, workflows_path: Path) -> tuple[list
 
         if status not in VALID_STATUSES:
             errors.append(f"{screen_id or prefix} has invalid status '{status}'.")
+
+        if maturity not in VALID_MATURITY_LABELS:
+            errors.append(f"{screen_id or prefix} has invalid maturity '{maturity}'.")
 
         if root_workspace not in VALID_ROOT_WORKSPACES:
             errors.append(f"{screen_id or prefix} has invalid rootWorkspace '{root_workspace}'.")
@@ -122,6 +156,31 @@ def validate_checklist(checklist_path: Path, workflows_path: Path) -> tuple[list
                 continue
             if not (REPO_ROOT / path_text).exists():
                 errors.append(f"{screen_id or prefix} implementation path does not exist: {path_text}")
+
+        maturity_evidence = screen.get("maturityEvidence", [])
+        if not isinstance(maturity_evidence, list) or not maturity_evidence:
+            errors.append(f"{screen_id or prefix} must list at least one maturityEvidence item.")
+            maturity_evidence = []
+
+        for evidence_index, evidence in enumerate(maturity_evidence, start=1):
+            evidence_prefix = f"{screen_id or prefix} maturityEvidence[{evidence_index}]"
+            evidence_path = _normalize_path(str(evidence.get("path", "")))
+            evidence_kind = str(evidence.get("kind", "")).strip()
+            evidence_summary = str(evidence.get("summary", "")).strip()
+
+            if not evidence_kind:
+                errors.append(f"{evidence_prefix} is missing kind.")
+            if not evidence_summary:
+                errors.append(f"{evidence_prefix} is missing summary.")
+            if not evidence_path:
+                errors.append(f"{evidence_prefix} is missing path.")
+                continue
+            if not _is_allowed_maturity_evidence_path(evidence_path):
+                errors.append(
+                    f"{evidence_prefix} path is not an allowed maturity evidence source: {evidence_path}"
+                )
+            if not (REPO_ROOT / evidence_path).exists():
+                errors.append(f"{evidence_prefix} path does not exist: {evidence_path}")
 
         workflow_coverage = screen.get("workflowCoverage", [])
         if not isinstance(workflow_coverage, list):
@@ -157,6 +216,7 @@ def validate_checklist(checklist_path: Path, workflows_path: Path) -> tuple[list
         errors.append(f"Checklist is missing workflowCoverage for workflow-referenced id: {missing_id}")
 
     status_counts = Counter(str(screen.get("status", "")).strip() for screen in screens)
+    maturity_counts = Counter(str(screen.get("maturity", "")).strip() for screen in screens)
     workspace_counts = Counter(str(screen.get("rootWorkspace", "")).strip() for screen in screens)
     coverage_count = sum(1 for screen in screens if screen.get("workflowCoverage"))
 
@@ -166,6 +226,7 @@ def validate_checklist(checklist_path: Path, workflows_path: Path) -> tuple[list
         "screenCount": len(screens),
         "workflowCoveredScreenCount": coverage_count,
         "statusCounts": dict(sorted(status_counts.items())),
+        "maturityCounts": dict(sorted(maturity_counts.items())),
         "workspaceCounts": dict(sorted(workspace_counts.items())),
     }
 
@@ -178,6 +239,9 @@ def _print_summary(summary: dict[str, Any]) -> None:
     print("Status counts:")
     for status, count in summary["statusCounts"].items():
         print(f"  {status}: {count}")
+    print("Maturity counts:")
+    for maturity, count in summary["maturityCounts"].items():
+        print(f"  {maturity}: {count}")
     print("Workspace counts:")
     for workspace, count in summary["workspaceCounts"].items():
         print(f"  {workspace}: {count}")
