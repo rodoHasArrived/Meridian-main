@@ -35,8 +35,10 @@ inputs. Direct-lending accrual reversals now project adjustment journal writes i
 periods when approval metadata is supplied, while originating accruals still require open periods.
 The F# ledger kernel now validates direct-lending `AccrualEntry` lineage and builds deterministic
 loan/period/currency `AccrualSummary` totals for accrual schedules.
-Durable accrual worker/operator completion, tax-reporting exports, and richer file-based ledger
-report exports remain open.
+`DailyAccrualWorker` now checks the F# period guard before posting originating accruals and routes
+period-blocked accruals to the Accounting operator inbox with `FundReconciliation` navigation.
+Same-transaction direct-lending journal append completion, tax-reporting exports, and richer
+file-based ledger report exports remain open.
 
 ## Overview
 
@@ -317,12 +319,12 @@ so the Phase 4 ledger-posting work remains open.
 - [ ] `LoanAccountingProjector` wired to `ILedgerJournalStore` so drawdown, accrual, receipt,
   discount/premium amortization, restructuring, and write-off events post balanced journal entries
   in the same database transaction as the loan event append
-- [ ] `IAccrualLedgerService` interface — `AccrueAsync` and `ReverseAccrualAsync` supporting
+- [x] `IAccrualLedgerService` interface — `AccrueAsync` and `ReverseAccrualAsync` supporting
   correcting entries within open periods and approved adjustment reversals in soft-closed periods
 - [x] `LoanAccountingProjector` resolves direct-lending accrual reversals as adjustment postings,
   allowing approved reversal writes to target a soft-closed accounting period while keeping
   originating accrual writes limited to open periods
-- [ ] `DailyAccrualWorker` extended to check `PeriodManagement.CheckPostingDate` before posting
+- [x] `DailyAccrualWorker` extended to check `PeriodManagement.CheckPostingDate` before posting
   and route failures to the operator inbox as period-blocked items
 
 ## Phase 5 — Reporting and Governed Outputs (Partial)
@@ -383,8 +385,23 @@ public interface ILedgerBookService
 
 public interface IAccrualLedgerService
 {
-    Task AccrueAsync(Guid loanId, AccrualEntryDto entry, CancellationToken ct = default);
-    Task ReverseAccrualAsync(Guid accrualId, string reason, CancellationToken ct = default);
+    Task<IReadOnlyList<LedgerJournalEntryWrite>> AccrueAsync(
+        Guid loanId,
+        LoanContractDetailDto contract,
+        PostDailyAccrualRequest request,
+        DailyAccrualEntryDto accrual,
+        Guid sourceEventId,
+        DirectLendingEventWriteMetadata metadata,
+        CancellationToken ct = default);
+
+    Task<IReadOnlyList<LedgerJournalEntryWrite>> ReverseAccrualAsync(
+        Guid loanId,
+        LoanContractDetailDto contract,
+        DailyAccrualEntryDto accrual,
+        Guid sourceEventId,
+        DirectLendingEventWriteMetadata metadata,
+        CancellationToken ct = default,
+        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null);
 }
 ```
 

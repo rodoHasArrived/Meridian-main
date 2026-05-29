@@ -204,6 +204,14 @@ projections with `LedgerPostingKindDto.Adjustment` so approved reversals can tar
 periods and then pass through the central ledger posting guard for final approval and period-state
 validation.
 
+`DailyAccrualWorker` applies the same period-state discipline before it posts recurring daily
+accruals. When the worker can resolve the loan's ledger-book period scope, it calls
+`LedgerInterop.CheckPostingDate` for the accrual date as an originating posting. A blocked period
+does not fall through to `PostDailyAccrualAsync`; the worker logs the block and upserts a
+`LedgerPeriodClose` operator-inbox item in the Accounting workspace with
+`/accounting/reconciliation` and `FundReconciliation` navigation so controllers can resolve the
+period issue from the normal reconciliation workbench.
+
 ### `LockedAccountingPeriodBook`
 
 `LockedAccountingPeriodBook` is the in-memory, book-key-scoped period-lock companion for

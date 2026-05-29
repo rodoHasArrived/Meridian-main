@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -41,6 +42,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
     }
 
     public ObservableCollection<StrategyRunSummary> Runs { get; } = [];
+    public WorkstationTableModel<StrategyRunSummary> RunsTable { get; }
     public IReadOnlyList<string> ModeFilters { get; } = ["All", "Backtest", "Paper", "Live"];
 
     private StrategyRunSummary? _selectedRun;
@@ -403,6 +405,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         _runService = runService;
         _navigationService = navigationService;
         _workspaceService = workspaceService;
+        RunsTable = BuildRunsTable(Runs);
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         OpenDetailCommand = new RelayCommand(OpenDetail, () => CanOpenSelectedRun);
@@ -565,6 +568,23 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             _navigationService.NavigateTo("RunLedger", SelectedRun.RunId);
         }
     }
+
+    internal static WorkstationTableModel<StrategyRunSummary> BuildRunsTable(ObservableCollection<StrategyRunSummary> rows)
+        => new(
+            rows,
+            [
+                new("Started", nameof(StrategyRunSummary.StartedAt), 132),
+                new("Strategy", nameof(StrategyRunSummary.StrategyName), 180),
+                new("Mode", nameof(StrategyRunSummary.Mode), 80),
+                new("Status", nameof(StrategyRunSummary.Status), 96),
+                new("Equity", nameof(StrategyRunSummary.FinalEquity), 104),
+                new("Net P&L", nameof(StrategyRunSummary.NetPnl), 104),
+                new("Fills", nameof(StrategyRunSummary.FillCount), 64),
+                new("Run Id", nameof(StrategyRunSummary.RunId), 220)
+            ],
+            "Strategy runs table",
+            "No strategy runs recorded",
+            "Complete a backtest or paper session to populate this workbench.");
 
     private void NotifyCommandsChanged()
     {

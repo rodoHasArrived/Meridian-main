@@ -769,6 +769,55 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RetainsScreenshotArtifactPayloads()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var sourceDirectory = Path.Combine(root, "source-artifacts");
+        Directory.CreateDirectory(sourceDirectory);
+        var screenshotPath = Path.Combine(sourceDirectory, "close-checklist.png");
+        var screenshotBytes = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p94AAAAASUVORK5CYII=");
+        await File.WriteAllBytesAsync(screenshotPath, screenshotBytes);
+        var screenshotHash = Convert.ToHexString(SHA256.HashData(screenshotBytes)).ToLowerInvariant();
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "close-checklist-screenshot",
+            "screenshot",
+            screenshotPath,
+            "/workstation/accounting/operations-continuity/workflow-1#close-checklist",
+            DateTimeOffset.UtcNow,
+            screenshotHash,
+            Retained: true,
+            CanonicalSubjectKind: EvidenceSubjectResolver.ReportPackKind,
+            CanonicalSubjectId: "close-2026-05");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "close-checklist-screenshot", "screenshot", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["close-checklist-screenshot"], ["close-checklist-screenshot"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "close checklist screenshot retention"));
+
+        response.VaultIdentity.Should().NotBeNull();
+        response.VaultIdentity!.StorageKind.Should().Be("file-bundle");
+        var retained = response.VaultIdentity.Artifacts.Should().ContainSingle().Which;
+        retained.ArtifactId.Should().Be("close-checklist-screenshot");
+        retained.Kind.Should().Be("screenshot");
+        retained.ContentHashSha256.Should().Be(screenshotHash);
+        retained.SourceRoute.Should().Be("/workstation/accounting/operations-continuity/workflow-1#close-checklist");
+        retained.CanonicalSubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
+        retained.CanonicalSubjectId.Should().Be("close-2026-05");
+        retained.RelativePath.Should().EndWith(".png");
+        var retainedPath = Path.Combine(root, retained.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        File.Exists(retainedPath).Should().BeTrue();
+        (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(screenshotBytes);
+    }
+
+    [Fact]
     public async Task EvidenceGraphService_DuringVaultArtifactReview_ProjectsRetainedManifestAndArtifacts()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-vault-workbench", Guid.NewGuid().ToString("N"));

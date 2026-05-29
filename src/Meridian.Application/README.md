@@ -25,6 +25,11 @@ and UI presentation concerns in their owning layers.
 ## Key folders and files
 
 - `Commands/` - CLI command handlers and operator workflows.
+- `DirectLending/` - loan command/query orchestration, direct-lending ledger projection, and the
+  daily accrual worker. Recurring accrual posting now checks ledger accounting-period state before
+  calling the direct-lending command service; period-blocked originating accruals are routed to the
+  Accounting operator inbox with `FundReconciliation` navigation instead of becoming log-only
+  failures.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
   and approval close lanes. Approval and close commands enforce shared close-checklist control

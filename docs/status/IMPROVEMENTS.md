@@ -1,6 +1,6 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-05-27
+**Last Updated:** 2026-05-28
 **Status:** Active tracking document (theme backlog scope)
 
 **Scope:** Themed improvement priorities and recommended focus areas (not the flat execution task ledger).
@@ -77,7 +77,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 ### Portfolio Health Snapshot
 
 - **Completion ratio (core theme backlog only):** 100% complete (35/35), 0% partial (0/35), 0% open (0/35).
-- **Core improvement themes A-G are closed** for the baseline improvement backlog and do not indicate Wave 2-4 closure.
+- **Core improvement themes A-G are closed** for the baseline improvement backlog and do not define current wave closure; canonical W2/W3 closure and W4 status live in `PROGRAM_STATE.md`.
 - **Theme J canonicalization is closed** through J8 (backlog scope), including drift reporting and fixture-maintenance workflow support.
 - **Kernel migration parity program initiated:** blueprint and status tracking are now defined for fixture-driven C# ↔ F# boundary parity (`score`/`severity`/`reason`) with expected-divergence controls and CI gating for kernel-related PRs. Track rollout in [`docs/plans/kernel-parity-migration-blueprint.md`](../plans/kernel-parity-migration-blueprint.md) and the archived bootstrap placeholder in [`archive/docs/summaries/KERNEL_PARITY_STATUS-placeholder-2026-04-20.md`](../../archive/docs/summaries/KERNEL_PARITY_STATUS-placeholder-2026-04-20.md).
 - **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization Baseline) are complete. K1, K2, and K3 remain active, and the browser and WPF workstation lanes is now backed by WPF compatibility evidence through metadata-driven navigation, workspace-shell pages, shared deep-page shell hosting, Trading/Research/Data desk briefing heroes, the feature-owned Data shell module, Trading Hours session briefing, OrderBook order-flow posture, Welcome readiness progress, Storage archive posture plus preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention detail, Watchlist pinned-first staging, Fund Accounts balance-evidence briefing, route-aware operator queue attention with actionable run review-packet items, DI fixes, registered-page sweep coverage, and hardened scheduled/manual WPF screenshot evidence capture.
@@ -1482,9 +1482,9 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-**Last Updated:** 2026-05-27
+**Last Updated:** 2026-05-28
 **Maintainer:** Project Team
-**Status:** ✅ Active tracking document — core improvements backlog complete (35/35) and Theme J complete (8/8); Theme K plus Waves 2-4 delivery remains active per ROADMAP/PROGRAM_STATE
+**Status:** ✅ Active tracking document — core improvements backlog complete (35/35) and Theme J complete (8/8); Theme K continues as workstation/productization support while W2/W3 are closed baselines and W4 remains active per ROADMAP/PROGRAM_STATE
 **Next Review:** Weekly engineering sync (or immediately after any status change)
 
 

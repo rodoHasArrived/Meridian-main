@@ -58,6 +58,25 @@ public sealed class StrategyRunBrowserViewModelTests
         vm.ComparisonPanelDetail.Should().Be("Record at least two strategy runs before comparing results.");
     }
 
+    [Fact]
+    public void RunsTable_ShouldExposeDenseWorkbenchColumns()
+    {
+        var vm = CreateEmpty();
+
+        vm.RunsTable.Title.Should().Be("Strategy runs table");
+        vm.RunsTable.EmptyTitle.Should().Be("No strategy runs recorded");
+        vm.RunsTable.Rows.Should().BeSameAs(vm.Runs);
+        vm.RunsTable.Columns.Select(static column => column.Header).Should().ContainInOrder(
+            "Started",
+            "Strategy",
+            "Mode",
+            "Status",
+            "Equity",
+            "Net P&L",
+            "Fills",
+            "Run Id");
+    }
+
     // ── Filter / search tests ─────────────────────────────────────────────
 
     [Fact]
@@ -466,6 +485,10 @@ public sealed class StrategyRunBrowserViewModelTests
         xaml.Should().Contain("StrategyRunsSearchBox");
         xaml.Should().Contain("StrategyRunsModeFilter");
         xaml.Should().Contain("StrategyRunsScopeText");
+        xaml.Should().Contain("workstation:DenseDataGridControl");
+        xaml.Should().Contain("{Binding RunsTable}");
+        xaml.Should().Contain("GridAutomationId=\"StrategyRunsGrid\"");
+        xaml.Should().Contain("EmptyAutomationId=\"StrategyRunsSharedEmptyState\"");
         xaml.Should().Contain("{Binding RunScopeText}");
         xaml.Should().Contain("StrategyRunsEmptyStatePanel");
         xaml.Should().Contain("{Binding EmptyStateTitle}");
@@ -480,6 +503,12 @@ public sealed class StrategyRunBrowserViewModelTests
         xaml.Should().Contain("StrategyRunsSelectionContextText");
         xaml.Should().Contain("StrategyRunsSelectionPerformanceText");
         xaml.Should().Contain("StrategyRunsSelectionEvidenceText");
+        xaml.Should().Contain("StrategyRunsInspectorTabs");
+        xaml.Should().Contain("StrategyRunsOverviewTab");
+        xaml.Should().Contain("StrategyRunsEvidenceTab");
+        xaml.Should().Contain("StrategyRunsCompareTab");
+        xaml.Should().Contain("StrategyRunsArtifactsTab");
+        xaml.Should().Contain("StrategyRunsArtifactsDetailText");
         xaml.Should().Contain("StrategyRunsComparisonPanelDetail");
         xaml.Should().Contain("StrategyRunsComparisonPlaceholderText");
         xaml.Should().Contain("{Binding SelectionText}");

@@ -1,6 +1,7 @@
 <Page x:Class="Meridian.Wpf.Views.StrategyRunsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Strategy Runs">
@@ -171,27 +172,13 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <DataGrid Grid.Row="0"
-                              ItemsSource="{Binding Runs}"
-                              SelectedItem="{Binding SelectedRun, Mode=TwoWay}"
-                              AutoGenerateColumns="False"
-                              IsReadOnly="True"
-                              CanUserSortColumns="True"
-                              HeadersVisibility="Column"
-                              Background="{DynamicResource ConsoleBackgroundLightBrush}"
-                              BorderThickness="0"
-                              AutomationProperties.AutomationId="StrategyRunsGrid">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Started" Binding="{Binding StartedAt, StringFormat={}{0:g}}" Width="140" />
-                            <DataGridTextColumn Header="Strategy" Binding="{Binding StrategyName}" Width="180" />
-                            <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="90" />
-                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
-                            <DataGridTextColumn Header="Equity" Binding="{Binding FinalEquity, StringFormat={}{0:C2}}" Width="110" />
-                            <DataGridTextColumn Header="Net PnL" Binding="{Binding NetPnl, StringFormat={}{0:C2}}" Width="110" />
-                            <DataGridTextColumn Header="Fills" Binding="{Binding FillCount}" Width="70" />
-                            <DataGridTextColumn Header="Run Id" Binding="{Binding RunId}" Width="*" />
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <workstation:DenseDataGridControl Grid.Row="0"
+                                                      Table="{Binding RunsTable}"
+                                                      SelectedItem="{Binding SelectedRun, Mode=TwoWay}"
+                                                      GridAutomationId="StrategyRunsGrid"
+                                                      EmptyAutomationId="StrategyRunsSharedEmptyState"
+                                                      MinHeight="280"
+                                                      AutomationProperties.Name="Strategy runs workbench table" />
 
                     <StackPanel Grid.Row="0"
                                 HorizontalAlignment="Center"
@@ -278,13 +265,11 @@
                     Width="400"
                     Margin="16,0,0,0"
                     Style="{DynamicResource CardStyle}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="0">
-                        <Border Background="{DynamicResource ConsoleBackgroundLightBrush}"
-                                CornerRadius="10"
-                                Padding="14,12"
-                                Margin="0,0,0,16">
-                            <StackPanel>
+                <TabControl AutomationProperties.AutomationId="StrategyRunsInspectorTabs">
+                    <TabItem Header="Overview"
+                             AutomationProperties.AutomationId="StrategyRunsOverviewTab">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,12,0,0">
                                 <TextBlock Text="Selection detail"
                                            Style="{DynamicResource CardHeaderStyle}" />
                                 <TextBlock Text="{Binding SelectionText}"
@@ -297,19 +282,13 @@
                                            FontSize="12"
                                            Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
                                            TextWrapping="Wrap" />
-                                <Border Margin="0,12,0,0"
-                                        Padding="12,10"
-                                        CornerRadius="8"
-                                        Background="{DynamicResource ConsoleAccentBlueAlpha10Brush}"
-                                        BorderBrush="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
-                                        BorderThickness="1">
-                                    <TextBlock Text="{Binding SelectionContextText}"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource InfoColorBrush}"
-                                               TextWrapping="Wrap" />
-                                </Border>
+                                <TextBlock Text="{Binding SelectionContextText}"
+                                           Margin="0,12,0,0"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource InfoColorBrush}"
+                                           TextWrapping="Wrap" />
                                 <TextBlock Text="Performance"
-                                           Margin="0,14,0,0"
+                                           Margin="0,16,0,0"
                                            FontSize="11"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource ConsoleTextMutedBrush}" />
@@ -319,72 +298,122 @@
                                            Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
                                            TextWrapping="Wrap"
                                            AutomationProperties.AutomationId="StrategyRunsSelectionPerformanceText" />
-                                <TextBlock Text="Evidence"
-                                           Margin="0,14,0,0"
-                                           FontSize="11"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource ConsoleTextMutedBrush}" />
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <TabItem Header="Evidence"
+                             AutomationProperties.AutomationId="StrategyRunsEvidenceTab">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="Run evidence"
+                                           Style="{DynamicResource CardHeaderStyle}" />
                                 <TextBlock Text="{Binding SelectedRunEvidenceText}"
-                                           Margin="0,6,0,0"
+                                           Margin="0,8,0,0"
                                            FontSize="12"
                                            Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
                                            TextWrapping="Wrap"
                                            AutomationProperties.AutomationId="StrategyRunsSelectionEvidenceText" />
+                                <UniformGrid Columns="1" Margin="0,16,0,0">
+                                    <Button Content="Open Detail"
+                                            Command="{Binding OpenDetailCommand}"
+                                            Style="{DynamicResource SecondaryButtonStyle}"
+                                            AutomationProperties.AutomationId="StrategyRunsEvidenceOpenDetailButton"
+                                            Margin="0,0,0,8" />
+                                    <Button Content="Open Portfolio"
+                                            Command="{Binding OpenPortfolioCommand}"
+                                            Style="{DynamicResource GhostButtonStyle}"
+                                            AutomationProperties.AutomationId="StrategyRunsEvidenceOpenPortfolioButton"
+                                            Margin="0,0,0,8" />
+                                    <Button Content="Open Ledger"
+                                            Command="{Binding OpenLedgerCommand}"
+                                            Style="{DynamicResource GhostButtonStyle}"
+                                            AutomationProperties.AutomationId="StrategyRunsEvidenceOpenLedgerButton"
+                                            Margin="0,0,0,8" />
+                                </UniformGrid>
                             </StackPanel>
-                        </Border>
+                        </ScrollViewer>
+                    </TabItem>
 
-                        <TextBlock Text="Run comparison" Style="{DynamicResource CardHeaderStyle}" />
-                        <TextBlock Text="{Binding ComparisonPanelDetail}"
-                                   Margin="0,8,0,14"
-                                   FontSize="12"
-                                   Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
-                                   TextWrapping="Wrap"
-                                   AutomationProperties.AutomationId="StrategyRunsComparisonPanelDetail" />
+                    <TabItem Header="Compare"
+                             AutomationProperties.AutomationId="StrategyRunsCompareTab">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="Run comparison" Style="{DynamicResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding ComparisonPanelDetail}"
+                                           Margin="0,8,0,14"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           AutomationProperties.AutomationId="StrategyRunsComparisonPanelDetail" />
 
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="110" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Metric" FontSize="11"
-                                       Foreground="{DynamicResource ConsoleTextMutedBrush}" FontWeight="SemiBold" />
-                            <TextBlock Grid.Column="1" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource InfoColorBrush}"
-                                       Text="{Binding ComparisonHeaderAText}" />
-                            <TextBlock Grid.Column="2" FontSize="11" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource SuccessColorBrush}"
-                                       Text="{Binding ComparisonHeaderBText}" />
-                        </Grid>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="110" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Metric" FontSize="11"
+                                               Foreground="{DynamicResource ConsoleTextMutedBrush}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource InfoColorBrush}"
+                                               Text="{Binding ComparisonHeaderAText}" />
+                                    <TextBlock Grid.Column="2" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource SuccessColorBrush}"
+                                               Text="{Binding ComparisonHeaderBText}" />
+                                </Grid>
 
-                        <Rectangle Height="1" Fill="{DynamicResource ConsoleTextMutedBrush}" Margin="0,0,0,8" Opacity="0.2" />
+                                <Rectangle Height="1" Fill="{DynamicResource ConsoleTextMutedBrush}" Margin="0,0,0,8" Opacity="0.2" />
 
-                        <ItemsControl ItemsSource="{Binding ComparisonRows}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,3,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="110" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11"
-                                                   Foreground="{DynamicResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding ValueA}" FontSize="11" TextWrapping="Wrap" Margin="0,0,8,0" />
-                                        <TextBlock Grid.Column="2" Text="{Binding ValueB}" FontSize="11" TextWrapping="Wrap" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                <ItemsControl ItemsSource="{Binding ComparisonRows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,3,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="110" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11"
+                                                           Foreground="{DynamicResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding ValueA}" FontSize="11" TextWrapping="Wrap" Margin="0,0,8,0" />
+                                                <TextBlock Grid.Column="2" Text="{Binding ValueB}" FontSize="11" TextWrapping="Wrap" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
 
-                        <TextBlock Text="{Binding ComparisonPlaceholderText}"
-                                   Margin="0,12,0,0"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource ConsoleTextMutedBrush}"
-                                   TextWrapping="Wrap"
-                                   AutomationProperties.AutomationId="StrategyRunsComparisonPlaceholderText" />
-                    </StackPanel>
-                </ScrollViewer>
+                                <TextBlock Text="{Binding ComparisonPlaceholderText}"
+                                           Margin="0,12,0,0"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                                           TextWrapping="Wrap"
+                                           AutomationProperties.AutomationId="StrategyRunsComparisonPlaceholderText" />
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <TabItem Header="Artifacts"
+                             AutomationProperties.AutomationId="StrategyRunsArtifactsTab">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="Strategy artifacts"
+                                           Style="{DynamicResource CardHeaderStyle}" />
+                                <TextBlock Text="Notebook, result packet, promotion notes, and audit links stay attached to the selected run as evidence is produced."
+                                           Margin="0,8,0,0"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           AutomationProperties.AutomationId="StrategyRunsArtifactsDetailText" />
+                                <TextBlock Text="{Binding SelectionContextText}"
+                                           Margin="0,14,0,0"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                </TabControl>
             </Border>
         </Grid>
     </Grid>

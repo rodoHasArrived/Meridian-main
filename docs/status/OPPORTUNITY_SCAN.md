@@ -1,6 +1,6 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-28
 **Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, signed DK1 pilot sample-set/parity-packet evidence, packet-bound sign-off validation, cockpit readiness projection, the active browser and WPF workstation lanes, the web Research run-library, Quant Notebook helpers, Quant Lab support slices, shared Strategy Engine pre-run validation, shared workflow command-palette commands with hash-aware provider-setup routing, browser Portfolio dense-table detail selection and brokerage-sync next actions plus Portfolio/Reporting/Settings/Data task panels, browser Accounting reconciliation dense-table detail-queue support with keyboard selection and no-host break-queue fixtures, browser Evidence Workbench and shared evidence packet/graph APIs, live quote/order-book/watchlist/Price Alerts market-context routes with selectable recent-trade detail inspection, Watchlist no-quote/empty-state copy, and quick-trade readiness handoffs, Overview Today panel, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail support, Trading Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, provider-setup validation handoffs, seeded no-host quote-demo fixtures, simplified browser rail/header chrome, browser Security Master search-result selection and details/lots/operator-override support with identity drill-ins, lot-detail, and conflict refresh state, UFL/reference-data projection endpoints, read-only/paper-first brokerage connection evidence, crash-safe shared UI persistence, WPF shell support evidence including the Data shell feature module, desktop workflow automation hardening, scheduled/manual WPF screenshot evidence capture, provider capability matrix governance, additive workstation continuity guards, and structured roadmap/source documentation controls
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
@@ -43,8 +43,16 @@ shared continuity, close/report acceptance, and governed evidence.
 endpoints, additive continuity payload guards, the provider capability matrix, and structured
 roadmap/source registries reduce ambiguity in what is implemented, gated, or only planned. They
 raise the value of shared-contract discipline and provider-readiness cleanup, but they do not outrank
-the existing opportunity order: cockpit acceptance, shared continuity, close/report acceptance, and
-governed evidence remain first.
+the current opportunity order: preserve closed cockpit/shared-continuity baselines, then convert
+close/report and governed-evidence support into accepted W4 proof.
+
+2026-05-28 W4 focus note: W2 cockpit and W3 shared continuity are now closed baselines, so the
+opportunity order should read as preservation for W1-W3 and active expansion for W4. The newest
+support evidence advances operations-continuity close routing, reconciliation casework,
+report-pack workflow/provenance, browser Accounting/Reporting parity, Investment Accounting
+Transaction Lab previews, report restatement review, run comparison/drill-in depth, shared route
+parity, and screenshot/evidence route validation. The best near-term opportunity is converting
+that support into full W4 close/case/report/evidence acceptance without pulling W5/W6 forward.
 
 ---
 
