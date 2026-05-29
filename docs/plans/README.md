@@ -1,11 +1,11 @@
 # Plans
 
-**Last Reviewed:** 2026-05-21
+**Last Reviewed:** 2026-05-28
 
 
 ## Immediate Plan TODOs
 
-- [ ] Convert the Strategy Engine pre-run foundation into accepted strategy-to-ledger lineage evidence before claiming W3 continuity progress.
+- [ ] Keep Strategy Engine, run comparison, and portfolio drill-in improvements framed as W3 baseline maintenance or W5 prep unless they produce accepted W4 governance/report lineage evidence.
 - [ ] Attach every non-`complete` provider capability-matrix row to an owner, target sprint, and adapter-readiness evidence packet.
 - [ ] Keep the active W2-W4 blocker list in [`wave-implementation-checklists.md`](wave-implementation-checklists.md) aligned with the latest pilot-readiness stage gates.
 - [ ] Use [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) before accepting WPF work as Wave 2, Wave 3, or Wave 4 workflow progress.
@@ -55,6 +55,15 @@ the current TODO ledger for W2-W4 blockers. The Approach B+ v2 documentation-sys
 Covered Call Slice 1 blueprint moved to `archive/docs/plans/` because their active roles are now
 covered by the structured docs mesh, Strategy Engine support evidence, the options roadmap, and
 the Backtest Studio plans.
+
+2026-05-28 planning follow-up: W2 and W3 are closed baselines in canonical program state, so active
+plan interpretation should treat new cockpit, run, portfolio, ledger, and reconciliation work as
+baseline preservation unless it directly advances W4 close/report/evidence acceptance. May 28
+support evidence added operations-continuity close routing, reconciliation casework, report-pack
+workflow/provenance, browser Accounting/Reporting parity, Investment Accounting Transaction Lab
+previews, report restatement review, run comparison/drill-in depth, shared route parity, and
+screenshot/evidence validation guards. These do not close W4 until the full Lane C close/case/report
+acceptance proof is green.
 
 ## Core Operator-Ready Path
 

@@ -134,8 +134,8 @@ It should be read with:
 ## Cross-Wave Dependency Rules
 
 1. Wave 1 trust-gate evidence stays green before any Wave 2-4 readiness claim is promoted.
-2. Wave 2 durable promotion traceability is a prerequisite for **Wave 3 exit claims** and Wave 4 governance handoff; limited Wave 3 pre-work may proceed in parallel when it stays release-neutral and does not bypass DK2 entry/exit criteria.
-3. Wave 3 shared run continuity must become the system of record before any client-specific shell work is allowed to widen; browser and WPF UI scope must consume shared contracts rather than define client-local business state.
+2. The closed Wave 2 durable-promotion baseline remains the prerequisite evidence for the closed Wave 3 baseline and for Wave 4 governance handoff; W4 work may preserve or extend that evidence only when it does not redefine W2/W3 exit criteria.
+3. The closed Wave 3 shared-run-continuity baseline remains the system-of-record seam for any wider client-specific shell work; browser and WPF UI scope must consume shared contracts rather than define client-local business state.
 4. Brokerage and custodian sync must land through execution and fund-account seams before governance can claim account-freshness or external-state continuity.
 5. Governance casework must move out of endpoint-local or in-memory storage before report publishing and exception-SLA claims are treated as durable.
 6. Accounting-led commercial slices must start with shared contract/readiness definitions such as accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-policy summaries, and evidence packet readiness before web dashboard workflow expansion.
@@ -220,7 +220,7 @@ Wave 2 is Done as of 2026-05-27; W4 scope should not dilute or redefine the cock
 
 ### Objective
 
-Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, the active browser and WPF workstations, and WPF desktop surfaces.
+Preserve the closed shared run, portfolio, ledger, cash-flow, and reconciliation baseline as one system across research, trading, governance, the active browser and WPF workstations, and WPF desktop surfaces.
 
 Current WPF evidence now includes RunCashFlow guidance for selected-run, missing-run, no-event, and loaded retained cash-flow summaries. Keep that in the Wave 3 continuity lane; governance-wide cash-flow projections and reporting still belong to Wave 4.
 

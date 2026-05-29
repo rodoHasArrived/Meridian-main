@@ -81,7 +81,8 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
 
             var item = await repository.GetByIdAsync($"security-master:conflict:{conflict.ConflictId:N}");
             item.Should().NotBeNull();
-            item!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+            item!.Status.Should().Be(ReconciliationBreakQueueStatus.SignedOff);
+            item.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
             item.ResolvedBy.Should().Be("approver");
             item.SignoffStatus.Should().Be("signed-off");
             item.SignoffHistory.Should().ContainSingle(record =>

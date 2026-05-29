@@ -17,6 +17,7 @@ namespace Meridian.Tests.Ui;
 /// broader report-pack publication, durable generalized casework, or browser/WPF parity criteria.
 /// </summary>
 [Trait("Category", "Scenario")]
+[Trait("Category", "W4Acceptance")]
 public sealed class FundOpsCloseLaneScenarioTests
 {
     [Fact]

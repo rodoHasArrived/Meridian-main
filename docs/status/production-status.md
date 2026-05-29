@@ -2,8 +2,8 @@
 
 <!-- auto-sync:tests -->
 **Version:** 1.7.9
-**Last Updated:** 2026-05-27
-**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Waves 2-4 productization remain active while the browser workstation is the active operator UI lane and WPF orientation/routing plus release-evidence automation continue to support compatibility; current UFL/reference-data, browser Security Master lot-detail/conflict state, Live Quotes trade-detail selection and quick-trade readiness handoffs, Portfolio dense-table detail selection and brokerage-sync next actions, hash-aware provider-setup command routing, query-string route focus for subject/symbol handoffs, Watchlist empty/no-quote copy, provider-setup validation handoff, Data backfill dense-table queue selection, Trading loading-state and Recent Fills detail support, Reporting report-pack profile actions, Accounting reconciliation dense-table detail queue with keyboard selection and no-host break-queue fixtures, Strategy run/promotion detail state, Strategy Engine pre-run definitions/validation, Quant Lab view-model, Quant Notebook helpers, Overview Today panel, local Price Alerts, visual Strategy Designer, Covered Call chain preview, saved-run history, and selectable trade-timeline detail state, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, Meridian Design System reference workbench/tokenized-color support, shared UI persistence, WPF Data shell module deltas, provider capability matrix governance, additive workstation continuity guards, and structured roadmap/source documentation controls are support evidence, not readiness exits
+**Last Updated:** 2026-05-28
+**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Wave 2 paper-trading cockpit and Wave 3 shared-run continuity baselines are closed as of 2026-05-27; Wave 4 governance/fund-operations close and report acceptance remains in progress. Browser and WPF are both active operator UI lanes and must continue to consume shared contracts, endpoints, and read models. Current May 28 support evidence includes W4 operations-continuity endpoint/workflow coverage, reconciliation casework, governed report-pack workflow/provenance, browser Accounting/Reporting parity, explicit operations-continuity workflow targets, Explain-the-Break parity through shared DTO/browser/WPF consumers, Investment Accounting Transaction Lab previews, report restatement review, richer run comparison/drill-in support, shared workflow route parity, and screenshot/evidence route validation guards. These preserve the closed W2/W3 baselines and advance W4 support; they are not full W4 close/report, Evidence Vault/report-line-provenance product, Backtest Studio, or live-readiness exits.
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
 Readiness claim wording in this document must follow [`readiness-claim-language-policy.md`](readiness-claim-language-policy.md).
@@ -34,15 +34,24 @@ execution metadata is sanitized before it reaches endpoint/audit payloads, CodeQ
 hardening is present in CI, and the web-workstation installer can archive superseded installs while
 repairing preserved configs that reference missing provider sections. Browser UX hardening now
 surfaces expired-session and forbidden-role API failures explicitly and exposes disabled form
-reasons through accessible field support text. These reduce operational risk, but W2-W4 remain
-`In Progress`.
+reasons through accessible field support text. These reduce operational risk, but they do not
+reopen the closed W2/W3 baselines or close the active W4 governance gate.
 
 2026-05-21 contract/docs note: Strategy Engine definitions and validate-run endpoints now provide
 pre-run blocking/diagnostic evidence for Covered Call and visual-designer workflows, additive
 workstation continuity guards protect shared ledger/reconciliation/strategy payloads, the provider
 capability matrix is the canonical adapter-readiness follow-up surface, and structured
 roadmap/source registries plus stale-doc/hash checks reduce documentation drift. These are
-production-discipline improvements, not W2-W4 readiness exits.
+production-discipline improvements, not W2/W3 reopening evidence or W4 readiness exits.
+
+2026-05-28 W4 support note: the active repository now has green shared/browser/source-route support
+evidence for W4 operations-continuity, reconciliation casework, report-pack workflow/provenance,
+Security Master endpoint mapping, fund-structure report-pack/cash-flow endpoints,
+`FundOpsCloseLaneScenarioTests`, and `PilotAcceptanceHarnessTests`. Browser W4 tests cover
+operations-continuity, governance, and reporting surfaces, and route-parity checks keep shared
+workflow targets aligned across browser and WPF. This is material W4 support evidence, but the
+readiness posture stays `In Progress` until the WPF build-backed Lane C acceptance lane and the
+full close/case/report/evidence workflow proof are green.
 
 ---
 
