@@ -2,7 +2,13 @@
 
 Last updated: 2026-05-29
 
-This inventory is assembled from the current WPF page registry sources listed below. It records the registered desktop screen contract, not a user-acceptance certification of every workflow.
+Product-level desktop gaps and TBIs are tracked in the canonical
+[`Desktop gaps and TBI register`](FEATURE_INVENTORY.md#desktop-gaps-and-tbi-register). Keep this
+screen inventory focused on page tags, registration status, and registry-visible screenshot or
+routing evidence; use the register for true TODOs, planned future waves, screenshot/evidence gaps,
+and documentation-only reconciliation items.
+
+## Source scope
 
 Generated manually from the current descriptors in:
 - [`src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs`](../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs)
