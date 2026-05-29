@@ -147,7 +147,7 @@ public sealed partial class FundLedgerViewModel
         var previousRunId = SelectedStatementRun?.RunId;
         var previousBreakId = SelectedStatementBreak?.BreakId;
         var runRows = snapshot.StatementRuns
-            .OrderByDescending(static run => ParseDateTimeOffset(run.CompletedAtUtc) ?? ParseDateTimeOffset(run.StartedAtUtc) ?? DateTimeOffset.MinValue)
+            .OrderByDescending(static run => run.CompletedAtUtc ?? run.StartedAtUtc)
             .Select(MapStatementRun)
             .ToArray();
         var issueRows = snapshot.ValidationIssues
