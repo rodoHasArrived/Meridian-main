@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-05-28
+last_reviewed: 2026-05-29
 ---
 
 # src/Meridian.Contracts
@@ -25,6 +25,7 @@ or provider implementations.
 ## Key folders and files
 
 - `Workstation/` - workstation and operator workflow DTOs.
+- `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - Contract DTO files - shared payloads consumed across host, UI services, desktop, and dashboard.
 - Project metadata - serialization and package references for contract consumers.
 
@@ -54,12 +55,16 @@ Security Master id. The vocabulary also includes symbol
 mismatch blockers for journal candidates whose instrument line symbol diverges from the
 journal-level Security Master symbol and mapping mismatch blockers for generic ledger-mapping
 references that do not name the resolved symbol or Security Master id.
+Ledger draft requests also carry explicit approval and ledger-mapping evidence flags so controller
+workflows can block the draft gate before post-time journal-line validation when Security Master
+provenance exists but approved identity or accounting mapping proof is still missing.
 
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
 retained manifest path, retained evidence links, report-line provenance, create requests, publish
-requests, explicit rejection requests with reason, actor/role, and optional evidence-link metadata,
-and restatement requests with approver, prior-version, changed-line, and evidence-link metadata.
+requests, explicit `Rejected` state support, explicit review-state rejection requests with reason,
+actor/role, and optional evidence-link metadata, and restatement requests with approver,
+prior-version, changed-line, and evidence-link metadata.
 Pilot readiness contracts also carry W4 acceptance evidence categories and roles so acceptance proof
 can be distinguished from evidence-vault manifest/export support in serialized artifacts.
 Report-line provenance carries the reported value plus run, source-session, ledger-entry,
@@ -71,7 +76,7 @@ routes back to run continuity, ledger trial-balance, reconciliation, and Securit
 evidence. Keep these fields shared so browser, WPF, and service tests enforce the same publication,
 drilldown, and no-orphan-evidence rules.
 
-Fund-structure contracts include the ledger mapping workbench payload used by accounting and
+Fund-structure contracts include the shared entity setup draft, validation summary, graph preview, and create-result payloads used by WPF, browser, and `/api/fund-structure` to create organization, business-lane, client/fund, legal-entity, vehicle, investment-portfolio, ownership, and account-handoff records without UI-local command vocabulary. Fund-structure contracts include the ledger mapping workbench payload used by accounting and
 governance surfaces to show account-to-ledger-group assignment source, unresolved mapping issues,
 and recommended operator action without requiring clients to duplicate mapping precedence rules.
 Investment Accounting Transaction Lab contracts carry shared preview payloads for trades,
@@ -110,10 +115,10 @@ statement, and validation producers can enforce the same retained-artifact vocab
 Audit Trail Explorer contracts live under `Workstation/AuditTrailExplorerDtos.cs` and normalize
 retained audit records into cross-object timeline rows with object kind, object id, actor,
 correlation, related-object ids, metadata, and evidence routes. Keep these query and result
-payloads contract-owned so browser and WPF clients search the same audit vocabulary instead of
-inventing client-local timelines. Manual override rows now use `OperatorAction` object kind keyed
-by override id, and circuit breaker rows use `ExecutionControl` object kind with control-route
-evidence links for operations review.
+payloads contract-owned, including object-kind/object-id and related-object filters, so browser and
+WPF clients search the same audit vocabulary instead of inventing client-local timelines. Manual
+override rows now use `OperatorAction` object kind keyed by override id, and circuit breaker rows
+use `ExecutionControl` object kind with control-route evidence links for operations review.
 
 Instrument Passport contracts are attached to the shared Security Master workstation trust
 workbench payloads. `InstrumentPassportDto` carries identifier and provider mappings, lifecycle
@@ -122,11 +127,28 @@ so browser and WPF clients do not rebuild governed passport semantics locally. P
 rows expose mapping source, freshness, confidence score, identifier-conflict links, and override
 history for each provider symbol mapping.
 
+Security Master custom asset profile contracts live under `SecurityMaster/` and define versioned
+profile definitions, typed field schemas, identifier preferences, lifecycle states, accounting-impact
+hints, pinned profile-backed terms, and approval metadata. Keep these contracts shared so future
+Data, Settings, browser, WPF, and endpoint flows validate the same no-code custom asset model
+instead of accepting client-local JSON shapes.
+`SecurityAssetClassCatalog` also exposes `CustomAsset` so create workflows and projection consumers
+can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
+`SecuritySearchRequest` carries optional `customProfileId`, `profileVersion`, `profileFieldKey`,
+and `profileFieldValue` filters so shared clients can find profile-backed alternative assets
+through the canonical Security Master search route without depending on endpoint-local JSON.
+Profile governance request/result DTOs carry draft, approval, rollback, lineage, audit event,
+rationale, actor, approval-reference, and correlation metadata so Data, Settings, browser, WPF, and
+endpoint tests share the same governed profile lifecycle contract.
+
 Strategy run comparison and diff contracts live in `Workstation/StrategyRunReadModels.cs`.
 Run diff payloads include base/target mode and engine plus final-equity, drawdown, Sharpe,
 return, fill-count, net-P&L deltas, strategy id/version metadata, lineage relation,
 compatibility level, artifact completeness, and warnings so browser, WPF, and service tests can
 compare strategy versions and engines without endpoint-local DTOs.
+Strategy promotion readiness contracts also carry retained approval checklist and evidence
+references so paper-to-live promotion gates remain contract-owned and browser/WPF clients can show
+the same human-approved evidence requirements without local promotion-state rules.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
@@ -192,7 +214,11 @@ Report-line provenance payloads live with the fund-operations workstation contra
 Ledger period and cross-period reporting DTOs expose closed-period trial-balance rows and P&L
 summary totals with accounting-basis, policy, prior-period variance, open-break count, and signoff
 posture so clients can render period close and cross-period reports without recomputing ledger
-semantics locally.
+semantics locally. `LedgerPeriodPnlSummaryDto` also separates realized revenue/expense net income
+from accrual-basis adjustment impact and retains the accrual adjustment lines used for the split.
+`LedgerTrialBalanceReportDto` wraps closed-period trial-balance detail rows with locked-period
+status, aggregate totals, accounting-policy lineage, and a SHA256 report signature so browser, WPF,
+export, and audit clients can verify the same period report payload.
 `LedgerAmountProvenanceDetailDto` is the shared click-through contract for a retained report-pack
 ledger amount: it carries the ledger amount, provider/source evidence pointers, Security Master
 link, reconciliation run and case state, compact related-case owner/status/sign-off routing,
@@ -208,14 +234,18 @@ factor evidence. Provider-ledger corporate-action/factor casework also enriches 
 principal/income amount, and journal-preview line count so report-line provenance can show valuation
 or journal support without reconstructing provider-ledger detail payloads. Related reconciliation
 case rows also retain materiality and aging context: severity, variance, tolerance band, reviewer and
-resolver fields, sign-off count, SLA policy/due-state, age band, and business-age hours.
+resolver fields, sign-off count, latest sign-off actor/time/note, SLA policy/due-state, age band,
+and business-age hours.
 
 Statement reconciliation payloads live under `Workstation/StatementReconciliationDtos.cs` and keep
 source-file evidence, mapping/tolerance profile versions, normalized positions, cash, transactions,
 match summaries, breaks, operator cases, run create/reconcile commands, run validation envelopes,
-and run-scoped break rows in the shared contract lane. Keep these DTOs additive and
-transport-safe so browser, WPF, retained evidence, and automation consumers can reconcile custodian
-statements without referencing application, UI, or infrastructure types.
+and run-scoped break rows in the shared contract lane. Statement case payloads expose durable
+casework metadata for owner/SLA disposition, aging, threaded comments, statement-row attachments,
+Explain-the-Break summaries, and audit events so browser and WPF clients can inspect broker and
+custodian statement exceptions without rebuilding domain aggregates locally. Keep these DTOs
+additive and transport-safe so browser, WPF, retained evidence, and automation consumers can
+reconcile custodian statements without referencing application, UI, or infrastructure types.
 
 Direct lending command result codes distinguish validation failures, missing aggregates,
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return

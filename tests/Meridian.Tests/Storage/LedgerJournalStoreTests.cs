@@ -275,6 +275,35 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_InstrumentEntry_RequiresLedgerMappingForResolvedInstrument()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            ledgerMappingReference: "ledger-map:generic-securities");
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without a Security Master ledger mapping tied to the resolved symbol or security id*");
+    }
+
+    [Fact]
+    public void PostingGuard_MetadataSymbol_RequiresLedgerMappingForResolvedInstrument()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            ledgerMappingReference: "ledger-map:generic-securities",
+            includeInstrumentLine: false);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*declares instrument symbol 'AAPL' without a Security Master ledger mapping tied to the resolved symbol or security id*");
+    }
+
+    [Fact]
     public void PostingGuard_InstrumentEntry_RequiresLineSymbolForSecurityMasterLineage()
     {
         var period = BuildAccountingPeriod("Open");
@@ -286,6 +315,57 @@ public sealed class LedgerJournalStoreTests
 
         act.Should().Throw<LedgerValidationException>()
             .WithMessage("*without an instrument symbol for Security Master lineage*");
+    }
+
+    [Fact]
+    public void PostingGuard_InstrumentEntry_RejectsLineageThatOnlyMatchesBySymbolSubstring()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(period.PeriodId);
+        var firstLine = write.Entry.Lines[0];
+        var mutatedLines = write.Entry.Lines
+            .Select(line => line.EntryId == firstLine.EntryId
+                ? line with { Account = line.Account with { Symbol = "A" } }
+                : line)
+            .ToArray();
+        var mutatedEntry = write.Entry with
+        {
+            Lines = mutatedLines,
+            Metadata = write.Entry.Metadata with { Symbol = "A" }
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write with { Entry = mutatedEntry }, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*declares instrument symbol 'A' without matching Security Master lineage*");
+    }
+
+    [Fact]
+    public void PostingGuard_InstrumentEntry_RejectsMultipleSymbolsWithSingleSecurityMasterId()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            extraInstrumentLineSymbol: "MSFT");
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*multiple instrument symbols with a single Security Master security id*");
+    }
+
+    [Fact]
+    public void PostingGuard_InstrumentEntry_RejectsMetadataSymbolThatDiffersFromLineSymbol()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            metadataSymbol: "MSFT");
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*multiple instrument symbols with a single Security Master security id*");
     }
 
     [Fact]
@@ -467,14 +547,17 @@ public sealed class LedgerJournalStoreTests
         bool includeActiveSecurityMasterStatus = true,
         bool includeLedgerMapping = true,
         string? instrumentLineSymbol = "AAPL",
-        bool includeProvenanceActiveSecurityStatus = false)
+        string? ledgerMappingReference = null,
+        string? extraInstrumentLineSymbol = null,
+        string? metadataSymbol = "AAPL",
+        bool includeInstrumentLine = true)
     {
         var journalEntryId = Guid.NewGuid();
         var occurredAt = DateTimeOffset.Parse("2026-01-31T21:00:00Z");
         var securityId = Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1");
-        const string symbol = "AAPL";
+        var symbol = metadataSymbol ?? "AAPL";
         const string description = "Approved Security Master instrument posting";
-        var mapping = includeLedgerMapping ? "ledger-map:aapl-gaap-securities" : "missing";
+        var mapping = includeLedgerMapping ? ledgerMappingReference ?? "ledger-map:aapl-gaap-securities" : "missing";
         var approval = includeApprovalEvidence ? "sm-approval:aapl-controller" : "missing";
         var activeStatus = includeActiveSecurityMasterStatus ? "security-status:active" : "missing";
         var provenanceStatus = includeProvenanceActiveSecurityStatus ? ";security-status:active" : string.Empty;
@@ -490,32 +573,60 @@ public sealed class LedgerJournalStoreTests
             tags["securityMasterProvenance"] = provenance;
         }
 
+        var lines = new List<LedgerEntry>();
+        if (includeInstrumentLine)
+        {
+            lines.Add(new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                occurredAt,
+                new LedgerAccount("Securities", LedgerAccountType.Asset, instrumentLineSymbol),
+                debit: 100m,
+                credit: 0m,
+                description));
+        }
+        else
+        {
+            lines.Add(new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                occurredAt,
+                new LedgerAccount("Cash", LedgerAccountType.Asset),
+                debit: 100m,
+                credit: 0m,
+                description));
+        }
+
+        if (!string.IsNullOrWhiteSpace(extraInstrumentLineSymbol))
+        {
+            lines.Add(new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                occurredAt,
+                new LedgerAccount("Securities", LedgerAccountType.Asset, extraInstrumentLineSymbol),
+                debit: 50m,
+                credit: 0m,
+                description));
+        }
+
+        lines.Add(new LedgerEntry(
+            Guid.NewGuid(),
+            journalEntryId,
+            occurredAt,
+            new LedgerAccount("Cash", LedgerAccountType.Asset),
+            debit: 0m,
+            credit: lines.Sum(static line => line.Debit),
+            description));
+
         return new LedgerJournalEntryWrite(
             new JournalEntry(
                 journalEntryId,
                 occurredAt,
                 description,
-                [
-                    new LedgerEntry(
-                        Guid.NewGuid(),
-                        journalEntryId,
-                        occurredAt,
-                        new LedgerAccount("Securities", LedgerAccountType.Asset, instrumentLineSymbol),
-                        debit: 100m,
-                        credit: 0m,
-                        description),
-                    new LedgerEntry(
-                        Guid.NewGuid(),
-                        journalEntryId,
-                        occurredAt,
-                        new LedgerAccount("Cash", LedgerAccountType.Asset),
-                        debit: 0m,
-                        credit: 100m,
-                        description)
-                ],
+                lines,
                 new JournalEntryMetadata(
                     ActivityType: "operations-continuity",
-                    Symbol: symbol,
+                    Symbol: metadataSymbol,
                     SecurityId: securityId,
                     LedgerBook: "fund-close",
                     Tags: tags)),

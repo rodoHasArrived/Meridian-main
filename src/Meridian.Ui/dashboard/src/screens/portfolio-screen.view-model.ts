@@ -262,6 +262,27 @@ export interface PortfolioRunDrillInSummary {
   actionLabel: string;
   actionAriaLabel: string;
   cards: PortfolioRunComparisonCard[];
+  bridgeRows: PortfolioRunBridgeRow[];
+  tradeEvidenceRows: PortfolioRunTradeEvidenceRow[];
+}
+
+export interface PortfolioRunBridgeRow {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: "default" | "success" | "warning" | "danger" | "muted";
+}
+
+export interface PortfolioRunTradeEvidenceRow {
+  id: string;
+  symbol: string;
+  quantity: string;
+  price: string;
+  commission: string;
+  filledAt: string;
+  accountId: string;
+  ariaLabel: string;
 }
 
 export interface PortfolioBrokeragePositionDetail {
@@ -897,6 +918,9 @@ export function buildPortfolioRunDrillInSummary(
           ? "warning"
           : "warning";
 
+  const bridgeRows = buildPortfolioRunBridgeRows(attribution, cashFlow, trades);
+  const tradeEvidenceRows = buildPortfolioRunTradeEvidenceRows(trades);
+
   return {
     ariaLabel: "Selected run portfolio drill-in evidence",
     title: "Portfolio drill-ins",
@@ -951,8 +975,95 @@ export function buildPortfolioRunDrillInSummary(
           : "Trade-level fill evidence has not been loaded.",
         tone: trades ? trades.totalFills > 0 ? "success" : "warning" : "warning"
       }
-    ]
+    ],
+    bridgeRows,
+    tradeEvidenceRows
   };
+}
+
+function buildPortfolioRunBridgeRows(
+  attribution: RunAttributionSummary | null,
+  cashFlow: RunCashFlowSummary | null,
+  trades: RunFillSummary | null
+): PortfolioRunBridgeRow[] {
+  if (!attribution && !cashFlow && !trades) {
+    return [];
+  }
+
+  const rows: PortfolioRunBridgeRow[] = [];
+  if (attribution) {
+    const topSymbol = attribution.bySymbol
+      .slice()
+      .sort((a, b) => Math.abs(b.totalPnl) - Math.abs(a.totalPnl))[0] ?? null;
+    rows.push({
+      id: "realized-pnl",
+      label: "Realized bridge",
+      value: formatSignedCurrency(attribution.totalRealizedPnl),
+      detail: topSymbol
+        ? `${topSymbol.symbol} contributes ${formatSignedCurrency(topSymbol.realizedPnl)} realized P&L across ${formatCountLabel(topSymbol.tradeCount, "trade")}.`
+        : "No per-symbol realized attribution rows were returned.",
+      tone: numericPnlTone(attribution.totalRealizedPnl)
+    });
+    rows.push({
+      id: "unrealized-pnl",
+      label: "Unrealized bridge",
+      value: formatSignedCurrency(attribution.totalUnrealizedPnl),
+      detail: topSymbol
+        ? `${topSymbol.symbol} carries ${formatSignedCurrency(topSymbol.unrealizedPnl)} unrealized P&L into the selected portfolio view.`
+        : "No per-symbol unrealized attribution rows were returned.",
+      tone: numericPnlTone(attribution.totalUnrealizedPnl)
+    });
+    rows.push({
+      id: "commission-drag",
+      label: "Commission drag",
+      value: formatCurrency(attribution.totalCommissions),
+      detail: `${formatCountLabel(attribution.bySymbol.length, "symbol")} contributes to attribution after commissions and margin-interest allocation.`,
+      tone: attribution.totalCommissions > 0 ? "warning" : "success"
+    });
+  }
+
+  if (cashFlow) {
+    rows.push({
+      id: "cash-flow-bridge",
+      label: "Cash-flow bridge",
+      value: formatSignedCurrency(cashFlow.netCashFlow),
+      detail: `${formatCountLabel(cashFlow.totalEntries, "cash-flow entry")} tie inflows ${formatCurrency(cashFlow.totalInflows)} to outflows ${formatCurrency(cashFlow.totalOutflows)}.`,
+      tone: numericPnlTone(cashFlow.netCashFlow)
+    });
+  }
+
+  if (trades) {
+    rows.push({
+      id: "trade-evidence",
+      label: "Trade evidence",
+      value: formatCountLabel(trades.totalFills, "fill"),
+      detail: `${formatCountLabel(trades.fills.length, "retained fill")} available for order, account, fill-price, and commission review.`,
+      tone: trades.totalFills > 0 ? "success" : "warning"
+    });
+  }
+
+  return rows;
+}
+
+function buildPortfolioRunTradeEvidenceRows(trades: RunFillSummary | null): PortfolioRunTradeEvidenceRow[] {
+  if (!trades) {
+    return [];
+  }
+
+  return trades.fills
+    .slice()
+    .sort((a, b) => new Date(b.filledAt).getTime() - new Date(a.filledAt).getTime())
+    .slice(0, 5)
+    .map((fill) => ({
+      id: fill.fillId,
+      symbol: fill.symbol,
+      quantity: fill.filledQuantity.toLocaleString(),
+      price: formatCurrencyPrecise(fill.fillPrice),
+      commission: formatCurrencyPrecise(fill.commission),
+      filledAt: formatDateTime(fill.filledAt),
+      accountId: fill.accountId ?? "No account",
+      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${fill.filledQuantity.toLocaleString()} at ${formatCurrencyPrecise(fill.fillPrice)} on ${formatDateTime(fill.filledAt)}`
+    }));
 }
 
 function buildPortfolioHeaderChips({

@@ -1941,8 +1941,8 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       acknowledgedBy: "ops-user"
     }
   ],
-  closePackage: null,
   closeReadiness: null,
+  closePackage: null,
   evidenceLinks: [],
   blockers: [
     {

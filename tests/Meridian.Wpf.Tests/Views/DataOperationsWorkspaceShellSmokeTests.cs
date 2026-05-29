@@ -69,6 +69,16 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
         snapshotService.Should().Contain("LoadAsync(CancellationToken cancellationToken = default)");
         code.Should().Contain("private async void OnOperationsHeroPrimaryActionClick");
         code.Should().Contain("private async void OnOperationsHeroSecondaryActionClick");
+        xaml.Should().Contain("WorkspaceDecisionQueueControl");
+        xaml.Should().Contain("QueueAutomationId=\"DataProviderDecisionQueue\"");
+        xaml.Should().Contain("QueueAutomationId=\"DataBackfillDecisionQueue\"");
+        xaml.Should().Contain("QueueAutomationId=\"DataStorageDecisionQueue\"");
+        xaml.Should().Contain("DecisionInvoked=\"OnDataDecisionInvoked\"");
+        xaml.Should().NotContain("QueueItemTemplate");
+        code.Should().Contain("private async void OnDataDecisionInvoked");
+        code.Should().Contain("WorkspaceDecisionInvokedEventArgs e");
+        code.Should().NotContain("OnQueuePrimaryActionClick");
+        code.Should().NotContain("OnQueueSecondaryActionClick");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

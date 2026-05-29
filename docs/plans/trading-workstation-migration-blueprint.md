@@ -66,7 +66,7 @@ The newest shell support slice adds Welcome readiness progress for provider conn
 
 4. **The UI is still page-dense below the shell**
    - many pages are individually useful
-   - the shell baseline is in place, but end-to-end workflows still need acceptance evidence across active Wave 2-4 paths
+   - the shell baseline is in place, but end-to-end workflows still need evidence that preserves closed W2/W3 baselines and closes the active W4 path
 
 ---
 

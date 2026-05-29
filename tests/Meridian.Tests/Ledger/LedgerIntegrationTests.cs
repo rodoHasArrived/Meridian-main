@@ -846,6 +846,7 @@ public sealed class LedgerIntegrationTests
         var investorCapital = chart.Register("Equity:Partners:Capital", LedgerAccountType.Equity);
         var feeRevenue = chart.Register("Revenue:Management Fees", LedgerAccountType.Revenue);
         var commissionExpense = chart.Register("Expenses:Commissions", LedgerAccountType.Expense);
+        var aaplSecurity = chart.Register("Assets:Investments:AAPL", LedgerAccountType.Asset, "AAPL", "broker-1");
         var ledger = new Meridian.Ledger.Ledger();
         var periodStart = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
         var periodEnd = new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero);
@@ -891,8 +892,22 @@ public sealed class LedgerIntegrationTests
             sourceSessionId: "session-close-2026-05",
             reconciliationEvidenceLinks: ["reconciliation:run-2026-05"],
             approvalEvidenceLinks: ["approval:close-2026-05"]);
+        var taxLotProjection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
+            aaplSecurity,
+            new DateOnly(2026, 5, 15),
+            quantitySold: 5m,
+            salePrice: 120m,
+            LedgerTaxLotReliefMethod.Hifo,
+            [
+                new LedgerTaxLot("lot-low", new DateOnly(2026, 1, 10), 4m, 90m),
+                new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 10), 5m, 100m),
+            ]));
 
-        var pack = LedgerReportPackBuilder.Build(ledger, request, chart);
+        var pack = LedgerReportPackBuilder.Build(
+            ledger,
+            request,
+            chart,
+            taxLotReliefProjections: [taxLotProjection]);
 
         pack.IsBalanced.Should().BeTrue();
         pack.Status.Should().Be(LedgerReportPackLifecycleStatus.Draft);
@@ -901,6 +916,8 @@ public sealed class LedgerIntegrationTests
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "trial-balance.csv");
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "income-statement.csv");
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "balance-sheet.csv");
+        pack.Artifacts.Should().Contain(artifact => artifact.Name == "financial-statements.json");
+        pack.Artifacts.Should().Contain(artifact => artifact.Name == "tax-lot-realized-gains.csv");
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "line-provenance.csv");
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "manifest.csv");
         pack.Artifacts.Should().OnlyContain(artifact => artifact.ChecksumSha256.Length == 64);
@@ -921,10 +938,22 @@ public sealed class LedgerIntegrationTests
         manifest.Content.Should().Contain("net-income,100");
         manifest.Content.Should().Contain("accounting-equation-variance,0");
         manifest.Content.Should().Contain("trial-balance.csv,text/csv,");
+        manifest.Content.Should().Contain("financial-statements.json,application/json,");
+        manifest.Content.Should().Contain("tax-lot-realized-gains.csv,text/csv,");
         manifest.Content.Should().Contain("line-provenance.csv,text/csv,");
+        var statementsArtifact = pack.Artifacts.Single(artifact => artifact.Name == "financial-statements.json");
+        statementsArtifact.Content.Should().Contain("\"schema\": \"ledger-financial-statements-v1\"");
+        statementsArtifact.Content.Should().Contain("\"trialBalanceRows\": [");
+        statementsArtifact.Content.Should().Contain("\"incomeStatementRows\": [");
+        statementsArtifact.Content.Should().Contain("\"balanceSheetRows\": [");
+        statementsArtifact.Content.Should().Contain("\"netIncome\": 100");
+        statementsArtifact.Content.Should().Contain("\"accountingEquationVariance\": 0");
         var provenanceArtifact = pack.Artifacts.Single(artifact => artifact.Name == "line-provenance.csv");
         provenanceArtifact.Content.Should().Contain("LedgerJournalEntryIds");
         provenanceArtifact.Content.Should().Contain("reconciliation:run-2026-05");
+        var taxArtifact = pack.Artifacts.Single(artifact => artifact.Name == "tax-lot-realized-gains.csv");
+        taxArtifact.Content.Should().Contain("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId");
+        taxArtifact.Content.Should().Contain("2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,5,100,600,500,100");
         pack.Signature.Algorithm.Should().Be("SHA256");
         pack.Signature.PayloadChecksumSha256.Should().HaveLength(64);
         pack.Signature.SignedBy.Should().Be("controller");
@@ -1084,6 +1113,97 @@ public sealed class LedgerIntegrationTests
         request.BaseCurrency.Should().Be("USD");
         request.AsOf.Should().Be(lockPeriod.EndsAtInclusive);
         request.LockedPeriod.Should().BeSameAs(lockPeriod);
+    }
+
+    [Fact]
+    public void LedgerScheduledReportExportPackageBuilder_BuildsDeliveryManifestAndRegulatoryXml()
+    {
+        var chart = new ChartOfAccounts();
+        var cash = chart.Register("Assets:Cash", LedgerAccountType.Asset);
+        var capital = chart.Register("Equity:Capital", LedgerAccountType.Equity);
+        var ledger = new Meridian.Ledger.Ledger();
+        ledger.PostLines(
+            new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero),
+            "capital contribution",
+            [(cash, 1_000m, 0m), (capital, 0m, 1_000m)]);
+        var schedule = new LedgerReportSchedule(
+            "reg-pack",
+            "fund-alpha",
+            "Monthly regulatory export",
+            LedgerReportScheduleFrequency.Monthly,
+            new DateOnly(2026, 5, 1),
+            dueDaysAfterPeriodEnd: 5,
+            "usd",
+            [LedgerReportExportFormat.Csv, LedgerReportExportFormat.RegulatoryXml],
+            ["regulator@example.com", "controller@example.com"],
+            "controller",
+            DateTimeOffset.Parse("2026-04-15T12:00:00Z"));
+        var scheduledExport = LedgerReportSchedulePlanner.Project(schedule, occurrenceCount: 1).Single();
+        var request = scheduledExport.ToReportPackRequest(
+            "controller",
+            DateTimeOffset.Parse("2026-06-01T13:00:00Z"));
+        var reportPack = LedgerReportPackBuilder.Build(ledger, request, chart);
+
+        var artifacts = LedgerScheduledReportExportPackageBuilder.Build(reportPack, scheduledExport);
+
+        artifacts.Should().Contain(artifact => artifact.Name == "scheduled-export-manifest.csv");
+        artifacts.Should().Contain(artifact => artifact.Name == "regulatory-summary.xml");
+        artifacts.Should().OnlyContain(artifact => artifact.ChecksumSha256.Length == 64);
+        var manifest = artifacts.Single(artifact => artifact.Name == "scheduled-export-manifest.csv");
+        manifest.Content.Should().Contain("ledger-scheduled-export-manifest-v1");
+        manifest.Content.Should().Contain("formats,Csv|RegulatoryXml");
+        manifest.Content.Should().Contain("recipients,controller@example.com|regulator@example.com");
+        manifest.Content.Should().Contain("report-pack-signature,");
+        manifest.Content.Should().Contain("financial-statements.json,application/json,");
+        var regulatoryXml = artifacts.Single(artifact => artifact.Name == "regulatory-summary.xml");
+        regulatoryXml.Content.Should().Contain("schema=\"ledger-regulatory-summary-v1\"");
+        regulatoryXml.Content.Should().Contain("<FundId>fund-alpha</FundId>");
+        regulatoryXml.Content.Should().Contain("<TotalAssets>1000</TotalAssets>");
+        regulatoryXml.Content.Should().Contain("<AccountingEquationVariance>0</AccountingEquationVariance>");
+        regulatoryXml.Content.Should().Contain("<Recipient>regulator@example.com</Recipient>");
+    }
+
+    [Fact]
+    public void LedgerScheduledReportExportPackageBuilder_RejectsMismatchedReportPack()
+    {
+        var chart = new ChartOfAccounts();
+        var cash = chart.Register("Assets:Cash", LedgerAccountType.Asset);
+        var capital = chart.Register("Equity:Capital", LedgerAccountType.Equity);
+        var ledger = new Meridian.Ledger.Ledger();
+        ledger.PostLines(
+            new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero),
+            "capital contribution",
+            [(cash, 1_000m, 0m), (capital, 0m, 1_000m)]);
+        var schedule = new LedgerReportSchedule(
+            "reg-pack",
+            "fund-alpha",
+            "Monthly regulatory export",
+            LedgerReportScheduleFrequency.Monthly,
+            new DateOnly(2026, 5, 1),
+            dueDaysAfterPeriodEnd: 5,
+            "usd",
+            [LedgerReportExportFormat.RegulatoryXml],
+            ["regulator@example.com"],
+            "controller",
+            DateTimeOffset.Parse("2026-04-15T12:00:00Z"));
+        var scheduledExport = LedgerReportSchedulePlanner.Project(schedule, occurrenceCount: 1).Single();
+        var mismatchedRequest = new LedgerReportPackRequest(
+            "different-report",
+            "fund-alpha",
+            "2026-05",
+            new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, 999, TimeSpan.Zero).AddTicks(9999),
+            scheduledExport.AsOf,
+            "usd",
+            "controller",
+            DateTimeOffset.Parse("2026-06-01T13:00:00Z"));
+        var reportPack = LedgerReportPackBuilder.Build(ledger, mismatchedRequest, chart);
+
+        var act = () => LedgerScheduledReportExportPackageBuilder.Build(reportPack, scheduledExport);
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*report identifier must match*");
     }
 
     [Fact]

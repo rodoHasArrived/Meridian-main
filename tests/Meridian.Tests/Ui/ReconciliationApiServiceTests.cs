@@ -50,8 +50,28 @@ public sealed class ReconciliationApiServiceTests
         created.Cases.Should().OnlyContain(item =>
             item.Owner == "fund-ops" &&
             item.Priority == "High" &&
+            item.Disposition == "NeedsInvestigation" &&
+            item.AgingDays == 0 &&
             item.DueAtUtc.HasValue &&
             item.EvidenceLink!.Contains("/api/workstation/reconciliation/statement-runs/", StringComparison.OrdinalIgnoreCase));
+        foreach (var item in created.Cases)
+        {
+            item.CommentThreads.Should().Contain(thread =>
+                thread.Subject == "External statement intake" &&
+                thread.Comments!.Any(comment =>
+                    comment.Actor == "system" &&
+                    comment.Body!.Contains("Suggested next action:", StringComparison.OrdinalIgnoreCase)));
+            item.Attachments.Should().Contain(attachment =>
+                attachment.EvidenceKind == "ExternalStatementRow" &&
+                attachment.SourceSystem == "custodian");
+            item.BreakExplanation.Should().NotBeNull();
+            item.BreakExplanation!.SourceSystems.Should().Contain("Sample Custodian");
+            item.BreakExplanation.SourceSystems.Should().Contain("Meridian ledger");
+            item.BreakExplanation.ProbableCause.Should().NotBeNullOrWhiteSpace();
+            item.BreakExplanation.LedgerImpact.Should().NotBeNullOrWhiteSpace();
+            item.BreakExplanation.SuggestedNextAction.Should().NotBeNullOrWhiteSpace();
+            item.AuditEvents.Should().Contain(audit => audit.EventType == "ExternalStatementCaseCreated");
+        }
 
         var openCases = await service.ListOpenCasesAsync(CancellationToken.None);
         openCases.Should().HaveCount(2);
@@ -67,6 +87,14 @@ public sealed class ReconciliationApiServiceTests
         var reloaded = await service.GetStatementRunAsync(created.RunId!, CancellationToken.None);
         reloaded.Should().NotBeNull();
         reloaded!.Cases.Should().HaveCount(2);
+        reloaded.Cases.Should().OnlyContain(item =>
+            item.Attachments != null &&
+            item.Attachments.Count > 0 &&
+            item.CommentThreads != null &&
+            item.CommentThreads.Count > 0 &&
+            item.BreakExplanation != null &&
+            item.AuditEvents != null &&
+            item.AuditEvents.Count > 0);
         reloaded.Breaks.Should().HaveCount(2);
     }
 }

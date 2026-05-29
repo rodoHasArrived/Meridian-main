@@ -8,6 +8,7 @@ using Meridian.Application.FundStructure;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -27,6 +28,132 @@ public sealed class FundStructureEndpointTests
     {
         _fixture = fixture;
         _client = fixture.Client;
+    }
+
+
+    [Fact]
+    public async Task SetupDraftValidate_WithMissingFields_ReturnsSharedValidationSummary()
+    {
+        var draft = CreateSetupDraft() with
+        {
+            AccountHandoff = new FundStructureSetupAccountHandoffDraftDto(string.Empty, string.Empty, AccountTypeDto.Brokerage, "US")
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/fund-structure/setup-drafts/validate", draft);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundStructureSetupPreviewDto>();
+        payload.Should().NotBeNull();
+        payload!.ValidationSummary.IsValid.Should().BeFalse();
+        payload.ValidationSummary.Issues.Should().Contain(issue => issue.FieldPath == "accountHandoff.accountCode");
+    }
+
+    [Fact]
+    public async Task SetupDraftCreate_WithValidDraft_CreatesStructureThroughSharedEndpointWorkflow()
+    {
+        var draft = CreateSetupDraft();
+
+        var response = await _client.PostAsJsonAsync("/api/fund-structure/setup-drafts/create", draft);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var payload = await response.Content.ReadFromJsonAsync<FundStructureSetupResultDto>();
+        payload.Should().NotBeNull();
+        payload!.Organization.Code.Should().Be("ORG-SETUP");
+        payload.BusinessLane.Code.Should().Be("BUS-SETUP");
+        payload.Fund.Should().NotBeNull();
+        payload.AccountHandoffAssignment.AssignmentType.Should().Be(FundStructureSetupWorkflowService.AccountHandoffAssignmentType);
+        payload.Graph.Nodes.Should().Contain(node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio && node.Code == "PORT-SETUP");
+    }
+
+    [Fact]
+    public async Task OwnershipLifecycleEndpoints_UpdateExpireAndValidateGraph()
+    {
+        var structureService = _fixture.Services.GetRequiredService<IFundStructureService>();
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        var portfolioId = Guid.NewGuid();
+        var linkId = Guid.NewGuid();
+        var now = new DateTimeOffset(2026, 04, 12, 0, 0, 0, TimeSpan.Zero);
+
+        await structureService.CreateOrganizationAsync(new CreateOrganizationRequest(
+            organizationId,
+            $"ORG-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Organization",
+            "USD",
+            now,
+            "endpoint-test"));
+        await structureService.CreateBusinessAsync(new CreateBusinessRequest(
+            businessId,
+            organizationId,
+            BusinessKindDto.FundManager,
+            $"BUS-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Business",
+            "USD",
+            now,
+            "endpoint-test"));
+        await structureService.CreateFundAsync(new CreateFundRequest(
+            fundId,
+            $"FND-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Fund",
+            "USD",
+            now,
+            "endpoint-test",
+            BusinessId: businessId));
+        await structureService.CreateInvestmentPortfolioAsync(new CreateInvestmentPortfolioRequest(
+            portfolioId,
+            businessId,
+            $"PRT-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Portfolio",
+            "USD",
+            now,
+            "endpoint-test",
+            FundId: fundId));
+        await structureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            linkId,
+            fundId,
+            portfolioId,
+            OwnershipRelationshipTypeDto.AllocatesTo,
+            now,
+            "endpoint-test"));
+
+        var updateResponse = await _client.PutAsJsonAsync(
+            $"/api/fund-structure/links/{linkId}",
+            new UpdateOwnershipLinkRequest(
+                Guid.Empty,
+                OwnershipRelationshipTypeDto.Owns,
+                now,
+                "endpoint-test",
+                OwnershipPercent: 60m,
+                IsPrimary: true,
+                Notes: "endpoint update"));
+        var validateResponse = await _client.PostAsJsonAsync(
+            "/api/fund-structure/links/validate",
+            new ValidateOwnershipGraphRequest(AsOf: now.AddHours(1)));
+        var expireResponse = await _client.PostAsJsonAsync(
+            $"/api/fund-structure/links/{linkId}/expire",
+            new ExpireOwnershipLinkRequest(
+                Guid.Empty,
+                now.AddDays(1),
+                "endpoint-test",
+                "endpoint expiration"));
+
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        expireResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await updateResponse.Content.ReadFromJsonAsync<OwnershipLinkDto>();
+        var validation = await validateResponse.Content.ReadFromJsonAsync<OwnershipGraphValidationResultDto>();
+        var expired = await expireResponse.Content.ReadFromJsonAsync<OwnershipLinkDto>();
+
+        updated.Should().NotBeNull();
+        updated!.OwnershipLinkId.Should().Be(linkId);
+        updated.RelationshipType.Should().Be(OwnershipRelationshipTypeDto.Owns);
+        updated.OwnershipPercent.Should().Be(60m);
+        validation.Should().NotBeNull();
+        validation!.IsValid.Should().BeTrue();
+        expired.Should().NotBeNull();
+        expired!.EffectiveTo.Should().Be(now.AddDays(1));
+        expired.Notes.Should().Be("endpoint expiration");
     }
 
     [Fact]
@@ -474,6 +601,20 @@ public sealed class FundStructureEndpointTests
             Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
         }
     }
+
+
+    private static FundStructureSetupDraftDto CreateSetupDraft()
+        => new(
+            new FundStructureSetupOrganizationDraftDto(null, "ORG-SETUP", "Setup Organization", "USD"),
+            new FundStructureSetupBusinessDraftDto(null, BusinessKindDto.FundManager, "BUS-SETUP", "Setup Business", "USD"),
+            new FundStructureSetupClientOrFundDraftDto(null, null, CreateClient: false, "FUND-SETUP", "Setup Fund", "USD"),
+            new FundStructureSetupLegalEntityDraftDto(null, LegalEntityTypeDto.Fund, "LE-SETUP", "Setup LP", "US-DE", "USD"),
+            new FundStructureSetupVehicleDraftDto(null, "VEH-SETUP", "Setup Vehicle", "USD"),
+            new FundStructureSetupInvestmentPortfolioDraftDto(null, "PORT-SETUP", "Setup Portfolio", "USD"),
+            new FundStructureSetupAccountHandoffDraftDto("ACCT-SETUP", "Setup brokerage handoff", AccountTypeDto.Brokerage, "USD", "Broker", "4000"),
+            InitialOwnershipLinks: Array.Empty<FundStructureSetupOwnershipLinkDraftDto>(),
+            EffectiveFrom: new DateTimeOffset(2026, 5, 29, 0, 0, 0, TimeSpan.Zero),
+            RequestedBy: "endpoint-test");
 
     private async Task<SeededFundWorkspace> SeedFundWorkspaceAsync(IReadOnlyList<string>? runIds = null)
     {

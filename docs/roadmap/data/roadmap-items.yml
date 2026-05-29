@@ -142,11 +142,11 @@ items:
       - Portfolio
       - Accounting
     owner_lane: Governance and Ledger
-    status: planned
-    health: yellow
+    status: done
+    health: green
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: Ledger and reconciliation workflows need evidence-linked acceptance before governed reporting can claim readiness.
+    evidence_posture: complete
+    current_summary: Closed in the 2026-05-29 W4 evidence slice through operations-continuity close-lane coverage, reconciliation casework, browser Accounting parity, WPF Lane C acceptance, and green PortfolioLedgerReview/Reconciliation pilot gates.
     exit_criteria:
       - Reconciliation queue actions link to ledger evidence.
       - Break resolution and sign-off states are operator-visible.
@@ -158,7 +158,14 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-05-20
+    evidence:
+      - type: status
+        path: docs/plans/current-direction-and-status.md
+      - type: test
+        path: tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs
+      - type: test
+        path: tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs
+    last_reviewed: 2026-05-29
 
   - id: W4-RPT-001
     title: Governed report pack readiness
@@ -169,11 +176,11 @@ items:
       - Reporting
       - Accounting
     owner_lane: Governance and Ledger
-    status: planned
-    health: yellow
+    status: done
+    health: green
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: Report-pack generation needs approval, export evidence, and clear ownership before being treated as governed output.
+    evidence_posture: complete
+    current_summary: Closed in the 2026-05-29 W4 evidence slice through governed report-pack workflow/provenance, publication/restatement readiness, evidence-vault manifest support, browser Reporting parity, and the green GovernedReportPack pilot gate.
     exit_criteria:
       - Report-pack lifecycle includes approval evidence.
       - Export output records are linked to source data and acceptance status.
@@ -185,7 +192,14 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-05-20
+    evidence:
+      - type: status
+        path: docs/plans/current-direction-and-status.md
+      - type: test
+        path: tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs
+    last_reviewed: 2026-05-29
 
   - id: W5-BTSTUDIO-001
     title: Backtesting studio evidence loop

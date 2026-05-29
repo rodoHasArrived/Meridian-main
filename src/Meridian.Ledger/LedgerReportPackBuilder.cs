@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace Meridian.Ledger;
 
@@ -13,7 +14,8 @@ public static class LedgerReportPackBuilder
         IReadOnlyLedger ledger,
         LedgerReportPackRequest request,
         ChartOfAccounts? chart = null,
-        string? financialAccountId = null)
+        string? financialAccountId = null,
+        IReadOnlyList<LedgerTaxLotReliefProjection>? taxLotReliefProjections = null)
     {
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(request);
@@ -29,6 +31,8 @@ public static class LedgerReportPackBuilder
             CreateCsvArtifact("trial-balance.csv", statements.TrialBalanceRows),
             CreateCsvArtifact("income-statement.csv", statements.IncomeStatementRows),
             CreateCsvArtifact("balance-sheet.csv", statements.BalanceSheetRows),
+            CreateFinancialStatementsJsonArtifact(request, statements),
+            CreateTaxLotRealizedGainsArtifact(taxLotReliefProjections ?? []),
         };
         var provenance = BuildLineProvenance(ledger, request, statements, financialAccountId);
         artifacts.Add(CreateLineProvenanceArtifact(provenance));
@@ -53,10 +57,121 @@ public static class LedgerReportPackBuilder
         };
     }
 
+    private static LedgerReportPackArtifact CreateTaxLotRealizedGainsArtifact(
+        IReadOnlyList<LedgerTaxLotReliefProjection> projections)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId,AcquiredDate,QuantityRelieved,UnitCost,Proceeds,CostBasis,RealizedGainOrLoss");
+
+        foreach (var projection in projections
+            .OrderBy(static projection => projection.Input.SaleDate)
+            .ThenBy(static projection => projection.Input.Account.Name, StringComparer.Ordinal)
+            .ThenBy(static projection => projection.Input.Account.Symbol ?? string.Empty, StringComparer.Ordinal)
+            .ThenBy(static projection => projection.Input.FinancialAccountId ?? string.Empty, StringComparer.Ordinal))
+        {
+            foreach (var selection in projection.Selections
+                .OrderBy(static selection => selection.Lot.AcquiredDate)
+                .ThenBy(static selection => selection.Lot.LotId, StringComparer.Ordinal))
+            {
+                var proceeds = RoundCurrency(selection.QuantityRelieved * projection.Input.SalePrice);
+                var realizedGainOrLoss = proceeds - selection.CostBasis;
+
+                builder.Append(projection.Input.SaleDate.ToString("O", CultureInfo.InvariantCulture));
+                builder.Append(',');
+                builder.Append(EscapeCsv(projection.Input.Account.Name));
+                builder.Append(',');
+                builder.Append(EscapeCsv(projection.Input.Account.Symbol ?? string.Empty));
+                builder.Append(',');
+                builder.Append(EscapeCsv(projection.Input.FinancialAccountId ?? string.Empty));
+                builder.Append(',');
+                builder.Append(projection.Input.ReliefMethod);
+                builder.Append(',');
+                builder.Append(EscapeCsv(selection.Lot.LotId));
+                builder.Append(',');
+                builder.Append(selection.Lot.AcquiredDate.ToString("O", CultureInfo.InvariantCulture));
+                builder.Append(',');
+                builder.Append(FormatDecimal(selection.QuantityRelieved));
+                builder.Append(',');
+                builder.Append(FormatDecimal(selection.UnitCost));
+                builder.Append(',');
+                builder.Append(FormatDecimal(proceeds));
+                builder.Append(',');
+                builder.Append(FormatDecimal(selection.CostBasis));
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(realizedGainOrLoss));
+            }
+        }
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact("tax-lot-realized-gains.csv", "text/csv", content, ComputeSha256(content));
+    }
+
     private static LedgerReportPackArtifact CreateCsvArtifact(string name, IReadOnlyList<LedgerChartBalance> rows)
     {
         var content = BuildCsv(rows);
         return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+    }
+
+    private static LedgerReportPackArtifact CreateFinancialStatementsJsonArtifact(
+        LedgerReportPackRequest request,
+        LedgerFinancialStatements statements)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("{");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"schema\": \"ledger-financial-statements-v1\",");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"reportId\": {JsonString(request.ReportId)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"fundId\": {JsonString(request.FundId)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"periodId\": {JsonString(request.PeriodId)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"periodStart\": {JsonString(request.PeriodStart.ToString("O", CultureInfo.InvariantCulture))},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"periodEnd\": {JsonString(request.PeriodEnd.ToString("O", CultureInfo.InvariantCulture))},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"asOf\": {JsonString(request.AsOf.ToString("O", CultureInfo.InvariantCulture))},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"baseCurrency\": {JsonString(request.BaseCurrency)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"lockedPeriod\": {(request.LockedPeriod is null ? "false" : "true")},");
+        builder.AppendLine("  \"totals\": {");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"assets\": {FormatDecimal(statements.TotalAssets)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"liabilities\": {FormatDecimal(statements.TotalLiabilities)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"equity\": {FormatDecimal(statements.TotalEquity)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"revenue\": {FormatDecimal(statements.TotalRevenue)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"expenses\": {FormatDecimal(statements.TotalExpenses)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"netIncome\": {FormatDecimal(statements.NetIncome)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"endingEquity\": {FormatDecimal(statements.EndingEquity)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"accountingEquationVariance\": {FormatDecimal(statements.AccountingEquationVariance)}");
+        builder.AppendLine("  },");
+        AppendRows(builder, "trialBalanceRows", statements.TrialBalanceRows, trailingComma: true);
+        AppendRows(builder, "incomeStatementRows", statements.IncomeStatementRows, trailingComma: true);
+        AppendRows(builder, "balanceSheetRows", statements.BalanceSheetRows, trailingComma: false);
+        builder.AppendLine("}");
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact("financial-statements.json", "application/json", content, ComputeSha256(content));
+    }
+
+    private static void AppendRows(
+        StringBuilder builder,
+        string propertyName,
+        IReadOnlyList<LedgerChartBalance> rows,
+        bool trailingComma)
+    {
+        builder.AppendLine(CultureInfo.InvariantCulture, $"  \"{propertyName}\": [");
+        var orderedRows = rows.OrderBy(static row => row.Path, StringComparer.Ordinal).ToArray();
+        for (var i = 0; i < orderedRows.Length; i++)
+        {
+            var row = orderedRows[i];
+            builder.AppendLine("    {");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"      \"path\": {JsonString(row.Path)},");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"      \"parentPath\": {JsonString(row.ParentPath ?? string.Empty)},");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"      \"accountName\": {JsonString(row.Account.Name)},");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"      \"accountType\": {JsonString(row.Account.AccountType.ToString())},");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"      \"symbol\": {JsonString(row.Account.Symbol ?? string.Empty)},");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"      \"financialAccountId\": {JsonString(row.Account.FinancialAccountId ?? string.Empty)},");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"      \"directBalance\": {FormatDecimal(row.DirectBalance)},");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"      \"aggregateBalance\": {FormatDecimal(row.AggregateBalance)}");
+            builder.Append("    }");
+            builder.AppendLine(i == orderedRows.Length - 1 ? string.Empty : ",");
+        }
+
+        builder.Append("  ]");
+        builder.AppendLine(trailingComma ? "," : string.Empty);
     }
 
     private static LedgerReportPackArtifact CreateManifestArtifact(
@@ -231,6 +346,12 @@ public static class LedgerReportPackBuilder
 
     private static string FormatDecimal(decimal value)
         => value.ToString("0.############################", CultureInfo.InvariantCulture);
+
+    private static decimal RoundCurrency(decimal amount)
+        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
+
+    private static string JsonString(string value)
+        => JsonSerializer.Serialize(value);
 
     private static string EscapeCsv(string value)
     {

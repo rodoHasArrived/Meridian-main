@@ -583,4 +583,4 @@ Why:
 - [Fund Management Module Implementation Backlog](fund-management-module-implementation-backlog.md)
 - [Trading Workstation Migration Blueprint](trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)

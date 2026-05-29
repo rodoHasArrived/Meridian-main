@@ -34,6 +34,9 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
+The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
+
+
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
@@ -64,6 +67,46 @@ standardize action posture, readiness tone, evidence links, recovery actions, an
 requirements for W4 close/report surfaces. Fund Ledger reconciliation and Report Pack handoff
 surfaces consume these primitives so blocker, evidence, recovery, and sign-off signifiers stay
 visible without creating desktop-only business rules.
+`MainPage` remains the route-compatible desktop shell entry point, but shell chrome is now composed
+from reusable WPF primitives: `InstitutionalShellFrameControl`, `ShellRailControl`,
+`ShellMastheadControl`, `WorkspaceEvidenceStripControl`, `WorkspaceCommandSurfaceControl`,
+`InstitutionalCommandPaletteControl`, and `WorkspaceInspectorHostControl`. Workspace shell posture
+is WPF-only and resolved through `ShellNavigationCatalog.GetWorkspaceLayoutDescriptor`: Trading and
+Data use `Terminal`, Portfolio, Accounting, Reporting, and Settings use `Cockpit`, and Strategy uses
+`Workbench`. Legacy workspace names continue to resolve as aliases to the seven canonical roots.
+`WorkspaceCommandSurfaceControl` and `WorkspaceEvidenceStripControl` take explicit automation ID
+properties from the active workspace layout descriptor so shell chrome can be reused without
+depending on ambient `MainPage` bindings.
+Modal surfaces should migrate through `WorkspaceDialogChromeControl`; provider API-key setup,
+watchlist saving, and scheduled-job editing now use that shared dialog chrome with stable title,
+subtitle, body, input, and action automation IDs.
+Standalone command-palette chrome should use the same shell tokens and stable automation IDs instead
+of page-local colors or shadow effects.
+High-value workbench pages should migrate through the shared workstation controls before broad
+page sweeps; Strategy Runs now uses `DenseDataGridControl` plus tabbed inspector panes for run,
+evidence, comparison, and artifact context while preserving existing page tags and navigation
+commands.
+Settings/Admin cockpit work uses `WorkstationStatePanelControl` for schedule and cleanup readiness
+state so maintenance blockers, confirmation posture, and evidence summaries reuse the same
+`WorkspaceTone` semantics as other operational pages.
+Data Quality terminal work uses `DenseDataGridControl` for the symbol-quality table with
+view-model-owned selected-row drilldown and provider-comparison command state, keeping the Data
+workspace on shared dense-table behavior without changing data-quality service contracts.
+Data terminal provider, backfill, and storage decision queues now use
+`WorkspaceDecisionQueueControl` while retaining existing queue-region empty/loading/error state
+templates and view-model-owned action resolution.
+Backfill terminal work uses `DenseDataGridControl` for gap-analysis and per-symbol-progress tables,
+with table descriptors owned by `BackfillWorkbenchSectionViewModel` so long-running provider
+catch-up workflows reuse the shared dense-table/empty-state surface.
+Trading terminal work uses `DenseDataGridControl` for active positions and view-model-owned
+selected-position inspector state so paper/live desk review keeps row selection, P&L, mode, and
+next-action context in the shared dense table surface. `WorkspaceInspectorHostControl` owns
+empty, selected, loading, and error inspector states with caller-supplied automation IDs so
+workspace pages can migrate selected-row detail without changing route/page tags.
+Accounting, Portfolio, Reporting, and Settings/Admin cockpit home decisions bind to view-model-owned `WorkspaceQueueItem`
+collections through `WorkspaceDecisionQueueControl`, preserving existing page tags while reusing
+`WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
+decisions, including primary, secondary, and blocked cockpit actions.
 
 ## Diagrams
 
@@ -97,6 +140,7 @@ behavior into view models. Do not duplicate product logic that belongs in shared
 
 ## Related docs
 
+- `docs/status/desktop-application-screens.md` - registry-backed screen inventory for the WPF desktop application.
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/development/wpf-implementation-notes.md`
 - `docs/source/generated/source-module-index.md`

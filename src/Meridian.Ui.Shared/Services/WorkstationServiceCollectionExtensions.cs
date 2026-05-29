@@ -67,6 +67,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ImmutableAuditLogService>();
         services.TryAddSingleton<AccessReviewService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
+        services.TryAddSingleton<FundStructureSetupWorkflowService>();
 
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
@@ -128,6 +129,10 @@ public static class WorkstationServiceCollectionExtensions
         });
         services.TryAddSingleton<LedgerAmountProvenanceService>();
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
+        services.TryAddSingleton(sp => new FamilyOfficeReadService(
+            sp.GetService<IFundStructureService>(),
+            sp.GetService<Meridian.Application.FundAccounts.IFundAccountService>(),
+            sp.GetService<StrategyRunReadService>()));
         services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
         services.TryAddSingleton<IOperationsContinuityRepository>(sp =>
         {

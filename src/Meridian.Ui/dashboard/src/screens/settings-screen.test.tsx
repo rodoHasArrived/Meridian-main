@@ -15,13 +15,19 @@ import type {
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
   RolePermissionCatalog,
+  SecurityAssetProfileDefinition,
   SessionInfo,
   SystemOverviewResponse
 } from "@/types";
 
 const apiMocks = vi.hoisted(() => ({
+  approveSecurityAssetProfile: vi.fn(),
   assignLedgerMapping: vi.fn(),
+  createSecurityMasterEntry: vi.fn(),
   createRolePermissionProfile: vi.fn(),
+  draftSecurityAssetProfile: vi.fn(),
+  getSecurityAssetProfileLineage: vi.fn(),
+  rollbackSecurityAssetProfile: vi.fn(),
   upsertOperationsApprovalPolicyRule: vi.fn(),
   upsertOperationsCloseCalendarItem: vi.fn(),
   connectAlpacaConnection: vi.fn(),
@@ -34,8 +40,13 @@ const apiMocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/api", async (importActual) => ({
   ...(await importActual<typeof import("@/lib/api")>()),
+  approveSecurityAssetProfile: apiMocks.approveSecurityAssetProfile,
   assignLedgerMapping: apiMocks.assignLedgerMapping,
+  createSecurityMasterEntry: apiMocks.createSecurityMasterEntry,
   createRolePermissionProfile: apiMocks.createRolePermissionProfile,
+  draftSecurityAssetProfile: apiMocks.draftSecurityAssetProfile,
+  getSecurityAssetProfileLineage: apiMocks.getSecurityAssetProfileLineage,
+  rollbackSecurityAssetProfile: apiMocks.rollbackSecurityAssetProfile,
   upsertOperationsApprovalPolicyRule: apiMocks.upsertOperationsApprovalPolicyRule,
   upsertOperationsCloseCalendarItem: apiMocks.upsertOperationsCloseCalendarItem,
   connectAlpacaConnection: apiMocks.connectAlpacaConnection,
@@ -323,11 +334,76 @@ const closeCalendar: OperationsCloseCalendar = {
   ]
 };
 
+const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
+  {
+    profileId: "private-fund-interest",
+    version: 1,
+    name: "Private Fund Interest",
+    category: "AlternativeAsset",
+    subType: "PrivateFundInterest",
+    status: "Approved",
+    fields: [
+      {
+        key: "sponsor",
+        label: "Sponsor",
+        fieldType: "Text",
+        isRequired: true,
+        allowedValues: [],
+        description: null,
+        minValue: null,
+        maxValue: null,
+        isProjected: true,
+        isSearchable: true
+      },
+      {
+        key: "navDate",
+        label: "NAV date",
+        fieldType: "Date",
+        isRequired: true,
+        allowedValues: [],
+        description: null,
+        minValue: null,
+        maxValue: null,
+        isProjected: true,
+        isSearchable: true
+      },
+      {
+        key: "commitment",
+        label: "Commitment",
+        fieldType: "Decimal",
+        isRequired: false,
+        allowedValues: [],
+        description: null,
+        minValue: 0,
+        maxValue: null,
+        isProjected: true,
+        isSearchable: false
+      }
+    ],
+    identifierPreferences: [
+      { kind: "InternalCode", isRequiredForClose: true, reason: "Private funds require an internal code." }
+    ],
+    lifecycleStates: ["Committed", "Funded", "Harvesting"],
+    accountingImpactHints: ["CommitmentAccounting", "NavBasedValuation"],
+    dateOrderRules: [],
+    effectiveFrom: "2026-05-01",
+    effectiveTo: null,
+    approvedBy: "Security Master Council",
+    approvedAtUtc: "2026-05-01T00:00:00Z",
+    changeReason: "Seed template"
+  }
+];
+
 describe("SettingsScreen", () => {
   beforeEach(() => {
+    apiMocks.approveSecurityAssetProfile.mockReset();
     apiMocks.connectAlpacaConnection.mockReset();
+    apiMocks.createSecurityMasterEntry.mockReset();
+    apiMocks.draftSecurityAssetProfile.mockReset();
+    apiMocks.getSecurityAssetProfileLineage.mockReset();
     apiMocks.assignLedgerMapping.mockReset();
     apiMocks.createRolePermissionProfile.mockReset();
+    apiMocks.rollbackSecurityAssetProfile.mockReset();
     apiMocks.upsertOperationsApprovalPolicyRule.mockReset();
     apiMocks.upsertOperationsCloseCalendarItem.mockReset();
     apiMocks.revokeAlpacaConnection.mockReset();
@@ -416,6 +492,98 @@ describe("SettingsScreen", () => {
       "href",
       "/api/workstation/operations/continuity/close-calendar"
     );
+  });
+
+  it("renders asset profile governance and profile-backed creation fields", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        securityAssetProfiles={securityAssetProfiles}
+      />
+    );
+
+    const profileRows = screen.getByRole("list", { name: "1 asset profile" });
+    expect(within(profileRows).getByText("Private Fund Interest")).toBeInTheDocument();
+    expect(within(profileRows).getByText("InternalCode")).toBeInTheDocument();
+    expect(screen.getByRole("form", { name: "Draft asset profile" })).toBeInTheDocument();
+
+    const createForm = screen.getByRole("form", { name: "Create profile-backed security" });
+    expect(within(createForm).getByLabelText("Profile-backed security display name")).toBeInTheDocument();
+    expect(within(createForm).getByLabelText("Profile field Sponsor")).toBeInTheDocument();
+    expect(within(createForm).getByLabelText("Profile field NAV date")).toBeInTheDocument();
+  });
+
+  it("creates profile-backed securities pinned to the approved profile version", async () => {
+    const user = userEvent.setup();
+    const onRefresh = vi.fn();
+    apiMocks.createSecurityMasterEntry.mockResolvedValue({
+      securityId: "sec-private-fund",
+      displayName: "Meridian Private Fund I",
+      status: "Active",
+      classification: {
+        assetClass: "CustomAsset",
+        subType: "PrivateFundInterest",
+        primaryIdentifierKind: "InternalCode",
+        primaryIdentifierValue: "PF-I",
+        matchedIdentifierKind: null,
+        matchedIdentifierValue: null,
+        matchedProvider: null
+      },
+      economicDefinition: {
+        currency: "USD",
+        version: 1,
+        effectiveFrom: "2026-05-29T00:00:00Z",
+        effectiveTo: null,
+        subType: "PrivateFundInterest",
+        assetFamily: "AlternativeAsset",
+        issuerType: null
+      }
+    });
+
+    renderWithRouter(
+      <SettingsScreen
+        session={{ ...session, displayName: "Ops Lead" }}
+        overview={overview}
+        securityAssetProfiles={securityAssetProfiles}
+        onRefresh={onRefresh}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Create profile-backed security" });
+    await user.type(within(form).getByLabelText("Profile-backed security display name"), "Meridian Private Fund I");
+    await user.type(within(form).getByLabelText("Profile-backed security internal code"), "PF-I");
+    await user.type(within(form).getByLabelText("Profile field Sponsor"), "Meridian GP");
+    await user.type(within(form).getByLabelText("Profile field NAV date"), "2026-04-30");
+    await user.click(within(form).getByRole("button", { name: /Create security/i }));
+
+    expect(apiMocks.createSecurityMasterEntry).toHaveBeenCalledWith(expect.objectContaining({
+      assetClass: "CustomAsset",
+      updatedBy: "Ops Lead",
+      sourceRecordId: "asset-profile:private-fund-interest:v1",
+      assetSpecificTerms: expect.objectContaining({
+        schemaVersion: 3,
+        customProfileId: "private-fund-interest",
+        profileVersion: 1,
+        category: "AlternativeAsset",
+        profileFields: expect.objectContaining({
+          sponsor: "Meridian GP",
+          navDate: "2026-04-30"
+        }),
+        profileApproval: expect.objectContaining({
+          approvalReference: "profile:private-fund-interest:v1"
+        })
+      }),
+      identifiers: [
+        expect.objectContaining({
+          kind: "InternalCode",
+          value: "PF-I",
+          isPrimary: true
+        })
+      ]
+    }));
+    expect(onRefresh).toHaveBeenCalledOnce();
+    expect(await within(form).findByText("Security created for Meridian Private Fund I.")).toBeInTheDocument();
   });
 
   it("submits ledger mapping assignments with audit rationale", async () => {

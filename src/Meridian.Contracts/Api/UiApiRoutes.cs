@@ -308,6 +308,12 @@ public static class UiApiRoutes
     public const string SecurityMasterValidation = "/api/security-master/{securityId:guid}/validation";
     public const string SecurityMasterResolve = "/api/security-master/resolve";
     public const string SecurityMasterSearch = "/api/security-master/search";
+    public const string SecurityMasterAssetProfiles = "/api/security-master/asset-profiles";
+    public const string SecurityMasterAssetProfilePromotionCandidates = "/api/security-master/asset-profiles/promotion-candidates";
+    public const string SecurityMasterAssetProfileLineage = "/api/security-master/asset-profiles/{profileId}/lineage";
+    public const string SecurityMasterAssetProfileDrafts = "/api/security-master/asset-profiles/drafts";
+    public const string SecurityMasterAssetProfileApprove = "/api/security-master/asset-profiles/approve";
+    public const string SecurityMasterAssetProfileRollback = "/api/security-master/asset-profiles/rollback";
     public const string SecurityMasterHistory = "/api/security-master/{securityId:guid}/history";
     public const string SecurityMasterCreate = "/api/security-master";
     public const string SecurityMasterAmend = "/api/security-master/amend";
@@ -598,6 +604,7 @@ public static class UiApiRoutes
     public const string LedgerPeriods = "/api/ledger/periods";
     public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";
     public const string LedgerPeriodTrialBalance = "/api/ledger/periods/{periodId:guid}/trial-balance";
+    public const string LedgerPeriodTrialBalanceReport = "/api/ledger/periods/{periodId:guid}/trial-balance-report";
     public const string LedgerPeriodPnlSummary = "/api/ledger/periods/{periodId:guid}/pnl-summary";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";

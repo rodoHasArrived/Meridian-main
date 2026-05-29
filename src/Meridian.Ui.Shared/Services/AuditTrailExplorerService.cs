@@ -48,6 +48,7 @@ public sealed class AuditTrailExplorerService
         var matched = entries
             .Where(entry => Matches(entry, query))
             .OrderByDescending(static entry => entry.OccurredAt)
+            .ThenBy(static entry => entry.AuditId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var returned = matched
             .Take(Math.Clamp(query.Limit, 1, 1_000))
@@ -74,6 +75,9 @@ public sealed class AuditTrailExplorerService
             MatchesValue(entry.Actor, query.Actor) &&
             MatchesValue(entry.Symbol, query.Symbol) &&
             MatchesValue(entry.CorrelationId, query.CorrelationId) &&
+            MatchesValue(entry.ObjectKind, query.ObjectKind) &&
+            MatchesValue(entry.ObjectId, query.ObjectId) &&
+            MatchesRelatedObjectId(entry, query.RelatedObjectId) &&
             (!query.FromUtc.HasValue || entry.OccurredAt >= query.FromUtc.Value) &&
             (!query.ToUtc.HasValue || entry.OccurredAt <= query.ToUtc.Value);
     }
@@ -81,6 +85,10 @@ public sealed class AuditTrailExplorerService
     private static bool MatchesValue(string? actual, string? expected)
         => string.IsNullOrWhiteSpace(expected) ||
            string.Equals(actual, expected.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static bool MatchesRelatedObjectId(AuditTrailTimelineEntryDto entry, string? expected)
+        => string.IsNullOrWhiteSpace(expected) ||
+           (entry.RelatedObjectIds?.Any(related => MatchesValue(related, expected)) ?? false);
 
     private static bool MatchesText(AuditTrailTimelineEntryDto entry, string? searchText)
     {
@@ -103,6 +111,8 @@ public sealed class AuditTrailExplorerService
             Contains(entry.Message, needle) ||
             Contains(entry.Reason, needle) ||
             Contains(entry.Scope, needle) ||
+            Contains(entry.EvidenceRoute, needle) ||
+            (entry.RelatedObjectIds?.Any(related => Contains(related, needle)) ?? false) ||
             (entry.Metadata?.Any(pair => Contains(pair.Key, needle) || Contains(pair.Value, needle)) ?? false);
     }
 

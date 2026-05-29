@@ -168,6 +168,29 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void WorkspaceSelection_UpdatesShellPostureAndLayoutAutomationContracts()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CurrentWorkspace.Should().Be("strategy");
+            vm.CurrentShellPosture.Should().Be(ShellPosture.Workbench);
+            vm.WorkspaceHomeTemplateAutomationId.Should().Be("WorkspaceHomeStrategyWorkbenchTemplate");
+
+            vm.SelectWorkspaceCommand.Execute("trading");
+
+            vm.CurrentWorkspace.Should().Be("trading");
+            vm.CurrentShellPosture.Should().Be(ShellPosture.Terminal);
+            vm.CurrentShellPostureName.Should().Be("Terminal");
+            vm.WorkspaceHomeTemplateAutomationId.Should().Be("WorkspaceHomeTradingTerminalTemplate");
+            vm.WorkspaceEvidenceStripAutomationId.Should().Be("WorkspaceEvidenceStripTrading");
+            vm.WorkspaceCommandSurfaceAutomationId.Should().Be("WorkspaceCommandSurfaceTrading");
+            vm.WorkspaceInspectorHostAutomationId.Should().Be("WorkspaceInspectorHostTrading");
+        });
+    }
+
+    [Fact]
     public void WorkspaceNavigation_UsesFriendlyContextTagsInsteadOfRawTierNames()
     {
         WpfTestThread.Run(() =>

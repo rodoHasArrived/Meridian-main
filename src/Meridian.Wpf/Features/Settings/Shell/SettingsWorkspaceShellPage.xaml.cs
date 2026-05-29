@@ -100,21 +100,8 @@ public partial class SettingsWorkspaceShellPage : SettingsWorkspaceShellPageBase
     private async void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
         => await ViewModel.ExecuteActionAsync(e.Command.Id, navigate: true).ConfigureAwait(true);
 
-    private async void OnItemPrimaryActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ViewModel.ExecuteActionAsync(actionId, navigate: false).ConfigureAwait(true);
-        }
-    }
-
-    private async void OnItemSecondaryActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ViewModel.ExecuteActionAsync(actionId, navigate: false).ConfigureAwait(true);
-        }
-    }
+    private async void OnSettingsDecisionInvoked(object sender, WorkspaceDecisionInvokedEventArgs e)
+        => await ViewModel.ExecuteActionAsync(e.ActionId, navigate: false).ConfigureAwait(true);
 
     private async void OnQuickLinkActionClick(object sender, RoutedEventArgs e)
     {

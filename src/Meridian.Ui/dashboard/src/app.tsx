@@ -45,9 +45,11 @@ import { legacyWorkspaceRedirect } from "@/lib/workspace";
 const DataOperationsScreen = lazy(() => import("@/screens/data-operations-screen").then((module) => ({ default: module.DataOperationsScreen })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const GovernanceScreen = lazy(() => import("@/screens/governance-screen").then((module) => ({ default: module.GovernanceScreen })));
+const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
+const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-setup-wizard").then((module) => ({ default: module.EntitySetupWizard })));
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
 const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").then((module) => ({ default: module.PriceAlertsScreen })));
@@ -97,6 +99,7 @@ function AppShell() {
     providerRoutingTrustSnapshots,
     providerRoutingRefreshing,
     rolePermissionCatalog,
+    securityAssetProfiles,
     ledgerMappingWorkbench,
     operationsApprovalPolicyMatrix,
     operationsCloseCalendar,
@@ -341,6 +344,7 @@ function AppShell() {
                     />
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} />} />
+                  <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen
                       portfolio={portfolio}
@@ -352,6 +356,7 @@ function AppShell() {
                     />
                   )} />
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+                  <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
@@ -395,6 +400,7 @@ function AppShell() {
                       providerRoutingRefreshing={providerRoutingRefreshing}
                       featureCapabilities={featureCapabilities}
                       rolePermissionCatalog={rolePermissionCatalog}
+                      securityAssetProfiles={securityAssetProfiles}
                       ledgerMappingWorkbench={ledgerMappingWorkbench}
                       operationsApprovalPolicyMatrix={operationsApprovalPolicyMatrix}
                       operationsCloseCalendar={operationsCloseCalendar}

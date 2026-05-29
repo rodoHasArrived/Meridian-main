@@ -1,6 +1,8 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Features.Data.Shell;
+using Meridian.Wpf.Features.Portfolio.Shell;
+using Meridian.Wpf.Features.Reporting.Shell;
 using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Views;
@@ -12,6 +14,8 @@ public sealed class WorkspaceShellPageSmokeTests
     [Theory]
     [InlineData(typeof(ResearchWorkspaceShellPage))]
     [InlineData(typeof(TradingWorkspaceShellPage))]
+    [InlineData(typeof(PortfolioWorkspaceShellPage))]
+    [InlineData(typeof(ReportingWorkspaceShellPage))]
     [InlineData(typeof(DataWorkspaceShellPage))]
     [InlineData(typeof(SettingsWorkspaceShellPage))]
     [InlineData(typeof(GovernanceWorkspaceShellPage))]

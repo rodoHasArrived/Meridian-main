@@ -1,8 +1,8 @@
-# UFL Swap Target-State Package V2
+# UFL Swap Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl swap target state v2** and document explicit in-scope vs out-of-scope items.
@@ -31,6 +31,77 @@ It assumes:
 - downstream governance, reconciliation, and pricing consumers querying canonical projections
 
 This package turns the existing `SwapTerms` and `SwapLeg` support into an implementation-ready plan for swap reference data, lifecycle handling, leg projections, and APIs.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.Swap`, `SwapTerms`, and `SwapLeg` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"Swap"` asset class and materializes swap legs from JSON.
+- Security Master validation enforces ordered effective and maturity dates, at least one leg, and nonblank leg type and currency values.
+- `src/Meridian.Application/Derivatives/ISwapReferenceService.cs` and `SwapProjectionService` define swap reference reads.
+- `src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs` exposes swap reference-data endpoints.
+- Security Master reference lookup tests cover `Swap` subtype derivation.
+
+### Partially Implemented
+
+- Canonical swap terms, legs, and reference surfaces exist, but lifecycle, valuation-reference, collateral, unwind, and rebuild-specific projection evidence remains partial.
+
+### Target-State Only
+
+- Swap lifecycle and leg projections beyond current reference reads.
+- Valuation-reference and index exposure views.
+- Novation and unwind state overlays.
+- Swap-specific accounting and reconciliation handoff.
+
+### Explicitly Out of Scope
+
+- CSA management.
+- Collateral optimization.
+- XVA.
+- Clearing integrations.
+- Full pricing-engine implementation.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.Swap`, terms, leg mapping, validation, and reference services exist. | canonical swap profile metadata and stricter validation evidence | F# validation and C# mapping tests |
+| IssuerOrCounterparty | L1 partial | counterparty-oriented swap terms can be modeled through the profile. | counterparty linkage and exposure projection | endpoint/projection tests |
+| Lifecycle | L0 | target-state only. | active, matured, novated, unwound, and terminated states | lifecycle projection tests |
+| CashFlowSchedule | L1 partial | leg terms exist. | leg schedule and reset/reference projections | schedule projection tests |
+| CollateralOrMargin | L0 | target-state only. | collateral and margin metadata if required by governed workflows | collateral tests |
+| ProjectionRebuild | L1/L2 partial | swap projection service and endpoint shape exist. | swap leg, lifecycle, exposure, valuation, and rebuild metadata projections | rebuild/checkpoint tests |
+| AccountingImpact | L0 | target-state only. | controlled accounting/reconciliation handoff for swap lifecycle events | accounting/reconciliation tests |
+
+## Current Maturity
+
+`L1/L2 partial`: canonical swap terms, legs, validation, and reference surfaces exist. L3 maturity requires leg, lifecycle, valuation, exposure, and rebuild metadata tests.
+
+## Next Milestone Contract
+
+**Goal:** advance swaps toward L3 by adding rebuild-safe leg, lifecycle, valuation-reference, counterparty, and exposure projections.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/Derivatives/`
+- `src/Meridian.Contracts/Derivatives/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for swap terms and legs.
+- endpoint contract tests for swap reference, type, and maturity reads.
+- projection/rebuild tests for leg, lifecycle, exposure, valuation, and source-event metadata.
+- provider-payload isolation tests for canonical swap projections.
+
+**Exit criteria:** swap consumers can query canonical leg, lifecycle, counterparty, and maturity views with deterministic rebuild evidence.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as evidence, but swap workflows must consume canonical swap terms, leg projections, counterparty/exposure projections, and rebuild metadata.
 
 ## Repo Fit
 
@@ -354,6 +425,6 @@ Meridian treats a swap as a canonical derivative identity with explainable leg s
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

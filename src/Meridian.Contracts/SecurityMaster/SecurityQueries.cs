@@ -11,7 +11,11 @@ public sealed record SecuritySearchRequest(
     string Query,
     int Take = 50,
     int Skip = 0,
-    bool ActiveOnly = false);
+    bool ActiveOnly = false,
+    string? CustomProfileId = null,
+    int? ProfileVersion = null,
+    string? ProfileFieldKey = null,
+    string? ProfileFieldValue = null);
 
 public sealed record SecurityHistoryRequest(
     Guid SecurityId,

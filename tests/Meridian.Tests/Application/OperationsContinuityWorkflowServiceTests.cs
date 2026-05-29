@@ -740,6 +740,50 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task BuildLedgerDraftAsync_ShouldRequireSecurityMasterApprovalAndLedgerMappingEvidence()
+    {
+        var service = CreateService(out _, out _);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user"));
+        var import = await service.ImportBrokerDataAsync(
+            start.Workflow!.WorkflowId,
+            new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user", "Normalized imported rows"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsSecurityMasterResolveRequestDto(
+                normalized.Workflow!.Version,
+                "ops-user",
+                "Resolved Security Master identities"));
+
+        var result = await service.BuildLedgerDraftAsync(start.Workflow.WorkflowId, new OperationsLedgerDraftRequestDto(
+            security.Workflow!.Version,
+            "ops-user",
+            PreviewId: "ledger-preview-missing-security-master-proof",
+            IsBalanced: true,
+            HasSecurityMasterProvenance: false,
+            HasSecurityMasterApproval: false,
+            HasLedgerMappings: false));
+
+        result.Success.Should().BeTrue();
+        var ledgerGate = result.Workflow!.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.LedgerPosting);
+        ledgerGate.Status.Should().Be(OperationsGateStatusDto.Blocked);
+        result.Workflow.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Drafted);
+        ledgerGate.Blockers.Should().Contain(blocker =>
+            blocker.Code == "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING");
+        ledgerGate.Blockers.Should().Contain(blocker =>
+            blocker.Code == "LEDGER_SECURITY_MASTER_APPROVAL_MISSING");
+        ledgerGate.Blockers.Should().Contain(blocker =>
+            blocker.Code == "LEDGER_SECURITY_MASTER_MAPPING_MISSING");
+    }
+
+    [Fact]
     public async Task NormalizeBrokerTransactionsAsync_ShouldAdvanceBrokerGateTowardSecurityMasterResolution()
     {
         var service = CreateService(out _, out var auditStore);
@@ -2088,8 +2132,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             component.Key == "reconciliation" &&
             component.IsReady == false &&
             component.Weight == 15);
-        close.Blockers.Should().Contain(blocker => blocker.Code == "RECONCILIATION_BREAKS_OPEN");
-        close.Blockers.Should().Contain(blocker => blocker.Code == "APPROVAL_MISSING");
+        close.Blockers.Should().Contain(blocker => blocker.Code == "RECONCILIATION_CRITICAL_BREAKS_OPEN");
+        close.Blockers.Should().Contain(blocker => blocker.Code == "APPROVAL_REQUIRED");
     }
 
     [Fact]

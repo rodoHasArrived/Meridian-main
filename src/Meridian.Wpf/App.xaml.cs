@@ -244,6 +244,11 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<WpfServices.ApiStatusService>());
         services.AddSingleton<WpfServices.StatusService>(_ => WpfServices.StatusService.Instance);
         services.AddSingleton<WpfServices.FirstRunService>(_ => WpfServices.FirstRunService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.SetupWizardService>();
+        services.AddSingleton<WpfServices.ISetupWizardStateService, WpfServices.SetupWizardStateService>();
+        services.AddSingleton<WpfServices.ISetupWizardNotificationSink, WpfServices.SetupWizardNotificationSink>();
+        services.AddSingleton<WpfServices.ISetupWizardNavigator, WpfServices.SetupWizardNavigator>();
+        services.AddSingleton<WpfServices.ISetupWizardLinkLauncher, WpfServices.SetupWizardLinkLauncher>();
 
         // ── Onboarding / workspace services ──────────────────────────────────
         services.AddSingleton<Meridian.Ui.Services.OnboardingTourService>(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
@@ -270,6 +275,7 @@ public partial class App : System.Windows.Application
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Meridian",
                 "fund-structure.json")));
+        services.AddSingleton<FundStructureSetupWorkflowService>();
         services.AddSingleton<EnvironmentDesignerService>(_ => new EnvironmentDesignerService(
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -335,6 +341,7 @@ public partial class App : System.Windows.Application
 
         // ── Additional pages not yet catalog-backed ─────────────────────────
         services.AddTransient<FundProfileSelectionPage>();
+        services.AddTransient<FundStructureSetupPage>();
         services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();
@@ -368,6 +375,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.ProviderViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundStructureSetupViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundAccountsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundLedgerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
@@ -408,6 +416,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.SetupWizardViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.CollectionSessionViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.WorkflowLibraryViewModel>();
 

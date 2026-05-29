@@ -368,6 +368,26 @@ public sealed class OperationsContinuityWorkflow
                 evidenceLinks));
         }
 
+        if (!request.HasSecurityMasterApproval)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_SECURITY_MASTER_APPROVAL_MISSING",
+                "Ledger draft requires approved Security Master identity evidence.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
+        if (!request.HasLedgerMappings)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_SECURITY_MASTER_MAPPING_MISSING",
+                "Ledger draft requires Security Master ledger mapping evidence.",
+                OperationsGateKeyDto.LedgerPosting,
+                "Critical",
+                evidenceLinks));
+        }
+
         if (!request.HasIdempotencyKey)
         {
             blockers.Add(new OperationsWorkflowBlockerDto(

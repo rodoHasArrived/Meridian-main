@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
-**Version:** 1.7.17
-**Date:** 2026-05-21
+**Version:** 1.7.20
+**Date:** 2026-05-29
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) (consolidated current direction, status, and plan-file roles), [`../plans/evidence-backed-investment-operations-plan.md`](../plans/evidence-backed-investment-operations-plan.md) (2026-04-29 differentiation filter and archive rule), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) (consolidated non-assembly execution backlog).
@@ -310,6 +310,8 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 
 > **Status:** Code present in `src/Meridian.Wpf/` and `tests/Meridian.Wpf.Tests/`, both included in the solution build. Builds full WPF desktop app on Windows; produces a CI-compatible stub on Linux/macOS.
 
+The registry-backed WPF screen inventory is maintained in [`desktop-application-screens.md`](desktop-application-screens.md), with workspace/page tag, visibility tier, related tags, implementation status, known gaps, and retained screenshot evidence where available.
+
 ### Shell & Navigation (Complete baseline)
 
 - Workspace model now persists built-in `Research`, `Trading`, `Data Operations`, and `Governance` workspaces, including legacy workspace ID migration for older saved sessions.
@@ -402,14 +404,19 @@ retained for desktop compatibility, shared-contract regression checks, and suppo
 
 ### Trading workstation migration target (Implemented baseline / workflow acceptance in progress)
 
-The current WPF app exposes broad capability coverage and the active shell baseline now organizes those capabilities into four workflow workspaces:
+The current WPF app exposes broad capability coverage and the active shell baseline now organizes those capabilities into seven canonical operator workspaces:
 
-- **Research** - backtests, Lean engine flows, charts, replay, experiment comparison
-- **Trading** - live monitoring, orders, fills, positions, strategy operation
-- **Data Operations** - providers, provider health, symbols, backfills, schedules, storage, exports
-- **Governance** - portfolio, ledger, diagnostics, retention, notifications, and settings
+- **Trading** - live monitoring, orders, fills, positions, and strategy operation
+- **Portfolio** - account, aggregate, fund, lending, and import workflows
+- **Accounting** - ledger, cash, reconciliation, trial balance, and audit workflows
+- **Reporting** - report packs, dashboards, analysis exports, and export presets
+- **Strategy** - backtests, Lean engine flows, charts, replay, experiment comparison, and run workflows
+- **Data** - providers, provider health, symbols, backfills, schedules, storage, exports, and quality
+- **Settings** - preferences, credentials, diagnostics, services, alerts, help, and workspace layouts
 
-This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) and [`ROADMAP.md`](ROADMAP.md) Waves 1-4. The remaining work is workflow acceptance and deeper cockpit/shared-model/governance continuity, not a new shell taxonomy migration.
+Legacy Research, Data Operations, and Governance names remain compatibility aliases for the corresponding canonical roots.
+
+This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md), [`ROADMAP.md`](ROADMAP.md) Waves 1-4, and the current registry inventory in [`desktop-application-screens.md`](desktop-application-screens.md). The remaining work is workflow acceptance and deeper cockpit/shared-model/governance continuity, not a new shell taxonomy migration.
 
 ### Shared run / portfolio / ledger / reconciliation baseline (In progress)
 
@@ -427,7 +434,94 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 ### Known WPF limitations
 
 - `DiagnosticsPage` reads from local process/environment; not connected to remote backend API.
-- Current functionality still relies on many existing pages under the hood, but the desktop taxonomy is now aligned around `Research`, `Trading`, `Data Operations`, and `Governance`; the remaining gap is no longer basic run-browser adoption, but deeper paper/live and cockpit-level workflow integration on top of the new shared run / portfolio / ledger model.
+- Current functionality still relies on many existing pages under the hood, but the desktop taxonomy is now aligned around the visible `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` roots while legacy `Research`, `Data Operations`, and `Governance` names remain aliases or historical groupings; the remaining gap is no longer basic run-browser adoption, but deeper paper/live and cockpit-level workflow integration on top of the new shared run / portfolio / ledger model.
+
+### Desktop gaps and TBI register
+
+This register is the canonical desktop triage list for gaps and TBIs discovered while reconciling
+`src/Meridian.Wpf/` with the current planning and acceptance sources. It does not reopen the
+closed W1-W4 evidence baselines; it records whether each item is a true implementation TODO, a
+planned future wave, a screenshot/evidence gap, or a documentation-only reconciliation item. The
+source documents are:
+[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md),
+[`ROADMAP.md`](ROADMAP.md),
+[`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md),
+[`workstation-cockpit-acceptance-matrix.md`](workstation-cockpit-acceptance-matrix.md), and
+[`../../src/Meridian.Wpf/README.md`](../../src/Meridian.Wpf/README.md).
+
+#### Navigation/shell
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Keep legacy desktop taxonomy references from drifting back into visible-root navigation language after this inventory reconciliation. | Reconciled here; route aliases remain intentionally supported. | Shell navigation / `MainPage` / page-tag catalog | `current-direction-and-status.md`; `src/Meridian.Wpf/README.md`; this inventory's WPF section | Workstation Shell and UX | Route-registry parity evidence proving legacy names stay aliases, not visible roots, plus future doc updates that use the seven canonical roots. | Documentation-only reconciliation item |
+| Keep shared workflow target parity from becoming browser-only or desktop-only as new workflow entries/actions are added. | Active regression guard; not a missing feature. | Command palette / workflow action routes / `EvidenceWorkbench` / `OperationsContinuity` / `OperationsClose` | `desktop-ui-workflow-acceptance-matrix.md`; `src/Meridian.Wpf/README.md` | Shared workflow catalog; WPF shell routing; browser route catalog | `ShellRouteRegistryTests` and browser route-catalog tests for every built-in workflow target. | Screenshot/evidence gap when parity proof is not attached to a workflow claim |
+| Continue migrating modal and command-palette chrome through shared shell primitives instead of page-local styling. | In progress by surface; provider API key setup, watchlist saving, and scheduled-job editing already use shared dialog chrome. | Modal surfaces / command palette / workspace command surface | `src/Meridian.Wpf/README.md` | WPF shared controls and workspace composition | Focused WPF control/page tests with stable automation IDs for each migrated modal; screenshot only when user-visible chrome changes. | True TODO for remaining page-local modals |
+
+#### Trading
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Preserve Lane A W2 paper-trading cockpit readiness across desktop and browser while adding maintenance changes. | Closed baseline; ongoing regression obligation. | `Trading` / `/trading/readiness` / operator inbox | `current-direction-and-status.md`; `desktop-ui-workflow-acceptance-matrix.md`; `workstation-cockpit-acceptance-matrix.md` | Trading workstation; shared readiness services; WPF Trading shell | Shared W2 readiness/operator-inbox tests, focused WPF Lane A tests, browser Trading parity tests, and pilot `TrustedData`, `PaperPromotion`, and `PaperSession` gates. | Screenshot/evidence gap if a claim lacks the current acceptance packet |
+| Keep live integration read-only/paper-first until W6 explicitly opens live-readiness acceptance. | Planned; not part of W1-W4 closure. | Trading cockpit / order placement / brokerage actions | `current-direction-and-status.md`; `ROADMAP.md` | Execution and brokerage; Trading workstation | W6 live-readiness tests, fail-closed order-placement evidence, broker/session recovery proof, and explicit sign-off artifacts. | Planned future wave |
+| Extend deeper paper/live data-source adoption and cockpit-level integration on top of the shared run/portfolio/ledger model. | Open product gap. | Trading terminal / positions / fills / paper-live review | `FEATURE_INVENTORY.md`; `ROADMAP.md` | Trading workstation; provider integration; shared UI services | Shared endpoint/read-model tests, WPF dense-table/inspector tests, browser parity checks, and pilot-readiness stage preservation. | True TODO |
+
+#### Portfolio
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Preserve Lane B W3 run -> portfolio -> ledger continuity after desktop portfolio changes. | Closed baseline; ongoing regression obligation. | `Portfolio` / account portfolio / aggregate portfolio / selected run context | `current-direction-and-status.md`; `desktop-ui-workflow-acceptance-matrix.md` | Portfolio read services; WPF Portfolio view models; shared continuity services | `StrategyRunPortfolioViewModelTests`, `AccountPortfolioViewModelTests`, `AggregatePortfolioViewModelTests`, shared continuity tests, browser Portfolio parity, and pilot `PortfolioLedgerReview` evidence. | Screenshot/evidence gap if the desktop claim lacks parity proof |
+| Add richer portfolio analytics beyond the shared baseline without forking shared read-model semantics. | Open product gap. | Portfolio cockpit / positions / account scope / run comparison | `FEATURE_INVENTORY.md`; `ROADMAP.md` | Portfolio services; shared UI services; WPF Portfolio | New shared DTO/service coverage first, then WPF and browser consumer tests showing identical blocker and selected-run semantics. | True TODO |
+
+#### Accounting
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Preserve Lane C W4 reconciliation casework, close posture, and governed accounting evidence. | Closed baseline; ongoing regression obligation. | `Accounting` / Fund Ledger / Fund Operations / reconciliation cases | `current-direction-and-status.md`; `desktop-ui-workflow-acceptance-matrix.md`; `workstation-cockpit-acceptance-matrix.md`; `src/Meridian.Wpf/README.md` | Accounting/Fund Ops services; WPF Fund Ledger; operations continuity | WPF `Category=W4Acceptance`, `FundOpsCloseLaneScenarioTests`, shared operations-continuity/report-pack tests, browser W4 parity, and pilot `Reconciliation` / `GovernedReportPack` gates. | Screenshot/evidence gap if acceptance artifacts are not attached |
+| Deepen per-entity, per-sleeve, and per-vehicle posting fidelity and reconciliation UX. | Open product gap. | Fund Ledger / Fund Accounts / reconciliation workbench | `FEATURE_INVENTORY.md`; `ROADMAP.md` | Ledger services; reconciliation services; WPF Accounting | Shared ledger/reconciliation contract tests, durable case/audit evidence, WPF queue/detail tests, and browser parity for blocker/recovery semantics. | True TODO |
+
+#### Reporting
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Keep report-pack readiness, publication, restatement, and Evidence Workbench routing aligned between browser and desktop. | Closed W4 support baseline; active parity guard. | `Reporting` / report packs / `EvidenceWorkbench` / Fund Audit Trail | `current-direction-and-status.md`; `desktop-ui-workflow-acceptance-matrix.md`; `workstation-cockpit-acceptance-matrix.md`; `src/Meridian.Wpf/README.md` | Reporting services; evidence services; WPF reporting/audit trail | Report-pack endpoint tests, browser W4 parity, WPF W4 acceptance tests, route-registry parity, and pilot `GovernedReportPack` evidence. | Screenshot/evidence gap if route/evidence proof is missing |
+| Expand governed report-pack UX beyond readiness/approval evidence into broader studio workflows. | Planned after current W4 baseline; productization remains broader than desktop proof. | Reporting cockpit / report pack task panels / evidence vault | `ROADMAP.md`; `current-direction-and-status.md` | Reporting product services; browser and WPF consumers | New shared workflow DTOs, retained manifest/evidence links, publication/restate recovery tests, and desktop/browser parity evidence. | Planned future wave |
+
+#### Strategy
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Plan and implement W5 Backtest Studio unification without pulling live-readiness scope forward. | Planned next wave. | `Strategy` / Backtest Studio / Strategy Runs / run comparison | `current-direction-and-status.md`; `ROADMAP.md`; `desktop-ui-workflow-acceptance-matrix.md` | Backtesting; Strategy services; WPF Strategy workbench; browser Strategy | W5 blueprint/checklist, canonical result normalization tests, run-diff/comparison tests, WPF Strategy Runs tests, browser parity, and pilot-stage preservation. | Planned future wave |
+| Complete strategy-aware launch/preflight and full Backtest Studio orchestration. | Open implementation gap. | Strategy Designer / Strategy Runs / Backtest Studio | `desktop-ui-workflow-acceptance-matrix.md`; `ROADMAP.md` | Strategy Engine; backtesting orchestration; shared UI services | Shared launch/preflight contracts, orchestration tests, WPF workbench tests, browser Strategy tests, and artifact completeness evidence. | True TODO |
+
+#### Data
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Preserve Data terminal provider, backfill, storage, and data-quality queue behavior while using shared dense-table and decision-queue controls. | Partially implemented; ongoing surface migration and regression obligation. | `Data` / Data Quality / Backfill / provider queues / storage queues | `src/Meridian.Wpf/README.md`; `FEATURE_INVENTORY.md` | Data workstation; provider/backfill services; WPF shared controls | Focused WPF view-model/control tests for selected-row drilldown, queue empty/loading/error states, and shared read-model parity for provider/backfill decisions. | True TODO for remaining unmigrated surfaces |
+| Close richer provider provenance and partial-response threshold UX for options-chain/provider failover. | Open product gap. | Data providers / options chain / provider health | `FEATURE_INVENTORY.md`; `ROADMAP.md` | Provider SDK; data services; WPF/Data UI | Provider-health gating tests, failover provenance DTO evidence, policy-threshold tests, and desktop/browser presentation parity. | True TODO |
+
+#### Settings
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Keep runtime desktop capability toggles and Settings/Admin readiness panels aligned with shared state-panel semantics. | Partially implemented; ongoing regression obligation. | `Settings` / Admin / feature capabilities / schedule and cleanup readiness | `src/Meridian.Wpf/README.md`; `current-direction-and-status.md` | Settings/Admin; WPF shell services; shared controls | Focused WPF Settings/Admin tests, capability-gate tests, and evidence that blockers/confirmation posture use `WorkspaceTone` consistently. | Screenshot/evidence gap if a Settings claim lacks UI proof |
+| Keep provider setup and credentials flows in shared dialog chrome without creating desktop-only credential behavior. | Partially implemented; additional provider/setup dialogs may remain. | Settings provider setup / API key setup / credential dialogs | `src/Meridian.Wpf/README.md`; `ROADMAP.md` | Provider management; Settings UI; credential services | Dialog automation-ID tests, secure credential handling tests, provider validation evidence, and screenshot only for visible workflow changes. | True TODO for remaining page-local setup dialogs |
+
+#### Cross-workspace/shared services
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Keep shared services/read models as the source of business behavior before WPF or browser composition. | Active architecture rule. | All workspace tags | `current-direction-and-status.md`; `desktop-ui-workflow-acceptance-matrix.md`; `src/Meridian.Wpf/README.md` | `src/Meridian.Ui.Services`; `src/Meridian.Ui.Shared`; WPF/browser consumers | Shared contract tests first, then WPF and browser parity tests tied to the affected scenario. | Documentation-only reconciliation item when a status claim needs ownership clarification |
+| Preserve W1-W4 as closed evidence baselines while classifying new work as maintenance, hardening, W5, or W6. | Active planning TODO. | W2/W3/W4 acceptance lanes; all desktop workspaces | `current-direction-and-status.md`; `ROADMAP.md`; `desktop-ui-workflow-acceptance-matrix.md` | Program planning; workflow owners | Matching pilot-readiness stage posture, lane-specific tests, and status docs that separate support evidence from exit claims. | Documentation-only reconciliation item |
+| Extract remaining business logic from page code-behind into view models per the WPF MVVM migration. | In progress. | Remaining WPF pages using code-behind business logic | `FEATURE_INVENTORY.md`; `src/Meridian.Wpf/README.md` | WPF MVVM owners; workspace page owners | Focused view-model tests and no page-local business-rule forks from shared services. | True TODO |
+
+#### Evidence/screenshots/tests
+
+| Item | Status | Affected screen/page tag | Source document | Implementation owner area | Acceptance evidence needed | Classification |
+| --- | --- | --- | --- | --- | --- | --- |
+| Attach the correct acceptance packet before claiming desktop workflow completion. | Active release gate. | Lane A/B/C desktop scenarios | `current-direction-and-status.md`; `desktop-ui-workflow-acceptance-matrix.md` | Workstation Shell and UX; CI/evidence owners | Lane-specific shared tests, focused WPF tests, browser parity checks, and pilot-readiness artifacts named in the matrix. | Screenshot/evidence gap |
+| Run and preserve cockpit/governance matrix validation before claiming cockpit/governance evidence. | Active release gate. | Workstation cockpit/governance routes and APIs | `workstation-cockpit-acceptance-matrix.md` | Browser workstation; shared endpoint owners; evidence owners | `python3 scripts/dev/validate_workstation_cockpit_acceptance_matrix.py` plus the criterion-specific tests and artifact pointers listed by the matrix. | Screenshot/evidence gap |
+| Re-run structured roadmap/source stale-doc and hash checks after docs or source changes, then reconcile generated evidence only when intentionally reviewed. | Open planning TODO. | Docs/source inventories and source README evidence | `current-direction-and-status.md`; `src/Meridian.Wpf/README.md` | Docs automation; source README owners | Stale-doc/hash validation output, updated source README/registry only when behavior or ownership changed, and clear final-result notes. | Documentation-only reconciliation item |
 
 ### WPF MVVM progress
 
@@ -610,6 +704,22 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 
 This section inventories the workflow-centric product model that now sits above the older page inventory.
 
+### Aliases and canonical workspace names
+
+The desktop shell keeps older shell/navigation terms as compatibility aliases while the visible
+workspace model remains `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
+`Settings`. Current alias resolution is registered in the shell page catalog and feature-owned
+Data module; layout lookup also normalizes the legacy workspace ids so deep links and automation
+land on the canonical workspace layout.
+
+| Alias / legacy name | Canonical workspace or page | Relevant page tags | Where the alias is resolved |
+| --- | --- | --- | --- |
+| `Research` / `ResearchWorkspace` | `Strategy` | Canonical `StrategyShell`; aliases `ResearchShell`, `ResearchWorkspace`; workspace id `strategy`; keywords include `strategy` and `research`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Research.cs` registers the Strategy shell page and aliases; `src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs` maps the legacy `research` layout id to `strategy`. |
+| `Governance` / `GovernanceWorkspace` | `Accounting` | Canonical `AccountingShell`; aliases `GovernanceShell`, `GovernanceWorkspace`; workspace id `accounting`; related fund-accounting tags include `FundLedger`, `FundReconciliation`, `FundTrialBalance`, and `FundAuditTrail`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs` registers the Accounting shell page and aliases; `src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs` maps the legacy `governance` layout id to `accounting`. |
+| `DataOperations` / `Data Operations` | `Data` | Canonical `DataShell`; aliases `DataOperationsShell`, `DataOperationsWorkspace`; workspace id `data`; keywords include `data` and `data operations`. | `src/Meridian.Wpf/Features/Data/DataFeatureModule.cs` registers the Data shell page and aliases; `src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs` maps `data-operations` and `data operations` layout ids to `data`. |
+| `OperationsContinuity` / `OperationsClose` | Fund operations | Canonical `FundLedger`; aliases `FundOperations`, `OperationsContinuity`, `OperationsClose`; workspace id `accounting`; title `Fund operations`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs` registers the Fund operations page and close/continuity aliases. |
+| `EvidenceWorkbench` | Fund audit trail | Canonical `FundAuditTrail`; alias `EvidenceWorkbench`; workspace id `accounting`; title `Fund audit trail`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs` registers the Fund audit trail page and Evidence Workbench alias. |
+
 | Surface | Status | Notes |
 | --------- | -------- | ------- |
 | Research workspace taxonomy | Partial | The active browser and WPF workstations now has a Research run library with retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets; desktop vocabulary also aligns on `Research`, and the WPF Research shell has a desk briefing hero for selected-run, run-detail, portfolio, and `Backtest -> Paper` promotion-review handoffs. Deeper research workflow acceptance, strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open |
@@ -623,6 +733,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, Security Master coverage issue detection, and a file-backed reconciliation break queue now exist. The queue seeds run-scoped breaks and supports review, resolve/dismiss, audit-history, and calibration-summary routes with profile rollups for tolerance/sign-off posture; the browser Accounting surface now projects run selection through shared dense rows, keyboard-accessible selected/expanded row state, open-break copy, and no-run detail guidance from a view model. Broader non-run, external-statement/custodian, SLA, and operator-approved calibrated exception workflows remain. |
 | Security Master platform baseline | Complete | The current Security Master mechanics are delivered and workstation productization is live: hardened WPF activation, search/runtime recovery, canonical `WorkstationSecurityReference` coverage/provenance, shared research/trading/governance/portfolio/ledger propagation, browser search-result selection, identity drill-ins, details/lots tracking, server-side operator overrides, and UFL/reference-data projection support across bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit |
 | Security Master — UFL reference-data projections | ✅ | Asset-class-specific projection services, DTOs, Postgres stores, migrations, reference-data endpoints, and tests now exist for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit. Full instrument passport/confidence-score workflows remain planned commercial modules. |
+| Security Master — custom asset profile promotion candidates | ⚠️ | Shared governance support can score approved custom asset profiles, return promotion readiness, recommended first-class package ids, and explanatory signals through `/api/security-master/asset-profiles/promotion-candidates`. This is assessment support only; operator promotion workflow, indexed profile-field projection lineage, and actual UFL package graduation remain open. |
 | Security Master — browser details and overrides | ⚠️ | Browser Security Master now includes selectable search-result rows that open identity drill-ins and keep corporate-action/trading-parameter/detail panels tied to the selected security, an extended details panel, local lots tracker with selectable dense rows and lot-detail state, server-side operator override GET/PATCH support, and a view-model-owned conflict refresh/retry command for recoverable identifier-conflict loads. Pending operator overrides now seed durable Security Master steward casework in the shared break queue when that repository is registered. Governed override approval UX and broader acceptance remain open. |
 | Security Master — bond term richness | ✅ | Extended `SecurityEconomicDefinition` with coupon rate, maturity, day-count convention, seniority, callable flag, and issue price |
 | Security Master — trading parameters | ✅ | Per-instrument lot size, tick size; `PaperTradingGateway` lot-size validation and `BacktestEngine` tick-size rounding wired; `GET /api/security-master/{id}/trading-parameters` |
@@ -634,7 +745,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
 | WPF run browser/detail/portfolio/ledger/cash-flow surfaces | In progress | Code present in `src/Meridian.Wpf/`; StrategyRuns now has visible-versus-recorded run scope, filter-aware empty-state recovery, and comparison-picker guidance, BatchBacktest has stateful results empty guidance for idle, validation-blocked, running, failed, cancelled, and populated sweep states, and RunCashFlow now distinguishes selected-run, missing-run, no-event, and loaded cash-flow evidence states while broader paper/live history continuity remains open |
 | Backtest Studio unification | Partial | Native Backtest Studio output and QuantConnect Lean result ingestion now normalize through the shared SDK `BacktestResult` model with engine metadata, external run id, result coverage kind, and warnings. Native runs are marked full coverage; Lean imports are summary-only until fill, cash-flow, attribution, and ledger artifacts are imported. Unified launch/preflight, cancellation, and operator lifecycle UX remain open |
-| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, selectable Recent Fills detail, replay, sessions, promotion flows, replay-audit metadata with stale-coverage detection, in-shell portfolio/accounting drill-ins, Position Blotter grouped selection review/action-readiness evidence, the WPF desk briefing hero, a shared `/api/workstation/trading/readiness` contract for session/replay/control/promotion/signed DK1 trust-gate/brokerage/work-item posture with stable work-item IDs and explicit UTC as-of labels in the browser summary, an initial `/api/workstation/operator/inbox` aggregation contract for readiness work items plus open reconciliation breaks, route-aware WPF shell queue-button consumption of the primary work item with active-account `fundAccountId` propagation, browser market-context support through live quotes/order book, recent-trade detail inspection, watchlists, click-to-trade staging, and historical charts, and durable execution audit coverage for submitted/rejected/cancelled/modified order lifecycle outcomes; active cockpit acceptance now belongs in the web dashboard, while cockpit hardening, broader broker validation, end-to-end queue workflow handling, and stronger acceptance criteria remain |
+| Paper-trading cockpit | Partial | The Wave 2 cockpit baseline is accepted as of 2026-05-27 and should be preserved through regression evidence rather than reopened by support-only changes. Trading workspace surfaces now cover positions, orders, selectable Recent Fills detail, replay, sessions, promotion flows, replay-audit metadata with stale-coverage detection, in-shell portfolio/accounting drill-ins, Position Blotter grouped selection review/action-readiness evidence, the WPF desk briefing hero, a shared `/api/workstation/trading/readiness` contract for session/replay/control/promotion/signed DK1 trust-gate/brokerage/work-item posture with stable work-item IDs and explicit UTC as-of labels in the browser summary, an initial `/api/workstation/operator/inbox` aggregation contract for readiness work items plus open reconciliation breaks, route-aware WPF shell queue-button consumption of the primary work item with active-account `fundAccountId` propagation, browser market-context support through live quotes/order book, recent-trade detail inspection, watchlists, click-to-trade staging, and historical charts, and durable execution audit coverage for submitted/rejected/cancelled/modified order lifecycle outcomes. Future hardening should keep the W2 evidence pack green while W4 close/report and broader broker/live validation remain open. |
 | Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Endpoint layer and dashboard flows exist, promotion approvals now carry an explicit approval checklist for DK1 trust packet, lineage, portfolio/ledger continuity, and risk-control review, and the browser promotion gate suppresses stale run evaluation/decision responses before enabling paper promotion; safety-gated lifecycle hardening, broader operator acceptance, and full live-readiness remain open |
 
 ### Additional governance and platform tracks
@@ -735,4 +846,4 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-_Last Updated: 2026-05-27_
+_Last Updated: 2026-05-29_

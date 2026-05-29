@@ -11,13 +11,16 @@ internal sealed record HostedBrokerageGatewayRuntimeSurface(
     string GatewayId,
     string DisplayName,
     bool IsRegistered,
+    string? DeclaredGatewayId,
     string? GatewayType,
+    bool GatewayIdMatchesRuntimeKey,
     bool SupportsAccountCatalog,
     bool SupportsPortfolioSync,
     bool SupportsActivitySync,
     bool SupportsOrderModification,
     bool SupportsPartialFills,
     IReadOnlyList<string> SupportedAssetClasses,
+    IReadOnlyList<string> ValidationIssues,
     IReadOnlyList<string> Notes);
 
 internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
@@ -51,19 +54,36 @@ internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
                 GatewayId: gatewayId,
                 DisplayName: DisplayNameFor(gatewayId),
                 IsRegistered: false,
+                DeclaredGatewayId: null,
                 GatewayType: null,
+                GatewayIdMatchesRuntimeKey: false,
                 SupportsAccountCatalog: false,
                 SupportsPortfolioSync: false,
                 SupportsActivitySync: false,
                 SupportsOrderModification: false,
                 SupportsPartialFills: false,
                 SupportedAssetClasses: [],
+                ValidationIssues: [gatewayId.Equals("stocksharp", StringComparison.OrdinalIgnoreCase)
+                    ? "stocksharp-runtime-type-missing"
+                    : "gateway-key-not-registered"],
                 Notes: [gatewayId.Equals("stocksharp", StringComparison.OrdinalIgnoreCase)
                     ? "StockSharp gateway runtime type is not present in this build."
                     : "Gateway key is not registered in the hosted service provider."]);
         }
 
         var canonicalProviderId = CanonicalSyncProviderId(gatewayId);
+        var gatewayIdMatches = GatewayIdMatches(gateway.GatewayId, gatewayId);
+        var supportsAccountCatalog = accountCatalogs.Any(catalog => IsProvider(catalog.ProviderId, canonicalProviderId));
+        var supportsPortfolioSync = portfolioSyncs.Any(sync => IsProvider(sync.ProviderId, canonicalProviderId));
+        var supportsActivitySync = activitySyncs.Any(sync => IsProvider(sync.ProviderId, canonicalProviderId));
+        var issues = BuildValidationIssues(
+            gatewayId,
+            gateway.GatewayId,
+            gatewayIdMatches,
+            supportsAccountCatalog,
+            supportsPortfolioSync,
+            supportsActivitySync,
+            gateway.BrokerageCapabilities);
         var notes = new List<string>();
         if (gatewayId.Equals("ib", StringComparison.OrdinalIgnoreCase))
         {
@@ -78,13 +98,16 @@ internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
             GatewayId: gatewayId,
             DisplayName: gateway.BrokerDisplayName,
             IsRegistered: true,
+            DeclaredGatewayId: gateway.GatewayId,
             GatewayType: gateway.GetType().FullName,
-            SupportsAccountCatalog: accountCatalogs.Any(catalog => IsProvider(catalog.ProviderId, canonicalProviderId)),
-            SupportsPortfolioSync: portfolioSyncs.Any(sync => IsProvider(sync.ProviderId, canonicalProviderId)),
-            SupportsActivitySync: activitySyncs.Any(sync => IsProvider(sync.ProviderId, canonicalProviderId)),
+            GatewayIdMatchesRuntimeKey: gatewayIdMatches,
+            SupportsAccountCatalog: supportsAccountCatalog,
+            SupportsPortfolioSync: supportsPortfolioSync,
+            SupportsActivitySync: supportsActivitySync,
             SupportsOrderModification: gateway.BrokerageCapabilities.SupportsOrderModification,
             SupportsPartialFills: gateway.BrokerageCapabilities.SupportsPartialFills,
             SupportedAssetClasses: gateway.BrokerageCapabilities.SupportedAssetClasses,
+            ValidationIssues: issues,
             Notes: notes);
     }
 
@@ -93,6 +116,63 @@ internal static class HostedBrokerageGatewayRuntimeSurfaceCatalog
 
     private static bool IsProvider(string actual, string expected) =>
         actual.Equals(expected, StringComparison.OrdinalIgnoreCase);
+
+    private static bool GatewayIdMatches(string declaredGatewayId, string runtimeKey)
+        => declaredGatewayId.Equals(runtimeKey, StringComparison.OrdinalIgnoreCase) ||
+           (runtimeKey.Equals("ibkr", StringComparison.OrdinalIgnoreCase) &&
+            declaredGatewayId.Equals("ib", StringComparison.OrdinalIgnoreCase));
+
+    private static IReadOnlyList<string> BuildValidationIssues(
+        string gatewayId,
+        string declaredGatewayId,
+        bool gatewayIdMatches,
+        bool supportsAccountCatalog,
+        bool supportsPortfolioSync,
+        bool supportsActivitySync,
+        BrokerageCapabilities capabilities)
+    {
+        var issues = new List<string>();
+        if (!gatewayIdMatches)
+        {
+            issues.Add($"gateway-id-mismatch:{declaredGatewayId}");
+        }
+
+        if (!supportsAccountCatalog)
+        {
+            issues.Add("account-catalog-missing");
+        }
+
+        if (!supportsPortfolioSync)
+        {
+            issues.Add("portfolio-sync-missing");
+        }
+
+        if (RequiresActivitySync(gatewayId) && !supportsActivitySync)
+        {
+            issues.Add("activity-sync-missing");
+        }
+
+        if (capabilities.SupportedOrderTypes.Count == 0)
+        {
+            issues.Add("order-types-empty");
+        }
+
+        if (capabilities.SupportedTimeInForce.Count == 0)
+        {
+            issues.Add("time-in-force-empty");
+        }
+
+        if (capabilities.SupportedAssetClasses.Count == 0)
+        {
+            issues.Add("asset-classes-empty");
+        }
+
+        return issues;
+    }
+
+    private static bool RequiresActivitySync(string gatewayId)
+        => !gatewayId.Equals("ib", StringComparison.OrdinalIgnoreCase) &&
+           !gatewayId.Equals("ibkr", StringComparison.OrdinalIgnoreCase);
 
     private static string DisplayNameFor(string gatewayId) =>
         gatewayId.ToLowerInvariant() switch

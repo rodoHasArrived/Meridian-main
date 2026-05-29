@@ -92,6 +92,165 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task LinkNodesAsync_WhenParentAndChildAreSameNode_ThrowsInvalidOperation()
+    {
+        var service = CreateStructureService();
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var organization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG",
+            "Meridian Wealth",
+            "USD",
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            organization.OrganizationId,
+            organization.OrganizationId,
+            OwnershipRelationshipTypeDto.Owns,
+            now,
+            "test")));
+    }
+
+    [Fact]
+    public async Task LinkNodesAsync_WhenRelationshipIsIncompatibleWithNodeKinds_ThrowsInvalidOperation()
+    {
+        var service = CreateStructureService();
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var organization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG",
+            "Meridian Wealth",
+            "USD",
+            now,
+            "test"));
+        var business = await service.CreateBusinessAsync(new CreateBusinessRequest(
+            Guid.NewGuid(),
+            organization.OrganizationId,
+            BusinessKindDto.FundManager,
+            "BUS",
+            "Meridian Funds",
+            "USD",
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            organization.OrganizationId,
+            business.BusinessId,
+            OwnershipRelationshipTypeDto.CustodiesFor,
+            now,
+            "test")));
+    }
+
+    [Fact]
+    public async Task LinkNodesAsync_WhenPrimaryLinkAlreadyActiveForChildAndRelationship_ThrowsInvalidOperation()
+    {
+        var service = CreateStructureService();
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var firstOrganization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG-1",
+            "First Organization",
+            "USD",
+            now,
+            "test"));
+        var secondOrganization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG-2",
+            "Second Organization",
+            "USD",
+            now,
+            "test"));
+        var business = await service.CreateBusinessAsync(new CreateBusinessRequest(
+            Guid.NewGuid(),
+            firstOrganization.OrganizationId,
+            BusinessKindDto.FundManager,
+            "BUS",
+            "Meridian Funds",
+            "USD",
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            secondOrganization.OrganizationId,
+            business.BusinessId,
+            OwnershipRelationshipTypeDto.Owns,
+            now,
+            "test",
+            IsPrimary: true)));
+    }
+
+    [Fact]
+    public async Task LinkNodesAsync_WhenSiblingOwnershipPercentagesWouldExceedOneHundred_ThrowsInvalidOperation()
+    {
+        var service = CreateStructureService();
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var organization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG",
+            "Meridian Wealth",
+            "USD",
+            now,
+            "test"));
+        var business = await service.CreateBusinessAsync(new CreateBusinessRequest(
+            Guid.NewGuid(),
+            organization.OrganizationId,
+            BusinessKindDto.FundManager,
+            "BUS",
+            "Meridian Funds",
+            "USD",
+            now,
+            "test"));
+        var fund = await service.CreateFundAsync(new CreateFundRequest(
+            Guid.NewGuid(),
+            business.BusinessId,
+            "FUND",
+            "Flagship Fund",
+            "USD",
+            now,
+            "test"));
+        var firstEntity = await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(),
+            LegalEntityTypeDto.LimitedPartner,
+            "LP-1",
+            "First Limited Partner",
+            "US",
+            "USD",
+            now,
+            "test"));
+        var secondEntity = await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(),
+            LegalEntityTypeDto.LimitedPartner,
+            "LP-2",
+            "Second Limited Partner",
+            "US",
+            "USD",
+            now,
+            "test"));
+
+        await service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            fund.FundId,
+            firstEntity.EntityId,
+            OwnershipRelationshipTypeDto.Owns,
+            now,
+            "test",
+            OwnershipPercent: 60m));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            fund.FundId,
+            secondEntity.EntityId,
+            OwnershipRelationshipTypeDto.Owns,
+            now,
+            "test",
+            OwnershipPercent: 50m)));
+    }
+
+    [Fact]
     public async Task GetOrganizationStructureAsync_ReturnsAdvisorAndFundBusinessesUnderOneOrganization()
     {
         var fixture = await CreateHybridFixtureAsync();
@@ -109,6 +268,122 @@ public sealed class InMemoryFundStructureServiceTests
         Assert.Contains(graph.Nodes, node => node.Kind == FundStructureNodeKindDto.Business);
         Assert.Contains(graph.Nodes, node => node.Kind == FundStructureNodeKindDto.Client);
         Assert.Contains(graph.Nodes, node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio);
+    }
+
+    [Fact]
+    public async Task ExpireOwnershipLinkAsync_PersistedSnapshotHidesExpiredLinkFromActiveGraph()
+    {
+        var tempDirectory = CreateTempDirectory();
+        var accountPersistencePath = Path.Combine(tempDirectory, "fund-accounts.json");
+        var structurePersistencePath = Path.Combine(tempDirectory, "fund-structure.json");
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+        var linkId = Guid.NewGuid();
+
+        try
+        {
+            var fixture = await CreateHybridFixtureAsync(accountPersistencePath, structurePersistencePath);
+            await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+                linkId,
+                fixture.DirectFundPortfolioId,
+                fixture.FundAccountId,
+                OwnershipRelationshipTypeDto.Operates,
+                now,
+                "test",
+                IsPrimary: true,
+                Notes: "temporary operating ownership"));
+
+            var updated = await fixture.StructureService.UpdateOwnershipLinkAsync(new UpdateOwnershipLinkRequest(
+                linkId,
+                OwnershipRelationshipTypeDto.CustodiesFor,
+                now,
+                "test",
+                OwnershipPercent: 75m,
+                IsPrimary: false,
+                Notes: "custody overlay"));
+            await fixture.StructureService.ExpireOwnershipLinkAsync(new ExpireOwnershipLinkRequest(
+                linkId,
+                now.AddDays(1),
+                "test",
+                "expired custody overlay"));
+
+            var reloadedAccountService = new InMemoryFundAccountService(accountPersistencePath);
+            var reloadedStructureService = CreateStructureService(reloadedAccountService, structurePersistencePath);
+            var activeGraph = await reloadedStructureService.GetOrganizationStructureAsync(
+                new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: true, AsOf: now.AddDays(2)));
+            var historicalGraph = await reloadedStructureService.GetOrganizationStructureAsync(
+                new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: false, AsOf: now.AddDays(2)));
+
+            Assert.Equal(OwnershipRelationshipTypeDto.CustodiesFor, updated.RelationshipType);
+            Assert.Equal(75m, updated.OwnershipPercent);
+            Assert.DoesNotContain(activeGraph.OwnershipLinks, link => link.OwnershipLinkId == linkId);
+            var expiredLink = Assert.Single(historicalGraph.OwnershipLinks, link => link.OwnershipLinkId == linkId);
+            Assert.Equal(now.AddDays(1), expiredLink.EffectiveTo);
+            Assert.Equal("expired custody overlay", expiredLink.Notes);
+        }
+        finally
+        {
+            DeleteDirectory(tempDirectory);
+        }
+    }
+
+    [Fact]
+    public async Task ReplaceOwnershipLinkAsync_ExpiresOriginalAndCreatesReplacementInActiveGraph()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+        var originalLinkId = Guid.NewGuid();
+        var replacementLinkId = Guid.NewGuid();
+
+        await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            originalLinkId,
+            fixture.DirectFundPortfolioId,
+            fixture.FundAccountId,
+            OwnershipRelationshipTypeDto.Operates,
+            now,
+            "test"));
+
+        var replacement = await fixture.StructureService.ReplaceOwnershipLinkAsync(new ReplaceOwnershipLinkRequest(
+            originalLinkId,
+            replacementLinkId,
+            fixture.SleevePortfolioId,
+            fixture.FundAccountId,
+            OwnershipRelationshipTypeDto.Operates,
+            now.AddDays(1),
+            "test",
+            IsPrimary: true,
+            Notes: "moved to sleeve book"));
+
+        var activeGraph = await fixture.StructureService.GetOrganizationStructureAsync(
+            new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: true, AsOf: now.AddDays(2)));
+        var allLinksGraph = await fixture.StructureService.GetOrganizationStructureAsync(
+            new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: false, AsOf: now.AddDays(2)));
+
+        Assert.Equal(replacementLinkId, replacement.OwnershipLinkId);
+        Assert.Equal(fixture.SleevePortfolioId, replacement.ParentNodeId);
+        Assert.DoesNotContain(activeGraph.OwnershipLinks, link => link.OwnershipLinkId == originalLinkId);
+        Assert.Contains(activeGraph.OwnershipLinks, link => link.OwnershipLinkId == replacementLinkId);
+        Assert.Equal(now.AddDays(1), allLinksGraph.OwnershipLinks.Single(link => link.OwnershipLinkId == originalLinkId).EffectiveTo);
+    }
+
+    [Fact]
+    public async Task ValidateOwnershipGraphAsync_CycleReportsValidationIssues()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+
+        await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            fixture.DirectFundPortfolioId,
+            fixture.FundId,
+            OwnershipRelationshipTypeDto.Owns,
+            now,
+            "test"));
+
+        var result = await fixture.StructureService.ValidateOwnershipGraphAsync(
+            new ValidateOwnershipGraphRequest(AsOf: now.AddDays(1)));
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Issues, issue => issue.Code == "ownership.cycle");
     }
 
     [Fact]

@@ -93,7 +93,7 @@ Provider chain payloads may be retained as source evidence and troubleshooting c
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
 - [UFL Capability Model](ufl-capability-model.md)
 - [UFL Conformance Matrix](ufl-conformance-matrix.md)
 - [UFL Projection and Evidence Kernel](ufl-projection-and-evidence-kernel.md)

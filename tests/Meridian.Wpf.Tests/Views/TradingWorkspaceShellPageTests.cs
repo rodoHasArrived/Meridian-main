@@ -914,6 +914,34 @@ public sealed class TradingWorkspaceShellPageTests
         xaml.IndexOf("Workflow Status", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Desk Lanes &amp; Supporting Tools", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void TradingWorkspaceShellPageSource_ShouldUseDenseActivePositionsGridAndInspector()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Trading\Shell\TradingWorkspaceShellPage.xaml"));
+        var viewModelCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\TradingWorkspaceShellViewModel.cs"));
+
+        xaml.Should().Contain("xmlns:workstation=\"clr-namespace:Meridian.Wpf.Workstation.Controls\"");
+        xaml.Should().Contain("workstation:DenseDataGridControl x:Name=\"ActivePositionsGrid\"");
+        xaml.Should().Contain("Table=\"{Binding ActivePositionsTable}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedActivePosition, Mode=TwoWay}\"");
+        xaml.Should().Contain("GridAutomationId=\"TradingActivePositionsGrid\"");
+        xaml.Should().Contain("EmptyAutomationId=\"TradingActivePositionsSharedEmptyState\"");
+        xaml.Should().Contain("views:WorkspaceInspectorHostControl");
+        xaml.Should().Contain("HostAutomationId=\"WorkspaceInspectorHostTrading\"");
+        xaml.Should().Contain("SelectedAutomationId=\"TradingSelectedPositionInspector\"");
+        xaml.Should().Contain("TradingSelectedPositionInspector");
+        xaml.Should().Contain("TradingSelectedPositionEmptyState");
+        xaml.Should().Contain("Binding=\"{Binding HasSelectedActivePosition}\"");
+        xaml.Should().NotContain("ActivePositionsList");
+
+        viewModelCode.Should().Contain("public WorkstationTableModel<TradingActivePositionItem> ActivePositionsTable");
+        viewModelCode.Should().Contain("public TradingActivePositionItem? SelectedActivePosition");
+        viewModelCode.Should().Contain("public bool HasSelectedActivePosition");
+        viewModelCode.Should().Contain("public string SelectedActivePositionEvidenceText");
+        viewModelCode.Should().Contain("BuildActivePositionsTable(state.ActivePositions)");
+        viewModelCode.Should().Contain("RestoreSelectedActivePosition");
+    }
+
     private static string GetRepositoryFilePath(string relativePath)
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);

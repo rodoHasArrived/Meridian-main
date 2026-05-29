@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
@@ -13,7 +14,8 @@
       AutomationProperties.Name="Trading Cockpit"
       AutomationProperties.AutomationId="TradingWorkspaceShellPage">
 
-    <Grid Margin="20">
+    <Grid Margin="20"
+          AutomationProperties.AutomationId="WorkspaceHomeTradingTerminalTemplate">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -28,12 +30,14 @@
                                            Grid.Row="1"
                                            CommandGroup="{Binding CommandGroup}"
                                            CommandInvoked="OnCommandBarCommandInvoked"
-                                           Margin="0,16,0,0" />
+                                           Margin="0,16,0,0"
+                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceTrading" />
 
         <ScrollViewer Grid.Row="2"
                       Margin="0,16,0,16"
                       VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
+                      HorizontalScrollBarVisibility="Disabled"
+                      AutomationProperties.AutomationId="WorkspaceEvidenceStripTrading">
             <StackPanel>
                 <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
                     <Grid>
@@ -222,76 +226,44 @@
                                         Style="{StaticResource LinkButtonStyle}" />
                             </Grid>
 
-                             <ItemsControl x:Name="ActivePositionsList"
-                                           ItemsSource="{Binding ActivePositions}"
-                                           AutomationProperties.AutomationId="ActivePositionsList"
-                                           AutomationProperties.Name="Active Positions">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="2*" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="100" />
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="{Binding Symbol}"
-                                                               FontSize="13"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                                    <TextBlock Text="{Binding StrategyName}"
-                                                               Margin="0,4,0,0"
-                                                               FontSize="11"
-                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
-                                                </StackPanel>
-                                                <TextBlock Grid.Column="1"
-                                                           Text="{Binding QuantityLabel}"
-                                                           FontSize="12"
-                                                           HorizontalAlignment="Right"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                                <TextBlock Grid.Column="2"
-                                                           Text="{Binding UnrealizedPnlFormatted}"
-                                                           FontSize="12"
-                                                           HorizontalAlignment="Right"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="{Binding UnrealizedPnlBrush}" />
-                                                <TextBlock Grid.Column="3"
-                                                           Text="{Binding RealizedPnlFormatted}"
-                                                           FontSize="12"
-                                                           HorizontalAlignment="Right"
-                                                           VerticalAlignment="Center"
-                                                           Foreground="{Binding RealizedPnlBrush}" />
-                                                <Border Grid.Column="4"
-                                                        Background="{Binding ModeBadgeBackground}"
-                                                        CornerRadius="6"
-                                                        Padding="8,3"
-                                                        VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding ModeLabel}"
-                                                               FontSize="11"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="White"
-                                                               HorizontalAlignment="Center" />
-                                                </Border>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-
-                             <TextBlock x:Name="NoPositionsText"
-                                        Margin="0,8,0,0"
-                                        FontSize="12"
-                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                        Text="No active positions. Start a paper or live run to see positions here."
-                                        Visibility="{Binding NoPositionsVisibility}" />
+                            <workstation:DenseDataGridControl x:Name="ActivePositionsGrid"
+                                                              Table="{Binding ActivePositionsTable}"
+                                                              SelectedItem="{Binding SelectedActivePosition, Mode=TwoWay}"
+                                                              GridAutomationId="TradingActivePositionsGrid"
+                                                              EmptyAutomationId="TradingActivePositionsSharedEmptyState"
+                                                              MinHeight="250"
+                                                              MaxHeight="340"
+                                                              AutomationProperties.Name="Active trading positions" />
                         </StackPanel>
                     </Border>
 
                     <StackPanel Grid.Column="1">
+                        <views:WorkspaceInspectorHostControl Margin="0,0,0,12"
+                                                             AutomationProperties.AutomationId="WorkspaceInspectorHostTrading"
+                                                             HostAutomationId="WorkspaceInspectorHostTrading"
+                                                             EmptyAutomationId="TradingSelectedPositionEmptyState"
+                                                             SelectedAutomationId="TradingSelectedPositionInspector"
+                                                             LoadingAutomationId="TradingSelectedPositionLoadingState"
+                                                             ErrorAutomationId="TradingSelectedPositionErrorState"
+                                                             EmptyTitle="Selected Position"
+                                                             EmptyDetail="Select an active-position row to inspect strategy, mode, P&amp;L, and next desk actions."
+                                                             SelectedTitle="{Binding SelectedActivePositionTitle}"
+                                                             SelectedDetail="{Binding SelectedActivePositionEvidenceText}"
+                                                             SelectedActionDetail="{Binding SelectedActivePositionActionDetail}"
+                                                             LoadingTitle="Loading position detail"
+                                                             LoadingDetail="Refreshing active-position evidence.">
+                            <views:WorkspaceInspectorHostControl.Style>
+                                <Style TargetType="{x:Type views:WorkspaceInspectorHostControl}">
+                                    <Setter Property="InspectorState" Value="{x:Static views:WorkspaceInspectorState.Empty}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasSelectedActivePosition}" Value="True">
+                                            <Setter Property="InspectorState" Value="{x:Static views:WorkspaceInspectorState.Selected}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:WorkspaceInspectorHostControl.Style>
+                        </views:WorkspaceInspectorHostControl>
+
                         <Border Style="{StaticResource WorkspaceInspectorCardStyle}" Margin="0,0,0,12">
                             <StackPanel>
                                 <Grid>

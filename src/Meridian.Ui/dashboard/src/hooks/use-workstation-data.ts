@@ -24,6 +24,7 @@ import {
   getWorkflowPresets,
   getFeatureCapabilities,
   getRolePermissionCatalog,
+  getSecurityAssetProfiles,
   setFeatureCapability
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
@@ -46,6 +47,7 @@ import type {
   SystemOverviewResponse,
   TradingWorkspaceResponse,
   RolePermissionCatalog,
+  SecurityAssetProfileDefinition,
   WorkflowPreset,
   WorkflowLibrary,
   WorkflowPresetLibrary,
@@ -70,6 +72,7 @@ interface WorkstationDataState {
   providerRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] | null;
   providerRoutingRefreshing: boolean;
   rolePermissionCatalog: RolePermissionCatalog | null;
+  securityAssetProfiles: SecurityAssetProfileDefinition[] | null;
   ledgerMappingWorkbench: LedgerMappingWorkbench | null;
   operationsApprovalPolicyMatrix: OperationsApprovalPolicyMatrix | null;
   operationsCloseCalendar: OperationsCloseCalendar | null;
@@ -104,6 +107,7 @@ const initialState: WorkstationDataState = {
   providerRoutingTrustSnapshots: null,
   providerRoutingRefreshing: false,
   rolePermissionCatalog: null,
+  securityAssetProfiles: null,
   ledgerMappingWorkbench: null,
   operationsApprovalPolicyMatrix: null,
   operationsCloseCalendar: null,
@@ -207,6 +211,7 @@ export function useWorkstationData() {
       providerRoutingBindings,
       providerRoutingTrustSnapshots,
       rolePermissionCatalog,
+      securityAssetProfiles,
       ledgerMappingWorkbench,
       operationsApprovalPolicyMatrix,
       operationsCloseCalendar,
@@ -229,6 +234,7 @@ export function useWorkstationData() {
       getProviderRoutingBindings(requestOptions),
       getProviderRoutingTrustSnapshots(requestOptions),
       getRolePermissionCatalog(requestOptions),
+      getSecurityAssetProfiles(requestOptions),
       getLedgerMappingWorkbench(requestOptions),
       getOperationsApprovalPolicyMatrix(requestOptions),
       getOperationsCloseCalendar({}, requestOptions),
@@ -287,6 +293,7 @@ export function useWorkstationData() {
       providerRoutingTrustSnapshots: readWorkspace(["settings"], providerRoutingTrustSnapshots),
       providerRoutingRefreshing: false,
       rolePermissionCatalog: readWorkspace(["settings"], rolePermissionCatalog),
+      securityAssetProfiles: readWorkspace(["settings", "data"], securityAssetProfiles),
       ledgerMappingWorkbench: readWorkspace(["settings"], ledgerMappingWorkbench),
       operationsApprovalPolicyMatrix: readWorkspace(["settings"], operationsApprovalPolicyMatrix),
       operationsCloseCalendar: readWorkspace(["settings"], operationsCloseCalendar),

@@ -532,7 +532,28 @@ describe("buildPortfolioScreenViewModel", () => {
         runId: "run-1",
         totalFills: 2,
         totalCommissions: 5,
-        fills: []
+        fills: [
+          {
+            fillId: "fill-older",
+            orderId: "order-older",
+            symbol: "AAPL",
+            filledQuantity: 40,
+            fillPrice: 187.25,
+            commission: 2,
+            filledAt: "2026-05-07T11:45:00Z",
+            accountId: "paper-account"
+          },
+          {
+            fillId: "fill-latest",
+            orderId: "order-latest",
+            symbol: "AAPL",
+            filledQuantity: 60,
+            fillPrice: 188.5,
+            commission: 3,
+            filledAt: "2026-05-07T11:50:00Z",
+            accountId: "paper-account"
+          }
+        ]
       },
       isLoading: false,
       error: null
@@ -546,7 +567,29 @@ describe("buildPortfolioScreenViewModel", () => {
       expect.objectContaining({ id: "attribution", value: "+$200", detail: "Realized +$120; unrealized +$80; 1 symbol." }),
       expect.objectContaining({ id: "drawdown", value: "1.25%", detail: "1 equity point; recovery 3 days; final equity $101,250." }),
       expect.objectContaining({ id: "cash-flow", value: "+$1,200", detail: "2 cash-flow entries; inflows $1,500; outflows $300." }),
-      expect.objectContaining({ id: "trades", value: "2", detail: "0 fills with $5 commissions." })
+      expect.objectContaining({ id: "trades", value: "2", detail: "2 fills with $5 commissions." })
+    ]);
+    expect(summary.bridgeRows).toEqual([
+      expect.objectContaining({ id: "realized-pnl", value: "+$120", detail: "AAPL contributes +$120 realized P&L across 2 trades." }),
+      expect.objectContaining({ id: "unrealized-pnl", value: "+$80", detail: "AAPL carries +$80 unrealized P&L into the selected portfolio view." }),
+      expect.objectContaining({ id: "commission-drag", value: "$5", tone: "warning" }),
+      expect.objectContaining({ id: "cash-flow-bridge", value: "+$1,200" }),
+      expect.objectContaining({ id: "trade-evidence", value: "2 fills", detail: "2 retained fills available for order, account, fill-price, and commission review." })
+    ]);
+    expect(summary.tradeEvidenceRows).toEqual([
+      expect.objectContaining({
+        id: "fill-latest",
+        symbol: "AAPL",
+        quantity: "60",
+        price: "$188.50",
+        commission: "$3.00",
+        filledAt: "May 7, 11:50 UTC",
+        accountId: "paper-account"
+      }),
+      expect.objectContaining({
+        id: "fill-older",
+        filledAt: "May 7, 11:45 UTC"
+      })
     ]);
   });
 

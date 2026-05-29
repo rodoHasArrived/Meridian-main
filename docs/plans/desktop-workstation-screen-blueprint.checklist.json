@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "blueprintPath": "docs/plans/desktop-workstation-screen-blueprint.md",
   "status": "draft-tracking",
   "generatedBy": "scripts/dev/desktop_screen_blueprint_checklist.py",
@@ -9,6 +9,14 @@
     "implemented",
     "blocked",
     "deferred"
+  ],
+  "allowedMaturityLabels": [
+    "Ready",
+    "Active but partial",
+    "Fixture/demo-backed",
+    "UI shell only",
+    "TBI",
+    "Needs verification"
   ],
   "screens": [
     {
@@ -35,6 +43,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~SecurityMasterViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Ready",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
+          "summary": "Focused WPF tests plus status inventory support the delivered Security Master desktop workbench; readiness is not based on the XAML page alone."
+        }
       ]
     },
     {
@@ -55,6 +71,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~WorkstationPageSmokeTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Fixture/demo-backed",
+      "maturityEvidence": [
+        {
+          "kind": "wpf-view-model",
+          "path": "src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs",
+          "summary": "Desktop view-model implementation exists, but current inventory evidence is fixture/demo-oriented rather than a full operator acceptance claim."
+        }
       ]
     },
     {
@@ -69,6 +93,14 @@
       "workflowCoverage": [],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~WatchlistViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/WatchlistViewModelTests.cs",
+          "summary": "Focused WPF view-model coverage exists; broader workflow acceptance is not recorded."
+        }
       ]
     },
     {
@@ -94,6 +126,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~BatchBacktestViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/BatchBacktestViewModelTests.cs",
+          "summary": "Batch backtest WPF view-model tests cover the replay/backtest surface while unification and launch/preflight remain open."
+        }
       ]
     },
     {
@@ -120,6 +160,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~StrategyRunBrowserViewModelTests|FullyQualifiedName~ResearchWorkspaceShellPageTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunBrowserViewModelTests.cs",
+          "summary": "Focused Strategy Run browser tests and shell tests support the Research screen, with deeper workflow acceptance still open."
+        }
       ]
     },
     {
@@ -132,6 +180,14 @@
       "workflowCoverage": [],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~QuantScriptViewModelTests|FullyQualifiedName~StrategyRunWorkspaceServiceTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "TBI",
+      "maturityEvidence": [
+        {
+          "kind": "status-evidence",
+          "path": "docs/status/FEATURE_INVENTORY.md",
+          "summary": "Status inventory keeps strategy-aware launch/preflight and Backtest Studio unification open; no screen-specific WPF implementation evidence is listed."
+        }
       ]
     },
     {
@@ -153,6 +209,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~TradingWorkspaceShellViewModelTests|FullyQualifiedName~TradingWorkspaceShellPageTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/TradingWorkspaceShellViewModelTests.cs",
+          "summary": "Trading shell view-model coverage supports the paper cockpit baseline, but live/broader broker validation remains open."
+        }
       ]
     },
     {
@@ -174,6 +238,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~TradingWorkspaceShellViewModelTests|FullyQualifiedName~PositionBlotterViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Needs verification",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/TradingWorkspaceShellViewModelTests.cs",
+          "summary": "Evidence is shared with the Trading shell and position blotter rather than a live-trading-specific acceptance proof."
+        }
       ]
     },
     {
@@ -189,6 +261,14 @@
       "workflowCoverage": [],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~AccountPortfolioViewModelTests|FullyQualifiedName~AggregatePortfolioViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/AccountPortfolioViewModelTests.cs",
+          "summary": "Focused portfolio view-model coverage exists while broader paper/live history continuity remains open."
+        }
       ]
     },
     {
@@ -209,6 +289,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~PositionBlotterViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/PositionBlotterViewModelTests.cs",
+          "summary": "Position blotter tests support exposure review and action-readiness behavior; broader acceptance remains partial."
+        }
       ]
     },
     {
@@ -229,6 +317,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~RunMatViewModelTests|FullyQualifiedName~TradingWorkspaceShellPageTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/RunMatViewModelTests.cs",
+          "summary": "Focused RunMat risk view-model tests cover current desktop risk behavior; this is not a complete enterprise risk module claim."
+        }
       ]
     },
     {
@@ -250,6 +346,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~FundLedgerViewModelTests|FullyQualifiedName~FundReconciliationWorkbenchServiceTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
+          "summary": "Focused reconciliation workbench service tests back the screen while non-run/external-statement workflows remain incomplete."
+        }
       ]
     },
     {
@@ -272,6 +376,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~AnalysisExportViewModelTests|FullyQualifiedName~DataExportViewModelTests|FullyQualifiedName~ExportPresetsViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs",
+          "summary": "Export/reporting view-model tests support current report-pack/export surfaces while expanded report templates remain open."
+        }
       ]
     },
     {
@@ -298,6 +410,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~BackfillViewModelTests|FullyQualifiedName~DataQualityViewModelCharacterizationTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/BackfillViewModelTests.cs",
+          "summary": "Backfill and data-quality WPF tests support the data-repair surface while deeper cross-workspace acceptance remains open."
+        }
       ]
     },
     {
@@ -319,6 +439,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~SystemHealthViewModelTests|FullyQualifiedName~SystemHealthPageSmokeTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/SystemHealthViewModelTests.cs",
+          "summary": "System-health focused tests support diagnostics behavior while full operational workflow acceptance is partial."
+        }
       ]
     },
     {
@@ -333,6 +461,14 @@
       "workflowCoverage": [],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~WorkflowLibraryViewModelTests|FullyQualifiedName~WorkstationWorkflowSummaryServiceTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "UI shell only",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs",
+          "summary": "Workflow library view-model coverage supports shell/list composition, but no full automation execution acceptance is listed."
+        }
       ]
     },
     {
@@ -348,6 +484,14 @@
       "workflowCoverage": [],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~ActivityLogViewModelTests|FullyQualifiedName~MessagingHubViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs",
+          "summary": "Activity/messaging view-model tests support audit/activity display while broader governed evidence workflows remain incomplete."
+        }
       ]
     },
     {
@@ -362,6 +506,14 @@
       "workflowCoverage": [],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~NotificationCenterViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/NotificationCenterViewModelTests.cs",
+          "summary": "Notification Center tests cover retained history/filter recovery, but broader alert workflow acceptance remains partial."
+        }
       ]
     },
     {
@@ -383,6 +535,14 @@
       ],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~PositionBlotterViewModelTests|FullyQualifiedName~TradingWorkspaceShellViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Needs verification",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/PositionBlotterViewModelTests.cs",
+          "summary": "Current evidence is position-blotter/trading-shell coverage, not a dedicated order-management acceptance proof."
+        }
       ]
     },
     {
@@ -397,6 +557,14 @@
       "workflowCoverage": [],
       "validationCommands": [
         "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~OrderBookViewModelTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+      ],
+      "maturity": "Active but partial",
+      "maturityEvidence": [
+        {
+          "kind": "focused-test",
+          "path": "tests/Meridian.Wpf.Tests/ViewModels/OrderBookViewModelTests.cs",
+          "summary": "Order book view-model tests support market-depth behavior while broader trading acceptance is still partial."
+        }
       ]
     }
   ]

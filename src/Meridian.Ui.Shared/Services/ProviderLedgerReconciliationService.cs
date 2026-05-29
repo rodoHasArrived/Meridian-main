@@ -35,6 +35,7 @@ public sealed class ProviderLedgerReconciliationService
     private readonly ICapabilityRouter? _capabilityRouter;
     private readonly IReconciliationBreakQueueRepository? _breakQueueRepository;
     private readonly IOperatorOverridesStore? _operatorOverridesStore;
+    private readonly ISecurityMasterConflictService? _securityMasterConflictService;
     private readonly ILogger<ProviderLedgerReconciliationService> _logger;
 
     public ProviderLedgerReconciliationService(
@@ -46,7 +47,8 @@ public sealed class ProviderLedgerReconciliationService
         ISecurityValidationGateService? securityValidationGate = null,
         ICapabilityRouter? capabilityRouter = null,
         IReconciliationBreakQueueRepository? breakQueueRepository = null,
-        IOperatorOverridesStore? operatorOverridesStore = null)
+        IOperatorOverridesStore? operatorOverridesStore = null,
+        ISecurityMasterConflictService? securityMasterConflictService = null)
     {
         _brokerageSync = brokerageSync ?? throw new ArgumentNullException(nameof(brokerageSync));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
@@ -57,6 +59,7 @@ public sealed class ProviderLedgerReconciliationService
         _capabilityRouter = capabilityRouter;
         _breakQueueRepository = breakQueueRepository;
         _operatorOverridesStore = operatorOverridesStore;
+        _securityMasterConflictService = securityMasterConflictService;
     }
 
     public async Task<ProviderLedgerReconciliationDetailDto> RunAsync(
@@ -813,9 +816,10 @@ public sealed class ProviderLedgerReconciliationService
         var interestCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsInterestTransaction(transaction.TransactionType));
         var principalCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsPrincipalReturnTransaction(transaction.TransactionType));
         var providerCorporateActionEventCount = corporateActionEvents.Count;
+        var amortizationScheduleEventCount = corporateActionEvents.Count(static action => IsAmortizationScheduleEvent(action.EventType));
         var factorScheduleEventCount = corporateActionEvents.Count(static action => IsFactorScheduleEvent(action.EventType));
         var loanScheduleEventCount = corporateActionEvents.Count(static action => IsLoanScheduleEvent(action.EventType));
-        var factorLikeScheduleEventCount = factorScheduleEventCount + loanScheduleEventCount;
+        var factorLikeScheduleEventCount = amortizationScheduleEventCount + factorScheduleEventCount + loanScheduleEventCount;
         var positionSecurityIdentityCount = positions
             .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
             .Select(static position => position.Symbol.Trim().ToUpperInvariant())
@@ -895,6 +899,12 @@ public sealed class ProviderLedgerReconciliationService
 
         if (factorScheduleEventCount > 0)
         {
+            requiredFeeds.Add("factor-schedule");
+        }
+
+        if (amortizationScheduleEventCount > 0)
+        {
+            requiredFeeds.Add("amortization-schedule");
             requiredFeeds.Add("factor-schedule");
         }
 
@@ -1138,11 +1148,12 @@ public sealed class ProviderLedgerReconciliationService
             var candidateType = ResolveCorporateActionEventCandidateType(action.EventType);
             var requiredFeed = ResolveCorporateActionEventRequiredFeed(action.EventType);
             var requiresSecurityIdentity = !string.IsNullOrWhiteSpace(action.Symbol);
+            var isScheduleEvent = IsScheduleEvidenceCandidate(candidateType);
             var candidateStatus = BuildCorporateActionCandidateStatus(
-                candidateType is "FactorScheduleEvent" or "LoanScheduleEvent"
+                isScheduleEvent
                     ? hasFactorScheduleCapabilityEvidence
                     : hasCorporateActionCapabilityEvidence,
-                candidateType is "FactorScheduleEvent" or "LoanScheduleEvent"
+                isScheduleEvent
                     ? factorScheduleRoutable
                     : providerCorporateActionsRoutable,
                 passport,
@@ -1172,15 +1183,15 @@ public sealed class ProviderLedgerReconciliationService
                 Currency: NormalizeOptional(action.Currency) ?? NormalizeOptional(providerProjection.Balance?.Currency),
                 Reason: BuildCorporateActionCandidateReason(
                     candidateType,
-                    candidateType is "FactorScheduleEvent" or "LoanScheduleEvent"
+                    isScheduleEvent
                         ? hasFactorScheduleCapabilityEvidence
                         : hasCorporateActionCapabilityEvidence,
-                    candidateType is "FactorScheduleEvent" or "LoanScheduleEvent"
+                    isScheduleEvent
                         ? factorScheduleRoutable
                         : providerCorporateActionsRoutable,
                     passport,
                     requiresSecurityIdentity,
-                    candidateType is "FactorScheduleEvent" or "LoanScheduleEvent" ? "factor-schedule" : "corporate-action")));
+                    isScheduleEvent ? "factor-schedule" : "corporate-action")));
         }
 
         var orderedCandidates = evidenceCandidates
@@ -1213,7 +1224,8 @@ public sealed class ProviderLedgerReconciliationService
             EvidenceCandidates = orderedCandidates,
             LedgerEffects = ledgerEffects,
             SecurityMasterScheduleFeeds = BuildSecurityMasterScheduleFeeds(orderedCandidates, ledgerEffects),
-            PrincipalCashTransactionCount = principalCashTransactionCount
+            PrincipalCashTransactionCount = principalCashTransactionCount,
+            AmortizationScheduleEventCount = amortizationScheduleEventCount
         };
     }
 
@@ -1224,6 +1236,11 @@ public sealed class ProviderLedgerReconciliationService
             .Where(static effect => effect is not null)
             .Cast<ProviderCorporateActionLedgerEffectDto>()
             .ToArray();
+
+    private static bool IsScheduleEvidenceCandidate(string candidateType) =>
+        string.Equals(candidateType, "FactorScheduleEvent", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(candidateType, "AmortizationScheduleEvent", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(candidateType, "LoanScheduleEvent", StringComparison.OrdinalIgnoreCase);
 
     private static IReadOnlyList<ProviderSecurityMasterScheduleFeedDto> BuildSecurityMasterScheduleFeeds(
         IReadOnlyList<ProviderCorporateActionEvidenceCandidateDto> candidates,
@@ -1272,6 +1289,7 @@ public sealed class ProviderLedgerReconciliationService
 
     private static bool IsSecurityMasterScheduleFeedEffect(string ledgerEffectKind) =>
         string.Equals(ledgerEffectKind, "FactorScheduleValuationInput", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(ledgerEffectKind, "AmortizationScheduleValuationInput", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(ledgerEffectKind, "LoanScheduleValuationInput", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(ledgerEffectKind, "CorporateActionCoverageInput", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(ledgerEffectKind, "DividendIncomeRecognition", StringComparison.OrdinalIgnoreCase) ||
@@ -1284,6 +1302,7 @@ public sealed class ProviderLedgerReconciliationService
         ledgerEffectKind switch
         {
             "FactorScheduleValuationInput" => "SecurityMasterFactorHistory",
+            "AmortizationScheduleValuationInput" => "SecurityMasterAmortizationSchedule",
             "LoanScheduleValuationInput" => "SecurityMasterLoanSchedule",
             "CorporateActionCoverageInput" => "SecurityMasterCorporateAction",
             "DividendIncomeRecognition" or "DistributionIncomeRecognition" or "CashIncomeRecognition" => "SecurityMasterIncomeSchedule",
@@ -1296,6 +1315,7 @@ public sealed class ProviderLedgerReconciliationService
         ledgerEffectKind switch
         {
             "FactorScheduleValuationInput" or "FactorScheduleCoverageCandidate" => "factor-schedule",
+            "AmortizationScheduleValuationInput" => "amortization-schedule,factor-schedule",
             "LoanScheduleValuationInput" => "loan-schedule,factor-schedule",
             "DividendIncomeRecognition" or "DistributionIncomeRecognition" or "CashIncomeRecognition" => "income-cash-activity",
             "PrincipalReturnRecognition" => "principal-cash-activity,factor-schedule",
@@ -1348,6 +1368,28 @@ public sealed class ProviderLedgerReconciliationService
                 candidate.Status,
                 candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
                     ? "Retained provider factor evidence can feed Security Master factor history and downstream ledger valuation; journal amount generation still requires par and prior-factor context."
+                    : candidate.Reason,
+                JournalLines: []);
+        }
+
+        if (string.Equals(candidate.CandidateType, "AmortizationScheduleEvent", StringComparison.OrdinalIgnoreCase))
+        {
+            return new ProviderCorporateActionLedgerEffectDto(
+                candidate.CandidateId,
+                candidate.CandidateType,
+                candidate.Symbol,
+                candidate.SecurityId,
+                candidate.ProviderEventId,
+                "AmortizationScheduleValuationInput",
+                eventDate,
+                Factor: candidate.Quantity,
+                CashAmount: candidate.Amount,
+                PrincipalAmount: candidate.Amount,
+                IncomeAmount: null,
+                candidate.Currency,
+                candidate.Status,
+                candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
+                    ? "Retained provider amortization schedule evidence can feed Security Master amortization history and downstream ledger valuation; final journal generation still requires amortization policy context."
                     : candidate.Reason,
                 JournalLines: []);
         }
@@ -1705,10 +1747,16 @@ public sealed class ProviderLedgerReconciliationService
     private static bool IsFactorScheduleEvent(string eventType)
         => !string.IsNullOrWhiteSpace(eventType) &&
            !IsLoanScheduleEvent(eventType) &&
+           !IsAmortizationScheduleEvent(eventType) &&
            (eventType.Contains("factor", StringComparison.OrdinalIgnoreCase) ||
             eventType.Contains("paydown", StringComparison.OrdinalIgnoreCase) ||
-            eventType.Contains("amortization", StringComparison.OrdinalIgnoreCase) ||
             eventType.Contains("principal", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsAmortizationScheduleEvent(string eventType)
+        => !string.IsNullOrWhiteSpace(eventType) &&
+           !IsLoanScheduleEvent(eventType) &&
+           (eventType.Contains("amortization", StringComparison.OrdinalIgnoreCase) ||
+            eventType.Contains("amortisation", StringComparison.OrdinalIgnoreCase));
 
     private static bool IsLoanScheduleEvent(string eventType)
         => !string.IsNullOrWhiteSpace(eventType) &&
@@ -1720,6 +1768,11 @@ public sealed class ProviderLedgerReconciliationService
         if (IsLoanScheduleEvent(eventType))
         {
             return "LoanScheduleEvent";
+        }
+
+        if (IsAmortizationScheduleEvent(eventType))
+        {
+            return "AmortizationScheduleEvent";
         }
 
         if (IsFactorScheduleEvent(eventType))
@@ -1743,6 +1796,11 @@ public sealed class ProviderLedgerReconciliationService
         if (IsLoanScheduleEvent(eventType))
         {
             return "loan-schedule,factor-schedule";
+        }
+
+        if (IsAmortizationScheduleEvent(eventType))
+        {
+            return "amortization-schedule,factor-schedule";
         }
 
         if (IsFactorScheduleEvent(eventType))
@@ -2192,8 +2250,12 @@ public sealed class ProviderLedgerReconciliationService
                 $"evidenceSource={candidate.EvidenceSource}",
                 $"amount={FormatAmount(candidate.Amount)}",
                 ledgerEffect is null ? null : $"ledgerEffect={ledgerEffect.LedgerEffectKind}",
+                ledgerEffect?.EffectiveDate is null ? null : $"effectiveDate={ledgerEffect.EffectiveDate.Value:yyyy-MM-dd}",
+                ledgerEffect?.Factor is null ? null : $"factor={FormatAmount(ledgerEffect.Factor)}",
+                ledgerEffect?.CashAmount is null ? null : $"cashAmount={FormatAmount(ledgerEffect.CashAmount)}",
                 ledgerEffect?.PrincipalAmount is null ? null : $"principalAmount={FormatAmount(ledgerEffect.PrincipalAmount)}",
                 ledgerEffect?.IncomeAmount is null ? null : $"incomeAmount={FormatAmount(ledgerEffect.IncomeAmount)}",
+                string.IsNullOrWhiteSpace(ledgerEffect?.Currency) ? null : $"currency={ledgerEffect.Currency}",
                 ledgerEffect is null ? null : $"journalLines={ledgerEffect.JournalLines.Count}",
                 $"status={candidate.Status}"
             }.Where(static part => !string.IsNullOrWhiteSpace(part)));
@@ -2427,7 +2489,9 @@ public sealed class ProviderLedgerReconciliationService
 
         if (providerProjection.Positions.Any(static position => IsFixedIncomeOrStructuredAssetClass(position.AssetClass)) ||
             (providerProjection.CorporateActions ?? []).Any(static action =>
-                IsFactorScheduleEvent(action.EventType) || IsLoanScheduleEvent(action.EventType)))
+                IsFactorScheduleEvent(action.EventType) ||
+                IsAmortizationScheduleEvent(action.EventType) ||
+                IsLoanScheduleEvent(action.EventType)))
         {
             await AddProviderCapabilityCheckAsync(
                     runId,
@@ -2533,6 +2597,9 @@ public sealed class ProviderLedgerReconciliationService
             .GroupBy(static position => position.Symbol.Trim().ToUpperInvariant(), StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .ToArray();
+        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts = _securityMasterConflictService is null
+            ? Array.Empty<SecurityMasterConflict>()
+            : await _securityMasterConflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
 
         foreach (var position in positions)
         {
@@ -2557,7 +2624,8 @@ public sealed class ProviderLedgerReconciliationService
                     symbol,
                     observedAt,
                     providerStaleAfterMinutes,
-                    overrideHistory))
+                    overrideHistory,
+                    openIdentifierConflicts))
                 {
                     continue;
                 }
@@ -2573,7 +2641,8 @@ public sealed class ProviderLedgerReconciliationService
                     reason: "Provider position already carries a resolved Security Master reference.",
                     observedAt: observedAt,
                     providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: overrideHistory));
+                    overrideHistory: overrideHistory,
+                    openIdentifierConflicts: openIdentifierConflicts));
                 AddMatched(
                     checks,
                     checkId,
@@ -2618,7 +2687,8 @@ public sealed class ProviderLedgerReconciliationService
                     symbol,
                     observedAt,
                     providerStaleAfterMinutes,
-                    overrideHistory))
+                    overrideHistory,
+                    openIdentifierConflicts))
                 {
                     continue;
                 }
@@ -2634,7 +2704,8 @@ public sealed class ProviderLedgerReconciliationService
                     reason: "Provider position resolved through the shared Security Master lookup.",
                     observedAt: observedAt,
                     providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: overrideHistory));
+                    overrideHistory: overrideHistory,
+                    openIdentifierConflicts: openIdentifierConflicts));
                 AddMatched(
                     checks,
                     checkId,
@@ -2678,7 +2749,8 @@ public sealed class ProviderLedgerReconciliationService
                         reason: "Security Master validation accepted the provider position.",
                         observedAt: observedAt,
                         providerStaleAfterMinutes: providerStaleAfterMinutes,
-                        overrideHistory: overrideHistory));
+                        overrideHistory: overrideHistory,
+                        openIdentifierConflicts: openIdentifierConflicts));
                     AddMatched(
                         checks,
                         checkId,
@@ -2713,7 +2785,8 @@ public sealed class ProviderLedgerReconciliationService
                     reason: reason,
                     observedAt: observedAt,
                     providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: []));
+                    overrideHistory: [],
+                    openIdentifierConflicts: openIdentifierConflicts));
             }
             else
             {
@@ -2728,7 +2801,8 @@ public sealed class ProviderLedgerReconciliationService
                     reason: reason,
                     observedAt: observedAt,
                     providerStaleAfterMinutes: providerStaleAfterMinutes,
-                    overrideHistory: []));
+                    overrideHistory: [],
+                    openIdentifierConflicts: openIdentifierConflicts));
             }
 
             AddBreak(
@@ -2765,7 +2839,8 @@ public sealed class ProviderLedgerReconciliationService
         string symbol,
         DateTimeOffset observedAt,
         int providerStaleAfterMinutes,
-        IReadOnlyList<string> overrideHistory)
+        IReadOnlyList<string> overrideHistory,
+        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
     {
         if (security.Status == SecurityStatusDto.Active)
         {
@@ -2784,7 +2859,8 @@ public sealed class ProviderLedgerReconciliationService
             reason: reason,
             observedAt: observedAt,
             providerStaleAfterMinutes: providerStaleAfterMinutes,
-            overrideHistory: overrideHistory));
+            overrideHistory: overrideHistory,
+            openIdentifierConflicts: openIdentifierConflicts));
 
         AddBreak(
             runId,
@@ -2835,15 +2911,19 @@ public sealed class ProviderLedgerReconciliationService
         string reason,
         DateTimeOffset observedAt,
         int providerStaleAfterMinutes,
-        IReadOnlyList<string> overrideHistory)
+        IReadOnlyList<string> overrideHistory,
+        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
     {
         var issues = validation?.Report.Issues ?? [];
+        var securityId = security?.SecurityId ?? validation?.SecurityId;
+        var openConflictSummaries = FormatOpenIdentifierConflicts(securityId, openIdentifierConflicts);
         var identifierConflicts = issues
             .Where(static issue =>
                 issue.Code.Contains("CONFLICT", StringComparison.OrdinalIgnoreCase)
                 || issue.Title.Contains("conflict", StringComparison.OrdinalIgnoreCase)
                 || issue.AffectedFields.Any(static field => field.Contains("identifier", StringComparison.OrdinalIgnoreCase)))
             .Select(static issue => issue.Code)
+            .Concat(openConflictSummaries)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var freshnessMinutes = Math.Max(0, (int)Math.Floor((observedAt - providerProjection.SyncedAt).TotalMinutes));
@@ -2852,14 +2932,30 @@ public sealed class ProviderLedgerReconciliationService
             .Select(static issue => issue.Code)
             .Where(static code => !string.IsNullOrWhiteSpace(code))
             .Concat(providerEvidenceStale ? ["PROVIDER_EVIDENCE_STALE"] : [])
+            .Concat(openConflictSummaries.Length > 0 ? ["SM_IDENTIFIER_CONFLICT"] : [])
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var adjustedConfidenceScore = providerEvidenceStale && confidenceScore > 70m
-            ? 70m
-            : confidenceScore;
-        var adjustedReason = providerEvidenceStale
-            ? $"{reason} Provider evidence is stale for this reconciliation run."
-            : reason;
+        var adjustedConfidenceScore = confidenceScore;
+        if (providerEvidenceStale && adjustedConfidenceScore > 70m)
+        {
+            adjustedConfidenceScore = 70m;
+        }
+
+        if (openConflictSummaries.Length > 0 && adjustedConfidenceScore > 60m)
+        {
+            adjustedConfidenceScore = 60m;
+        }
+
+        var reasonParts = new List<string> { reason };
+        if (providerEvidenceStale)
+        {
+            reasonParts.Add("Provider evidence is stale for this reconciliation run.");
+        }
+
+        if (openConflictSummaries.Length > 0)
+        {
+            reasonParts.Add($"{openConflictSummaries.Length} open Security Master identifier conflict(s) involve this resolved instrument.");
+        }
 
         return new ProviderSecurityMasterPassportDto(
             Symbol: position.Symbol.Trim().ToUpperInvariant(),
@@ -2870,7 +2966,7 @@ public sealed class ProviderLedgerReconciliationService
             AssetClass: position.AssetClass,
             Currency: position.Currency,
             PositionId: position.PositionId,
-            SecurityId: security?.SecurityId ?? validation?.SecurityId,
+            SecurityId: securityId,
             SecurityDisplayName: security?.DisplayName,
             SecurityStatus: security?.Status,
             Status: status,
@@ -2881,7 +2977,27 @@ public sealed class ProviderLedgerReconciliationService
             OverrideHistory: overrideHistory,
             ObservedAt: observedAt,
             FreshnessMinutes: freshnessMinutes,
-            Reason: adjustedReason);
+            Reason: string.Join(" ", reasonParts));
+    }
+
+    private static string[] FormatOpenIdentifierConflicts(
+        Guid? securityId,
+        IReadOnlyList<SecurityMasterConflict> openIdentifierConflicts)
+    {
+        var resolvedSecurityId = securityId.GetValueOrDefault();
+        if (resolvedSecurityId == Guid.Empty || openIdentifierConflicts.Count == 0)
+        {
+            return [];
+        }
+
+        return openIdentifierConflicts
+            .Where(conflict =>
+                conflict.SecurityId == resolvedSecurityId &&
+                string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static conflict => conflict.DetectedAt)
+            .Select(static conflict =>
+                $"conflict={conflict.ConflictId:N}; kind={conflict.ConflictKind}; field={conflict.FieldPath}; providers={conflict.ProviderA}/{conflict.ProviderB}")
+            .ToArray();
     }
 
     private async Task<IReadOnlyList<string>> GetSecurityMasterOverrideHistoryAsync(

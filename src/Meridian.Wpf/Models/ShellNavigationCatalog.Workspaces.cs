@@ -127,6 +127,7 @@ public static partial class ShellNavigationCatalog
             DefaultPanes:
             [
                 Pane("FundLedger", PaneDropAction.Replace),
+                Pane("FundStructureSetup", PaneDropAction.OpenTab),
                 Pane("FundReconciliation", PaneDropAction.SplitRight),
                 Pane("FundTrialBalance", PaneDropAction.SplitBelow),
                 Pane("FundAuditTrail", PaneDropAction.OpenTab)

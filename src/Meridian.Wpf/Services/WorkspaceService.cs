@@ -26,7 +26,7 @@ namespace Meridian.Wpf.Services;
 public sealed class WorkspaceService
 {
     private static readonly Lazy<WorkspaceService> _instance = new(() => new WorkspaceService());
-    private static string? _settingsFilePathOverride;
+    private static readonly AsyncLocal<string?> SettingsFilePathOverride = new();
 
     private const string WorkspacesFileName = "workspace-data.json";
 
@@ -134,15 +134,16 @@ public sealed class WorkspaceService
 
     private static string GetSettingsFilePath()
     {
-        if (!string.IsNullOrWhiteSpace(_settingsFilePathOverride))
+        var settingsFilePathOverride = SettingsFilePathOverride.Value;
+        if (!string.IsNullOrWhiteSpace(settingsFilePathOverride))
         {
-            var overrideDirectory = Path.GetDirectoryName(_settingsFilePathOverride);
+            var overrideDirectory = Path.GetDirectoryName(settingsFilePathOverride);
             if (!string.IsNullOrWhiteSpace(overrideDirectory))
             {
                 Directory.CreateDirectory(overrideDirectory);
             }
 
-            return _settingsFilePathOverride;
+            return settingsFilePathOverride;
         }
 
         var dir = Path.Combine(
@@ -1045,7 +1046,7 @@ public sealed class WorkspaceService
 
     internal static void SetSettingsFilePathOverrideForTests(string? filePath)
     {
-        _settingsFilePathOverride = filePath;
+        SettingsFilePathOverride.Value = filePath;
     }
 
     internal static void SetWorkspaceStateFilePathOverrideForTests(string? filePath)

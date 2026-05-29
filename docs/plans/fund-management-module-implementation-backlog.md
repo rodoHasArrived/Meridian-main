@@ -38,7 +38,7 @@ This backlog is derived from:
 - [Fund Management Product Vision and Capability Matrix](fund-management-product-vision-and-capability-matrix.md)
 - [Trading Workstation Migration Blueprint](trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Project Roadmap](../status/ROADMAP.md)
 - [Feature Inventory](../status/FEATURE_INVENTORY.md)
 
@@ -802,5 +802,5 @@ The export and report-pack infrastructure exists for internal governance reports
 - [Fund Management Product Vision and Capability Matrix](fund-management-product-vision-and-capability-matrix.md)
 - [Trading Workstation Migration Blueprint](trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Project Roadmap](../status/ROADMAP.md)

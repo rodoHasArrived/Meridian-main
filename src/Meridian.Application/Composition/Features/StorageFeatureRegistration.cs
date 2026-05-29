@@ -70,7 +70,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         var directLendingOptions = CreateDirectLendingOptions();
         var ledgerOptions = CreateLedgerOptions();
 
-        services.TryAddSingleton(_ => AssetClassValidatorRegistry.CreateDefault());
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
@@ -86,6 +85,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             return config.Storage?.ToStorageOptions(dataRoot, compressionEnabled)
                 ?? StorageProfilePresets.CreateFromProfile(null, dataRoot, compressionEnabled);
         });
+        services.TryAddSingleton<ISecurityAssetProfileGovernanceService, SecurityAssetProfileGovernanceService>();
+        services.TryAddSingleton<ISecurityAssetProfileCatalog>(sp => sp.GetRequiredService<ISecurityAssetProfileGovernanceService>());
+        services.TryAddSingleton(sp => AssetClassValidatorRegistry.CreateDefault(sp.GetRequiredService<ISecurityAssetProfileCatalog>()));
 
         // Source registry for data source tracking
         services.AddSingleton<ISourceRegistry>(sp =>

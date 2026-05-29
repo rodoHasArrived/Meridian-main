@@ -9,6 +9,7 @@ using Meridian.Wpf.Tests.Support;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
 
@@ -146,6 +147,28 @@ public sealed class MainPageUiWorkflowTests
             ShellNavigationCatalog.GetWorkspace("strategy")?.HomePageTag.Should().Be("StrategyShell");
             ShellNavigationCatalog.GetWorkspace("data")?.HomePageTag.Should().Be("DataShell");
             ShellNavigationCatalog.GetWorkspace("settings")?.HomePageTag.Should().Be("SettingsShell");
+        });
+    }
+
+    [Fact]
+    public void MainPage_ShouldComposeRouteCompatibleInstitutionalShellPrimitives()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.CommandPaletteControl.Should().NotBeNull();
+            facade.WorkspaceInspectorHost.Should().NotBeNull();
+            facade.WorkspaceInspectorHost.InspectorState.Should().Be(WorkspaceInspectorState.Empty);
+            facade.FindDescendantByAutomationId<WorkspaceCommandSurfaceControl>("WorkspaceCommandSurfaceStrategy")
+                .Should()
+                .NotBeNull();
+            facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripStrategy")
+                .Should()
+                .NotBeNull();
+            facade.FindDescendantByAutomationId<WorkspaceInspectorHostControl>("WorkspaceInspectorHostStrategy")
+                .Should()
+                .NotBeNull();
         });
     }
 

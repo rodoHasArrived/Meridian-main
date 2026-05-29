@@ -5,6 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
       mc:Ignorable="d"
       d:DesignHeight="800" d:DesignWidth="1200"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
@@ -360,6 +361,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Orientation="Horizontal">
@@ -375,6 +377,14 @@
                                      Foreground="{DynamicResource ConsoleTextBrush}"
                                      BorderThickness="1" Padding="8,4"
                                      ToolTip="Filter symbols" />
+                            <Button Grid.Column="2"
+                                    Content="Compare Selected"
+                                    Click="CompareSelectedProvider_Click"
+                                    IsEnabled="{Binding CanCompareSelectedSymbol}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Padding="10,4"
+                                    Margin="8,0,0,0"
+                                    AutomationProperties.AutomationId="DataQualityCompareSelectedSymbolButton" />
                         </Grid>
 
                         <TextBlock x:Name="SymbolFilterScopeText"
@@ -384,32 +394,14 @@
                                    Margin="0,-6,0,12"
                                    AutomationProperties.AutomationId="DataQualitySymbolFilterScopeText" />
 
-                        <ListView x:Name="SymbolQualityList" MaxHeight="350" SelectionMode="Single"
-                                  ItemsSource="{Binding FilteredSymbols}"
-                                  SelectionChanged="SymbolQuality_SelectionChanged">
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn Header="Symbol" Width="90" DisplayMemberBinding="{Binding Symbol}" />
-                                    <GridViewColumn Header="Score" Width="80" DisplayMemberBinding="{Binding ScoreFormatted}" />
-                                    <GridViewColumn Header="Grade" Width="60" DisplayMemberBinding="{Binding Grade}" />
-                                    <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding Status}" />
-                                    <GridViewColumn Header="Issues" Width="160" DisplayMemberBinding="{Binding Issues}" />
-                                    <GridViewColumn Header="Last Update" Width="120" DisplayMemberBinding="{Binding LastUpdateFormatted}" />
-                                    <GridViewColumn Header="" Width="80">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button Content="Compare"
-                                                        Tag="{Binding Symbol}"
-                                                        Click="CompareProviders_Click"
-                                                        Style="{StaticResource GhostButtonStyle}"
-                                                        Padding="6,2"
-                                                        FontSize="11" />
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
+                        <workstation:DenseDataGridControl x:Name="SymbolQualityList"
+                                                          Table="{Binding SymbolQualityTable}"
+                                                          SelectedItem="{Binding SelectedSymbolQuality, Mode=TwoWay}"
+                                                          GridAutomationId="DataQualitySymbolQualityGrid"
+                                                          EmptyAutomationId="DataQualitySymbolQualitySharedEmptyState"
+                                                          MinHeight="280"
+                                                          MaxHeight="350"
+                                                          AutomationProperties.Name="Data quality by symbol" />
 
                         <StackPanel x:Name="NoSymbolsPanel"
                                     Visibility="{Binding HasNoSymbols, Converter={StaticResource BoolToVisibilityConverter}}"

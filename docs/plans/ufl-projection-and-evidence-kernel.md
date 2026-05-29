@@ -22,7 +22,7 @@ The current `UflProjectionRebuilder` is a Phase 0 bridge: it validates the asset
 
 ## Shared Interfaces
 
-The first code slice should introduce a common storage and projector shape rather than one-off rebuild code per asset package:
+The first code slice should introduce a common storage and projector shape rather than one-off rebuild code per asset profile:
 
 ```csharp
 public interface IUflProjectionStore<TSnapshot>

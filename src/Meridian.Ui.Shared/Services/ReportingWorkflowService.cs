@@ -34,8 +34,8 @@ public sealed class ReportPackWorkflowService
         {
             [ReportPackWorkflowStateDto.Draft] = [ReportPackWorkflowStateDto.InReview, ReportPackWorkflowStateDto.Validated],
             [ReportPackWorkflowStateDto.Validated] = [ReportPackWorkflowStateDto.InReview, ReportPackWorkflowStateDto.PendingApproval, ReportPackWorkflowStateDto.Draft],
-            [ReportPackWorkflowStateDto.InReview] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.PendingApproval, ReportPackWorkflowStateDto.Draft],
-            [ReportPackWorkflowStateDto.PendingApproval] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Rejected, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.InReview] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.PendingApproval, ReportPackWorkflowStateDto.Rejected, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.PendingApproval] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Draft],
             [ReportPackWorkflowStateDto.Rejected] = [ReportPackWorkflowStateDto.Draft],
             [ReportPackWorkflowStateDto.Approved] = [ReportPackWorkflowStateDto.Published],
             [ReportPackWorkflowStateDto.Published] = [ReportPackWorkflowStateDto.Restated, ReportPackWorkflowStateDto.Archived],
@@ -62,6 +62,9 @@ public sealed class ReportPackWorkflowService
         _records[id] = record;
         return record;
     }
+
+    public ReportPackWorkflowRecordDto Submit(Guid reportId, string actor, string role, string? note = null) =>
+        TransitionCore(reportId, ReportPackWorkflowStateDto.InReview, actor, role, note);
 
     public ReportPackWorkflowRecordDto Transition(Guid reportId, ReportPackWorkflowStateDto target, string actor, string role, string? note = null)
     {
@@ -198,7 +201,7 @@ public sealed class ReportPackWorkflowService
             target == ReportPackWorkflowStateDto.InReview ||
             target == ReportPackWorkflowStateDto.Validated ||
             target == ReportPackWorkflowStateDto.PendingApproval
-                ? normalized is "operator" or "reviewer" or "validator"
+                ? normalized is "operator" or "reviewer" or "validator" or "admin"
                 : target switch
         {
             ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",

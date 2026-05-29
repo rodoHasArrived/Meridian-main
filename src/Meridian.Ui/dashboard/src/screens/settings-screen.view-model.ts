@@ -40,6 +40,7 @@ import type {
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
   RolePermissionCatalog,
+  SecurityAssetProfileDefinition,
   TradingWorkspaceResponse,
   WorkspaceKey
 } from "@/types";
@@ -912,6 +913,34 @@ export interface SettingsOperationsControlCenter {
   cards: SettingsOperationsControlCard[];
 }
 
+export interface SettingsAssetProfileRow {
+  profileId: string;
+  versionLabel: string;
+  name: string;
+  categoryLabel: string;
+  statusLabel: string;
+  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  fieldCountLabel: string;
+  projectedFieldLabel: string;
+  requiredCloseIdentifierLabel: string;
+  accountingImpactLabel: string;
+  effectiveLabel: string;
+}
+
+export interface SettingsAssetProfileGovernancePanel {
+  title: string;
+  summary: string;
+  statusLabel: string;
+  statusVariant: "default" | "success" | "warning" | "danger" | "outline";
+  approvedCountLabel: string;
+  projectedFieldCountLabel: string;
+  closeIdentifierCountLabel: string;
+  listLabel: string;
+  canCreateSecurity: boolean;
+  createDisabledReason: string | null;
+  rows: SettingsAssetProfileRow[];
+}
+
 export interface SettingsScreenViewModel {
   headerChips: SettingsHeaderChip[];
   sessionTitle: string;
@@ -939,6 +968,7 @@ export interface SettingsScreenViewModel {
   backendCapabilityStatusVariant: "default" | "success" | "warning" | "danger" | "outline";
   runtimeCapabilitySection: SettingsRuntimeCapabilitySection;
   operationsControlCenter: SettingsOperationsControlCenter;
+  assetProfileGovernancePanel: SettingsAssetProfileGovernancePanel;
 }
 
 export interface SettingsScreenPayload {
@@ -957,6 +987,7 @@ export interface SettingsScreenPayload {
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
   featureCapabilities?: FeatureCapabilitySettingsResponse | null;
   rolePermissionCatalog?: RolePermissionCatalog | null;
+  securityAssetProfiles?: SecurityAssetProfileDefinition[] | null;
   ledgerMappingWorkbench?: LedgerMappingWorkbench | null;
   operationsApprovalPolicyMatrix?: OperationsApprovalPolicyMatrix | null;
   operationsCloseCalendar?: OperationsCloseCalendar | null;
@@ -2288,6 +2319,10 @@ export function buildSettingsScreenViewModel(
   const backendCapabilitySection = buildBackendCapabilitySection(payload);
   const runtimeCapabilitySection = buildRuntimeCapabilitySection(payload.featureCapabilities ?? null);
   const operationsControlCenter = buildOperationsControlCenter(payload);
+  const assetProfileGovernancePanel = buildAssetProfileGovernancePanel(
+    payload.securityAssetProfiles ?? null,
+    payload.loading === true
+  );
   const providerConnectionCenter = buildProviderConnectionCenter(
     payload.providerConnections ?? null,
     payload.providerRoutingConnections ?? null,
@@ -2317,6 +2352,7 @@ export function buildSettingsScreenViewModel(
     alpacaConnectionPanel,
     runtimeCapabilitySection,
     operationsControlCenter,
+    assetProfileGovernancePanel,
     ...diagnosticSection,
     ...backendCapabilitySection
   };
@@ -2324,6 +2360,98 @@ export function buildSettingsScreenViewModel(
 
 function isSettingsScreenPayload(value: SettingsScreenPayload | SessionInfo | null): value is SettingsScreenPayload {
   return value !== null && "session" in value && "overview" in value;
+}
+
+function buildAssetProfileGovernancePanel(
+  profiles: SecurityAssetProfileDefinition[] | null,
+  loading: boolean
+): SettingsAssetProfileGovernancePanel {
+  if (!profiles) {
+    return {
+      title: "Asset Profile Governance",
+      summary: loading
+        ? "Asset profiles are loading from Security Master."
+        : "Asset profile catalog has not loaded.",
+      statusLabel: loading ? "Checking" : "Unavailable",
+      statusVariant: loading ? "warning" : "outline",
+      approvedCountLabel: "0",
+      projectedFieldCountLabel: "0",
+      closeIdentifierCountLabel: "0",
+      listLabel: "Asset profile governance rows",
+      canCreateSecurity: false,
+      createDisabledReason: loading
+        ? "Asset profile catalog is still loading."
+        : "Asset profile catalog has not loaded.",
+      rows: []
+    };
+  }
+
+  const approvedProfiles = profiles.filter((profile) => profile.status === "Approved");
+  const projectedFieldCount = approvedProfiles.reduce(
+    (sum, profile) => sum + profile.fields.filter((field) => field.isProjected || field.isSearchable).length,
+    0
+  );
+  const requiredIdentifierCount = approvedProfiles.reduce(
+    (sum, profile) => sum + profile.identifierPreferences.filter((preference) => preference.isRequiredForClose).length,
+    0
+  );
+  const statusVariant: SettingsAssetProfileGovernancePanel["statusVariant"] =
+    approvedProfiles.length > 0 ? "success" : "warning";
+
+  return {
+    title: "Asset Profile Governance",
+    summary: approvedProfiles.length > 0
+      ? `${approvedProfiles.length} approved alternative-asset profile${approvedProfiles.length === 1 ? "" : "s"} are available for governed Security Master creation.`
+      : "No approved asset profiles are available for Security Master creation.",
+    statusLabel: approvedProfiles.length > 0 ? `${approvedProfiles.length} approved` : "Approval needed",
+    statusVariant,
+    approvedCountLabel: String(approvedProfiles.length),
+    projectedFieldCountLabel: String(projectedFieldCount),
+    closeIdentifierCountLabel: String(requiredIdentifierCount),
+    listLabel: `${profiles.length} asset profile${profiles.length === 1 ? "" : "s"}`,
+    canCreateSecurity: approvedProfiles.length > 0,
+    createDisabledReason: approvedProfiles.length > 0 ? null : "Approve an asset profile before creating custom assets.",
+    rows: profiles.map((profile) => {
+      const projectedFields = profile.fields.filter((field) => field.isProjected || field.isSearchable).length;
+      const requiredIdentifiers = profile.identifierPreferences
+        .filter((preference) => preference.isRequiredForClose)
+        .map((preference) => preference.kind);
+      return {
+        profileId: profile.profileId,
+        versionLabel: `v${profile.version}`,
+        name: profile.name,
+        categoryLabel: profile.subType ? `${profile.category} / ${profile.subType}` : profile.category,
+        statusLabel: profile.status,
+        statusVariant: assetProfileStatusVariant(profile.status),
+        fieldCountLabel: `${profile.fields.length} field${profile.fields.length === 1 ? "" : "s"}`,
+        projectedFieldLabel: `${projectedFields} projected`,
+        requiredCloseIdentifierLabel: requiredIdentifiers.length > 0
+          ? requiredIdentifiers.join(", ")
+          : "No close identifier",
+        accountingImpactLabel: profile.accountingImpactHints.length > 0
+          ? profile.accountingImpactHints.join(", ")
+          : "No accounting hints",
+        effectiveLabel: formatSettingsDateOnly(profile.effectiveFrom)
+      };
+    })
+  };
+}
+
+function assetProfileStatusVariant(
+  status: SecurityAssetProfileDefinition["status"]
+): SettingsAssetProfileRow["statusVariant"] {
+  switch (status) {
+    case "Approved":
+      return "success";
+    case "Draft":
+      return "warning";
+    case "Retired":
+      return "danger";
+    case "Superseded":
+      return "outline";
+    default:
+      return "default";
+  }
 }
 
 function buildOperationsControlCenter(payload: SettingsScreenPayload): SettingsOperationsControlCenter {

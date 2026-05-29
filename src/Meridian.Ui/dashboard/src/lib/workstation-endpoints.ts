@@ -111,6 +111,10 @@ export const STRATEGY_ENGINE_API_ENDPOINTS = {
 
 export const SECURITY_MASTER_API_ENDPOINTS = {
   base: "/api/security-master",
+  assetProfiles: "/api/security-master/asset-profiles",
+  assetProfileDrafts: "/api/security-master/asset-profiles/drafts",
+  assetProfileApprove: "/api/security-master/asset-profiles/approve",
+  assetProfileRollback: "/api/security-master/asset-profiles/rollback",
   workstationSecurities: "/api/workstation/security-master/securities",
   workstationConflictsBulkResolve: "/api/workstation/security-master/conflicts/bulk-resolve"
 } as const;
@@ -533,6 +537,26 @@ export function securityMasterEntryEndpoint(): string {
 
 export function securityMasterAmendEndpoint(): string {
   return `${SECURITY_MASTER_API_ENDPOINTS.base}/amend`;
+}
+
+export function securityMasterAssetProfilesEndpoint(): string {
+  return SECURITY_MASTER_API_ENDPOINTS.assetProfiles;
+}
+
+export function securityMasterAssetProfileLineageEndpoint(profileId: string): string {
+  return `${SECURITY_MASTER_API_ENDPOINTS.assetProfiles}/${pathSegment(profileId, "profileId")}/lineage`;
+}
+
+export function securityMasterAssetProfileDraftsEndpoint(): string {
+  return SECURITY_MASTER_API_ENDPOINTS.assetProfileDrafts;
+}
+
+export function securityMasterAssetProfileApproveEndpoint(): string {
+  return SECURITY_MASTER_API_ENDPOINTS.assetProfileApprove;
+}
+
+export function securityMasterAssetProfileRollbackEndpoint(): string {
+  return SECURITY_MASTER_API_ENDPOINTS.assetProfileRollback;
 }
 
 export function securityMasterAliasUpsertEndpoint(): string {

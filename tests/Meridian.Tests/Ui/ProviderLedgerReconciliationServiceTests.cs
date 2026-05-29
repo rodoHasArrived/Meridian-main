@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
@@ -100,6 +101,49 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 history.Contains("Approved", StringComparison.OrdinalIgnoreCase) &&
                 history.Contains("reviewer=security-steward", StringComparison.OrdinalIgnoreCase) &&
                 history.Contains("reason=provider-symbol-confirmed", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_AttachesOpenIdentifierConflictsToPassport()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var securityId = Guid.Parse("35D27D8E-4460-4B17-92B8-6E5F53773D1D");
+            var conflictId = Guid.Parse("C3C9D912-4F8D-4C8A-B737-0E015877E3F6");
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                securityMasterConflictService: new StaticSecurityMasterConflictService(
+                    new SecurityMasterConflict(
+                        conflictId,
+                        securityId,
+                        "Identifier",
+                        "cusip",
+                        "alpaca",
+                        "037833100",
+                        "polygon",
+                        "037833101",
+                        DateTimeOffset.UtcNow.AddMinutes(-15),
+                        "Open")));
+
+            var detail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
+
+            var passport = detail.SecurityMasterPassports.Should().ContainSingle(item => item.Symbol == "AAPL").Subject;
+            passport.Status.Should().Be(ProviderSecurityMasterPassportStatusDto.Resolved);
+            passport.ConfidenceScore.Should().Be(60m);
+            passport.IdentifierConflicts.Should().ContainSingle(conflict =>
+                conflict.Contains(conflictId.ToString("N"), StringComparison.OrdinalIgnoreCase) &&
+                conflict.Contains("providers=alpaca/polygon", StringComparison.OrdinalIgnoreCase));
+            passport.ValidationIssueCodes.Should().Contain("SM_IDENTIFIER_CONFLICT");
+            passport.Reason.Should().Contain("open Security Master identifier conflict");
         }
         finally
         {
@@ -732,6 +776,64 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_RetainsProviderAmortizationScheduleEvents()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                internalSecuritiesMarketValue: 9_900m,
+                internalUnrealizedPnl: -100m,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
+                portfolioAdapter: new FixedIncomePortfolioAdapter(),
+                activityAdapter: new AmortizationScheduleActivityAdapter());
+
+            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
+            detail.CorporateActionReadiness.Should().NotBeNull();
+            detail.CorporateActionReadiness!.ProviderCorporateActionEventCount.Should().Be(1);
+            detail.CorporateActionReadiness.AmortizationScheduleEventCount.Should().Be(1);
+            detail.CorporateActionReadiness.FactorScheduleEventCount.Should().Be(0);
+            detail.CorporateActionReadiness.RequiredFeeds.Should().Contain("amortization-schedule");
+            detail.CorporateActionReadiness.RequiredFeeds.Should().Contain("factor-schedule");
+            detail.CorporateActionReadiness.EvidenceCandidates.Should().Contain(candidate =>
+                candidate.CandidateType == "AmortizationScheduleEvent" &&
+                candidate.ProviderEventId == "amortization-ust10y-20260501" &&
+                candidate.RequiredFeed == "amortization-schedule,factor-schedule" &&
+                candidate.EvidenceSource == "provider-corporate-action" &&
+                candidate.Amount == 125m &&
+                candidate.Quantity == 0.975m &&
+                candidate.Symbol == "UST10Y" &&
+                candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+            var amortizationEffect = detail.CorporateActionReadiness.LedgerEffects.Should().ContainSingle(effect =>
+                effect.CandidateType == "AmortizationScheduleEvent" &&
+                effect.ProviderEventId == "amortization-ust10y-20260501" &&
+                effect.LedgerEffectKind == "AmortizationScheduleValuationInput").Subject;
+            amortizationEffect.CashAmount.Should().Be(125m);
+            amortizationEffect.PrincipalAmount.Should().Be(125m);
+            amortizationEffect.Factor.Should().Be(0.975m);
+            amortizationEffect.Status.Should().Be(ProviderLedgerReconciliationCheckStatusDto.Matched);
+            amortizationEffect.JournalLines.Should().BeEmpty();
+            var amortizationFeed = detail.CorporateActionReadiness.SecurityMasterScheduleFeeds.Should()
+                .ContainSingle(feed => feed.ProviderEventId == "amortization-ust10y-20260501").Subject;
+            amortizationFeed.FeedKind.Should().Be("SecurityMasterAmortizationSchedule");
+            amortizationFeed.RequiredFeed.Should().Be("amortization-schedule,factor-schedule");
+            amortizationFeed.SecurityId.Should().NotBeNull();
+            amortizationFeed.PrincipalAmount.Should().Be(125m);
+            amortizationFeed.Factor.Should().Be(0.975m);
+            amortizationFeed.CanUpdateSecurityMaster.Should().BeTrue();
+            amortizationFeed.CanSupportLedgerValuation.Should().BeTrue();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_ProviderLedgerReconciliation_RetainsIncomeCashActivityCandidates()
     {
         var root = CreateTempRoot();
@@ -1126,7 +1228,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
             dividendCase.ExplainabilitySummary.Should().Contain("providerEventId=cash-dividend-aapl");
             dividendCase.ExplainabilitySummary.Should().Contain("evidenceSource=provider-activity");
             dividendCase.ExplainabilitySummary.Should().Contain("ledgerEffect=DividendIncomeRecognition");
+            dividendCase.ExplainabilitySummary.Should().Contain("effectiveDate=");
+            dividendCase.ExplainabilitySummary.Should().Contain("cashAmount=125");
             dividendCase.ExplainabilitySummary.Should().Contain("incomeAmount=125");
+            dividendCase.ExplainabilitySummary.Should().Contain("currency=USD");
             dividendCase.ExplainabilitySummary.Should().Contain("journalLines=0");
         }
         finally
@@ -1169,7 +1274,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
             principalCase.ExplainabilitySummary.Should().Contain("providerEventId=principal-paydown-ust10y");
             principalCase.ExplainabilitySummary.Should().Contain("requiredFeed=principal-cash-activity,factor-schedule");
             principalCase.ExplainabilitySummary.Should().Contain("ledgerEffect=PrincipalReturnRecognition");
+            principalCase.ExplainabilitySummary.Should().Contain("effectiveDate=");
+            principalCase.ExplainabilitySummary.Should().Contain("cashAmount=250");
             principalCase.ExplainabilitySummary.Should().Contain("principalAmount=250");
+            principalCase.ExplainabilitySummary.Should().Contain("currency=USD");
             principalCase.ExplainabilitySummary.Should().Contain("journalLines=0");
         }
         finally
@@ -1506,6 +1614,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Score.Should().Be(100);
             readiness.Components.Should().HaveCount(6);
             readiness.Components.Should().OnlyContain(component => component.Status == FundAccountCloseReadinessStatusDto.Ready);
+            readiness.Components.Should().OnlyContain(component =>
+                component.EvidenceLink == $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconciliation/latest");
             readiness.Components.Should().Contain(component =>
                 component.Key == "corporate-action-factor-readiness" &&
                 component.Score == 10 &&
@@ -1573,7 +1683,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Blockers.Should().Contain(blocker =>
                 blocker.Code == "close.security_master.casework_blocked" &&
                 blocker.Category == "SecurityMaster" &&
-                blocker.Severity == "Critical");
+                blocker.Severity == "Critical" &&
+                blocker.EvidenceLink == $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconciliation/latest");
             readiness.Components.Should().Contain(component =>
                 component.Key == "approvals-casework" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Blocked &&
@@ -1612,6 +1723,45 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Components.Should().Contain(component =>
                 component.Key == "provider-ledger-reconciliation" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Blocked);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_FundAccountCloseReadiness_RequiresSecurityMasterReviewWhenResolvedPassportIsStale()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
+            await BackdateBrokerageProjectionAsync(fixture, TimeSpan.FromHours(2));
+            await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(ProviderStaleAfterMinutes: 30, RequestedBy: "ops-user"));
+
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+
+            readiness.Should().NotBeNull();
+            readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.ReviewRequired);
+            readiness.IsReadyToClose.Should().BeFalse();
+            readiness.Components.Should().Contain(component =>
+                component.Key == "security-master-completeness" &&
+                component.Status == FundAccountCloseReadinessStatusDto.ReviewRequired &&
+                component.BlockingReason.Contains("stale provider evidence", StringComparison.OrdinalIgnoreCase));
+            readiness.Blockers.Should().Contain(blocker =>
+                blocker.Code == "close.security_master.stale_provider_mapping" &&
+                blocker.Category == "SecurityMaster" &&
+                blocker.Severity == "Warning" &&
+                blocker.EvidenceLink == $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconciliation/latest");
+            readiness.NextActions.Should().Contain(action =>
+                action.Code == "close.security_master.stale_provider_mapping" &&
+                action.Label == "Resolve Security Master coverage");
         }
         finally
         {
@@ -1960,6 +2110,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         IBrokeragePortfolioSync? portfolioAdapter = null,
         IBrokerageActivitySync? activityAdapter = null,
         IOperatorOverridesStore? operatorOverridesStore = null,
+        ISecurityMasterConflictService? securityMasterConflictService = null,
         bool recordCustodianPosition = false,
         decimal custodianPositionQuantity = 100m,
         decimal custodianPositionMarketValue = 18_750m,
@@ -1996,6 +2147,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
         if (operatorOverridesStore is not null)
         {
             services.AddSingleton(operatorOverridesStore);
+        }
+        if (securityMasterConflictService is not null)
+        {
+            services.AddSingleton(securityMasterConflictService);
         }
 
         services.AddSingleton<BrokeragePortfolioSyncService>();
@@ -2459,6 +2614,40 @@ public sealed class ProviderLedgerReconciliationServiceTests
         }
     }
 
+    private sealed class AmortizationScheduleActivityAdapter : IBrokerageActivitySync
+    {
+        public string ProviderId => "alpaca";
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var retrievedAt = DateTimeOffset.UtcNow;
+            return Task.FromResult(new BrokerageActivitySnapshotDto(
+                "alpaca",
+                externalAccountId,
+                retrievedAt,
+                Orders: [],
+                Fills: [],
+                CashTransactions: [],
+                CorporateActions:
+                [
+                    new BrokerageCorporateActionSnapshotDto(
+                        "amortization-ust10y-20260501",
+                        "AmortizationScheduleUpdated",
+                        "UST10Y",
+                        new DateOnly(2026, 5, 1),
+                        null,
+                        Amount: 125m,
+                        Quantity: 0.975m,
+                        Currency: "USD",
+                        Description: "Monthly amortization schedule update")
+                ]));
+        }
+    }
+
     private sealed class StaticSecurityReferenceLookup(SecurityStatusDto status = SecurityStatusDto.Active) : ISecurityReferenceLookup
     {
         public Task<WorkstationSecurityReference?> GetBySymbolAsync(string symbol, CancellationToken ct = default)
@@ -2519,6 +2708,31 @@ public sealed class ProviderLedgerReconciliationServiceTests
             string updatedBy,
             CancellationToken ct = default) =>
             throw new NotSupportedException();
+    }
+
+    private sealed class StaticSecurityMasterConflictService(params SecurityMasterConflict[] conflicts)
+        : ISecurityMasterConflictService
+    {
+        public Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<SecurityMasterConflict>>(
+                conflicts
+                    .Where(static conflict => string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
+                    .ToArray());
+        }
+
+        public Task<SecurityMasterConflict?> GetConflictAsync(Guid conflictId, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(conflicts.FirstOrDefault(conflict => conflict.ConflictId == conflictId));
+        }
+
+        public Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =>
+            Task.CompletedTask;
     }
 
     private sealed record FixedCapabilityRouter(bool IsRoutable) : ICapabilityRouter

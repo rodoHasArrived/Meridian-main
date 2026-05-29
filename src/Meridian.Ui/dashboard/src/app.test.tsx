@@ -61,6 +61,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     providerRoutingTrustSnapshots: null,
     providerRoutingRefreshing: false,
     rolePermissionCatalog: null,
+    securityAssetProfiles: null,
     ledgerMappingWorkbench: null,
     operationsApprovalPolicyMatrix: null,
     operationsCloseCalendar: null,

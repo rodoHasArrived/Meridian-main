@@ -194,7 +194,10 @@ public sealed class LedgerAmountProvenanceService
             item.SlaBreached,
             item.SlaState,
             item.AgeBand,
-            item.BusinessAgeHours);
+            item.BusinessAgeHours,
+            item.SignedOffBy,
+            item.SignedOffAt,
+            item.SignOffNote);
 
     private static LedgerAmountProvenanceEvidenceDto ToEvidence(FundReportPackLineagePointerDto pointer)
         => new(
@@ -236,7 +239,12 @@ public sealed class LedgerAmountProvenanceService
             LedgerEffectKind: ExtractExplainabilityValue(item.ExplainabilitySummary, "ledgerEffect"),
             PrincipalAmount: ExtractExplainabilityDecimal(item.ExplainabilitySummary, "principalAmount"),
             IncomeAmount: ExtractExplainabilityDecimal(item.ExplainabilitySummary, "incomeAmount"),
-            JournalPreviewLineCount: ExtractExplainabilityInt(item.ExplainabilitySummary, "journalLines"));
+            JournalPreviewLineCount: ExtractExplainabilityInt(item.ExplainabilitySummary, "journalLines"),
+            EffectiveDate: ExtractExplainabilityDate(item.ExplainabilitySummary, "effectiveDate"),
+            Factor: ExtractExplainabilityDecimal(item.ExplainabilitySummary, "factor") ??
+                ExtractLegacyFactorAmount(item.ExplainabilitySummary),
+            CashAmount: ExtractExplainabilityDecimal(item.ExplainabilitySummary, "cashAmount"),
+            Currency: ExtractExplainabilityValue(item.ExplainabilitySummary, "currency"));
     }
 
     private static bool IsProviderEvidenceCase(ReconciliationBreakQueueItem item)
@@ -412,6 +420,23 @@ public sealed class LedgerAmountProvenanceService
             ExtractExplainabilityValue(summary, key),
             System.Globalization.NumberStyles.Number,
             System.Globalization.CultureInfo.InvariantCulture,
+            out var value)
+            ? value
+            : null;
+
+    private static decimal? ExtractLegacyFactorAmount(string? summary)
+    {
+        var candidate = ExtractExplainabilityValue(summary, "candidate");
+        return string.Equals(candidate, "FactorScheduleEvent", StringComparison.OrdinalIgnoreCase)
+            ? ExtractExplainabilityDecimal(summary, "amount")
+            : null;
+    }
+
+    private static DateOnly? ExtractExplainabilityDate(string? summary, string key)
+        => DateOnly.TryParse(
+            ExtractExplainabilityValue(summary, key),
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,
             out var value)
             ? value
             : null;

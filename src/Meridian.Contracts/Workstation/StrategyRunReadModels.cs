@@ -160,7 +160,8 @@ public sealed record StrategyRunPromotionSummary(
     string? ApprovalStatus = null,
     string? ManualOverrideId = null,
     string? ApprovedBy = null,
-    IReadOnlyList<string>? ApprovalChecklist = null);
+    IReadOnlyList<string>? ApprovalChecklist = null,
+    IReadOnlyList<string>? EvidenceReferences = null);
 
 /// <summary>
 /// Shared governance summary used by audit and control surfaces.

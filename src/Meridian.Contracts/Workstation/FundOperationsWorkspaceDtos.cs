@@ -244,7 +244,11 @@ public sealed record LedgerAmountProvenanceEvidenceDto(
     string? LedgerEffectKind = null,
     decimal? PrincipalAmount = null,
     decimal? IncomeAmount = null,
-    int? JournalPreviewLineCount = null);
+    int? JournalPreviewLineCount = null,
+    DateOnly? EffectiveDate = null,
+    decimal? Factor = null,
+    decimal? CashAmount = null,
+    string? Currency = null);
 
 public sealed record LedgerAmountSecurityMasterLinkDto(
     string Symbol,
@@ -283,7 +287,10 @@ public sealed record LedgerAmountReconciliationCaseDto(
     bool SlaBreached = false,
     ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack,
     string? AgeBand = null,
-    double BusinessAgeHours = 0);
+    double BusinessAgeHours = 0,
+    string? SignedOffBy = null,
+    DateTimeOffset? SignedOffAt = null,
+    string? SignOffNote = null);
 
 public sealed record LedgerAmountReconciliationStateDto(
     int ReconciliationRunCount,
@@ -412,6 +419,12 @@ public sealed record FundReportPackHistoryItemDto(
     public int LifecycleEventCount { get; init; }
 }
 
+/// <summary>
+/// Shared governed report-pack workflow states. The W4 happy-path lifecycle is
+/// <see cref="Draft"/> to <see cref="InReview"/> to <see cref="Approved"/> to
+/// <see cref="Published"/>; additional states are retained for rejection, restatement,
+/// archival, and compatibility with older validation-oriented clients.
+/// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter<ReportPackWorkflowStateDto>))]
 public enum ReportPackWorkflowStateDto
 {
@@ -422,6 +435,7 @@ public enum ReportPackWorkflowStateDto
     Published = 4,
     Restated = 5,
     Archived = 6,
+    /// <summary>Reviewer-returned report pack that must be resubmitted before approval and publication.</summary>
     Rejected = 7,
     PendingApproval = 8
 }
@@ -458,6 +472,7 @@ public sealed record ReportPackPublicationManifestDto(
     string SignedOffBy,
     DateTimeOffset SignedOffAt,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks);
+/// <summary>Request payload for publishing an approved report pack into retained evidence storage.</summary>
 public sealed record ReportPackPublishRequestDto(
     string SignedOffBy,
     string EvidenceHash,
@@ -465,6 +480,7 @@ public sealed record ReportPackPublishRequestDto(
     string RetainedManifestPath,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
     string? Note = null);
+/// <summary>Request payload for rejecting an in-review report pack with reviewer metadata and supporting evidence.</summary>
 public sealed record ReportPackRejectRequestDto(
     string Reason,
     string Actor,
@@ -476,12 +492,14 @@ public sealed record ReportPackCreateRequestDto(
     string Period,
     VersionedReportTemplateIdDto TemplateId,
     IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null);
+/// <summary>Durable metadata captured when a published report pack is restated.</summary>
 public sealed record ReportPackRestatementMetadataDto(
     string ReasonCode,
     string Approver,
     Guid PriorVersionReportId,
     IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
     IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+/// <summary>Durable rejection decision retained on a report pack after review-state rejection.</summary>
 public sealed record ReportPackRejectionMetadataDto(
     string Reason,
     string Actor,

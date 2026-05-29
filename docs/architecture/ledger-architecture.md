@@ -96,21 +96,37 @@ income-statement rows, balance-sheet rows, net income, ending equity, and an acc
 variance. Totals are computed from the flat trial balance to avoid double-counting parent rollups;
 rows use the chart hierarchy for operator-facing statement sections.
 
+Closed-period trial-balance endpoints also expose `LedgerTrialBalanceReportDto`, which wraps the
+same server-derived period rows with locked-period status, debit/credit/net-income totals,
+accounting-policy lineage, and a SHA-256 checksum signature. The line-list route remains available
+for simple grids, while the report route gives export and audit surfaces a single signed payload.
+Closed-period P&L endpoints expose realized revenue/expense net income separately from
+accrual-basis adjustment impact, using retained ledger line labels and lineage markers to identify
+accrual adjustments while preserving the existing total revenue, expense, and net-income values.
+
 ### `LedgerReportPackBuilder`
 
 `LedgerReportPackBuilder` packages point-in-time financial statements into export-ready ledger
 artifacts. Given a `LedgerReportPackRequest`, it builds trial-balance, income-statement,
-balance-sheet, and manifest CSV artifacts, computes SHA-256 checksums for each artifact, and signs
-the report-pack payload with a deterministic integrity checksum plus the generator identity and
-timestamp. The request can carry a matching `LockedAccountingPeriod` so report manifests preserve
-period-lock evidence without making the ledger domain responsible for persistence, workflow
-approval, or endpoint routing.
+balance-sheet, financial-statements JSON, tax-lot realized-gains CSV, line-provenance, and
+manifest artifacts, computes SHA-256 checksums for each artifact, and signs the report-pack
+payload with a deterministic integrity checksum plus the generator identity and timestamp. The
+request can carry a matching `LockedAccountingPeriod` so report manifests preserve period-lock
+evidence without making the ledger domain responsible for persistence, workflow approval, or
+endpoint routing. When account-level tax-lot relief projections are supplied, the tax export
+records sale date, account scope, relief method, relieved lots, proceeds, cost basis, and
+per-lot realized gain/loss; otherwise the artifact remains header-only for stable pack shape.
 
 ### `LedgerReportSchedulePlanner`
 
 `LedgerReportSchedulePlanner` projects governed report schedules into concrete export occurrences.
 A `LedgerReportSchedule` captures the fund, report name, monthly/quarterly/annual cadence, first
 period start, due-day offset, base currency, requested formats, recipients, and creator evidence.
+`LedgerScheduledReportExportPackageBuilder` then binds a signed report pack to one scheduled
+occurrence and emits delivery artifacts: a recipient/format manifest for all scheduled exports and
+a regulator-facing XML summary when `RegulatoryXml` is requested. The XML artifact carries period,
+fund, due-date, signature, and statement-total evidence for downstream reporting tools; full
+XBRL/iXBRL taxonomy production remains outside the core ledger kernel.
 The planner emits period identifiers, report IDs, as-of timestamps, due timestamps, recipients, and
 formats, and each occurrence can create a `LedgerReportPackRequest`. Delivery, permission checks,
 artifact storage, and notification remain outside the ledger domain.
@@ -170,8 +186,8 @@ and rejects unknown or duplicate selections.
 The projector permits partial-lot relief, rounds per-lot cost basis to currency precision, debits
 scoped cash for proceeds, credits the security carrying account for cost basis, and posts the
 realized gain or loss to the scoped gain/loss account. It is intentionally deterministic and
-in-memory; persistence, approval, and tax-reporting export remain responsibilities of the storage,
-workflow, and reporting layers.
+in-memory; persistence and approval remain responsibilities of the storage and workflow layers,
+while report packs can export supplied projections for tax-reporting evidence.
 
 The PostgreSQL ledger store now owns the durable inputs for this projection. `ILedgerJournalStore`
 persists account-scoped tax-lot policies and open tax lots by ledger book/account, including
@@ -197,6 +213,29 @@ links. Approval and posting require evidence, rejected drafts cannot be posted, 
 convert to a `JournalEntry` with stable journal/line identifiers plus audit tags for source event,
 approval ID, approval status, and approver. The aggregate posts to the in-memory `Ledger`; durable
 storage and operator workflow queues remain application/storage responsibilities.
+
+Direct-lending accrual reversals use the same adjustment discipline. `LoanAccountingProjector`
+keeps originating accrual projections limited to open accounting periods, but resolves reversal
+projections with `LedgerPostingKindDto.Adjustment` so approved reversals can target soft-closed
+periods and then pass through the central ledger posting guard for final approval and period-state
+validation.
+
+Direct-lending command persistence is transactionally coupled to ledger journal persistence.
+`PostgresDirectLendingCommandService` projects ledger-impacting drawdown, accrual, receipt,
+discount/premium amortization, restructuring, and write-off events before calling
+`IDirectLendingStateStore.SaveAsync`; the generated loan event id is carried as the ledger
+`SourceEventId`. `PostgresDirectLendingStateStore` then appends those `LedgerJournalEntryWrite`
+records through `ITransactionalLedgerJournalStore` using the same `NpgsqlConnection` and
+serializable `NpgsqlTransaction` as the loan state, event, projection, outbox, and snapshot writes.
+If the ledger append fails, the loan event append is not committed.
+
+`DailyAccrualWorker` applies the same period-state discipline before it posts recurring daily
+accruals. When the worker can resolve the loan's ledger-book period scope, it calls
+`LedgerInterop.CheckPostingDate` for the accrual date as an originating posting. A blocked period
+does not fall through to `PostDailyAccrualAsync`; the worker logs the block and upserts a
+`LedgerPeriodClose` operator-inbox item in the Accounting workspace with
+`/accounting/reconciliation` and `FundReconciliation` navigation so controllers can resolve the
+period issue from the normal reconciliation workbench.
 
 ### `LockedAccountingPeriodBook`
 
@@ -422,6 +461,14 @@ reconciliation.
 - Journal entry ID uniqueness within the ledger
 - Ledger entry ID uniqueness
 - Consistent timestamps across all lines in an entry
+
+### AccrualTypes
+
+`LedgerInterop.ValidateAccrualEntry` and `BuildAccrualSummary` keep direct-lending accrual inputs
+deterministic before they are projected into journals. The kernel validates required loan/source
+event lineage, currency, period-slice dates, non-negative interest/fee/penalty amounts, and
+aggregate version, then summarizes valid entries by loan, reporting period, and normalized
+currency.
 
 ### Reconciliation
 

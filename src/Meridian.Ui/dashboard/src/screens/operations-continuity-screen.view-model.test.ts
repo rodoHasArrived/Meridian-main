@@ -155,8 +155,8 @@ const detail: OperationsContinuityWorkflow = {
       acknowledgedBy: null
     }
   ],
-  closePackage: null,
   closeReadiness: null,
+  closePackage: null,
   evidenceLinks: [
     {
       evidenceId: "close-workflow-1",
@@ -230,6 +230,16 @@ describe("Operations Continuity view model", () => {
       acknowledgementLabel: "Ledger validation is still required.",
       statusLabel: "Pending",
       statusTone: "review"
+    });
+    expect(vm.checklistSummary).toMatchObject({
+      taskCountLabel: "1 close task",
+      readyCountLabel: "0 ready",
+      blockedCountLabel: "1 blocked",
+      acknowledgementCountLabel: "0 acknowledged",
+      approvalCountLabel: "2 control approvals required",
+      evidenceCountLabel: "1/1 evidence pointer",
+      dueSoonLabel: "Next due May 09, 00:00 UTC: Ledger posting controller check",
+      statusTone: "blocked"
     });
     expect(vm.timeline[0]).toMatchObject({
       title: "Ledger Draft Blocked",
@@ -420,6 +430,130 @@ describe("Operations Continuity view model", () => {
     expect(vm.blockersEmptyText).toBe("Loading selected workflow blockers...");
     expect(vm.checklistEmptyText).toBe("Loading selected workflow checklist...");
     expect(vm.timelineEmptyText).toBe("Loading workflow timeline.");
+  });
+
+  it("summarizes completed checklist controls from the shared close-checklist contract", () => {
+    const completedDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      closeChecklist: [
+        {
+          ...detail.closeChecklist[0]!,
+          status: "Acknowledged",
+          blockingReason: null,
+          requiredApprovalCount: 1,
+          acknowledgedAtUtc: "2026-05-09T15:30:00Z",
+          acknowledgedBy: "fund-controller"
+        },
+        {
+          taskId: "close-gate-reportpack",
+          gate: "Approval",
+          label: "Report pack sign-off",
+          owner: "fund-admin",
+          requiredEvidence: "Published report pack manifest and retained evidence hash.",
+          dueDate: null,
+          requiredApprovalCount: 1,
+          expiresOn: null,
+          status: "Complete",
+          blockingReason: null,
+          evidencePointer: "report-pack-evidence-1",
+          remediationRoute: "/workstation/reporting",
+          canAcknowledge: false,
+          acknowledgedAtUtc: null,
+          acknowledgedBy: null
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: completedDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.checklistSummary).toMatchObject({
+      taskCountLabel: "2 close tasks",
+      readyCountLabel: "2 ready",
+      blockedCountLabel: "0 blocked",
+      acknowledgementCountLabel: "1 acknowledged",
+      approvalCountLabel: "2 control approvals required",
+      evidenceCountLabel: "2/2 evidence pointers",
+      dueSoonLabel: "No open due dates",
+      statusTone: "ready"
+    });
+  });
+
+  it("projects governed close-package publication from shared workflow metadata", () => {
+    const publishedDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      closePackage: {
+        closePackageId: "close-package-2026-05",
+        reportPackId: "report-pack-may-2026",
+        retainedManifestId: "close-package-2026-05-manifest",
+        retainedManifestRoute: "/workstation/accounting/operations-continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close-package/close-package-2026-05-manifest",
+        evidenceHash: "b5f6c7d8e9a00112233445566778899aabbccddeeff00112233445566778899",
+        publishedAtUtc: "2026-05-10T18:45:00Z",
+        publishedBy: "fund-controller",
+        signOffRationale: "Controller sign-off after report pack and checklist evidence were retained.",
+        evidenceLinks: [
+          {
+            evidenceId: "close-package-evidence-1",
+            label: "Close package retained manifest",
+            route: "/workstation/reporting/report-packs/report-pack-may-2026",
+            source: "operations-continuity",
+            capturedAtUtc: "2026-05-10T18:44:00Z"
+          }
+        ],
+        checklistControlApprovals: [
+          {
+            taskId: "close-gate-ledgerposting",
+            approvedBy: "fund-controller",
+            approvedAtUtc: "2026-05-10T18:40:00Z"
+          },
+          {
+            taskId: "close-gate-reportpack",
+            approvedBy: "fund-admin",
+            approvedAtUtc: "2026-05-10T18:42:00Z"
+          }
+        ]
+      }
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: publishedDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.selectedDetail?.metadata).toContainEqual({
+      label: "Close package",
+      value: "close-package-2026-05 signed by fund-controller at May 10, 18:45 UTC"
+    });
+    expect(vm.closePackage).toMatchObject({
+      statusLabel: "Published",
+      statusTone: "ready",
+      packageIdLabel: "close-package-2026-05",
+      reportPackLabel: "Report pack report-pack-may-2026",
+      manifestLabel: "close-package-2026-05-manifest",
+      manifestHref: "/accounting/operations-continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close-package/close-package-2026-05-manifest",
+      evidenceHashLabel: "b5f6c7d8e9a00112233445566778899aabbccddeeff00112233445566778899",
+      publishedLabel: "Published May 10, 18:45 UTC",
+      signerLabel: "Signed by fund-controller",
+      rationaleLabel: "Controller sign-off after report pack and checklist evidence were retained.",
+      evidenceLabel: "1 retained evidence link",
+      approvalLabel: "2 checklist control approvals"
+    });
   });
 
   it("aborts in-flight list requests when the hook unmounts", () => {

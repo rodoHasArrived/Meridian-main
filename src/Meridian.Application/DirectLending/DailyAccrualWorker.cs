@@ -65,7 +65,7 @@ public sealed class DailyAccrualWorker : BackgroundService
         _logger.LogInformation("DailyAccrualWorker stopped.");
     }
 
-    private async Task RunAccrualBatchAsync(DateOnly accrualDate, CancellationToken ct)
+    internal async Task RunAccrualBatchAsync(DateOnly accrualDate, CancellationToken ct)
     {
         var loanIds = await _operationsStore.GetLoanIdsAsync(ct).ConfigureAwait(false);
 

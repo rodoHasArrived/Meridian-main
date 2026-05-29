@@ -1,5 +1,16 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
+using Meridian.Contracts.Auth;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.Ui;
@@ -44,6 +55,64 @@ public sealed class ReportPackWorkflowServiceTests
             && e.Actor == "reviewer"
             && e.FromState == ReportPackWorkflowStateDto.Draft
             && e.ToState == ReportPackWorkflowStateDto.InReview);
+    }
+
+
+    [Fact]
+    public async Task Endpoint_CreateSubmitApprovePublish_CompletesW4LifecycleWithoutUnreachableIntermediateState()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
+        var client = app.GetTestClient();
+        var request = new ReportPackCreateRequestDto(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1));
+
+        var createResponse = await client.PostAsJsonAsync("/api/fund-structure/reporting/packs", request, ServerJsonOptions);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<ReportPackWorkflowRecordDto>(ServerJsonOptions);
+
+        created.Should().NotBeNull();
+        created!.State.Should().Be(ReportPackWorkflowStateDto.Draft);
+
+        var submitResponse = await client.PostAsync($"/api/fund-structure/reporting/packs/{created.ReportId:D}/submit", null);
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var submitted = await submitResponse.Content.ReadFromJsonAsync<ReportPackWorkflowRecordDto>(ServerJsonOptions);
+
+        submitted.Should().NotBeNull();
+        submitted!.State.Should().Be(ReportPackWorkflowStateDto.InReview);
+        submitted.AuditTrail.Should().ContainSingle(entry =>
+            entry.FromState == ReportPackWorkflowStateDto.Draft &&
+            entry.ToState == ReportPackWorkflowStateDto.InReview);
+
+        var approveResponse = await client.PostAsync($"/api/fund-structure/reporting/packs/{created.ReportId:D}/approve", null);
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var approved = await approveResponse.Content.ReadFromJsonAsync<ReportPackWorkflowRecordDto>(ServerJsonOptions);
+
+        approved.Should().NotBeNull();
+        approved!.State.Should().Be(ReportPackWorkflowStateDto.Approved);
+
+        var publishRequest = new ReportPackPublishRequestDto(
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+        var publishResponse = await client.PostAsJsonAsync($"/api/fund-structure/reporting/packs/{created.ReportId:D}/publish", publishRequest, ServerJsonOptions);
+        publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var published = await publishResponse.Content.ReadFromJsonAsync<ReportPackWorkflowRecordDto>(ServerJsonOptions);
+
+        published.Should().NotBeNull();
+        published!.State.Should().Be(ReportPackWorkflowStateDto.Published);
+        published.AuditTrail.Select(entry => entry.ToState).Should().ContainInOrder(
+            ReportPackWorkflowStateDto.Draft,
+            ReportPackWorkflowStateDto.InReview,
+            ReportPackWorkflowStateDto.Approved,
+            ReportPackWorkflowStateDto.Published);
+        published.AuditTrail.Should().NotContain(entry =>
+            entry.ToState == ReportPackWorkflowStateDto.Validated ||
+            entry.ToState == ReportPackWorkflowStateDto.PendingApproval);
     }
 
     [Fact]
@@ -278,8 +347,7 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
 
         var rejected = svc.Reject(
             created.ReportId,
@@ -310,8 +378,7 @@ public sealed class ReportPackWorkflowServiceTests
 
         if (startingState == ReportPackWorkflowStateDto.Published)
         {
-            svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-            svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+            svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
             svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
             svc.Publish(
                 created.ReportId,
@@ -335,8 +402,7 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
 
         Action act = () => svc.Reject(created.ReportId, "needs reviewer remediation", "operator", "operator");
 
@@ -349,15 +415,14 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
 
         var rejected = svc.Reject(created.ReportId, "missing controller sign-off evidence", "senior-reviewer", "reviewer");
 
         rejected.AuditTrail.Should().ContainSingle(entry =>
             entry.Actor == "senior-reviewer" &&
             entry.Action == "rejected" &&
-            entry.FromState == ReportPackWorkflowStateDto.PendingApproval &&
+            entry.FromState == ReportPackWorkflowStateDto.InReview &&
             entry.ToState == ReportPackWorkflowStateDto.Rejected &&
             entry.Note == "missing controller sign-off evidence");
     }
@@ -367,8 +432,7 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Reject(created.ReportId, "missing controller sign-off evidence", "senior-reviewer", "reviewer");
 
         Action publishRejected = () => svc.Publish(
@@ -385,8 +449,7 @@ public sealed class ReportPackWorkflowServiceTests
             .WithMessage("invalid transition Rejected -> Published");
 
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Draft, "author", "operator");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         var published = svc.Publish(
             created.ReportId,
@@ -532,4 +595,31 @@ public sealed class ReportPackWorkflowServiceTests
             SecurityDefinitionId: "definition-1",
             ReconciliationOutcome: "matched",
             ApprovalId: "approval-1");
+
+    private static readonly JsonSerializerOptions ServerJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
+
+    private static async Task<WebApplication> CreateFundStructureAppAsync(UserRole role)
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Development
+        });
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ReportPackWorkflowService>();
+
+        var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "controller.admin";
+            context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = role;
+            await next();
+        });
+        app.MapFundStructureEndpoints(ServerJsonOptions);
+
+        await app.StartAsync();
+        return app;
+    }
 }

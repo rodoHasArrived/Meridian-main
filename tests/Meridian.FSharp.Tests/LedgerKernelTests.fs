@@ -20,6 +20,23 @@ let private line debit credit =
         Description = "test"
     }
 
+let private accrualEntry loanId accrualDate interest commitmentFee penalty currency sourceEventId =
+    {
+        AccrualEntryId = Guid.NewGuid()
+        LoanId = loanId
+        AccrualDate = accrualDate
+        PeriodStartDate = accrualDate
+        PeriodEndDate = accrualDate
+        InterestAmount = interest
+        CommitmentFeeAmount = commitmentFee
+        PenaltyAmount = penalty
+        Currency = currency
+        SourceEventId = sourceEventId
+        SourceEventType = "loan.daily-accrual-posted"
+        AggregateVersion = 2L
+        RecordedAt = DateTimeOffset.Parse("2026-03-24T12:00:00Z")
+    }
+
 [<Fact>]
 let ``Ledger validation rejects unbalanced journal`` () =
     let result =
@@ -49,6 +66,56 @@ let ``Ledger trial balance groups by account identity`` () =
 
     balances.Length |> should equal 1
     balances[0].Balance |> should equal 125m
+
+[<Fact>]
+let ``Accrual summary aggregates direct lending entries by loan period and currency`` () =
+    let loanId = Guid.Parse("22222222-2222-2222-2222-222222222222")
+    let otherLoanId = Guid.Parse("33333333-3333-3333-3333-333333333333")
+    let eventOne = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+    let eventTwo = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+
+    let summary =
+        LedgerInterop.BuildAccrualSummary(
+            loanId,
+            DateOnly(2026, 3, 1),
+            DateOnly(2026, 3, 31),
+            "usd",
+            [|
+                accrualEntry loanId (DateOnly(2026, 3, 24)) 12.50m 3.25m 1.00m "USD" eventOne
+                accrualEntry loanId (DateOnly(2026, 3, 25)) 10.00m 2.00m 0.00m "usd" eventTwo
+                accrualEntry otherLoanId (DateOnly(2026, 3, 25)) 99.00m 0.00m 0.00m "USD" (Guid.NewGuid())
+                accrualEntry loanId (DateOnly(2026, 4, 1)) 25.00m 0.00m 0.00m "USD" (Guid.NewGuid())
+            |])
+
+    summary.EntryCount |> should equal 2
+    summary.Currency |> should equal "USD"
+    summary.InterestAmount |> should equal 22.50m
+    summary.CommitmentFeeAmount |> should equal 5.25m
+    summary.PenaltyAmount |> should equal 1.00m
+    summary.SourceEventIds |> should equal [| eventOne; eventTwo |]
+
+[<Fact>]
+let ``Accrual validation rejects negative amounts and missing lineage`` () =
+    let invalidEntry =
+        {
+            accrualEntry
+                (Guid.Parse("22222222-2222-2222-2222-222222222222"))
+                (DateOnly(2026, 3, 24))
+                -1.00m
+                0.00m
+                0.00m
+                "USD"
+                Guid.Empty
+            with
+                SourceEventType = ""
+        }
+
+    let result = LedgerInterop.ValidateAccrualEntry(invalidEntry)
+
+    result.IsValid |> should equal false
+    result.Errors |> should contain "Interest amount cannot be negative."
+    result.Errors |> should contain "Source event id is required."
+    result.Errors |> should contain "Source event type is required."
 
 [<Fact>]
 let ``Ledger reconciliation marks exact cash flow as matched`` () =

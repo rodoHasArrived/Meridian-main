@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-28
+last_reviewed: 2026-05-29
 ---
 
 # src/Meridian.Application
@@ -25,6 +25,13 @@ and UI presentation concerns in their owning layers.
 ## Key folders and files
 
 - `Commands/` - CLI command handlers and operator workflows.
+- `DirectLending/` - loan command/query orchestration, direct-lending ledger projection, and the
+  daily accrual worker. Recurring accrual posting now checks ledger accounting-period state before
+  calling the direct-lending command service; period-blocked originating accruals are routed to the
+  Accounting operator inbox with `FundReconciliation` navigation instead of becoming log-only
+  failures. Ledger-impacting commands project balanced `LedgerJournalEntryWrite` records before
+  persistence and pass them to the direct-lending state store with the same generated loan event id
+  as ledger source lineage.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
   and approval close lanes. Approval and close commands enforce shared close-checklist control
@@ -69,10 +76,21 @@ and UI presentation concerns in their owning layers.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
-  valuation evidence.
+  valuation evidence. The same folder owns the starter custom asset profile catalog and profile-backed
+  validation rules for approved profile-version pinning, typed no-code field values, profile approval
+  metadata, and identifier coverage. Security Master create/amend orchestration preserves pinned
+  profile-backed `CustomAsset` and `OtherSecurity` payloads in projection and event evidence while
+  reusing the existing generic-security domain backing model. The query service keeps ordinary text
+  search delegated to the storage index and uses the projected Security Master universe only when
+  custom profile id, version, field-key, or field-value filters are supplied. Profile definitions
+  are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter definitions
+  with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
-  mapping workbench orchestration. Ledger mapping resolution stays server-side and reuses
-  fund-structure assignments before falling back to account ledger references.
+  mapping workbench orchestration. Ownership-link policy validation prevents invalid setup graphs
+  by blocking self-parenting, active cycles, incompatible relationship types, overlapping primary
+  links, invalid percentage ownership, sibling percentage over-allocation, and invalid effective
+  windows before graph mutations are persisted. Ledger mapping resolution stays server-side and
+  reuses fund-structure assignments before falling back to account ledger references.
 - `FundAccounts/` - internal account balance snapshots, statement intake, account readiness, and
   provider-link history. Balance snapshots preserve optional realized and unrealized P&L values so
   shared provider-ledger reconciliation can compare broker marks with retained internal book

@@ -139,7 +139,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                         RunId: runId,
                         Symbol: safeRequest.Symbol,
                         CorrelationId: correlationId,
-                        Message: controlDecision.RejectReason), ct).ConfigureAwait(false);
+                        Message: controlDecision.RejectReason,
+                        Reason: controlDecision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
+                        Scope: BuildOrderAuditScope(safeRequest, runId),
+                        Metadata: BuildOrderRejectedByControlAuditMetadata(controlDecision)), ct).ConfigureAwait(false);
                 }
 
                 var rejectedState = CreateRejectedState(orderId, safeRequest, controlDecision.RejectReason);
@@ -594,6 +597,22 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             ["manualOverrideId"] = operatorControlDecision.AppliedManualOverrideId,
             ["controlDecision"] = "approved-by-manual-override"
         };
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildOrderRejectedByControlAuditMetadata(
+        ExecutionControlDecision operatorControlDecision)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["controlDecision"] = "rejected-by-operator-controls"
+        };
+
+        if (!string.IsNullOrWhiteSpace(operatorControlDecision.RejectCode))
+        {
+            metadata["rejectCode"] = operatorControlDecision.RejectCode;
+        }
+
+        return metadata;
     }
 
     private async Task RecordOrderLifecycleAuditAsync(

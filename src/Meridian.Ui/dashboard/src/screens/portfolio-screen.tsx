@@ -865,6 +865,45 @@ export function PortfolioScreen({
                     </div>
                   ))}
                 </div>
+                {vm.runDrillInSummary.bridgeRows.length > 0 ? (
+                  <div className="mt-3 grid gap-2 lg:grid-cols-2" aria-label="Selected run realized unrealized bridge">
+                    {vm.runDrillInSummary.bridgeRows.map((row) => (
+                      <div
+                        key={row.id}
+                        className="grid gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2 sm:grid-cols-[minmax(0,0.45fr)_minmax(0,0.25fr)_minmax(0,1fr)]"
+                      >
+                        <div className="eyebrow-label">{row.label}</div>
+                        <div className={cn("font-mono text-xs font-semibold sm:text-right", detailFieldToneClass[row.tone])}>
+                          {row.value}
+                        </div>
+                        <p className="text-xs leading-5 text-muted-foreground">{row.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                {vm.runDrillInSummary.tradeEvidenceRows.length > 0 ? (
+                  <div className="mt-3 overflow-hidden rounded-md border border-border/60 bg-background/45">
+                    <div className="border-b border-border/60 px-3 py-2">
+                      <div className="eyebrow-label">Recent trade evidence</div>
+                    </div>
+                    <div className="grid divide-y divide-border/60">
+                      {vm.runDrillInSummary.tradeEvidenceRows.map((row) => (
+                        <div
+                          key={row.id}
+                          aria-label={row.ariaLabel}
+                          className="grid gap-2 px-3 py-2 text-xs sm:grid-cols-[minmax(0,0.5fr)_minmax(0,0.45fr)_minmax(0,0.45fr)_minmax(0,0.45fr)_minmax(0,0.7fr)_minmax(0,0.7fr)]"
+                        >
+                          <span className="font-semibold text-foreground">{row.symbol}</span>
+                          <span className="font-mono text-muted-foreground">{row.quantity}</span>
+                          <span className="font-mono text-muted-foreground">{row.price}</span>
+                          <span className="font-mono text-muted-foreground">{row.commission}</span>
+                          <span className="font-mono text-muted-foreground">{row.filledAt}</span>
+                          <span className="break-words font-mono text-muted-foreground">{row.accountId}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </section>
               <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
               <DenseDataTable

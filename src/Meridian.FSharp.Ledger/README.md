@@ -22,6 +22,7 @@ This layer should express ledger calculations in functional form while keeping p
 ## Key folders and files
 
 - `Meridian.FSharp.Ledger.fsproj` - F# ledger project boundary.
+- `AccrualTypes.fs` - direct-lending accrual entry validation and deterministic period summaries.
 - `ReconciliationCaseWorkflow.fs` - pure transition legality and provider-ledger tolerance checks for reconciliation cases.
 - Ledger calculation modules and functional domain types.
 
@@ -32,6 +33,9 @@ Use this module for ledger calculations and deterministic reconciliation rules t
 ## API contract notes
 
 - `LedgerInterop.ClassifyBreakFacts` trims string fields before mapping DTOs into `RawBreakFacts`, so classification is stable for equivalent break facts that differ only by surrounding whitespace.
+- `LedgerInterop.ValidateAccrualEntry` and `BuildAccrualSummary` expose direct-lending accrual
+  validation and period summaries to C# services without adding persistence concerns to this
+  project.
 - `ReconciliationCaseWorkflowInterop` exposes C#-friendly transition and provider-ledger checks while keeping the lifecycle rule table pure. The shared Accounting casework lifecycle maps legacy review flows onto `Investigating`, `Resolved`, `SignedOff`, and privileged `Reopened` states so browser, WPF, and repository wrappers use one deterministic transition table.
 
 ## Diagrams

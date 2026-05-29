@@ -98,6 +98,39 @@ public sealed record LinkFundStructureNodesRequest(
     bool IsPrimary = false,
     string? Notes = null);
 
+public sealed record UpdateOwnershipLinkRequest(
+    Guid OwnershipLinkId,
+    OwnershipRelationshipTypeDto RelationshipType,
+    DateTimeOffset EffectiveFrom,
+    string UpdatedBy,
+    decimal? OwnershipPercent = null,
+    bool IsPrimary = false,
+    DateTimeOffset? EffectiveTo = null,
+    string? Notes = null);
+
+public sealed record ExpireOwnershipLinkRequest(
+    Guid OwnershipLinkId,
+    DateTimeOffset EffectiveTo,
+    string ExpiredBy,
+    string? Notes = null);
+
+public sealed record ReplaceOwnershipLinkRequest(
+    Guid OwnershipLinkId,
+    Guid ReplacementOwnershipLinkId,
+    Guid ParentNodeId,
+    Guid ChildNodeId,
+    OwnershipRelationshipTypeDto RelationshipType,
+    DateTimeOffset EffectiveFrom,
+    string ReplacedBy,
+    decimal? OwnershipPercent = null,
+    bool IsPrimary = false,
+    DateTimeOffset? ReplacedEffectiveTo = null,
+    string? Notes = null);
+
+public sealed record ValidateOwnershipGraphRequest(
+    DateTimeOffset? AsOf = null,
+    bool ActiveOnly = true);
+
 public sealed record AssignFundStructureNodeRequest(
     Guid AssignmentId,
     Guid NodeId,

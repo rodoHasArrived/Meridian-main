@@ -69,6 +69,48 @@ public sealed class AccrualLedgerServiceTests
         writes[0].AdjustmentApproval.Should().BeEquivalentTo(approval);
     }
 
+    [Fact]
+    public async Task ReverseAccrualAsync_UsesSoftClosedPeriodForApprovedAdjustment()
+    {
+        var period = BuildOpenPeriod() with { Status = "SoftClosed" };
+        var service = CreateService(period);
+        var loanId = Guid.NewGuid();
+        var approval = BuildApprovedAdjustmentApproval();
+
+        var writes = await service.ReverseAccrualAsync(
+            loanId,
+            BuildContract(loanId),
+            BuildAccrualEntry(),
+            Guid.NewGuid(),
+            BuildMetadata(),
+            adjustmentApproval: approval);
+
+        writes.Should().ContainSingle();
+        writes[0].PeriodId.Should().Be(period.PeriodId);
+        writes[0].PostingKind.Should().Be(LedgerPostingKindDto.Adjustment);
+        writes[0].AdjustmentApproval.Should().BeEquivalentTo(approval);
+    }
+
+    [Fact]
+    public async Task AccrueAsync_RejectsOriginatingAccrualWhenOnlyMatchingPeriodIsSoftClosed()
+    {
+        var period = BuildOpenPeriod() with { Status = "SoftClosed" };
+        var service = CreateService(period);
+        var loanId = Guid.NewGuid();
+
+        var act = () => service.AccrueAsync(
+            loanId,
+            BuildContract(loanId),
+            new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)),
+            BuildAccrualEntry(),
+            Guid.NewGuid(),
+            BuildMetadata());
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*No ledger accounting period accepts Originating posting date '2026-03-24'*");
+    }
+
     private static AccrualLedgerService CreateService(LedgerAccountingPeriod period)
     {
         var projector = new LoanAccountingProjector(

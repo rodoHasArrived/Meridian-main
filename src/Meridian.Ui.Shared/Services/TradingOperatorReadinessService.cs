@@ -5,6 +5,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.FSharp.Operations;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
@@ -942,7 +943,8 @@ public sealed class TradingOperatorReadinessService
                 ApprovalStatus: record.Decision,
                 ManualOverrideId: record.ManualOverrideId,
                 ApprovedBy: record.ApprovedBy,
-                ApprovalChecklist: record.ApprovalChecklist ?? []);
+                ApprovalChecklist: record.ApprovalChecklist ?? [],
+                EvidenceReferences: record.EvidenceReferences ?? []);
         }
 
         var promotion = latestRun?.Promotion ?? latestRun?.Summary.Promotion;
@@ -959,7 +961,8 @@ public sealed class TradingOperatorReadinessService
                 ApprovalStatus: promotion.ApprovalStatus,
                 ManualOverrideId: promotion.ManualOverrideId,
                 ApprovedBy: promotion.ApprovedBy,
-                ApprovalChecklist: promotion.ApprovalChecklist ?? []);
+                ApprovalChecklist: promotion.ApprovalChecklist ?? [],
+                EvidenceReferences: promotion.EvidenceReferences ?? []);
     }
 
     private static bool IsPromotionRecordLinkedToRun(StrategyPromotionRecord record, string runId) =>
@@ -971,6 +974,7 @@ public sealed class TradingOperatorReadinessService
         !string.IsNullOrWhiteSpace(record.ApprovedBy) &&
         !string.IsNullOrWhiteSpace(record.ApprovalReason) &&
         HasApprovalChecklist(record.ApprovalChecklist) &&
+        (record.TargetRunType != RunType.Live || HasEvidenceReferences(record.EvidenceReferences)) &&
         !string.IsNullOrWhiteSpace(record.SourceRunId) &&
         !string.IsNullOrWhiteSpace(record.AuditReference);
 
@@ -1005,6 +1009,12 @@ public sealed class TradingOperatorReadinessService
             missing.Add("checklist");
         }
 
+        if (string.Equals(promotion.SuggestedNextMode, RunType.Live.ToString(), StringComparison.OrdinalIgnoreCase) &&
+            !HasEvidenceReferences(promotion.EvidenceReferences))
+        {
+            missing.Add("evidenceReferences");
+        }
+
         if (string.IsNullOrWhiteSpace(promotion.SourceRunId))
         {
             missing.Add("sourceRunId");
@@ -1033,6 +1043,10 @@ public sealed class TradingOperatorReadinessService
     private static bool HasApprovalChecklist(IReadOnlyList<string>? approvalChecklist)
         => approvalChecklist is { Count: > 0 } &&
            approvalChecklist.All(static item => !string.IsNullOrWhiteSpace(item));
+
+    private static bool HasEvidenceReferences(IReadOnlyList<string>? evidenceReferences)
+        => evidenceReferences is { Count: > 0 } &&
+           evidenceReferences.All(static item => !string.IsNullOrWhiteSpace(item));
 
     private static TradingPaperSessionReadinessDto? SelectActiveSession(
         IReadOnlyList<TradingPaperSessionReadinessDto> sessions,

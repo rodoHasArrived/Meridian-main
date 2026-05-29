@@ -44,7 +44,7 @@ reconciliation, approvals, and governed outputs from the same underlying evidenc
 Master should be treated as a delivered baseline in this blueprint, not as a future foundation
 wave.
 
-For the first deep vertical implementation of these governance patterns in direct lending, see [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md).
+For the first deep vertical implementation of these governance patterns in direct lending, see [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md).
 
 ## Current implementation foundation
 
@@ -670,5 +670,5 @@ _FundStudio source: discretionary mandate management with drift monitoring and r
 - [Fund Management Product Vision and Capability Matrix](fund-management-product-vision-and-capability-matrix.md)
 - [Fund Management Module Implementation Backlog](fund-management-module-implementation-backlog.md)
 - [Fund Management PR-Sequenced Roadmap](fund-management-pr-sequenced-roadmap.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Project Roadmap](../status/ROADMAP.md)

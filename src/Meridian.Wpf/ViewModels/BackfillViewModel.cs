@@ -14,6 +14,7 @@ using Meridian.Ui.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 using UiBackfillCompletedEventArgs = Meridian.Ui.Services.BackfillCompletedEventArgs;
 using UiBackfillProgressEventArgs = Meridian.Ui.Services.BackfillProgressEventArgs;
 using UiBackfillService = Meridian.Ui.Services.BackfillService;
@@ -61,6 +62,8 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
     public ObservableCollection<ScheduledJobInfo> ScheduledJobs => WorkbenchSection.ScheduledJobs;
     public ObservableCollection<ResumableJobInfo> ResumableJobs => WorkbenchSection.ResumableJobs;
     public ObservableCollection<GapAnalysisItem> GapItems => WorkbenchSection.GapItems;
+    public WorkstationTableModel<SymbolProgressInfo> SymbolProgressTable => WorkbenchSection.SymbolProgressTable;
+    public WorkstationTableModel<GapAnalysisItem> GapItemsTable => WorkbenchSection.GapItemsTable;
 
     // ── Bindable properties ─────────────────────────────────────────────────
     public string BackfillStatusText

@@ -17,6 +17,50 @@ public static class FundStructureEndpoints
     {
         var group = app.MapGroup("/api/fund-structure").WithTags("Fund Structure");
 
+
+        group.MapPost("/setup-drafts/validate", (JsonElement body, HttpContext context) =>
+        {
+            var workflow = ResolveSetupWorkflow(context);
+            if (workflow is null)
+                return ServiceUnavailable();
+
+            var draft = JsonSerializer.Deserialize<FundStructureSetupDraftDto>(body.GetRawText(), jsonOptions);
+            var result = workflow.Preview(draft);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("ValidateFundStructureSetupDraft")
+        .Produces<FundStructureSetupPreviewDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/setup-drafts/create", async (JsonElement body, HttpContext context) =>
+        {
+            var workflow = ResolveSetupWorkflow(context);
+            if (workflow is null)
+                return ServiceUnavailable();
+
+            FundStructureSetupDraftDto? draft;
+            try
+            {
+                draft = JsonSerializer.Deserialize<FundStructureSetupDraftDto>(body.GetRawText(), jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.Problem($"Setup draft is invalid JSON. {ex.Message}", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var validation = workflow.Validate(draft);
+            if (!validation.IsValid)
+            {
+                return Results.Json(validation, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var result = await workflow.CreateAsync(draft!, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+        })
+        .WithName("CreateFundStructureSetupDraft")
+        .Produces<FundStructureSetupResultDto>(StatusCodes.Status201Created)
+        .Produces<FundStructureSetupValidationSummaryDto>(StatusCodes.Status400BadRequest);
+
         group.MapPost("/organizations", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
@@ -187,6 +231,101 @@ public static class FundStructureEndpoints
         .WithName("LinkFundStructureNodes")
         .Produces<OwnershipLinkDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPut("/links/{ownershipLinkId:guid}", async (Guid ownershipLinkId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+
+            var request = JsonSerializer.Deserialize<UpdateOwnershipLinkRequest>(body.GetRawText(), jsonOptions);
+            if (request is null)
+            {
+                return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            request = request with { OwnershipLinkId = ownershipLinkId };
+            try
+            {
+                var result = await service.UpdateOwnershipLinkAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("UpdateOwnershipLink")
+        .Produces<OwnershipLinkDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/links/{ownershipLinkId:guid}/expire", async (Guid ownershipLinkId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+
+            var request = JsonSerializer.Deserialize<ExpireOwnershipLinkRequest>(body.GetRawText(), jsonOptions);
+            if (request is null)
+            {
+                return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            request = request with { OwnershipLinkId = ownershipLinkId };
+            try
+            {
+                var result = await service.ExpireOwnershipLinkAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("ExpireOwnershipLink")
+        .Produces<OwnershipLinkDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/links/{ownershipLinkId:guid}/replace", async (Guid ownershipLinkId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+
+            var request = JsonSerializer.Deserialize<ReplaceOwnershipLinkRequest>(body.GetRawText(), jsonOptions);
+            if (request is null)
+            {
+                return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            request = request with { OwnershipLinkId = ownershipLinkId };
+            try
+            {
+                var result = await service.ReplaceOwnershipLinkAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("ReplaceOwnershipLink")
+        .Produces<OwnershipLinkDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/links/validate", async (JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+
+            var request = JsonSerializer.Deserialize<ValidateOwnershipGraphRequest>(body.GetRawText(), jsonOptions)
+                ?? new ValidateOwnershipGraphRequest();
+            var result = await service.ValidateOwnershipGraphAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("ValidateOwnershipGraph")
+        .Produces<OwnershipGraphValidationResultDto>(StatusCodes.Status200OK);
 
         group.MapPost("/assignments", async (JsonElement body, HttpContext context) =>
         {
@@ -704,7 +843,7 @@ public static class FundStructureEndpoints
         .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status201Created);
 
         group.MapPost("/reporting/packs/{reportId:guid}/validate", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Validated));
-        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.InReview));
+        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => SubmitPack(context, reportId));
         group.MapPost("/reporting/packs/{reportId:guid}/approve", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Approved));
         group.MapPost("/reporting/packs/{reportId:guid}/reject", (Guid reportId, ReportPackRejectRequestDto request, HttpContext context) =>
         {
@@ -739,6 +878,7 @@ public static class FundStructureEndpoints
             }
         })
         .WithName("RejectReportingPackWorkflow")
+        .Accepts<ReportPackRejectRequestDto>("application/json")
         .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
@@ -912,6 +1052,34 @@ public static class FundStructureEndpoints
     }
 
 
+    private static IResult SubmitPack(HttpContext context, Guid reportId)
+    {
+        if (!HasReportingWorkflowPermission(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        if (!TryResolveAuthorizedActorAndRole(context, out var actor, out var role))
+        {
+            return Results.Unauthorized();
+        }
+
+        var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+        if (svc is null)
+        {
+            return WorkspaceServiceUnavailable();
+        }
+
+        try
+        {
+            return Results.Json(svc.Submit(reportId, actor, role), statusCode: StatusCodes.Status200OK);
+        }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
     private static IResult TransitionPack(HttpContext context, Guid reportId, ReportPackWorkflowStateDto target)
     {
         if (!HasReportingWorkflowPermission(context))
@@ -939,6 +1107,11 @@ public static class FundStructureEndpoints
             return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
         }
     }
+
+    private static FundStructureSetupWorkflowService? ResolveSetupWorkflow(HttpContext context)
+        => context.RequestServices.GetService<FundStructureSetupWorkflowService>()
+           ?? (ResolveService(context) is { } service ? new FundStructureSetupWorkflowService(service) : null);
+
     private static IFundStructureService? ResolveService(HttpContext context) =>
         context.RequestServices.GetService<IFundStructureService>();
 

@@ -15,14 +15,17 @@
         ResizeMode="NoResize"
         Deactivated="OnWindowDeactivated"
         KeyDown="OnWindowKeyDown"
+        AutomationProperties.AutomationId="CommandPaletteWindow"
         AutomationProperties.Name="Command Palette">
 
-    <Border Background="#FF1E1E2E"
-            CornerRadius="8"
-            BorderBrush="#FF45475A"
+    <Border x:Name="CommandPaletteShell"
+            Background="{StaticResource ConsoleCardSurfaceRaisedBrush}"
+            CornerRadius="6"
+            BorderBrush="{StaticResource ConsoleBorderBrush}"
             BorderThickness="1"
             Margin="16"
-            Effect="{StaticResource CommandPaletteShadow}">
+            AutomationProperties.AutomationId="CommandPaletteWindowChrome"
+            AutomationProperties.Name="Command Palette Chrome">
         <Grid Margin="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -32,7 +35,10 @@
             </Grid.RowDefinitions>
 
             <!-- Search box -->
-            <Border Grid.Row="0" BorderBrush="#FF45475A" BorderThickness="0,0,0,1" Padding="12,12,12,10">
+            <Border Grid.Row="0"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="12,12,12,10">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -42,26 +48,29 @@
                                Text="&#xE721;"
                                FontFamily="Segoe MDL2 Assets"
                                FontSize="16"
-                               Foreground="#FF89B4FA"
+                               Foreground="{StaticResource ConsoleAccentBlueBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,8,0" />
                     <TextBox x:Name="SearchBox"
                              Grid.Column="1"
                              FontSize="16"
                              Background="Transparent"
-                             Foreground="#FFCDD6F4"
-                             CaretBrush="#FF89B4FA"
+                             Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                             CaretBrush="{StaticResource ConsoleAccentBlueBrush}"
                              BorderThickness="0"
                              VerticalContentAlignment="Center"
-                             TextChanged="OnSearchTextChanged" />
+                             TextChanged="OnSearchTextChanged"
+                             AutomationProperties.AutomationId="CommandPaletteWindowInput"
+                             AutomationProperties.Name="Command Palette Search" />
                     <TextBlock Grid.Column="1"
                                x:Name="PlaceholderText"
                                Text="Type a command or search..."
                                FontSize="16"
-                               Foreground="#FF6C7086"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
                                VerticalAlignment="Center"
                                IsHitTestVisible="False"
-                               Margin="4,0,0,0" />
+                               Margin="4,0,0,0"
+                               AutomationProperties.AutomationId="CommandPaletteWindowPlaceholder" />
                 </Grid>
             </Border>
 
@@ -70,9 +79,10 @@
                        x:Name="CategoryLabel"
                        Text="RECENT"
                        FontSize="11"
-                       Foreground="#FF6C7086"
+                       Foreground="{StaticResource ConsoleTextMutedBrush}"
                        FontWeight="SemiBold"
                        Margin="16,8,16,4"
+                       AutomationProperties.AutomationId="CommandPaletteWindowCategory"
                        />
 
             <!-- Results list -->
@@ -83,13 +93,15 @@
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      SelectionMode="Single"
                      MouseDoubleClick="OnResultDoubleClick"
-                     KeyDown="OnResultsKeyDown">
+                     KeyDown="OnResultsKeyDown"
+                     AutomationProperties.AutomationId="CommandPaletteWindowResults"
+                     AutomationProperties.Name="Command Palette Results">
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="Padding" Value="12,8" />
                         <Setter Property="Margin" Value="4,1" />
                         <Setter Property="Background" Value="Transparent" />
-                        <Setter Property="Foreground" Value="#FFCDD6F4" />
+                        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
@@ -102,10 +114,10 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="#FF313244" />
+                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="#FF45475A" />
+                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ConsoleBackgroundActiveBrush}" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -127,7 +139,7 @@
                                        Text="{Binding Icon}"
                                        FontFamily="Segoe MDL2 Assets"
                                        FontSize="14"
-                                       Foreground="#FF89B4FA"
+                                       Foreground="{StaticResource ConsoleAccentBlueBrush}"
                                        VerticalAlignment="Top"
                                        Margin="0,1,0,0" />
 
@@ -136,10 +148,10 @@
                                 <TextBlock Text="{Binding Title}"
                                            FontSize="13"
                                            FontWeight="SemiBold"
-                                           Foreground="#FFCDD6F4" />
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 <TextBlock Text="{Binding Description}"
                                            FontSize="11"
-                                           Foreground="#FF6C7086"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            Margin="0,2,0,0"
                                            TextWrapping="Wrap" />
                             </StackPanel>
@@ -152,19 +164,19 @@
                                 <!-- Category Badge -->
                                 <TextBlock Text="{Binding Category}"
                                            FontSize="10"
-                                           Foreground="#FF585B70"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            Margin="0,0,0,4"
                                            Visibility="{Binding Category, Converter={StaticResource NullToCollapsedConverter}}" />
                                 
                                 <!-- Shortcut Chip -->
-                                <Border Background="#FF313244"
+                                <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
                                         CornerRadius="3"
                                         Padding="4,2"
                                         Visibility="{Binding Shortcut, Converter={StaticResource NullToCollapsedConverter}}">
                                     <TextBlock Text="{Binding Shortcut}"
                                                FontFamily="Consolas"
                                                FontSize="10"
-                                               Foreground="#FF89B4FA" />
+                                               Foreground="{StaticResource ConsoleAccentBlueBrush}" />
                                 </Border>
                             </StackPanel>
                         </Grid>
@@ -173,14 +185,18 @@
             </ListBox>
 
             <!-- Footer -->
-            <Border Grid.Row="3" BorderBrush="#FF45475A" BorderThickness="0,1,0,0" Padding="12,8">
+            <Border Grid.Row="3"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="0,1,0,0"
+                    Padding="12,8"
+                    AutomationProperties.AutomationId="CommandPaletteWindowFooter">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="&#x2191;&#x2193;" Foreground="#FF585B70" FontSize="11" Margin="0,0,4,0" />
-                    <TextBlock Text="navigate" Foreground="#FF585B70" FontSize="11" Margin="0,0,12,0" />
-                    <TextBlock Text="&#x23CE;" Foreground="#FF585B70" FontSize="11" Margin="0,0,4,0" />
-                    <TextBlock Text="select" Foreground="#FF585B70" FontSize="11" Margin="0,0,12,0" />
-                    <TextBlock Text="esc" Foreground="#FF585B70" FontSize="11" Margin="0,0,4,0" />
-                    <TextBlock Text="close" Foreground="#FF585B70" FontSize="11" />
+                    <TextBlock Text="&#x2191;&#x2193;" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="0,0,4,0" />
+                    <TextBlock Text="navigate" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="0,0,12,0" />
+                    <TextBlock Text="&#x23CE;" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="0,0,4,0" />
+                    <TextBlock Text="select" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="0,0,12,0" />
+                    <TextBlock Text="esc" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" Margin="0,0,4,0" />
+                    <TextBlock Text="close" Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
                 </StackPanel>
             </Border>
         </Grid>
@@ -188,11 +204,5 @@
 
     <Window.Resources>
         <local:NullToCollapsedConverter x:Key="NullToCollapsedConverter" />
-        <DropShadowEffect x:Key="CommandPaletteShadow"
-                          BlurRadius="24"
-                          Direction="270"
-                          ShadowDepth="8"
-                          Opacity="0.6"
-                          Color="Black" />
     </Window.Resources>
 </Window>

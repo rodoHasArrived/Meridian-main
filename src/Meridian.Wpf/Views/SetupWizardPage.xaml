@@ -32,25 +32,42 @@
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                         <Ellipse x:Name="BackendStatusDot" Width="10" Height="10" Margin="0,0,8,0"
-                                 Fill="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
-                        <TextBlock x:Name="BackendStatusText" Text="Checking backend status..."
+                                 VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding BackendStatusTone}" Value="Warning">
+                                            <Setter Property="Fill" Value="{StaticResource WarningColorBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding BackendStatusTone}" Value="Success">
+                                            <Setter Property="Fill" Value="{StaticResource SuccessColorBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding BackendStatusTone}" Value="Error">
+                                            <Setter Property="Fill" Value="{StaticResource ErrorColorBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock x:Name="BackendStatusText" Text="{Binding BackendStatusText}"
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
                     </StackPanel>
-                    <TextBlock x:Name="BackendStatusDetailText" Text="No connection check performed yet."
+                    <TextBlock x:Name="BackendStatusDetailText" Text="{Binding BackendStatusDetailText}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,16" />
 
                     <WrapPanel>
                         <Button Content="Test Connection"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Margin="0,0,12,0"
-                                Click="TestConnection_Click" />
+                                Command="{Binding TestConnectionCommand}" />
                         <Button Content="Start Backend"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Margin="0,0,12,0"
-                                Click="StartBackend_Click" />
+                                Command="{Binding StartBackendCommand}" />
                         <Button Content="Open Instructions"
                                 Style="{StaticResource SecondaryButtonStyle}"
-                                Click="OpenInstructions_Click" />
+                                Command="{Binding OpenInstructionsCommand}" />
                     </WrapPanel>
                 </StackPanel>
             </Border>
@@ -61,7 +78,7 @@
                     <TextBlock Text="Select a preset that matches your use case. This pre-configures symbols, providers, and settings for your workflow."
                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,0,0,16" />
 
-                    <ItemsControl x:Name="PresetsList">
+                    <ItemsControl x:Name="PresetsList" ItemsSource="{Binding Presets}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <UniformGrid Columns="2" />
@@ -70,8 +87,8 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Button Margin="0,0,8,8"
-                                        Click="PresetCard_Click"
-                                        Tag="{Binding Id}"
+                                        Command="{Binding DataContext.ApplyPresetCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                        CommandParameter="{Binding Id}"
                                         HorizontalContentAlignment="Stretch">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
@@ -94,6 +111,7 @@
                     </ItemsControl>
 
                     <TextBlock x:Name="PresetStatusText"
+                               Text="{Binding PresetStatusText}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" />
                 </StackPanel>
             </Border>
@@ -106,12 +124,14 @@
 
                     <StackPanel Margin="0,0,0,12">
                         <TextBlock Text="Configuration file" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
-                        <TextBlock x:Name="ConfigPathText" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock x:Name="ConfigPathText" Text="{Binding ConfigPath}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                     </StackPanel>
 
                     <StackPanel Margin="0,0,0,12">
                         <TextBlock Text="Default provider" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                         <ComboBox x:Name="ProviderCombo"
+                                  ItemsSource="{Binding ProviderOptions}"
+                                  SelectedItem="{Binding SelectedProvider, Mode=TwoWay}"
                                   Style="{StaticResource FormComboBoxStyle}" />
                     </StackPanel>
 
@@ -124,15 +144,17 @@
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="StorageLocationTextBox"
                                      Style="{StaticResource FormTextBoxStyle}"
+                                     Text="{Binding StorageLocation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Grid.Column="0"
                                      Margin="0,0,12,0" />
                             <Button Content="Use Default"
                                     Style="{StaticResource SecondaryButtonStyle}"
                                     Grid.Column="1"
-                                    Click="UseDefaultStorage_Click" />
+                                    Command="{Binding UseDefaultStorageCommand}" />
                         </Grid>
                     </StackPanel>
                     <TextBlock x:Name="ConfigStatusText"
+                               Text="{Binding ConfigStatusText}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" />
                 </StackPanel>
             </Border>
@@ -145,21 +167,26 @@
 
                     <StackPanel Margin="0,0,0,12">
                         <TextBlock Text="Nasdaq Data Link API key" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
-                        <TextBox x:Name="NasdaqApiKeyTextBox" Style="{StaticResource FormTextBoxStyle}" />
+                        <TextBox x:Name="NasdaqApiKeyTextBox"
+                                 Text="{Binding NasdaqApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FormTextBoxStyle}" />
                     </StackPanel>
 
                     <StackPanel Margin="0,0,0,16">
                         <TextBlock Text="OpenFIGI API key (optional)" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
-                        <TextBox x:Name="OpenFigiApiKeyTextBox" Style="{StaticResource FormTextBoxStyle}" />
+                        <TextBox x:Name="OpenFigiApiKeyTextBox"
+                                 Text="{Binding OpenFigiApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FormTextBoxStyle}" />
                     </StackPanel>
 
                     <TextBlock x:Name="ValidationStatusText"
+                               Text="{Binding ValidationStatusText}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,16" />
 
                     <WrapPanel>
                         <Button Content="Save &amp; Continue"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Click="SaveAndContinue_Click" />
+                                Command="{Binding SaveAndContinueCommand}" />
                     </WrapPanel>
                 </StackPanel>
             </Border>

@@ -265,6 +265,17 @@ public sealed record OwnershipLinkDto(
     DateTimeOffset? EffectiveTo,
     string? Notes);
 
+public sealed record OwnershipGraphValidationIssueDto(
+    string Code,
+    string Message,
+    Guid? OwnershipLinkId = null,
+    Guid? NodeId = null);
+
+public sealed record OwnershipGraphValidationResultDto(
+    bool IsValid,
+    DateTimeOffset AsOf,
+    IReadOnlyList<OwnershipGraphValidationIssueDto> Issues);
+
 public sealed record FundStructureAssignmentDto(
     Guid AssignmentId,
     Guid NodeId,

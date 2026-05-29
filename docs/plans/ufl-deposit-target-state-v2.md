@@ -1,8 +1,8 @@
-# UFL Deposit Target-State Package V2
+# UFL Deposit Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl deposit target state v2** and document explicit in-scope vs out-of-scope items.
@@ -31,6 +31,75 @@ It assumes:
 - downstream treasury, governance, and accounting services querying canonical projections
 
 This package turns the existing `DepositTerms` support into an implementation-ready plan for deposit reference data, lifecycle management, treasury views, and APIs.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.Deposit` and `DepositTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"Deposit"` asset class.
+- Security Master validation enforces nonblank deposit type, nonblank institution name, and nonnegative interest rates when present.
+- `src/Meridian.Ui.Shared/Endpoints/DepositReferenceEndpoints.cs` exposes reference-data reads.
+- `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs` verifies basic create support for deposits.
+
+### Partially Implemented
+
+- Canonical terms and reference reads exist, but deposit lifecycle, institution ladder, callable-state, accrual, and rebuild-specific projection evidence is not complete.
+
+### Target-State Only
+
+- Deposit lifecycle and maturity projections.
+- Institution and ladder views for treasury operations.
+- Callable-state and accrual-convention projections.
+- Deposit-specific query contracts and endpoints beyond the current reference surface.
+
+### Explicitly Out of Scope
+
+- Bank covenant management.
+- Generalized cash forecasting.
+- Counterparty-risk engines.
+- Bank-operations integrations beyond reference and lifecycle support.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.Deposit`, terms, mapping, validation, and basic create test exist. | canonical deposit profile metadata | F# validation and C# mapping tests |
+| IssuerOrCounterparty | L1/L2 partial | institution terms and reference endpoint support exist. | institution lineage and ladder projections | endpoint/projection tests |
+| Lifecycle | L0 | target-state only. | term, callable, matured, renewed, and closed states | lifecycle projection tests |
+| AccrualConvention | L1 partial | interest-rate and day-count terms exist. | accrual-convention projection and treasury handoff | accrual tests |
+| CashFlowSchedule | L0 | target-state only. | maturity and expected interest schedule projection | schedule projection tests |
+| ProjectionRebuild | L1/L2 partial | Security Master projection and reference read path exist. | deposit-scoped rebuild metadata and checkpoints | rebuild/checkpoint tests |
+| AccountingImpact | L0 | target-state only. | approved accounting/reconciliation handoff for maturity and interest events | accounting/reconciliation tests |
+
+## Current Maturity
+
+`L1/L2 partial`: canonical deposit terms, validation, basic create support, and reference endpoint support exist. L3 maturity requires lifecycle, ladder, callable-state, accrual, and rebuild metadata tests.
+
+## Next Milestone Contract
+
+**Goal:** advance deposits to L3 by adding lifecycle, institution ladder, callable-state, accrual, and rebuild-safe projection metadata.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/Deposits/`
+- `src/Meridian.Contracts/Deposits/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for deposit terms.
+- endpoint contract tests for deposit reference reads.
+- projection/rebuild tests for institution, maturity, callable, lifecycle, and accrual metadata.
+- provider-payload isolation tests for canonical deposit projections.
+
+**Exit criteria:** deposit reference and lifecycle views can be rebuilt deterministically with institution, maturity, accrual, and source-event evidence.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as source evidence, but deposit workflows must consume canonical Security Master terms, institution references, lifecycle projections, and rebuild metadata.
 
 ## Repo Fit
 
@@ -347,6 +416,6 @@ Meridian treats a deposit as a canonical treasury instrument with explainable in
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

@@ -160,7 +160,9 @@ public sealed class EvidenceWorkflowFabricTests
         var provider = Node(subject, "provider", "provider-trust", EvidenceStatusDto.Ready);
         var replay = Node(subject, "replay", "paper-replay", EvidenceStatusDto.Ready);
         var reconciliation = Node(subject, "reconciliation", "reconciliation-run", EvidenceStatusDto.Ready);
+        var casework = Node(subject, "casework", "break-queue", EvidenceStatusDto.Ready);
         var approval = Node(subject, "approval", "approval", EvidenceStatusDto.Ready);
+        var closeChecklist = Node(subject, "close-checklist", "close-checklist", EvidenceStatusDto.Ready);
         var report = Node(subject, "report", "report-pack", EvidenceStatusDto.Ready) with
         {
             Freshness = new EvidenceFreshnessDto(
@@ -171,17 +173,27 @@ public sealed class EvidenceWorkflowFabricTests
         var service = new EvidencePacketValidationService();
 
         var result = service.Validate(
-            [provider, replay, reconciliation, approval, report],
+            [provider, replay, reconciliation, casework, approval, closeChecklist, report],
             [],
-            new HashSet<string>(["provider", "replay", "reconciliation", "approval", "report"], StringComparer.OrdinalIgnoreCase),
+            new HashSet<string>(["provider", "replay", "reconciliation", "casework", "approval", "close-checklist", "report"], StringComparer.OrdinalIgnoreCase),
             enforceNoOrphanRule: false);
 
         var policyIds = result.Completeness.SlaPolicies.Select(policy => policy.PolicyId);
         policyIds.Should().Contain("provider-validation-freshness");
         policyIds.Should().Contain("replay-check-freshness");
         policyIds.Should().Contain("reconciliation-freshness");
+        policyIds.Should().Contain("reconciliation-casework-freshness");
         policyIds.Should().Contain("approval-freshness");
+        policyIds.Should().Contain("close-checklist-freshness");
         policyIds.Should().Contain("report-pack-freshness");
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "reconciliation-casework-freshness" &&
+            assessment.EvidenceId == "casework" &&
+            !assessment.IsBreached);
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "close-checklist-freshness" &&
+            assessment.EvidenceId == "close-checklist" &&
+            !assessment.IsBreached);
         result.Completeness.SlaAssessments.Should().Contain(assessment =>
             assessment.PolicyId == "report-pack-freshness" &&
             assessment.EvidenceId == "report" &&
@@ -677,7 +689,9 @@ public sealed class EvidenceWorkflowFabricTests
                 Route: "/api/workstation/runs/run-ledger-proof/ledger/journal",
                 GeneratedAt: generatedAt,
                 Hash: null,
-                Retained: true),
+                Retained: true,
+                CanonicalSubjectKind: EvidenceSubjectResolver.StrategyRunKind,
+                CanonicalSubjectId: "run-ledger-proof"),
             new EvidenceArtifactRefDto(
                 "strategy-run:run-ledger-proof:ledger:trial-balance",
                 "ledger-trial-balance",
@@ -685,7 +699,9 @@ public sealed class EvidenceWorkflowFabricTests
                 Route: "/api/workstation/runs/run-ledger-proof/ledger/trial-balance",
                 GeneratedAt: generatedAt,
                 Hash: null,
-                Retained: true)
+                Retained: true,
+                CanonicalSubjectKind: EvidenceSubjectResolver.StrategyRunKind,
+                CanonicalSubjectId: "run-ledger-proof")
         };
         var packet = new EvidencePacketDto(
             Subject: subject,
@@ -766,6 +782,55 @@ public sealed class EvidenceWorkflowFabricTests
         manifestJson.Should().Contain("\"storageKind\": \"file-bundle\"");
         manifestJson.Should().Contain("\"artifacts\": [");
         manifestJson.Should().Contain("\"relativePath\": \"workstation/evidence/_vault/");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RetainsScreenshotArtifactPayloads()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var sourceDirectory = Path.Combine(root, "source-artifacts");
+        Directory.CreateDirectory(sourceDirectory);
+        var screenshotPath = Path.Combine(sourceDirectory, "close-checklist.png");
+        var screenshotBytes = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p94AAAAASUVORK5CYII=");
+        await File.WriteAllBytesAsync(screenshotPath, screenshotBytes);
+        var screenshotHash = Convert.ToHexString(SHA256.HashData(screenshotBytes)).ToLowerInvariant();
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "close-checklist-screenshot",
+            "screenshot",
+            screenshotPath,
+            "/workstation/accounting/operations-continuity/workflow-1#close-checklist",
+            DateTimeOffset.UtcNow,
+            screenshotHash,
+            Retained: true,
+            CanonicalSubjectKind: EvidenceSubjectResolver.ReportPackKind,
+            CanonicalSubjectId: "close-2026-05");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "close-checklist-screenshot", "screenshot", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["close-checklist-screenshot"], ["close-checklist-screenshot"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "close checklist screenshot retention"));
+
+        response.VaultIdentity.Should().NotBeNull();
+        response.VaultIdentity!.StorageKind.Should().Be("file-bundle");
+        var retained = response.VaultIdentity.Artifacts.Should().ContainSingle().Which;
+        retained.ArtifactId.Should().Be("close-checklist-screenshot");
+        retained.Kind.Should().Be("screenshot");
+        retained.ContentHashSha256.Should().Be(screenshotHash);
+        retained.SourceRoute.Should().Be("/workstation/accounting/operations-continuity/workflow-1#close-checklist");
+        retained.CanonicalSubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
+        retained.CanonicalSubjectId.Should().Be("close-2026-05");
+        retained.RelativePath.Should().EndWith(".png");
+        var retainedPath = Path.Combine(root, retained.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        File.Exists(retainedPath).Should().BeTrue();
+        (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(screenshotBytes);
     }
 
     [Fact]
@@ -1275,7 +1340,9 @@ public sealed class EvidenceWorkflowFabricTests
         => artifact.GetProperty("kind").GetString() == kind &&
            artifact.GetProperty("route").GetString() == route &&
            artifact.GetProperty("path").ValueKind == JsonValueKind.Null &&
-           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null;
+           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null &&
+           artifact.GetProperty("canonicalSubjectKind").GetString() == EvidenceSubjectResolver.StrategyRunKind &&
+           artifact.GetProperty("canonicalSubjectId").GetString() == "run-ledger-proof";
 
     private sealed class StubContributor : IEvidenceContributor
     {

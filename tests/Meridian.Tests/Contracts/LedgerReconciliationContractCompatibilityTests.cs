@@ -164,7 +164,24 @@ public sealed class LedgerReconciliationContractCompatibilityTests
         AssertMembers(typeof(StatementReconciliationCaseDto),
             "CaseId", "RunId", "Status", "Priority", "Title", "Summary", "BreakIds", "CreatedAtUtc",
             "LastUpdatedAtUtc", "LastUpdatedBy", "Owner", "DueAtUtc", "ResolvedAtUtc", "ResolutionCode",
-            "ResolutionSummary", "EvidenceLink");
+            "ResolutionSummary", "EvidenceLink", "Disposition", "AgingDays", "CommentThreads",
+            "Attachments", "BreakExplanation", "AuditEvents");
+
+        AssertMembers(typeof(StatementReconciliationCaseCommentThreadDto),
+            "ThreadId", "Subject", "Comments");
+
+        AssertMembers(typeof(StatementReconciliationCaseCommentDto),
+            "CommentId", "Body", "Actor", "CreatedAtUtc", "ParentCommentId");
+
+        AssertMembers(typeof(StatementReconciliationCaseAttachmentDto),
+            "AttachmentId", "EvidenceKind", "SourceSystem", "SourceReference", "ContentHash", "Route", "AttachedAtUtc");
+
+        AssertMembers(typeof(StatementReconciliationBreakExplanationDto),
+            "Summary", "SourceSystems", "ProbableCause", "LedgerImpact", "SuggestedNextAction", "RequiredSignoffRole",
+            "EvidenceLinks");
+
+        AssertMembers(typeof(StatementReconciliationCaseAuditEventDto),
+            "EventId", "EventType", "OccurredAtUtc", "Actor", "Detail");
     }
 
     [Fact]

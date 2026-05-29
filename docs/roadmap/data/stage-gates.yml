@@ -30,12 +30,18 @@ stage_gates:
     title: Portfolio ledger review
     purpose: Ledger and reconciliation records can support books and operator sign-off.
     owner_lane: Governance and Ledger
-    exit_evidence: []
+    exit_evidence:
+      - docs/plans/current-direction-and-status.md
+      - tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs
+      - tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs
   - id: GovernedReportPack
     title: Governed report pack
     purpose: Report packs carry approval and export evidence.
     owner_lane: Governance and Ledger
-    exit_evidence: []
+    exit_evidence:
+      - docs/plans/current-direction-and-status.md
+      - tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs
+      - tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs
   - id: BacktestingEvidence
     title: Backtesting evidence
     purpose: Backtest results can be traced to strategy decisions and later paper validation.

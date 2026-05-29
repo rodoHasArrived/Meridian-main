@@ -103,6 +103,7 @@ public sealed class SecurityMasterExceptionCaseworkService
                 "Could not resolve Security Master conflict case {BreakId}: {Error}",
                 existing.BreakId,
                 resolve.Error);
+            return;
         }
     }
 
@@ -131,7 +132,7 @@ public sealed class SecurityMasterExceptionCaseworkService
             return;
         }
 
-        var resolvedBy = NormalizeActor(overrides.ReviewedBy) ?? NormalizeActor(actor);
+        var resolvedBy = NormalizeOptionalActor(overrides.ReviewedBy) ?? NormalizeActor(actor);
         if (existing.Status == ReconciliationBreakQueueStatus.Open)
         {
             var review = await _breakQueueRepository.StartReviewAsync(
@@ -139,7 +140,7 @@ public sealed class SecurityMasterExceptionCaseworkService
                         existing.BreakId,
                         existing.AssignedTo ?? resolvedBy,
                         resolvedBy,
-                        "Security Master override selected for approval sign-off.",
+                        "Security Master override selected for approval resolution.",
                         "Security Master"),
                     ct)
                 .ConfigureAwait(false);
@@ -153,7 +154,7 @@ public sealed class SecurityMasterExceptionCaseworkService
             }
         }
 
-        await _breakQueueRepository.ResolveAsync(
+        var resolve = await _breakQueueRepository.ResolveAsync(
                 new ResolveReconciliationBreakRequest(
                     existing.BreakId,
                     ReconciliationBreakQueueStatus.Resolved,
@@ -162,6 +163,14 @@ public sealed class SecurityMasterExceptionCaseworkService
                     overrides.ReasonCode ?? "Override approval completed."),
                 ct)
             .ConfigureAwait(false);
+        if (resolve.Status != ReconciliationBreakQueueTransitionStatus.Success)
+        {
+            _logger.LogWarning(
+                "Could not resolve Security Master override case {BreakId}: {Error}",
+                existing.BreakId,
+                resolve.Error);
+            return;
+        }
     }
 
     private static ReconciliationBreakQueueItem BuildConflictCase(
@@ -238,7 +247,7 @@ public sealed class SecurityMasterExceptionCaseworkService
             ExceptionRoute: "security-master/operator-overrides",
             ToleranceProfileId: "security-master-override",
             RequiredSignoffRole: "Security Master steward",
-            SignoffStatus: isApproved ? "signed-off" : "pending-signoff",
+            SignoffStatus: isApproved ? "ready-for-signoff" : "pending-signoff",
             FundAccountId: null,
             ExplainabilitySummary: string.Join(
                 ", ",
@@ -249,7 +258,7 @@ public sealed class SecurityMasterExceptionCaseworkService
             RoutingTarget: route,
             RoutingDetail: overrides.SecurityId.ToString("D"),
             RecommendedAction: "Approve, reject, or remove the operator override before governed ledger, reconciliation, or report workflows consume it.",
-            LifecycleState: isApproved ? ReconciliationCaseLifecycleState.Posted : ReconciliationCaseLifecycleState.Open,
+            LifecycleState: isApproved ? ReconciliationCaseLifecycleState.Resolved : ReconciliationCaseLifecycleState.Open,
             LifecycleRationale: isApproved
                 ? "Security Master operator override is approved."
                 : "Auto-generated from a pending Security Master operator override.",
@@ -257,9 +266,7 @@ public sealed class SecurityMasterExceptionCaseworkService
             CustodianId: null,
             UpstreamSyncCursor: $"security-master-override:{overrides.SecurityId:N}:{overrides.UpdatedAt:O}:{overrides.ApprovalStatus}",
             LastUpstreamSyncAt: overrides.UpdatedAt,
-            SignoffHistory: isApproved && !string.IsNullOrWhiteSpace(overrides.ReviewedBy) && overrides.ReviewedAt.HasValue
-                ? [new ReconciliationCaseSignoffRecord(overrides.ReviewedBy, "Security Master steward", "Resolved", overrides.ReasonCode, overrides.ReviewedAt.Value)]
-                : null,
+            SignoffHistory: null,
             Team: "Security Master",
             StateTransitions: []);
     }
@@ -271,5 +278,8 @@ public sealed class SecurityMasterExceptionCaseworkService
         => $"security-master:override:{securityId:N}";
 
     private static string NormalizeActor(string? actor)
-        => string.IsNullOrWhiteSpace(actor) ? DefaultActor : actor.Trim();
+        => NormalizeOptionalActor(actor) ?? DefaultActor;
+
+    private static string? NormalizeOptionalActor(string? actor)
+        => string.IsNullOrWhiteSpace(actor) ? null : actor.Trim();
 }

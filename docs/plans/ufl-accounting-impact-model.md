@@ -7,7 +7,7 @@
 
 ## Summary
 
-Accounting impact is a UFL capability, not a default requirement for every asset package. Reference-heavy assets can mature through canonical terms, reference reads, and projection safety before they need journal workflows. Operationally heavy assets such as direct lending, repo, swaps, cash sweeps, and equity corporate actions need explicit accounting and reconciliation paths.
+Accounting impact is a UFL capability, not a default requirement for every asset profile. Reference-heavy assets can mature through canonical terms, reference reads, and projection safety before they need journal workflows. Operationally heavy assets such as direct lending, repo, swaps, cash sweeps, and equity corporate actions need explicit accounting and reconciliation paths.
 
 ## Applicability
 
@@ -31,7 +31,7 @@ AccountingImpact includes:
 AccountingImpact does not include:
 
 - silent posting from raw provider payloads;
-- pricing, valuation, or risk analytics unless a separate asset package explicitly owns them;
+- pricing, valuation, or risk analytics unless a separate asset profile explicitly owns them;
 - bypassing ledger validation or period controls;
 - mobile-specific workflows.
 
@@ -39,7 +39,7 @@ AccountingImpact does not include:
 
 ### Implemented
 
-- Meridian has ledger, accounting, reporting, reconciliation, and evidence surfaces that asset packages can target.
+- Meridian has ledger, accounting, reporting, reconciliation, and evidence surfaces that asset profiles can target.
 - Direct lending documents and code evidence already describe deeper journal, reconciliation, and rebuild behavior than most reference assets.
 - Equity target-state documentation includes corporate-action accounting automation as an explicit target capability.
 
@@ -76,5 +76,5 @@ For any asset pursuing L5:
 
 - [UFL Capability Model](ufl-capability-model.md)
 - [UFL Projection and Evidence Kernel](ufl-projection-and-evidence-kernel.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
-- [UFL Equity Target-State Package V2](ufl-equity-target-state-v2.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
+- [UFL Equity Capability Profile](ufl-equity-target-state-v2.md)

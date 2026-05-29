@@ -16,11 +16,19 @@ public sealed class DataQualityPageSmokeTests
         var code = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataQualityPage.xaml.cs"));
 
         xaml.Should().Contain("Text=\"{Binding SymbolFilterScopeText}\"");
+        xaml.Should().Contain("workstation:DenseDataGridControl");
+        xaml.Should().Contain("Table=\"{Binding SymbolQualityTable}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedSymbolQuality, Mode=TwoWay}\"");
+        xaml.Should().Contain("GridAutomationId=\"DataQualitySymbolQualityGrid\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataQualityCompareSelectedSymbolButton\"");
+        xaml.Should().Contain("IsEnabled=\"{Binding CanCompareSelectedSymbol}\"");
         xaml.Should().Contain("Text=\"{Binding SymbolEmptyStateTitle}\"");
         xaml.Should().Contain("Text=\"{Binding SymbolEmptyStateDetail}\"");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataQualityClearSymbolFilterButton\"");
         code.Should().Contain("ClearSymbolFilter_Click");
         code.Should().Contain("_viewModel.ClearSymbolFilter()");
+        code.Should().Contain("CompareSelectedProvider_Click");
+        code.Should().Contain("_viewModel.SelectedSymbolQuality");
     }
 
     [Fact]

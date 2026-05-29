@@ -142,8 +142,25 @@ const detail: OperationsContinuityWorkflow = {
       acknowledgedBy: null
     }
   ],
-  closePackage: null,
   closeReadiness: null,
+  closePackage: {
+    closePackageId: "close-package-2026-05",
+    reportPackId: "report-pack-may-2026",
+    retainedManifestId: "close-package-2026-05-manifest",
+    retainedManifestRoute: "/workstation/accounting/operations-continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close-package/close-package-2026-05-manifest",
+    evidenceHash: "b5f6c7d8e9a00112233445566778899aabbccddeeff00112233445566778899",
+    publishedAtUtc: "2026-05-10T18:45:00Z",
+    publishedBy: "fund-controller",
+    signOffRationale: "Controller sign-off after report pack and checklist evidence were retained.",
+    evidenceLinks: [],
+    checklistControlApprovals: [
+      {
+        taskId: "close-gate-ledgerposting",
+        approvedBy: "fund-controller",
+        approvedAtUtc: "2026-05-10T18:40:00Z"
+      }
+    ]
+  },
   evidenceLinks: [],
   blockers: gates[1]!.blockers
 };
@@ -165,12 +182,25 @@ describe("OperationsContinuityScreen", () => {
     expect(await screen.findByRole("heading", { name: "Gates" })).toBeInTheDocument();
     expect(screen.getByText("Ledger posting requires a balanced and validated journal draft.")).toBeInTheDocument();
     const checklist = screen.getByRole("table", { name: "Operations continuity close checklist" });
+    const checklistSummary = screen.getByRole("list", { name: "Close checklist control summary" });
+    expect(await screen.findByText("1 close task")).toBeInTheDocument();
+    expect(within(checklistSummary).getByText("0 ready")).toBeInTheDocument();
+    expect(within(checklistSummary).getByText("1 blocked")).toBeInTheDocument();
+    expect(within(checklistSummary).getByText("2 control approvals required")).toBeInTheDocument();
+    expect(within(checklistSummary).getByText("1/1 evidence pointer")).toBeInTheDocument();
     expect(within(checklist).getByText("Ledger posting controller check")).toBeInTheDocument();
     expect(within(checklist).getByText("Validated journal draft, retained ledger hash, and controller approval evidence.")).toBeInTheDocument();
+    expect(within(checklist).getByText("ledger-evidence-1")).toBeInTheDocument();
     expect(within(checklist).getByText("2 control approvals required")).toBeInTheDocument();
     expect(within(checklist).getByRole("link", { name: "Open remediation for Ledger posting controller check" }))
       .toHaveAttribute("href", "/accounting/ledger");
     expect(await screen.findByText("Ledger Draft Blocked")).toBeInTheDocument();
+    const closePackage = screen.getByLabelText("Close package publication summary");
+    expect(within(closePackage).getByText("close-package-2026-05")).toBeInTheDocument();
+    expect(within(closePackage).getByRole("link", { name: "Open retained close package manifest" }))
+      .toHaveAttribute("href", "/accounting/operations-continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close-package/close-package-2026-05-manifest");
+    expect(within(closePackage).getByText("Signed by fund-controller")).toBeInTheDocument();
+    expect(within(closePackage).getByText("1 checklist control approval")).toBeInTheDocument();
 
     const nextAction = screen.getByRole("link", { name: "Open operations continuity next action: Resolve Ledger Posting blockers" });
     expect(nextAction).toHaveAttribute("href", "/accounting");
