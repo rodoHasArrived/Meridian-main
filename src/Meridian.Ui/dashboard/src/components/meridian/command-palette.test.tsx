@@ -187,7 +187,7 @@ describe("CommandPalette", () => {
       { initialEntries: ["/data/quotes?symbol=MSFT"] }
     );
 
-    expect(screen.getByRole("navigation", { name: "21 workstation commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "22 workstation commands" })).toBeInTheDocument();
     expect(screen.getByLabelText("Focus actions: 1 focus action")).toBeInTheDocument();
     expect(screen.getByText(/1 ranked focus action available\./)).toBeInTheDocument();
     expect(screen.getByLabelText(
