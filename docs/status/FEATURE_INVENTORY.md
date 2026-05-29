@@ -710,7 +710,9 @@ The desktop shell keeps older shell/navigation terms as compatibility aliases wh
 workspace model remains `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
 `Settings`. Current alias resolution is registered in the shell page catalog and feature-owned
 Data module; layout lookup also normalizes the legacy workspace ids so deep links and automation
-land on the canonical workspace layout.
+land on the canonical workspace layout. The registry-backed WPF screen list is maintained in
+[`docs/status/desktop-application-screens.md`](desktop-application-screens.md) for page-level
+workspace, page tag, visibility, related-tag, implementation, gap, and screenshot evidence.
 
 | Alias / legacy name | Canonical workspace or page | Relevant page tags | Where the alias is resolved |
 | --- | --- | --- | --- |
