@@ -67,10 +67,16 @@ public sealed class FamilyOfficeReadService
         var ownershipGraph = BuildOwnershipGraph(relevant, asOfDate);
         var evidenceLinks = BuildStructureEvidenceLinks(relevant, asOfDate);
         var accountContexts = await BuildAccountContextsAsync(relevant.Accounts, generatedAt, ct).ConfigureAwait(false);
+        if (relevant.Accounts.Count > 0 && accountContexts.Count == 0)
+        {
+            warnings.Add("Family-office accounts are linked, but the fund-account read service is unavailable, so balances, cash, liabilities, reconciliation, and evidence completeness cannot be assembled.");
+        }
+
         var accounts = accountContexts.Select(static context => context.Summary).ToArray();
         var publicAssets = BuildPublicAssets(accountContexts, warnings);
         var privateAssets = BuildPrivateAssets(relevant, asOfDate, warnings);
         var commitments = BuildCommitments(relevant, asOfDate, warnings);
+        AddEvidenceAndReconciliationWarnings(accounts, publicAssets, privateAssets, commitments, warnings);
         var balanceSheet = BuildBalanceSheet(familyClient, accountContexts, privateAssets, commitments, warnings, generatedAt, asOfDate);
         var readiness = BuildReadiness(warnings, evidenceLinks, generatedAt, accounts, entities.Count, balanceSheet);
 
@@ -495,6 +501,30 @@ public sealed class FamilyOfficeReadService
             LastReviewedAtUtc: null)).ToArray();
     }
 
+    private static void AddEvidenceAndReconciliationWarnings(
+        IReadOnlyList<FamilyAccountSummaryDto> accounts,
+        IReadOnlyList<FamilyAssetSummaryDto> publicAssets,
+        IReadOnlyList<PrivateAssetSummaryDto> privateAssets,
+        IReadOnlyList<CapitalCommitmentDto> commitments,
+        List<string> warnings)
+    {
+        if (accounts.Any(static account => !account.ReconciliationStatus.Equals("Reconciled", StringComparison.OrdinalIgnoreCase))
+            || publicAssets.Any(static asset => !asset.ReconciliationStatus.Equals("Reconciled", StringComparison.OrdinalIgnoreCase))
+            || privateAssets.Any(static asset => !asset.ReconciliationStatus.Equals("Reconciled", StringComparison.OrdinalIgnoreCase))
+            || commitments.Any(static commitment => !commitment.ReconciliationStatus.Equals("Reconciled", StringComparison.OrdinalIgnoreCase)))
+        {
+            warnings.Add("One or more family-office values are unreconciled or have open reconciliation breaks.");
+        }
+
+        if (accounts.Any(static account => !account.EvidenceCompleteness.Equals("Complete", StringComparison.OrdinalIgnoreCase))
+            || publicAssets.Any(static asset => !asset.EvidenceCompleteness.Equals("Complete", StringComparison.OrdinalIgnoreCase))
+            || privateAssets.Any(static asset => !asset.EvidenceCompleteness.Equals("Complete", StringComparison.OrdinalIgnoreCase))
+            || commitments.Any(static commitment => !commitment.EvidenceCompleteness.Equals("Complete", StringComparison.OrdinalIgnoreCase)))
+        {
+            warnings.Add("One or more balances, asset marks, liabilities, commitments, or reconciliations are missing complete evidence.");
+        }
+    }
+
     private static FamilyBalanceSheetDto BuildBalanceSheet(
         ClientSummaryDto familyClient,
         IReadOnlyList<AccountContext> accounts,
@@ -516,15 +546,6 @@ public sealed class FamilyOfficeReadService
             warnings.Add("One or more account or asset values are stale compared with the current workstation date.");
         }
 
-        if (accounts.Any(static account => !account.Summary.ReconciliationStatus.Equals("Reconciled", StringComparison.OrdinalIgnoreCase)))
-        {
-            warnings.Add("One or more accounts are unreconciled or have open reconciliation breaks.");
-        }
-
-        if (accounts.Any(static account => !account.Summary.EvidenceCompleteness.Equals("Complete", StringComparison.OrdinalIgnoreCase)))
-        {
-            warnings.Add("One or more balances, valuations, or reconciliations are missing complete evidence.");
-        }
 
         return new FamilyBalanceSheetDto(
             FamilyOfficeId: familyClient.ClientId.ToString("D"),

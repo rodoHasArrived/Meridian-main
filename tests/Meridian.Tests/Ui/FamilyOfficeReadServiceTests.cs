@@ -90,6 +90,55 @@ public sealed class FamilyOfficeReadServiceTests
         Assert.Contains(overview.Readiness.Blockers, warning => warning.Contains("unreconciled", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task GetOverviewAsync_WhenAccountsExistWithoutFundAccountReadService_ReturnsDegradedGuidance()
+    {
+        var fundAccounts = new InMemoryFundAccountService();
+        var fundStructure = new InMemoryFundStructureService(fundAccounts);
+        var now = DateTimeOffset.Parse("2026-05-29T12:00:00Z");
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        var entityId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+
+        await fundStructure.CreateOrganizationAsync(new CreateOrganizationRequest(
+            organizationId, "ORG", "Meridian Family Office", "USD", now.AddYears(-1), "test"), CancellationToken.None);
+        await fundStructure.CreateBusinessAsync(new CreateBusinessRequest(
+            businessId, organizationId, BusinessKindDto.Hybrid, "SFO", "SFO Advisers", "USD", now.AddYears(-1), "test"), CancellationToken.None);
+        await fundStructure.CreateClientAsync(new CreateClientRequest(
+            clientId, businessId, "FAM", "Founders Family", "USD", now.AddYears(-1), "test", ClientSegmentKind: ClientSegmentKind.FamilyOffice), CancellationToken.None);
+        await fundStructure.CreateFundAsync(new CreateFundRequest(
+            fundId, "FND", "Founders Holdings", "USD", now.AddYears(-1), "test", BusinessId: businessId), CancellationToken.None);
+        await fundStructure.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            entityId, LegalEntityTypeDto.LimitedPartner, "TRUST", "Founders Trust", "US-DE", "USD", now.AddYears(-1), "test"), CancellationToken.None);
+        await fundStructure.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(), clientId, fundId, OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", OwnershipPercent: 100m), CancellationToken.None);
+        await fundStructure.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(), fundId, entityId, OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", OwnershipPercent: 100m), CancellationToken.None);
+        await fundAccounts.CreateAccountAsync(new CreateAccountRequest(
+            accountId,
+            AccountTypeDto.Custody,
+            "CUST-1",
+            "Main Custody",
+            "USD",
+            now.AddYears(-1),
+            "test",
+            FundId: fundId,
+            EntityId: entityId,
+            Institution: "Test Custodian"), CancellationToken.None);
+
+        var service = new FamilyOfficeReadService(fundStructure, fundAccountService: null, timeProvider: new FixedTimeProvider(now));
+
+        var overview = await service.GetOverviewAsync(CancellationToken.None);
+
+        Assert.Equal("Degraded", overview.Readiness.Status);
+        Assert.Empty(overview.Accounts);
+        Assert.Contains(overview.Readiness.Blockers, warning => warning.Contains("fund-account read service is unavailable", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(overview.Readiness.Blockers, warning => warning.Contains("balances, cash, liabilities, reconciliation", StringComparison.OrdinalIgnoreCase));
+    }
+
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;
