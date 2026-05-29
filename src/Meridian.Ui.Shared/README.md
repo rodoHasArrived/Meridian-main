@@ -33,7 +33,10 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
-source-of-truth services authoritative. Workstation endpoint registration is split by domain through
+source-of-truth services authoritative. `FamilyOfficeReadService` composes the family-office
+workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
+services, and emits degraded guidance when linked accounts cannot provide balances, liabilities,
+reconciliation state, or evidence completeness. Workstation endpoint registration is split by domain through
 `WorkstationEndpoints.*.cs` partial files. Keep the root `WorkstationEndpoints.cs` file as the
 coordinator, route new domain-specific endpoint edits to the matching partial file, and avoid
 concurrent branches that both modify the root coordinator or the shared
