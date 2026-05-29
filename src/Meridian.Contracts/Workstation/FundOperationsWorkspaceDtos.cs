@@ -419,6 +419,12 @@ public sealed record FundReportPackHistoryItemDto(
     public int LifecycleEventCount { get; init; }
 }
 
+/// <summary>
+/// Shared governed report-pack workflow states. The W4 happy-path lifecycle is
+/// <see cref="Draft"/> to <see cref="InReview"/> to <see cref="Approved"/> to
+/// <see cref="Published"/>; additional states are retained for rejection, restatement,
+/// archival, and compatibility with older validation-oriented clients.
+/// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter<ReportPackWorkflowStateDto>))]
 public enum ReportPackWorkflowStateDto
 {
