@@ -772,13 +772,14 @@ public sealed class OperationsContinuityWorkflowServiceTests
             HasLedgerMappings: false));
 
         result.Success.Should().BeTrue();
-        result.Workflow!.LedgerPostingGate.Status.Should().Be(OperationsGateStatusDto.Blocked);
+        var ledgerGate = result.Workflow!.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.LedgerPosting);
+        ledgerGate.Status.Should().Be(OperationsGateStatusDto.Blocked);
         result.Workflow.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Drafted);
-        result.Workflow.LedgerPostingGate.Blockers.Should().Contain(blocker =>
+        ledgerGate.Blockers.Should().Contain(blocker =>
             blocker.Code == "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING");
-        result.Workflow.LedgerPostingGate.Blockers.Should().Contain(blocker =>
+        ledgerGate.Blockers.Should().Contain(blocker =>
             blocker.Code == "LEDGER_SECURITY_MASTER_APPROVAL_MISSING");
-        result.Workflow.LedgerPostingGate.Blockers.Should().Contain(blocker =>
+        ledgerGate.Blockers.Should().Contain(blocker =>
             blocker.Code == "LEDGER_SECURITY_MASTER_MAPPING_MISSING");
     }
 

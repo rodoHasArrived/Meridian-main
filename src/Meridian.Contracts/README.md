@@ -53,6 +53,9 @@ provenance does not reference the resolved Security Master id. The vocabulary al
 mismatch blockers for journal candidates whose instrument line symbol diverges from the
 journal-level Security Master symbol and mapping mismatch blockers for generic ledger-mapping
 references that do not name the resolved symbol or Security Master id.
+Ledger draft requests also carry explicit approval and ledger-mapping evidence flags so controller
+workflows can block the draft gate before post-time journal-line validation when Security Master
+provenance exists but approved identity or accounting mapping proof is still missing.
 
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
