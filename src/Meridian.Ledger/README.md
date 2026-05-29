@@ -43,6 +43,9 @@ receipts, cash-interest credits, and corporate-action cash events before workflo
 `LockedAccountingPeriodBook` records book-scoped accounting period locks and rejects late journal
 postings that fall inside a locked range, preserving published NAV and close evidence while still
 allowing separate books such as shadow-NAV ledgers to continue independently.
+`ShadowNavValidator` compares actual and shadow ledger books at a point in time, reports
+account-level and NAV variances against configured tolerances, and prepares a governed override
+draft when independent fund-admin validation requires review.
 
 ## Diagrams
 

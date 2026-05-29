@@ -1313,12 +1313,43 @@ public sealed class OperationsContinuityWorkflow
                 evidenceLinks));
         }
 
+        var requiredCapabilityGaps = NormalizeProviderCapabilityGaps(request.ProviderRequiredCapabilityGaps);
+        if (requiredCapabilityGaps.Length > 0)
+        {
+            brokerBlockers.Add(new OperationsWorkflowBlockerDto(
+                "BROKER_PROVIDER_REQUIRED_CAPABILITY_UNROUTABLE",
+                $"Provider routing cannot satisfy required close capability/capabilities: {string.Join(", ", requiredCapabilityGaps)}.",
+                OperationsGateKeyDto.BrokerIngest,
+                "Critical",
+                evidenceLinks));
+        }
+
         if (brokerBlockers.Count > 0)
         {
             BrokerIngestGate = BrokerIngestGate.WithStatus(
                 OperationsGateStatusDto.Blocked,
                 brokerBlockers,
                 NextActionsForGate(OperationsGateKeyDto.BrokerIngest, OperationsGateStatusDto.Blocked));
+        }
+        else
+        {
+            var degradedCapabilityGaps = NormalizeProviderCapabilityGaps(request.ProviderDegradedCapabilityGaps);
+            if (degradedCapabilityGaps.Length > 0)
+            {
+                var reviewBlockers = new[]
+                {
+                    new OperationsWorkflowBlockerDto(
+                        "BROKER_PROVIDER_CAPABILITY_DEGRADED",
+                        $"Provider routing is degraded for close capability/capabilities: {string.Join(", ", degradedCapabilityGaps)}.",
+                        OperationsGateKeyDto.BrokerIngest,
+                        "Warning",
+                        evidenceLinks)
+                };
+                BrokerIngestGate = BrokerIngestGate.WithStatus(
+                    OperationsGateStatusDto.ReviewRequired,
+                    reviewBlockers,
+                    NextActionsForGate(OperationsGateKeyDto.BrokerIngest, OperationsGateStatusDto.ReviewRequired));
+            }
         }
 
         ApplySecurityMasterIssuePosture(
@@ -1399,6 +1430,21 @@ public sealed class OperationsContinuityWorkflow
                     nextActions: []);
             }
         }
+    }
+
+    private static string[] NormalizeProviderCapabilityGaps(IReadOnlyList<string>? gaps)
+    {
+        if (gaps is null || gaps.Count == 0)
+        {
+            return [];
+        }
+
+        return gaps
+            .Where(static gap => !string.IsNullOrWhiteSpace(gap))
+            .Select(static gap => gap.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static gap => gap, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private void ApplyReconciliationPosture(

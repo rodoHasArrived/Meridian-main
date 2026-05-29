@@ -1158,6 +1158,111 @@ public sealed class LedgerIntegrationTests
             .WithMessage("*overlaps*");
     }
 
+    [Fact]
+    public void ShadowNavValidator_ReportsMatchedActualAndShadowLedgersWithinTolerance()
+    {
+        var projectLedgers = new ProjectLedgerBook("fund-alpha");
+        var actualKey = new LedgerBookKey("fund-alpha", "Fund", LedgerViewKind.Actual);
+        var shadowKey = new LedgerBookKey("fund-alpha", "ShadowNAV", LedgerViewKind.Actual);
+        var asOf = new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero);
+        var cash = LedgerAccounts.CashAccount("broker-1");
+        var capital = LedgerAccounts.CapitalAccountFor("broker-1");
+
+        projectLedgers.GetOrCreate(actualKey).PostLines(
+            asOf,
+            "actual nav",
+            new[] { (cash, 1_000m, 0m), (capital, 0m, 1_000m) });
+        projectLedgers.GetOrCreate(shadowKey).PostLines(
+            asOf,
+            "shadow nav",
+            new[] { (cash, 1_000m, 0m), (capital, 0m, 1_000m) });
+
+        var report = ShadowNavValidator.Validate(
+            projectLedgers,
+            actualKey,
+            shadowKey,
+            asOf,
+            new ShadowNavValidationPolicy(navTolerance: 0.01m, accountTolerance: 0.01m, reviewerGroup: "fund-admin"));
+
+        report.ActualNav.Should().Be(1_000m);
+        report.ShadowNav.Should().Be(1_000m);
+        report.RequiresOverride.Should().BeFalse();
+        report.Findings.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ShadowNavValidator_FlagsMaterialVarianceAndCreatesOverrideDraft()
+    {
+        var projectLedgers = new ProjectLedgerBook("fund-alpha");
+        var actualKey = new LedgerBookKey("fund-alpha", "Fund", LedgerViewKind.Actual);
+        var shadowKey = new LedgerBookKey("fund-alpha", "ShadowNAV", LedgerViewKind.Actual);
+        var asOf = new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero);
+        var cash = LedgerAccounts.CashAccount("broker-1");
+        var capital = LedgerAccounts.CapitalAccountFor("broker-1");
+
+        projectLedgers.GetOrCreate(actualKey).PostLines(
+            asOf,
+            "actual nav",
+            new[] { (cash, 1_000m, 0m), (capital, 0m, 1_000m) });
+        projectLedgers.GetOrCreate(shadowKey).PostLines(
+            asOf,
+            "shadow nav",
+            new[] { (cash, 995m, 0m), (capital, 0m, 995m) });
+
+        var report = ShadowNavValidator.Validate(
+            projectLedgers,
+            actualKey,
+            shadowKey,
+            asOf,
+            new ShadowNavValidationPolicy(navTolerance: 1m, accountTolerance: 1m, policyId: "may-nav-policy", reviewerGroup: "fund-admin"));
+        var overrideDraft = report.CreateOverrideDraft(
+            new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero),
+            "controller",
+            "Fund administrator shadow NAV differs from actual book.");
+
+        report.RequiresOverride.Should().BeTrue();
+        report.NavVariance.Should().Be(5m);
+        report.Findings.Should().Contain(finding =>
+            finding.Account == cash &&
+            finding.ActualBalance == 1_000m &&
+            finding.ShadowBalance == 995m &&
+            finding.RequiresOverride);
+        overrideDraft.PolicyId.Should().Be("may-nav-policy");
+        overrideDraft.ReviewerGroup.Should().Be("fund-admin");
+        overrideDraft.CreatedBy.Should().Be("controller");
+        overrideDraft.NavVariance.Should().Be(5m);
+        overrideDraft.Findings.Should().BeSameAs(report.Findings);
+    }
+
+    [Fact]
+    public void ShadowNavValidator_RejectsMissingShadowLedger()
+    {
+        var projectLedgers = new ProjectLedgerBook("fund-alpha");
+        var actualKey = new LedgerBookKey("fund-alpha", "Fund", LedgerViewKind.Actual);
+        var shadowKey = new LedgerBookKey("fund-alpha", "ShadowNAV", LedgerViewKind.Actual);
+        var asOf = new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero);
+
+        projectLedgers.GetOrCreate(actualKey).PostLines(
+            asOf,
+            "actual nav",
+            new[]
+            {
+                (LedgerAccounts.CashAccount("broker-1"), 100m, 0m),
+                (LedgerAccounts.CapitalAccountFor("broker-1"), 0m, 100m),
+            });
+
+        var act = () => ShadowNavValidator.Validate(
+            projectLedgers,
+            actualKey,
+            shadowKey,
+            asOf,
+            new ShadowNavValidationPolicy(navTolerance: 0.01m, accountTolerance: 0.01m));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Shadow ledger*not found*");
+    }
+
     private static JournalEntry BuildGeneratedBalancedJournal(
         int lineCountSeed,
         int amountSeed,

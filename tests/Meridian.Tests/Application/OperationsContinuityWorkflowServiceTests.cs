@@ -484,6 +484,88 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task RefreshGatePostureAsync_RequiredProviderCapabilityGap_ShouldBlockBrokerIngest()
+    {
+        var service = CreateService(out _, out _);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            SecurityMasterSnapshotId: Guid.NewGuid(),
+            BrokerSource: "custodian",
+            Actor: "ops-user",
+            Rationale: "Open monthly operations close workflow"));
+
+        var posture = await service.RefreshGatePostureAsync(start.Workflow!.WorkflowId, new OperationsGatePostureRequestDto(
+            start.Workflow.Version,
+            "ops-user",
+            Rationale: "Provider routing lacks required accounting feeds.",
+            ProviderAccountLinked: true,
+            ProviderSyncStale: false,
+            ProviderRequiredCapabilityGaps:
+            [
+                "AccountPositions",
+                "ReconciliationFeed",
+                "AccountPositions"
+            ]));
+
+        posture.Success.Should().BeTrue();
+        posture.Workflow.Should().NotBeNull();
+        var brokerGate = posture.Workflow!.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.BrokerIngest);
+        brokerGate.Status.Should().Be(OperationsGateStatusDto.Blocked);
+        brokerGate.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "BROKER_PROVIDER_REQUIRED_CAPABILITY_UNROUTABLE" &&
+            blocker.Message.Contains("AccountPositions", StringComparison.OrdinalIgnoreCase) &&
+            blocker.Message.Contains("ReconciliationFeed", StringComparison.OrdinalIgnoreCase));
+        posture.Workflow.CloseReadiness.Should().NotBeNull();
+        posture.Workflow.CloseReadiness!.Blockers.Should().Contain(blocker =>
+            blocker.Code == "BROKER_SYNC_STALE" &&
+            blocker.Gate == OperationsGateKeyDto.BrokerIngest);
+        posture.Workflow.CloseReadiness.Components.Should().Contain(component =>
+            component.Key == "provider-freshness" &&
+            component.IsReady == false);
+    }
+
+    [Fact]
+    public async Task RefreshGatePostureAsync_DegradedProviderCapabilityGap_ShouldRequireBrokerReview()
+    {
+        var service = CreateService(out _, out _);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            SecurityMasterSnapshotId: Guid.NewGuid(),
+            BrokerSource: "custodian",
+            Actor: "ops-user",
+            Rationale: "Open monthly operations close workflow"));
+
+        var posture = await service.RefreshGatePostureAsync(start.Workflow!.WorkflowId, new OperationsGatePostureRequestDto(
+            start.Workflow.Version,
+            "ops-user",
+            Rationale: "Provider routing lacks optional but close-relevant feeds.",
+            ProviderAccountLinked: true,
+            ProviderSyncStale: false,
+            ProviderDegradedCapabilityGaps:
+            [
+                "HistoricalQuotes:Equity",
+                "CorporateActions"
+            ]));
+
+        posture.Success.Should().BeTrue();
+        posture.Workflow.Should().NotBeNull();
+        var brokerGate = posture.Workflow!.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.BrokerIngest);
+        brokerGate.Status.Should().Be(OperationsGateStatusDto.ReviewRequired);
+        brokerGate.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "BROKER_PROVIDER_CAPABILITY_DEGRADED" &&
+            blocker.Severity == "Warning" &&
+            blocker.Message.Contains("HistoricalQuotes:Equity", StringComparison.OrdinalIgnoreCase) &&
+            blocker.Message.Contains("CorporateActions", StringComparison.OrdinalIgnoreCase));
+        posture.Workflow.CloseReadiness.Should().NotBeNull();
+        posture.Workflow.CloseReadiness!.Components.Should().Contain(component =>
+            component.Key == "provider-freshness" &&
+            component.IsReady == false);
+        posture.Workflow.CloseReadiness.Score.Should().BeLessThan(100);
+    }
+
+    [Fact]
     public async Task SubmitForApprovalAsync_ShouldRejectMissingSubmissionMetadataWithoutAppendingAudit()
     {
         var service = CreateService(out _, out var auditStore);

@@ -191,6 +191,8 @@ public static class OperationsWorkflowContractMatrix
         "BROKER_OUT_OF_PERIOD_ROWS",
         "BROKER_PARSE_FAILED",
         "BROKER_PROVIDER_ACCOUNT_UNLINKED",
+        "BROKER_PROVIDER_CAPABILITY_DEGRADED",
+        "BROKER_PROVIDER_REQUIRED_CAPABILITY_UNROUTABLE",
         "BROKER_SCHEMA_INCOMPATIBLE",
         "BROKER_SECURITY_UNRESOLVED",
         "BROKER_STATEMENT_MISSING",
@@ -316,6 +318,8 @@ public static class OperationsWorkflowContractMatrix
     public static IReadOnlySet<string> IssueCodes { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
         "BROKER_PROVIDER_ACCOUNT_UNLINKED",
+        "BROKER_PROVIDER_CAPABILITY_DEGRADED",
+        "BROKER_PROVIDER_REQUIRED_CAPABILITY_UNROUTABLE",
         "BROKER_SECURITY_UNRESOLVED",
         "BROKER_STATEMENT_MISSING",
         "BROKER_SYNC_STALE",
@@ -466,7 +470,9 @@ public sealed record OperationsGatePostureRequestDto(
     int? OpenNonCriticalBreakCount = null,
     bool? ReportPackReady = null,
     string? ReportPackId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    IReadOnlyList<string>? ProviderRequiredCapabilityGaps = null,
+    IReadOnlyList<string>? ProviderDegradedCapabilityGaps = null);
 
 public sealed record OperationsSecurityMasterResolveRequestDto(
     long ExpectedVersion,

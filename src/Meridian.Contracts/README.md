@@ -39,7 +39,10 @@ messages. Close-checklist control approval blockers are part of that shared voca
 remain contract-owned rather than browser-only or WPF-only state. Close readiness score payloads
 are also contract-owned and include server-derived Security Master, position, cash, ledger,
 pricing, reconciliation, corporate-action/factor-schedule, report, and approval components so UI
-clients can render readiness without client-local scoring rules. Closed operations workflows also
+clients can render readiness without client-local scoring rules. Gate posture requests can carry
+required provider capability gaps and degraded provider capability gaps from the shared provider
+routing matrix; the server turns those into broker-ingest blocker/review states instead of asking
+clients to infer close readiness from provider metadata. Closed operations workflows also
 publish `OperationsClosePackagePublicationDto` with close-package id, retained manifest id/route,
 evidence hash, sign-off actor/rationale, report pack id, evidence links, and checklist approvals so
 clients can inspect close-package publication without rebuilding package metadata locally. Ledger

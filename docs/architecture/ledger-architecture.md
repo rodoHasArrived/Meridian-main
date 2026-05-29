@@ -138,6 +138,16 @@ ledger mutates. Locks are scoped by `LedgerBookKey`, so a published actuals peri
 May journals while a separate shadow-NAV or scenario ledger remains available for independent
 validation. Overlapping locks for the same book are rejected to keep close evidence unambiguous.
 
+### `ShadowNavValidator`
+
+`ShadowNavValidator` compares a published/actual ledger book to an independent shadow-NAV ledger
+book at a selected close timestamp. It builds point-in-time financial statements for both books,
+uses net assets (`assets - liabilities`) as NAV, and emits account-level variance findings from the
+two trial balances. `ShadowNavValidationPolicy` keeps NAV and account tolerances plus reviewer
+metadata with the report. When a variance exceeds tolerance, the report can produce a
+`ShadowNavOverrideDraft` that carries the policy, reviewer group, variance evidence, and source
+ledger keys into the later approval workflow without mutating either book.
+
 ---
 
 ## How backtesting posts to the ledger
