@@ -3408,11 +3408,14 @@ public sealed partial class WorkstationEndpointsTests
                 OriginalFileName: "statement.csv",
                 MappingProfileId: "mapping-v1",
                 ToleranceProfileId: "tolerance-v1",
-                ImportedBy: "ops-user",
-                SourceFileHash: "ABC123"),
+                ImportedBy: "spoofed-user",
+                SourceFileHash: "CALLERHASH"),
             ServerJsonOptions);
         createdResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        service.CreatedRequests.Should().ContainSingle(request => request.FundAccountId == "fund-1");
+        service.CreatedRequests.Should().ContainSingle(request =>
+            request.FundAccountId == "fund-1"
+            && request.ImportedBy == "ops-user"
+            && request.SourceFileHash is null);
 
         var exceptions = await client.GetFromJsonAsync<List<StatementRunExceptionDto>>(
             UiApiRoutes.ReconciliationStatementExceptions,

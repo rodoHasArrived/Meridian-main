@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
@@ -5,11 +6,41 @@ using Meridian.Ui.Shared.Contracts.Reconciliation;
 
 namespace Meridian.Ui.Services.Services.Reconciliation;
 
-public sealed class ReconciliationApiService(
-    ICanonicalStatementStore importStore,
-    IReconciliationCaseStore caseStore,
-    IReconciliationBreakStore breakStore) : IReconciliationApiService
+public sealed class ReconciliationApiService : IReconciliationApiService
 {
+    internal const long MaxStatementSourceFileBytes = 100L * 1024L * 1024L;
+    private const string ImportRootEnvironmentVariable = "MERIDIAN_STATEMENT_IMPORT_ROOT";
+
+    private readonly ICanonicalStatementStore importStore;
+    private readonly IReconciliationCaseStore caseStore;
+    private readonly IReconciliationBreakStore breakStore;
+    private readonly string statementImportRoot;
+
+    public ReconciliationApiService(
+        ICanonicalStatementStore importStore,
+        IReconciliationCaseStore caseStore,
+        IReconciliationBreakStore breakStore)
+        : this(importStore, caseStore, breakStore, ResolveDefaultStatementImportRoot())
+    {
+    }
+
+    public ReconciliationApiService(
+        ICanonicalStatementStore importStore,
+        IReconciliationCaseStore caseStore,
+        IReconciliationBreakStore breakStore,
+        string statementImportRoot)
+    {
+        ArgumentNullException.ThrowIfNull(importStore);
+        ArgumentNullException.ThrowIfNull(caseStore);
+        ArgumentNullException.ThrowIfNull(breakStore);
+        ArgumentException.ThrowIfNullOrWhiteSpace(statementImportRoot);
+
+        this.importStore = importStore;
+        this.caseStore = caseStore;
+        this.breakStore = breakStore;
+        this.statementImportRoot = NormalizeDirectoryPath(statementImportRoot);
+    }
+
     public async Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
         => (await importStore.ListImportsAsync(ct).ConfigureAwait(false))
             .Select(static import => new StatementImportSummaryDto(
@@ -31,9 +62,8 @@ public sealed class ReconciliationApiService(
         ArgumentNullException.ThrowIfNull(request);
         ValidateCreateRequest(request);
 
-        var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash)
-            ? await ComputeSourceFileHashAsync(request.SourcePath, ct).ConfigureAwait(false)
-            : request.SourceFileHash.Trim().ToUpperInvariant();
+        var sourceFile = ResolveStatementSourceFile(request.SourcePath);
+        var sourceFileHash = await ComputeSourceFileHashAsync(sourceFile.FullName, ct).ConfigureAwait(false);
         var importId = StatementDuplicateKey.Create(
             request.FundAccountId,
             request.StatementPeriodStart,
@@ -45,7 +75,7 @@ public sealed class ReconciliationApiService(
             request.Broker.Trim(),
             request.StatementPeriodEnd,
             DateTimeOffset.UtcNow,
-            request.SourcePath.Trim(),
+            sourceFile.FullName,
             sourceFileHash,
             RawRowCount: 0,
             NormalizedRowCount: 0)
@@ -56,7 +86,7 @@ public sealed class ReconciliationApiService(
             StatementPeriodStart = request.StatementPeriodStart,
             StatementPeriodEnd = request.StatementPeriodEnd,
             OriginalFileName = string.IsNullOrWhiteSpace(request.OriginalFileName)
-                ? Path.GetFileName(request.SourcePath)
+                ? sourceFile.Name
                 : request.OriginalFileName.Trim(),
             MappingProfileId = request.MappingProfileId.Trim(),
             ToleranceProfileId = request.ToleranceProfileId.Trim(),
@@ -345,11 +375,76 @@ public sealed class ReconciliationApiService(
         }
     }
 
+    private FileInfo ResolveStatementSourceFile(string sourcePath)
+    {
+        var fullPath = Path.GetFullPath(sourcePath.Trim());
+        if (!IsPathInsideDirectory(fullPath, statementImportRoot))
+        {
+            throw new ArgumentException("Statement source file must be staged under the configured reconciliation import root.", nameof(sourcePath));
+        }
+
+        var sourceFile = new FileInfo(fullPath);
+        if (!sourceFile.Exists)
+        {
+            throw new FileNotFoundException("Statement source file was not found in the configured reconciliation import root.", fullPath);
+        }
+
+        if ((sourceFile.Attributes & FileAttributes.Directory) != 0 || (sourceFile.Attributes & FileAttributes.ReparsePoint) != 0)
+        {
+            throw new ArgumentException("Statement source must be a regular file and cannot be a directory or link.", nameof(sourcePath));
+        }
+
+        if (sourceFile.Length > MaxStatementSourceFileBytes)
+        {
+            throw new ArgumentException($"Statement source file exceeds the {MaxStatementSourceFileBytes} byte workstation import limit.", nameof(sourcePath));
+        }
+
+        return sourceFile;
+    }
+
     private static async Task<string> ComputeSourceFileHashAsync(string sourcePath, CancellationToken ct)
     {
-        await using var stream = File.OpenRead(sourcePath);
-        var hash = await System.Security.Cryptography.SHA256.HashDataAsync(stream, ct).ConfigureAwait(false);
+        var options = new FileStreamOptions
+        {
+            Access = FileAccess.Read,
+            Mode = FileMode.Open,
+            Options = FileOptions.Asynchronous | FileOptions.SequentialScan,
+            Share = FileShare.Read,
+            BufferSize = 64 * 1024
+        };
+
+        await using var stream = new FileStream(sourcePath, options);
+        if (!stream.CanSeek || stream.Length > MaxStatementSourceFileBytes)
+        {
+            throw new ArgumentException("Statement source must be a bounded regular file.", nameof(sourcePath));
+        }
+
+        var hash = await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false);
         return Convert.ToHexString(hash);
+    }
+
+    private static string ResolveDefaultStatementImportRoot()
+    {
+        var configuredRoot = Environment.GetEnvironmentVariable(ImportRootEnvironmentVariable);
+        return string.IsNullOrWhiteSpace(configuredRoot)
+            ? Path.Combine(AppContext.BaseDirectory, "data", "reconciliation", "statement-import-staging")
+            : configuredRoot;
+    }
+
+    private static string NormalizeDirectoryPath(string path)
+    {
+        var fullPath = Path.GetFullPath(path.Trim());
+        return fullPath.EndsWith(Path.DirectorySeparatorChar)
+            ? fullPath
+            : fullPath + Path.DirectorySeparatorChar;
+    }
+
+    private static bool IsPathInsideDirectory(string path, string directory)
+    {
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        return path.StartsWith(directory, comparison);
     }
 
     private static StatementBreakType MapBreakType(string breakCode)

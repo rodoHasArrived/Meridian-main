@@ -1362,18 +1362,27 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
             if (service is null)
             {
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await service.CreateStatementRunAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var trustedRequest = request with { ImportedBy = currentUser, SourceFileHash = null };
+            var detail = await service.CreateStatementRunAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .WithName("CreateStatementRun")
         .Produces<StatementRunDto>(201)
+        .Produces(401)
         .Produces(403)
         .Produces(404)
+        .Produces(429)
         .Produces(501);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementRunById), async (
