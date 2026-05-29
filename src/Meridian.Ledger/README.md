@@ -74,6 +74,10 @@ and supplied realized-gain tax-lot projections.
 `LedgerReportSchedulePlanner` projects monthly, quarterly, or annual report schedules into
 period-bounded export occurrences and report-pack requests for regulatory, investor, or internal
 stakeholder delivery workflows.
+`LedgerScheduledReportExportPackageBuilder` turns a signed report pack plus one scheduled
+occurrence into a delivery manifest and regulator-facing XML summary artifact when requested by the
+schedule, preserving recipients, due date, requested formats, report-pack signature, and statement
+totals without claiming full XBRL/iXBRL coverage.
 
 ## Diagrams
 

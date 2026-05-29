@@ -122,6 +122,11 @@ per-lot realized gain/loss; otherwise the artifact remains header-only for stabl
 `LedgerReportSchedulePlanner` projects governed report schedules into concrete export occurrences.
 A `LedgerReportSchedule` captures the fund, report name, monthly/quarterly/annual cadence, first
 period start, due-day offset, base currency, requested formats, recipients, and creator evidence.
+`LedgerScheduledReportExportPackageBuilder` then binds a signed report pack to one scheduled
+occurrence and emits delivery artifacts: a recipient/format manifest for all scheduled exports and
+a regulator-facing XML summary when `RegulatoryXml` is requested. The XML artifact carries period,
+fund, due-date, signature, and statement-total evidence for downstream reporting tools; full
+XBRL/iXBRL taxonomy production remains outside the core ledger kernel.
 The planner emits period identifiers, report IDs, as-of timestamps, due timestamps, recipients, and
 formats, and each occurrence can create a `LedgerReportPackRequest`. Delivery, permission checks,
 artifact storage, and notification remain outside the ledger domain.

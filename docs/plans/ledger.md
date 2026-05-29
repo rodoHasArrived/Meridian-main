@@ -21,7 +21,7 @@ shadow-NAV validation reports with governed override drafts, plus deterministic 
 investor fee/high-water/allocation projections, tiered preferred-return/carry waterfall
 allocations, signed financial-report artifact generation including a machine-readable
 financial-statements JSON artifact plus tax-lot realized-gains CSV export, and scheduled
-report-export occurrence projection.
+report-export occurrence projection with delivery-manifest and regulatory XML summary artifacts.
 Multi-currency posting now has a local-to-base journal projector that preserves local
 amount/currency/rate evidence while producing balanced base-currency ledger lines.
 Generic automated journal drafts now also cover recurring management-fee, performance-fee,
@@ -46,8 +46,9 @@ adjustment impact while retaining prior-period variance and policy lineage.
 Direct-lending commands now project ledger-impacting events before persistence and pass the
 resulting `LedgerJournalEntryWrite` records into `IDirectLendingStateStore.SaveAsync`, where
 `PostgresDirectLendingStateStore` appends them through `ITransactionalLedgerJournalStore` inside
-the same serializable transaction as the loan event append. Full regulatory-format exports
-remain open beyond the first ledger-domain tax-lot realized-gains artifact.
+the same serializable transaction as the loan event append. Full XBRL/iXBRL regulatory exports
+remain open beyond the first ledger-domain scheduled regulatory XML summary and tax-lot
+realized-gains artifacts.
 
 ## Overview
 
@@ -223,7 +224,7 @@ say "basis per configured policy" until accountant review.
 
 ### Out of Scope
 
-- Tax-reporting exports (reporting layer work; durable tax-lot policy/open-lot persistence exists)
+- Full tax-reporting packages beyond ledger-domain realized-gain evidence artifacts
 - Durable mark-to-market / GAAP fair-value adjustment posting (storage/workflow layer work)
 - Full XBRL/iXBRL output (reporting layer, not core ledger kernel)
 - Non-direct-lending instrument accrual templates (future UFL package work)
@@ -349,6 +350,8 @@ accrual schedule) that can be exported and attached to the operator report pack.
 - [x] Ledger-domain signed report-pack artifact builder for trial balance, P&L, balance sheet,
   financial-statements JSON, tax-lot realized-gains CSV, and manifest checksums from
   point-in-time statements and supplied realized-gain projections
+- [x] Scheduled export delivery artifacts for report recipients, requested formats, due dates,
+  report-pack signatures, and regulator-facing XML summary totals
 - [x] `FundOperationsWorkspaceReadService` includes `FundLedgerSummary`,
   `FundLedgerReconciliationSnapshot`, selected-ledger filtering, and trial-balance rows in the
   fund-operations workspace projection

@@ -98,6 +98,25 @@ public sealed class WorkspaceDialogChromeControlTests
         xaml.Should().NotContain("Foreground=\"White\"");
     }
 
+    [Fact]
+    public void CommandPaletteWindowSource_ShouldUseSharedShellTokensAndStableAutomationIds()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Views\CommandPaletteWindow.xaml"));
+
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"CommandPaletteWindow\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"CommandPaletteWindowChrome\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"CommandPaletteWindowInput\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"CommandPaletteWindowResults\"");
+        xaml.Should().Contain("ConsoleCardSurfaceRaisedBrush");
+        xaml.Should().Contain("ConsoleAccentBlueBrush");
+        xaml.Should().Contain("ConsoleTextPrimaryBrush");
+        xaml.Should().NotContain("Background=\"#FF1E1E2E\"");
+        xaml.Should().NotContain("#FF45475A");
+        xaml.Should().NotContain("#FF89B4FA");
+        xaml.Should().NotContain("DropShadowEffect");
+    }
+
     private static T Get<T>(Control control, string name)
         where T : FrameworkElement
         => control.FindName(name).Should().BeOfType<T>($"{name} should be part of the dialog chrome contract").Subject;
