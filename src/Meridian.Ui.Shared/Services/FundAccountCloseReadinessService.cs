@@ -284,6 +284,9 @@ public sealed class FundAccountCloseReadinessService
             .ToArray() ?? [];
         var unresolvedPassports = latestReconciliation?.SecurityMasterPassports?
             .Count(static passport => passport.Status is ProviderSecurityMasterPassportStatusDto.Unresolved or ProviderSecurityMasterPassportStatusDto.Blocked) ?? 0;
+        var staleResolvedPassports = latestReconciliation?.SecurityMasterPassports?
+            .Count(static passport => passport.ProviderIsStale &&
+                passport.Status is ProviderSecurityMasterPassportStatusDto.Resolved or ProviderSecurityMasterPassportStatusDto.Inferred) ?? 0;
         var securityBreaks = latestReconciliation?.Summary.SecurityIssueCount ?? 0;
         var openSecurityMasterCases = openCases
             .Where(IsSecurityMasterCasework)
@@ -326,6 +329,15 @@ public sealed class FundAccountCloseReadinessService
                 FundAccountCloseReadinessStatusDto.ReviewRequired, "Warning",
                 $"{openSecurityMasterCases.Length} held-security Security Master case(s) remain open for steward review.",
                 "close.security_master.casework_review", "SecurityMaster", route);
+            return;
+        }
+
+        if (staleResolvedPassports > 0)
+        {
+            AddComponent(components, blockers, "security-master-completeness", "Security Master completeness", SecurityMasterWeight,
+                FundAccountCloseReadinessStatusDto.ReviewRequired, "Warning",
+                $"{staleResolvedPassports} resolved provider-to-Security Master passport(s) are backed by stale provider evidence.",
+                "close.security_master.stale_provider_mapping", "SecurityMaster", route);
             return;
         }
 

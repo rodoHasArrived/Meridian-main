@@ -74,8 +74,9 @@ Data use `Terminal`, Portfolio, Accounting, Reporting, and Settings use `Cockpit
 `WorkspaceCommandSurfaceControl` and `WorkspaceEvidenceStripControl` take explicit automation ID
 properties from the active workspace layout descriptor so shell chrome can be reused without
 depending on ambient `MainPage` bindings.
-Modal surfaces should migrate through `WorkspaceDialogChromeControl`; provider API-key setup now
-uses that shared dialog chrome with stable title, subtitle, body, input, and action automation IDs.
+Modal surfaces should migrate through `WorkspaceDialogChromeControl`; provider API-key setup,
+watchlist saving, and scheduled-job editing now use that shared dialog chrome with stable title,
+subtitle, body, input, and action automation IDs.
 High-value workbench pages should migrate through the shared workstation controls before broad
 page sweeps; Strategy Runs now uses `DenseDataGridControl` plus tabbed inspector panes for run,
 evidence, comparison, and artifact context while preserving existing page tags and navigation

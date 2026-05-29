@@ -66,6 +66,38 @@ public sealed class WorkspaceDialogChromeControlTests
         code.Should().Contain("DialogChrome.SubtitleText");
     }
 
+    [Theory]
+    [InlineData(
+        @"src\Meridian.Wpf\Views\SaveWatchlistDialog.xaml",
+        "SaveWatchlistDialogChrome",
+        "SaveWatchlistNameInput",
+        "SaveWatchlistCancelButton",
+        "SaveWatchlistSaveButton")]
+    [InlineData(
+        @"src\Meridian.Wpf\Views\EditScheduledJobDialog.xaml",
+        "EditScheduledJobDialogChrome",
+        "EditScheduledJobNameInput",
+        "EditScheduledJobCancelButton",
+        "EditScheduledJobSaveButton")]
+    public void LegacyDialogSources_ShouldUseSharedDialogChromeAndStableActionAutomationIds(
+        string relativePath,
+        string chromeAutomationId,
+        string primaryInputAutomationId,
+        string cancelAutomationId,
+        string saveAutomationId)
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(relativePath));
+
+        xaml.Should().Contain("WorkspaceDialogChromeControl");
+        xaml.Should().Contain($"DialogAutomationId=\"{chromeAutomationId}\"");
+        xaml.Should().Contain($"AutomationProperties.AutomationId=\"{primaryInputAutomationId}\"");
+        xaml.Should().Contain($"AutomationProperties.AutomationId=\"{cancelAutomationId}\"");
+        xaml.Should().Contain($"AutomationProperties.AutomationId=\"{saveAutomationId}\"");
+        xaml.Should().NotContain("Background=\"#FF1E1E2E\"");
+        xaml.Should().NotContain("Background=\"#FF4CAF50\"");
+        xaml.Should().NotContain("Foreground=\"White\"");
+    }
+
     private static T Get<T>(Control control, string name)
         where T : FrameworkElement
         => control.FindName(name).Should().BeOfType<T>($"{name} should be part of the dialog chrome contract").Subject;

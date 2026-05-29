@@ -1731,6 +1731,45 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_FundAccountCloseReadiness_RequiresSecurityMasterReviewWhenResolvedPassportIsStale()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: true));
+            await BackdateBrokerageProjectionAsync(fixture, TimeSpan.FromHours(2));
+            await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(ProviderStaleAfterMinutes: 30, RequestedBy: "ops-user"));
+
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+
+            readiness.Should().NotBeNull();
+            readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.ReviewRequired);
+            readiness.IsReadyToClose.Should().BeFalse();
+            readiness.Components.Should().Contain(component =>
+                component.Key == "security-master-completeness" &&
+                component.Status == FundAccountCloseReadinessStatusDto.ReviewRequired &&
+                component.BlockingReason.Contains("stale provider evidence", StringComparison.OrdinalIgnoreCase));
+            readiness.Blockers.Should().Contain(blocker =>
+                blocker.Code == "close.security_master.stale_provider_mapping" &&
+                blocker.Category == "SecurityMaster" &&
+                blocker.Severity == "Warning" &&
+                blocker.EvidenceLink == $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconciliation/latest");
+            readiness.NextActions.Should().Contain(action =>
+                action.Code == "close.security_master.stale_provider_mapping" &&
+                action.Label == "Resolve Security Master coverage");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_FundAccountCloseReadiness_BlocksWhenRequiredProviderCapabilitiesAreMissing()
     {
         var root = CreateTempRoot();
