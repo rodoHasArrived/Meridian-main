@@ -120,6 +120,15 @@ specific-lot identification without adding a dependency from `Meridian.Ledger` b
 lot selectors. Execution and front-office lot engines can map the ledger enum to their selector
 implementations while report and close workflows retain account-level policy evidence.
 
+### `AutomatedJournalDraftProjector`
+
+`AutomatedJournalDraftProjector` turns normalized recurring/lifecycle events into balanced journal
+drafts before approval or durable posting. The first supported event set covers dividend
+declarations, dividend receipts, cash-interest credits, corporate-action income, and
+corporate-action expenses. Drafts include normalized metadata and optional source-event tags so
+approval, reconciliation, and reporting flows can trace the automated journal back to the upstream
+event.
+
 ---
 
 ## How backtesting posts to the ledger

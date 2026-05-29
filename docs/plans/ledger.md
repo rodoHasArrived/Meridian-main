@@ -16,8 +16,8 @@ book/period APIs, period-close inbox routing, period posting-kind guards, run-le
 customizable hierarchical chart-of-accounts rollups, ledger-domain income-statement/balance-sheet
 projection, local-to-base currency translation, unrealized FX revaluation line generation, and the
 first fixed-income coupon/accretion/amortization journal projection are complete. Durable
-accrual-to-ledger posting, account-level tax-lot policy persistence, and ledger-specific reporting
-endpoints remain open.
+accrual-to-ledger posting, journal automation persistence/approval, account-level tax-lot policy
+persistence, and ledger-specific reporting endpoints remain open.
 
 ## Overview
 
@@ -52,6 +52,7 @@ baseline.
 | `MultiCurrencyLedgerTranslator.cs` | Local-currency balance translation and unrealized FX revaluation journal lines |
 | `FixedIncomeAmortizationProjector.cs` | Coupon accrual, discount accretion, and premium amortization journal-line projection |
 | `LedgerAccountTaxLotPolicyBook.cs` | Account-level FIFO/LIFO/HIFO/SpecificId relief policy resolution |
+| `AutomatedJournalDraftProjector.cs` | Balanced journal drafts for dividends, cash interest, and corporate-action cash events |
 | `LedgerAccountType.cs` | Asset / Liability / Equity / Revenue / Expense ordinals |
 | `JournalEntry.cs` | Balanced set of `LedgerEntry` lines |
 | `JournalEntryMetadata.cs` | Command/correlation/causation lineage attached to a journal entry |

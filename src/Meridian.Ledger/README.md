@@ -38,6 +38,8 @@ balanced unrealized FX revaluation journal lines for monetary asset/liability ac
 premium amortization lines for bond accounting workflows before persistence or approval posting.
 `LedgerAccountTaxLotPolicyBook` resolves FIFO/LIFO/HIFO/SpecificId relief methods at the ledger
 account level so accounting statements can follow front-office lot-relief policy.
+`AutomatedJournalDraftProjector` produces balanced drafts for dividend declarations, dividend
+receipts, cash-interest credits, and corporate-action cash events before workflow approval/posting.
 
 ## Diagrams
 

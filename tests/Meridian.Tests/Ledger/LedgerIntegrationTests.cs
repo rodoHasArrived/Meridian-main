@@ -1002,6 +1002,62 @@ public sealed class LedgerIntegrationTests
             .WithMessage("*not effective until 2026-06-01*");
     }
 
+    [Fact]
+    public void AutomatedJournalDraftProjector_ProjectsDividendDeclarationAndReceipt()
+    {
+        var declared = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.DividendDeclared,
+            "aapl",
+            42m,
+            new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero),
+            FinancialAccountId: "broker-1",
+            SourceEventId: "div-001"));
+        var received = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.DividendReceived,
+            "AAPL",
+            42m,
+            new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            FinancialAccountId: "broker-1"));
+
+        declared.IsBalanced.Should().BeTrue();
+        declared.Metadata.ActivityType.Should().Be(nameof(AutomatedJournalEventKind.DividendDeclared));
+        declared.Metadata.Symbol.Should().Be("AAPL");
+        declared.Metadata.Tags.Should().ContainKey("sourceEventId");
+        declared.Lines.Should().Contain(line => line.account.Name == "Dividend Receivable" && line.account.Symbol == "AAPL" && line.debit == 42m);
+        declared.Lines.Should().Contain(line => line.account.Name == "Dividend Income" && line.account.FinancialAccountId == "broker-1" && line.credit == 42m);
+
+        received.IsBalanced.Should().BeTrue();
+        received.Lines.Should().Contain(line => line.account.Name == "Cash" && line.account.FinancialAccountId == "broker-1" && line.debit == 42m);
+        received.Lines.Should().Contain(line => line.account.Name == "Dividend Receivable" && line.credit == 42m);
+    }
+
+    [Fact]
+    public void AutomatedJournalDraftProjector_ProjectsCorporateActionExpense()
+    {
+        var draft = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.CorporateActionExpense,
+            "msft",
+            12.5m,
+            DateTimeOffset.UtcNow,
+            FinancialAccountId: "broker-2"));
+
+        draft.IsBalanced.Should().BeTrue();
+        draft.Lines.Should().Contain(line => line.account.Name == "Corporate Action Expense" && line.account.FinancialAccountId == "broker-2" && line.debit == 12.5m);
+        draft.Lines.Should().Contain(line => line.account.Name == "Cash" && line.account.FinancialAccountId == "broker-2" && line.credit == 12.5m);
+    }
+
+    [Fact]
+    public void AutomatedJournalDraftProjector_RejectsNonPositiveAmounts()
+    {
+        var act = () => AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.CashInterestCredited,
+            "USD",
+            0m,
+            DateTimeOffset.UtcNow));
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
     private static JournalEntry BuildGeneratedBalancedJournal(
         int lineCountSeed,
         int amountSeed,
