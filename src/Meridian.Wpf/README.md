@@ -81,6 +81,9 @@ state so maintenance blockers, confirmation posture, and evidence summaries reus
 Data Quality terminal work uses `DenseDataGridControl` for the symbol-quality table with
 view-model-owned selected-row drilldown and provider-comparison command state, keeping the Data
 workspace on shared dense-table behavior without changing data-quality service contracts.
+Backfill terminal work uses `DenseDataGridControl` for gap-analysis and per-symbol-progress tables,
+with table descriptors owned by `BackfillWorkbenchSectionViewModel` so long-running provider
+catch-up workflows reuse the shared dense-table/empty-state surface.
 
 ## Diagrams
 
