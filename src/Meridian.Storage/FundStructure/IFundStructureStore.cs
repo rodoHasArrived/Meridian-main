@@ -57,6 +57,13 @@ public interface IFundStructureStore
     Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, CancellationToken ct = default);
     Task<IReadOnlyList<FundStructureAssignmentDto>> GetAllAssignmentsAsync(CancellationToken ct = default);
 
+    // Atomic setup workflow persistence
+    Task CommitSetupBatchAsync(FundStructureSetupBatch batch, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(batch);
+        throw new NotSupportedException("This fund-structure store does not support atomic setup batches.");
+    }
+
     // Emptiness check
     Task<bool> IsEmptyAsync(CancellationToken ct = default);
 }

@@ -29,7 +29,7 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
-`FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
+`IFundStructureSetupService` backs `/api/fund-structure/setup/preview` and `/api/fund-structure/setup/commit`, while `FundStructureSetupWorkflowService` keeps the older `/setup-drafts/validate` and `/setup-drafts/create` routes compatible. Browser and WPF setup screens now preview the draft first, then commit through the shared application workflow so validation, reuse detection, command sequencing, and account handoff behavior are not duplicated in clients.
 
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation

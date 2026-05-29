@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Transactions;
 using Meridian.Contracts.FundStructure;
 using Npgsql;
 
@@ -644,6 +645,38 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
                 r.IsDBNull(r.GetOrdinal("effective_to")) ? null : r.GetFieldValue<DateTimeOffset>(r.GetOrdinal("effective_to")),
                 r.GetBoolean(r.GetOrdinal("is_primary"))));
         return result;
+    }
+
+
+    public async Task CommitSetupBatchAsync(FundStructureSetupBatch batch, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(batch);
+
+        using var scope = new TransactionScope(
+            TransactionScopeOption.Required,
+            new TransactionOptions { IsolationLevel = IsolationLevel.Serializable },
+            TransactionScopeAsyncFlowOption.Enabled);
+
+        foreach (var dto in batch.Organizations)
+            await UpsertOrganizationAsync(dto, ct).ConfigureAwait(false);
+        foreach (var dto in batch.Businesses)
+            await UpsertBusinessAsync(dto, ct).ConfigureAwait(false);
+        foreach (var dto in batch.Clients)
+            await UpsertClientAsync(dto, ct).ConfigureAwait(false);
+        foreach (var dto in batch.Funds)
+            await UpsertFundAsync(dto, ct).ConfigureAwait(false);
+        foreach (var dto in batch.Vehicles)
+            await UpsertVehicleAsync(dto, ct).ConfigureAwait(false);
+        foreach (var dto in batch.LegalEntities)
+            await UpsertLegalEntityAsync(dto, ct).ConfigureAwait(false);
+        foreach (var dto in batch.InvestmentPortfolios)
+            await UpsertInvestmentPortfolioAsync(dto, ct).ConfigureAwait(false);
+        foreach (var dto in batch.OwnershipLinks)
+            await UpsertOwnershipLinkAsync(dto, ct).ConfigureAwait(false);
+        foreach (var dto in batch.Assignments)
+            await UpsertAssignmentAsync(dto, ct).ConfigureAwait(false);
+
+        scope.Complete();
     }
 
     // ── Emptiness check ───────────────────────────────────────────────────────

@@ -27,6 +27,7 @@ This layer persists durable state and evidence. It should expose storage seams w
 - `FundAccounts/` - account definitions, balance snapshots, statement batches, reconciliation
   results, and account readiness persistence. Balance snapshots include optional realized and
   unrealized P&L columns for provider-ledger shadow-book comparison evidence.
+- `FundStructure/` - PostgreSQL fund-structure storage contracts and store implementation, including the setup-batch seam used when entity setup commits must be persisted as one transaction.
 - `Packaging/`, `Export/`, and `Maintenance/` - operational storage workflows.
 
 ## Important workflows

@@ -69,6 +69,7 @@ and UI presentation concerns in their owning layers.
   cash/activity rows, requires row currency equality before broker/custodian auto-match, appends
   reconciliation decision journals through crash-safe copy-on-write JSONL writes, and attaches
   break explanations plus retained statement-row evidence.
+- `FundStructure/` - fund-structure graph commands, policy checks, and the setup workflow that previews an entity setup draft, detects reusable code/name matches, validates ownership/account handoff inputs before mutation, creates missing nodes in dependency order, and returns commit resolution evidence for WPF, browser, and API callers; PostgreSQL stores expose `CommitSetupBatchAsync` for transaction-scoped persistence when the setup workflow is backed by store-level batch commits.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot

@@ -66,6 +66,34 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
+    public async Task SetupPreviewAndCommit_WithRequestEnvelope_ReturnsCommitResult()
+    {
+        var draft = CreateSetupDraft() with
+        {
+            Organization = new FundStructureSetupOrganizationDraftDto(null, $"ORG-{Guid.NewGuid():N}"[..12].ToUpperInvariant(), "Endpoint Setup Organization", "USD"),
+            BusinessLane = new FundStructureSetupBusinessDraftDto(null, BusinessKindDto.FundManager, $"BUS-{Guid.NewGuid():N}"[..12].ToUpperInvariant(), "Endpoint Setup Business", "USD"),
+            ClientOrFund = new FundStructureSetupClientOrFundDraftDto(null, null, CreateClient: false, $"FND-{Guid.NewGuid():N}"[..12].ToUpperInvariant(), "Endpoint Setup Fund", "USD"),
+            LegalEntity = new FundStructureSetupLegalEntityDraftDto(null, LegalEntityTypeDto.Fund, $"LE-{Guid.NewGuid():N}"[..12].ToUpperInvariant(), "Endpoint Setup Entity", "US-DE", "USD"),
+            Vehicle = new FundStructureSetupVehicleDraftDto(null, $"VEH-{Guid.NewGuid():N}"[..12].ToUpperInvariant(), "Endpoint Setup Vehicle", "USD"),
+            InvestmentPortfolio = new FundStructureSetupInvestmentPortfolioDraftDto(null, $"PRT-{Guid.NewGuid():N}"[..12].ToUpperInvariant(), "Endpoint Setup Portfolio", "USD")
+        };
+        var request = new FundStructureSetupDraftRequest(draft);
+
+        var previewResponse = await _client.PostAsJsonAsync("/api/fund-structure/setup/preview", request);
+        var commitResponse = await _client.PostAsJsonAsync("/api/fund-structure/setup/commit", request);
+
+        previewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var preview = await previewResponse.Content.ReadFromJsonAsync<FundStructureSetupPreviewDto>();
+        preview.Should().NotBeNull();
+        preview!.ValidationSummary.IsValid.Should().BeTrue();
+        commitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var commit = await commitResponse.Content.ReadFromJsonAsync<FundStructureSetupCommitResultDto>();
+        commit.Should().NotBeNull();
+        commit!.Succeeded.Should().BeTrue();
+        commit.Entities.Should().Contain(entity => entity.Alias == FundStructureSetupNodeAlias.InvestmentPortfolio && entity.WasCreated);
+    }
+
+    [Fact]
     public async Task OwnershipLifecycleEndpoints_UpdateExpireAndValidateGraph()
     {
         var structureService = _fixture.Services.GetRequiredService<IFundStructureService>();

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { createFundStructureSetupDraft, validateFundStructureSetupDraft, type FundStructureSetupDraft, type FundStructureSetupPreview, type FundStructureSetupResult } from "@/lib/api";
+import { createFundStructureSetupDraft, validateFundStructureSetupDraft, type FundStructureSetupDraft, type FundStructureSetupPreview, type FundStructureSetupCommitResult } from "@/lib/api";
 
 interface DraftFields {
   organizationCode: string;
@@ -49,7 +49,7 @@ const initialFields: DraftFields = {
 export function EntitySetupWizard() {
   const [fields, setFields] = useState(initialFields);
   const [preview, setPreview] = useState<FundStructureSetupPreview | null>(null);
-  const [result, setResult] = useState<FundStructureSetupResult | null>(null);
+  const [result, setResult] = useState<FundStructureSetupCommitResult | null>(null);
   const [status, setStatus] = useState("Validate the setup draft before review and create.");
   const [busy, setBusy] = useState(false);
   const draft = useMemo(() => buildDraft(fields), [fields]);
@@ -77,7 +77,7 @@ export function EntitySetupWizard() {
       const response = await createFundStructureSetupDraft(draft);
       setResult(response);
       setPreview({ nodes: response.graph.nodes, ownershipLinks: [], validationSummary: response.validationSummary });
-      setStatus(`Created ${response.businessLane.name} and ${response.investmentPortfolio.name}.`);
+      setStatus(response.succeeded ? response.messages.join(" ") : `Resolve ${response.validationSummary.issues.length} setup issue(s).`);
     } finally {
       setBusy(false);
     }

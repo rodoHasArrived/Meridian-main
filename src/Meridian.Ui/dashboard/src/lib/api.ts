@@ -1753,24 +1753,32 @@ export interface FundStructureSetupPreview {
   validationSummary: FundStructureSetupValidationSummary;
 }
 
-export interface FundStructureSetupResult {
-  organization: { organizationId: string; code: string; name: string };
-  businessLane: { businessId: string; code: string; name: string };
-  client?: { clientId: string; code: string; name: string } | null;
-  fund?: { fundId: string; code: string; name: string } | null;
-  legalEntity: { entityId: string; code: string; name: string };
-  vehicle: { vehicleId: string; code: string; name: string };
-  investmentPortfolio: { investmentPortfolioId: string; code: string; name: string };
+export interface FundStructureSetupEntityResolution {
+  alias: string;
+  kind: string;
+  nodeId: string;
+  code: string;
+  name: string;
+  wasCreated: boolean;
+  resolution: string;
+}
+
+export interface FundStructureSetupCommitResult {
+  succeeded: boolean;
+  entities: FundStructureSetupEntityResolution[];
   ownershipLinks: unknown[];
-  accountHandoffAssignment: unknown;
+  accountHandoffAssignment?: unknown | null;
   graph: { nodes: FundStructureNodePreview[]; ownershipLinks: unknown[] };
   validationSummary: FundStructureSetupValidationSummary;
+  messages: string[];
 }
+
+export type FundStructureSetupResult = FundStructureSetupCommitResult;
 
 export async function validateFundStructureSetupDraft(draft: FundStructureSetupDraft, options: ApiRequestOptions = {}): Promise<FundStructureSetupPreview> {
-  return postJson<FundStructureSetupPreview>("/api/fund-structure/setup-drafts/validate", draft, options);
+  return postJson<FundStructureSetupPreview>("/api/fund-structure/setup/preview", { draft, reuseExistingEntities: true }, options);
 }
 
-export async function createFundStructureSetupDraft(draft: FundStructureSetupDraft, options: ApiRequestOptions = {}): Promise<FundStructureSetupResult> {
-  return postJson<FundStructureSetupResult>("/api/fund-structure/setup-drafts/create", draft, options);
+export async function createFundStructureSetupDraft(draft: FundStructureSetupDraft, options: ApiRequestOptions = {}): Promise<FundStructureSetupCommitResult> {
+  return postJson<FundStructureSetupCommitResult>("/api/fund-structure/setup/commit", { draft, reuseExistingEntities: true }, options);
 }

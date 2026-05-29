@@ -18,6 +18,53 @@ public static class FundStructureEndpoints
         var group = app.MapGroup("/api/fund-structure").WithTags("Fund Structure");
 
 
+
+        group.MapPost("/setup/preview", async (JsonElement body, HttpContext context) =>
+        {
+            var setupService = ResolveSetupService(context);
+            if (setupService is null)
+                return ServiceUnavailable();
+
+            FundStructureSetupDraftRequest request;
+            try
+            {
+                request = DeserializeSetupRequest(body, jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.Problem($"Setup draft is invalid JSON. {ex.Message}", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var result = await setupService.PreviewAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("PreviewFundStructureSetup")
+        .Produces<FundStructureSetupPreviewDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/setup/commit", async (JsonElement body, HttpContext context) =>
+        {
+            var setupService = ResolveSetupService(context);
+            if (setupService is null)
+                return ServiceUnavailable();
+
+            FundStructureSetupDraftRequest request;
+            try
+            {
+                request = DeserializeSetupRequest(body, jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.Problem($"Setup draft is invalid JSON. {ex.Message}", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var result = await setupService.CommitAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions, statusCode: result.Succeeded ? StatusCodes.Status201Created : StatusCodes.Status400BadRequest);
+        })
+        .WithName("CommitFundStructureSetup")
+        .Produces<FundStructureSetupCommitResultDto>(StatusCodes.Status201Created)
+        .Produces<FundStructureSetupCommitResultDto>(StatusCodes.Status400BadRequest);
+
         group.MapPost("/setup-drafts/validate", (JsonElement body, HttpContext context) =>
         {
             var workflow = ResolveSetupWorkflow(context);
@@ -1108,9 +1155,26 @@ public static class FundStructureEndpoints
         }
     }
 
+    private static FundStructureSetupDraftRequest DeserializeSetupRequest(JsonElement body, JsonSerializerOptions jsonOptions)
+    {
+        if (body.ValueKind == JsonValueKind.Object && body.TryGetProperty("draft", out _))
+        {
+            return JsonSerializer.Deserialize<FundStructureSetupDraftRequest>(body.GetRawText(), jsonOptions)
+                ?? throw new JsonException("Setup request body is required.");
+        }
+
+        var draft = JsonSerializer.Deserialize<FundStructureSetupDraftDto>(body.GetRawText(), jsonOptions)
+            ?? throw new JsonException("Setup draft body is required.");
+        return new FundStructureSetupDraftRequest(draft);
+    }
+
+    private static IFundStructureSetupService? ResolveSetupService(HttpContext context)
+        => context.RequestServices.GetService<IFundStructureSetupService>()
+           ?? (ResolveService(context) is { } service ? new FundStructureSetupService(service) : null);
+
     private static FundStructureSetupWorkflowService? ResolveSetupWorkflow(HttpContext context)
         => context.RequestServices.GetService<FundStructureSetupWorkflowService>()
-           ?? (ResolveService(context) is { } service ? new FundStructureSetupWorkflowService(service) : null);
+           ?? (ResolveSetupService(context) is { } service ? new FundStructureSetupWorkflowService(service) : null);
 
     private static IFundStructureService? ResolveService(HttpContext context) =>
         context.RequestServices.GetService<IFundStructureService>();

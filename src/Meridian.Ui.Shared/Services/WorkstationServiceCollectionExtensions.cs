@@ -67,6 +67,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ImmutableAuditLogService>();
         services.TryAddSingleton<AccessReviewService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
+        services.TryAddSingleton<IFundStructureSetupService, FundStructureSetupService>();
         services.TryAddSingleton<FundStructureSetupWorkflowService>();
 
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
