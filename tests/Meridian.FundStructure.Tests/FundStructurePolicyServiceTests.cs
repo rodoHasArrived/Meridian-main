@@ -51,6 +51,36 @@ public sealed class FundStructurePolicyServiceTests
     }
 
     [Fact]
+    public void ValidateOwnershipLink_ThrowsWhenOverlappingFutureLinkWouldCreateCycle()
+    {
+        var service = new FundStructurePolicyService();
+        var parentId = Guid.NewGuid();
+        var childId = Guid.NewGuid();
+        var candidate = CreateLink(
+            parentId,
+            childId,
+            OwnershipRelationshipTypeDto.Owns,
+            effectiveFrom: new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero),
+            effectiveTo: new DateTimeOffset(2026, 03, 01, 0, 0, 0, TimeSpan.Zero));
+        var futureReverseLink = CreateLink(
+            childId,
+            parentId,
+            OwnershipRelationshipTypeDto.Owns,
+            effectiveFrom: new DateTimeOffset(2026, 02, 01, 0, 0, 0, TimeSpan.Zero));
+
+        Assert.Throws<InvalidOperationException>(() => service.ValidateOwnershipLink(
+            candidate,
+            FundStructureNodeKindDto.Fund,
+            FundStructureNodeKindDto.Entity,
+            [futureReverseLink],
+            new Dictionary<Guid, FundStructureNodeKindDto>
+            {
+                [parentId] = FundStructureNodeKindDto.Fund,
+                [childId] = FundStructureNodeKindDto.Entity
+            }));
+    }
+
+    [Fact]
     public void ValidateOwnershipLink_ThrowsWhenRelationshipTypeDoesNotMatchNodeKinds()
     {
         var service = new FundStructurePolicyService();
@@ -167,6 +197,56 @@ public sealed class FundStructurePolicyServiceTests
             effectiveFrom: new DateTimeOffset(2026, 01, 15, 0, 0, 0, TimeSpan.Zero));
 
         Assert.Throws<InvalidOperationException>(() => service.ValidateOwnershipReplacement(existing, replacement));
+    }
+
+    [Fact]
+    public void ValidateOwnershipUpdate_ThrowsWhenAmendedPrimaryWindowOverlapsExistingPrimaryLink()
+    {
+        var service = new FundStructurePolicyService();
+        var firstParentId = Guid.NewGuid();
+        var secondParentId = Guid.NewGuid();
+        var childId = Guid.NewGuid();
+        var existing = CreateLink(
+            firstParentId,
+            childId,
+            OwnershipRelationshipTypeDto.Owns,
+            isPrimary: false,
+            effectiveFrom: new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero));
+        var competingPrimary = CreateLink(
+            secondParentId,
+            childId,
+            OwnershipRelationshipTypeDto.Owns,
+            isPrimary: true,
+            effectiveFrom: new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero));
+        var updated = existing with { IsPrimary = true };
+
+        Assert.Throws<InvalidOperationException>(() => service.ValidateOwnershipUpdate(
+            existing,
+            updated,
+            FundStructureNodeKindDto.Fund,
+            FundStructureNodeKindDto.Entity,
+            [existing, competingPrimary],
+            new Dictionary<Guid, FundStructureNodeKindDto>
+            {
+                [firstParentId] = FundStructureNodeKindDto.Fund,
+                [secondParentId] = FundStructureNodeKindDto.Fund,
+                [childId] = FundStructureNodeKindDto.Entity
+            }));
+    }
+
+    [Fact]
+    public void ValidateOwnershipExpiration_ThrowsWhenExpirationPrecedesEffectiveFrom()
+    {
+        var service = new FundStructurePolicyService();
+        var link = CreateLink(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            OwnershipRelationshipTypeDto.Owns,
+            effectiveFrom: new DateTimeOffset(2026, 02, 01, 0, 0, 0, TimeSpan.Zero));
+
+        Assert.Throws<InvalidOperationException>(() => service.ValidateOwnershipExpiration(
+            link,
+            new DateTimeOffset(2026, 01, 31, 0, 0, 0, TimeSpan.Zero)));
     }
 
     [Fact]

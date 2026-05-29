@@ -89,7 +89,7 @@ and UI presentation concerns in their owning layers.
   mapping workbench orchestration. Ownership-link policy validation prevents invalid setup graphs
   by blocking self-parenting, active cycles, incompatible relationship types, overlapping primary
   links, invalid percentage ownership, sibling percentage over-allocation, and invalid effective
-  windows before graph mutations are persisted. Ledger mapping resolution stays server-side and
+  windows before create, amend, expire, or replacement graph mutations are persisted. Ledger mapping resolution stays server-side and
   reuses fund-structure assignments before falling back to account ledger references.
 - `FundAccounts/` - internal account balance snapshots, statement intake, account readiness, and
   provider-link history. Balance snapshots preserve optional realized and unrealized P&L values so

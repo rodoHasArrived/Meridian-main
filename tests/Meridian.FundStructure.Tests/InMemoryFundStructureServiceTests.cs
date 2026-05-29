@@ -251,6 +251,89 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task UpdateOwnershipLinkAsync_WhenAmendedPrimaryWouldOverlapExistingPrimary_ThrowsInvalidOperation()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+        var firstLinkId = Guid.NewGuid();
+        var secondLinkId = Guid.NewGuid();
+
+        await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            firstLinkId,
+            fixture.DirectFundPortfolioId,
+            fixture.FundAccountId,
+            OwnershipRelationshipTypeDto.Operates,
+            now,
+            "test",
+            IsPrimary: false));
+        await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            secondLinkId,
+            fixture.SleevePortfolioId,
+            fixture.FundAccountId,
+            OwnershipRelationshipTypeDto.Operates,
+            now,
+            "test",
+            IsPrimary: true));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.StructureService.UpdateOwnershipLinkAsync(
+            new UpdateOwnershipLinkRequest(
+                firstLinkId,
+                OwnershipRelationshipTypeDto.Operates,
+                now,
+                "test",
+                IsPrimary: true)));
+    }
+
+    [Fact]
+    public async Task ExpireOwnershipLinkAsync_WhenExpirationPrecedesEffectiveFrom_ThrowsInvalidOperation()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+        var linkId = Guid.NewGuid();
+
+        await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            linkId,
+            fixture.DirectFundPortfolioId,
+            fixture.FundAccountId,
+            OwnershipRelationshipTypeDto.Operates,
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.StructureService.ExpireOwnershipLinkAsync(
+            new ExpireOwnershipLinkRequest(
+                linkId,
+                now.AddDays(-1),
+                "test")));
+    }
+
+    [Fact]
+    public async Task ReplaceOwnershipLinkAsync_WhenReplacementWindowOverlapsOriginal_ThrowsInvalidOperation()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+        var originalLinkId = Guid.NewGuid();
+
+        await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            originalLinkId,
+            fixture.DirectFundPortfolioId,
+            fixture.FundAccountId,
+            OwnershipRelationshipTypeDto.Operates,
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.StructureService.ReplaceOwnershipLinkAsync(
+            new ReplaceOwnershipLinkRequest(
+                originalLinkId,
+                Guid.NewGuid(),
+                fixture.SleevePortfolioId,
+                fixture.FundAccountId,
+                OwnershipRelationshipTypeDto.Operates,
+                now.AddDays(1),
+                "test",
+                ReplacedEffectiveTo: now.AddDays(2))));
+    }
+
+    [Fact]
     public async Task GetOrganizationStructureAsync_ReturnsAdvisorAndFundBusinessesUnderOneOrganization()
     {
         var fixture = await CreateHybridFixtureAsync();

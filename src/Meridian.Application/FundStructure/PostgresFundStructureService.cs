@@ -431,6 +431,17 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 EffectiveTo = request.EffectiveTo,
                 Notes = request.Notes
             };
+            var nodeKinds = CaptureNodeKinds(snap);
+            var parentKind = ResolveKnownNodeKind(existing.ParentNodeId, nodeKinds);
+            var childKind = ResolveKnownNodeKind(existing.ChildNodeId, nodeKinds);
+            _policy.ValidateOwnershipUpdate(
+                existing,
+                updated,
+                parentKind,
+                childKind,
+                snap.OwnershipLinks.Values.ToList(),
+                nodeKinds);
+
             snap.OwnershipLinks[updated.OwnershipLinkId] = updated;
             RebuildOwnershipProjections(snap);
             await PersistChangedAsync(snap, ct).ConfigureAwait(false);
@@ -452,8 +463,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
             if (!snap.OwnershipLinks.TryGetValue(request.OwnershipLinkId, out var existing))
                 throw new InvalidOperationException($"Ownership link {request.OwnershipLinkId} was not found.");
-            if (request.EffectiveTo < existing.EffectiveFrom)
-                throw new InvalidOperationException("Ownership link expiration cannot be earlier than its effective-from timestamp.");
+            _policy.ValidateOwnershipExpiration(existing, request.EffectiveTo);
 
             var notes = string.IsNullOrWhiteSpace(request.Notes) ? existing.Notes : request.Notes;
             var expired = existing with { EffectiveTo = request.EffectiveTo, Notes = notes };
@@ -487,13 +497,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 throw new InvalidOperationException($"Ownership link {request.ReplacementOwnershipLinkId} already exists.");
 
             var replacedEffectiveTo = request.ReplacedEffectiveTo ?? request.EffectiveFrom;
-            if (replacedEffectiveTo < existing.EffectiveFrom)
-                throw new InvalidOperationException("Replacement expiration cannot be earlier than the replaced link's effective-from timestamp.");
-
-            snap.OwnershipLinks[existing.OwnershipLinkId] = existing with { EffectiveTo = replacedEffectiveTo };
-            if (parentKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ParentNodeId);
-            if (childKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ChildNodeId);
-
+            var expiredExisting = existing with { EffectiveTo = replacedEffectiveTo };
             var replacement = new OwnershipLinkDto(
                 request.ReplacementOwnershipLinkId,
                 request.ParentNodeId,
@@ -504,6 +508,22 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 request.EffectiveFrom,
                 EffectiveTo: null,
                 request.Notes);
+            var nodeKinds = CaptureNodeKinds(snap);
+            nodeKinds[request.ParentNodeId] = parentKind.Value;
+            nodeKinds[request.ChildNodeId] = childKind.Value;
+            _policy.ValidateOwnershipReplacement(
+                existing,
+                expiredExisting,
+                replacement,
+                parentKind.Value,
+                childKind.Value,
+                snap.OwnershipLinks.Values.ToList(),
+                nodeKinds);
+
+            snap.OwnershipLinks[existing.OwnershipLinkId] = expiredExisting;
+            if (parentKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ParentNodeId);
+            if (childKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ChildNodeId);
+
             snap.OwnershipLinks[replacement.OwnershipLinkId] = replacement;
             RebuildOwnershipProjections(snap);
             await PersistChangedAsync(snap, ct).ConfigureAwait(false);
@@ -1233,6 +1253,19 @@ public sealed class PostgresFundStructureService : IFundStructureService
     }
 
     // ── Static utilities ──────────────────────────────────────────────────────
+
+
+    private static FundStructureNodeKindDto ResolveKnownNodeKind(
+        Guid nodeId,
+        IReadOnlyDictionary<Guid, FundStructureNodeKindDto> nodeKinds)
+    {
+        if (nodeKinds.TryGetValue(nodeId, out var kind))
+        {
+            return kind;
+        }
+
+        throw new InvalidOperationException($"Node {nodeId} was not found.");
+    }
 
     private static Dictionary<Guid, FundStructureNodeKindDto> CaptureNodeKinds(MutableSnapshot snap)
     {
