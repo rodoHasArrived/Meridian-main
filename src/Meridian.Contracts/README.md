@@ -194,7 +194,9 @@ Report-line provenance payloads live with the fund-operations workstation contra
 Ledger period and cross-period reporting DTOs expose closed-period trial-balance rows and P&L
 summary totals with accounting-basis, policy, prior-period variance, open-break count, and signoff
 posture so clients can render period close and cross-period reports without recomputing ledger
-semantics locally.
+semantics locally. `LedgerTrialBalanceReportDto` wraps closed-period trial-balance detail rows with
+locked-period status, aggregate totals, accounting-policy lineage, and a SHA256 report signature so
+browser, WPF, export, and audit clients can verify the same period report payload.
 `LedgerAmountProvenanceDetailDto` is the shared click-through contract for a retained report-pack
 ledger amount: it carries the ledger amount, provider/source evidence pointers, Security Master
 link, reconciliation run and case state, compact related-case owner/status/sign-off routing,

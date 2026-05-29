@@ -207,6 +207,32 @@ public sealed record LedgerPeriodSummaryDto(
     string AccountingPolicyId = "legacy-v1",
     string AccountingPolicyVersion = "legacy-v1");
 
+public sealed record LedgerReportSignatureDto(
+    string Algorithm,
+    string PayloadChecksumSha256,
+    string SignedBy,
+    DateTimeOffset SignedAtUtc);
+
+public sealed record LedgerTrialBalanceReportDto(
+    Guid PeriodId,
+    Guid LedgerBookId,
+    int FiscalYear,
+    int PeriodNo,
+    string Label,
+    bool IsPeriodLocked,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    decimal NetIncome,
+    decimal? PeriodOnPeriodVariance,
+    int OpenBreakCount,
+    LedgerPeriodSignoffStatusDto SignoffStatus,
+    DateTimeOffset CompletedAt,
+    IReadOnlyList<LedgerPeriodTrialBalanceLineDto> Lines,
+    LedgerReportSignatureDto Signature,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1");
+
 public sealed record LedgerPeriodPnlSummaryDto(
     Guid PeriodId,
     Guid LedgerBookId,

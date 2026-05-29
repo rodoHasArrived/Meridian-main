@@ -438,6 +438,9 @@ public sealed class LedgerBookServiceTests
         var pnl = await client.GetFromJsonAsync<LedgerPeriodPnlSummaryDto>(
             UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodPnlSummary, "periodId", current.PeriodId.ToString()),
             ServerJsonOptions);
+        var trialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", current.PeriodId.ToString()),
+            ServerJsonOptions);
 
         trialBalance.Should().NotBeNull();
         trialBalance!.Should().Contain(row =>
@@ -453,6 +456,23 @@ public sealed class LedgerBookServiceTests
         pnl.PeriodOnPeriodVariance.Should().Be(400m);
         pnl.RevenueLines.Should().ContainSingle(row => row.AccountName == "Management fees");
         pnl.ExpenseLines.Should().ContainSingle(row => row.AccountName == "Operating expense");
+        trialBalanceReport.Should().NotBeNull();
+        trialBalanceReport!.PeriodId.Should().Be(current.PeriodId);
+        trialBalanceReport.LedgerBookId.Should().Be(book.LedgerBookId);
+        trialBalanceReport.IsPeriodLocked.Should().BeTrue();
+        trialBalanceReport.TotalDebits.Should().Be(1_500m);
+        trialBalanceReport.TotalCredits.Should().Be(1_500m);
+        trialBalanceReport.NetIncome.Should().Be(900m);
+        trialBalanceReport.PeriodOnPeriodVariance.Should().Be(400m);
+        trialBalanceReport.AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
+        trialBalanceReport.AccountingPolicyId.Should().Be("gaap-close-v1");
+        trialBalanceReport.Lines.Should().Contain(row =>
+            row.AccountName == "Management fees" &&
+            row.AccountType == nameof(LedgerAccountType.Revenue) &&
+            row.Balance == 1_200m);
+        trialBalanceReport.Signature.Algorithm.Should().Be("SHA256");
+        trialBalanceReport.Signature.PayloadChecksumSha256.Should().HaveLength(64);
+        trialBalanceReport.Signature.SignedBy.Should().Be("fund-controller");
     }
 
     [Fact]

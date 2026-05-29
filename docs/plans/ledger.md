@@ -37,6 +37,8 @@ The F# ledger kernel now validates direct-lending `AccrualEntry` lineage and bui
 loan/period/currency `AccrualSummary` totals for accrual schedules.
 `DailyAccrualWorker` now checks the F# period guard before posting originating accruals and routes
 period-blocked accruals to the Accounting operator inbox with `FundReconciliation` navigation.
+Closed-period trial balances now also expose a signed `LedgerTrialBalanceReportDto` with locked-period
+status, aggregate totals, per-account detail rows, accounting-policy lineage, and checksum evidence.
 Direct-lending commands now project ledger-impacting events before persistence and pass the
 resulting `LedgerJournalEntryWrite` records into `IDirectLendingStateStore.SaveAsync`, where
 `PostgresDirectLendingStateStore` appends them through `ITransactionalLedgerJournalStore` inside
@@ -335,7 +337,7 @@ so the Phase 4 ledger-posting work remains open.
 **Goal:** Surface verified ledger state as governed report artifacts (trial balance, P&L summary,
 accrual schedule) that can be exported and attached to the operator report pack.
 
-- [ ] `TrialBalanceReportDto` — signed, period-locked trial balance with aggregate-level totals and
+- [x] `LedgerTrialBalanceReportDto` — signed, period-locked trial balance with aggregate-level totals and
   per-account detail rows
 - [ ] `PeriodPnlSummaryDto` — realized income/expense P&L with prior-period comparatives and
   accrual-basis adjustments
