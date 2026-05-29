@@ -543,7 +543,10 @@ public sealed record FundAccountCloseReadinessComponentDto(
     string Severity,
     string Reason,
     string? RouteHint = null,
-    string? EvidenceLink = null);
+    string? EvidenceLink = null)
+{
+    public string BlockingReason => Reason;
+}
 
 public sealed record FundAccountCloseReadinessBlockerDto(
     string Code,

@@ -11,7 +11,7 @@
 - [ ] Add/update operator runbook steps and rollback procedure for the trading workstation migration blueprint workflow.
 - [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
 
-**Status:** Active blueprint — browser and WPF are both active operator UI lanes, with business behavior owned by shared contracts, local/web API endpoints, and shared read models before either client composes it. The WPF shell/navigation baseline remains implemented support evidence; signed DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and WPF Trading desk briefing hero with stale replay count detail plus warning/critical shared-work-item blockers. The web Research run library now provides the first browser support slice for retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets. Workflow validation and cockpit/shared-model/governance hardening remain in progress.
+**Status:** Active blueprint — browser and WPF are both active operator UI lanes, with business behavior owned by shared contracts, local/web API endpoints, and shared read models before either client composes it. The WPF shell/navigation baseline remains implemented support evidence; signed DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and WPF Trading desk briefing hero with stale replay count detail plus warning/critical shared-work-item blockers. The 2026-05-27 evidence slice closes W2 paper-trading cockpit and W3 shared run / portfolio / ledger continuity as Done baselines; W4 close/report/reconciliation/evidence governance remains the active hardening gate.
 
 ---
 
@@ -347,7 +347,7 @@ Welcome readiness progress, Storage preview scope/guidance, OrderBook order-flow
 
 **Goal:** Unify backtest, paper, and live-facing state around common models.
 
-**Current status (2026-04-27):** Partial. Shared run, portfolio, ledger, reconciliation, and promotion endpoint seams are present, but the roadmap still treats cross-workspace continuity and compatibility governance as Wave 3 / DK2 work.
+**Current status (2026-05-27):** Done baseline for W3 shared run / portfolio / ledger continuity. Shared run, portfolio, ledger, reconciliation, brokerage/account, browser parity, and focused WPF evidence are closed for the W3 acceptance baseline; additional report, close, and evidence-governance workflows belong to W4 rather than reopening W3.
 
 RunCashFlow now has a WPF evidence-state pass for selected-run, missing-run, no-event, and loaded retained cash-flow summaries. Treat it as a shared-run continuity improvement alongside run detail, portfolio, ledger, StrategyRuns, BatchBacktest, and QuantScript handoffs; broader governance cash-flow projection still belongs to the fund-ops wave.
 
@@ -396,7 +396,7 @@ operator-visible product features.
 
 **Goal:** Turn paper trading into a reliable pre-live environment.
 
-**Current status (2026-04-27):** Partial. Paper/execution primitives, cockpit surfaces, signed DK1 trust-gate readiness projection, position/order/fill/replay/session paths, Trading Hours session briefing, OrderBook order-flow posture, account-scoped route-aware operator queue handling with shell-context attention cues and Account Portfolio brokerage-sync routing, and promotion checklist/audit evidence are present. Dependable daily operation is still a Wave 2 / DK1 acceptance problem.
+**Current status (2026-05-27):** Done baseline for W2 paper-trading cockpit reliability. Paper/execution primitives, cockpit surfaces, signed DK1 trust-gate readiness projection, position/order/fill/replay/session paths, Trading Hours session briefing, OrderBook order-flow posture, account-scoped route-aware operator queue handling, Account Portfolio brokerage-sync routing, and promotion checklist/audit evidence are accepted as the W2 baseline. New live-readiness, close-workflow, report, and evidence-vault claims remain W4 or later work.
 
 **Work**
 

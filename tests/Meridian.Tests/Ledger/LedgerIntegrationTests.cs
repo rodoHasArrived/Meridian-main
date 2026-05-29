@@ -839,6 +839,275 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void LedgerReportPackBuilder_BuildsSignedArtifactsForLockedPeriodStatements()
+    {
+        var chart = new ChartOfAccounts();
+        var cash = chart.Register("Assets:Cash:Brokerage", LedgerAccountType.Asset);
+        var investorCapital = chart.Register("Equity:Partners:Capital", LedgerAccountType.Equity);
+        var feeRevenue = chart.Register("Revenue:Management Fees", LedgerAccountType.Revenue);
+        var commissionExpense = chart.Register("Expenses:Commissions", LedgerAccountType.Expense);
+        var ledger = new Meridian.Ledger.Ledger();
+        var periodStart = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
+        var periodEnd = new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero);
+        var asOf = periodEnd;
+        var ledgerKey = new LedgerBookKey("fund-alpha", "official", LedgerViewKind.Actual);
+        var lockedPeriod = new LockedAccountingPeriod(
+            ledgerKey,
+            "2026-05",
+            periodStart,
+            periodEnd,
+            new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero),
+            "controller",
+            "published NAV");
+
+        ledger.PostLines(periodStart.AddDays(1), "capital contribution", new[]
+        {
+            (cash, 1_000m, 0m),
+            (investorCapital, 0m, 1_000m),
+        });
+        ledger.PostLines(periodStart.AddDays(10), "management fee revenue", new[]
+        {
+            (cash, 125m, 0m),
+            (feeRevenue, 0m, 125m),
+        });
+        ledger.PostLines(periodStart.AddDays(11), "commission accrual", new[]
+        {
+            (commissionExpense, 25m, 0m),
+            (cash, 0m, 25m),
+        });
+
+        var request = new LedgerReportPackRequest(
+            "lrp-2026-05",
+            "fund-alpha",
+            "2026-05",
+            periodStart,
+            periodEnd,
+            asOf,
+            "usd",
+            "controller",
+            new DateTimeOffset(2026, 6, 1, 13, 0, 0, TimeSpan.Zero),
+            lockedPeriod,
+            sourceRunId: "run-close-2026-05",
+            sourceSessionId: "session-close-2026-05",
+            reconciliationEvidenceLinks: ["reconciliation:run-2026-05"],
+            approvalEvidenceLinks: ["approval:close-2026-05"]);
+
+        var pack = LedgerReportPackBuilder.Build(ledger, request, chart);
+
+        pack.IsBalanced.Should().BeTrue();
+        pack.Status.Should().Be(LedgerReportPackLifecycleStatus.Draft);
+        pack.Statements.TotalAssets.Should().Be(1_100m);
+        pack.Statements.NetIncome.Should().Be(100m);
+        pack.Artifacts.Should().Contain(artifact => artifact.Name == "trial-balance.csv");
+        pack.Artifacts.Should().Contain(artifact => artifact.Name == "income-statement.csv");
+        pack.Artifacts.Should().Contain(artifact => artifact.Name == "balance-sheet.csv");
+        pack.Artifacts.Should().Contain(artifact => artifact.Name == "line-provenance.csv");
+        pack.Artifacts.Should().Contain(artifact => artifact.Name == "manifest.csv");
+        pack.Artifacts.Should().OnlyContain(artifact => artifact.ChecksumSha256.Length == 64);
+        pack.LineProvenance.Should().Contain(row =>
+            row.ArtifactName == "trial-balance.csv" &&
+            row.RowKey == "Assets:Cash:Brokerage" &&
+            row.SourceRunId == "run-close-2026-05" &&
+            row.SourceSessionId == "session-close-2026-05" &&
+            row.LedgerEntryIds.Count > 0 &&
+            row.EvidenceLinks.Contains("reconciliation:run-2026-05") &&
+            row.EvidenceLinks.Contains("approval:close-2026-05"));
+
+        var manifest = pack.Artifacts.Single(artifact => artifact.Name == "manifest.csv");
+        manifest.Content.Should().Contain("ledger-report-pack-manifest-v1");
+        manifest.Content.Should().Contain("locked-period,true");
+        manifest.Content.Should().Contain("source-run-id,run-close-2026-05");
+        manifest.Content.Should().Contain("reconciliation-evidence-count,1");
+        manifest.Content.Should().Contain("net-income,100");
+        manifest.Content.Should().Contain("accounting-equation-variance,0");
+        manifest.Content.Should().Contain("trial-balance.csv,text/csv,");
+        manifest.Content.Should().Contain("line-provenance.csv,text/csv,");
+        var provenanceArtifact = pack.Artifacts.Single(artifact => artifact.Name == "line-provenance.csv");
+        provenanceArtifact.Content.Should().Contain("LedgerJournalEntryIds");
+        provenanceArtifact.Content.Should().Contain("reconciliation:run-2026-05");
+        pack.Signature.Algorithm.Should().Be("SHA256");
+        pack.Signature.PayloadChecksumSha256.Should().HaveLength(64);
+        pack.Signature.SignedBy.Should().Be("controller");
+    }
+
+    [Fact]
+    public void LedgerReportPackLifecycle_TracksApprovalPublicationRestatementAndArchive()
+    {
+        var chart = new ChartOfAccounts();
+        var cash = chart.Register("Assets:Cash", LedgerAccountType.Asset);
+        var capital = chart.Register("Equity:Capital", LedgerAccountType.Equity);
+        var ledger = new Meridian.Ledger.Ledger();
+        var periodStart = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
+        var periodEnd = new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero);
+        ledger.PostLines(periodStart.AddDays(1), "capital contribution", new[]
+        {
+            (cash, 100m, 0m),
+            (capital, 0m, 100m),
+        });
+        var pack = LedgerReportPackBuilder.Build(
+            ledger,
+            new LedgerReportPackRequest(
+                "lrp-2026-05",
+                "fund-alpha",
+                "2026-05",
+                periodStart,
+                periodEnd,
+                periodEnd,
+                "usd",
+                "controller",
+                new DateTimeOffset(2026, 6, 1, 13, 0, 0, TimeSpan.Zero),
+                sourceRunId: "run-close-2026-05",
+                reconciliationEvidenceLinks: ["reconciliation:clean"],
+                approvalEvidenceLinks: ["approval:controller"]),
+            chart);
+
+        var published = pack
+            .Validate("controller", new DateTimeOffset(2026, 6, 1, 14, 0, 0, TimeSpan.Zero), "control totals validated", ["evidence:validation"])
+            .Approve("controller", new DateTimeOffset(2026, 6, 1, 15, 0, 0, TimeSpan.Zero), "approved for publication", ["approval:controller"])
+            .Publish("controller", new DateTimeOffset(2026, 6, 1, 16, 0, 0, TimeSpan.Zero), "published retained report pack", ["vault:report-pack/lrp-2026-05"]);
+        var restated = published.Restate(
+            "restatement-1",
+            "late custodian correction",
+            "controller",
+            new DateTimeOffset(2026, 6, 2, 10, 0, 0, TimeSpan.Zero),
+            ["trial-balance.csv:Assets:Cash:aggregate-balance"],
+            ["statement:custodian-correction", "approval:restatement"]);
+        var archived = restated.Archive(
+            "records",
+            new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero),
+            "retention window closed",
+            ["vault:archive/lrp-2026-05"]);
+
+        published.Status.Should().Be(LedgerReportPackLifecycleStatus.Published);
+        published.LifecycleEvents.Should().HaveCount(3);
+        published.LifecycleEvents.Select(item => item.ToStatus).Should().Equal(
+            LedgerReportPackLifecycleStatus.Validated,
+            LedgerReportPackLifecycleStatus.Approved,
+            LedgerReportPackLifecycleStatus.Published);
+        restated.Status.Should().Be(LedgerReportPackLifecycleStatus.Restated);
+        var restatement = restated.Restatements.Should().ContainSingle().Subject;
+        restatement.Reason.Should().Be("late custodian correction");
+        restatement.ApprovedBy.Should().Be("controller");
+        restatement.ChangedLineKeys.Should().Contain("trial-balance.csv:Assets:Cash:aggregate-balance");
+        restatement.EvidenceLinks.Should().Contain("statement:custodian-correction");
+        archived.Status.Should().Be(LedgerReportPackLifecycleStatus.Archived);
+        archived.LifecycleEvents.Last().EvidenceLinks.Should().Contain("vault:archive/lrp-2026-05");
+    }
+
+    [Fact]
+    public void LedgerReportPackRequest_RejectsAsOfOutsideAccountingPeriod()
+    {
+        var periodStart = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
+        var periodEnd = new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero);
+
+        var action = () => new LedgerReportPackRequest(
+            "lrp-2026-05",
+            "fund-alpha",
+            "2026-05",
+            periodStart,
+            periodEnd,
+            periodEnd.AddTicks(1),
+            "USD",
+            "controller",
+            DateTimeOffset.UtcNow);
+
+        action.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*as-of timestamp must fall inside the accounting period*");
+    }
+
+    [Fact]
+    public void LedgerReportSchedulePlanner_ProjectsScheduledQuarterlyExports()
+    {
+        var schedule = new LedgerReportSchedule(
+            "investor-pack",
+            "fund-alpha",
+            "Quarterly investor report pack",
+            LedgerReportScheduleFrequency.Quarterly,
+            new DateOnly(2026, 1, 1),
+            dueDaysAfterPeriodEnd: 10,
+            "usd",
+            [LedgerReportExportFormat.Csv, LedgerReportExportFormat.Xlsx],
+            ["investors@example.com", "regulator@example.com"],
+            "controller",
+            new DateTimeOffset(2025, 12, 15, 12, 0, 0, TimeSpan.Zero));
+
+        var exports = LedgerReportSchedulePlanner.Project(schedule, occurrenceCount: 2);
+
+        exports.Should().HaveCount(2);
+        exports[0].ReportId.Should().Be("investor-pack:2026-Q1:0001");
+        exports[0].PeriodId.Should().Be("2026-Q1");
+        exports[0].PeriodStart.Should().Be(new DateOnly(2026, 1, 1));
+        exports[0].PeriodEnd.Should().Be(new DateOnly(2026, 3, 31));
+        exports[0].AsOf.Should().Be(new DateTimeOffset(2026, 3, 31, 23, 59, 59, 999, TimeSpan.Zero).AddTicks(9999));
+        exports[0].DueAtUtc.Should().Be(new DateTimeOffset(2026, 4, 10, 0, 0, 0, TimeSpan.Zero));
+        exports[0].Formats.Should().BeEquivalentTo([LedgerReportExportFormat.Csv, LedgerReportExportFormat.Xlsx]);
+        exports[0].Recipients.Should().BeEquivalentTo(["investors@example.com", "regulator@example.com"]);
+        exports[1].ReportId.Should().Be("investor-pack:2026-Q2:0002");
+        exports[1].PeriodStart.Should().Be(new DateOnly(2026, 4, 1));
+        exports[1].PeriodEnd.Should().Be(new DateOnly(2026, 6, 30));
+    }
+
+    [Fact]
+    public void LedgerReportScheduledExport_CreatesReportPackRequest()
+    {
+        var schedule = new LedgerReportSchedule(
+            "reg-pack",
+            "fund-alpha",
+            "Monthly regulatory export",
+            LedgerReportScheduleFrequency.Monthly,
+            new DateOnly(2026, 5, 1),
+            dueDaysAfterPeriodEnd: 5,
+            "usd",
+            [LedgerReportExportFormat.Csv],
+            ["regulator@example.com"],
+            "controller",
+            DateTimeOffset.Parse("2026-04-15T12:00:00Z"));
+        var scheduledExport = LedgerReportSchedulePlanner.Project(schedule, occurrenceCount: 1).Single();
+        var lockPeriod = new LockedAccountingPeriod(
+            new LedgerBookKey("fund-alpha", "official", LedgerViewKind.Actual),
+            "2026-05",
+            new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, 999, TimeSpan.Zero).AddTicks(9999),
+            DateTimeOffset.Parse("2026-06-01T12:00:00Z"),
+            "controller",
+            "published close");
+
+        var request = scheduledExport.ToReportPackRequest(
+            "controller",
+            DateTimeOffset.Parse("2026-06-01T13:00:00Z"),
+            lockPeriod);
+
+        request.ReportId.Should().Be("reg-pack:2026-05:0001");
+        request.FundId.Should().Be("fund-alpha");
+        request.PeriodId.Should().Be("2026-05");
+        request.BaseCurrency.Should().Be("USD");
+        request.AsOf.Should().Be(lockPeriod.EndsAtInclusive);
+        request.LockedPeriod.Should().BeSameAs(lockPeriod);
+    }
+
+    [Fact]
+    public void LedgerReportSchedule_RejectsEmptyRecipients()
+    {
+        var act = () => new LedgerReportSchedule(
+            "reg-pack",
+            "fund-alpha",
+            "Monthly regulatory export",
+            LedgerReportScheduleFrequency.Monthly,
+            new DateOnly(2026, 5, 1),
+            dueDaysAfterPeriodEnd: 5,
+            "usd",
+            [LedgerReportExportFormat.Csv],
+            [" "],
+            "controller",
+            DateTimeOffset.UtcNow);
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*At least one non-empty report recipient*");
+    }
+
+    [Fact]
     public void MultiCurrencyLedgerTranslator_TranslatesLocalCurrencyBalancesToBaseCurrency()
     {
         var eurCash = LedgerAccounts.CashInCurrency("eur", "broker-1");
@@ -863,6 +1132,147 @@ public sealed class LedgerIntegrationTests
         translation.Total(LedgerAccountType.Asset).Should().Be(1_100m);
         translation.Total(LedgerAccountType.Equity).Should().Be(1_100m);
         translation.Exposures.Single(exposure => exposure.Account == eurCash).LocalCurrency.Should().Be("EUR");
+    }
+
+    [Fact]
+    public void MultiCurrencyJournalProjector_ConvertsLocalLinesToBalancedBasePosting()
+    {
+        var eurCash = LedgerAccounts.CashInCurrency("eur", "broker-1");
+        var usdCapital = LedgerAccounts.CapitalAccountFor("broker-1");
+        var input = new MultiCurrencyJournalInput(
+            new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero),
+            "EUR subscription posted in USD base currency",
+            "usd",
+            [
+                new MultiCurrencyJournalLineInput(eurCash, "eur", localDebit: 1_000m, localCredit: 0m, fxRateToBase: 1.10m),
+                new MultiCurrencyJournalLineInput(usdCapital, "usd", localDebit: 0m, localCredit: 1_100m, fxRateToBase: 1m),
+            ],
+            new JournalEntryMetadata(ActivityType: "Subscription", FinancialAccountId: "broker-1"));
+
+        var projection = MultiCurrencyJournalProjector.Project(input);
+        var ledger = new Meridian.Ledger.Ledger();
+        ledger.PostLines(input.Timestamp, input.Description, projection.ToLedgerLines(), input.Metadata);
+
+        projection.IsBaseBalanced.Should().BeTrue();
+        projection.TotalBaseDebits.Should().Be(1_100m);
+        projection.TotalBaseCredits.Should().Be(1_100m);
+        projection.Lines.Should().Contain(line =>
+            line.Account == eurCash &&
+            line.LocalCurrency == "EUR" &&
+            line.BaseCurrency == "USD" &&
+            line.LocalDebit == 1_000m &&
+            line.FxRateToBase == 1.10m &&
+            line.BaseDebit == 1_100m);
+        ledger.GetBalance(eurCash).Should().Be(1_100m);
+        ledger.GetBalance(usdCapital).Should().Be(1_100m);
+    }
+
+    [Fact]
+    public void MultiCurrencyJournalProjector_RejectsUnbalancedBaseCurrencyPosting()
+    {
+        var input = new MultiCurrencyJournalInput(
+            DateTimeOffset.UtcNow,
+            "unbalanced local-to-base posting",
+            "USD",
+            [
+                new MultiCurrencyJournalLineInput(LedgerAccounts.CashInCurrency("EUR", "broker-1"), "EUR", localDebit: 1_000m, localCredit: 0m, fxRateToBase: 1.10m),
+                new MultiCurrencyJournalLineInput(LedgerAccounts.CapitalAccountFor("broker-1"), "USD", localDebit: 0m, localCredit: 1_000m, fxRateToBase: 1m),
+            ]);
+
+        var act = () => MultiCurrencyJournalProjector.Project(input);
+
+        act.Should()
+            .Throw<LedgerValidationException>()
+            .WithMessage("*not balanced in base currency USD*");
+    }
+
+    [Fact]
+    public void DailyPortfolioPricingProjector_ProjectsPolicyBackedMarksAndAuditEvidence()
+    {
+        var policy = new DailyPortfolioPricingPolicy(
+            "fund-alpha",
+            "policy-close-v1",
+            "Fund Alpha daily close",
+            "Listed close, then broker quote, then valuation committee model",
+            "valuation-committee",
+            new DateTimeOffset(2026, 5, 1, 12, 0, 0, TimeSpan.Zero));
+        var input = new DailyPortfolioPricingInput(
+            policy,
+            "2026-05",
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            "usd",
+            [
+                new DailyPortfolioPriceMark(
+                    "aapl",
+                    Quantity: 10m,
+                    CostPrice: 100m,
+                    MarkPrice: 120m,
+                    PriceSource: "NYSE official close",
+                    EvidenceReference: "price://nyse/aapl/2026-05-31",
+                    FinancialAccountId: "broker-1",
+                    InstrumentType: "ListedEquity"),
+                new DailyPortfolioPriceMark(
+                    "otc-note",
+                    Quantity: 5m,
+                    CostPrice: 100m,
+                    MarkPrice: 90m,
+                    PriceSource: "Valuation committee model",
+                    EvidenceReference: "evidence://valuation/otc-note/2026-05-31",
+                    FinancialAccountId: "broker-1",
+                    InstrumentType: "OtcInstrument"),
+            ]);
+
+        var projection = DailyPortfolioPricingProjector.Project(input);
+
+        projection.TotalCostBasis.Should().Be(1_500m);
+        projection.TotalMarketValue.Should().Be(1_650m);
+        projection.NetUnrealizedGainOrLoss.Should().Be(150m);
+        projection.IsBalanced.Should().BeTrue();
+        projection.Lines.Should().Contain(line =>
+            line.Symbol == "AAPL" &&
+            line.MarketValue == 1_200m &&
+            line.UnrealizedGainOrLoss == 200m &&
+            line.PolicyId == "policy-close-v1" &&
+            line.PriceSource == "NYSE official close" &&
+            line.EvidenceReference == "price://nyse/aapl/2026-05-31");
+        projection.Lines.Should().Contain(line =>
+            line.Symbol == "OTC-NOTE" &&
+            line.MarketValue == 450m &&
+            line.UnrealizedGainOrLoss == -50m &&
+            line.InstrumentType == "OtcInstrument");
+        projection.JournalLines.Should().Contain(line =>
+            line.account.Name == "Securities" &&
+            line.account.Symbol == "AAPL" &&
+            line.account.FinancialAccountId == "broker-1" &&
+            line.debit == 200m);
+        projection.JournalLines.Should().Contain(line =>
+            line.account.Name == "Unrealized Gain" &&
+            line.account.FinancialAccountId == "broker-1" &&
+            line.credit == 200m);
+        projection.JournalLines.Should().Contain(line =>
+            line.account.Name == "Unrealized Loss" &&
+            line.account.FinancialAccountId == "broker-1" &&
+            line.debit == 50m);
+        projection.JournalLines.Should().Contain(line =>
+            line.account.Name == "Securities" &&
+            line.account.Symbol == "OTC-NOTE" &&
+            line.credit == 50m);
+    }
+
+    [Fact]
+    public void DailyPortfolioPriceMark_RejectsMissingPricingEvidence()
+    {
+        var act = () => new DailyPortfolioPriceMark(
+            "AAPL",
+            Quantity: 10m,
+            CostPrice: 100m,
+            MarkPrice: 120m,
+            PriceSource: "NYSE official close",
+            EvidenceReference: " ");
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*evidence reference must not be null or whitespace*");
     }
 
     [Fact]
@@ -1003,6 +1413,101 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void LedgerTaxLotReliefProjector_UsesAccountPolicyToRelieveHifoLotsAndProjectGain()
+    {
+        var account = LedgerAccounts.Securities("AAPL", "broker-1");
+        var policyBook = new LedgerAccountTaxLotPolicyBook();
+        var policy = policyBook.Register(
+            account,
+            LedgerTaxLotReliefMethod.Hifo,
+            "policy-hifo-aapl",
+            new DateOnly(2026, 1, 1),
+            "Align realized P&L with front-office HIFO relief.");
+        var input = new LedgerTaxLotReliefInput(
+            account,
+            new DateOnly(2026, 5, 28),
+            quantitySold: 12m,
+            salePrice: 130m,
+            policy.ReliefMethod,
+            [
+                new LedgerTaxLot("lot-low", new DateOnly(2026, 1, 1), 10m, 90m),
+                new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 1), 8m, 110m),
+                new LedgerTaxLot("lot-mid", new DateOnly(2026, 3, 1), 10m, 100m),
+            ]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        projection.IsBalanced.Should().BeTrue();
+        projection.Selections.Should().HaveCount(2);
+        projection.Selections[0].Lot.LotId.Should().Be("lot-high");
+        projection.Selections[0].QuantityRelieved.Should().Be(8m);
+        projection.Selections[1].Lot.LotId.Should().Be("lot-mid");
+        projection.Selections[1].QuantityRelieved.Should().Be(4m);
+        projection.Proceeds.Should().Be(1560m);
+        projection.CostBasis.Should().Be(1280m);
+        projection.RealizedGainOrLoss.Should().Be(280m);
+        projection.Lines.Should().Contain(line => line.account == LedgerAccounts.CashAccount("broker-1") && line.debit == 1560m);
+        projection.Lines.Should().Contain(line => line.account == account && line.credit == 1280m);
+        projection.Lines.Should().Contain(line => line.account == LedgerAccounts.RealizedGainFor("broker-1") && line.credit == 280m);
+    }
+
+    [Fact]
+    public void LedgerTaxLotReliefProjector_UsesSpecificIdsAndRejectsMissingSpecificSelection()
+    {
+        var account = LedgerAccounts.Securities("MSFT", "broker-2");
+        var openLots = new[]
+        {
+            new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 5m, 200m),
+            new LedgerTaxLot("lot-b", new DateOnly(2026, 2, 1), 5m, 210m),
+        };
+        var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
+            account,
+            new DateOnly(2026, 5, 28),
+            quantitySold: 4m,
+            salePrice: 220m,
+            LedgerTaxLotReliefMethod.SpecificId,
+            openLots,
+            specificLotIds: ["lot-b"]));
+
+        projection.IsBalanced.Should().BeTrue();
+        projection.Selections.Should().ContainSingle();
+        projection.Selections[0].Lot.LotId.Should().Be("lot-b");
+        projection.CostBasis.Should().Be(840m);
+        projection.RealizedGainOrLoss.Should().Be(40m);
+
+        var act = () => LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
+            account,
+            new DateOnly(2026, 5, 28),
+            quantitySold: 4m,
+            salePrice: 220m,
+            LedgerTaxLotReliefMethod.SpecificId,
+            openLots));
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*SpecificId relief requires at least one selected lot identifier*");
+    }
+
+    [Fact]
+    public void LedgerTaxLotReliefProjector_RejectsInsufficientOpenLotQuantity()
+    {
+        var account = LedgerAccounts.Securities("TSLA");
+        var input = new LedgerTaxLotReliefInput(
+            account,
+            new DateOnly(2026, 5, 28),
+            quantitySold: 8m,
+            salePrice: 185m,
+            LedgerTaxLotReliefMethod.Fifo,
+            [new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 5m, 150m)]);
+
+        var act = () => LedgerTaxLotReliefProjector.Project(input);
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Insufficient open tax-lot quantity*");
+    }
+
+    [Fact]
     public void AutomatedJournalDraftProjector_ProjectsDividendDeclarationAndReceipt()
     {
         var declared = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
@@ -1047,6 +1552,44 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void AutomatedJournalDraftProjector_ProjectsRecurringAccrualObligations()
+    {
+        var performanceFee = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.PerformanceFeeAccrued,
+            "fund-alpha",
+            75m,
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            FinancialAccountId: "fund-alpha",
+            SourceEventId: "fee-run-001"));
+        var commission = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.CommissionAccrued,
+            "broker",
+            8.25m,
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            FinancialAccountId: "broker-1"));
+        var withholding = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.WithholdingTaxAccrued,
+            "AAPL",
+            4.50m,
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            FinancialAccountId: "broker-1"));
+
+        performanceFee.IsBalanced.Should().BeTrue();
+        performanceFee.Metadata.ActivityType.Should().Be(nameof(AutomatedJournalEventKind.PerformanceFeeAccrued));
+        performanceFee.Metadata.Tags.Should().ContainKey("sourceEventId");
+        performanceFee.Lines.Should().Contain(line => line.account.Name == "Performance Fee Expense" && line.account.FinancialAccountId == "fund-alpha" && line.debit == 75m);
+        performanceFee.Lines.Should().Contain(line => line.account.Name == "Performance Fee Payable" && line.account.FinancialAccountId == "fund-alpha" && line.credit == 75m);
+
+        commission.IsBalanced.Should().BeTrue();
+        commission.Lines.Should().Contain(line => line.account.Name == "Commission Expense" && line.account.FinancialAccountId == "broker-1" && line.debit == 8.25m);
+        commission.Lines.Should().Contain(line => line.account.Name == "Commission Payable" && line.account.FinancialAccountId == "broker-1" && line.credit == 8.25m);
+
+        withholding.IsBalanced.Should().BeTrue();
+        withholding.Lines.Should().Contain(line => line.account.Name == "Withholding Tax Expense" && line.account.FinancialAccountId == "broker-1" && line.debit == 4.50m);
+        withholding.Lines.Should().Contain(line => line.account.Name == "Withholding Tax Payable" && line.account.FinancialAccountId == "broker-1" && line.credit == 4.50m);
+    }
+
+    [Fact]
     public void AutomatedJournalDraftProjector_RejectsNonPositiveAmounts()
     {
         var act = () => AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
@@ -1056,6 +1599,88 @@ public sealed class LedgerIntegrationTests
             DateTimeOffset.UtcNow));
 
         act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void AutomatedJournalApproval_ApprovesAndPostsDraftWithAuditEvidence()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var draft = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.ManagementFeeAccrued,
+            "fund-alpha",
+            125m,
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            FinancialAccountId: "fund-alpha",
+            SourceEventId: "fee-run-2026-05"));
+
+        var submitted = Meridian.Ledger.AutomatedJournalApproval.Submit(
+            draft,
+            "automation",
+            new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero),
+            "monthly fee automation run",
+            ["job:fee-run-2026-05"]);
+        var approved = submitted.Approve(
+            "controller",
+            new DateTimeOffset(2026, 6, 1, 13, 0, 0, TimeSpan.Zero),
+            "controller approved May accrual",
+            ["approval:controller:2026-05"]);
+        var posted = approved.PostTo(
+            ledger,
+            "ledger-bot",
+            new DateTimeOffset(2026, 6, 1, 13, 5, 0, TimeSpan.Zero),
+            "posted approved automated accrual",
+            ["journal-store:automated:2026-05"]);
+
+        posted.Status.Should().Be(Meridian.Ledger.AutomatedJournalApprovalStatus.Posted);
+        posted.Events.Select(item => item.ToStatus).Should().Equal(
+            Meridian.Ledger.AutomatedJournalApprovalStatus.Submitted,
+            Meridian.Ledger.AutomatedJournalApprovalStatus.Approved,
+            Meridian.Ledger.AutomatedJournalApprovalStatus.Posted);
+        ledger.Journal.Should().ContainSingle();
+        var journal = ledger.Journal.Single();
+        journal.JournalEntryId.Should().Be(posted.JournalEntryId);
+        journal.Metadata.Tags.Should().ContainKey("sourceEventId").WhoseValue.Should().Be("fee-run-2026-05");
+        journal.Metadata.Tags.Should().ContainKey("automatedJournalApprovalId").WhoseValue.Should().Be(posted.ApprovalId.ToString("D"));
+        journal.Metadata.Tags.Should().ContainKey("approvedBy").WhoseValue.Should().Be("controller");
+        ledger.GetBalance(LedgerAccounts.ManagementFeeExpenseFor("fund-alpha")).Should().Be(125m);
+        ledger.GetBalance(LedgerAccounts.ManagementFeePayableFor("fund-alpha")).Should().Be(125m);
+    }
+
+    [Fact]
+    public void AutomatedJournalApproval_RejectsMissingEvidenceAndUnapprovedPosting()
+    {
+        var draft = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.WithholdingTaxAccrued,
+            "AAPL",
+            5m,
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            FinancialAccountId: "broker-1"));
+        var submitted = Meridian.Ledger.AutomatedJournalApproval.Submit(
+            draft,
+            "automation",
+            new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero),
+            "withholding tax automation run");
+
+        var approveWithoutEvidence = () => submitted.Approve(
+            "controller",
+            new DateTimeOffset(2026, 6, 1, 13, 0, 0, TimeSpan.Zero),
+            "approved",
+            []);
+        var postBeforeApproval = () => submitted.PostTo(
+            new Meridian.Ledger.Ledger(),
+            "ledger-bot",
+            new DateTimeOffset(2026, 6, 1, 13, 5, 0, TimeSpan.Zero),
+            "posted",
+            ["journal-store:withholding"]);
+        var rejected = submitted.Reject(
+            "controller",
+            new DateTimeOffset(2026, 6, 1, 13, 10, 0, TimeSpan.Zero),
+            "missing withholding evidence");
+
+        approveWithoutEvidence.Should().Throw<ArgumentException>().WithMessage("*evidence is required*");
+        postBeforeApproval.Should().Throw<InvalidOperationException>().WithMessage("*Only approved*");
+        rejected.Status.Should().Be(Meridian.Ledger.AutomatedJournalApprovalStatus.Rejected);
+        rejected.Events.Last().Reason.Should().Be("missing withholding evidence");
     }
 
     [Fact]
@@ -1261,6 +1886,182 @@ public sealed class LedgerIntegrationTests
         act.Should()
             .Throw<InvalidOperationException>()
             .WithMessage("*Shadow ledger*not found*");
+    }
+
+    [Fact]
+    public void PartnershipInvestorAccountingProjector_ProjectsFeesHighWaterMarkAndInvestorAllocations()
+    {
+        var input = new PartnershipInvestorAllocationInput(
+            "master-fund",
+            "2026-05",
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            BeginningNav: 1_000m,
+            EndingNavBeforeFees: 1_200m,
+            HighWaterMark: 1_050m,
+            ManagementFeeRate: 0.02m,
+            PerformanceFeeRate: 0.20m,
+            [
+                new PartnershipInvestor("feeder-a", "Feeder A", 0.60m),
+                new PartnershipInvestor("spv-b", "SPV B", 0.40m),
+            ]);
+
+        var projection = PartnershipInvestorAccountingProjector.Project(input);
+
+        projection.ManagementFee.Should().Be(20m);
+        projection.PerformanceFee.Should().Be(26m);
+        projection.AllocableProfitOrLoss.Should().Be(154m);
+        projection.EndingNavAfterFees.Should().Be(1_154m);
+        projection.UpdatedHighWaterMark.Should().Be(1_154m);
+        projection.IsBalanced.Should().BeTrue();
+        projection.InvestorAllocations.Should().Contain(allocation =>
+            allocation.Investor.InvestorId == "feeder-a" &&
+            allocation.AllocatedProfitOrLoss == 92.40m &&
+            allocation.CapitalAccount.Name == "Investor Capital");
+        projection.InvestorAllocations.Should().Contain(allocation =>
+            allocation.Investor.InvestorId == "spv-b" &&
+            allocation.AllocatedProfitOrLoss == 61.60m);
+        projection.Lines.Should().Contain(line => line.account.Name == "Management Fee Expense" && line.debit == 20m);
+        projection.Lines.Should().Contain(line => line.account.Name == "Management Fee Payable" && line.credit == 20m);
+        projection.Lines.Should().Contain(line => line.account.Name == "Performance Fee Expense" && line.debit == 26m);
+        projection.Lines.Should().Contain(line => line.account.Name == "Performance Fee Payable" && line.credit == 26m);
+        projection.Lines.Should().Contain(line => line.account.Name == "Retained Earnings" && line.debit == 154m);
+    }
+
+    [Fact]
+    public void PartnershipInvestorAccountingProjector_AllocatesLossesToInvestorCapital()
+    {
+        var input = new PartnershipInvestorAllocationInput(
+            "master-fund",
+            "2026-06",
+            new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
+            BeginningNav: 1_000m,
+            EndingNavBeforeFees: 900m,
+            HighWaterMark: 1_154m,
+            ManagementFeeRate: 0m,
+            PerformanceFeeRate: 0.20m,
+            [
+                new PartnershipInvestor("feeder-a", "Feeder A", 0.50m),
+                new PartnershipInvestor("feeder-b", "Feeder B", 0.50m),
+            ]);
+
+        var projection = PartnershipInvestorAccountingProjector.Project(input);
+
+        projection.ManagementFee.Should().Be(0m);
+        projection.PerformanceFee.Should().Be(0m);
+        projection.AllocableProfitOrLoss.Should().Be(-100m);
+        projection.UpdatedHighWaterMark.Should().Be(1_154m);
+        projection.IsBalanced.Should().BeTrue();
+        projection.Lines.Should().Contain(line => line.account.FinancialAccountId == "feeder-a" && line.debit == 50m);
+        projection.Lines.Should().Contain(line => line.account.FinancialAccountId == "feeder-b" && line.debit == 50m);
+        projection.Lines.Should().Contain(line => line.account.Name == "Retained Earnings" && line.credit == 100m);
+    }
+
+    [Fact]
+    public void PartnershipInvestorAccountingProjector_RejectsInvalidInvestorAllocationWeights()
+    {
+        var input = new PartnershipInvestorAllocationInput(
+            "master-fund",
+            "2026-05",
+            DateTimeOffset.UtcNow,
+            BeginningNav: 1_000m,
+            EndingNavBeforeFees: 1_100m,
+            HighWaterMark: 1_000m,
+            ManagementFeeRate: 0.01m,
+            PerformanceFeeRate: 0.10m,
+            [
+                new PartnershipInvestor("investor-a", "Investor A", 0.50m),
+                new PartnershipInvestor("investor-b", "Investor B", 0.25m),
+            ]);
+
+        var act = () => PartnershipInvestorAccountingProjector.Project(input);
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*sum to 1.000000*");
+    }
+
+    [Fact]
+    public void PartnershipWaterfallProjector_AllocatesPreferredReturnAndCarryTiers()
+    {
+        var input = new PartnershipWaterfallAllocationInput(
+            "master-fund",
+            "2026-05",
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            DistributableProfit: 200m,
+            [
+                new PartnershipInvestor("limited-partner", "Limited Partner", 0.80m),
+                new PartnershipInvestor("general-partner", "General Partner", 0.20m),
+            ],
+            [
+                new PartnershipWaterfallTier(
+                    "preferred-return",
+                    "Preferred return to limited partner",
+                    [new PartnershipWaterfallAllocationRule("limited-partner", 1m)],
+                    capAmount: 100m),
+                new PartnershipWaterfallTier(
+                    "carry",
+                    "Residual carried-interest split",
+                    [
+                        new PartnershipWaterfallAllocationRule("limited-partner", 0.80m),
+                        new PartnershipWaterfallAllocationRule("general-partner", 0.20m),
+                    ]),
+            ]);
+
+        var projection = PartnershipWaterfallProjector.Project(input);
+
+        projection.AllocatedProfit.Should().Be(200m);
+        projection.UnallocatedProfit.Should().Be(0m);
+        projection.IsBalanced.Should().BeTrue();
+        projection.TierAllocations.Should().Contain(allocation =>
+            allocation.TierId == "preferred-return" &&
+            allocation.Investor.InvestorId == "limited-partner" &&
+            allocation.AllocatedAmount == 100m);
+        projection.TierAllocations.Should().Contain(allocation =>
+            allocation.TierId == "carry" &&
+            allocation.Investor.InvestorId == "limited-partner" &&
+            allocation.AllocatedAmount == 80m);
+        projection.TierAllocations.Should().Contain(allocation =>
+            allocation.TierId == "carry" &&
+            allocation.Investor.InvestorId == "general-partner" &&
+            allocation.AllocatedAmount == 20m);
+        projection.InvestorAllocations.Should().Contain(allocation =>
+            allocation.Investor.InvestorId == "limited-partner" &&
+            allocation.AllocatedProfitOrLoss == 180m);
+        projection.InvestorAllocations.Should().Contain(allocation =>
+            allocation.Investor.InvestorId == "general-partner" &&
+            allocation.AllocatedProfitOrLoss == 20m);
+        projection.Lines.Should().Contain(line => line.account.Name == "Retained Earnings" && line.debit == 200m);
+        projection.Lines.Should().Contain(line => line.account.FinancialAccountId == "limited-partner" && line.credit == 180m);
+        projection.Lines.Should().Contain(line => line.account.FinancialAccountId == "general-partner" && line.credit == 20m);
+    }
+
+    [Fact]
+    public void PartnershipWaterfallProjector_RejectsInvalidTierWeights()
+    {
+        var input = new PartnershipWaterfallAllocationInput(
+            "master-fund",
+            "2026-05",
+            DateTimeOffset.UtcNow,
+            DistributableProfit: 100m,
+            [
+                new PartnershipInvestor("limited-partner", "Limited Partner", 0.80m),
+                new PartnershipInvestor("general-partner", "General Partner", 0.20m),
+            ],
+            [
+                new PartnershipWaterfallTier(
+                    "carry",
+                    "Residual carried-interest split",
+                    [
+                        new PartnershipWaterfallAllocationRule("limited-partner", 0.80m),
+                        new PartnershipWaterfallAllocationRule("general-partner", 0.10m),
+                    ]),
+            ]);
+
+        var act = () => PartnershipWaterfallProjector.Project(input);
+
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*allocation percentages must sum to 1.000000*");
     }
 
     private static JournalEntry BuildGeneratedBalancedJournal(

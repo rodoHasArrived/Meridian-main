@@ -476,9 +476,10 @@ public sealed class OperationsContinuityWorkflowServiceTests
             component.Key == "provider-freshness" &&
             component.Weight == 10 &&
             component.IsReady == false &&
-            component.BlockingReason!.Contains("Provider data freshness", StringComparison.OrdinalIgnoreCase));
+            component.BlockingReason!.Contains("Provider sync is stale", StringComparison.OrdinalIgnoreCase));
         posture.Workflow.CloseReadiness.Blockers.Should().Contain(blocker =>
             blocker.Code == "BROKER_SYNC_STALE" &&
+            blocker.Message.Contains("Provider sync is stale", StringComparison.OrdinalIgnoreCase) &&
             blocker.Gate == OperationsGateKeyDto.BrokerIngest);
         posture.Workflow.CloseReadiness.Score.Should().BeLessThan(100);
     }
@@ -518,11 +519,12 @@ public sealed class OperationsContinuityWorkflowServiceTests
             blocker.Message.Contains("ReconciliationFeed", StringComparison.OrdinalIgnoreCase));
         posture.Workflow.CloseReadiness.Should().NotBeNull();
         posture.Workflow.CloseReadiness!.Blockers.Should().Contain(blocker =>
-            blocker.Code == "BROKER_SYNC_STALE" &&
+            blocker.Code == "BROKER_PROVIDER_REQUIRED_CAPABILITY_UNROUTABLE" &&
             blocker.Gate == OperationsGateKeyDto.BrokerIngest);
         posture.Workflow.CloseReadiness.Components.Should().Contain(component =>
             component.Key == "provider-freshness" &&
-            component.IsReady == false);
+            component.IsReady == false &&
+            component.BlockingReason!.Contains("AccountPositions", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -561,7 +563,11 @@ public sealed class OperationsContinuityWorkflowServiceTests
         posture.Workflow.CloseReadiness.Should().NotBeNull();
         posture.Workflow.CloseReadiness!.Components.Should().Contain(component =>
             component.Key == "provider-freshness" &&
-            component.IsReady == false);
+            component.IsReady == false &&
+            component.Severity == "Warning");
+        posture.Workflow.CloseReadiness.Blockers.Should().Contain(blocker =>
+            blocker.Code == "BROKER_PROVIDER_CAPABILITY_DEGRADED" &&
+            blocker.Severity == "Warning");
         posture.Workflow.CloseReadiness.Score.Should().BeLessThan(100);
     }
 

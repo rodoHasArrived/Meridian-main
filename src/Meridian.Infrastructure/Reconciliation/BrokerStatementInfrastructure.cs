@@ -60,7 +60,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     {
         var errors = new List<string>();
         if (!File.Exists(request.SourcePath)) errors.Add("Source file not found.");
-        if (!string.Equals(request.Broker, "samplebroker", StringComparison.OrdinalIgnoreCase)) errors.Add("Unsupported broker.");
+        if (!IsSupportedStatementSource(request.Broker)) errors.Add("Unsupported broker or custodian statement source.");
         if (errors.Count > 0) return new BrokerStatementValidationResult(false, errors, 0);
 
         var lines = await File.ReadAllLinesAsync(request.SourcePath, ct).ConfigureAwait(false);
@@ -136,6 +136,11 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         var bytes = SHA256.HashData(input);
         return Convert.ToHexString(bytes);
     }
+
+    private static bool IsSupportedStatementSource(string source) =>
+        string.Equals(source, "samplebroker", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(source, "broker", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(source, "custodian", StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed record StatementMatchingTolerance(decimal PositionQuantityTolerance, decimal CashAmountTolerance, decimal TransactionAmountTolerance)

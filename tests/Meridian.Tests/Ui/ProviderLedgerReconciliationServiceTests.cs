@@ -1027,7 +1027,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
 
             var audit = await repository.GetAuditHistoryAsync(cashCase.BreakId);
             audit.Should().ContainSingle(entry =>
-                entry.EventType == "Seeded" &&
+                entry.EventType == "CaseCreated" &&
                 entry.BreakId == cashCase.BreakId &&
                 entry.SignoffStatus == "assigned");
         }
@@ -1085,7 +1085,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
 
             var audit = await repository.GetAuditHistoryAsync(candidateCase.BreakId);
             audit.Should().ContainSingle(entry =>
-                entry.EventType == "Seeded" &&
+                entry.EventType == "CaseCreated" &&
                 entry.BreakId == candidateCase.BreakId &&
                 entry.RequiredSignoffRole == "Security Master steward");
         }
@@ -1205,17 +1205,20 @@ public sealed class ProviderLedgerReconciliationServiceTests
             var updated = await repository.GetByIdAsync(caseId);
 
             updated.Should().NotBeNull();
-            updated!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+            updated!.Status.Should().Be(ReconciliationBreakQueueStatus.SignedOff);
+            updated.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
             updated.SignoffStatus.Should().Be("signed-off");
             updated.ResolvedBy.Should().Be("controller");
+            updated.SignedOffBy.Should().Be("controller");
             updated.SignoffHistory.Should().ContainSingle(record =>
                 record.Actor == "controller" &&
                 record.Role == "Fund accounting");
 
             var audit = await repository.GetAuditHistoryAsync(caseId);
-            audit.Select(entry => entry.EventType).Should().Contain("Seeded");
+            audit.Select(entry => entry.EventType).Should().Contain("CaseCreated");
             audit.Select(entry => entry.EventType).Should().Contain("ReviewStarted");
             audit.Select(entry => entry.EventType).Should().Contain("Resolved");
+            audit.Select(entry => entry.EventType).Should().Contain("SignedOff");
         }
         finally
         {
@@ -1329,6 +1332,50 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_BlocksInactiveSecurityMasterReferenceForLedgerClose()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                securityStatus: SecurityStatusDto.Inactive);
+
+            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Blocked);
+            detail.Summary.SecurityIssueCount.Should().Be(1);
+            detail.Breaks.Should().Contain(breakRow =>
+                breakRow.Code == "SM_SECURITY_NOT_ACTIVE" &&
+                breakRow.Symbol == "AAPL" &&
+                breakRow.Severity == ReconciliationBreakSeverity.Critical);
+            var passport = detail.SecurityMasterPassports.Should().NotBeNull().And.ContainSingle(item => item.Symbol == "AAPL").Subject;
+            passport.Status.Should().Be(ProviderSecurityMasterPassportStatusDto.Blocked);
+            passport.SecurityStatus.Should().Be(SecurityStatusDto.Inactive);
+            passport.ConfidenceScore.Should().Be(0m);
+            passport.ResolutionSource.Should().Be("security-master-status");
+            passport.Reason.Should().Contain("active approved Security Master status");
+
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+
+            readiness.Should().NotBeNull();
+            readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
+            readiness.Components.Should().Contain(component =>
+                component.Key == "security-master-completeness" &&
+                component.Status == FundAccountCloseReadinessStatusDto.Blocked);
+            readiness.Blockers.Should().Contain(blocker =>
+                blocker.Code == "close.security_master.blocked" &&
+                blocker.Category == "SecurityMaster" &&
+                blocker.Severity == "Critical");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_ProviderLedgerReconciliation_SeedsSecurityMasterCaseworkForUnresolvedProviderSymbols()
     {
         var root = CreateTempRoot();
@@ -1361,8 +1408,15 @@ public sealed class ProviderLedgerReconciliationServiceTests
             securityCase.SignoffStatus.Should().Be("assigned");
             securityCase.LifecycleRationale.Should().Contain("unresolved provider Security Master identity");
             securityCase.RecommendedAction.Should().Contain("Security Master identity");
+            securityCase.ExplainabilitySummary.Should().Contain("passportStatus=Unresolved");
+            securityCase.ExplainabilitySummary.Should().Contain("resolutionSource=unresolved");
+            securityCase.ExplainabilitySummary.Should().Contain("confidence=0");
+            securityCase.ExplainabilitySummary.Should().Contain("freshnessMinutes=");
+            securityCase.ExplainabilitySummary.Should().Contain("overrideCount=0");
             securityCase.BreakExplanation.Should().NotBeNull();
             securityCase.BreakExplanation!.SourceSystems.Should().Contain("Security Master");
+            securityCase.BreakExplanation.LedgerImpact.Should().Contain("Provider-to-Security Master passport status Unresolved");
+            securityCase.BreakExplanation.LedgerImpact.Should().Contain("resolution source unresolved");
         }
         finally
         {
@@ -1510,7 +1564,16 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Should().NotBeNull();
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
             readiness.IsReadyToClose.Should().BeFalse();
-            readiness.Score.Should().Be(88);
+            readiness.Score.Should().Be(70);
+            readiness.Components.Should().Contain(component =>
+                component.Key == "security-master-completeness" &&
+                component.Status == FundAccountCloseReadinessStatusDto.Blocked &&
+                component.Score == 0 &&
+                component.BlockingReason!.Contains("Security Master case", StringComparison.OrdinalIgnoreCase));
+            readiness.Blockers.Should().Contain(blocker =>
+                blocker.Code == "close.security_master.casework_blocked" &&
+                blocker.Category == "SecurityMaster" &&
+                blocker.Severity == "Critical");
             readiness.Components.Should().Contain(component =>
                 component.Key == "approvals-casework" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Blocked &&
@@ -1518,6 +1581,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Blockers.Should().Contain(blocker =>
                 blocker.Code == "close.approvals.critical_pending" &&
                 blocker.Category == "Approvals");
+            readiness.NextActions.Should().Contain(action => action.Code == "close.security_master.casework_blocked");
             readiness.NextActions.Should().Contain(action => action.Code == "close.approvals.critical_pending");
         }
         finally
@@ -1548,6 +1612,42 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Components.Should().Contain(component =>
                 component.Key == "provider-ledger-reconciliation" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Blocked);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_FundAccountCloseReadiness_BlocksWhenRequiredProviderCapabilitiesAreMissing()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: false));
+            await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
+
+            var readiness = await fixture.CloseReadiness.GetAsync(fixture.AccountId);
+
+            readiness.Should().NotBeNull();
+            readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.Blocked);
+            readiness.IsReadyToClose.Should().BeFalse();
+            readiness.Components.Should().Contain(component =>
+                component.Key == "provider-freshness" &&
+                component.Status == FundAccountCloseReadinessStatusDto.Blocked &&
+                component.BlockingReason!.Contains("AccountBalances", StringComparison.OrdinalIgnoreCase) &&
+                component.BlockingReason.Contains("ReconciliationFeed", StringComparison.OrdinalIgnoreCase));
+            readiness.Blockers.Should().Contain(blocker =>
+                blocker.Code == "close.provider_capability.blocked" &&
+                blocker.Category == "ProviderData" &&
+                blocker.Severity == "Critical");
+            readiness.NextActions.Should().Contain(action => action.Code == "close.provider_capability.blocked");
         }
         finally
         {
@@ -1613,6 +1713,14 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness!.Status.Should().Be(FundAccountCloseReadinessStatusDto.ReviewRequired);
             readiness.IsReadyToClose.Should().BeFalse();
             readiness.Score.Should().BeLessThan(100);
+            readiness.Components.Should().Contain(component =>
+                component.Key == "provider-freshness" &&
+                component.Status == FundAccountCloseReadinessStatusDto.ReviewRequired &&
+                component.BlockingReason!.Contains("CorporateActions", StringComparison.OrdinalIgnoreCase));
+            readiness.Blockers.Should().Contain(blocker =>
+                blocker.Code == "close.provider_capability.review" &&
+                blocker.Category == "ProviderData" &&
+                blocker.Severity == "Warning");
             readiness.Components.Should().Contain(component =>
                 component.Key == "corporate-action-factor-readiness" &&
                 component.Status == FundAccountCloseReadinessStatusDto.ReviewRequired &&
@@ -1857,7 +1965,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
         decimal custodianPositionMarketValue = 18_750m,
         bool recordBankStatement = false,
         decimal bankClosingBalance = 50_000m,
-        decimal? bankIncomeAmount = null)
+        decimal? bankIncomeAmount = null,
+        SecurityStatusDto securityStatus = SecurityStatusDto.Active)
     {
         var accountId = Guid.NewGuid();
         var services = new ServiceCollection();
@@ -1871,7 +1980,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         services.AddSingleton(activityAdapter ?? new EmptyActivityAdapter());
         if (includeSecurityLookup)
         {
-            services.AddSingleton<ISecurityReferenceLookup>(new StaticSecurityReferenceLookup());
+            services.AddSingleton<ISecurityReferenceLookup>(new StaticSecurityReferenceLookup(securityStatus));
         }
         if (capabilityRouter is not null)
         {
@@ -2350,7 +2459,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         }
     }
 
-    private sealed class StaticSecurityReferenceLookup : ISecurityReferenceLookup
+    private sealed class StaticSecurityReferenceLookup(SecurityStatusDto status = SecurityStatusDto.Active) : ISecurityReferenceLookup
     {
         public Task<WorkstationSecurityReference?> GetBySymbolAsync(string symbol, CancellationToken ct = default)
         {
@@ -2361,7 +2470,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 $"{normalized} security",
                 "Equity",
                 "USD",
-                SecurityStatusDto.Active,
+                status,
                 normalized,
                 MatchedIdentifierKind: "Ticker",
                 MatchedIdentifierValue: normalized,

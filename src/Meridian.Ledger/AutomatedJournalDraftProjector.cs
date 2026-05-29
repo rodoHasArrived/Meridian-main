@@ -51,6 +51,17 @@ public static class AutomatedJournalDraftProjector
             ? LedgerAccounts.CorporateActionExpense
             : LedgerAccounts.CorporateActionExpenseFor(financialAccountId);
         var dividendReceivable = LedgerAccounts.DividendReceivable(symbol, financialAccountId);
+        var accrualScope = financialAccountId ?? symbol;
+        var managementFeeExpense = LedgerAccounts.ManagementFeeExpenseFor(accrualScope);
+        var managementFeePayable = LedgerAccounts.ManagementFeePayableFor(accrualScope);
+        var performanceFeeExpense = LedgerAccounts.PerformanceFeeExpenseFor(accrualScope);
+        var performanceFeePayable = LedgerAccounts.PerformanceFeePayableFor(accrualScope);
+        var commissionExpense = string.IsNullOrWhiteSpace(financialAccountId)
+            ? LedgerAccounts.CommissionExpense
+            : LedgerAccounts.CommissionExpenseFor(financialAccountId);
+        var commissionPayable = LedgerAccounts.CommissionPayableFor(accrualScope);
+        var withholdingTaxExpense = LedgerAccounts.WithholdingTaxExpenseFor(accrualScope);
+        var withholdingTaxPayable = LedgerAccounts.WithholdingTaxPayableFor(accrualScope);
 
         return kind switch
         {
@@ -79,6 +90,26 @@ public static class AutomatedJournalDraftProjector
                 (corporateActionExpense, amount, 0m),
                 (cash, 0m, amount),
             ],
+            AutomatedJournalEventKind.ManagementFeeAccrued =>
+            [
+                (managementFeeExpense, amount, 0m),
+                (managementFeePayable, 0m, amount),
+            ],
+            AutomatedJournalEventKind.PerformanceFeeAccrued =>
+            [
+                (performanceFeeExpense, amount, 0m),
+                (performanceFeePayable, 0m, amount),
+            ],
+            AutomatedJournalEventKind.CommissionAccrued =>
+            [
+                (commissionExpense, amount, 0m),
+                (commissionPayable, 0m, amount),
+            ],
+            AutomatedJournalEventKind.WithholdingTaxAccrued =>
+            [
+                (withholdingTaxExpense, amount, 0m),
+                (withholdingTaxPayable, 0m, amount),
+            ],
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported automated journal event kind."),
         };
     }
@@ -99,6 +130,10 @@ public static class AutomatedJournalDraftProjector
             AutomatedJournalEventKind.CashInterestCredited => $"Cash interest credited for {symbol}",
             AutomatedJournalEventKind.CorporateActionIncome => $"Corporate action income for {symbol}",
             AutomatedJournalEventKind.CorporateActionExpense => $"Corporate action expense for {symbol}",
+            AutomatedJournalEventKind.ManagementFeeAccrued => $"Management fee accrued for {symbol}",
+            AutomatedJournalEventKind.PerformanceFeeAccrued => $"Performance fee accrued for {symbol}",
+            AutomatedJournalEventKind.CommissionAccrued => $"Commission accrued for {symbol}",
+            AutomatedJournalEventKind.WithholdingTaxAccrued => $"Withholding tax accrued for {symbol}",
             _ => $"Automated journal event for {symbol}",
         };
 
@@ -117,4 +152,3 @@ public static class AutomatedJournalDraftProjector
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
-

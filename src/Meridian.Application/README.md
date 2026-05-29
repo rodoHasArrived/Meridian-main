@@ -34,7 +34,11 @@ and UI presentation concerns in their owning layers.
   and checklist approvals. Close readiness is scored server-side across Security Master, provider-data freshness, position, cash,
   ledger, pricing, reconciliation, report, and approval components. The provider freshness
   component uses the same broker-sync stale posture signal that blocks the broker ingest gate, so
-  controller close calendars do not treat stale provider data as merely a UI warning. The approval
+  controller close calendars do not treat stale provider data as merely a UI warning. Gate posture
+  also accepts required and degraded provider capability gaps from the provider routing matrix:
+  required balance, position, reconciliation, or account-scoped gaps block broker ingest, while
+  quote-history, corporate-action, factor-schedule, or asset-class degradation moves broker ingest
+  to review-required and reduces close readiness until an operator resolves or accepts the gap. The approval
   policy matrix service projects the
   same server-owned reviewer, permission, report-pack, checklist, and audit-event rules for
   configuration surfaces and accepts governed rule upserts with rationale, actor, correlation, and

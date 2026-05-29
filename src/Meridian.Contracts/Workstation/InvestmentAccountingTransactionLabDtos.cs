@@ -20,6 +20,13 @@ public enum InvestmentAccountingTradeSideDto
     Sell = 1
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<InvestmentAccountingPreviewModeDto>))]
+public enum InvestmentAccountingPreviewModeDto
+{
+    TransactionLab = 0,
+    BooksBeforeBroker = 1
+}
+
 public sealed record InvestmentAccountingTransactionLabRequestDto(
     InvestmentAccountingTransactionKindDto Kind,
     string FundAccountId,
@@ -35,7 +42,8 @@ public sealed record InvestmentAccountingTransactionLabRequestDto(
     string? SourceSessionId = null,
     string? BrokerStatementId = null,
     string? ReconciliationCaseId = null,
-    IReadOnlyList<string>? EvidenceIds = null);
+    IReadOnlyList<string>? EvidenceIds = null,
+    InvestmentAccountingPreviewModeDto PreviewMode = InvestmentAccountingPreviewModeDto.TransactionLab);
 
 public sealed record InvestmentAccountingTrialBalanceImpactDto(
     string AccountName,
@@ -52,6 +60,15 @@ public sealed record InvestmentAccountingReconciliationExpectationDto(
     string? BrokerStatementId = null,
     string? ReconciliationCaseId = null);
 
+public sealed record BooksBeforeBrokerReadinessDto(
+    bool IsBooksBeforeBrokerMode,
+    bool CanStageBrokerAction,
+    string ExpectedBrokerAction,
+    string BrokerInstructionSummary,
+    IReadOnlyList<string> RequiredApprovals,
+    IReadOnlyList<string> Blockers,
+    IReadOnlyList<string> EvidenceIds);
+
 public sealed record InvestmentAccountingTransactionLabPreviewDto(
     string PreviewId,
     InvestmentAccountingTransactionKindDto Kind,
@@ -65,4 +82,5 @@ public sealed record InvestmentAccountingTransactionLabPreviewDto(
     InvestmentAccountingReconciliationExpectationDto ReconciliationExpectation,
     IReadOnlyList<string> EvidenceIds,
     string? SourceRunId = null,
-    string? SourceSessionId = null);
+    string? SourceSessionId = null,
+    BooksBeforeBrokerReadinessDto? BooksBeforeBroker = null);

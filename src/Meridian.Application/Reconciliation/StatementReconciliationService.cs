@@ -54,6 +54,7 @@ public sealed class StatementReconciliationService
         var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
         var id = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
         var sourceRows = File.ReadLines(sourcePath)
+            .Skip(1)
             .Select((line, index) => CreateSourceRowReference(id, index + 1, line, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["sourceKind"] = normalizedSourceKind,

@@ -364,6 +364,98 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task LedgerEndpoints_PeriodReportingRoutes_ReturnTrialBalanceAndPnlSummary()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<ILedgerJournalStore>();
+
+        var book = await PostJsonAsync<LedgerBookDto>(
+            client,
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                Guid.Parse("9dc7712e-8aa4-4c65-bc46-f6b8d0884695"),
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund",
+                "USD",
+                AccountingBasis: AccountingBasisKindDto.Gaap,
+                AccountingPolicyId: "gaap-close-v1",
+                AccountingPolicyVersion: "v1"));
+        var prior = await PostJsonAsync<LedgerPeriodDto>(
+            client,
+            UiApiRoutes.LedgerPeriods,
+            new CreateLedgerPeriodRequest(
+                book.LedgerBookId,
+                2026,
+                1,
+                "2026-P01",
+                new DateOnly(2026, 1, 1),
+                new DateOnly(2026, 1, 31)));
+        await store.AppendAsync(BuildBalancedEntry(
+            prior.PeriodId,
+            revenue: 800m,
+            expense: 300m,
+            timestamp: DateTimeOffset.Parse("2026-01-31T21:00:00Z")) with
+        {
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = "gaap-close-v1",
+            AccountingPolicyVersion = "v1"
+        });
+        await PostJsonAsync<LedgerPeriodCloseResultDto>(
+            client,
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", prior.PeriodId.ToString()),
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, ClosedBy: "fund-controller"));
+
+        var current = await PostJsonAsync<LedgerPeriodDto>(
+            client,
+            UiApiRoutes.LedgerPeriods,
+            new CreateLedgerPeriodRequest(
+                book.LedgerBookId,
+                2026,
+                2,
+                "2026-P02",
+                new DateOnly(2026, 2, 1),
+                new DateOnly(2026, 2, 28)));
+        await store.AppendAsync(BuildBalancedEntry(
+            current.PeriodId,
+            revenue: 1_200m,
+            expense: 300m,
+            timestamp: DateTimeOffset.Parse("2026-02-28T21:00:00Z")) with
+        {
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = "gaap-close-v1",
+            AccountingPolicyVersion = "v1"
+        });
+        await PostJsonAsync<LedgerPeriodCloseResultDto>(
+            client,
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", current.PeriodId.ToString()),
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, ClosedBy: "fund-controller"));
+
+        var trialBalance = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalance, "periodId", current.PeriodId.ToString()),
+            ServerJsonOptions);
+        var pnl = await client.GetFromJsonAsync<LedgerPeriodPnlSummaryDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodPnlSummary, "periodId", current.PeriodId.ToString()),
+            ServerJsonOptions);
+
+        trialBalance.Should().NotBeNull();
+        trialBalance!.Should().Contain(row =>
+            row.AccountName == "Management fees" &&
+            row.AccountType == nameof(LedgerAccountType.Revenue) &&
+            row.Balance == 1_200m &&
+            row.AccountingBasis == AccountingBasisKindDto.Gaap &&
+            row.AccountingPolicyId == "gaap-close-v1");
+        pnl.Should().NotBeNull();
+        pnl!.TotalRevenue.Should().Be(1_200m);
+        pnl.TotalExpenses.Should().Be(300m);
+        pnl.NetIncome.Should().Be(900m);
+        pnl.PeriodOnPeriodVariance.Should().Be(400m);
+        pnl.RevenueLines.Should().ContainSingle(row => row.AccountName == "Management fees");
+        pnl.ExpenseLines.Should().ContainSingle(row => row.AccountName == "Operating expense");
+    }
+
+    [Fact]
     public async Task LedgerEndpoints_CreateBook_WhenUserLacksLedgerMutationPermission_ReturnsForbidden()
     {
         await using var app = await CreateAppAsync(UserPermission.ViewTrades);

@@ -59,7 +59,7 @@ public sealed class FundAccountCloseReadinessService
         var blockers = new List<FundAccountCloseReadinessBlockerDto>();
 
         AddProviderFreshnessComponent(components, blockers, accountReadiness, latestReconciliation, evaluatedAt);
-        AddSecurityMasterComponent(components, blockers, accountReadiness, latestReconciliation);
+        AddSecurityMasterComponent(components, blockers, accountReadiness, latestReconciliation, openCases);
         AddLedgerPostingComponent(components, blockers, account, accountReadiness, latestSnapshot, latestReconciliation);
         AddReconciliationComponent(components, blockers, latestReconciliation);
         AddCorporateActionFactorComponent(components, blockers, latestReconciliation);
@@ -205,6 +205,30 @@ public sealed class FundAccountCloseReadinessService
             return;
         }
 
+        var requiredCapabilityGaps = GetProviderCapabilityChecks(
+            latestReconciliation,
+            ProviderLedgerReconciliationCheckStatusDto.Blocked);
+        if (requiredCapabilityGaps.Length > 0)
+        {
+            AddComponent(components, blockers, "provider-freshness", "Provider data freshness", ProviderWeight,
+                FundAccountCloseReadinessStatusDto.Blocked, "Critical",
+                $"Provider capability routing cannot satisfy required close feed(s): {FormatCapabilityGaps(requiredCapabilityGaps)}.",
+                "close.provider_capability.blocked", "ProviderData", route);
+            return;
+        }
+
+        var degradedCapabilityGaps = GetProviderCapabilityChecks(
+            latestReconciliation,
+            ProviderLedgerReconciliationCheckStatusDto.Break);
+        if (degradedCapabilityGaps.Length > 0)
+        {
+            AddComponent(components, blockers, "provider-freshness", "Provider data freshness", ProviderWeight,
+                FundAccountCloseReadinessStatusDto.ReviewRequired, "Warning",
+                $"Provider capability routing is degraded for close feed(s): {FormatCapabilityGaps(degradedCapabilityGaps)}.",
+                "close.provider_capability.review", "ProviderData", route);
+            return;
+        }
+
         var providerSyncedAt = latestReconciliation?.Summary.ProviderSyncedAt;
         var staleAfter = TimeSpan.FromMinutes(latestReconciliation?.Summary.ProviderStaleAfterMinutes ?? 30);
         if (providerIssues.Length > 0 ||
@@ -222,11 +246,35 @@ public sealed class FundAccountCloseReadinessService
             FundAccountCloseReadinessStatusDto.Ready, "Info", "Provider data is fresh enough for close readiness.", route);
     }
 
+    private static string[] GetProviderCapabilityChecks(
+        ProviderLedgerReconciliationDetailDto? latestReconciliation,
+        ProviderLedgerReconciliationCheckStatusDto status)
+    {
+        if (latestReconciliation is null)
+        {
+            return [];
+        }
+
+        return latestReconciliation.Checks
+            .Where(check =>
+                check.Status == status &&
+                check.CheckId.StartsWith("provider-capability:", StringComparison.OrdinalIgnoreCase))
+            .Select(static check => check.CheckId["provider-capability:".Length..].Trim())
+            .Where(static capability => !string.IsNullOrWhiteSpace(capability))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static capability => capability, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string FormatCapabilityGaps(IReadOnlyList<string> capabilityGaps) =>
+        string.Join(", ", capabilityGaps);
+
     private static void AddSecurityMasterComponent(
         ICollection<FundAccountCloseReadinessComponentDto> components,
         ICollection<FundAccountCloseReadinessBlockerDto> blockers,
         AccountReadinessSnapshotDto? accountReadiness,
-        ProviderLedgerReconciliationDetailDto? latestReconciliation)
+        ProviderLedgerReconciliationDetailDto? latestReconciliation,
+        IReadOnlyList<ReconciliationBreakQueueItem> openCases)
     {
         var route = latestReconciliation is null
             ? null
@@ -237,6 +285,9 @@ public sealed class FundAccountCloseReadinessService
         var unresolvedPassports = latestReconciliation?.SecurityMasterPassports?
             .Count(static passport => passport.Status is ProviderSecurityMasterPassportStatusDto.Unresolved or ProviderSecurityMasterPassportStatusDto.Blocked) ?? 0;
         var securityBreaks = latestReconciliation?.Summary.SecurityIssueCount ?? 0;
+        var openSecurityMasterCases = openCases
+            .Where(IsSecurityMasterCasework)
+            .ToArray();
 
         if (latestReconciliation is null)
         {
@@ -244,6 +295,16 @@ public sealed class FundAccountCloseReadinessService
                 FundAccountCloseReadinessStatusDto.Blocked, "Critical",
                 "No provider-ledger reconciliation exists to prove Security Master coverage.",
                 "close.security_master.unproven", "SecurityMaster", route);
+            return;
+        }
+
+        if (openSecurityMasterCases.Any(static item =>
+                item.Severity is ReconciliationBreakSeverity.Critical or ReconciliationBreakSeverity.High))
+        {
+            AddComponent(components, blockers, "security-master-completeness", "Security Master completeness", SecurityMasterWeight,
+                FundAccountCloseReadinessStatusDto.Blocked, "Critical",
+                $"{openSecurityMasterCases.Length} held-security Security Master case(s) still require steward sign-off.",
+                "close.security_master.casework_blocked", "SecurityMaster", route);
             return;
         }
 
@@ -259,6 +320,15 @@ public sealed class FundAccountCloseReadinessService
             return;
         }
 
+        if (openSecurityMasterCases.Length > 0)
+        {
+            AddComponent(components, blockers, "security-master-completeness", "Security Master completeness", SecurityMasterWeight,
+                FundAccountCloseReadinessStatusDto.ReviewRequired, "Warning",
+                $"{openSecurityMasterCases.Length} held-security Security Master case(s) remain open for steward review.",
+                "close.security_master.casework_review", "SecurityMaster", route);
+            return;
+        }
+
         if (securityIssues.Length > 0 || unresolvedPassports > 0 || securityBreaks > 0)
         {
             AddComponent(components, blockers, "security-master-completeness", "Security Master completeness", SecurityMasterWeight,
@@ -271,6 +341,11 @@ public sealed class FundAccountCloseReadinessService
         AddComponentOnly(components, "security-master-completeness", "Security Master completeness", SecurityMasterWeight,
             FundAccountCloseReadinessStatusDto.Ready, "Info", "Provider positions are covered by Security Master evidence.", route);
     }
+
+    private static bool IsSecurityMasterCasework(ReconciliationBreakQueueItem item) =>
+        string.Equals(item.Team, "Security Master", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(item.RequiredSignoffRole, "Security Master steward", StringComparison.OrdinalIgnoreCase) ||
+        (item.ExceptionRoute?.StartsWith("security-master/", StringComparison.OrdinalIgnoreCase) ?? false);
 
     private static void AddLedgerPostingComponent(
         ICollection<FundAccountCloseReadinessComponentDto> components,

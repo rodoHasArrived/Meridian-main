@@ -911,6 +911,106 @@ public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
             : string.Join("-", value.Trim().Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
 }
 
+public sealed class EvidenceVaultEvidenceContributor : IEvidenceContributor
+{
+    private readonly IServiceProvider _services;
+
+    public EvidenceVaultEvidenceContributor(IServiceProvider services)
+    {
+        _services = services ?? throw new ArgumentNullException(nameof(services));
+    }
+
+    public string ContributorId => "evidence-vault";
+
+    public bool Supports(EvidenceSubjectDto subject)
+        => string.Equals(subject.SubjectKind, EvidenceSubjectResolver.EvidenceVaultKind, StringComparison.OrdinalIgnoreCase);
+
+    public async Task<EvidenceContribution> ContributeAsync(EvidenceContributionContext context)
+    {
+        var store = _services.GetService<IEvidenceArtifactStore>();
+        if (store is null)
+        {
+            return new EvidenceContribution([], [], [], [], ["Evidence artifact store is not registered."]);
+        }
+
+        if (string.Equals(context.Subject.SubjectId, "lookup", StringComparison.OrdinalIgnoreCase))
+        {
+            return new EvidenceContribution([], [], [], [], ["Open a specific vault id to inspect retained vault artifacts."]);
+        }
+
+        var identity = await store.TryGetVaultIdentityAsync(context.Subject.SubjectId, context.CancellationToken)
+            .ConfigureAwait(false);
+        if (identity is null)
+        {
+            return new EvidenceContribution([], [], [], [], [$"Evidence vault '{context.Subject.SubjectId}' was not found."]);
+        }
+
+        var nodes = new List<EvidenceNodeDto>();
+        var edges = new List<EvidenceEdgeDto>();
+        var required = new List<string>();
+        var rootId = NodeId(context.Subject, "manifest");
+        nodes.Add(Node(
+            context.Subject,
+            rootId,
+            "evidence-vault-manifest",
+            EvidenceStatusDto.Ready,
+            $"Vault {identity.VaultId} retains {identity.StorageKind} evidence for {identity.SubjectKind}/{identity.SubjectId} with {identity.Artifacts.Count} artifact(s).",
+            "EvidenceArtifactStore",
+            identity.RetainedAt,
+            artifacts:
+            [
+                new EvidenceArtifactRefDto(
+                    $"{rootId}:manifest",
+                    "evidence-vault-manifest-route",
+                    Path: identity.ManifestPath,
+                    Route: identity.ManifestRoute,
+                    GeneratedAt: identity.RetainedAt,
+                    Hash: identity.ContentHashSha256,
+                    Retained: false,
+                    CanonicalSubjectKind: identity.SubjectKind,
+                    CanonicalSubjectId: identity.SubjectId)
+            ]));
+        required.Add(rootId);
+
+        foreach (var artifact in identity.Artifacts.OrderBy(static artifact => artifact.ArtifactId, StringComparer.OrdinalIgnoreCase))
+        {
+            var artifactId = NodeId(context.Subject, $"artifact-{SanitizeNodePart(artifact.ArtifactId)}");
+            nodes.Add(Node(
+                context.Subject,
+                artifactId,
+                "retained-vault-artifact",
+                EvidenceStatusDto.Ready,
+                $"Retained {artifact.Kind} artifact {artifact.ArtifactId} is stored at {artifact.RelativePath} ({artifact.SizeBytes} bytes).",
+                "EvidenceArtifactStore",
+                artifact.RetainedAt,
+                artifacts:
+                [
+                    new EvidenceArtifactRefDto(
+                        $"{artifactId}:retained-payload",
+                        artifact.Kind,
+                        Path: artifact.RelativePath,
+                        Route: artifact.SourceRoute,
+                        GeneratedAt: artifact.RetainedAt,
+                        Hash: artifact.ContentHashSha256,
+                        Retained: false,
+                        CanonicalSubjectKind: artifact.CanonicalSubjectKind,
+                        CanonicalSubjectId: artifact.CanonicalSubjectId)
+                ]));
+            edges.Add(new EvidenceEdgeDto(rootId, artifactId, "retains", "Vault manifest retains the artifact payload and canonical subject linkage."));
+            required.Add(artifactId);
+        }
+
+        return new EvidenceContribution(nodes, edges, [], required, []);
+    }
+
+    private static string SanitizeNodePart(string value)
+        => string.IsNullOrWhiteSpace(value)
+            ? "artifact"
+            : string.Join("-", value.Trim().Split(
+                Path.GetInvalidFileNameChars().Concat([':', '/', '\\', '?', '&', '=']).Distinct().ToArray(),
+                StringSplitOptions.RemoveEmptyEntries));
+}
+
 internal static class EvidenceContributionHelpers
 {
     public static string NodeId(EvidenceSubjectDto subject, string suffix)
@@ -949,7 +1049,7 @@ internal static class EvidenceContributionHelpers
         string? route = null,
         DateTimeOffset? generatedAt = null,
         string? hash = null,
-        bool retained = true)
+        bool retained = false)
         => new(
             ArtifactId: artifactId,
             Kind: kind,

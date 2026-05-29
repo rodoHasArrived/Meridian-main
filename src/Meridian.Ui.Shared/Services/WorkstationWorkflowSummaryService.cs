@@ -102,8 +102,57 @@ public sealed class WorkstationWorkflowSummaryService
             FundDisplayName: fundDisplayName?.Trim()
                 ?? fundProfileId?.Trim()
                 ?? (contextSelected ? "Fund-linked scope selected" : "No fund scope selected"),
-            Workspaces: workspaces);
+            Workspaces: workspaces)
+        {
+            AssuranceScore = BuildAssuranceScore(workspaces)
+        };
     }
+
+    private static MeridianAssuranceScoreDto BuildAssuranceScore(IReadOnlyList<WorkspaceWorkflowSummary> workspaces)
+    {
+        var components = workspaces
+            .Select(BuildAssuranceComponent)
+            .ToArray();
+        var score = components.Length == 0
+            ? 100
+            : (int)Math.Round(components.Average(static component => component.Score), MidpointRounding.AwayFromZero);
+        var status =
+            components.Any(static component => component.Status == EvidenceStatusDto.Blocked) ? EvidenceStatusDto.Blocked :
+            components.Any(static component => component.Status == EvidenceStatusDto.Stale) ? EvidenceStatusDto.Stale :
+            components.Any(static component => component.Status == EvidenceStatusDto.ReviewRequired) ? EvidenceStatusDto.ReviewRequired :
+            components.All(static component => component.Status == EvidenceStatusDto.Ready) ? EvidenceStatusDto.Ready :
+            EvidenceStatusDto.ReviewRequired;
+
+        return new MeridianAssuranceScoreDto(score, status, components, []);
+    }
+
+    private static EvidenceAssuranceComponentDto BuildAssuranceComponent(WorkspaceWorkflowSummary workspace)
+    {
+        var isBlocking = workspace.PrimaryBlocker.IsBlocking;
+        var tone = workspace.StatusTone;
+        var score =
+            isBlocking && IsCriticalTone(tone) ? 0 :
+            isBlocking ? 60 :
+            string.Equals(tone, "Success", StringComparison.OrdinalIgnoreCase) ? 100 :
+            string.Equals(tone, "Info", StringComparison.OrdinalIgnoreCase) ? 85 :
+            75;
+        var status =
+            isBlocking && IsCriticalTone(tone) ? EvidenceStatusDto.Blocked :
+            isBlocking ? EvidenceStatusDto.ReviewRequired :
+            string.Equals(tone, "Success", StringComparison.OrdinalIgnoreCase) ? EvidenceStatusDto.Ready :
+            EvidenceStatusDto.ReviewRequired;
+
+        return new EvidenceAssuranceComponentDto(
+            ComponentId: workspace.WorkspaceId,
+            Label: workspace.WorkspaceTitle,
+            Score: score,
+            Status: status,
+            Detail: $"{workspace.StatusLabel}: {workspace.StatusDetail}");
+    }
+
+    private static bool IsCriticalTone(string tone) =>
+        string.Equals(tone, "Critical", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(tone, "Danger", StringComparison.OrdinalIgnoreCase);
 
     private WorkspaceWorkflowSummary BuildStrategySummary(
         StrategyRunSummary? candidateForPaper,

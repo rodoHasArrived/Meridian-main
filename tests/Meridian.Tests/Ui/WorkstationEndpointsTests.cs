@@ -1152,6 +1152,12 @@ public sealed partial class WorkstationEndpointsTests
         accounting.NextAction.Label.Should().Be("Review Reconciliation Breaks");
         accounting.NextAction.TargetPageTag.Should().Be("FundReconciliation");
         accounting.PrimaryBlocker.IsBlocking.Should().BeTrue();
+        summary.AssuranceScore.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        summary.AssuranceScore.Score.Should().BeLessThan(100);
+        summary.AssuranceScore.Components.Should().Contain(component =>
+            component.ComponentId == "accounting" &&
+            component.Status == EvidenceStatusDto.ReviewRequired &&
+            component.Detail.Contains("Reconciliation breaks require review", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -1166,6 +1172,11 @@ public sealed partial class WorkstationEndpointsTests
         var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
         summary.Should().NotBeNull();
         summary!.Workspaces.Should().HaveCount(7);
+        summary.AssuranceScore.Should().NotBeNull();
+        summary.AssuranceScore.Components.Should().HaveCount(7);
+        summary.AssuranceScore.Components.Should().Contain(component =>
+            component.ComponentId == "trading" &&
+            component.Status == EvidenceStatusDto.ReviewRequired);
         summary.Workspaces.Select(workspace => workspace.WorkspaceId).Should().BeEquivalentTo(
             "trading",
             "portfolio",

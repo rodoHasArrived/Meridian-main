@@ -148,8 +148,13 @@ public static class LedgerPeriodPostingGuard
         foreach (var line in instrumentLines)
         {
             var symbol = line.Account.Symbol;
-            if (!string.IsNullOrWhiteSpace(symbol) &&
-                !lineage.Contains(symbol.Trim(), StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(symbol))
+            {
+                throw new LedgerValidationException(
+                    $"Journal entry '{journalEntry.JournalEntryId}' posts instrument line '{line.Account.Name}' without an instrument symbol for Security Master lineage.");
+            }
+
+            if (!lineage.Contains(symbol.Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 throw new LedgerValidationException(
                     $"Journal entry '{journalEntry.JournalEntryId}' posts instrument line '{symbol.Trim()}' without matching Security Master line lineage.");

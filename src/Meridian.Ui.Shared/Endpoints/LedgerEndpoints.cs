@@ -203,6 +203,54 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapGet(UiApiRoutes.LedgerPeriodTrialBalance, async (Guid periodId, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            return summary is null
+                ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
+                : Results.Json(summary.TrialBalance, jsonOptions);
+        })
+        .WithName("GetLedgerPeriodTrialBalance")
+        .Produces<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerPeriodPnlSummary, async (Guid periodId, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            return summary is null
+                ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
+                : Results.Json(BuildPnlSummary(summary), jsonOptions);
+        })
+        .WithName("GetLedgerPeriodPnlSummary")
+        .Produces<LedgerPeriodPnlSummaryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
     }
 
     private static ILedgerBookService? ResolveService(HttpContext context)
@@ -236,6 +284,35 @@ public static class LedgerEndpoints
             LedgerBookValidationException or LedgerPeriodTransitionException => Results.BadRequest(new { error = exception.Message }),
             _ => Results.Problem(exception.Message)
         };
+
+    private static LedgerPeriodPnlSummaryDto BuildPnlSummary(LedgerPeriodSummaryDto summary)
+    {
+        var revenueLines = summary.TrialBalance
+            .Where(static row => string.Equals(row.AccountType, "Revenue", StringComparison.Ordinal))
+            .ToArray();
+        var expenseLines = summary.TrialBalance
+            .Where(static row => string.Equals(row.AccountType, "Expense", StringComparison.Ordinal))
+            .ToArray();
+
+        return new LedgerPeriodPnlSummaryDto(
+            summary.PeriodId,
+            summary.LedgerBookId,
+            summary.FiscalYear,
+            summary.PeriodNo,
+            summary.Label,
+            TotalRevenue: revenueLines.Sum(static row => row.Balance),
+            TotalExpenses: expenseLines.Sum(static row => row.Balance),
+            summary.NetIncome,
+            summary.PeriodOnPeriodVariance,
+            summary.OpenBreakCount,
+            summary.SignoffStatus,
+            summary.CompletedAt,
+            revenueLines,
+            expenseLines,
+            summary.AccountingBasis,
+            summary.AccountingPolicyId,
+            summary.AccountingPolicyVersion);
+    }
 
     private static bool TryGetLedgerCloseActor(HttpContext context, out string actor)
     {

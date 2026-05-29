@@ -769,6 +769,69 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task EvidenceGraphService_DuringVaultArtifactReview_ProjectsRetainedManifestAndArtifacts()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-vault-workbench", Guid.NewGuid().ToString("N"));
+        var sourceDirectory = Path.Combine(root, "source-artifacts");
+        Directory.CreateDirectory(sourceDirectory);
+        var statementPath = Path.Combine(sourceDirectory, "custodian-statement.csv");
+        var statementBytes = Encoding.UTF8.GetBytes("account,symbol,quantity,price\nA1,MSFT,2,410\n");
+        await File.WriteAllBytesAsync(statementPath, statementBytes);
+        var statementHash = Convert.ToHexString(SHA256.HashData(statementBytes)).ToLowerInvariant();
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var retainedArtifact = new EvidenceArtifactRefDto(
+            "custodian-statement-1",
+            "custodian-statement",
+            statementPath,
+            "/api/workstation/reconciliation/statement-runs/stmt-1",
+            DateTimeOffset.UtcNow,
+            statementHash,
+            Retained: true,
+            CanonicalSubjectKind: "reconciliation-case",
+            CanonicalSubjectId: "case-123");
+        var sourcePacket = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "statement-node", "custodian-statement", EvidenceStatusDto.Ready, artifacts: [retainedArtifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["statement-node"], ["statement-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+        var exported = await store.WriteManifestAsync(sourcePacket, new EvidencePacketExportRequest("operator", "vault workbench coverage"));
+        var services = new ServiceCollection()
+            .AddSingleton<IEvidenceArtifactStore>(store)
+            .BuildServiceProvider();
+        var graph = new EvidenceGraphService(
+            new EvidenceSubjectResolver(services),
+            new EvidenceTemplateRegistry(),
+            [new EvidenceVaultEvidenceContributor(services)],
+            NullLogger<EvidenceGraphService>.Instance);
+
+        var packet = await graph.GetPacketAsync(EvidenceSubjectResolver.EvidenceVaultKind, exported.VaultIdentity!.VaultId);
+
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.EvidenceVaultKind);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "evidence-vault-manifest" &&
+            node.Summary.Contains(exported.VaultIdentity.VaultId, StringComparison.Ordinal));
+        var artifactNode = packet.Nodes.Should().ContainSingle(node => node.Kind == "retained-vault-artifact").Which;
+        artifactNode.Status.Should().Be(EvidenceStatusDto.Ready);
+        artifactNode.Summary.Should().Contain("custodian-statement-1");
+        artifactNode.ArtifactRefs.Should().ContainSingle(artifact =>
+            artifact.ArtifactId.EndsWith(":retained-payload", StringComparison.Ordinal) &&
+            artifact.Kind == "custodian-statement" &&
+            artifact.Hash == statementHash &&
+            artifact.CanonicalSubjectKind == "reconciliation-case" &&
+            artifact.CanonicalSubjectId == "case-123");
+        packet.Edges.Should().Contain(edge =>
+            edge.Relationship == "retains" &&
+            edge.ToId == artifactNode.EvidenceId);
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.Completeness.OrphanEvidenceIds.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task FileEvidenceArtifactStore_DuringManifestExport_RejectsMissingRetainedArtifactPayloads()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
@@ -868,6 +931,72 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RejectsRouteOnlyRetainedArtifactWithoutCanonicalSubject()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "approval-route-only",
+            "approval",
+            Path: null,
+            Route: "/api/workstation/operations-continuity/workflows/workflow-1/approval",
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Hash: null,
+            Retained: true);
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "approval-node", "approval", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["approval-node"], ["approval-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "approval retention"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*approval-route-only*missing canonical subject linkage*");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RetainsRouteOnlyArtifactWithCanonicalSubjectInManifest()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "approval-route-only",
+            "approval",
+            Path: null,
+            Route: "/api/workstation/operations-continuity/workflows/workflow-1/approval",
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Hash: null,
+            Retained: true,
+            CanonicalSubjectKind: EvidenceSubjectResolver.ApprovalKind,
+            CanonicalSubjectId: "workflow-1");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "approval-node", "approval", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["approval-node"], ["approval-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "approval retention"));
+        var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        var manifestJson = await File.ReadAllTextAsync(manifestPath);
+
+        response.VaultIdentity.Should().NotBeNull();
+        response.VaultIdentity!.StorageKind.Should().Be("file-manifest");
+        response.VaultIdentity.Artifacts.Should().BeEmpty();
+        manifestJson.Should().Contain("\"artifactId\": \"approval-route-only\"");
+        manifestJson.Should().Contain("\"canonicalSubjectKind\": \"approval\"");
+        manifestJson.Should().Contain("\"canonicalSubjectId\": \"workflow-1\"");
+    }
+
+    [Fact]
     public async Task EvidenceEndpoints_VaultSearch_RejectsEmptyLookup()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-search-empty-{Guid.NewGuid():N}");
@@ -888,12 +1017,13 @@ public sealed class EvidenceWorkflowFabricTests
         await using var app = await CreateEvidenceAppAsync(root);
         var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync(
+        var exportResponse = await client.PostAsJsonAsync(
             "/api/workstation/evidence/subjects/report-pack/current/export-manifest",
             new EvidencePacketExportRequest("operator", "seed")
             {
                 Linkage = new EvidenceSubjectLinkageDto("report-pack/current", "run-123", "period-2026-05", "rp-55", "case-77")
             });
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var response = await client.PostAsJsonAsync(
             "/api/workstation/evidence/vault/search",

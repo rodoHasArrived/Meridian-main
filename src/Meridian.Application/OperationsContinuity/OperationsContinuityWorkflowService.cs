@@ -1153,13 +1153,15 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             "Security Master mappings, overrides, and instrument confidence must be complete.",
             OperationsGateKeyDto.SecurityMaster,
             "/workstation/data");
+        var brokerIngestReadinessBlocker = GetBrokerIngestReadinessBlocker(workflow);
         AddComponent(components, blockers, "provider-freshness", "Provider data freshness", 10,
             workflow.BrokerIngestGate.Status == OperationsGateStatusDto.Passed &&
                 !HasBlocker(workflow.BrokerIngestGate, "BROKER_SYNC_STALE"),
-            "BROKER_SYNC_STALE",
-            "Provider data freshness is stale or has not been proven for this close.",
+            brokerIngestReadinessBlocker.Code,
+            brokerIngestReadinessBlocker.Message,
             OperationsGateKeyDto.BrokerIngest,
-            "/workstation/accounting");
+            "/workstation/accounting",
+            brokerIngestReadinessBlocker.Severity);
         AddComponent(components, blockers, "positions", "Positions", 10,
             workflow.BrokerIngestGate.Status == OperationsGateStatusDto.Passed &&
                 workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Complete,
@@ -1221,6 +1223,18 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     private static bool HasBlocker(OperationsGateState gate, string blockerCode) =>
         gate.Blockers.Any(blocker => string.Equals(blocker.Code, blockerCode, StringComparison.OrdinalIgnoreCase));
 
+    private static (string Code, string Message, string Severity) GetBrokerIngestReadinessBlocker(OperationsContinuityWorkflow workflow)
+    {
+        var blocker = workflow.BrokerIngestGate.Blockers.FirstOrDefault(blocker =>
+            string.Equals(blocker.Code, "BROKER_PROVIDER_REQUIRED_CAPABILITY_UNROUTABLE", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(blocker.Code, "BROKER_PROVIDER_CAPABILITY_DEGRADED", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(blocker.Code, "BROKER_SYNC_STALE", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(blocker.Code, "BROKER_PROVIDER_ACCOUNT_UNLINKED", StringComparison.OrdinalIgnoreCase));
+        return blocker is null
+            ? ("BROKER_SYNC_STALE", "Provider data freshness is stale or has not been proven for this close.", "Critical")
+            : (blocker.Code, blocker.Message, blocker.Severity);
+    }
+
     private static void AddComponent(
         ICollection<OperationsCloseReadinessComponentDto> components,
         ICollection<OperationsCloseReadinessBlockerDto> blockers,
@@ -1231,7 +1245,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         string blockerCode,
         string blockingReason,
         OperationsGateKeyDto gate,
-        string routeHint)
+        string routeHint,
+        string severity = "Critical")
     {
         components.Add(new OperationsCloseReadinessComponentDto(
             key,
@@ -1239,7 +1254,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             isReady ? weight : 0,
             weight,
             isReady,
-            isReady ? "Info" : "Critical",
+            isReady ? "Info" : severity,
             isReady ? null : blockingReason,
             gate,
             routeHint));
@@ -1249,7 +1264,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             blockers.Add(new OperationsCloseReadinessBlockerDto(
                 blockerCode,
                 label,
-                "Critical",
+                severity,
                 blockingReason,
                 gate,
                 routeHint));

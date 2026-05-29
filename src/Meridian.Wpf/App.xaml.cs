@@ -371,10 +371,19 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.FundAccountsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundLedgerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
-        services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunBrowserViewModel>();
-        services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
-        services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
-        services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
+        services.AddTransient(sp => new StrategyRunBrowserViewModel(
+            sp.GetRequiredService<WpfServices.StrategyRunWorkspaceService>(),
+            sp.GetRequiredService<WpfServices.NavigationService>(),
+            sp.GetRequiredService<WpfServices.WorkspaceService>()));
+        services.AddTransient(sp => new StrategyRunDetailViewModel(
+            sp.GetRequiredService<WpfServices.StrategyRunWorkspaceService>(),
+            sp.GetRequiredService<WpfServices.NavigationService>()));
+        services.AddTransient(sp => new StrategyRunPortfolioViewModel(
+            sp.GetRequiredService<WpfServices.StrategyRunWorkspaceService>(),
+            sp.GetRequiredService<WpfServices.NavigationService>()));
+        services.AddTransient(sp => new StrategyRunLedgerViewModel(
+            sp.GetRequiredService<WpfServices.StrategyRunWorkspaceService>(),
+            sp.GetRequiredService<WpfServices.NavigationService>()));
         services.AddTransient<Meridian.Wpf.ViewModels.CashFlowViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunRiskViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();

@@ -1846,7 +1846,9 @@ public sealed class ProviderLedgerReconciliationService
 
         var existing = await _breakQueueRepository.GetByIdAsync(desired.BreakId, ct).ConfigureAwait(false);
         if (existing is null ||
-            existing.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed)
+            existing.Status is ReconciliationBreakQueueStatus.Resolved
+                or ReconciliationBreakQueueStatus.Dismissed
+                or ReconciliationBreakQueueStatus.SignedOff)
         {
             return;
         }
@@ -1892,6 +1894,34 @@ public sealed class ProviderLedgerReconciliationService
                 "Provider-ledger reconciliation could not resolve signed-off break case {BreakId}: {Error}",
                 existing.BreakId,
                 resolve.Error);
+            return;
+        }
+
+        if (resolve.Item is null)
+        {
+            return;
+        }
+
+        var signOff = await _breakQueueRepository.ApplyCaseworkCommandAsync(
+                new ReconciliationCaseworkCommand(
+                    existing.BreakId,
+                    ReconciliationCaseworkAction.SignOff,
+                    actor,
+                    $"provider-ledger-signoff:{existing.BreakId}:{breakRow.BreakKey ?? breakRow.CheckId}",
+                    existing.RunId,
+                    "provider-ledger-reconciliation",
+                    resolve.Item.Version,
+                    Reason: "Provider-ledger reconciliation request carried a controller sign-off.",
+                    Note: "Provider-ledger reconciliation break signed off.",
+                    Privileged: string.Equals(resolve.Item.ResolvedBy, actor, StringComparison.OrdinalIgnoreCase)),
+                ct)
+            .ConfigureAwait(false);
+        if (signOff.Status != ReconciliationBreakQueueTransitionStatus.Success)
+        {
+            _logger.LogWarning(
+                "Provider-ledger reconciliation could not sign off break case {BreakId}: {Error}",
+                existing.BreakId,
+                signOff.Error);
         }
     }
 
@@ -1930,6 +1960,9 @@ public sealed class ProviderLedgerReconciliationService
             summary.ExternalAccountId ?? "external-account-unknown",
             summary.ProviderSyncedAt?.ToString("O") ?? "provider-sync-missing",
             summary.ReconciliationRunId.ToString("N"));
+        var passport = isSecurityMasterIdentityCase
+            ? FindPassportForBreak(detail, breakRow)
+            : null;
 
         return new ReconciliationBreakQueueItem(
             BreakId: caseId,
@@ -1958,7 +1991,7 @@ public sealed class ProviderLedgerReconciliationService
             RequiredSignoffRole: signoffRole,
             SignoffStatus: signoffStatus,
             FundAccountId: summary.AccountId.ToString("D"),
-            ExplainabilitySummary: BuildExplainabilitySummary(summary, breakRow),
+            ExplainabilitySummary: BuildExplainabilitySummary(summary, breakRow, passport),
             RoutingTarget: latestRoute,
             RoutingDetail: breakRow.CheckId,
             RecommendedAction: BuildRecommendedAction(breakRow),
@@ -1978,7 +2011,20 @@ public sealed class ProviderLedgerReconciliationService
             Team: isSecurityMasterIdentityCase ? "Security Master" : null,
             Counterparty: summary.ProviderId,
             StateTransitions: [],
-            BreakExplanation: BuildBreakExplanation(summary, breakRow, latestRoute, syncCursor));
+            BreakExplanation: BuildBreakExplanation(summary, breakRow, latestRoute, syncCursor, passport));
+    }
+
+    private static ProviderSecurityMasterPassportDto? FindPassportForBreak(
+        ProviderLedgerReconciliationDetailDto detail,
+        ProviderLedgerReconciliationBreakDto breakRow)
+    {
+        if (string.IsNullOrWhiteSpace(breakRow.Symbol) || detail.SecurityMasterPassports is null)
+        {
+            return null;
+        }
+
+        return detail.SecurityMasterPassports.FirstOrDefault(passport =>
+            string.Equals(passport.Symbol, breakRow.Symbol.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool IsSecurityMasterIdentityBreak(ProviderLedgerReconciliationBreakDto breakRow)
@@ -2172,7 +2218,8 @@ public sealed class ProviderLedgerReconciliationService
 
     private static string BuildExplainabilitySummary(
         ProviderLedgerReconciliationSummaryDto summary,
-        ProviderLedgerReconciliationBreakDto breakRow)
+        ProviderLedgerReconciliationBreakDto breakRow,
+        ProviderSecurityMasterPassportDto? passport = null)
         => string.Join(
             ", ",
             new[]
@@ -2184,8 +2231,16 @@ public sealed class ProviderLedgerReconciliationService
                 $"expected={FormatAmount(breakRow.ExpectedAmount)}",
                 $"actual={FormatAmount(breakRow.ActualAmount)}",
                 $"variance={FormatAmount(breakRow.Variance)}",
-                $"symbol={breakRow.Symbol ?? "account"}"
-            });
+                $"symbol={breakRow.Symbol ?? "account"}",
+                passport is null ? null : $"passportStatus={passport.Status}",
+                passport is null ? null : $"resolutionSource={passport.ResolutionSource}",
+                passport is null ? null : $"confidence={FormatAmount(passport.ConfidenceScore)}",
+                passport is null ? null : $"freshnessMinutes={passport.FreshnessMinutes}",
+                passport is null ? null : $"providerStale={passport.ProviderIsStale}",
+                passport is null ? null : $"validationIssues={string.Join("|", passport.ValidationIssueCodes)}",
+                passport is null ? null : $"identifierConflicts={string.Join("|", passport.IdentifierConflicts)}",
+                passport is null ? null : $"overrideCount={passport.OverrideHistory.Count}"
+            }.Where(static part => !string.IsNullOrWhiteSpace(part)));
 
     private static string BuildRecommendedAction(ProviderLedgerReconciliationBreakDto breakRow)
         => breakRow.Code.StartsWith("SM_", StringComparison.OrdinalIgnoreCase)
@@ -2196,7 +2251,8 @@ public sealed class ProviderLedgerReconciliationService
         ProviderLedgerReconciliationSummaryDto summary,
         ProviderLedgerReconciliationBreakDto breakRow,
         string latestRoute,
-        string syncCursor)
+        string syncCursor,
+        ProviderSecurityMasterPassportDto? passport = null)
     {
         var provider = summary.ProviderId ?? "unknown provider";
         var externalAccount = summary.ExternalAccountId ?? "unknown external account";
@@ -2222,10 +2278,27 @@ public sealed class ProviderLedgerReconciliationService
             Summary: $"{HumanizeBreakCategory(breakRow.Category)} for {symbol} from {provider} account {externalAccount}; variance {variance}.",
             SourceSystems: [provider, "Meridian ledger", "Meridian positions", "Security Master"],
             ProbableCause: probableCause,
-            LedgerImpact: $"Expected {FormatAmount(breakRow.ExpectedAmount)}, actual {FormatAmount(breakRow.ActualAmount)}, variance {variance}; close readiness should treat the related ledger, cash, position, and report evidence as blocked until resolved or signed off.",
+            LedgerImpact: BuildBreakLedgerImpact(breakRow, variance, passport),
             SuggestedNextAction: BuildRecommendedAction(breakRow),
             EvidenceLinks: [latestRoute, breakRow.CheckId, syncCursor]);
     }
+
+    private static string BuildBreakLedgerImpact(
+        ProviderLedgerReconciliationBreakDto breakRow,
+        string variance,
+        ProviderSecurityMasterPassportDto? passport)
+    {
+        var impact = $"Expected {FormatAmount(breakRow.ExpectedAmount)}, actual {FormatAmount(breakRow.ActualAmount)}, variance {variance}; close readiness should treat the related ledger, cash, position, and report evidence as blocked until resolved or signed off.";
+        if (passport is null)
+        {
+            return impact;
+        }
+
+        return $"{impact} Provider-to-Security Master passport status {passport.Status}, confidence {FormatAmount(passport.ConfidenceScore)}, resolution source {passport.ResolutionSource}, freshness {passport.FreshnessMinutes} minute(s), validation issues {FormatIssueList(passport.ValidationIssueCodes)}, identifier conflicts {FormatIssueList(passport.IdentifierConflicts)}, override history count {passport.OverrideHistory.Count}.";
+    }
+
+    private static string FormatIssueList(IReadOnlyList<string> values) =>
+        values.Count == 0 ? "none" : string.Join("|", values);
 
     private static ReconciliationBreakExplanationDto BuildCorporateActionCandidateBreakExplanation(
         ProviderLedgerReconciliationSummaryDto summary,
@@ -2471,6 +2544,24 @@ public sealed class ProviderLedgerReconciliationService
             {
                 var overrideHistory = await GetSecurityMasterOverrideHistoryAsync(position.Security.SecurityId, ct)
                     .ConfigureAwait(false);
+                if (AddInactiveSecurityMasterBreak(
+                    runId,
+                    lifecycle,
+                    providerProjection,
+                    position,
+                    position.Security,
+                    checks,
+                    breaks,
+                    securityMasterPassports,
+                    checkId,
+                    symbol,
+                    observedAt,
+                    providerStaleAfterMinutes,
+                    overrideHistory))
+                {
+                    continue;
+                }
+
                 securityMasterPassports.Add(BuildSecurityMasterPassport(
                     providerProjection,
                     position,
@@ -2514,6 +2605,24 @@ public sealed class ProviderLedgerReconciliationService
             {
                 var overrideHistory = await GetSecurityMasterOverrideHistoryAsync(resolved.SecurityId, ct)
                     .ConfigureAwait(false);
+                if (AddInactiveSecurityMasterBreak(
+                    runId,
+                    lifecycle,
+                    providerProjection,
+                    position,
+                    resolved,
+                    checks,
+                    breaks,
+                    securityMasterPassports,
+                    checkId,
+                    symbol,
+                    observedAt,
+                    providerStaleAfterMinutes,
+                    overrideHistory))
+                {
+                    continue;
+                }
+
                 securityMasterPassports.Add(BuildSecurityMasterPassport(
                     providerProjection,
                     position,
@@ -2641,6 +2750,61 @@ public sealed class ProviderLedgerReconciliationService
                 symbol,
                 "/workstation/data/security-master");
         }
+    }
+
+    private static bool AddInactiveSecurityMasterBreak(
+        Guid runId,
+        BreakLifecycleContext lifecycle,
+        FundAccountBrokerageSyncActivityDto providerProjection,
+        FundAccountBrokeragePositionDto position,
+        WorkstationSecurityReference security,
+        List<ProviderLedgerReconciliationCheckDto> checks,
+        List<ProviderLedgerReconciliationBreakDto> breaks,
+        List<ProviderSecurityMasterPassportDto> securityMasterPassports,
+        string checkId,
+        string symbol,
+        DateTimeOffset observedAt,
+        int providerStaleAfterMinutes,
+        IReadOnlyList<string> overrideHistory)
+    {
+        if (security.Status == SecurityStatusDto.Active)
+        {
+            return false;
+        }
+
+        var reason = $"Security Master reference for provider position '{symbol}' is {security.Status}; active approved Security Master status is required for ledger posting and close readiness.";
+        securityMasterPassports.Add(BuildSecurityMasterPassport(
+            providerProjection,
+            position,
+            security,
+            validation: null,
+            status: ProviderSecurityMasterPassportStatusDto.Blocked,
+            confidenceScore: 0m,
+            resolutionSource: "security-master-status",
+            reason: reason,
+            observedAt: observedAt,
+            providerStaleAfterMinutes: providerStaleAfterMinutes,
+            overrideHistory: overrideHistory));
+
+        AddBreak(
+            runId,
+            lifecycle,
+            checks,
+            breaks,
+            checkId,
+            $"Security Master identity for {symbol}",
+            ProviderLedgerReconciliationCheckStatusDto.Blocked,
+            "SM_SECURITY_NOT_ACTIVE",
+            ReconciliationBreakCategory.ClassificationGap,
+            ReconciliationBreakSeverity.Critical,
+            "active-security-master",
+            "provider-sync",
+            null,
+            null,
+            reason,
+            symbol,
+            "/workstation/data/security-master");
+        return true;
     }
 
     private static string BuildProviderCapabilityBlockReason(

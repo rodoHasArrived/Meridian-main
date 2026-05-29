@@ -57,7 +57,9 @@ impact for trades, dividends, fees, accruals, corporate actions, and broker-reco
 It emits balanced expected-journal candidates, trial-balance deltas, ledger-impact flags, and
 reconciliation expectations through `/api/fund-structure/accounting/transaction-lab/preview`, so
 browser and WPF clients can consume the same accounting lab contract instead of rebuilding
-accounting rules locally.
+accounting rules locally. Requests can opt into explicit Books Before Broker mode to receive
+broker-staging readiness, evidence/source blockers, required accounting and broker-routing
+approvals, and the expected broker action before any paper/live movement is staged.
 Report-pack workflow state is shared here as well: the W4 path moves `Draft` packs to `InReview`
 through submission, then to `Approved`, and finally to `Published`; publication requires sign-off,
 evidence hash, retained manifest metadata, and retained evidence links for every report-line
@@ -100,16 +102,27 @@ rows.
 Evidence packet validation also owns the shared SLA/freshness policy and Meridian Assurance Score
 calculation for provider validation, replay, reconciliation, approval, and reporting evidence so
 client surfaces consume the same readiness posture instead of recalculating it locally.
+The workflow-summary endpoint also projects a cross-workflow Meridian Assurance Score from the
+shared workspace postures, giving browser and WPF shells the same readiness indicator for Trading,
+Portfolio, Accounting, Reporting, Strategy, Data, and Settings instead of client-local scoring.
 The file-backed Evidence Vault now stores more than manifest retention: retained local artifact
 refs with file paths are copied into a vault bundle with content hash, size, source route, and
 canonical subject metadata, while route-only artifacts stay as manifest references. The vault write
-boundary rejects retained payloads that omit canonical subject linkage or use unsupported subject
-kinds, so copied statement/report/approval/screenshot artifacts cannot become orphan evidence. This keeps
+boundary rejects every retained artifact reference, copied or route-only, that omits canonical
+subject linkage, lacks an addressable path/route, or uses unsupported subject kinds, so retained
+statement/report/approval/screenshot artifacts cannot become orphan evidence. This keeps
 packet/report/statement/screenshot/approval evidence retention server-owned instead of
 client-local.
+Retained vault bundles are also first-class Evidence Workbench subjects through the
+`evidence-vault` subject kind: the shared contributor projects the retained manifest and each
+copied artifact into the same packet graph, preserving hashes, source routes, and canonical subject
+linkage for browser/WPF parity.
 The shared Audit Trail Explorer service projects retained execution, promotion, order, control, and
 Operations Continuity close/reconciliation/approval timeline records into contract-owned timeline rows and exposes `/api/execution/audit/search` with
 server-side text, run, actor, symbol, action, outcome, correlation, time-window, and limit filters.
+Manual override audit rows resolve to operator-action objects keyed by `overrideId`, while circuit
+breaker rows resolve to execution-control objects with direct control routes, so operations review
+can distinguish who staged a live override from who opened or closed a trading halt.
 Use that shared service for browser and WPF audit search rather than client-local timeline
 normalization.
 The Security Master workstation workbench also exposes a shared Instrument Passport at
@@ -236,6 +249,10 @@ controller-facing readiness score used by workflow detail and close calendar pay
 provider freshness, Security Master completeness, ledger posting, reconciliation-break,
 report-pack, and approval blockers server-owned so browser and WPF clients do not recalculate close
 status.
+`/api/ledger/periods/{periodId}/trial-balance` and `/api/ledger/periods/{periodId}/pnl-summary`
+expose closed-period ledger reports from the shared ledger book service. They keep trial balance,
+revenue, expense, net income, prior-period variance, open-break count, and signoff posture
+server-derived for browser and WPF accounting surfaces.
 Closed Operations Continuity workflow detail payloads include the governed close-package
 publication manifest metadata produced by the close command: signer, sign-off rationale, retained
 manifest id/route, evidence hash, report pack id, linked evidence, and checklist approvals.
@@ -253,6 +270,25 @@ because the aggregate provider-ledger checks matched.
 When provider-routing capability metadata is registered, the reconciliation service blocks runs
 that cannot route account balances, account positions, or reconciliation-feed capability for the
 fund account, so unsupported providers fail as accounting break evidence before ledger comparison.
+The account close-readiness provider-data component now consumes those retained capability checks:
+required capability misses block close readiness, while degraded quote-history,
+corporate-action, factor-schedule, or asset-class capability checks require controller review.
+Held-security Security Master exception cases also feed the close-readiness Security Master
+component, so unresolved conflicts, stale mappings, or pending override approvals cannot hide
+behind a green provider-ledger comparison.
+Ledger amount provenance drilldowns now preserve related reconciliation case materiality and aging
+metadata, including severity, variance, tolerance band, sign-off actors, SLA state, age band, and
+business-age hours, so report-line click-throughs can show whether a retained amount is still
+inside controller-owned break review.
+The Security Master link in the same drilldown now carries the retained display label, source
+system, and evidence id from the report-pack lineage pointer alongside the durable Security Master
+id, so report-line consumers can show the exact definition evidence used for the amount.
+Provider-ledger Security Master casework now retains provider-to-Security Master passport context
+directly on the durable case: passport status, resolution source, confidence, freshness, provider
+staleness, validation issue codes, identifier conflicts, and override-history count.
+Resolved provider positions must also point to an active Security Master record; inactive
+definitions are retained on the passport but block the Security Master reconciliation check and
+close-readiness component instead of being treated as approved ledger-posting evidence.
 Positioned accounts also require corporate-action capability as a valuation-readiness signal; if
 that capability is unavailable, reconciliation can still run but records a degradation break for
 controller review. Provider-ledger runs also check account-position and historical-quote routing

@@ -26,6 +26,10 @@ public interface IEvidenceArtifactStore
         string vaultId,
         CancellationToken ct = default);
 
+    Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
+        string vaultId,
+        CancellationToken ct = default);
+
     Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
         EvidenceVaultLookupRequestDto request,
         CancellationToken ct = default);
@@ -112,6 +116,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             VaultIdentity: null,
             Lifecycle: request.Lifecycle,
             Linkage: request.Linkage);
+        ValidateRetainedArtifactReferences(packet);
         var retainedExportJson = JsonSerializer.Serialize(manifest, _jsonOptions);
         var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(retainedExportJson))).ToLowerInvariant();
         var vaultId = $"ev-{contentHash[..24]}";
@@ -173,6 +178,23 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        var identity = await TryGetVaultIdentityAsync(vaultId, ct).ConfigureAwait(false);
+        var manifestPath = identity is null
+            ? null
+            : ResolveVaultManifestPath(identity, identity.VaultId);
+        if (manifestPath is null)
+        {
+            return null;
+        }
+
+        return OpenManifestFile(manifestPath);
+    }
+
+    public async Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
+        string vaultId,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
         var safeVaultId = ValidateVaultId(vaultId);
         if (safeVaultId is null)
         {
@@ -180,16 +202,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
 
         var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
-        var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
-        var manifestPath = identity is null
-            ? null
-            : ResolveVaultManifestPath(identity, safeVaultId);
-        if (manifestPath is null)
-        {
-            return null;
-        }
-
-        return OpenManifestFile(manifestPath);
+        return await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
     }
 
     public static string ResolveDataRoot(IServiceProvider services)
@@ -543,6 +556,24 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         return copied
             .OrderBy(static artifact => artifact.RelativePath, StringComparer.Ordinal)
             .ToArray();
+    }
+
+    private static void ValidateRetainedArtifactReferences(EvidencePacketDto packet)
+    {
+        foreach (var artifact in packet.Nodes.SelectMany(static node => node.ArtifactRefs))
+        {
+            if (!artifact.Retained)
+            {
+                continue;
+            }
+
+            ValidateRetainedArtifactLinkage(artifact);
+            if (string.IsNullOrWhiteSpace(artifact.Path) && string.IsNullOrWhiteSpace(artifact.Route))
+            {
+                throw new InvalidOperationException(
+                    $"Retained artifact '{artifact.ArtifactId}' must have a source path or route.");
+            }
+        }
     }
 
     private static void ValidateRetainedArtifactLinkage(EvidenceArtifactRefDto artifact)

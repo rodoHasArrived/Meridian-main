@@ -197,6 +197,11 @@ public sealed class AuditTrailExplorerService
             return AuditTrailObjectKindDto.Order.ToString();
         }
 
+        if (entry.Action.Contains("ManualOverride", StringComparison.OrdinalIgnoreCase))
+        {
+            return AuditTrailObjectKindDto.OperatorAction.ToString();
+        }
+
         if (entry.Category.Contains("Control", StringComparison.OrdinalIgnoreCase) ||
             entry.Action.Contains("CircuitBreaker", StringComparison.OrdinalIgnoreCase) ||
             entry.Action.Contains("Override", StringComparison.OrdinalIgnoreCase))
@@ -214,6 +219,7 @@ public sealed class AuditTrailExplorerService
 
     private static string ResolveExecutionObjectId(ExecutionAuditEntry entry)
         => FirstNonBlank(
+            GetMetadata(entry, "overrideId"),
             entry.OrderId,
             entry.CorrelationId,
             entry.RunId,
@@ -226,7 +232,10 @@ public sealed class AuditTrailExplorerService
                 entry.RunId,
                 entry.OrderId,
                 entry.CorrelationId,
-                entry.Symbol
+                entry.Symbol,
+                GetMetadata(entry, "overrideId"),
+                GetMetadata(entry, "kind"),
+                GetMetadata(entry, "strategyId")
             }
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Select(value => value!.Trim())
@@ -285,11 +294,28 @@ public sealed class AuditTrailExplorerService
 
     private static string BuildEvidenceRoute(ExecutionAuditEntry entry)
     {
+        var overrideId = GetMetadata(entry, "overrideId");
+        if (!string.IsNullOrWhiteSpace(overrideId) &&
+            entry.Action.Contains("ManualOverride", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"/api/execution/controls/manual-overrides/{Uri.EscapeDataString(overrideId)}/clear";
+        }
+
+        if (entry.Action.Contains("CircuitBreaker", StringComparison.OrdinalIgnoreCase))
+        {
+            return "/api/execution/controls/circuit-breaker";
+        }
+
         var query = FirstNonBlank(entry.CorrelationId, entry.AuditId);
         return string.IsNullOrWhiteSpace(query)
             ? "/api/execution/audit/search"
             : $"/api/execution/audit/search?searchText={Uri.EscapeDataString(query)}";
     }
+
+    private static string? GetMetadata(ExecutionAuditEntry entry, string key)
+        => entry.Metadata is not null && entry.Metadata.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value.Trim()
+            : null;
 
     private static string? FirstNonBlank(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();

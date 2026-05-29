@@ -44,6 +44,7 @@ public sealed class LedgerAmountProvenanceServiceTests
                 LastUpdatedAt: snapshot.GeneratedAt.AddMinutes(-5),
                 Severity: ReconciliationBreakSeverity.High,
                 ExceptionRoute: "accounting/reconciliation/provider-ledger",
+                ToleranceBand: 0.01m,
                 RequiredSignoffRole: "Fund accounting",
                 SignoffStatus: "pending-signoff",
                 FundAccountId: "fund-ops",
@@ -82,6 +83,9 @@ public sealed class LedgerAmountProvenanceServiceTests
             runLink.IsLineScoped.Should().BeFalse();
             detail.SecurityMaster.Should().NotBeNull();
             detail.SecurityMaster!.Symbol.Should().Be("AAPL");
+            detail.SecurityMaster.DisplayName.Should().Be("AAPL");
+            detail.SecurityMaster.SourceSystem.Should().Be("security-master");
+            detail.SecurityMaster.EvidenceId.Should().Be("AAPL");
             detail.SecurityMaster.RelatedEvidenceIds.Should().Contain("journal-entry-1");
             detail.Reconciliation.ReconciliationRunCount.Should().Be(2);
             detail.Reconciliation.OpenBreakCount.Should().Be(1);
@@ -98,6 +102,14 @@ public sealed class LedgerAmountProvenanceServiceTests
             relatedCase.SignoffStatus.Should().Be("pending-signoff");
             relatedCase.ExceptionRoute.Should().Be("accounting/reconciliation/provider-ledger");
             relatedCase.RecommendedAction.Should().Be("Review provider-ledger variance and sign off.");
+            relatedCase.Severity.Should().Be(nameof(ReconciliationBreakSeverity.High));
+            relatedCase.Variance.Should().Be(25m);
+            relatedCase.ToleranceBand.Should().Be(0.01m);
+            relatedCase.SlaPolicyId.Should().NotBeNullOrWhiteSpace();
+            relatedCase.SlaPolicyId!.StartsWith("default-high", StringComparison.OrdinalIgnoreCase).Should().BeTrue();
+            relatedCase.SlaDueAt.Should().NotBeNull();
+            relatedCase.AgeBand.Should().NotBeNullOrWhiteSpace();
+            relatedCase.BusinessAgeHours.Should().BeGreaterThanOrEqualTo(0);
             detail.Evidence.Should().Contain(item =>
                 item.EvidenceType == "provider-event" &&
                 item.EvidenceId == "alpaca|PA-LEDGER|provider-position-aapl" &&

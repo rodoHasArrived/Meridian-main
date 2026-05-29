@@ -77,6 +77,80 @@ public sealed class AuditTrailExplorerServiceTests
     }
 
     [Fact]
+    public async Task SearchAsync_ProjectsManualOverridesAsOperatorActionsKeyedByOverrideId()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var auditTrail = CreateAuditTrail(root);
+            await auditTrail.RecordAsync(new ExecutionAuditEntry(
+                AuditId: "audit-override",
+                Category: "Control",
+                Action: "ManualOverrideCreated",
+                Outcome: "Completed",
+                OccurredAt: DateTimeOffset.Parse("2026-05-28T15:15:00Z"),
+                Actor: "ops",
+                RunId: "run-live",
+                Symbol: "AAPL",
+                CorrelationId: "corr-override",
+                Message: "Risk review completed",
+                Metadata: new Dictionary<string, string>
+                {
+                    ["overrideId"] = "ovr-live-1",
+                    ["kind"] = "AllowLivePromotion",
+                    ["strategyId"] = "strategy-alpha",
+                    ["runId"] = "run-live"
+                }));
+
+            var service = new AuditTrailExplorerService(auditTrail);
+
+            var result = await service.SearchAsync(new AuditTrailExplorerQueryDto(SearchText: "ovr-live-1"));
+
+            var entry = result.Entries.Should().ContainSingle().Which;
+            entry.ObjectKind.Should().Be("OperatorAction");
+            entry.ObjectId.Should().Be("ovr-live-1");
+            entry.RelatedObjectIds.Should().Contain(["run-live", "corr-override", "AAPL", "AllowLivePromotion", "strategy-alpha"]);
+            entry.EvidenceRoute.Should().Be("/api/execution/controls/manual-overrides/ovr-live-1/clear");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task SearchAsync_ProjectsCircuitBreakersAsExecutionControlsWithControlRoute()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var auditTrail = CreateAuditTrail(root);
+            await auditTrail.RecordAsync(new ExecutionAuditEntry(
+                AuditId: "audit-circuit-breaker",
+                Category: "Control",
+                Action: "CircuitBreakerOpened",
+                Outcome: "Completed",
+                OccurredAt: DateTimeOffset.Parse("2026-05-28T15:20:00Z"),
+                Actor: "ops",
+                CorrelationId: "corr-circuit",
+                Message: "Operator halt"));
+
+            var service = new AuditTrailExplorerService(auditTrail);
+
+            var result = await service.SearchAsync(new AuditTrailExplorerQueryDto(SearchText: "circuit"));
+
+            var entry = result.Entries.Should().ContainSingle().Which;
+            entry.ObjectKind.Should().Be("ExecutionControl");
+            entry.ObjectId.Should().Be("corr-circuit");
+            entry.EvidenceRoute.Should().Be("/api/execution/controls/circuit-breaker");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task SearchAsync_FiltersByTextMetadataAndLimit()
     {
         var root = CreateTempRoot();

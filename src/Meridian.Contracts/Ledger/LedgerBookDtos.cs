@@ -207,6 +207,25 @@ public sealed record LedgerPeriodSummaryDto(
     string AccountingPolicyId = "legacy-v1",
     string AccountingPolicyVersion = "legacy-v1");
 
+public sealed record LedgerPeriodPnlSummaryDto(
+    Guid PeriodId,
+    Guid LedgerBookId,
+    int FiscalYear,
+    int PeriodNo,
+    string Label,
+    decimal TotalRevenue,
+    decimal TotalExpenses,
+    decimal NetIncome,
+    decimal? PeriodOnPeriodVariance,
+    int OpenBreakCount,
+    LedgerPeriodSignoffStatusDto SignoffStatus,
+    DateTimeOffset CompletedAt,
+    IReadOnlyList<LedgerPeriodTrialBalanceLineDto> RevenueLines,
+    IReadOnlyList<LedgerPeriodTrialBalanceLineDto> ExpenseLines,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1");
+
 public sealed record LedgerPeriodCloseResultDto(
     LedgerPeriodDto Period,
     LedgerPeriodSummaryDto Summary,

@@ -246,6 +246,20 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_InstrumentEntry_RequiresLineSymbolForSecurityMasterLineage()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            instrumentLineSymbol: null);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without an instrument symbol for Security Master lineage*");
+    }
+
+    [Fact]
     public void LedgerJournalMigration_DefinesJournalTablesAndLineageColumns()
     {
         var sql = ReadMigration("V_ledger_001__journal_entries.sql");
@@ -360,7 +374,8 @@ public sealed class LedgerJournalStoreTests
         Guid periodId,
         bool includeSecurityMasterProvenance = true,
         bool includeApprovalEvidence = true,
-        bool includeLedgerMapping = true)
+        bool includeLedgerMapping = true,
+        string? instrumentLineSymbol = "AAPL")
     {
         var journalEntryId = Guid.NewGuid();
         var occurredAt = DateTimeOffset.Parse("2026-01-31T21:00:00Z");
@@ -391,7 +406,7 @@ public sealed class LedgerJournalStoreTests
                         Guid.NewGuid(),
                         journalEntryId,
                         occurredAt,
-                        new LedgerAccount("Securities", LedgerAccountType.Asset, symbol),
+                        new LedgerAccount("Securities", LedgerAccountType.Asset, instrumentLineSymbol),
                         debit: 100m,
                         credit: 0m,
                         description),

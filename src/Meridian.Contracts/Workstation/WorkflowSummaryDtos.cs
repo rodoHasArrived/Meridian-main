@@ -8,7 +8,11 @@ public sealed record OperatorWorkflowHomeSummary(
     bool HasOperatingContext,
     string OperatingContextLabel,
     string FundDisplayName,
-    IReadOnlyList<WorkspaceWorkflowSummary> Workspaces);
+    IReadOnlyList<WorkspaceWorkflowSummary> Workspaces)
+{
+    public MeridianAssuranceScoreDto AssuranceScore { get; init; } =
+        new(100, EvidenceStatusDto.Ready, [], []);
+}
 
 /// <summary>
 /// Workflow posture for one top-level workstation workspace.

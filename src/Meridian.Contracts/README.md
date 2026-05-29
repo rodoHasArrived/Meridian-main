@@ -78,7 +78,9 @@ dividends, fees, accruals, corporate actions, and broker-reconciliation examples
 reuse the balanced expected-journal preview contract and add trial-balance impact,
 reconciliation expectation, source run/session, statement/case, and evidence ids so browser, WPF,
 and endpoint services can reason about Books Before Broker accounting impact without client-local
-accounting rules.
+accounting rules. Requests can now opt into `BooksBeforeBroker` preview mode, which returns
+server-owned broker-staging readiness, required approvals, blockers, evidence ids, and expected
+broker action before any paper/live movement is routed.
 
 Auth contracts include the role and permission catalog plus custom role-profile upsert payloads.
 Keep role-profile requests, result envelopes, and audit-event metadata in contracts so browser,
@@ -108,7 +110,9 @@ Audit Trail Explorer contracts live under `Workstation/AuditTrailExplorerDtos.cs
 retained audit records into cross-object timeline rows with object kind, object id, actor,
 correlation, related-object ids, metadata, and evidence routes. Keep these query and result
 payloads contract-owned so browser and WPF clients search the same audit vocabulary instead of
-inventing client-local timelines.
+inventing client-local timelines. Manual override rows now use `OperatorAction` object kind keyed
+by override id, and circuit breaker rows use `ExecutionControl` object kind with control-route
+evidence links for operations review.
 
 Instrument Passport contracts are attached to the shared Security Master workstation trust
 workbench payloads. `InstrumentPassportDto` carries identifier and provider mappings, lifecycle
@@ -184,19 +188,25 @@ passports to open global Security Master casework for the same held securities, 
 identifier-conflict or operator-override cases remain visible in the controller score.
 
 Report-line provenance payloads live with the fund-operations workstation contracts.
+Ledger period reporting DTOs expose closed-period trial-balance rows and P&L summary totals with
+accounting-basis, policy, prior-period variance, open-break count, and signoff posture so clients
+can render period close reports without recomputing ledger semantics locally.
 `LedgerAmountProvenanceDetailDto` is the shared click-through contract for a retained report-pack
 ledger amount: it carries the ledger amount, provider/source evidence pointers, Security Master
 link, reconciliation run and case state, compact related-case owner/status/sign-off routing,
 approval state, and report usage so browser and WPF clients do not reconstruct audit lineage from
 report-pack internals. The Security Master link can now retain a durable `SecurityId`; the shared
-service uses retained security evidence ids to attach open Security Master exception cases to the
-same report-line drilldown. Provider-event evidence can be direct report lineage or synthesized from
+service also carries the retained Security Master display label, source system, and evidence id from
+the report lineage pointer, then uses retained security evidence ids to attach open Security Master
+exception cases to the same report-line drilldown. Provider-event evidence can be direct report lineage or synthesized from
 related provider-ledger casework that retains provider sync cursors and routes. Provider-event
 evidence also carries optional provider event id/type, provider evidence source, required feed, and
 Security Master id metadata when the source case came from provider-ledger corporate-action or
 factor evidence. Provider-ledger corporate-action/factor casework also enriches the evidence row with ledger-effect kind,
 principal/income amount, and journal-preview line count so report-line provenance can show valuation
-or journal support without reconstructing provider-ledger detail payloads.
+or journal support without reconstructing provider-ledger detail payloads. Related reconciliation
+case rows also retain materiality and aging context: severity, variance, tolerance band, reviewer and
+resolver fields, sign-off count, SLA policy/due-state, age band, and business-age hours.
 
 Statement reconciliation payloads live under `Workstation/StatementReconciliationDtos.cs` and keep
 source-file evidence, mapping/tolerance profile versions, normalized positions, cash, transactions,

@@ -110,6 +110,23 @@ public sealed class EvidenceTemplateRegistry
                 "report-pack"
             ],
             NoOrphanRule: true,
+            ExportSettings: ManifestOnlyV1),
+
+        new EvidenceTemplateDto(
+            WorkflowId: "retained-vault-artifact-review",
+            RequiredEvidenceKinds:
+            [
+                "evidence-vault-manifest",
+                "retained-vault-artifact"
+            ],
+            OptionalEvidenceKinds:
+            [
+                "report-pack",
+                "approval",
+                "reconciliation-run",
+                "security-master-conflict"
+            ],
+            NoOrphanRule: true,
             ExportSettings: ManifestOnlyV1)
     ];
 

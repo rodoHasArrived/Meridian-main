@@ -51,7 +51,8 @@ public sealed class InvestmentAccountingTransactionLabService
             BuildReconciliationExpectation(request, evidenceIds),
             evidenceIds,
             NormalizeNullable(request.SourceRunId),
-            NormalizeNullable(request.SourceSessionId));
+            NormalizeNullable(request.SourceSessionId),
+            BuildBooksBeforeBrokerReadiness(request, evidenceIds, isBalanced));
     }
 
     private static decimal ResolveAmount(InvestmentAccountingTransactionLabRequestDto request)
@@ -165,6 +166,82 @@ public sealed class InvestmentAccountingTransactionLabService
             evidenceIds,
             NormalizeNullable(request.BrokerStatementId),
             NormalizeNullable(request.ReconciliationCaseId));
+    }
+
+    private static BooksBeforeBrokerReadinessDto? BuildBooksBeforeBrokerReadiness(
+        InvestmentAccountingTransactionLabRequestDto request,
+        IReadOnlyList<string> evidenceIds,
+        bool isBalanced)
+    {
+        if (request.PreviewMode != InvestmentAccountingPreviewModeDto.BooksBeforeBroker)
+        {
+            return null;
+        }
+
+        var blockers = new List<string>();
+        if (!isBalanced)
+        {
+            blockers.Add("journal-not-balanced");
+        }
+
+        if (evidenceIds.Count == 0)
+        {
+            blockers.Add("evidence-required-before-broker-staging");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.SourceRunId) && string.IsNullOrWhiteSpace(request.SourceSessionId))
+        {
+            blockers.Add("source-run-or-session-required");
+        }
+
+        if (request.Kind == InvestmentAccountingTransactionKindDto.Trade &&
+            (request.Quantity <= 0m || request.Price <= 0m || request.Side is null))
+        {
+            blockers.Add("trade-order-terms-required");
+        }
+
+        var requiredApprovals = request.Kind == InvestmentAccountingTransactionKindDto.Trade
+            ? new[] { "operator-accounting-approval", "broker-routing-approval" }
+            : ["operator-accounting-approval"];
+
+        return new BooksBeforeBrokerReadinessDto(
+            IsBooksBeforeBrokerMode: true,
+            CanStageBrokerAction: blockers.Count == 0,
+            ExpectedBrokerAction: ResolveExpectedBrokerAction(request),
+            BrokerInstructionSummary: BuildBrokerInstructionSummary(request, blockers),
+            RequiredApprovals: requiredApprovals,
+            Blockers: blockers,
+            EvidenceIds: evidenceIds);
+    }
+
+    private static string ResolveExpectedBrokerAction(InvestmentAccountingTransactionLabRequestDto request)
+        => request.Kind switch
+        {
+            InvestmentAccountingTransactionKindDto.Trade => request.Side switch
+            {
+                InvestmentAccountingTradeSideDto.Buy => "StageBuyOrder",
+                InvestmentAccountingTradeSideDto.Sell => "StageSellOrder",
+                _ => "TradeTermsRequired"
+            },
+            InvestmentAccountingTransactionKindDto.BrokerReconciliation => "NoBrokerOrder-ReconciliationCase",
+            _ => "NoBrokerOrder-AccountingOnly"
+        };
+
+    private static string BuildBrokerInstructionSummary(
+        InvestmentAccountingTransactionLabRequestDto request,
+        IReadOnlyList<string> blockers)
+    {
+        if (blockers.Count > 0)
+        {
+            return $"Books Before Broker preview is blocked by {string.Join(", ", blockers)}.";
+        }
+
+        if (request.Kind == InvestmentAccountingTransactionKindDto.Trade)
+        {
+            return $"{request.Side} {request.Quantity} {request.Symbol.Trim().ToUpperInvariant()} can be staged only after the previewed books, evidence, and approvals are accepted.";
+        }
+
+        return "Accounting impact is ready for approval; no broker order should be staged for this preview.";
     }
 
     private static IReadOnlyList<string> BuildValidationFlags(bool isBalanced, IReadOnlyList<string> evidenceIds)

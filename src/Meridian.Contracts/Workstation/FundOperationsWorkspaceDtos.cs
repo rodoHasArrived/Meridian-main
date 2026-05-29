@@ -252,7 +252,10 @@ public sealed record LedgerAmountSecurityMasterLinkDto(
     IReadOnlyList<string> RelatedEvidenceIds,
     int EvidenceCount,
     DateTimeOffset? CapturedAt = null,
-    Guid? SecurityId = null);
+    Guid? SecurityId = null,
+    string? DisplayName = null,
+    string? SourceSystem = null,
+    string? EvidenceId = null);
 
 public sealed record LedgerAmountReconciliationCaseDto(
     string CaseId,
@@ -265,7 +268,22 @@ public sealed record LedgerAmountReconciliationCaseDto(
     string? ExceptionRoute,
     string? RecommendedAction,
     DateTimeOffset DetectedAt,
-    DateTimeOffset LastUpdatedAt);
+    DateTimeOffset LastUpdatedAt,
+    string? Severity = null,
+    decimal Variance = 0m,
+    decimal? ToleranceBand = null,
+    string? ReviewedBy = null,
+    DateTimeOffset? ReviewedAt = null,
+    string? ResolvedBy = null,
+    DateTimeOffset? ResolvedAt = null,
+    string? ResolutionNote = null,
+    int SignoffCount = 0,
+    string? SlaPolicyId = null,
+    DateTimeOffset? SlaDueAt = null,
+    bool SlaBreached = false,
+    ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack,
+    string? AgeBand = null,
+    double BusinessAgeHours = 0);
 
 public sealed record LedgerAmountReconciliationStateDto(
     int ReconciliationRunCount,

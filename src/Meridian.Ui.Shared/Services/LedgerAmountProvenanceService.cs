@@ -112,7 +112,10 @@ public sealed class LedgerAmountProvenanceService
                     securityPointer.RelatedEvidenceIds ?? [],
                     securityPointer.EvidenceCount ?? securityPointer.RelatedEvidenceIds?.Count ?? 0,
                     securityPointer.CapturedAt,
-                    securityId),
+                    securityId,
+                    securityPointer.DisplayLabel,
+                    securityPointer.SourceSystem,
+                    securityPointer.EvidenceId),
             Reconciliation: new LedgerAmountReconciliationStateDto(
                 snapshot.Provenance.ReconciliationRunCount,
                 snapshot.Provenance.OpenReconciliationBreakCount,
@@ -176,7 +179,22 @@ public sealed class LedgerAmountProvenanceService
             item.ExceptionRoute,
             item.RecommendedAction,
             item.DetectedAt,
-            item.LastUpdatedAt);
+            item.LastUpdatedAt,
+            item.Severity.ToString(),
+            item.Variance,
+            item.ToleranceBand,
+            item.ReviewedBy,
+            item.ReviewedAt,
+            item.ResolvedBy,
+            item.ResolvedAt,
+            item.ResolutionNote,
+            item.SignoffHistory?.Count ?? 0,
+            item.SlaPolicyId,
+            item.SlaDueAt,
+            item.SlaBreached,
+            item.SlaState,
+            item.AgeBand,
+            item.BusinessAgeHours);
 
     private static LedgerAmountProvenanceEvidenceDto ToEvidence(FundReportPackLineagePointerDto pointer)
         => new(

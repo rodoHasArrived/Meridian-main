@@ -34,39 +34,28 @@ public sealed class ReconciliationApiService(
         var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash)
             ? await ComputeSourceFileHashAsync(request.SourcePath, ct).ConfigureAwait(false)
             : request.SourceFileHash.Trim().ToUpperInvariant();
-        var importId = StatementDuplicateKey.Create(
-            request.FundAccountId,
-            request.StatementPeriodStart,
-            request.StatementPeriodEnd,
-            sourceFileHash);
+        var statementService = new CsvBrokerStatementService(importStore);
+        var imported = await statementService.ImportAsync(ToImportRequest(request, sourceFileHash), ct).ConfigureAwait(false);
+        var matcher = new StatementMatchingService();
+        var outcomes = matcher.MatchRows(imported.Rows);
+        var breaks = matcher
+            .BuildBreakRecords(imported.Import.ImportId, imported.Import.ImportId, imported.Rows, outcomes)
+            .Select(static item => item with
+            {
+                EvidenceLink = $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(item.ImportId)}#row-{Uri.EscapeDataString(item.SourceReference)}"
+            })
+            .ToArray();
+        await breakStore.WriteAsync(breaks, ct).ConfigureAwait(false);
 
-        var import = new CanonicalStatementImport(
-            importId,
-            request.Broker.Trim(),
-            request.StatementPeriodEnd,
-            DateTimeOffset.UtcNow,
-            request.SourcePath.Trim(),
-            sourceFileHash,
-            RawRowCount: 0,
-            NormalizedRowCount: 0)
+        var cases = BuildStatementCases(imported.Import, imported.Rows, outcomes, breaks, request.ImportedBy);
+        foreach (var reconciliationCase in cases)
         {
-            SourceInstitution = request.SourceInstitution.Trim(),
-            FundAccountId = request.FundAccountId.Trim(),
-            ExternalAccountId = request.ExternalAccountId.Trim(),
-            StatementPeriodStart = request.StatementPeriodStart,
-            StatementPeriodEnd = request.StatementPeriodEnd,
-            OriginalFileName = string.IsNullOrWhiteSpace(request.OriginalFileName)
-                ? Path.GetFileName(request.SourcePath)
-                : request.OriginalFileName.Trim(),
-            MappingProfileId = request.MappingProfileId.Trim(),
-            ToleranceProfileId = request.ToleranceProfileId.Trim(),
-            ImportedBy = request.ImportedBy.Trim(),
-            SourceFileHash = sourceFileHash,
-            DuplicateKey = importId
-        };
+            await caseStore.SaveAsync(reconciliationCase, ct).ConfigureAwait(false);
+        }
 
-        await importStore.SaveImportAsync(import, [], ct).ConfigureAwait(false);
-        return ToRunDto(import, [], StatementRunStatus.Completed, request.Notes);
+        var breakDtos = breaks.Select(ToRunBreakDto).ToArray();
+        var status = breakDtos.Length == 0 ? StatementRunStatus.Completed : StatementRunStatus.ReviewRequired;
+        return ToRunDto(imported.Import, breakDtos, status, request.Notes, cases);
     }
 
     public async Task<StatementRunDto?> GetStatementRunAsync(string runId, CancellationToken ct = default)
@@ -78,12 +67,14 @@ public sealed class ReconciliationApiService(
         }
 
         var breaks = await ListBreakDtosAsync(import.ImportId, ct).ConfigureAwait(false);
+        var cases = await ListCasesForImportAsync(import.ImportId, ct).ConfigureAwait(false);
         return ToRunDto(
             import,
             breaks,
             breaks.Any(static item => string.Equals(item.Status, "Open", StringComparison.OrdinalIgnoreCase))
                 ? StatementRunStatus.ReviewRequired
-                : StatementRunStatus.Completed);
+                : StatementRunStatus.Completed,
+            cases: cases);
     }
 
     public async Task<StatementRunValidationDto?> GetStatementRunValidationAsync(string runId, CancellationToken ct = default)
@@ -113,7 +104,8 @@ public sealed class ReconciliationApiService(
         }
 
         var breaks = await ListBreakDtosAsync(import.ImportId, ct).ConfigureAwait(false);
-        return ToRunDto(import, breaks, breaks.Count == 0 ? StatementRunStatus.Completed : StatementRunStatus.ReviewRequired);
+        var cases = await ListCasesForImportAsync(import.ImportId, ct).ConfigureAwait(false);
+        return ToRunDto(import, breaks, breaks.Count == 0 ? StatementRunStatus.Completed : StatementRunStatus.ReviewRequired, cases: cases);
     }
 
     public async Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(CancellationToken ct = default)
@@ -216,25 +208,15 @@ public sealed class ReconciliationApiService(
         => (await breakStore.ListOpenAsync(ct).ConfigureAwait(false))
             .Where(item => string.Equals(item.RunId, runId, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(item.ImportId, runId, StringComparison.OrdinalIgnoreCase))
-            .Select(static item => new StatementRunBreakDto(
-                item.BreakId,
-                item.RunId,
-                item.ImportId,
-                item.SourceReference,
-                MapBreakType(item.BreakCode),
-                item.Category,
-                item.Delta,
-                item.Tolerance,
-                item.ToleranceBreached,
-                item.CreatedAtUtc,
-                item.Status))
+            .Select(ToRunBreakDto)
             .ToList();
 
     private static StatementRunDto ToRunDto(
         CanonicalStatementImport import,
         IReadOnlyList<StatementRunBreakDto> breaks,
         StatementRunStatus status,
-        string? notes = null)
+        string? notes = null,
+        IReadOnlyList<ReconciliationCase>? cases = null)
     {
         var source = new StatementSourceDto(
             SourceId: import.ImportId,
@@ -291,12 +273,174 @@ public sealed class ReconciliationApiService(
                 null,
                 item.CreatedAtUtc,
                 item.Status)).ToList(),
-            Cases: [],
+            Cases: cases?.Select(ToStatementCaseDto).ToList() ?? [],
             ImportId: import.ImportId,
             FundProfileId: import.FundAccountId,
             FundAccountId: Guid.TryParse(import.FundAccountId, out var accountId) ? accountId : null,
             Notes: notes);
     }
+
+    private async Task<IReadOnlyList<ReconciliationCase>> ListCasesForImportAsync(string importId, CancellationToken ct)
+        => (await caseStore.ListAsync(ct).ConfigureAwait(false))
+            .Where(item => string.Equals(item.ImportId, importId, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+    private static BrokerStatementImportRequest ToImportRequest(StatementRunCreateDto request, string sourceFileHash)
+        => new(
+            request.Broker.Trim(),
+            request.SourceInstitution.Trim(),
+            request.FundAccountId.Trim(),
+            request.ExternalAccountId.Trim(),
+            request.StatementPeriodStart,
+            request.StatementPeriodEnd,
+            request.SourcePath.Trim(),
+            string.IsNullOrWhiteSpace(request.OriginalFileName) ? Path.GetFileName(request.SourcePath) : request.OriginalFileName.Trim(),
+            request.MappingProfileId.Trim(),
+            request.ToleranceProfileId.Trim(),
+            request.ImportedBy.Trim(),
+            sourceFileHash);
+
+    private static StatementRunBreakDto ToRunBreakDto(ReconciliationBreakRecord item)
+        => new(
+            item.BreakId,
+            item.RunId,
+            item.ImportId,
+            item.SourceReference,
+            MapBreakType(item.BreakCode),
+            item.Category,
+            item.Delta,
+            item.Tolerance,
+            item.ToleranceBreached,
+            item.CreatedAtUtc,
+            item.Status);
+
+    private static IReadOnlyList<ReconciliationCase> BuildStatementCases(
+        CanonicalStatementImport import,
+        IReadOnlyList<CanonicalStatementRow> rows,
+        IReadOnlyList<MatchOutcome> outcomes,
+        IReadOnlyList<ReconciliationBreakRecord> breaks,
+        string actor)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var rowByReference = rows.ToDictionary(
+            row => $"{import.ImportId}:{row.SourceRowNumber}",
+            StringComparer.OrdinalIgnoreCase);
+        var outcomeByChecksum = outcomes.ToDictionary(
+            outcome => outcome.RowChecksum,
+            StringComparer.OrdinalIgnoreCase);
+
+        return breaks.Select(breakRecord =>
+        {
+            rowByReference.TryGetValue(breakRecord.SourceReference, out var row);
+            var sourceRowHash = row?.RawChecksum ?? breakRecord.SourceReference;
+            outcomeByChecksum.TryGetValue(sourceRowHash, out var outcome);
+            var evidenceLink = breakRecord.EvidenceLink ?? $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(import.ImportId)}#row-{Uri.EscapeDataString(breakRecord.SourceReference)}";
+            var evidenceReferences = new[] { evidenceLink, $"statement-row:{breakRecord.SourceReference}", $"statement-hash:{sourceRowHash}" };
+            var explanation = BuildBreakExplanation(import, row, breakRecord, outcome, evidenceReferences);
+            var attachment = new ReconciliationCaseAttachment(
+                AttachmentId: $"statement-row:{breakRecord.ImportId}:{breakRecord.SourceReference}",
+                EvidenceKind: "ExternalStatementRow",
+                SourceSystem: import.Broker,
+                SourceReference: breakRecord.SourceReference,
+                ContentHash: sourceRowHash,
+                Route: evidenceLink,
+                AttachedAtUtc: now);
+
+            return new ReconciliationCase(
+                CaseId: $"case:{breakRecord.BreakId}",
+                ImportId: import.ImportId,
+                Status: "Open",
+                Reason: explanation.Summary,
+                Confidence: outcome?.Confidence ?? 0.25m,
+                Rationale: outcome?.Rationale ?? breakRecord.Category,
+                CreatedAtUtc: now,
+                History:
+                [
+                    new ReconciliationCaseHistoryEntry(now, "None", "Open", "Case created from external statement break.")
+                    {
+                        Actor = string.IsNullOrWhiteSpace(actor) ? "system" : actor.Trim(),
+                        EvidenceId = evidenceLink
+                    }
+                ])
+            {
+                Owner = "fund-ops",
+                Priority = breakRecord.ToleranceBreached ? "High" : "Normal",
+                DueAtUtc = now.AddDays(breakRecord.ToleranceBreached ? 1 : 2),
+                LastUpdatedAtUtc = now,
+                LastUpdatedBy = string.IsNullOrWhiteSpace(actor) ? "system" : actor.Trim(),
+                Disposition = "NeedsInvestigation",
+                AgingDays = 0,
+                EvidenceReferences = evidenceReferences,
+                Attachments = [attachment],
+                BreakExplanation = explanation,
+                CommentThreads =
+                [
+                    new ReconciliationCaseCommentThread(
+                        "statement-intake",
+                        "External statement intake",
+                        [
+                            new Meridian.Domain.Reconciliation.ReconciliationCaseComment(
+                                Guid.NewGuid().ToString("N"),
+                                $"{explanation.Summary} Suggested next action: {explanation.SuggestedNextAction}",
+                                "system",
+                                now)
+                        ])
+                ],
+                AuditEvents =
+                [
+                    new ReconciliationCaseAuditEvent(
+                        Guid.NewGuid().ToString("N"),
+                        "ExternalStatementCaseCreated",
+                        now,
+                        "system",
+                        $"Case created from statement break {breakRecord.BreakId}.")
+                ]
+            };
+        }).ToArray();
+    }
+
+    private static ReconciliationBreakExplanation BuildBreakExplanation(
+        CanonicalStatementImport import,
+        CanonicalStatementRow? row,
+        ReconciliationBreakRecord breakRecord,
+        MatchOutcome? outcome,
+        IReadOnlyList<string> evidenceReferences)
+    {
+        var sourceSystem = string.IsNullOrWhiteSpace(import.SourceInstitution) ? import.Broker : import.SourceInstitution;
+        var rowLabel = row is null ? breakRecord.SourceReference : $"row {row.SourceRowNumber}";
+        var activityType = row?.ActivityType ?? breakRecord.Category;
+        var amount = row is null ? breakRecord.Delta : Math.Abs(row.CashAmount) + Math.Abs(row.Quantity * row.Price);
+
+        return new ReconciliationBreakExplanation(
+            Summary: $"{activityType} break from {sourceSystem} statement {rowLabel}.",
+            SourceSystems: [sourceSystem, "Meridian ledger", "Meridian positions"],
+            ProbableCause: outcome?.Rationale ?? "External statement row did not match retained Meridian ledger, position, or cash evidence.",
+            LedgerImpact: $"Ledger, cash, or position balances may require review for {import.FundAccountId}; unmatched statement exposure is {amount:G29}.",
+            SuggestedNextAction: "Assign the case, compare the external statement row to retained ledger and position evidence, then attach support before disposition.",
+            RequiredSignoffRole: breakRecord.ToleranceBreached ? "Fund accounting" : "Fund operations",
+            EvidenceLinks: evidenceReferences);
+    }
+
+    private static StatementReconciliationCaseDto ToStatementCaseDto(ReconciliationCase item)
+        => new(
+            CaseId: item.CaseId,
+            RunId: item.ImportId,
+            Status: item.Status,
+            Priority: item.Priority,
+            Title: item.Reason,
+            Summary: item.BreakExplanation?.Summary ?? item.Rationale,
+            BreakIds: item.EvidenceReferences
+                .Where(static reference => reference.StartsWith("statement-row:", StringComparison.OrdinalIgnoreCase))
+                .ToArray(),
+            CreatedAtUtc: item.CreatedAtUtc,
+            LastUpdatedAtUtc: item.LastUpdatedAtUtc,
+            LastUpdatedBy: item.LastUpdatedBy,
+            Owner: item.Owner,
+            DueAtUtc: item.DueAtUtc,
+            ResolvedAtUtc: item.Resolution?.ResolvedAtUtc,
+            ResolutionCode: item.Resolution?.ResolutionCode,
+            ResolutionSummary: item.Resolution?.Summary,
+            EvidenceLink: item.EvidenceReferences.FirstOrDefault());
 
     private static ReconciliationCaseSummaryDto ToCaseSummary(ReconciliationCase item)
         => new(

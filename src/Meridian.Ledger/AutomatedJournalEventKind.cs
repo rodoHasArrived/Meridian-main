@@ -19,5 +19,16 @@ public enum AutomatedJournalEventKind
 
     /// <summary>Corporate-action fee or negative adjustment.</summary>
     CorporateActionExpense,
-}
 
+    /// <summary>Management fee incurred but not yet paid.</summary>
+    ManagementFeeAccrued,
+
+    /// <summary>Performance or incentive fee incurred but not yet paid.</summary>
+    PerformanceFeeAccrued,
+
+    /// <summary>Commission incurred but not yet paid or settled in cash.</summary>
+    CommissionAccrued,
+
+    /// <summary>Withholding tax obligation incurred but not yet remitted.</summary>
+    WithholdingTaxAccrued,
+}

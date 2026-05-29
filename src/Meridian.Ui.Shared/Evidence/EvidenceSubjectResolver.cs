@@ -16,6 +16,7 @@ public sealed class EvidenceSubjectResolver
     public const string AnalysisExportKind = "analysis-export";
     public const string SecurityMasterConflictKind = "security-master-conflict";
     public const string ApprovalKind = "approval";
+    public const string EvidenceVaultKind = "evidence-vault";
 
     private static readonly HashSet<string> SupportedKinds = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -27,7 +28,8 @@ public sealed class EvidenceSubjectResolver
         ProviderTrustKind,
         AnalysisExportKind,
         SecurityMasterConflictKind,
-        ApprovalKind
+        ApprovalKind,
+        EvidenceVaultKind
     };
 
     private readonly IServiceProvider _services;
@@ -78,7 +80,14 @@ public sealed class EvidenceSubjectResolver
                 Label: "Current operations approval",
                 Workspace: "Accounting",
                 Route: "/accounting",
-                PageTag: "OperationsContinuity")
+                PageTag: "OperationsContinuity"),
+            new(
+                SubjectId: "lookup",
+                SubjectKind: EvidenceVaultKind,
+                Label: "Retained evidence vault lookup",
+                Workspace: "Reporting",
+                Route: "/reporting/evidence?view=vault",
+                PageTag: "EvidenceWorkbench")
         };
 
         var runService = _services.GetService<StrategyRunReadService>();
@@ -200,6 +209,15 @@ public sealed class EvidenceSubjectResolver
                 Route: "/data/security-master?view=conflicts",
                 PageTag: "SecurityMaster"),
             ApprovalKind => await ResolveApprovalSubjectAsync(subjectId, ct).ConfigureAwait(false),
+            EvidenceVaultKind => new EvidenceSubjectDto(
+                SubjectId: subjectId,
+                SubjectKind: EvidenceVaultKind,
+                Label: string.Equals(subjectId, "lookup", StringComparison.OrdinalIgnoreCase)
+                    ? "Retained evidence vault lookup"
+                    : $"Retained evidence vault {subjectId}",
+                Workspace: "Reporting",
+                Route: $"/reporting/evidence?vaultId={Uri.EscapeDataString(subjectId)}",
+                PageTag: "EvidenceWorkbench"),
             _ => null
         };
     }
