@@ -37,7 +37,10 @@ The F# ledger kernel now validates direct-lending `AccrualEntry` lineage and bui
 loan/period/currency `AccrualSummary` totals for accrual schedules.
 `DailyAccrualWorker` now checks the F# period guard before posting originating accruals and routes
 period-blocked accruals to the Accounting operator inbox with `FundReconciliation` navigation.
-Same-transaction direct-lending journal append completion, tax-reporting exports, and richer
+Direct-lending commands now project ledger-impacting events before persistence and pass the
+resulting `LedgerJournalEntryWrite` records into `IDirectLendingStateStore.SaveAsync`, where
+`PostgresDirectLendingStateStore` appends them through `ITransactionalLedgerJournalStore` inside
+the same serializable transaction as the loan event append. Tax-reporting exports and richer
 file-based ledger report exports remain open.
 
 ## Overview
@@ -316,7 +319,7 @@ so the Phase 4 ledger-posting work remains open.
 
 - [x] `AccrualEntry` and `AccrualSummary` F# types added to `Meridian.FSharp.Ledger` — one entry
   per accrual period-slice with reference to the originating loan ID and event lineage
-- [ ] `LoanAccountingProjector` wired to `ILedgerJournalStore` so drawdown, accrual, receipt,
+- [x] `LoanAccountingProjector` wired to `ILedgerJournalStore` so drawdown, accrual, receipt,
   discount/premium amortization, restructuring, and write-off events post balanced journal entries
   in the same database transaction as the loan event append
 - [x] `IAccrualLedgerService` interface — `AccrueAsync` and `ReverseAccrualAsync` supporting

@@ -29,7 +29,9 @@ and UI presentation concerns in their owning layers.
   daily accrual worker. Recurring accrual posting now checks ledger accounting-period state before
   calling the direct-lending command service; period-blocked originating accruals are routed to the
   Accounting operator inbox with `FundReconciliation` navigation instead of becoming log-only
-  failures.
+  failures. Ledger-impacting commands project balanced `LedgerJournalEntryWrite` records before
+  persistence and pass them to the direct-lending state store with the same generated loan event id
+  as ledger source lineage.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
   and approval close lanes. Approval and close commands enforce shared close-checklist control

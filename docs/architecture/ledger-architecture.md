@@ -204,6 +204,15 @@ projections with `LedgerPostingKindDto.Adjustment` so approved reversals can tar
 periods and then pass through the central ledger posting guard for final approval and period-state
 validation.
 
+Direct-lending command persistence is transactionally coupled to ledger journal persistence.
+`PostgresDirectLendingCommandService` projects ledger-impacting drawdown, accrual, receipt,
+discount/premium amortization, restructuring, and write-off events before calling
+`IDirectLendingStateStore.SaveAsync`; the generated loan event id is carried as the ledger
+`SourceEventId`. `PostgresDirectLendingStateStore` then appends those `LedgerJournalEntryWrite`
+records through `ITransactionalLedgerJournalStore` using the same `NpgsqlConnection` and
+serializable `NpgsqlTransaction` as the loan state, event, projection, outbox, and snapshot writes.
+If the ledger append fails, the loan event append is not committed.
+
 `DailyAccrualWorker` applies the same period-state discipline before it posts recurring daily
 accruals. When the worker can resolve the loan's ledger-book period scope, it calls
 `LedgerInterop.CheckPostingDate` for the accrual date as an originating posting. A blocked period

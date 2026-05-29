@@ -160,7 +160,9 @@ public sealed class EvidenceWorkflowFabricTests
         var provider = Node(subject, "provider", "provider-trust", EvidenceStatusDto.Ready);
         var replay = Node(subject, "replay", "paper-replay", EvidenceStatusDto.Ready);
         var reconciliation = Node(subject, "reconciliation", "reconciliation-run", EvidenceStatusDto.Ready);
+        var casework = Node(subject, "casework", "break-queue", EvidenceStatusDto.Ready);
         var approval = Node(subject, "approval", "approval", EvidenceStatusDto.Ready);
+        var closeChecklist = Node(subject, "close-checklist", "close-checklist", EvidenceStatusDto.Ready);
         var report = Node(subject, "report", "report-pack", EvidenceStatusDto.Ready) with
         {
             Freshness = new EvidenceFreshnessDto(
@@ -171,17 +173,27 @@ public sealed class EvidenceWorkflowFabricTests
         var service = new EvidencePacketValidationService();
 
         var result = service.Validate(
-            [provider, replay, reconciliation, approval, report],
+            [provider, replay, reconciliation, casework, approval, closeChecklist, report],
             [],
-            new HashSet<string>(["provider", "replay", "reconciliation", "approval", "report"], StringComparer.OrdinalIgnoreCase),
+            new HashSet<string>(["provider", "replay", "reconciliation", "casework", "approval", "close-checklist", "report"], StringComparer.OrdinalIgnoreCase),
             enforceNoOrphanRule: false);
 
         var policyIds = result.Completeness.SlaPolicies.Select(policy => policy.PolicyId);
         policyIds.Should().Contain("provider-validation-freshness");
         policyIds.Should().Contain("replay-check-freshness");
         policyIds.Should().Contain("reconciliation-freshness");
+        policyIds.Should().Contain("reconciliation-casework-freshness");
         policyIds.Should().Contain("approval-freshness");
+        policyIds.Should().Contain("close-checklist-freshness");
         policyIds.Should().Contain("report-pack-freshness");
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "reconciliation-casework-freshness" &&
+            assessment.EvidenceId == "casework" &&
+            !assessment.IsBreached);
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "close-checklist-freshness" &&
+            assessment.EvidenceId == "close-checklist" &&
+            !assessment.IsBreached);
         result.Completeness.SlaAssessments.Should().Contain(assessment =>
             assessment.PolicyId == "report-pack-freshness" &&
             assessment.EvidenceId == "report" &&

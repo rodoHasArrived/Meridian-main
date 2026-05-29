@@ -44,6 +44,14 @@ public sealed class EvidencePacketValidationService
             RequiredForAssurance: true,
             Description: "Reconciliation evidence should be refreshed at least daily."),
         new(
+            PolicyId: "reconciliation-casework-freshness",
+            EvidenceKind: "break-queue",
+            WorkflowKind: "reconciliation",
+            FreshnessMinutes: 24 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Reconciliation casework and break queue evidence should be refreshed at least daily."),
+        new(
             PolicyId: "approval-freshness",
             EvidenceKind: "approval",
             WorkflowKind: "approval",
@@ -51,6 +59,14 @@ public sealed class EvidencePacketValidationService
             BreachSeverity: EvidenceValidationSeverityDto.Warning,
             RequiredForAssurance: true,
             Description: "Approval evidence should remain inside the governed review window."),
+        new(
+            PolicyId: "close-checklist-freshness",
+            EvidenceKind: "close-checklist",
+            WorkflowKind: "approval",
+            FreshnessMinutes: 24 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Close checklist evidence should be refreshed before approval or close-package publication."),
         new(
             PolicyId: "promotion-approval-freshness",
             EvidenceKind: "promotion-review",

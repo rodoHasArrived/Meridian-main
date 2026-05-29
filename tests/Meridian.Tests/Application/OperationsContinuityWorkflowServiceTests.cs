@@ -2090,8 +2090,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
             component.Key == "reconciliation" &&
             component.IsReady == false &&
             component.Weight == 15);
-        close.Blockers.Should().Contain(blocker => blocker.Code == "RECONCILIATION_BREAKS_OPEN");
-        close.Blockers.Should().Contain(blocker => blocker.Code == "APPROVAL_MISSING");
+        close.Blockers.Should().Contain(blocker => blocker.Code == "RECONCILIATION_CRITICAL_BREAKS_OPEN");
+        close.Blockers.Should().Contain(blocker => blocker.Code == "APPROVAL_REQUIRED");
     }
 
     [Fact]

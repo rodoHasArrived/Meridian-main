@@ -46,6 +46,12 @@ ledger schema. `ILedgerJournalStore` owns durable FIFO/LIFO/HIFO/SpecificId poli
 open-lot balances for a ledger book/account, while relief projection, approval workflow, and
 tax-reporting exports remain outside the storage layer.
 
+Direct-lending state persistence can include projected ledger journals in the same database
+transaction as the loan event append. `PostgresDirectLendingStateStore.SaveAsync` accepts
+`LedgerJournalEntryWrite` records and appends them through `ITransactionalLedgerJournalStore` with
+the active `NpgsqlConnection` and serializable transaction, so a failed ledger append rolls back the
+loan state/event/projection/outbox write as one unit.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
