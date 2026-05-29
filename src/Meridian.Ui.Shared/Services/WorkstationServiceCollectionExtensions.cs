@@ -23,6 +23,7 @@ using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Services.Acceptance;
 using Meridian.Ui.Shared.Services.CoveredCall;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.Extensions.Configuration;
@@ -119,6 +120,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportPackValidationService>();
         services.TryAddSingleton<ReportTemplateRegistryService>();
         services.TryAddSingleton<ReportPackWorkflowService>();
+        services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();

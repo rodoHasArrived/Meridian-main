@@ -22,6 +22,7 @@ using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Services.Acceptance;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -162,7 +163,28 @@ public sealed class PilotAcceptanceHarnessTests
         reportPack!.Provenance.RelatedRunIds.Should().Contain(seed.BacktestRunId);
         reportPack.Provenance.RelatedRunIds.Should().Contain(seed.PaperRunId);
 
-        var stageGates = BuildPilotStageGates(
+        var workflow = PublishPilotReportPackWorkflow(
+            pilot.App.Services.GetRequiredService<ReportPackWorkflowService>(),
+            seed,
+            reportPack.ReportId,
+            reconciliation.Summary.ReconciliationRunId,
+            ledgerEvidenceId!,
+            reportPack.Provenance.SourceSnapshotHash);
+        workflow.State.Should().Be(ReportPackWorkflowStateDto.Published);
+        workflow.Publication.Should().NotBeNull();
+        workflow.AuditTrail.Should().Contain(audit => audit.ToState == ReportPackWorkflowStateDto.Approved);
+
+        var w4Evidence = BuildW4AcceptanceEvidence(
+            seed,
+            reconciliation.Summary.ReconciliationRunId,
+            workflow,
+            reportPack.ReportId.ToString("D"),
+            reportPack.Artifacts);
+        var w4Filter = pilot.App.Services.GetRequiredService<W4AcceptanceFilter>();
+        var w4Acceptance = w4Filter.Evaluate(w4Evidence);
+        w4Acceptance.IsDone.Should().BeTrue();
+
+        var stageGates = w4Filter.ApplyToGovernedReportPackGate(BuildPilotStageGates(
             seed,
             promotion.AuditReference,
             session.SessionId,
@@ -171,7 +193,7 @@ public sealed class PilotAcceptanceHarnessTests
             continuity.Run.Summary.RunId,
             portfolioEvidenceId!,
             ledgerEvidenceId!,
-            reportPack.ReportId.ToString("D"));
+            reportPack.ReportId.ToString("D")), w4Acceptance);
         var evidenceGraph = BuildPilotEvidenceGraph(
             seed,
             promotion.AuditReference,
@@ -181,7 +203,9 @@ public sealed class PilotAcceptanceHarnessTests
             continuity.Run.Summary.RunId,
             portfolioEvidenceId!,
             ledgerEvidenceId!,
-            reportPack.ReportId.ToString("D"));
+            reportPack.ReportId.ToString("D"))
+            .Concat(BuildW4AcceptanceGraph(workflow, reconciliation.Summary.ReconciliationRunId))
+            .ToArray();
 
         var artifact = new PilotReadinessArtifactDto(
             GeneratedAtUtc: DateTimeOffset.UtcNow,
@@ -201,7 +225,9 @@ public sealed class PilotAcceptanceHarnessTests
             StageGates: stageGates,
             EvidenceGraph: evidenceGraph)
         {
-            LedgerArtifactRefs = ledgerArtifactRefs
+            LedgerArtifactRefs = ledgerArtifactRefs,
+            W4Evidence = w4Evidence,
+            W4Acceptance = w4Acceptance
         };
 
         var artifactPath = await WritePilotReadinessArtifactAsync(artifact);
@@ -219,6 +245,8 @@ public sealed class PilotAcceptanceHarnessTests
         AssertSerializedLedgerArtifactRefs(artifactDocument.RootElement, ledgerJournalRoute, ledgerTrialBalanceRoute);
         artifactDocument.RootElement.GetProperty("allStagesReady").GetBoolean().Should().BeTrue();
         artifactDocument.RootElement.GetProperty("readyStageCount").GetInt32().Should().Be(8);
+        artifactDocument.RootElement.GetProperty("w4Acceptance").GetProperty("isDone").GetBoolean().Should().BeTrue();
+        artifactDocument.RootElement.GetProperty("w4Acceptance").GetProperty("supportEvidence").EnumerateArray().Should().NotBeEmpty();
         var stageNames = artifactDocument.RootElement.GetProperty("stageGates")
             .EnumerateArray()
             .Select(item => item.GetProperty("stage").GetString())
@@ -243,6 +271,9 @@ public sealed class PilotAcceptanceHarnessTests
         graphRelationships.Should().Contain("checked-against");
         graphRelationships.Should().Contain("reconciled-by");
         graphRelationships.Should().Contain("summarized-by");
+        graphRelationships.Should().Contain("closes-into");
+        graphRelationships.Should().Contain("approved-by");
+        graphRelationships.Should().Contain("published-by");
         artifactDocument.RootElement.GetProperty("evidenceGraph")
             .EnumerateArray()
             .Should()
@@ -256,6 +287,56 @@ public sealed class PilotAcceptanceHarnessTests
             .Select(item => item.GetString())
             .Should()
             .Contain(seed.PaperRunId);
+    }
+
+    [Fact]
+    public void W4AcceptanceFilter_SupportEvidenceOnly_CannotReportDone()
+    {
+        var filter = new W4AcceptanceFilter();
+        var supportOnly = new[]
+        {
+            new PilotAcceptanceEvidenceDto(
+                PilotAcceptanceEvidenceCategoryDto.EvidenceVaultManifestExportSupport,
+                PilotAcceptanceEvidenceRoleDto.Support,
+                "evidence-vault/pilot-report/manifest.json",
+                "Evidence-vault retained manifest")
+        };
+
+        var evaluation = filter.Evaluate(supportOnly);
+        var gate = filter.ApplyToGovernedReportPackGate(CreateGovernedReportPackGate(), evaluation);
+
+        evaluation.IsDone.Should().BeFalse();
+        evaluation.Status.Should().Be(PilotReadinessStageStatusDto.ReviewRequired);
+        evaluation.SupportEvidence.Should().ContainSingle();
+        evaluation.MissingAcceptanceCategories.Should().BeEquivalentTo(W4AcceptanceFilter.RequiredAcceptanceCategories);
+        gate.Status.Should().Be(PilotReadinessStageStatusDto.ReviewRequired);
+        gate.EvidenceIds.Should().BeEmpty("support manifests are not W4 acceptance evidence");
+        gate.SupportEvidenceIds.Should().Contain("evidence-vault/pilot-report/manifest.json");
+    }
+
+    [Fact]
+    public void W4AcceptanceFilter_EndToEndCaseCloseApprovalPublicationEvidence_CanReportDone()
+    {
+        var filter = new W4AcceptanceFilter();
+        var evidence = CreateCompleteW4Evidence();
+
+        var evaluation = filter.Evaluate(evidence);
+        var gate = filter.ApplyToGovernedReportPackGate(CreateGovernedReportPackGate(), evaluation);
+
+        evaluation.IsDone.Should().BeTrue();
+        evaluation.MissingAcceptanceCategories.Should().BeEmpty();
+        evaluation.MissingSupportCategories.Should().BeEmpty();
+        evaluation.AcceptanceEvidence.Select(item => item.Category).Should().BeEquivalentTo(W4AcceptanceFilter.RequiredAcceptanceCategories);
+        gate.Status.Should().Be(PilotReadinessStageStatusDto.Ready);
+        gate.EvidenceIds.Should().Contain(new[]
+        {
+            "casework/recon-run-001",
+            "close-checklist/fund-001/2026-04-11",
+            "approval/report-pack-001",
+            "publication/report-pack-001",
+            "restatement-ready/report-pack-001"
+        });
+        gate.SupportEvidenceIds.Should().Contain("evidence-vault/report-pack-001/manifest.json");
     }
 
     private static async Task<PilotTestApp> CreatePilotAppAsync()
@@ -414,7 +495,7 @@ public sealed class PilotAcceptanceHarnessTests
             fundDisplayName: fundDisplayName,
             parentRunId: backtestRunId));
 
-        return new PilotSeed(fundProfileId, strategyId, strategyName, backtestRunId, paperRunId);
+        return new PilotSeed(fundProfileId, account.AccountId, strategyId, strategyName, backtestRunId, paperRunId);
     }
 
     private static StrategyRunEntry BuildPilotRun(
@@ -588,6 +669,111 @@ public sealed class PilotAcceptanceHarnessTests
             Timestamp = DateTimeOffset.UtcNow
         };
 
+    private static ReportPackWorkflowRecordDto PublishPilotReportPackWorkflow(
+        ReportPackWorkflowService workflowService,
+        PilotSeed seed,
+        Guid generatedReportId,
+        string reconciliationRunId,
+        string ledgerEvidenceId,
+        string sourceSnapshotHash)
+    {
+        var lineProvenance = new[]
+        {
+            new ReportPackLineProvenanceDto(
+                "trial-balance:cash",
+                "ledger",
+                ledgerEvidenceId,
+                ledgerEvidenceId,
+                RunId: seed.PaperRunId,
+                LedgerEntryId: ledgerEvidenceId,
+                ReconciliationCaseId: $"casework/{reconciliationRunId}",
+                ReportValue: "250000.00",
+                ReconciliationRunId: reconciliationRunId)
+        };
+        var workflow = workflowService.Create(
+            seed.FundProfileId,
+            seed.AccountId.ToString("D"),
+            "2026-04-11",
+            new VersionedReportTemplateIdDto("pilot-governed-report-pack", 1),
+            "pilot.operator",
+            lineProvenance);
+        workflow = workflowService.Transition(workflow.ReportId, ReportPackWorkflowStateDto.Validated, "pilot.validator", "validator", "Pilot report pack validated.");
+        workflow = workflowService.Transition(workflow.ReportId, ReportPackWorkflowStateDto.PendingApproval, "pilot.reviewer", "reviewer", "Submitted for W4 acceptance approval.");
+        workflow = workflowService.Transition(workflow.ReportId, ReportPackWorkflowStateDto.Approved, "pilot.approver", "approver", "Approved for pilot W4 publication.");
+        return workflowService.Publish(
+            workflow.ReportId,
+            "pilot.publisher",
+            "publisher",
+            "pilot.approver",
+            sourceSnapshotHash,
+            $"manifest/{generatedReportId:D}",
+            $"evidence-vault/report-packs/{generatedReportId:D}/manifest.json",
+            [
+                new ReportPackEvidenceLinkDto(ledgerEvidenceId, "Ledger evidence", $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}/ledger/journal", "ledger"),
+                new ReportPackEvidenceLinkDto($"casework/{reconciliationRunId}", "Reconciliation casework", $"/api/workstation/reconciliation/runs/{Uri.EscapeDataString(reconciliationRunId)}", "reconciliation"),
+                new ReportPackEvidenceLinkDto($"close-checklist/{seed.AccountId:D}/2026-04-11", "Accounting close checklist", null, "accounting-close"),
+                new ReportPackEvidenceLinkDto($"restatement-ready/{generatedReportId:D}", "Restatement readiness controls", null, "reporting-governance")
+            ],
+            "Published with retained W4 pilot acceptance evidence.");
+    }
+
+    private static IReadOnlyList<PilotAcceptanceEvidenceDto> BuildW4AcceptanceEvidence(
+        PilotSeed seed,
+        string reconciliationRunId,
+        ReportPackWorkflowRecordDto workflow,
+        string reportPackId,
+        IReadOnlyList<FundReportPackArtifactDto> artifacts)
+    {
+        var approvalEvent = workflow.AuditTrail.Last(audit => audit.ToState == ReportPackWorkflowStateDto.Approved);
+        var publication = workflow.Publication ?? throw new InvalidOperationException("Published report-pack workflow requires publication metadata.");
+        var manifestSupportId = string.IsNullOrWhiteSpace(publication.RetainedManifestPath)
+            ? $"evidence-vault/{reportPackId}/manifest.json"
+            : publication.RetainedManifestPath;
+        var exportSupportId = artifacts.FirstOrDefault()?.RelativePath ?? manifestSupportId;
+
+        return
+        [
+            new(PilotAcceptanceEvidenceCategoryDto.ReconciliationCasework, PilotAcceptanceEvidenceRoleDto.Acceptance, $"casework/{reconciliationRunId}", "Reconciliation casework", $"/api/workstation/reconciliation/runs/{Uri.EscapeDataString(reconciliationRunId)}"),
+            new(PilotAcceptanceEvidenceCategoryDto.AccountingCloseChecklist, PilotAcceptanceEvidenceRoleDto.Acceptance, $"close-checklist/{seed.AccountId:D}/2026-04-11", "Accounting close checklist"),
+            new(PilotAcceptanceEvidenceCategoryDto.ReportingReviewApproval, PilotAcceptanceEvidenceRoleDto.Acceptance, $"approval/{workflow.ReportId:D}/{approvalEvent.At:yyyyMMddHHmmss}", "Reporting review approval"),
+            new(PilotAcceptanceEvidenceCategoryDto.GovernedReportPackPublication, PilotAcceptanceEvidenceRoleDto.Acceptance, $"publication/{workflow.ReportId:D}/{publication.ManifestId}", "Governed report-pack publication", publication.RetainedManifestPath),
+            new(PilotAcceptanceEvidenceCategoryDto.RestatementReadiness, PilotAcceptanceEvidenceRoleDto.Acceptance, $"restatement-ready/{reportPackId}", "Restatement readiness controls"),
+            new(PilotAcceptanceEvidenceCategoryDto.EvidenceVaultManifestExportSupport, PilotAcceptanceEvidenceRoleDto.Support, manifestSupportId, "Evidence-vault retained manifest/export", exportSupportId)
+        ];
+    }
+
+    private static IReadOnlyList<PilotEvidenceGraphEdgeDto> BuildW4AcceptanceGraph(
+        ReportPackWorkflowRecordDto workflow,
+        string reconciliationRunId) =>
+    [
+        new($"casework/{reconciliationRunId}", $"close-checklist/{workflow.FundAccountId}/2026-04-11", "closes-into"),
+        new($"close-checklist/{workflow.FundAccountId}/2026-04-11", $"approval/{workflow.ReportId:D}", "approved-by"),
+        new($"approval/{workflow.ReportId:D}", $"publication/{workflow.ReportId:D}", "published-by")
+    ];
+
+    private static IReadOnlyList<PilotAcceptanceEvidenceDto> CreateCompleteW4Evidence() =>
+    [
+        new(PilotAcceptanceEvidenceCategoryDto.ReconciliationCasework, PilotAcceptanceEvidenceRoleDto.Acceptance, "casework/recon-run-001", "Reconciliation casework"),
+        new(PilotAcceptanceEvidenceCategoryDto.AccountingCloseChecklist, PilotAcceptanceEvidenceRoleDto.Acceptance, "close-checklist/fund-001/2026-04-11", "Accounting close checklist"),
+        new(PilotAcceptanceEvidenceCategoryDto.ReportingReviewApproval, PilotAcceptanceEvidenceRoleDto.Acceptance, "approval/report-pack-001", "Reporting approval"),
+        new(PilotAcceptanceEvidenceCategoryDto.GovernedReportPackPublication, PilotAcceptanceEvidenceRoleDto.Acceptance, "publication/report-pack-001", "Governed report-pack publication"),
+        new(PilotAcceptanceEvidenceCategoryDto.RestatementReadiness, PilotAcceptanceEvidenceRoleDto.Acceptance, "restatement-ready/report-pack-001", "Restatement readiness"),
+        new(PilotAcceptanceEvidenceCategoryDto.EvidenceVaultManifestExportSupport, PilotAcceptanceEvidenceRoleDto.Support, "evidence-vault/report-pack-001/manifest.json", "Manifest/export support")
+    ];
+
+    private static PilotReadinessStageGateDto CreateGovernedReportPackGate() =>
+        new(
+            PilotReadinessStageDto.GovernedReportPack,
+            "Governed report pack lineage",
+            PilotReadinessStageStatusDto.Ready,
+            ["evidence-vault/report-pack-001/manifest.json"],
+            [],
+            "Support manifest exists.")
+        {
+            WaveClaims = ["W4"],
+            SupportEvidenceIds = ["evidence-vault/report-pack-001/manifest.json"]
+        };
+
     private static IReadOnlyList<PilotReadinessStageGateDto> BuildPilotStageGates(
         PilotSeed seed,
         string? promotionAuditId,
@@ -740,8 +926,8 @@ public sealed class PilotAcceptanceHarnessTests
         builder.AppendLine($"- Validation command: `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter \"FullyQualifiedName~PilotAcceptanceHarnessTests\" --logger \"console;verbosity=normal\"`");
         builder.AppendLine($"- Report pack: `{artifact.ReportPackId}`");
         builder.AppendLine();
-        builder.AppendLine("| Stage | W2-W4 claims | Status | Evidence IDs | Blockers | Validation |");
-        builder.AppendLine("|---|---|---|---|---|---|");
+        builder.AppendLine("| Stage | W2-W4 claims | Status | Acceptance evidence IDs | Support evidence IDs | Blockers | Validation |");
+        builder.AppendLine("|---|---|---|---|---|---|---|");
 
         foreach (var gate in artifact.StageGates)
         {
@@ -755,6 +941,10 @@ public sealed class PilotAcceptanceHarnessTests
             builder.Append(gate.Status);
             builder.Append(" | ");
             builder.Append(EscapeMarkdownCell(string.Join("<br>", gate.EvidenceIds.Select(static id => $"`{id}`"))));
+            builder.Append(" | ");
+            builder.Append(gate.SupportEvidenceIds.Count == 0
+                ? "None"
+                : EscapeMarkdownCell(string.Join("<br>", gate.SupportEvidenceIds.Select(static id => $"`{id}`"))));
             builder.Append(" | ");
             builder.Append(gate.Blockers.Count == 0
                 ? "None"
@@ -1019,6 +1209,7 @@ public sealed class PilotAcceptanceHarnessTests
 
     private sealed record PilotSeed(
         string FundProfileId,
+        Guid AccountId,
         string StrategyId,
         string StrategyName,
         string BacktestRunId,

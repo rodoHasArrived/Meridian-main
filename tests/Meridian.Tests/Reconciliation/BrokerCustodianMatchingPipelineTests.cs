@@ -32,7 +32,7 @@ public sealed class BrokerCustodianMatchingPipelineTests
 
         decisions.Should().HaveCount(2);
         decisions.Should().OnlyContain(decision => decision.Status == CanonicalReconciliationDecisionStatus.UnresolvedBreak);
-        decisions.Should().OnlyContain(decision => decision.RightRecordId is null);
+        decisions.Should().OnlyContain(decision => decision.RightRecordId == null);
     }
 
     [Fact]

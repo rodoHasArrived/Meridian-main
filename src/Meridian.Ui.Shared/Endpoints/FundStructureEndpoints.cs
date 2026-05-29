@@ -704,7 +704,7 @@ public static class FundStructureEndpoints
         .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status201Created);
 
         group.MapPost("/reporting/packs/{reportId:guid}/validate", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Validated));
-        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.PendingApproval));
+        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.InReview));
         group.MapPost("/reporting/packs/{reportId:guid}/approve", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Approved));
         group.MapPost("/reporting/packs/{reportId:guid}/publish", (Guid reportId, ReportPackPublishRequestDto request, HttpContext context) =>
         {

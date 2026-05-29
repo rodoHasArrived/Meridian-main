@@ -32,9 +32,9 @@ public sealed class ReportPackWorkflowService
     private static readonly IReadOnlyDictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]> AllowedTransitions =
         new Dictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]>
         {
-            [ReportPackWorkflowStateDto.Draft] = [ReportPackWorkflowStateDto.Validated],
-            [ReportPackWorkflowStateDto.Validated] = [ReportPackWorkflowStateDto.PendingApproval, ReportPackWorkflowStateDto.Draft],
-            [ReportPackWorkflowStateDto.PendingApproval] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.Draft] = [ReportPackWorkflowStateDto.InReview, ReportPackWorkflowStateDto.Validated],
+            [ReportPackWorkflowStateDto.Validated] = [ReportPackWorkflowStateDto.InReview, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.InReview] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Draft],
             [ReportPackWorkflowStateDto.Approved] = [ReportPackWorkflowStateDto.Published],
             [ReportPackWorkflowStateDto.Published] = [ReportPackWorkflowStateDto.Restated, ReportPackWorkflowStateDto.Archived],
             [ReportPackWorkflowStateDto.Restated] = [ReportPackWorkflowStateDto.Archived],
@@ -166,8 +166,8 @@ public sealed class ReportPackWorkflowService
         var normalized = role.Trim().ToLowerInvariant();
         var allowed = target switch
         {
+            ReportPackWorkflowStateDto.InReview => normalized is "operator" or "reviewer" or "validator",
             ReportPackWorkflowStateDto.Validated => normalized is "operator" or "reviewer" or "validator",
-            ReportPackWorkflowStateDto.PendingApproval => normalized is "operator" or "reviewer" or "validator",
             ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
             ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
             ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",

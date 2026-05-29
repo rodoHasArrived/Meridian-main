@@ -4,16 +4,18 @@ using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.Ui;
 
+/// <summary>
+/// Scenario tests guard the controller close-reporting path where an operator submits a freshly created W4 report pack for review before approval and publication.
+/// </summary>
 public sealed class ReportPackWorkflowServiceTests
 {
     [Fact]
-    public void Transition_AllowsExpectedStateMachineFlow()
+    public void Transition_FreshDraftSubmitApprovePublish_CompletesW4LifecycleWithoutLegacyIntermediateState()
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
 
-        var validated = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        var submitted = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        var submitted = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         var approved = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         var published = svc.Publish(
             created.ReportId,
@@ -25,16 +27,23 @@ public sealed class ReportPackWorkflowServiceTests
             "vault/report-packs/manifest-1.json",
             [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
 
+        submitted.State.Should().Be(ReportPackWorkflowStateDto.InReview);
+        approved.State.Should().Be(ReportPackWorkflowStateDto.Approved);
         published.State.Should().Be(ReportPackWorkflowStateDto.Published);
         published.Publication.Should().NotBeNull();
         published.Publication!.SignedOffBy.Should().Be("controller");
         published.Publication.EvidenceHash.Should().Be("sha256:abc123");
-        published.AuditTrail.Should().HaveCount(5);
+        published.AuditTrail.Should().HaveCount(4);
         published.AuditTrail.Should().ContainSingle(e =>
             e.Action == "create"
             && e.Actor == "author"
             && e.FromState == ReportPackWorkflowStateDto.Draft
             && e.ToState == ReportPackWorkflowStateDto.Draft);
+        published.AuditTrail.Should().ContainSingle(e =>
+            e.Action == "inreview"
+            && e.Actor == "reviewer"
+            && e.FromState == ReportPackWorkflowStateDto.Draft
+            && e.ToState == ReportPackWorkflowStateDto.InReview);
     }
 
     [Fact]
@@ -42,8 +51,7 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
 
         Action act = () => svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Published, "publisher", "publisher");
@@ -63,8 +71,7 @@ public sealed class ReportPackWorkflowServiceTests
             new VersionedReportTemplateIdDto("board-pack", 1),
             "author",
             [new ReportPackLineProvenanceDto("trial-balance.cash", "ledger", "ledger-entry-1", "ledger-evidence-1", LedgerEntryId: "ledger-entry-1", ReportValue: "100.00")]);
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
 
         Action act = () => svc.Publish(
@@ -92,8 +99,7 @@ public sealed class ReportPackWorkflowServiceTests
             new VersionedReportTemplateIdDto("board-pack", 1),
             "author",
             [new ReportPackLineProvenanceDto("trial-balance.cash", "ledger", "ledger-entry-1", "ledger-evidence-1", LedgerEntryId: "ledger-entry-1")]);
-        svc.Transition(missingValue.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(missingValue.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(missingValue.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(missingValue.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
 
         Action missingValuePublish = () => svc.Publish(
@@ -116,8 +122,7 @@ public sealed class ReportPackWorkflowServiceTests
             new VersionedReportTemplateIdDto("board-pack", 1),
             "author",
             [new ReportPackLineProvenanceDto("trial-balance.nav", "report", "nav-line-1", "nav-evidence-1", ReportValue: "125.00")]);
-        svc.Transition(missingPointer.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(missingPointer.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(missingPointer.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(missingPointer.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
 
         Action missingPointerPublish = () => svc.Publish(
@@ -184,8 +189,7 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         svc.Publish(
             created.ReportId,
@@ -212,8 +216,7 @@ public sealed class ReportPackWorkflowServiceTests
     {
         var svc = new ReportPackWorkflowService();
         var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         svc.Publish(
             created.ReportId,
@@ -248,8 +251,7 @@ public sealed class ReportPackWorkflowServiceTests
         earlyArchive.Should().Throw<InvalidOperationException>()
             .WithMessage("invalid transition Draft -> Archived");
 
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         svc.Publish(
             created.ReportId,

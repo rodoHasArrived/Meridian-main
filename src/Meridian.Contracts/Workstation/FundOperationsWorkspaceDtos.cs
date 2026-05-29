@@ -32,7 +32,9 @@ public enum GovernanceReportPackStatusDto
     Exported = 7,
     Retained = 8,
     Superseded = 9,
-    Restated = 10
+    Restated = 10,
+    InReview = 11,
+    Published = 12
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<GovernanceReportValidationSeverityDto>))]
@@ -397,6 +399,7 @@ public enum ReportPackWorkflowStateDto
 {
     Draft = 0,
     Validated = 1,
+    InReview = 2,
     PendingApproval = 2,
     Approved = 3,
     Published = 4,

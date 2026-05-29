@@ -51,10 +51,13 @@ for journal candidates whose instrument line symbol diverges from the journal-le
 symbol and mapping mismatch blockers for generic ledger-mapping references that do not name the
 resolved symbol or Security Master id.
 
-Report-pack workflow contracts carry governed publication metadata: sign-off actor, evidence hash,
+Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
+`Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
 retained manifest path, retained evidence links, report-line provenance, create requests, publish
 requests, and restatement requests with approver, prior-version, changed-line, and evidence-link
-metadata. Report-line provenance carries the reported value plus run, source-session, ledger-entry,
+metadata. Pilot readiness contracts also carry W4 acceptance evidence categories and roles so
+acceptance proof can be distinguished from evidence-vault manifest/export support in serialized
+artifacts. Report-line provenance carries the reported value plus run, source-session, ledger-entry,
 reconciliation-case, and reconciliation-run pointers so each retained line can be traced back to the
 source workflow evidence before publication. Generated report-pack lineage pointers also carry optional display labels, source-system
 tags, related ledger or journal evidence IDs, line amounts, latest evidence timestamps, and API

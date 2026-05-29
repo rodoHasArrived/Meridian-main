@@ -58,11 +58,23 @@ It emits balanced expected-journal candidates, trial-balance deltas, ledger-impa
 reconciliation expectations through `/api/fund-structure/accounting/transaction-lab/preview`, so
 browser and WPF clients can consume the same accounting lab contract instead of rebuilding
 accounting rules locally.
+<<<<<<< ours
+Report-pack workflow state is shared here as well: the W4 path moves `Draft` packs to `InReview`
+through submission, then to `Approved`, and finally to `Published`; publication requires sign-off,
+evidence hash, retained manifest metadata, and retained evidence links for every report-line
+provenance pointer so browser and WPF clients do not invent local lifecycle or no-orphan-evidence
+rules. The shared fund-structure endpoints expose report-pack workflow creation, validation,
+submission, approval, publication, restatement, history, and archival routes backed by shared
+contracts; restatement
+=======
 Report-pack workflow state is shared here as well: publication requires sign-off, evidence hash,
 retained manifest metadata, and retained evidence links for every report-line provenance pointer so
-browser and WPF clients do not invent local lifecycle or no-orphan-evidence rules. The shared
+browser and WPF clients do not invent local lifecycle or no-orphan-evidence rules. The shared W4
+acceptance filter keeps governed report-pack acceptance evidence separate from evidence-vault
+manifest/export support so pilot readiness cannot mark W4 done from support artifacts alone. The shared
 fund-structure endpoints expose report-pack workflow creation, validation, submission, approval,
 publication, restatement, history, and archival routes backed by shared contracts; restatement
+>>>>>>> theirs
 changed lines must carry evidence links before the workflow can advance. Publication also rejects
 line provenance that omits the reported value or lacks a run, source-session, ledger-entry,
 reconciliation-case, or reconciliation-run pointer, keeping value-level report lineage enforceable
