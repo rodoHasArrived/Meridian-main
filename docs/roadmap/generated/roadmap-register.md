@@ -137,16 +137,16 @@ Closed in the 2026-05-27 evidence slice through shared brokerage/continuity/pilo
 | Field | Value |
 | --- | --- |
 | Wave | W4 |
-| Status | planned |
-| Health | yellow |
+| Status | done |
+| Health | green |
 | Priority | high |
 | Owner lane | Governance and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-05-20 |
+| Evidence posture | complete |
+| Last reviewed | 2026-05-29 |
 
 ### Current Summary
 
-Ledger and reconciliation workflows need evidence-linked acceptance before governed reporting can claim readiness.
+Closed in the 2026-05-29 W4 evidence slice through operations-continuity close-lane coverage, reconciliation casework, browser Accounting parity, WPF Lane C acceptance, and green PortfolioLedgerReview/Reconciliation pilot gates.
 
 ### Exit Criteria
 
@@ -165,16 +165,16 @@ Ledger and reconciliation workflows need evidence-linked acceptance before gover
 | Field | Value |
 | --- | --- |
 | Wave | W4 |
-| Status | planned |
-| Health | yellow |
+| Status | done |
+| Health | green |
 | Priority | high |
 | Owner lane | Governance and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-05-20 |
+| Evidence posture | complete |
+| Last reviewed | 2026-05-29 |
 
 ### Current Summary
 
-Report-pack generation needs approval, export evidence, and clear ownership before being treated as governed output.
+Closed in the 2026-05-29 W4 evidence slice through governed report-pack workflow/provenance, publication/restatement readiness, evidence-vault manifest support, browser Reporting parity, and the green GovernedReportPack pilot gate.
 
 ### Exit Criteria
 

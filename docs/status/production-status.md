@@ -1,9 +1,9 @@
 # Meridian - Production Status
 
 <!-- auto-sync:tests -->
-**Version:** 1.7.9
+**Version:** 1.8.0
 **Last Updated:** 2026-05-29
-**Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Wave 2 paper-trading cockpit and Wave 3 shared-run continuity baselines are closed as of 2026-05-27; Wave 4 governance/fund-operations close and report acceptance remains in progress. Browser and WPF are both active operator UI lanes and must continue to consume shared contracts, endpoints, and read models. Current support evidence includes W4 operations-continuity endpoint/workflow coverage, reconciliation casework, governed report-pack workflow/provenance, browser Accounting/Reporting parity, explicit operations-continuity workflow targets, Explain-the-Break parity through shared DTO/browser/WPF consumers, Investment Accounting Transaction Lab previews, report restatement review, richer run comparison/drill-in support, shared workflow route parity, screenshot/evidence route validation guards, and Security Master asset-profile promotion-candidate assessment. These preserve the closed W2/W3 baselines and advance W4/UFL support; they are not full W4 close/report, Evidence Vault/report-line-provenance product, Backtest Studio, first-class UFL package graduation, or live-readiness exits.
+**Status:** Development / Pilot Ready - Wave 1 trust gate, Wave 2 paper-trading cockpit, Wave 3 shared-run continuity, and Wave 4 governance/fund-operations close/report baselines are closed as of 2026-05-29. Browser and WPF are both active operator UI lanes and must continue to consume shared contracts, endpoints, and read models. The W4 closure packet combines operations-continuity endpoint/workflow coverage, reconciliation casework, governed report-pack workflow/provenance, browser Accounting/Reporting parity, WPF `Category=W4Acceptance` coverage, `FundOpsCloseLaneScenarioTests`, and `PilotAcceptanceHarnessTests` with `w4Acceptance.isDone=true`. These preserve the closed W1-W4 baselines; they are not Evidence Vault/report-line-provenance product completion beyond the current manifest/export support, Backtest Studio, first-class UFL package graduation, or live-readiness exits.
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
 Readiness claim wording in this document must follow [`readiness-claim-language-policy.md`](readiness-claim-language-policy.md).
@@ -36,7 +36,7 @@ hardening is present in CI, and the web-workstation installer can archive supers
 repairing preserved configs that reference missing provider sections. Browser UX hardening now
 surfaces expired-session and forbidden-role API failures explicitly and exposes disabled form
 reasons through accessible field support text. These reduce operational risk, but they do not
-reopen the closed W2/W3 baselines or close the active W4 governance gate.
+reopen the closed W2/W3 baselines; W4 closes later in the 2026-05-29 acceptance packet.
 
 2026-05-21 contract/docs note: Strategy Engine definitions and validate-run endpoints now provide
 pre-run blocking/diagnostic evidence for Covered Call and visual-designer workflows, additive
@@ -45,14 +45,14 @@ capability matrix is the canonical adapter-readiness follow-up surface, and stru
 roadmap/source registries plus stale-doc/hash checks reduce documentation drift. These are
 production-discipline improvements, not W2/W3 reopening evidence or W4 readiness exits.
 
-2026-05-28 W4 support note: the active repository now has green shared/browser/source-route support
-evidence for W4 operations-continuity, reconciliation casework, report-pack workflow/provenance,
-Security Master endpoint mapping, fund-structure report-pack/cash-flow endpoints,
+2026-05-29 W4 close note: the active repository now has green shared/browser/source-route evidence
+for W4 operations-continuity, reconciliation casework, report-pack workflow/provenance, Security
+Master endpoint mapping, fund-structure report-pack/cash-flow endpoints,
 `FundOpsCloseLaneScenarioTests`, and `PilotAcceptanceHarnessTests`. Browser W4 tests cover
-operations-continuity, governance, and reporting surfaces, and route-parity checks keep shared
-workflow targets aligned across browser and WPF. This is material W4 support evidence, but the
-readiness posture stays `In Progress` until the WPF build-backed Lane C acceptance lane and the
-full close/case/report/evidence workflow proof are green.
+operations-continuity, governance, and reporting surfaces, route-parity checks keep shared workflow
+targets aligned across browser and WPF, and the WPF Lane C `Category=W4Acceptance` filter anchors
+retained-desktop coverage. This is the W4 closure packet; future close/report changes are baseline
+maintenance unless they explicitly belong to W5 or W6.
 
 2026-05-29 Security Master note: custom asset profile governance now exposes promotion-candidate
 assessment through the shared service and `/api/security-master/asset-profiles/promotion-candidates`.
@@ -71,7 +71,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 | W1 | Data Operations + Provider Reliability | Data Confidence and Validation | Trading Workstation | 4 hours / 1 business day | Trading Workstation; Shared Platform Interop; Governance and Ledger | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
 | W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
 | W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
-| W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | Done | 2026-05-29 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
 | W5 | Research Platform | Strategy and Research | Shared Workflow and Contracts | 2 business days / 3 business days | Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
 | W6 | Execution + Brokerage Integrations | Execution and Brokerage Integrations | Governance and Ledger | 4 hours / 1 business day | Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
 <!-- program-state:end -->
@@ -195,13 +195,13 @@ Operator-readiness language for Wave 2 should defer to the canonical `Done` stat
 ### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
 
 - Security Master is a delivered baseline, not an open foundation item
-- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows; the Fund Accounts workbench now projects account-queue, provider-routing, shared-data, retained balance-evidence, and ready-for-reconciliation states from loaded evidence, browser Portfolio now surfaces brokerage household/account posture, browser Reporting now exposes report-pack task state, Security Master now has browser search-result selection, identity drill-ins, details/lots/operator overrides plus UFL/reference-data projection support, the first reconciliation break-queue slice is file-backed with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, calibration-summary rollups, browser Accounting dense-table selection/empty-state guidance, and no-host break-queue fixture coverage, and the operations-continuity close lane now covers broker import/normalization through close/reopen via shared workstation routes, but operator-approved calibration, external-account/custodian acceptance, report-pack lifecycle acceptance, browser close-workflow acceptance, and generalized governance casework remain open
-- the next governance slices should extend shared DTOs, read models, and export seams instead of creating a second governance stack
+- governance/fund-operations close and report acceptance is now a closed baseline: the Fund Accounts workbench projects account-queue, provider-routing, shared-data, retained balance-evidence, and ready-for-reconciliation states from loaded evidence; browser Portfolio surfaces brokerage household/account posture; browser Reporting exposes report-pack task state; Security Master has browser search-result selection, identity drill-ins, details/lots/operator overrides plus UFL/reference-data projection support; reconciliation break-queue casework is file-backed with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, calibration-summary rollups, browser Accounting dense-table selection/empty-state guidance, and no-host break-queue fixture coverage; and the operations-continuity close lane covers broker import/normalization through checklist, reconciliation, approval, close, and reopen via shared workstation routes
+- the next governance slices should preserve this W4 baseline by extending shared DTOs, read models, and export seams instead of creating a second governance stack
 
 
 #### Wave 4 objective pass/fail gate (cockpit-style)
 
-"Wave 4 objective" is **Pass** only when every governance/fund-ops criterion below is green in CI and locally reproducible. It is **Fail** if any criterion is red.
+"Wave 4 objective" is **Pass** as of 2026-05-29 because every governance/fund-ops criterion below has a locally reproducible acceptance lane. It regresses to **Fail** if any criterion turns red.
 
 | Criterion | Required endpoint(s) + response fields | Required workstation surface behavior | Fail condition |
 | --- | --- | --- | --- |
@@ -209,7 +209,7 @@ Operator-readiness language for Wave 2 should defer to the canonical `Done` stat
 | Corporate action provenance and parameter versioning remain explainable | `/api/security-master/corporate-actions` and `/api/security-master/trading-parameters` must return event provenance (`CorporateActionSource`, `IngestedAtUtc`) plus effective version fields (`EffectiveVersion`, `EffectiveFromUtc`, `SupersedesVersion`). | Operator can **search -> drill-in -> history -> resolution** from instrument view into corporate-action timeline and trading-parameter history, then resolve a flagged discrepancy with the effective-version trail visible. | Corporate-action timeline lacks provenance, trading-parameter change lacks effective-version traceability, or discrepancy resolution is recorded without explainable source/version linkage. |
 | Governance audit trail is complete across fund-ops decisions | Governance workflow endpoints (`/api/fund-structure/workspace-view`, `/api/fund-structure/report-pack-preview`, and reconciliation decision endpoints) must emit audit metadata (`AuditActor`, `AuditTimestampUtc`, `CorrelationId`) and decision rationale fields for approvals/rejections. | Operator can **search -> drill-in -> history -> resolution** for an account/entity decision, inspect prior decision history, and complete or reject resolution with rationale that remains visible in history and governed output previews. | Any governance decision path that omits actor/timestamp/correlation, fails to retain decision rationale, or breaks history-to-resolution linkage between workspace and governed-output views. |
 
-Wave 4 readiness language should stay "in progress" until the full objective gate above is continuously passing.
+Wave 4 readiness language is now `Done`; continue running the objective gate as a regression suite before changing close/report workflows.
 
 Use this file for readiness evidence and operator-facing risk notes; use [`ROADMAP.md`](ROADMAP.md) for full wave sequencing.
 

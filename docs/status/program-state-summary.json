@@ -41,9 +41,9 @@
       "Backup Owner": "Shared Workflow and Contracts",
       "Escalation SLA": "1 business day / 2 business days",
       "Dependency Owners": "Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop",
-      "Status": "In Progress",
-      "Target Date": "2026-07-24",
-      "Evidence Link": "[`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline)"
+      "Status": "Done",
+      "Target Date": "2026-05-29",
+      "Evidence Link": "[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md)"
     },
     {
       "Wave": "W5",
