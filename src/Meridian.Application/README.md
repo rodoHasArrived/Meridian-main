@@ -69,6 +69,7 @@ and UI presentation concerns in their owning layers.
   cash/activity rows, requires row currency equality before broker/custodian auto-match, appends
   reconciliation decision journals through crash-safe copy-on-write JSONL writes, and attaches
   break explanations plus retained statement-row evidence.
+- `PrivateAssets/` - private-asset read-model persistence and validation for private equity, venture, private credit, real estate, direct company, collectible, operating-business, and other holdings. The application layer persists shared contract DTOs and derives warnings for stale NAV, missing valuation dates, missing owner entities, missing commitment schedules, and missing retained evidence links without requiring UI clients to duplicate validation rules.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot

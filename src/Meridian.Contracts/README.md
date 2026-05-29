@@ -73,6 +73,8 @@ routes back to run continuity, ledger trial-balance, reconciliation, and Securit
 evidence. Keep these fields shared so browser, WPF, and service tests enforce the same publication,
 drilldown, and no-orphan-evidence rules.
 
+Private asset contracts provide shared DTOs for illiquid fund, venture, credit, real estate, direct company, collectible, operating-business, and other holdings. They keep imported statements, capital notices, K-1s, side letters, subscription documents, valuation memos, and commitment schedules as typed evidence links so browser, WPF, persistence, and reporting surfaces do not fall back to unstructured notes. The read models carry server-derived warnings for stale NAV, missing valuation date, missing owner entity, missing commitment schedule, and missing evidence.
+
 Fund-structure contracts include the ledger mapping workbench payload used by accounting and
 governance surfaces to show account-to-ledger-group assignment source, unresolved mapping issues,
 and recommended operator action without requiring clients to duplicate mapping precedence rules.
