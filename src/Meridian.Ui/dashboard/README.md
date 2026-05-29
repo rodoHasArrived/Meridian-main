@@ -55,6 +55,8 @@ Portfolio run evidence, Trading recent fills, Data backfill queue rows, and Secu
 
 ## Important workflows
 
+The Settings lane includes the operator ownership review panel fed by `/api/fund-structure/ownership-review`, with active/as-of rollup summary, invalid-link warnings, selected-link inspection, and disabled edit/expire/replace affordances until backend lifecycle support is enabled.
+
 This is the active operator UI lane; keep shared contract parity with the WPF desktop. Security
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure

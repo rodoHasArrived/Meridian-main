@@ -3335,3 +3335,51 @@ export interface DataFetchResult {
   bars: PriceBar[];
   rowCount: number;
 }
+
+export type OwnershipReviewValidationState = "Valid" | "Warning" | "Blocking";
+
+export interface OwnershipReviewEffectiveWindow {
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+  isActiveAsOf: boolean;
+  displayLabel: string;
+}
+
+export interface OwnershipLifecycleCommand {
+  label: string;
+  endpoint: string;
+  isEnabled: boolean;
+  disabledReason: string;
+}
+
+export interface OwnershipReviewLink {
+  ownershipLinkId: string;
+  nodeDisplayLabel: string;
+  parentLabel: string;
+  childLabel: string;
+  relationshipLabel: string;
+  percent?: number | null;
+  isPrimary: boolean;
+  effectiveWindow: OwnershipReviewEffectiveWindow;
+  validationState: OwnershipReviewValidationState;
+  blockingMessages: string[];
+  suggestedRemediationActions: string[];
+  lifecycleCommands: OwnershipLifecycleCommand[];
+}
+
+export interface OwnershipReviewSummary {
+  totalLinkCount: number;
+  activeLinkCount: number;
+  invalidLinkCount: number;
+  explicitOwnershipPercentTotal: number;
+  rollupSummary: string;
+  blockingMessages: string[];
+}
+
+export interface OwnershipReviewModel {
+  asOf: string;
+  links: OwnershipReviewLink[];
+  summary: OwnershipReviewSummary;
+  emptyStateTitle: string;
+  emptyStateDetail: string;
+}

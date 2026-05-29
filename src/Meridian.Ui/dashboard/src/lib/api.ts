@@ -125,6 +125,7 @@ import type {
   LedgerMappingAssignmentRequest,
   LedgerMappingAssignmentResult,
   LedgerMappingWorkbench,
+  OwnershipReviewModel,
   OperationsApprovalPolicyMatrix,
   OperationsApprovalPolicyRuleUpsertRequest,
   OperationsApprovalPolicyRuleUpsertResult,
@@ -559,6 +560,14 @@ export function rollbackSecurityAssetProfile(
 
 export function getLedgerMappingWorkbench(options: ApiRequestOptions = {}) {
   return getJson<LedgerMappingWorkbench>(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench, options);
+}
+
+export function getOwnershipReview(options: ApiRequestOptions & { asOf?: string } = {}) {
+  const { asOf, ...requestOptions } = options;
+  const endpoint = asOf
+    ? `${FUND_STRUCTURE_API_ENDPOINTS.ownershipReview}?asOf=${encodeURIComponent(asOf)}`
+    : FUND_STRUCTURE_API_ENDPOINTS.ownershipReview;
+  return getJson<OwnershipReviewModel>(endpoint, requestOptions);
 }
 
 export function assignLedgerMapping(request: LedgerMappingAssignmentRequest, options: ApiRequestOptions = {}) {

@@ -34,6 +34,7 @@ import type {
   OperationsApprovalPolicyMatrix,
   OperationsApprovalPolicyMatrixRow,
   OperationsCloseCalendar,
+  OwnershipReviewModel,
   OperationsCloseCalendarItem,
   RolePermissionCatalog,
   SecurityAssetProfileDefinition,
@@ -67,6 +68,7 @@ interface SettingsScreenProps {
   ledgerMappingWorkbench?: LedgerMappingWorkbench | null;
   operationsApprovalPolicyMatrix?: OperationsApprovalPolicyMatrix | null;
   operationsCloseCalendar?: OperationsCloseCalendar | null;
+  ownershipReview?: OwnershipReviewModel | null;
   providerRoutingRefreshing?: boolean;
   onFeatureCapabilityToggle?: (capabilityKey: string, isEnabled: boolean) => Promise<void> | void;
   onRefresh?: () => Promise<void> | void;
@@ -330,6 +332,7 @@ export function SettingsScreen({
   ledgerMappingWorkbench = null,
   operationsApprovalPolicyMatrix = null,
   operationsCloseCalendar = null,
+  ownershipReview = null,
   providerRoutingRefreshing = false,
   onFeatureCapabilityToggle,
   onRefresh,
@@ -368,6 +371,14 @@ export function SettingsScreen({
     canClear: vm.alpacaConnectionPanel.canClear
   });
   const recentEventsVm = useSettingsRecentEventsSelectionViewModel(vm.recentEventsSection);
+  const [selectedOwnershipLinkId, setSelectedOwnershipLinkId] = useState<string | null>(null);
+  const [ownershipActiveOnly, setOwnershipActiveOnly] = useState(false);
+  const [ownershipAsOfDate, setOwnershipAsOfDate] = useState(() => ownershipReview?.asOf.slice(0, 10) ?? "");
+  const filteredOwnershipLinks = (ownershipReview?.links ?? []).filter((link) => !ownershipActiveOnly || link.effectiveWindow.isActiveAsOf);
+  const selectedOwnershipLink = filteredOwnershipLinks.find((link) => link.ownershipLinkId === selectedOwnershipLinkId)
+    ?? filteredOwnershipLinks.find((link) => link.validationState === "Blocking")
+    ?? filteredOwnershipLinks[0]
+    ?? null;
   const [providerSearch, setProviderSearch] = useState("");
   const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
@@ -1670,6 +1681,112 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+
+      <Card id="operator-ownership-review" className="panel-surface scroll-mt-6 border border-border/70">
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="eyebrow-label">Setup ownership</div>
+              <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                <GitBranch className="h-4 w-4 text-primary" aria-hidden="true" />
+                Operator ownership review
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Ownership state from /api/fund-structure/ownership-review must be explicit before setup completion.
+              </CardDescription>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <SettingsChip label="Active" value={ownershipReview ? String(ownershipReview.summary.activeLinkCount) : "—"} />
+              <SettingsChip label="Invalid" value={ownershipReview ? String(ownershipReview.summary.invalidLinkCount) : "—"} />
+              <SettingsChip label="Rollup" value={ownershipReview ? `${ownershipReview.summary.explicitOwnershipPercentTotal.toFixed(2)}%` : "—"} />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 rounded-xl border border-border/70 bg-muted/20 p-3 text-sm text-muted-foreground md:grid-cols-[1fr_auto_auto] md:items-end">
+            <div>{ownershipReview?.summary.rollupSummary ?? "Ownership review is loading or unavailable."}</div>
+            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-foreground">
+              <input type="checkbox" checked={ownershipActiveOnly} onChange={(event) => setOwnershipActiveOnly(event.target.checked)} />
+              Active as of
+            </label>
+            <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-foreground">
+              As-of date
+              <Input type="date" value={ownershipAsOfDate || ownershipReview?.asOf.slice(0, 10) || ""} onChange={(event) => setOwnershipAsOfDate(event.target.value)} className="h-8 min-w-40" />
+            </label>
+          </div>
+          {!ownershipReview || filteredOwnershipLinks.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-warning/50 bg-warning/10 p-4">
+              <div className="font-semibold text-foreground">{ownershipReview?.emptyStateTitle ?? "Ownership setup incomplete"}</div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {ownershipReview?.emptyStateDetail ?? "Create ownership links before completing setup."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
+              <div className="overflow-hidden rounded-xl border border-border/70">
+                <table className="min-w-full divide-y divide-border/70 text-sm" aria-label="Ownership graph table">
+                  <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Link</th>
+                      <th className="px-3 py-2 text-left">Window</th>
+                      <th className="px-3 py-2 text-right">Percent</th>
+                      <th className="px-3 py-2 text-left">Validation</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/70">
+                    {filteredOwnershipLinks.map((link) => (
+                      <tr key={link.ownershipLinkId} className={cn("cursor-pointer", selectedOwnershipLink?.ownershipLinkId === link.ownershipLinkId && "bg-primary/10")} onClick={() => setSelectedOwnershipLinkId(link.ownershipLinkId)}>
+                        <td className="px-3 py-2">
+                          <button type="button" className="text-left font-medium text-foreground" onClick={() => setSelectedOwnershipLinkId(link.ownershipLinkId)}>
+                            {link.nodeDisplayLabel}
+                          </button>
+                          <div className="text-xs text-muted-foreground">{link.isPrimary ? "Primary" : "Secondary"}</div>
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">{link.effectiveWindow.displayLabel}</td>
+                        <td className="px-3 py-2 text-right">{link.percent == null ? "—" : `${link.percent.toFixed(2)}%`}</td>
+                        <td className="px-3 py-2">
+                          <Badge variant={link.validationState === "Blocking" ? "danger" : link.validationState === "Warning" ? "outline" : "success"}>
+                            {link.validationState}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="rounded-xl border border-border/70 p-4" aria-label="Selected ownership link inspector">
+                <div className="font-semibold text-foreground">Selected-link inspector</div>
+                <dl className="mt-3 space-y-2 text-sm">
+                  <SettingsFieldRow label="Parent" value={selectedOwnershipLink?.parentLabel ?? "—"} tone="default" />
+                  <SettingsFieldRow label="Relationship" value={selectedOwnershipLink?.relationshipLabel ?? "—"} tone="muted" />
+                  <SettingsFieldRow label="Child" value={selectedOwnershipLink?.childLabel ?? "—"} tone="default" />
+                </dl>
+                {(selectedOwnershipLink?.blockingMessages.length ?? 0) > 0 && (
+                  <div className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
+                    <div className="font-semibold text-destructive">Invalid-link warnings</div>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+                      {selectedOwnershipLink?.blockingMessages.map((message) => <li key={message}>{message}</li>)}
+                    </ul>
+                  </div>
+                )}
+                <div className="mt-4 text-sm">
+                  <div className="font-semibold text-foreground">Suggested remediation</div>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+                    {(selectedOwnershipLink?.suggestedRemediationActions ?? ["Select an ownership link to inspect remediation."]).map((action) => <li key={action}>{action}</li>)}
+                  </ul>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {(selectedOwnershipLink?.lifecycleCommands ?? []).map((command) => (
+                    <Button key={command.label} type="button" variant="outline" size="sm" disabled={!command.isEnabled} title={command.disabledReason}>
+                      {command.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card id="fund-operations-control-center" className="panel-surface scroll-mt-6 border border-border/70">
         <CardHeader>

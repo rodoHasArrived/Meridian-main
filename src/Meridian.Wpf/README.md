@@ -34,6 +34,8 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
+The setup wizard includes an ownership review panel that loads `/api/fund-structure/ownership-review`, lists ownership links, shows the selected-link inspector, surfaces validation blockers, and keeps lifecycle commands disabled until backend edit/expire/replace methods are enabled.
+
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext

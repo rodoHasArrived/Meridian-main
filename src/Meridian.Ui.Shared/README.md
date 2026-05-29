@@ -29,6 +29,8 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+The shared `OwnershipReviewReadService` projects `FundStructureGraphDto` into the operator ownership review model and backs `/api/fund-structure/ownership-review`, keeping setup ownership validation out of UI-specific code.
+
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. Workstation endpoint registration is split by domain through
 `WorkstationEndpoints.*.cs` partial files. Keep the root `WorkstationEndpoints.cs` file as the

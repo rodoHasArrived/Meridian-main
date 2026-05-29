@@ -4,11 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Application.Config;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.FundStructure;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Microsoft.Extensions.Logging;
@@ -25,6 +27,8 @@ public interface ISetupWizardStateService
     IReadOnlyList<SetupPreset> GetSetupPresets();
 
     Task<SetupWizardConfigurationState> LoadConfigurationAsync(CancellationToken ct = default);
+
+    Task<OwnershipReviewModelDto> GetOwnershipReviewAsync(DateTimeOffset? asOf = null, CancellationToken ct = default);
 
     SetupWizardApiKeyState LoadStoredApiKeys();
 
@@ -172,6 +176,23 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
         }
     }
 
+    public async Task<OwnershipReviewModelDto> GetOwnershipReviewAsync(DateTimeOffset? asOf = null, CancellationToken ct = default)
+    {
+        var path = asOf is null
+            ? "/api/fund-structure/ownership-review"
+            : $"/api/fund-structure/ownership-review?asOf={Uri.EscapeDataString(asOf.Value.ToString("O"))}";
+
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<OwnershipReviewModelDto>(path, cancellationToken: ct).ConfigureAwait(false)
+                ?? CreateUnavailableOwnershipReview(asOf);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return CreateUnavailableOwnershipReview(asOf, ex.Message);
+        }
+    }
+
     public SetupWizardApiKeyState LoadStoredApiKeys()
         => new(
             Environment.GetEnvironmentVariable("NASDAQDATALINK__APIKEY", EnvironmentVariableTarget.User) ?? string.Empty,
@@ -278,6 +299,16 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
         SaveApiKey("NASDAQDATALINK__APIKEY", nasdaqDataLinkApiKey);
         SaveApiKey("OPENFIGI__APIKEY", openFigiApiKey);
     }
+
+    private static OwnershipReviewModelDto CreateUnavailableOwnershipReview(DateTimeOffset? asOf, string? detail = null)
+        => new(
+            asOf ?? DateTimeOffset.UtcNow,
+            Array.Empty<OwnershipReviewLinkDto>(),
+            new OwnershipReviewSummaryDto(0, 0, 0, 0m, "Ownership review is not available yet.", Array.Empty<string>()),
+            "Ownership setup unavailable",
+            detail is null
+                ? "The setup wizard could not load ownership state from /api/fund-structure/ownership-review."
+                : $"The setup wizard could not load ownership state from /api/fund-structure/ownership-review. {detail}");
 
     private static void SaveApiKey(string variableName, string value)
     {

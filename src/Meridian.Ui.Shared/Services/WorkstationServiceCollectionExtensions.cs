@@ -67,6 +67,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ImmutableAuditLogService>();
         services.TryAddSingleton<AccessReviewService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
+        services.TryAddSingleton<IOwnershipReviewReadService, OwnershipReviewReadService>();
 
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>

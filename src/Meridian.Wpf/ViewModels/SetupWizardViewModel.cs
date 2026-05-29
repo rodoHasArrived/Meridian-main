@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.FundStructure;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
@@ -31,6 +32,10 @@ public sealed class SetupWizardViewModel : BindableBase
     private string _presetStatusText = string.Empty;
     private string _validationStatusText = string.Empty;
     private bool _isBusy;
+    private OwnershipReviewLinkDto? _selectedOwnershipLink;
+    private string _ownershipReviewTitle = "Ownership setup incomplete";
+    private string _ownershipReviewDetail = "Ownership state has not been loaded yet.";
+    private string _ownershipRollupSummary = "No ownership review loaded.";
 
     public SetupWizardViewModel(
         ISetupWizardStateService stateService,
@@ -52,11 +57,16 @@ public sealed class SetupWizardViewModel : BindableBase
         OpenInstructionsCommand = new RelayCommand(
             () => _linkLauncher.Open(InstructionsUrl),
             CanRunCommand);
+        EditOwnershipCommand = new RelayCommand(() => { }, CanRunOwnershipLifecycleCommand);
+        ExpireOwnershipCommand = new RelayCommand(() => { }, CanRunOwnershipLifecycleCommand);
+        ReplaceOwnershipCommand = new RelayCommand(() => { }, CanRunOwnershipLifecycleCommand);
     }
 
     public ObservableCollection<string> ProviderOptions { get; } = new();
 
     public ObservableCollection<SetupPreset> Presets { get; } = new();
+
+    public ObservableCollection<OwnershipReviewLinkDto> OwnershipLinks { get; } = new();
 
     public AsyncRelayCommand LoadCommand { get; }
 
@@ -71,6 +81,12 @@ public sealed class SetupWizardViewModel : BindableBase
     public RelayCommand UseDefaultStorageCommand { get; }
 
     public RelayCommand OpenInstructionsCommand { get; }
+
+    public RelayCommand EditOwnershipCommand { get; }
+
+    public RelayCommand ExpireOwnershipCommand { get; }
+
+    public RelayCommand ReplaceOwnershipCommand { get; }
 
     public string ConfigPath
     {
@@ -138,6 +154,40 @@ public sealed class SetupWizardViewModel : BindableBase
         private set => SetProperty(ref _validationStatusText, value);
     }
 
+    public OwnershipReviewLinkDto? SelectedOwnershipLink
+    {
+        get => _selectedOwnershipLink;
+        set
+        {
+            if (!SetProperty(ref _selectedOwnershipLink, value))
+            {
+                return;
+            }
+
+            EditOwnershipCommand.NotifyCanExecuteChanged();
+            ExpireOwnershipCommand.NotifyCanExecuteChanged();
+            ReplaceOwnershipCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public string OwnershipReviewTitle
+    {
+        get => _ownershipReviewTitle;
+        private set => SetProperty(ref _ownershipReviewTitle, value);
+    }
+
+    public string OwnershipReviewDetail
+    {
+        get => _ownershipReviewDetail;
+        private set => SetProperty(ref _ownershipReviewDetail, value);
+    }
+
+    public string OwnershipRollupSummary
+    {
+        get => _ownershipRollupSummary;
+        private set => SetProperty(ref _ownershipRollupSummary, value);
+    }
+
     public bool IsBusy
     {
         get => _isBusy;
@@ -155,6 +205,9 @@ public sealed class SetupWizardViewModel : BindableBase
             SaveAndContinueCommand.NotifyCanExecuteChanged();
             UseDefaultStorageCommand.NotifyCanExecuteChanged();
             OpenInstructionsCommand.NotifyCanExecuteChanged();
+            EditOwnershipCommand.NotifyCanExecuteChanged();
+            ExpireOwnershipCommand.NotifyCanExecuteChanged();
+            ReplaceOwnershipCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -182,6 +235,7 @@ public sealed class SetupWizardViewModel : BindableBase
             NasdaqApiKey = apiKeys.NasdaqDataLinkApiKey;
             OpenFigiApiKey = apiKeys.OpenFigiApiKey;
 
+            await LoadOwnershipReviewAsync();
             await EnsureBackendAvailableAsync();
         });
     }
@@ -223,6 +277,19 @@ public sealed class SetupWizardViewModel : BindableBase
                 await _notificationSink.NotifyErrorAsync("Setup Preset", $"Failed to apply preset: {ex.Message}");
             }
         });
+    }
+
+    private async Task LoadOwnershipReviewAsync()
+    {
+        var review = await _stateService.GetOwnershipReviewAsync().ConfigureAwait(false);
+        ReplaceItems(OwnershipLinks, review.Links);
+        SelectedOwnershipLink = OwnershipLinks.FirstOrDefault(link => link.ValidationState == OwnershipReviewValidationStateDto.Blocking)
+            ?? OwnershipLinks.FirstOrDefault();
+        OwnershipReviewTitle = OwnershipLinks.Count == 0 ? review.EmptyStateTitle : "Ownership review";
+        OwnershipReviewDetail = OwnershipLinks.Count == 0
+            ? review.EmptyStateDetail
+            : $"Selected ownership link: {SelectedOwnershipLink?.NodeDisplayLabel ?? "none"}.";
+        OwnershipRollupSummary = review.Summary.RollupSummary;
     }
 
     private async Task RefreshBackendStatusAsync()
@@ -362,6 +429,9 @@ public sealed class SetupWizardViewModel : BindableBase
     }
 
     private bool CanRunCommand() => !IsBusy;
+
+    private bool CanRunOwnershipLifecycleCommand()
+        => !IsBusy && SelectedOwnershipLink?.LifecycleCommands.Any(command => command.IsEnabled) == true;
 
     private async Task RunBusyAsync(Func<Task> action)
     {

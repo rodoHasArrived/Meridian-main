@@ -1,3 +1,4 @@
+using Meridian.Contracts.FundStructure;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
@@ -86,6 +87,48 @@ public sealed class SetupWizardViewModelTests
         viewModel.ValidationStatusText.Should().Be("Configuration saved and backend verified. Opening Research Workspace...");
     }
 
+
+    [Fact]
+    public async Task LoadAsync_WhenOwnershipReviewHasInvalidLink_SelectsInvalidLinkAndDisablesLifecycleCommands()
+    {
+        var state = new FakeSetupWizardStateService
+        {
+            OwnershipReview = CreateOwnershipReview(OwnershipReviewValidationStateDto.Blocking)
+        };
+        var viewModel = CreateViewModel(state);
+
+        await viewModel.LoadAsync();
+
+        viewModel.OwnershipLinks.Should().HaveCount(1);
+        viewModel.SelectedOwnershipLink.Should().NotBeNull();
+        viewModel.SelectedOwnershipLink!.ValidationState.Should().Be(OwnershipReviewValidationStateDto.Blocking);
+        viewModel.OwnershipRollupSummary.Should().Contain("blocking");
+        viewModel.EditOwnershipCommand.CanExecute(null).Should().BeFalse();
+        viewModel.ExpireOwnershipCommand.CanExecute(null).Should().BeFalse();
+        viewModel.ReplaceOwnershipCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task LoadAsync_WhenOwnershipReviewIsEmpty_ShowsOwnershipEmptyState()
+    {
+        var state = new FakeSetupWizardStateService
+        {
+            OwnershipReview = new OwnershipReviewModelDto(
+                DateTimeOffset.Parse("2026-05-29T00:00:00Z"),
+                Array.Empty<OwnershipReviewLinkDto>(),
+                new OwnershipReviewSummaryDto(0, 0, 0, 0m, "No ownership links have been configured.", Array.Empty<string>()),
+                "Ownership setup incomplete",
+                "Create ownership links before completing setup.")
+        };
+        var viewModel = CreateViewModel(state);
+
+        await viewModel.LoadAsync();
+
+        viewModel.OwnershipLinks.Should().BeEmpty();
+        viewModel.OwnershipReviewTitle.Should().Be("Ownership setup incomplete");
+        viewModel.OwnershipReviewDetail.Should().Contain("Create ownership links");
+    }
+
     [Fact]
     public async Task ApplyPresetCommand_UsesFirstSupportedRecommendedProvider()
     {
@@ -101,6 +144,35 @@ public sealed class SetupWizardViewModelTests
         viewModel.SelectedProvider.Should().Be("Alpaca");
         viewModel.PresetStatusText.Should().Contain("Applied \"Minimal Setup\" preset");
         notification.SuccessMessages.Should().Contain(message => message.Contains("Minimal Setup"));
+    }
+
+    private static OwnershipReviewModelDto CreateOwnershipReview(OwnershipReviewValidationStateDto state)
+    {
+        var command = new OwnershipLifecycleCommandDto(
+            "Edit",
+            "/api/fund-structure/links/00000000-0000-0000-0000-000000000001/edit",
+            false,
+            "Backend ownership lifecycle methods are not enabled for this environment yet.");
+        var link = new OwnershipReviewLinkDto(
+            Guid.Parse("00000000-0000-0000-0000-000000000001"),
+            "Alpha Fund owns Alpha Sleeve",
+            "Alpha Fund (Fund)",
+            "Alpha Sleeve (Sleeve)",
+            "owns",
+            100m,
+            true,
+            new OwnershipReviewEffectiveWindowDto(DateTimeOffset.Parse("2026-01-01T00:00:00Z"), null, true, "2026-01-01 to open-ended (active)"),
+            state,
+            state == OwnershipReviewValidationStateDto.Blocking ? ["Parent node is missing from the fund-structure graph."] : [],
+            state == OwnershipReviewValidationStateDto.Blocking ? ["Select an existing parent node before setup completion."] : ["No remediation required."],
+            [command]);
+
+        return new OwnershipReviewModelDto(
+            DateTimeOffset.Parse("2026-05-29T00:00:00Z"),
+            [link],
+            new OwnershipReviewSummaryDto(1, 1, state == OwnershipReviewValidationStateDto.Blocking ? 1 : 0, 100m, "1 active of 1 ownership links; 0 blocking; 100% explicit active ownership.", Array.Empty<string>()),
+            "Ownership setup incomplete",
+            "Create ownership links before completing setup.");
     }
 
     private static SetupWizardViewModel CreateViewModel(
@@ -141,6 +213,8 @@ public sealed class SetupWizardViewModelTests
         public SetupWizardSaveResult SaveResult { get; init; } =
             new(true, "Configuration saved.");
 
+        public OwnershipReviewModelDto OwnershipReview { get; init; } = CreateOwnershipReview(OwnershipReviewValidationStateDto.Valid);
+
         public IReadOnlyList<SetupPreset> GetSetupPresets()
             =>
             [
@@ -163,6 +237,9 @@ public sealed class SetupWizardViewModelTests
                 "Synthetic",
                 "data",
                 "Loaded existing valid configuration."));
+
+        public Task<OwnershipReviewModelDto> GetOwnershipReviewAsync(DateTimeOffset? asOf = null, CancellationToken ct = default)
+            => Task.FromResult(OwnershipReview);
 
         public SetupWizardApiKeyState LoadStoredApiKeys()
             => new("nasdaq-key", "figi-key");

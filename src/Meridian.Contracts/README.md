@@ -30,6 +30,8 @@ or provider implementations.
 
 ## Important workflows
 
+Ownership review contracts in `FundStructure/OwnershipReviewDtos.cs` define the shared setup-time ownership read model, validation state, lifecycle command affordances, effective windows, blockers, and remediation actions used by WPF and browser surfaces.
+
 Treat additive and breaking changes as cross-module compatibility work. Operations Continuity
 workflow DTOs publish the shared broker intake, Security Master, ledger posting, reconciliation,
 approval, close, and audit vocabulary consumed by both browser and WPF workstation clients. Keep

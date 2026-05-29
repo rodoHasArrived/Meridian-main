@@ -118,7 +118,68 @@
 
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
-                    <TextBlock Text="Step 3 · Configure providers and storage" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                    <TextBlock Text="Step 3 · Review ownership before setup completion" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                    <TextBlock Text="{Binding OwnershipReviewTitle}" Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,0,0,4" />
+                    <TextBlock Text="{Binding OwnershipReviewDetail}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                    <TextBlock Text="{Binding OwnershipRollupSummary}" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,16" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <ListBox x:Name="OwnershipLinksList"
+                                 ItemsSource="{Binding OwnershipLinks}"
+                                 SelectedItem="{Binding SelectedOwnershipLink, Mode=TwoWay}"
+                                 MinHeight="180"
+                                 Grid.Column="0"
+                                 AutomationProperties.Name="Ownership tree list">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="8" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="0,0,0,1">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding ValidationState}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                                <TextBlock Text="{Binding NodeDisplayLabel}" FontWeight="SemiBold" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding EffectiveWindow.DisplayLabel}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding Percent, StringFormat=Percent: {0:0.##}%}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <Border Grid.Column="2" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12"
+                                AutomationProperties.Name="Selected ownership link inspector">
+                            <StackPanel>
+                                <TextBlock Text="Selected-link inspector" FontWeight="SemiBold" Margin="0,0,0,8" />
+                                <TextBlock Text="{Binding SelectedOwnershipLink.ParentLabel}" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="{Binding SelectedOwnershipLink.RelationshipLabel}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock Text="{Binding SelectedOwnershipLink.ChildLabel}" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,8" />
+                                <TextBlock Text="Validation" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding SelectedOwnershipLink.ValidationState}" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,8" />
+                                <ItemsControl ItemsSource="{Binding SelectedOwnershipLink.BlockingMessages}" Margin="0,0,0,8" />
+                                <TextBlock Text="Suggested remediation" FontWeight="SemiBold" />
+                                <ItemsControl ItemsSource="{Binding SelectedOwnershipLink.SuggestedRemediationActions}" Margin="0,0,0,12" />
+                                <WrapPanel>
+                                    <Button Content="Edit" Command="{Binding EditOwnershipCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                                    <Button Content="Expire" Command="{Binding ExpireOwnershipCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                                    <Button Content="Replace" Command="{Binding ReplaceOwnershipCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                                </WrapPanel>
+                                <TextBlock Text="Commands activate when backend ownership lifecycle endpoints are available."
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Step 4 · Configure providers and storage" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
                     <TextBlock Text="Choose your default data provider and where data will be stored."
                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,0,0,16" />
 
@@ -161,7 +222,7 @@
 
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
-                    <TextBlock Text="Step 4 · Add API keys (optional)" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                    <TextBlock Text="Step 5 · Add API keys (optional)" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
                     <TextBlock Text="Provide API keys for premium providers. Keys are stored in your user environment variables."
                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,0,0,16" />
 

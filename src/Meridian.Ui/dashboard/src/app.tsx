@@ -102,6 +102,7 @@ function AppShell() {
     ledgerMappingWorkbench,
     operationsApprovalPolicyMatrix,
     operationsCloseCalendar,
+    ownershipReview,
     brokeragePortfolio,
     workflowLibrary,
     workflowPresets,
@@ -402,6 +403,7 @@ function AppShell() {
                       ledgerMappingWorkbench={ledgerMappingWorkbench}
                       operationsApprovalPolicyMatrix={operationsApprovalPolicyMatrix}
                       operationsCloseCalendar={operationsCloseCalendar}
+                      ownershipReview={ownershipReview}
                       onFeatureCapabilityToggle={updateFeatureCapability}
                       onRefresh={refresh}
                       onProviderRoutingRefresh={refreshProviderRouting}

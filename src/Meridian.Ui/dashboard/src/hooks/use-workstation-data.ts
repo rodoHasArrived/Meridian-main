@@ -6,6 +6,7 @@ import {
   getGovernanceWorkspace,
   getAlpacaConnectionStatus,
   getLedgerMappingWorkbench,
+  getOwnershipReview,
   getOperationsApprovalPolicyMatrix,
   getOperationsCloseCalendar,
   getProviderConnections,
@@ -37,6 +38,7 @@ import type {
   LedgerMappingWorkbench,
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
+  OwnershipReviewModel,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
@@ -76,6 +78,7 @@ interface WorkstationDataState {
   ledgerMappingWorkbench: LedgerMappingWorkbench | null;
   operationsApprovalPolicyMatrix: OperationsApprovalPolicyMatrix | null;
   operationsCloseCalendar: OperationsCloseCalendar | null;
+  ownershipReview: OwnershipReviewModel | null;
   brokeragePortfolio: BrokerageHouseholdPortfolio | null;
   workflowLibrary: WorkflowLibrary | null;
   workflowPresets: WorkflowPresetLibrary | null;
@@ -111,6 +114,7 @@ const initialState: WorkstationDataState = {
   ledgerMappingWorkbench: null,
   operationsApprovalPolicyMatrix: null,
   operationsCloseCalendar: null,
+  ownershipReview: null,
   brokeragePortfolio: null,
   workflowLibrary: null,
   workflowPresets: null,
@@ -215,6 +219,7 @@ export function useWorkstationData() {
       ledgerMappingWorkbench,
       operationsApprovalPolicyMatrix,
       operationsCloseCalendar,
+      ownershipReview,
       brokeragePortfolio,
       workflowLibrary,
       workflowPresets,
@@ -238,6 +243,7 @@ export function useWorkstationData() {
       getLedgerMappingWorkbench(requestOptions),
       getOperationsApprovalPolicyMatrix(requestOptions),
       getOperationsCloseCalendar({}, requestOptions),
+      getOwnershipReview(requestOptions),
       getBrokerageHouseholdPortfolio("alpaca", requestOptions),
       getWorkflowLibrary(requestOptions),
       getWorkflowPresets(requestOptions),
@@ -297,6 +303,7 @@ export function useWorkstationData() {
       ledgerMappingWorkbench: readWorkspace(["settings"], ledgerMappingWorkbench),
       operationsApprovalPolicyMatrix: readWorkspace(["settings"], operationsApprovalPolicyMatrix),
       operationsCloseCalendar: readWorkspace(["settings"], operationsCloseCalendar),
+      ownershipReview: readWorkspace(["settings"], ownershipReview),
       brokeragePortfolio: readWorkspace(["portfolio"], brokeragePortfolio),
       workflowLibrary: readWorkflow(workflowLibrary),
       workflowPresets: readWorkflow(workflowPresets),

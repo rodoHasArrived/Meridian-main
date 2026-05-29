@@ -65,6 +65,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     ledgerMappingWorkbench: null,
     operationsApprovalPolicyMatrix: null,
     operationsCloseCalendar: null,
+    ownershipReview: null,
     brokeragePortfolio: null,
     workflowLibrary: null,
     workflowPresets: null,

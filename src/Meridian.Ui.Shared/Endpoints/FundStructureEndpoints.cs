@@ -348,6 +348,50 @@ public static class FundStructureEndpoints
         .WithName("GetLegacyFundStructureGraph")
         .Produces<FundStructureGraphDto>(StatusCodes.Status200OK);
 
+        group.MapGet("/ownership-review", async (HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+
+            var reviewService = context.RequestServices.GetService<IOwnershipReviewReadService>()
+                ?? new OwnershipReviewReadService();
+            var q = context.Request.Query;
+            var asOf = ParseDateTimeOffset(q["asOf"]);
+            var query = new FundStructureQuery(
+                FundId: ParseGuid(q["fundId"]),
+                NodeId: ParseGuid(q["nodeId"]),
+                NodeKind: ParseNodeKind(q["nodeKind"]),
+                ActiveOnly: ParseActiveOnly(q["activeOnly"]),
+                AsOf: asOf);
+
+            var graph = await service.GetFundStructureGraphAsync(query, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(reviewService.Project(graph, asOf), jsonOptions);
+        })
+        .WithName("GetOwnershipReview")
+        .Produces<OwnershipReviewModelDto>(StatusCodes.Status200OK);
+
+        group.MapPost("/links/{ownershipLinkId:guid}/edit", (Guid ownershipLinkId) =>
+            Results.Problem(
+                $"Ownership link {ownershipLinkId} cannot be edited until backend lifecycle methods are enabled.",
+                statusCode: StatusCodes.Status501NotImplemented))
+        .WithName("EditOwnershipLink")
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        group.MapPost("/links/{ownershipLinkId:guid}/expire", (Guid ownershipLinkId) =>
+            Results.Problem(
+                $"Ownership link {ownershipLinkId} cannot be expired until backend lifecycle methods are enabled.",
+                statusCode: StatusCodes.Status501NotImplemented))
+        .WithName("ExpireOwnershipLink")
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        group.MapPost("/links/{ownershipLinkId:guid}/replace", (Guid ownershipLinkId) =>
+            Results.Problem(
+                $"Ownership link {ownershipLinkId} cannot be replaced until backend lifecycle methods are enabled.",
+                statusCode: StatusCodes.Status501NotImplemented))
+        .WithName("ReplaceOwnershipLink")
+        .Produces(StatusCodes.Status501NotImplemented);
+
         group.MapGet("/businesses/{businessId:guid}/advisory-view", async (Guid businessId, HttpContext context) =>
         {
             var service = ResolveService(context);

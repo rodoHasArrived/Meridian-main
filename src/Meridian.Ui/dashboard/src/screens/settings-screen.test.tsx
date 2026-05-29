@@ -9,6 +9,7 @@ import type {
   LedgerMappingWorkbench,
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
+  OwnershipReviewModel,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
@@ -394,6 +395,60 @@ const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
   }
 ];
 
+const ownershipReview: OwnershipReviewModel = {
+  asOf: "2026-05-29T00:00:00Z",
+  emptyStateTitle: "Ownership setup incomplete",
+  emptyStateDetail: "Create ownership links before completing setup.",
+  summary: {
+    totalLinkCount: 1,
+    activeLinkCount: 1,
+    invalidLinkCount: 1,
+    explicitOwnershipPercentTotal: 120,
+    rollupSummary: "1 active of 1 ownership links; 1 blocking; 120% explicit active ownership.",
+    blockingMessages: ["Ownership percent must be between 0 and 100."]
+  },
+  links: [
+    {
+      ownershipLinkId: "00000000-0000-0000-0000-000000000001",
+      nodeDisplayLabel: "Alpha Fund owns Core Sleeve",
+      parentLabel: "Alpha Fund (Fund)",
+      childLabel: "Core Sleeve (Sleeve)",
+      relationshipLabel: "owns",
+      percent: 120,
+      isPrimary: true,
+      effectiveWindow: {
+        effectiveFrom: "2026-01-01T00:00:00Z",
+        effectiveTo: null,
+        isActiveAsOf: true,
+        displayLabel: "2026-01-01 to open-ended (active)"
+      },
+      validationState: "Blocking",
+      blockingMessages: ["Ownership percent must be between 0 and 100."],
+      suggestedRemediationActions: ["Edit the percent to a value from 0 through 100."],
+      lifecycleCommands: [
+        {
+          label: "Edit",
+          endpoint: "/api/fund-structure/links/00000000-0000-0000-0000-000000000001/edit",
+          isEnabled: false,
+          disabledReason: "Backend ownership lifecycle methods are not enabled for this environment yet."
+        },
+        {
+          label: "Expire",
+          endpoint: "/api/fund-structure/links/00000000-0000-0000-0000-000000000001/expire",
+          isEnabled: false,
+          disabledReason: "Backend ownership lifecycle methods are not enabled for this environment yet."
+        },
+        {
+          label: "Replace",
+          endpoint: "/api/fund-structure/links/00000000-0000-0000-0000-000000000001/replace",
+          isEnabled: false,
+          disabledReason: "Backend ownership lifecycle methods are not enabled for this environment yet."
+        }
+      ]
+    }
+  ]
+};
+
 describe("SettingsScreen", () => {
   beforeEach(() => {
     apiMocks.approveSecurityAssetProfile.mockReset();
@@ -433,6 +488,31 @@ describe("SettingsScreen", () => {
     expect(within(eventRow).getByText("Provider health")).toBeInTheDocument();
     expect(within(eventDetail).getByText("Brokerage sync delayed.")).toBeInTheDocument();
     expect(within(eventDetail).getByText("Provider health / evt-1")).toBeInTheDocument();
+  });
+
+
+  it("renders ownership review warnings and disabled lifecycle commands", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={overview} ownershipReview={ownershipReview} />);
+
+    expect(screen.getByRole("table", { name: "Ownership graph table" })).toHaveTextContent("Alpha Fund owns Core Sleeve");
+    expect(screen.getByText("1 active of 1 ownership links; 1 blocking; 120% explicit active ownership.")).toBeInTheDocument();
+    expect(screen.getByText("Ownership percent must be between 0 and 100.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Expire" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Replace" })).toBeDisabled();
+  });
+
+  it("renders ownership empty state before setup completion", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        ownershipReview={{ ...ownershipReview, links: [], summary: { ...ownershipReview.summary, totalLinkCount: 0, activeLinkCount: 0, invalidLinkCount: 0, explicitOwnershipPercentTotal: 0, rollupSummary: "No ownership links have been configured." } }}
+      />
+    );
+
+    expect(screen.getByText("Ownership setup incomplete")).toBeInTheDocument();
+    expect(screen.getByText("Create ownership links before completing setup.")).toBeInTheDocument();
   });
 
   it("renders profile authentication posture with authority handoffs", () => {
