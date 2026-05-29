@@ -3335,3 +3335,105 @@ export interface DataFetchResult {
   bars: PriceBar[];
   rowCount: number;
 }
+
+// --- Fund structure setup workflow ---
+
+export type FundStructureNodeKind =
+  | "Organization"
+  | "Business"
+  | "Client"
+  | "Fund"
+  | "Sleeve"
+  | "Vehicle"
+  | "InvestmentPortfolio"
+  | "Entity"
+  | "Account";
+
+export type OwnershipRelationshipType = "Owns" | "Advises" | "Operates" | "ClearsFor" | "CustodiesFor" | "AllocatesTo";
+export type BusinessKind = "FinancialAdvisor" | "FundManager" | "Hybrid";
+export type ClientSegmentKind = "Unspecified" | "IndividualInvestor" | "FamilyOffice";
+export type LegalEntityType = "Fund" | "ManagementCompany" | "GeneralPartner" | "LimitedPartner" | "Vehicle" | "Custodian" | "Broker" | "Counterparty" | "Other";
+
+export interface FundStructureSetupDraftRequest {
+  draftId: string | null;
+  effectiveFrom: string;
+  requestedBy: string;
+  nodes: FundStructureSetupNodeDraft[];
+  links: FundStructureSetupLinkDraft[];
+  reuseExistingEntities?: boolean;
+}
+
+export interface FundStructureSetupNodeDraft {
+  clientKey: string;
+  kind: FundStructureNodeKind;
+  code: string;
+  name: string;
+  baseCurrency: string;
+  nodeId?: string | null;
+  description?: string | null;
+  businessKind?: BusinessKind | null;
+  clientSegmentKind?: ClientSegmentKind | null;
+  legalEntityType?: LegalEntityType | null;
+  jurisdiction?: string | null;
+  mandate?: string | null;
+  strategyIds?: string[] | null;
+}
+
+export interface FundStructureSetupLinkDraft {
+  parentClientKey: string;
+  childClientKey: string;
+  relationshipType: OwnershipRelationshipType;
+  ownershipLinkId?: string | null;
+  ownershipPercent?: number | null;
+  isPrimary?: boolean;
+  notes?: string | null;
+}
+
+export interface FundStructureSetupPreview {
+  isValid: boolean;
+  draftId: string | null;
+  nodes: FundStructureSetupNodePreview[];
+  links: FundStructureSetupLinkPreview[];
+  validationMessages: FundStructureSetupValidationMessage[];
+  createNodeCount: number;
+  reuseNodeCount: number;
+  createLinkCount: number;
+}
+
+export interface FundStructureSetupNodePreview {
+  clientKey: string;
+  kind: FundStructureNodeKind;
+  nodeId: string;
+  code: string;
+  name: string;
+  willCreate: boolean;
+  reusesExisting: boolean;
+  message: string | null;
+}
+
+export interface FundStructureSetupLinkPreview {
+  ownershipLinkId: string;
+  parentNodeId: string;
+  childNodeId: string;
+  relationshipType: OwnershipRelationshipType;
+  willCreate: boolean;
+  reusesExisting: boolean;
+  message: string | null;
+}
+
+export interface FundStructureSetupCommitResult {
+  isCommitted: boolean;
+  draftId: string | null;
+  createdNodeIds: string[];
+  reusedNodeIds: string[];
+  createdOwnershipLinkIds: string[];
+  preview: FundStructureSetupPreview;
+  validationMessages: FundStructureSetupValidationMessage[];
+}
+
+export interface FundStructureSetupValidationMessage {
+  severity: string;
+  code: string;
+  message: string;
+  clientKey: string | null;
+}

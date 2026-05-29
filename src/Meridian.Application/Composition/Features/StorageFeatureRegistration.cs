@@ -314,6 +314,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.TryAddSingleton<IFundStructureStore, PostgresFundStructureStore>();
             services.TryAddSingleton<PostgresFundStructureService>();
             services.TryAddSingleton<IFundStructureService>(sp => sp.GetRequiredService<PostgresFundStructureService>());
+            services.TryAddSingleton<IFundStructureSetupService, FundStructureSetupService>();
         }
         else
         {
@@ -330,6 +331,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                     securityMasterQueryService,
                     persistencePath);
             });
+            services.TryAddSingleton<IFundStructureSetupService, FundStructureSetupService>();
         }
         // ── Banking ──────────────────────────────────────────────────────────
         if (BankingStartup.IsConfigured())

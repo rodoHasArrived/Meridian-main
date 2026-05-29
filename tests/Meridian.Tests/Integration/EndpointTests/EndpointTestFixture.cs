@@ -86,6 +86,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
             new InMemoryFundStructureService(
                 sp.GetRequiredService<IFundAccountService>(),
                 persistencePath: null));
+        builder.Services.AddSingleton<IFundStructureSetupService, FundStructureSetupService>();
 
         _app = builder.Build();
         _app.UseApiKeyAuthentication();

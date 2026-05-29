@@ -122,6 +122,9 @@ import type {
   ExecutionManualOverride,
   UpdateExecutionPositionLimitRequest,
   FeatureCapabilitySettingsResponse,
+  FundStructureSetupCommitResult,
+  FundStructureSetupDraftRequest,
+  FundStructureSetupPreview,
   LedgerMappingAssignmentRequest,
   LedgerMappingAssignmentResult,
   LedgerMappingWorkbench,
@@ -555,6 +558,14 @@ export function rollbackSecurityAssetProfile(
   options: ApiRequestOptions = {}
 ) {
   return postJson<SecurityAssetProfileGovernanceResult>(securityMasterAssetProfileRollbackEndpoint(), request, options);
+}
+
+export function previewFundStructureSetup(request: FundStructureSetupDraftRequest, options: ApiRequestOptions = {}) {
+  return postJson<FundStructureSetupPreview>(FUND_STRUCTURE_API_ENDPOINTS.setupPreview, request, options);
+}
+
+export function commitFundStructureSetup(request: FundStructureSetupDraftRequest, options: ApiRequestOptions = {}) {
+  return postJson<FundStructureSetupCommitResult>(FUND_STRUCTURE_API_ENDPOINTS.setupCommit, request, options);
 }
 
 export function getLedgerMappingWorkbench(options: ApiRequestOptions = {}) {

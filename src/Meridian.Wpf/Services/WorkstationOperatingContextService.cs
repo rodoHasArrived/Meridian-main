@@ -13,6 +13,7 @@ public sealed partial class WorkstationOperatingContextService
 {
     private readonly FundContextService _fundContextService;
     private readonly IFundStructureService? _fundStructureService;
+    private readonly IFundStructureSetupService? _fundStructureSetupService;
     private readonly IEnvironmentRuntimeProjectionService? _environmentRuntimeProjectionService;
     private readonly object _loadGate = new();
     private readonly string _storagePath;
@@ -23,11 +24,13 @@ public sealed partial class WorkstationOperatingContextService
     public WorkstationOperatingContextService(
         FundContextService fundContextService,
         IFundStructureService? fundStructureService = null,
+        IFundStructureSetupService? fundStructureSetupService = null,
         IEnvironmentRuntimeProjectionService? environmentRuntimeProjectionService = null,
         string? storagePath = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _fundStructureService = fundStructureService;
+        _fundStructureSetupService = fundStructureSetupService;
         _environmentRuntimeProjectionService = environmentRuntimeProjectionService;
         _storagePath = storagePath ?? GetDefaultStoragePath();
     }
@@ -303,6 +306,18 @@ public sealed partial class WorkstationOperatingContextService
 
     private async Task SeedHybridGraphAsync(CancellationToken ct)
     {
+        if (_fundStructureSetupService is not null)
+        {
+            var request = CreateHybridSetupDraft();
+            var preview = await _fundStructureSetupService.PreviewSetupAsync(request, ct).ConfigureAwait(false);
+            if (preview.IsValid)
+            {
+                await _fundStructureSetupService.CommitSetupAsync(request, ct).ConfigureAwait(false);
+            }
+
+            return;
+        }
+
         var organizationId = Guid.Parse("0d6b6e74-88af-44df-a718-6147b3790cf7");
         var businessId = Guid.Parse("bf705d1f-ca05-4658-84aa-cdd69a01c4d4");
         var clientId = Guid.Parse("86e71237-b2be-4544-b1b8-77dbfa2c3830");
@@ -408,6 +423,34 @@ public sealed partial class WorkstationOperatingContextService
                     EntityId: entityId,
                     Description: "Fund operating portfolio."),
                 ct)).ConfigureAwait(false);
+    }
+
+    private static FundStructureSetupDraftRequest CreateHybridSetupDraft()
+    {
+        var effectiveFrom = new DateTimeOffset(2026, 1, 2, 9, 0, 0, TimeSpan.Zero);
+        return new FundStructureSetupDraftRequest(
+            Guid.Parse("45ac9cdb-ccdb-4a1c-8d50-3c3aa95b12b7"),
+            effectiveFrom,
+            "codex",
+            [
+                new FundStructureSetupNodeDraftDto("org", FundStructureNodeKindDto.Organization, "NW-ORG", "Northwind Advisory Group", "USD", Guid.Parse("0d6b6e74-88af-44df-a718-6147b3790cf7"), "Hybrid advisory and fund operating sample organization."),
+                new FundStructureSetupNodeDraftDto("business", FundStructureNodeKindDto.Business, "NW-HYB", "Northwind Hybrid", "USD", Guid.Parse("bf705d1f-ca05-4658-84aa-cdd69a01c4d4"), "Shared advisory and fund operating business.", BusinessKindDto.Hybrid),
+                new FundStructureSetupNodeDraftDto("client", FundStructureNodeKindDto.Client, "CFO-001", "Canyon Family Office", "USD", Guid.Parse("86e71237-b2be-4544-b1b8-77dbfa2c3830"), "Advisory client with shared accounting visibility.", ClientSegmentKind: ClientSegmentKind.FamilyOffice),
+                new FundStructureSetupNodeDraftDto("entity", FundStructureNodeKindDto.Entity, "NW-ENT", "Northwind Income Fund LP", "USD", Guid.Parse("911d0237-5b94-4d31-b594-9d2eec3098f3"), "Primary operating legal entity.", LegalEntityType: LegalEntityTypeDto.Fund, Jurisdiction: "Delaware"),
+                new FundStructureSetupNodeDraftDto("fund", FundStructureNodeKindDto.Fund, "NW-INCOME", "Northwind Income", "USD", Guid.Parse("2c4eaa0f-2768-4fe1-bdb2-b4136610891d"), "Hybrid operating income fund."),
+                new FundStructureSetupNodeDraftDto("client-portfolio", FundStructureNodeKindDto.InvestmentPortfolio, "CANYON-MANDATE", "Canyon Income Mandate", "USD", Guid.Parse("9784b11e-2dbc-48c3-9dc9-a5a05ad9d0de"), "Client advisory mandate portfolio."),
+                new FundStructureSetupNodeDraftDto("fund-portfolio", FundStructureNodeKindDto.InvestmentPortfolio, "NW-FUND-PORT", "Northwind Income Master Portfolio", "USD", Guid.Parse("9118d218-afcf-49cb-a6f5-dd248b581c82"), "Fund operating portfolio.")
+            ],
+            [
+                new FundStructureSetupLinkDraftDto("org", "business", OwnershipRelationshipTypeDto.Owns),
+                new FundStructureSetupLinkDraftDto("business", "client", OwnershipRelationshipTypeDto.Advises),
+                new FundStructureSetupLinkDraftDto("business", "fund", OwnershipRelationshipTypeDto.Operates),
+                new FundStructureSetupLinkDraftDto("business", "client-portfolio", OwnershipRelationshipTypeDto.Operates),
+                new FundStructureSetupLinkDraftDto("client", "client-portfolio", OwnershipRelationshipTypeDto.Owns),
+                new FundStructureSetupLinkDraftDto("business", "fund-portfolio", OwnershipRelationshipTypeDto.Operates),
+                new FundStructureSetupLinkDraftDto("fund", "fund-portfolio", OwnershipRelationshipTypeDto.AllocatesTo),
+                new FundStructureSetupLinkDraftDto("entity", "fund-portfolio", OwnershipRelationshipTypeDto.Owns)
+            ]);
     }
 
     private async Task SynchronizeCompatibilityFundAsync(WorkstationOperatingContext context, CancellationToken ct)

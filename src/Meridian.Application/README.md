@@ -97,6 +97,8 @@ and UI presentation concerns in their owning layers.
 
 ## Important workflows
 
+Fund-structure application services include a setup workflow service that previews full graph drafts, reuses matching existing entities by code or name, orders missing node creation by dependency, and blocks mutation when validation fails.
+
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 

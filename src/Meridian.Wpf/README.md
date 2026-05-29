@@ -34,6 +34,8 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
+The WPF setup seeding path previews the shared fund-structure setup draft before committing it, keeping desktop onboarding aligned with the backend one-shot setup workflow.
+
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext

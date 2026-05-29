@@ -217,6 +217,8 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(AUTH_API_ENDPOINTS.roles).toBe("/api/auth/roles");
     expect(AUTH_API_ENDPOINTS.roleProfiles).toBe("/api/auth/role-profiles");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.setupPreview).toBe("/api/fund-structure/setup/preview");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.setupCommit).toBe("/api/fund-structure/setup/commit");
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench).toBe("/api/fund-structure/ledger-mapping-view");
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingAssignments).toBe("/api/fund-structure/ledger-mapping-assignments");
     expect(FUND_STRUCTURE_API_ENDPOINTS.transactionLabPreview).toBe("/api/fund-structure/accounting/transaction-lab/preview");

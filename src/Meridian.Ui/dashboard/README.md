@@ -55,6 +55,8 @@ Portfolio run evidence, Trading recent fills, Data backfill queue rows, and Secu
 
 ## Important workflows
 
+Browser workstation API helpers expose fund-structure setup preview and commit endpoints so setup screens can preview validation before submitting a draft.
+
 This is the active operator UI lane; keep shared contract parity with the WPF desktop. Security
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure

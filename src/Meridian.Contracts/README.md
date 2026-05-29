@@ -30,6 +30,8 @@ or provider implementations.
 
 ## Important workflows
 
+Fund-structure contracts also expose setup draft, preview, validation-message, and commit-result payloads so browser, WPF, and endpoint clients can validate a complete organization/business/fund/entity/portfolio draft before one-shot commit.
+
 Treat additive and breaking changes as cross-module compatibility work. Operations Continuity
 workflow DTOs publish the shared broker intake, Security Master, ledger posting, reconciliation,
 approval, close, and audit vocabulary consumed by both browser and WPF workstation clients. Keep

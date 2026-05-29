@@ -29,6 +29,8 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+Fund-structure shared endpoints include `/api/fund-structure/setup/preview` and `/api/fund-structure/setup/commit` so setup screens can preview validation and reuse decisions before committing the graph.
+
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. Workstation endpoint registration is split by domain through
 `WorkstationEndpoints.*.cs` partial files. Keep the root `WorkstationEndpoints.cs` file as the
