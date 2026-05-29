@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl supported assets index** and document explicit in-scope vs out-of-scope items.
@@ -95,7 +95,8 @@ Custom assets are not a bypass around modeling discipline. One-off generic instr
 | Deep vertical slice | [Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md), [Direct Lending Implementation Roadmap](ufl-direct-lending-implementation-roadmap.md) |
 | Listed and derivative instruments | [Equity Target-State Package V2](ufl-equity-target-state-v2.md), [Option Target-State Package V2](ufl-option-target-state-v2.md), [Future Target-State Package V2](ufl-future-target-state-v2.md), [Warrant Target-State Package V2](ufl-warrant-target-state-v2.md), [CFD Target-State Package V2](ufl-cfd-target-state-v2.md), [Swap Target-State Package V2](ufl-swap-target-state-v2.md) |
 | Rates, cash, and credit | [Bond Target-State Package V2](ufl-bond-target-state-v2.md), [Treasury Bill Target-State Package V2](ufl-treasury-bill-target-state-v2.md), [Commercial Paper Target-State Package V2](ufl-commercial-paper-target-state-v2.md), [Certificate of Deposit Target-State Package V2](ufl-certificate-of-deposit-target-state-v2.md), [Deposit Target-State Package V2](ufl-deposit-target-state-v2.md), [Cash Sweep Target-State Package V2](ufl-cash-sweep-target-state-v2.md), [Money Market Fund Target-State Package V2](ufl-money-market-fund-target-state-v2.md), [Repo Target-State Package V2](ufl-repo-target-state-v2.md) |
-| Other asset coverage | [FX Spot Target-State Package V2](ufl-fx-spot-target-state-v2.md), [Commodity Target-State Package V2](ufl-commodity-target-state-v2.md), [Crypto Target-State Package V2](ufl-crypto-target-state-v2.md), [Other Security Target-State Package V2](ufl-other-security-target-state-v2.md) |
+| Other asset coverage | [FX Spot Target-State Package V2](ufl-fx-spot-target-state-v2.md), [Commodity Target-State Package V2](ufl-commodity-target-state-v2.md), [Crypto Target-State Package V2](ufl-crypto-target-state-v2.md) |
+| Custom and generic coverage | [Other Security Target-State Package V2](ufl-other-security-target-state-v2.md), [UFL Custom Asset Composability](ufl-custom-asset-composability.md) |
 
 ## Notes
 

@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, application, and workstation contributors
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 **Status:** active UFL foundation
 
 ## Summary
@@ -10,6 +10,18 @@
 UFL is a capability and conformance framework first, and a set of asset-package documents second. Asset packages should be thin profiles over a common UFL model: they state which capabilities apply, what maturity level is currently evidenced, what target additions remain, and what tests prove the next milestone.
 
 Provider payloads may be retained as evidence, but downstream UFL workflows must consume canonical Security Master identities, canonical terms, and canonical projections.
+
+## Shared Framework
+
+Every UFL asset follows the same common architecture before it adds asset-specific behavior:
+
+1. **Identity and terms:** Security Master owns canonical `SecurityId`, asset class, common terms, asset-specific terms, aliases, issuer or counterparty links, and underlying links.
+2. **Lifecycle and validation:** deterministic validators enforce required fields, date ordering, valid enum values, lifecycle state, and promotion or review guardrails.
+3. **Projection and rebuild:** shared rebuild orchestration projects canonical terms into asset-scoped read models with checkpoints, source-event metadata, correlation IDs, and rebuild sequence.
+4. **Evidence and accounting:** assets that need fund-operations depth add accounting-impact previews, journal drafts, reconciliation links, report evidence, and period-control behavior through the shared AccountingImpact capability.
+5. **Workstation controls:** operator review, approval, correction, rollback, promotion, and evidence handling stay in governed workstation surfaces, not provider-specific adapters.
+
+The asset package is the profile over this framework. It must say which capabilities are active, which are target-state only, and which tests or evidence would move the asset to the next maturity level.
 
 ## Capability Set
 
@@ -51,6 +63,17 @@ Use partial levels when current evidence is mixed, for example `L1/L2 partial`. 
 | Lane C - Asset-Specific Operations | Vertical modules when needed | loan servicing, servicer ingestion, corporate-action accounting, repo exposure, swap leg references, option chain lifecycle, bond accrual/lifecycle extensions |
 
 Reference-heavy assets should usually advance Lane A before deep operational workflows. Direct lending is intentionally deeper because servicing, projection, accounting, reconciliation, and servicer-ingestion behavior are core to the asset.
+
+## Conformance Rules
+
+- A `SecurityKind` case, parser alias, or DTO alone is not enough to claim full UFL maturity.
+- L1 requires canonical terms and deterministic validation through the Security Master path.
+- L2 requires stable read contracts or endpoints over canonical reference data.
+- L3 requires asset-scoped projection metadata, deterministic rebuild behavior, checkpoints, and replay tests.
+- L4 requires workstation controls for review, approval, correction, rollback, and audit evidence.
+- L5 requires accounting-impact previews, journal/reconciliation links, period-control handling, and reporting evidence.
+- Provider payloads can support evidence and troubleshooting, but conformance claims must be based on canonical terms, canonical aliases, and canonical projections.
+- Use `partial` when a capability exists in one path but lacks projection, endpoint, rebuild, or test evidence across the asset profile.
 
 ## Asset Profile Shape
 

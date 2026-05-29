@@ -211,7 +211,50 @@ public sealed record StatementReconciliationCaseDto(
     DateTimeOffset? ResolvedAtUtc = null,
     string? ResolutionCode = null,
     string? ResolutionSummary = null,
-    string? EvidenceLink = null);
+    string? EvidenceLink = null,
+    string? Disposition = null,
+    int? AgingDays = null,
+    IReadOnlyList<StatementReconciliationCaseCommentThreadDto>? CommentThreads = null,
+    IReadOnlyList<StatementReconciliationCaseAttachmentDto>? Attachments = null,
+    StatementReconciliationBreakExplanationDto? BreakExplanation = null,
+    IReadOnlyList<StatementReconciliationCaseAuditEventDto>? AuditEvents = null);
+
+public sealed record StatementReconciliationCaseCommentThreadDto(
+    string? ThreadId,
+    string? Subject,
+    IReadOnlyList<StatementReconciliationCaseCommentDto>? Comments);
+
+public sealed record StatementReconciliationCaseCommentDto(
+    string? CommentId,
+    string? Body,
+    string? Actor,
+    DateTimeOffset? CreatedAtUtc,
+    string? ParentCommentId = null);
+
+public sealed record StatementReconciliationCaseAttachmentDto(
+    string? AttachmentId,
+    string? EvidenceKind,
+    string? SourceSystem,
+    string? SourceReference,
+    string? ContentHash,
+    string? Route,
+    DateTimeOffset? AttachedAtUtc);
+
+public sealed record StatementReconciliationBreakExplanationDto(
+    string? Summary,
+    IReadOnlyList<string>? SourceSystems,
+    string? ProbableCause,
+    string? LedgerImpact,
+    string? SuggestedNextAction,
+    string? RequiredSignoffRole,
+    IReadOnlyList<string>? EvidenceLinks);
+
+public sealed record StatementReconciliationCaseAuditEventDto(
+    string? EventId,
+    string? EventType,
+    DateTimeOffset? OccurredAtUtc,
+    string? Actor,
+    string? Detail);
 
 /// <summary>
 /// Shared workstation payload for a statement reconciliation run and its normalized evidence.

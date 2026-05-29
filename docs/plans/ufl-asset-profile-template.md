@@ -2,12 +2,14 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, application, and workstation contributors
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 **Status:** active template
 
 ## Summary
 
 Use this template when creating or converting UFL asset packages. Existing `*-target-state-v2.md` filenames may remain for compatibility, but each asset should read like a capability profile over the shared UFL model.
+
+Asset packages may retain detailed target-state sections as implementation notes, but the top-level profile is authoritative for maturity, evidence, provider boundary, and next milestone claims.
 
 ## Evidence Boundary
 
@@ -70,6 +72,10 @@ Use `partial` when evidence is mixed. Example: `L1/L2 partial`.
 - docs/status evidence packet when claiming delivered maturity
 
 **Exit criteria:** no target-state claim is marked delivered without named code and test evidence.
+
+## Legacy Target-State Detail
+
+If a converted package keeps earlier architecture, DDL, event, workflow, or ticket sections, treat those sections as target-state design notes. Do not use them as delivered evidence unless the profile names the current code, endpoint, test, or docs artifact that proves the claim.
 
 ## Provider Payload Boundary
 

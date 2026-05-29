@@ -440,7 +440,52 @@ public sealed class ReconciliationApiService(
             ResolvedAtUtc: item.Resolution?.ResolvedAtUtc,
             ResolutionCode: item.Resolution?.ResolutionCode,
             ResolutionSummary: item.Resolution?.Summary,
-            EvidenceLink: item.EvidenceReferences.FirstOrDefault());
+            EvidenceLink: item.EvidenceReferences.FirstOrDefault(),
+            Disposition: item.Disposition,
+            AgingDays: item.AgingDays,
+            CommentThreads: item.CommentThreads.Select(ToStatementCaseCommentThreadDto).ToArray(),
+            Attachments: item.Attachments.Select(ToStatementCaseAttachmentDto).ToArray(),
+            BreakExplanation: item.BreakExplanation is null ? null : ToStatementBreakExplanationDto(item.BreakExplanation),
+            AuditEvents: item.AuditEvents.Select(ToStatementCaseAuditEventDto).ToArray());
+
+    private static StatementReconciliationCaseCommentThreadDto ToStatementCaseCommentThreadDto(ReconciliationCaseCommentThread item) =>
+        new(
+            item.ThreadId,
+            item.Subject,
+            item.Comments.Select(static comment => new StatementReconciliationCaseCommentDto(
+                comment.CommentId,
+                comment.Body,
+                comment.Actor,
+                comment.CreatedAtUtc,
+                comment.ParentCommentId)).ToArray());
+
+    private static StatementReconciliationCaseAttachmentDto ToStatementCaseAttachmentDto(ReconciliationCaseAttachment item) =>
+        new(
+            item.AttachmentId,
+            item.EvidenceKind,
+            item.SourceSystem,
+            item.SourceReference,
+            item.ContentHash,
+            item.Route,
+            item.AttachedAtUtc);
+
+    private static StatementReconciliationBreakExplanationDto ToStatementBreakExplanationDto(ReconciliationBreakExplanation item) =>
+        new(
+            item.Summary,
+            item.SourceSystems,
+            item.ProbableCause,
+            item.LedgerImpact,
+            item.SuggestedNextAction,
+            item.RequiredSignoffRole,
+            item.EvidenceLinks);
+
+    private static StatementReconciliationCaseAuditEventDto ToStatementCaseAuditEventDto(ReconciliationCaseAuditEvent item) =>
+        new(
+            item.EventId,
+            item.EventType,
+            item.OccurredAtUtc,
+            item.Actor,
+            item.Detail);
 
     private static ReconciliationCaseSummaryDto ToCaseSummary(ReconciliationCase item)
         => new(
