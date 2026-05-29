@@ -96,6 +96,10 @@ approval counts, expiration dates, and close-readiness blockers, so the browser 
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
 derived from those shared task fields: ready, blocked, acknowledged, approval, evidence-pointer,
 and next-due counts are display projections only and must not become client-local close state.
+The close-package panel is likewise a read-only projection of the shared operations-continuity
+publication metadata: signer, sign-off rationale, retained manifest route, evidence hash, report
+pack id, retained evidence links, and checklist control approvals come from the server workflow
+payload rather than browser-local publication state.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
 Portfolio run drill-ins consume the shared attribution, equity-curve, cash-flow, and fill payloads
 and project browser view state for run comparison, realized/unrealized P&L bridge rows, and recent

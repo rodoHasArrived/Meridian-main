@@ -165,7 +165,7 @@ public sealed class LedgerAmountProvenanceServiceTests
                 RequiredSignoffRole: "Security Master steward",
                 SignoffStatus: "pending-signoff",
                 FundAccountId: "fund-ops",
-                ExplainabilitySummary: "provider=alpaca, externalAccount=PA-LEDGER, candidate=FactorScheduleEvent, providerEventId=factor-aapl-20260501, symbol=AAPL, securityId=35d27d8e-4460-4b17-92b8-6e5f53773d1d, requiredFeed=factor-schedule, evidenceSource=provider-corporate-action, ledgerEffect=FactorScheduleValuationInput, amount=0.9825, principalAmount=0, incomeAmount=0, journalLines=0, status=Break",
+                ExplainabilitySummary: "provider=alpaca, externalAccount=PA-LEDGER, candidate=FactorScheduleEvent, providerEventId=factor-aapl-20260501, symbol=AAPL, securityId=35d27d8e-4460-4b17-92b8-6e5f53773d1d, requiredFeed=factor-schedule, evidenceSource=provider-corporate-action, amount=0.9825, ledgerEffect=FactorScheduleValuationInput, effectiveDate=2026-05-01, factor=0.9825, principalAmount=0, incomeAmount=0, currency=USD, journalLines=0, status=Break",
                 RoutingTarget: "/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest",
                 RoutingDetail: "provider-corporate-action:alpaca:pa-ledger:factorscheduleevent:factor-aapl-20260501:aapl",
                 ExternalAccountId: "PA-LEDGER",
@@ -186,13 +186,77 @@ public sealed class LedgerAmountProvenanceServiceTests
             providerEvidence.RequiredFeed.Should().Be("factor-schedule");
             providerEvidence.SecurityId.Should().Be("35d27d8e-4460-4b17-92b8-6e5f53773d1d");
             providerEvidence.LedgerEffectKind.Should().Be("FactorScheduleValuationInput");
+            providerEvidence.EffectiveDate.Should().Be(new DateOnly(2026, 5, 1));
+            providerEvidence.Factor.Should().Be(0.9825m);
             providerEvidence.PrincipalAmount.Should().Be(0m);
             providerEvidence.IncomeAmount.Should().Be(0m);
+            providerEvidence.Currency.Should().Be("USD");
             providerEvidence.JournalPreviewLineCount.Should().Be(0);
             providerEvidence.SourceSystem.Should().Be("alpaca");
             providerEvidence.Route.Should().Be("/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest");
             detail.Warnings.Should().NotContain("No retained provider-event pointer is attached to this ledger amount.");
             detail.Reconciliation.RelatedCaseIds.Should().Contain("case-provider-factor-aapl");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task GetAsync_SurfacesProviderAmortizationScheduleMetadataAsStructuredEvidence()
+    {
+        var reportId = Guid.NewGuid();
+        var snapshot = BuildSnapshot(reportId);
+        var root = CreateTempRoot();
+        try
+        {
+            var breakRepository = new FileReconciliationBreakQueueRepository(
+                root,
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+            await breakRepository.CreateIfMissingAsync(new ReconciliationBreakQueueItem(
+                BreakId: "case-provider-amortization-aapl",
+                RunId: "provider-ledger-run",
+                StrategyName: "Provider corporate-action evidence",
+                Category: ReconciliationBreakCategory.MissingPortfolioCoverage,
+                Status: ReconciliationBreakQueueStatus.Open,
+                Variance: 0m,
+                Reason: "Provider amortization event requires controller review.",
+                AssignedTo: "security-master-steward",
+                DetectedAt: snapshot.GeneratedAt.AddMinutes(-10),
+                LastUpdatedAt: snapshot.GeneratedAt.AddMinutes(-5),
+                Severity: ReconciliationBreakSeverity.Medium,
+                ExceptionRoute: "accounting/reconciliation/provider-ledger/corporate-actions",
+                RequiredSignoffRole: "Security Master steward",
+                SignoffStatus: "pending-signoff",
+                FundAccountId: "fund-ops",
+                ExplainabilitySummary: "provider=alpaca, externalAccount=PA-LEDGER, candidate=AmortizationScheduleEvent, providerEventId=amortization-aapl-20260501, symbol=AAPL, securityId=35d27d8e-4460-4b17-92b8-6e5f53773d1d, requiredFeed=amortization-schedule,factor-schedule, evidenceSource=provider-corporate-action, amount=125, ledgerEffect=AmortizationScheduleValuationInput, effectiveDate=2026-05-01, factor=0.975, cashAmount=125, principalAmount=125, currency=USD, journalLines=0, status=Break",
+                RoutingTarget: "/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest",
+                RoutingDetail: "provider-corporate-action:alpaca:pa-ledger:amortizationscheduleevent:amortization-aapl-20260501:aapl",
+                ExternalAccountId: "PA-LEDGER",
+                CustodianId: "alpaca",
+                UpstreamSyncCursor: "alpaca|PA-LEDGER|amortization-aapl-20260501",
+                LastUpstreamSyncAt: snapshot.GeneratedAt.AddMinutes(-6)));
+
+            var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
+
+            var detail = await service.GetAsync(reportId, "Securities:AAPL");
+
+            detail.Should().NotBeNull();
+            var providerEvidence = detail!.Evidence.Should().ContainSingle(item =>
+                item.EvidenceType == "provider-event" &&
+                item.ProviderEventId == "amortization-aapl-20260501").Subject;
+            providerEvidence.ProviderEventType.Should().Be("AmortizationScheduleEvent");
+            providerEvidence.RequiredFeed.Should().Be("amortization-schedule,factor-schedule");
+            providerEvidence.LedgerEffectKind.Should().Be("AmortizationScheduleValuationInput");
+            providerEvidence.EffectiveDate.Should().Be(new DateOnly(2026, 5, 1));
+            providerEvidence.Factor.Should().Be(0.975m);
+            providerEvidence.CashAmount.Should().Be(125m);
+            providerEvidence.PrincipalAmount.Should().Be(125m);
+            providerEvidence.IncomeAmount.Should().BeNull();
+            providerEvidence.Currency.Should().Be("USD");
+            providerEvidence.JournalPreviewLineCount.Should().Be(0);
+            detail.Reconciliation.RelatedCaseIds.Should().Contain("case-provider-amortization-aapl");
         }
         finally
         {

@@ -182,6 +182,7 @@ const closeDetail: OperationsContinuityWorkflow = {
       gate: "Reconciliation",
       label: "Reconciliation casework signed off",
       owner: "fund-controller",
+      requiredEvidence: "Signed-off reconciliation case and retained custodian statement evidence.",
       dueDate: "2026-05-28",
       requiredApprovalCount: 1,
       expiresOn: "2026-05-31",
@@ -198,6 +199,7 @@ const closeDetail: OperationsContinuityWorkflow = {
       gate: "Approval",
       label: "Report pack approved for publication",
       owner: "fund-controller",
+      requiredEvidence: "Approved report-pack manifest retained for close publication.",
       dueDate: "2026-05-28",
       requiredApprovalCount: 1,
       expiresOn: "2026-05-31",
@@ -215,6 +217,37 @@ const closeDetail: OperationsContinuityWorkflow = {
     severity: "Ready",
     blockers: [],
     nextActions: []
+  },
+  closePackage: {
+    closePackageId: "close-package-2026-05",
+    reportPackId: "report-pack-2026-05",
+    retainedManifestId: "close-package-2026-05-manifest",
+    retainedManifestRoute: "/workstation/accounting/operations-continuity/w4-close-2026-05/close-package/close-package-2026-05-manifest",
+    evidenceHash: "b5f6c7d8e9a00112233445566778899aabbccddeeff00112233445566778899",
+    publishedAtUtc: "2026-05-28T15:10:00Z",
+    publishedBy: "fund-controller",
+    signOffRationale: "Close package published after reconciliation casework, report pack approval, and checklist control approvals.",
+    evidenceLinks: [
+      {
+        evidenceId: "close-package-manifest",
+        label: "Retained close package manifest",
+        route: "/workstation/accounting/operations-continuity/w4-close-2026-05/close-package/close-package-2026-05-manifest",
+        source: "operations-continuity",
+        capturedAtUtc: "2026-05-28T15:10:00Z"
+      }
+    ],
+    checklistControlApprovals: [
+      {
+        taskId: "close-gate-reconciliation",
+        approvedBy: "fund-controller",
+        approvedAtUtc: "2026-05-28T14:30:00Z"
+      },
+      {
+        taskId: "close-gate-report-pack",
+        approvedBy: "fund-controller",
+        approvedAtUtc: "2026-05-28T15:00:00Z"
+      }
+    ]
   },
   evidenceLinks: [
     {
