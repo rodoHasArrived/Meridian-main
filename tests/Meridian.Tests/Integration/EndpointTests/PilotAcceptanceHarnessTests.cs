@@ -691,7 +691,12 @@ public sealed class PilotAcceptanceHarnessTests
                 LedgerEntryId: ledgerEvidenceId,
                 ReconciliationCaseId: $"casework/{reconciliationRunId}",
                 ReportValue: "250000.00",
-                ReconciliationRunId: reconciliationRunId)
+                ReconciliationRunId: reconciliationRunId,
+                ProviderEventId: $"provider-event/{seed.AccountId:D}/PILOT-BANK-001",
+                SecurityMasterId: "security-master/cash/USD",
+                SecurityDefinitionId: "security-definition/cash/USD",
+                ReconciliationOutcome: "matched",
+                ApprovalId: $"approval/{generatedReportId:D}/pilot.approver")
         };
         var workflow = workflowService.Create(
             seed.FundProfileId,

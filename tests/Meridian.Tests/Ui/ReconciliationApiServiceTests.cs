@@ -58,7 +58,9 @@ public sealed class ReconciliationApiServiceTests
         {
             item.CommentThreads.Should().Contain(thread =>
                 thread.Subject == "External statement intake" &&
-                thread.Comments!.Any(comment => comment.Actor == "ops-user"));
+                thread.Comments!.Any(comment =>
+                    comment.Actor == "system" &&
+                    comment.Body!.Contains("Suggested next action:", StringComparison.OrdinalIgnoreCase)));
             item.Attachments.Should().Contain(attachment =>
                 attachment.EvidenceKind == "ExternalStatementRow" &&
                 attachment.SourceSystem == "custodian");

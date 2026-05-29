@@ -63,6 +63,7 @@ This package turns the existing `CashSweepTerms` support into an implementation-
 
 | Capability | Level | Current evidence | Target addition | Tests |
 | --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.CashSweep`, terms, mapping, validation, and basic create test exist. | keep canonical sweep-program identity aligned with Security Master profile metadata | F# validation and C# mapping tests |
 | IssuerOrCounterparty | L0 | none named as delivered. | optional institution or program sponsor linkage when needed | reference/projection tests |
 | Lifecycle | L0 | target-state only. | active, restricted, suspended, inactive, and cutoff-sensitive lifecycle state | lifecycle projection tests |
 | CashFlowSchedule | L0 | target-state only. | sweep frequency and expected cash-movement metadata | projection tests |
