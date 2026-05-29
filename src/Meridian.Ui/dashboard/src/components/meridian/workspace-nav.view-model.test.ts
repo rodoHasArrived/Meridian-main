@@ -50,6 +50,23 @@ describe("workspace nav view model", () => {
     });
   });
 
+  it("surfaces the family-office route under Portfolio", () => {
+    const model = buildWorkspaceNavViewModel("/portfolio/family-office");
+    const portfolio = model.items.find((item) => item.key === "portfolio");
+
+    expect(portfolio?.subItems.map((item) => item.route)).toEqual([
+      "/portfolio/attribution",
+      "/portfolio/brokerage-sync",
+      "/portfolio/family-office"
+    ]);
+    expect(portfolio?.subItems.find((item) => item.route === "/portfolio/family-office")).toMatchObject({
+      label: "Family office",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Family office, current page"
+    });
+  });
+
   it("surfaces the accounting ledger lane as a first-class subroute", () => {
     const model = buildWorkspaceNavViewModel("/accounting/ledger");
     const accounting = model.items.find((item) => item.key === "accounting");

@@ -66,7 +66,8 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
   ],
   portfolio: [
     { label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution },
-    { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync }
+    { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync },
+    { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice }
   ],
   accounting: [
     { label: "Continuity", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
