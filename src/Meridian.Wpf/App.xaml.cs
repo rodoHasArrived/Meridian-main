@@ -244,6 +244,11 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<WpfServices.ApiStatusService>());
         services.AddSingleton<WpfServices.StatusService>(_ => WpfServices.StatusService.Instance);
         services.AddSingleton<WpfServices.FirstRunService>(_ => WpfServices.FirstRunService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.SetupWizardService>();
+        services.AddSingleton<WpfServices.ISetupWizardStateService, WpfServices.SetupWizardStateService>();
+        services.AddSingleton<WpfServices.ISetupWizardNotificationSink, WpfServices.SetupWizardNotificationSink>();
+        services.AddSingleton<WpfServices.ISetupWizardNavigator, WpfServices.SetupWizardNavigator>();
+        services.AddSingleton<WpfServices.ISetupWizardLinkLauncher, WpfServices.SetupWizardLinkLauncher>();
 
         // ── Onboarding / workspace services ──────────────────────────────────
         services.AddSingleton<Meridian.Ui.Services.OnboardingTourService>(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
@@ -408,6 +413,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.SetupWizardViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.CollectionSessionViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.WorkflowLibraryViewModel>();
 

@@ -9,4 +9,5 @@ public enum LedgerReportExportFormat
     Xlsx,
     Pdf,
     Json,
+    RegulatoryXml,
 }
