@@ -1,0 +1,122 @@
+<Page x:Class="Meridian.Wpf.Views.FundStructureSetupPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Entity Setup">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" MaxWidth="1120">
+            <TextBlock Text="Entity setup" FontSize="28" FontWeight="SemiBold" />
+            <TextBlock Text="Create the organization, business lane, client or fund, legal entity, vehicle, investment portfolio, ownership links, and account handoff through /api/fund-structure shared orchestration."
+                       TextWrapping="Wrap" Margin="0,6,0,18" />
+
+            <UniformGrid Columns="3" Margin="0,0,0,16">
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="Organization code" />
+                    <TextBox Text="{Binding OrganizationCode, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Organization name" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding OrganizationName, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="Business code" />
+                    <TextBox Text="{Binding BusinessCode, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Business name" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding BusinessName, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,0,12">
+                    <TextBlock Text="Base currency" />
+                    <TextBox Text="{Binding BaseCurrency, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Requested by" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding RequestedBy, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </UniformGrid>
+
+            <UniformGrid Columns="3" Margin="0,0,0,16">
+                <StackPanel Margin="0,0,12,12">
+                    <CheckBox Content="Create client instead of fund" IsChecked="{Binding CreateClient}" Margin="0,0,0,8" />
+                    <TextBlock Text="Client/fund code" />
+                    <TextBox Text="{Binding ClientOrFundCode, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Client/fund name" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding ClientOrFundName, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="Legal entity code" />
+                    <TextBox Text="{Binding LegalEntityCode, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Legal entity name" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding LegalEntityName, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Jurisdiction" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding Jurisdiction, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel Margin="0,0,0,12">
+                    <TextBlock Text="Vehicle code" />
+                    <TextBox Text="{Binding VehicleCode, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Vehicle name" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding VehicleName, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </UniformGrid>
+
+            <UniformGrid Columns="2" Margin="0,0,0,16">
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="Portfolio code" />
+                    <TextBox Text="{Binding PortfolioCode, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Portfolio name" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding PortfolioName, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Account handoff code" />
+                    <TextBox Text="{Binding AccountCode, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Account display name" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding AccountDisplayName, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Institution" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding Institution, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Ledger reference" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding LedgerReference, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+            </UniformGrid>
+
+            <WrapPanel Margin="0,0,0,16">
+                <Button Content="Validate draft" Command="{Binding ValidateDraftCommand}" Margin="0,0,8,8" Padding="14,8" />
+                <Button Content="Review and create" Command="{Binding CreateStructureCommand}" Margin="0,0,8,8" Padding="14,8" />
+            </WrapPanel>
+
+            <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" Margin="0,0,0,12" />
+            <TextBlock Text="{Binding ResultSummary}" Margin="0,0,0,18" />
+
+            <TextBlock Text="Validation summary" FontSize="18" FontWeight="SemiBold" />
+            <ItemsControl ItemsSource="{Binding ValidationIssues}" Margin="0,6,0,16">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="Graph / ownership preview" FontSize="18" FontWeight="SemiBold" />
+            <ItemsControl ItemsSource="{Binding PreviewNodes}" Margin="0,6,0,10">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="{Binding Kind}" />
+                            <Run Text=" — " />
+                            <Run Text="{Binding Code}" />
+                            <Run Text=" / " />
+                            <Run Text="{Binding Name}" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding PreviewLinks}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="{Binding Parent}" />
+                            <Run Text=" → " />
+                            <Run Text="{Binding Child}" />
+                            <Run Text=" (" />
+                            <Run Text="{Binding RelationshipType}" />
+                            <Run Text=")" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

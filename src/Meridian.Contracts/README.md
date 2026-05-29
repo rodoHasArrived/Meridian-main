@@ -73,7 +73,7 @@ routes back to run continuity, ledger trial-balance, reconciliation, and Securit
 evidence. Keep these fields shared so browser, WPF, and service tests enforce the same publication,
 drilldown, and no-orphan-evidence rules.
 
-Fund-structure contracts include the ledger mapping workbench payload used by accounting and
+Fund-structure contracts include the shared entity setup draft, validation summary, graph preview, and create-result payloads used by WPF, browser, and `/api/fund-structure` to create organization, business-lane, client/fund, legal-entity, vehicle, investment-portfolio, ownership, and account-handoff records without UI-local command vocabulary. Fund-structure contracts include the ledger mapping workbench payload used by accounting and
 governance surfaces to show account-to-ledger-group assignment source, unresolved mapping issues,
 and recommended operator action without requiring clients to duplicate mapping precedence rules.
 Investment Accounting Transaction Lab contracts carry shared preview payloads for trades,

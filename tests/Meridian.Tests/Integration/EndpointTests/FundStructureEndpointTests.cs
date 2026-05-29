@@ -8,6 +8,7 @@ using Meridian.Application.FundStructure;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -27,6 +28,41 @@ public sealed class FundStructureEndpointTests
     {
         _fixture = fixture;
         _client = fixture.Client;
+    }
+
+
+    [Fact]
+    public async Task SetupDraftValidate_WithMissingFields_ReturnsSharedValidationSummary()
+    {
+        var draft = CreateSetupDraft() with
+        {
+            AccountHandoff = new FundStructureSetupAccountHandoffDraftDto(string.Empty, string.Empty, AccountTypeDto.Brokerage, "US")
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/fund-structure/setup-drafts/validate", draft);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundStructureSetupPreviewDto>();
+        payload.Should().NotBeNull();
+        payload!.ValidationSummary.IsValid.Should().BeFalse();
+        payload.ValidationSummary.Issues.Should().Contain(issue => issue.FieldPath == "accountHandoff.accountCode");
+    }
+
+    [Fact]
+    public async Task SetupDraftCreate_WithValidDraft_CreatesStructureThroughSharedEndpointWorkflow()
+    {
+        var draft = CreateSetupDraft();
+
+        var response = await _client.PostAsJsonAsync("/api/fund-structure/setup-drafts/create", draft);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var payload = await response.Content.ReadFromJsonAsync<FundStructureSetupResultDto>();
+        payload.Should().NotBeNull();
+        payload!.Organization.Code.Should().Be("ORG-SETUP");
+        payload.BusinessLane.Code.Should().Be("BUS-SETUP");
+        payload.Fund.Should().NotBeNull();
+        payload.AccountHandoffAssignment.AssignmentType.Should().Be(FundStructureSetupWorkflowService.AccountHandoffAssignmentType);
+        payload.Graph.Nodes.Should().Contain(node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio && node.Code == "PORT-SETUP");
     }
 
     [Fact]
@@ -474,6 +510,20 @@ public sealed class FundStructureEndpointTests
             Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
         }
     }
+
+
+    private static FundStructureSetupDraftDto CreateSetupDraft()
+        => new(
+            new FundStructureSetupOrganizationDraftDto(null, "ORG-SETUP", "Setup Organization", "USD"),
+            new FundStructureSetupBusinessDraftDto(null, BusinessKindDto.FundManager, "BUS-SETUP", "Setup Business", "USD"),
+            new FundStructureSetupClientOrFundDraftDto(null, null, CreateClient: false, "FUND-SETUP", "Setup Fund", "USD"),
+            new FundStructureSetupLegalEntityDraftDto(null, LegalEntityTypeDto.Fund, "LE-SETUP", "Setup LP", "US-DE", "USD"),
+            new FundStructureSetupVehicleDraftDto(null, "VEH-SETUP", "Setup Vehicle", "USD"),
+            new FundStructureSetupInvestmentPortfolioDraftDto(null, "PORT-SETUP", "Setup Portfolio", "USD"),
+            new FundStructureSetupAccountHandoffDraftDto("ACCT-SETUP", "Setup brokerage handoff", AccountTypeDto.Brokerage, "USD", "Broker", "4000"),
+            InitialOwnershipLinks: Array.Empty<FundStructureSetupOwnershipLinkDraftDto>(),
+            EffectiveFrom: new DateTimeOffset(2026, 5, 29, 0, 0, 0, TimeSpan.Zero),
+            RequestedBy: "endpoint-test");
 
     private async Task<SeededFundWorkspace> SeedFundWorkspaceAsync(IReadOnlyList<string>? runIds = null)
     {

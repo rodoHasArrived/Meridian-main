@@ -29,6 +29,9 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+`FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
+
+
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. Workstation endpoint registration is split by domain through
 `WorkstationEndpoints.*.cs` partial files. Keep the root `WorkstationEndpoints.cs` file as the
