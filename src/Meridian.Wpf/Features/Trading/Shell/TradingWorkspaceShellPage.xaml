@@ -13,7 +13,8 @@
       AutomationProperties.Name="Trading Cockpit"
       AutomationProperties.AutomationId="TradingWorkspaceShellPage">
 
-    <Grid Margin="20">
+    <Grid Margin="20"
+          AutomationProperties.AutomationId="WorkspaceHomeTradingTerminalTemplate">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -28,12 +29,14 @@
                                            Grid.Row="1"
                                            CommandGroup="{Binding CommandGroup}"
                                            CommandInvoked="OnCommandBarCommandInvoked"
-                                           Margin="0,16,0,0" />
+                                           Margin="0,16,0,0"
+                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceTrading" />
 
         <ScrollViewer Grid.Row="2"
                       Margin="0,16,0,16"
                       VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
+                      HorizontalScrollBarVisibility="Disabled"
+                      AutomationProperties.AutomationId="WorkspaceEvidenceStripTrading">
             <StackPanel>
                 <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
                     <Grid>
@@ -291,7 +294,8 @@
                         </StackPanel>
                     </Border>
 
-                    <StackPanel Grid.Column="1">
+                    <StackPanel Grid.Column="1"
+                                AutomationProperties.AutomationId="WorkspaceInspectorHostTrading">
                         <Border Style="{StaticResource WorkspaceInspectorCardStyle}" Margin="0,0,0,12">
                             <StackPanel>
                                 <Grid>

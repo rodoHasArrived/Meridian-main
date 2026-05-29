@@ -220,6 +220,46 @@ function Test-ApprovedDecision {
     return @("approved", "signed", "complete", "completed") -contains $Decision.Trim().ToLowerInvariant()
 }
 
+function ConvertTo-PacketBindingUtcTicks {
+    param([object]$Value)
+
+    if ($null -eq $Value) {
+        return $null
+    }
+
+    try {
+        if ($Value -is [datetime]) {
+            return $Value.ToUniversalTime().Ticks
+        }
+
+        if ($Value -is [datetimeoffset]) {
+            return $Value.UtcDateTime.Ticks
+        }
+
+        $styles = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+        return ([datetimeoffset]::Parse([string]$Value, [System.Globalization.CultureInfo]::InvariantCulture, $styles)).UtcDateTime.Ticks
+    }
+    catch {
+        return $null
+    }
+}
+
+function Test-PacketBindingValueEquals {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [object]$Expected,
+        [object]$Actual
+    )
+
+    if ([string]::Equals($Name, "generatedAtUtc", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $expectedTicks = ConvertTo-PacketBindingUtcTicks -Value $Expected
+        $actualTicks = ConvertTo-PacketBindingUtcTicks -Value $Actual
+        return $null -ne $expectedTicks -and $null -ne $actualTicks -and $expectedTicks -eq $actualTicks
+    }
+
+    return [string]::Equals([string]$Expected, [string]$Actual, [System.StringComparison]::OrdinalIgnoreCase)
+}
+
 function Get-PacketReview {
     param(
         [Parameter(Mandatory)][object]$Packet,
@@ -438,7 +478,7 @@ function Get-OperatorSignoffPacket {
             $name = [string]$comparison.Name
             $expectedValue = Get-ObjectPropertyValue -Object $ExpectedPacketReview -Name $name
             $actualValue = Get-ObjectPropertyValue -Object $payloadPacketReview -Name $name
-            if (-not [string]::Equals([string]$expectedValue, [string]$actualValue, [System.StringComparison]::OrdinalIgnoreCase)) {
+            if (-not (Test-PacketBindingValueEquals -Name $name -Expected $expectedValue -Actual $actualValue)) {
                 $packetBindingMissingRequirements.Add([string]$comparison.Requirement)
             }
         }
@@ -669,6 +709,41 @@ $packetStatus = if ($blockers.Count -eq 0) { "ready-for-operator-review" } else 
 $jsonPath = Join-Path $summaryDir "dk1-pilot-parity-packet.json"
 $mdPath = Join-Path $summaryDir "dk1-pilot-parity-packet.md"
 $packetGeneratedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
+$expectedSourceSummary = ConvertTo-RelativePath -Path $SummaryJsonPath
+if (Test-Path -LiteralPath $jsonPath) {
+    try {
+        $existingPacketJson = Get-Content -Raw -LiteralPath $jsonPath
+        $existingPacketDocument = [System.Text.Json.JsonDocument]::Parse($existingPacketJson)
+        try {
+            $generatedAtProperty = [System.Text.Json.JsonElement]::new()
+            $sourceSummaryProperty = [System.Text.Json.JsonElement]::new()
+            $existingGeneratedAtUtc = if ($existingPacketDocument.RootElement.TryGetProperty("generatedAtUtc", [ref]$generatedAtProperty)) {
+                $generatedAtProperty.GetString()
+            }
+            else {
+                ""
+            }
+            $existingSourceSummary = if ($existingPacketDocument.RootElement.TryGetProperty("sourceSummary", [ref]$sourceSummaryProperty)) {
+                $sourceSummaryProperty.GetString()
+            }
+            else {
+                ""
+            }
+        }
+        finally {
+            $existingPacketDocument.Dispose()
+        }
+        if (
+            -not [string]::IsNullOrWhiteSpace($existingGeneratedAtUtc) -and
+            [string]::Equals($existingSourceSummary, $expectedSourceSummary, [System.StringComparison]::OrdinalIgnoreCase)
+        ) {
+            $packetGeneratedAtUtc = $existingGeneratedAtUtc
+        }
+    }
+    catch {
+        $packetGeneratedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
+    }
+}
 
 $governanceEvidencePath = Join-Path $summaryDir "latest-governance-decision.json"
 $calibrationSnapshotPath = Join-Path $summaryDir "latest-calibration-snapshot.json"
@@ -689,7 +764,7 @@ if ((Test-Path -LiteralPath $governanceEvidencePath) -and (Test-Path -LiteralPat
 $packet = [ordered]@{
     generatedAtUtc = $packetGeneratedAtUtc
     dateStamp = if ($summary.PSObject.Properties.Name -contains "dateStamp") { [string]$summary.dateStamp } else { $DateStamp }
-    sourceSummary = ConvertTo-RelativePath -Path $SummaryJsonPath
+    sourceSummary = $expectedSourceSummary
     sourceResult = $summaryResult
     status = $packetStatus
     requiredPilotSamples = $requiredSamples

@@ -33,6 +33,8 @@ now expose trial-balance and P&L summaries from closed accounting periods. The P
 store now persists account-level tax-lot policies and open tax lots for ledger-book/account relief
 inputs. Direct-lending accrual reversals now project adjustment journal writes into soft-closed
 periods when approval metadata is supplied, while originating accruals still require open periods.
+The F# ledger kernel now validates direct-lending `AccrualEntry` lineage and builds deterministic
+loan/period/currency `AccrualSummary` totals for accrual schedules.
 Durable accrual worker/operator completion, tax-reporting exports, and richer file-based ledger
 report exports remain open.
 
@@ -189,6 +191,7 @@ say "basis per configured policy" until accountant review.
 | `Reconciliation.fs` | `ProjectedFlow` / `ActualCashEvent` matching; cash-ledger event types |
 | `ReconciliationClassification.fs` | Canonical break-class taxonomy with reason codes and severity derivation |
 | `ReconciliationRules.fs` | Configurable `MatchingRule` evaluation; `classifyBreaks` batch helper |
+| `AccrualTypes.fs` | Direct-lending accrual entry validation and period summary aggregation |
 | `LedgerReadModels.fs` | `buildTrialBalance` — groups balance inputs into `TrialBalanceRow` output |
 | `PeriodManagement.fs` | `AccountingPeriod`, `PeriodStatus`, `PeriodCloseEvent`, period locking and posting-date guards |
 | `Interop.fs` | Sealed `LedgerInterop` class exposing all F# ledger primitives to C# consumers |
@@ -309,7 +312,7 @@ Delivered prerequisite: direct-lending services already expose `DailyAccrualEntr
 and posting APIs for loan accruals. That is not yet the same as balanced ledger journal projection,
 so the Phase 4 ledger-posting work remains open.
 
-- [ ] `AccrualEntry` and `AccrualSummary` F# types added to `Meridian.FSharp.Ledger` — one entry
+- [x] `AccrualEntry` and `AccrualSummary` F# types added to `Meridian.FSharp.Ledger` — one entry
   per accrual period-slice with reference to the originating loan ID and event lineage
 - [ ] `LoanAccountingProjector` wired to `ILedgerJournalStore` so drawdown, accrual, receipt,
   discount/premium amortization, restructuring, and write-off events post balanced journal entries

@@ -64,6 +64,13 @@ standardize action posture, readiness tone, evidence links, recovery actions, an
 requirements for W4 close/report surfaces. Fund Ledger reconciliation and Report Pack handoff
 surfaces consume these primitives so blocker, evidence, recovery, and sign-off signifiers stay
 visible without creating desktop-only business rules.
+`MainPage` remains the route-compatible desktop shell entry point, but shell chrome is now composed
+from reusable WPF primitives: `InstitutionalShellFrameControl`, `ShellRailControl`,
+`ShellMastheadControl`, `WorkspaceEvidenceStripControl`, `WorkspaceCommandSurfaceControl`,
+`InstitutionalCommandPaletteControl`, and `WorkspaceInspectorHostControl`. Workspace shell posture
+is WPF-only and resolved through `ShellNavigationCatalog.GetWorkspaceLayoutDescriptor`: Trading and
+Data use `Terminal`, Portfolio, Accounting, Reporting, and Settings use `Cockpit`, and Strategy uses
+`Workbench`. Legacy workspace names continue to resolve as aliases to the seven canonical roots.
 
 ## Diagrams
 

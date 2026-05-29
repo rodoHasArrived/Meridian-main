@@ -53,7 +53,7 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
 
             var audit = await repository.GetAuditHistoryAsync(item.BreakId);
             audit.Should().ContainSingle(entry =>
-                entry.EventType == "Seeded" &&
+                entry.EventType == "CaseCreated" &&
                 entry.BreakId == item.BreakId &&
                 entry.RequiredSignoffRole == "Security Master steward");
         }
@@ -91,9 +91,10 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             var auditTypes = (await repository.GetAuditHistoryAsync(item.BreakId))
                 .Select(entry => entry.EventType)
                 .ToArray();
-            auditTypes.Should().Contain("Seeded");
+            auditTypes.Should().Contain("CaseCreated");
             auditTypes.Should().Contain("ReviewStarted");
             auditTypes.Should().Contain("Resolved");
+            auditTypes.Should().Contain("SignedOff");
         }
         finally
         {
@@ -145,6 +146,62 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             item.UpstreamSyncCursor.Should().Contain("Pending");
             item.ExplainabilitySummary.Should().Contain("overrideCount=1");
             item.RecommendedAction.Should().Contain("Approve");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task SeedOperatorOverrideCaseAsync_ApprovedOverrideSignsOffExistingCasework()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var repository = BuildRepository(root);
+            var service = BuildService(repository);
+            var securityId = Guid.NewGuid();
+            var createdAt = DateTimeOffset.UtcNow.AddMinutes(-10);
+            var pending = new OperatorOverridesDto(
+                securityId,
+                new Dictionary<string, string> { ["sector"] = "Technology" },
+                "analyst",
+                createdAt)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,
+                ReasonCode = "CLASSIFICATION_CORRECTION"
+            };
+            await service.SeedOperatorOverrideCaseAsync(pending, "analyst");
+
+            var reviewedAt = DateTimeOffset.UtcNow.AddMinutes(-1);
+            var approved = pending with
+            {
+                UpdatedAt = reviewedAt,
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Approved,
+                ReviewedBy = "security-steward",
+                ReviewedAt = reviewedAt
+            };
+
+            await service.SeedOperatorOverrideCaseAsync(approved, "analyst");
+
+            var item = await repository.GetByIdAsync($"security-master:override:{securityId:N}");
+            item.Should().NotBeNull();
+            item!.Status.Should().Be(ReconciliationBreakQueueStatus.SignedOff);
+            item.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
+            item.ResolvedBy.Should().Be("security-steward");
+            item.SignedOffBy.Should().Be("security-steward");
+            item.SignoffStatus.Should().Be("signed-off");
+            item.SignoffHistory.Should().Contain(record =>
+                record.Actor == "security-steward" &&
+                record.Role == "Security Master steward");
+
+            var auditTypes = (await repository.GetAuditHistoryAsync(item.BreakId))
+                .Select(static entry => entry.EventType)
+                .ToArray();
+            auditTypes.Should().Contain("ReviewStarted");
+            auditTypes.Should().Contain("Resolved");
+            auditTypes.Should().Contain("SignedOff");
         }
         finally
         {

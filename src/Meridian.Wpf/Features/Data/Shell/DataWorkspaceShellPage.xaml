@@ -180,21 +180,19 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="20"
+          AutomationProperties.AutomationId="WorkspaceHomeDataTerminalTemplate">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
-                                                 ShellContext="{Binding ShellContext}" />
-
-        <Border Grid.Row="1"
+        <Border Grid.Row="0"
                 Style="{StaticResource SectionCardStyle}"
-                Margin="0,0,0,16">
+                Margin="0,0,0,16"
+                AutomationProperties.AutomationId="WorkspaceEvidenceStripData">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.6*" />
@@ -339,10 +337,11 @@
         </Border>
 
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
-                                          Grid.Row="2"
-                                          CommandInvoked="OnCommandBarCommandInvoked" />
+                                          Grid.Row="1"
+                                          CommandInvoked="OnCommandBarCommandInvoked"
+                                          AutomationProperties.AutomationId="WorkspaceCommandSurfaceData" />
 
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2.15*" />
                 <ColumnDefinition Width="16" />
@@ -424,7 +423,8 @@
 
             <ScrollViewer Grid.Column="2"
                           VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
+                          HorizontalScrollBarVisibility="Disabled"
+                          AutomationProperties.AutomationId="WorkspaceInspectorHostData">
                 <StackPanel>
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
@@ -553,7 +553,7 @@
             </ScrollViewer>
         </Grid>
 
-        <Border Grid.Row="4"
+        <Border Grid.Row="3"
                 Margin="0,12,0,0"
                 Style="{StaticResource WorkspaceDockHostStyle}">
             <StackPanel>

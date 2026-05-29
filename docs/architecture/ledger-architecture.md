@@ -429,6 +429,14 @@ reconciliation.
 - Ledger entry ID uniqueness
 - Consistent timestamps across all lines in an entry
 
+### AccrualTypes
+
+`LedgerInterop.ValidateAccrualEntry` and `BuildAccrualSummary` keep direct-lending accrual inputs
+deterministic before they are projected into journals. The kernel validates required loan/source
+event lineage, currency, period-slice dates, non-negative interest/fee/penalty amounts, and
+aggregate version, then summarizes valid entries by loan, reporting period, and normalized
+currency.
+
 ### Reconciliation
 
 `Reconciliation.reconcilePayment` and `Reconciliation.reconcileEventStream` compare projected cash flows to actual `CashLedgerEvent` values:

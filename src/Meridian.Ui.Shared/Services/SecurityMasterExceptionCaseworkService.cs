@@ -103,6 +103,34 @@ public sealed class SecurityMasterExceptionCaseworkService
                 "Could not resolve Security Master conflict case {BreakId}: {Error}",
                 existing.BreakId,
                 resolve.Error);
+            return;
+        }
+
+        if (resolve.Item is null)
+        {
+            return;
+        }
+
+        var signOff = await _breakQueueRepository.ApplyCaseworkCommandAsync(
+                new ReconciliationCaseworkCommand(
+                    existing.BreakId,
+                    ReconciliationCaseworkAction.SignOff,
+                    actor,
+                    $"security-master-conflict-signoff:{existing.BreakId}:{conflict.ConflictId:N}",
+                    $"security-master-conflict:{conflict.ConflictId:N}",
+                    "security-master-casework",
+                    resolve.Item.Version,
+                    Reason: "Security Master conflict resolution includes steward sign-off.",
+                    Note: request.Reason ?? $"Security Master conflict {conflict.ConflictId:N} resolved.",
+                    Privileged: string.Equals(resolve.Item.ResolvedBy, actor, StringComparison.OrdinalIgnoreCase)),
+                ct)
+            .ConfigureAwait(false);
+        if (signOff.Status != ReconciliationBreakQueueTransitionStatus.Success)
+        {
+            _logger.LogWarning(
+                "Could not sign off Security Master conflict case {BreakId}: {Error}",
+                existing.BreakId,
+                signOff.Error);
         }
     }
 
@@ -153,7 +181,7 @@ public sealed class SecurityMasterExceptionCaseworkService
             }
         }
 
-        await _breakQueueRepository.ResolveAsync(
+        var resolve = await _breakQueueRepository.ResolveAsync(
                 new ResolveReconciliationBreakRequest(
                     existing.BreakId,
                     ReconciliationBreakQueueStatus.Resolved,
@@ -162,6 +190,41 @@ public sealed class SecurityMasterExceptionCaseworkService
                     overrides.ReasonCode ?? "Override approval completed."),
                 ct)
             .ConfigureAwait(false);
+        if (resolve.Status != ReconciliationBreakQueueTransitionStatus.Success)
+        {
+            _logger.LogWarning(
+                "Could not resolve Security Master override case {BreakId}: {Error}",
+                existing.BreakId,
+                resolve.Error);
+            return;
+        }
+
+        if (resolve.Item is null)
+        {
+            return;
+        }
+
+        var signOff = await _breakQueueRepository.ApplyCaseworkCommandAsync(
+                new ReconciliationCaseworkCommand(
+                    existing.BreakId,
+                    ReconciliationCaseworkAction.SignOff,
+                    resolvedBy,
+                    $"security-master-override-signoff:{existing.BreakId}:{overrides.SecurityId:N}",
+                    $"security-master-override:{overrides.SecurityId:N}",
+                    "security-master-casework",
+                    resolve.Item.Version,
+                    Reason: "Security Master operator override approval includes steward sign-off.",
+                    Note: overrides.ReasonCode ?? "Security Master operator override approved.",
+                    Privileged: string.Equals(resolve.Item.ResolvedBy, resolvedBy, StringComparison.OrdinalIgnoreCase)),
+                ct)
+            .ConfigureAwait(false);
+        if (signOff.Status != ReconciliationBreakQueueTransitionStatus.Success)
+        {
+            _logger.LogWarning(
+                "Could not sign off Security Master override case {BreakId}: {Error}",
+                existing.BreakId,
+                signOff.Error);
+        }
     }
 
     private static ReconciliationBreakQueueItem BuildConflictCase(
