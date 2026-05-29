@@ -483,12 +483,22 @@ public sealed record ReportPackCreateRequestDto(
     string Period,
     VersionedReportTemplateIdDto TemplateId,
     IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null);
-public sealed record ReportPackRestatementMetadataDto(
-    string ReasonCode,
-    string Approver,
+public sealed record ReportPackRestatementRequestDto(
+    string Reason,
     Guid PriorVersionReportId,
+    Guid CorrectedVersionReportId,
+    IReadOnlyList<string> ChangedSections,
     IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
-    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+    string Approver,
+    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks);
+public sealed record ReportPackRestatementMetadataDto(
+    string Reason,
+    Guid PriorVersionReportId,
+    Guid CorrectedVersionReportId,
+    IReadOnlyList<string> ChangedSections,
+    IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
+    string Approver,
+    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks);
 public sealed record ReportPackRejectionMetadataDto(
     string Reason,
     string Actor,

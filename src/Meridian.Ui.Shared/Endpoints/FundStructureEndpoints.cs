@@ -6,6 +6,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
@@ -815,7 +816,7 @@ public static class FundStructureEndpoints
 
         group.MapPost("/reporting/packs/{reportId:guid}/archive", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Archived));
 
-        group.MapPost("/reporting/packs/{reportId:guid}/restate", (Guid reportId, string reasonCode, Guid priorVersionReportId, ReportPackChangedLineDto[] changedLines, HttpContext context) =>
+        group.MapPost("/reporting/packs/{reportId:guid}/restate", (Guid reportId, [FromBody] ReportPackRestatementRequestDto request, HttpContext context) =>
         {
             if (!HasReportingWorkflowPermission(context))
             {
@@ -835,7 +836,7 @@ public static class FundStructureEndpoints
 
             try
             {
-                return Results.Json(svc.Restate(reportId, actor, role, reasonCode, actor, priorVersionReportId, changedLines), jsonOptions);
+                return Results.Json(svc.Restate(reportId, actor, role, request), jsonOptions);
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
             {

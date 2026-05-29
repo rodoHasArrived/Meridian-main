@@ -116,11 +116,54 @@ public sealed class ReportPackWorkflowService
         return Reject(reportId, request.Reason, request.Actor, request.ActorRole, request.EvidenceLinks);
     }
 
-    public ReportPackWorkflowRecordDto Restate(Guid reportId, string actor, string role, string reasonCode, string approver, Guid priorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> changedLines)
+    public ReportPackWorkflowRecordDto Restate(Guid reportId, string actor, string role, ReportPackRestatementRequestDto request)
     {
-        if (string.IsNullOrWhiteSpace(reasonCode)) throw new ArgumentException("reasonCode is required");
-        if (changedLines.Count == 0) throw new ArgumentException("changedLines are required");
-        var linesWithoutEvidence = changedLines
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Reason);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Approver);
+        if (request.PriorVersionReportId == Guid.Empty)
+        {
+            throw new ArgumentException("priorVersionReportId is required", nameof(request));
+        }
+
+        if (request.CorrectedVersionReportId == Guid.Empty)
+        {
+            throw new ArgumentException("correctedVersionReportId is required", nameof(request));
+        }
+
+        ArgumentNullException.ThrowIfNull(request.ChangedSections);
+        ArgumentNullException.ThrowIfNull(request.ChangedLines);
+        ArgumentNullException.ThrowIfNull(request.EvidenceLinks);
+        var changedSections = request.ChangedSections
+            .Where(static section => !string.IsNullOrWhiteSpace(section))
+            .Select(static section => section.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (changedSections.Length == 0)
+        {
+            throw new ArgumentException("changedSections are required", nameof(request));
+        }
+
+        if (request.ChangedLines.Count == 0)
+        {
+            throw new ArgumentException("changedLines are required", nameof(request));
+        }
+
+        var evidenceLinks = NormalizeEvidenceLinks(request.EvidenceLinks);
+        if (evidenceLinks.Count == 0)
+        {
+            throw new ArgumentException("Restatement requires evidence links.", nameof(request));
+        }
+
+        var normalizedChangedLines = request.ChangedLines
+            .Select(static line => line with
+            {
+                LineKey = line.LineKey?.Trim() ?? string.Empty,
+                PreviousValue = line.PreviousValue?.Trim() ?? string.Empty,
+                CurrentValue = line.CurrentValue?.Trim() ?? string.Empty
+            })
+            .ToArray();
+        var linesWithoutEvidence = normalizedChangedLines
             .Where(static line => line.EvidenceLinks is null || line.EvidenceLinks.Count == 0 || line.EvidenceLinks.All(static link => string.IsNullOrWhiteSpace(link.EvidenceId)))
             .Select(static line => line.LineKey)
             .ToArray();
@@ -129,19 +172,49 @@ public sealed class ReportPackWorkflowService
             throw new ArgumentException($"Restatement changed lines require evidence links: {string.Join(", ", linesWithoutEvidence)}.");
         }
 
-        var transitioned = Transition(reportId, ReportPackWorkflowStateDto.Restated, actor, role, note: reasonCode);
-        var evidenceLinks = changedLines
-            .SelectMany(static line => line.EvidenceLinks ?? [])
-            .GroupBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .ToArray();
+        var reason = request.Reason.Trim();
+        var transitioned = Transition(reportId, ReportPackWorkflowStateDto.Restated, actor, role, note: reason);
         var next = transitioned with
         {
             Version = transitioned.Version + 1,
-            Restatement = new ReportPackRestatementMetadataDto(reasonCode, approver, priorVersionReportId, changedLines, evidenceLinks)
+            Restatement = new ReportPackRestatementMetadataDto(
+                reason,
+                request.PriorVersionReportId,
+                request.CorrectedVersionReportId,
+                changedSections,
+                normalizedChangedLines,
+                request.Approver.Trim(),
+                evidenceLinks)
         };
         _records[reportId] = next;
         return next;
+    }
+
+    public ReportPackWorkflowRecordDto Restate(
+        Guid reportId,
+        string actor,
+        string role,
+        string reasonCode,
+        string approver,
+        Guid priorVersionReportId,
+        IReadOnlyList<ReportPackChangedLineDto> changedLines)
+    {
+        var evidenceLinks = changedLines
+            .SelectMany(static line => line.EvidenceLinks ?? [])
+            .ToArray();
+
+        return Restate(
+            reportId,
+            actor,
+            role,
+            new ReportPackRestatementRequestDto(
+                reasonCode,
+                priorVersionReportId,
+                reportId,
+                changedLines.Select(static line => line.LineKey).Where(static lineKey => !string.IsNullOrWhiteSpace(lineKey)).ToArray(),
+                changedLines,
+                approver,
+                evidenceLinks));
     }
 
     public ReportPackWorkflowRecordDto Publish(

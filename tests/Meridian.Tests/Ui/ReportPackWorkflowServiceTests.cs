@@ -1,6 +1,16 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Tests.Ui;
 
@@ -402,60 +412,92 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
-    public void Restate_RequiresLineageAndReasonMetadata()
+    public void Restate_PublishedPackWithCompleteRequest_RetainsRestatementMetadata()
     {
         var svc = new ReportPackWorkflowService();
-        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
-        svc.Publish(
-            created.ReportId,
-            "publisher",
-            "publisher",
-            "controller",
-            "sha256:abc123",
-            "manifest-1",
-            "vault/report-packs/manifest-1.json",
-            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+        var created = CreatePublishedPack(svc);
+        var correctedReportId = Guid.NewGuid();
+        var request = CompleteRestatementRequest(created.ReportId, correctedReportId);
 
-        var restated = svc.Restate(created.ReportId, "approver", "approver", "pricing-correction", "chief-approver", created.ReportId,
-            [new ReportPackChangedLineDto("line-1", "100", "125", [new ReportPackEvidenceLinkDto("pricing-evidence-1", "Pricing correction", "/evidence/pricing-evidence-1", "pricing")])]);
+        var restated = svc.Restate(created.ReportId, "approver", "approver", request);
 
         restated.State.Should().Be(ReportPackWorkflowStateDto.Restated);
-        restated.Restatement.Should().NotBeNull();
-        restated.Restatement!.ChangedLines.Should().ContainSingle();
-        restated.Restatement.EvidenceLinks.Should().ContainSingle(link => link.EvidenceId == "pricing-evidence-1");
         restated.Version.Should().Be(2);
+        restated.Restatement.Should().BeEquivalentTo(new ReportPackRestatementMetadataDto(
+            "pricing-correction",
+            created.ReportId,
+            correctedReportId,
+            ["NAV", "Trial balance"],
+            request.ChangedLines,
+            "chief-approver",
+            request.EvidenceLinks));
+    }
+
+    [Fact]
+    public void Restate_PublishedPackWithoutCorrectedVersion_RejectsRequest()
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = CreatePublishedPack(svc);
+        var request = CompleteRestatementRequest(created.ReportId, Guid.Empty);
+
+        Action act = () => svc.Restate(created.ReportId, "approver", "approver", request);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("correctedVersionReportId is required*");
+    }
+
+    [Fact]
+    public void Restate_PublishedPackWithoutChangedSections_RejectsRequest()
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = CreatePublishedPack(svc);
+        var request = CompleteRestatementRequest(created.ReportId, Guid.NewGuid()) with { ChangedSections = [] };
+
+        Action act = () => svc.Restate(created.ReportId, "approver", "approver", request);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("changedSections are required*");
     }
 
     [Fact]
     public void Restate_RejectsChangedLinesWithoutEvidenceLinks()
     {
         var svc = new ReportPackWorkflowService();
-        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
-        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
-        svc.Publish(
-            created.ReportId,
-            "publisher",
-            "publisher",
-            "controller",
-            "sha256:abc123",
-            "manifest-1",
-            "vault/report-packs/manifest-1.json",
-            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+        var created = CreatePublishedPack(svc);
+        var request = CompleteRestatementRequest(created.ReportId, Guid.NewGuid()) with
+        {
+            ChangedLines = [new ReportPackChangedLineDto("line-1", "100", "125")]
+        };
 
-        Action act = () => svc.Restate(
-            created.ReportId,
-            "approver",
-            "approver",
-            "pricing-correction",
-            "chief-approver",
-            created.ReportId,
-            [new ReportPackChangedLineDto("line-1", "100", "125")]);
+        Action act = () => svc.Restate(created.ReportId, "approver", "approver", request);
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Restatement changed lines require evidence links: line-1.");
+    }
+
+    [Fact]
+    public async Task Endpoint_RestateRequestBody_EnforcesPermissionAndWorkflowRoleValidation()
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = CreatePublishedPack(svc);
+        var request = CompleteRestatementRequest(created.ReportId, Guid.NewGuid());
+
+        await using var forbiddenApp = await CreateReportingEndpointAppAsync(svc, UserRole.ReadOnly, UserPermission.ViewAnalytics);
+        var forbidden = await forbiddenApp.GetTestClient().PostAsJsonAsync(
+            $"/api/fund-structure/reporting/packs/{created.ReportId:D}/restate",
+            request,
+            JsonOptions);
+        forbidden.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        await using var roleMismatchApp = await CreateReportingEndpointAppAsync(svc, UserRole.Accounting, UserPermission.ManageStrategies);
+        var roleMismatch = await roleMismatchApp.GetTestClient().PostAsJsonAsync(
+            $"/api/fund-structure/reporting/packs/{created.ReportId:D}/restate",
+            request,
+            JsonOptions);
+        roleMismatch.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await roleMismatch.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(JsonOptions);
+        problem.Should().NotBeNull();
+        problem!["detail"].GetString().Should().Be("Role 'Accounting' cannot transition to Restated.");
     }
 
     [Fact]
@@ -488,6 +530,63 @@ public sealed class ReportPackWorkflowServiceTests
             entry.FromState == ReportPackWorkflowStateDto.Published &&
             entry.ToState == ReportPackWorkflowStateDto.Archived);
     }
+
+    private static ReportPackWorkflowRecordDto CreatePublishedPack(ReportPackWorkflowService svc)
+    {
+        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        return svc.Publish(
+            created.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+    }
+
+    private static ReportPackRestatementRequestDto CompleteRestatementRequest(Guid priorVersionReportId, Guid correctedVersionReportId) =>
+        new(
+            "pricing-correction",
+            priorVersionReportId,
+            correctedVersionReportId,
+            ["NAV", "Trial balance"],
+            [new ReportPackChangedLineDto(
+                "line-1",
+                "100",
+                "125",
+                [new ReportPackEvidenceLinkDto("pricing-evidence-1", "Pricing correction", "/evidence/pricing-evidence-1", "pricing")])],
+            "chief-approver",
+            [new ReportPackEvidenceLinkDto("approval-evidence-1", "Restatement approval", "/evidence/approval-evidence-1", "approval")]);
+
+    private static async Task<WebApplication> CreateReportingEndpointAppAsync(
+        ReportPackWorkflowService svc,
+        UserRole role,
+        UserPermission permissions)
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Development
+        });
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton(svc);
+
+        var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "endpoint-user";
+            context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = role;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            await next();
+        });
+        app.MapFundStructureEndpoints(JsonOptions);
+        await app.StartAsync();
+        return app;
+    }
+
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private static ReportPackWorkflowRecordDto CreateApprovedPack(
         ReportPackWorkflowService svc,
