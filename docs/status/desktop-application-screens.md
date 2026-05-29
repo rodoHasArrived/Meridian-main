@@ -2,6 +2,12 @@
 
 This registry-backed inventory lists the WPF desktop screens currently declared by the shell navigation and feature-module registries. It is intended as a status companion for `src/Meridian.Wpf/README.md` and `docs/status/FEATURE_INVENTORY.md`, not as a replacement for source-owned registration.
 
+Product-level desktop gaps and TBIs are tracked in the canonical
+[`Desktop gaps and TBI register`](FEATURE_INVENTORY.md#desktop-gaps-and-tbi-register). Keep this
+screen inventory focused on page tags, registration status, and registry-visible screenshot or
+routing evidence; use the register for true TODOs, planned future waves, screenshot/evidence gaps,
+and documentation-only reconciliation items.
+
 ## Source scope
 
 Generated manually from the current descriptors in:
