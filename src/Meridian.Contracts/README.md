@@ -212,7 +212,8 @@ factor evidence. Provider-ledger corporate-action/factor casework also enriches 
 principal/income amount, and journal-preview line count so report-line provenance can show valuation
 or journal support without reconstructing provider-ledger detail payloads. Related reconciliation
 case rows also retain materiality and aging context: severity, variance, tolerance band, reviewer and
-resolver fields, sign-off count, SLA policy/due-state, age band, and business-age hours.
+resolver fields, sign-off count, latest sign-off actor/time/note, SLA policy/due-state, age band,
+and business-age hours.
 
 Statement reconciliation payloads live under `Workstation/StatementReconciliationDtos.cs` and keep
 source-file evidence, mapping/tolerance profile versions, normalized positions, cash, transactions,

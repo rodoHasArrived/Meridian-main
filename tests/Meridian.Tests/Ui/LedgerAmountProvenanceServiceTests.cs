@@ -201,6 +201,79 @@ public sealed class LedgerAmountProvenanceServiceTests
     }
 
     [Fact]
+    public async Task GetAsync_SurfacesRelatedCaseSignOffApprovalMetadata()
+    {
+        var reportId = Guid.NewGuid();
+        var snapshot = BuildSnapshot(reportId);
+        var signedOffAt = snapshot.GeneratedAt.AddMinutes(-2);
+        var root = CreateTempRoot();
+        try
+        {
+            var breakRepository = new FileReconciliationBreakQueueRepository(
+                root,
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+            await breakRepository.CreateIfMissingAsync(new ReconciliationBreakQueueItem(
+                BreakId: "case-aapl-signed-off",
+                RunId: "provider-ledger-run",
+                StrategyName: "Provider ledger reconciliation",
+                Category: ReconciliationBreakCategory.AmountMismatch,
+                Status: ReconciliationBreakQueueStatus.SignedOff,
+                Variance: 0m,
+                Reason: "AAPL provider-ledger variance was accepted for close.",
+                AssignedTo: "fund-accounting",
+                DetectedAt: snapshot.GeneratedAt.AddMinutes(-30),
+                LastUpdatedAt: signedOffAt,
+                ReviewedBy: "fund-accounting-reviewer",
+                ReviewedAt: snapshot.GeneratedAt.AddMinutes(-20),
+                ResolvedBy: "fund-accounting-reviewer",
+                ResolvedAt: snapshot.GeneratedAt.AddMinutes(-10),
+                ResolutionNote: "Variance ties to retained custodian evidence.",
+                Severity: ReconciliationBreakSeverity.Medium,
+                ExceptionRoute: "accounting/reconciliation/provider-ledger",
+                ToleranceBand: 0.01m,
+                RequiredSignoffRole: "Controller",
+                SignoffStatus: "signed-off",
+                ExplainabilitySummary: "account=Securities, symbol=AAPL, variance=0",
+                RoutingTarget: "/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest",
+                RoutingDetail: "Securities:AAPL",
+                RecommendedAction: "No further action.",
+                LifecycleState: ReconciliationCaseLifecycleState.SignedOff,
+                SignedOffBy: "controller",
+                SignedOffAt: signedOffAt,
+                SignOffNote: "Approved for close package.",
+                SignoffHistory:
+                [
+                    new ReconciliationCaseSignoffRecord(
+                        "controller",
+                        "Controller",
+                        "SignedOff",
+                        "Approved for close package.",
+                        signedOffAt)
+                ]));
+
+            var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
+
+            var detail = await service.GetAsync(reportId, "Securities:AAPL");
+
+            detail.Should().NotBeNull();
+            var relatedCase = detail!.Reconciliation.RelatedCases.Should().NotBeNull().And
+                .ContainSingle(item => item.CaseId == "case-aapl-signed-off")
+                .Subject;
+            relatedCase.Status.Should().Be(nameof(ReconciliationBreakQueueStatus.SignedOff));
+            relatedCase.LifecycleState.Should().Be(nameof(ReconciliationCaseLifecycleState.SignedOff));
+            relatedCase.SignoffStatus.Should().Be("signed-off");
+            relatedCase.SignoffCount.Should().Be(1);
+            relatedCase.SignedOffBy.Should().Be("controller");
+            relatedCase.SignedOffAt.Should().Be(signedOffAt);
+            relatedCase.SignOffNote.Should().Be("Approved for close package.");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task GetAsync_LinksSecurityMasterCaseworkByRetainedSecurityId()
     {
         var reportId = Guid.NewGuid();

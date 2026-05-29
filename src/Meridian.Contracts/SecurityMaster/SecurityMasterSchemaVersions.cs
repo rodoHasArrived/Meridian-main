@@ -9,4 +9,5 @@ public static class SecurityMasterSchemaVersions
 {
     public const int LegacyAssetSpecificTerms = 1;
     public const int EconomicTerms = 2;
+    public const int CustomAssetProfileTerms = 3;
 }

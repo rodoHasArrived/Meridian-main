@@ -75,7 +75,7 @@ internal static class SecurityAssetProfileSeeds
                     new(SecurityIdentifierKind.InternalCode, true, "Private or modeled strips need a Meridian-stable internal code.")
                 ],
                 ["Modeled", "Active", "Amortizing", "Matured", "Retired"],
-                [SecurityAssetProfileAccountingImpactHint.Valuation, SecurityAssetProfileAccountingImpactHint.FactorSchedule, SecurityAssetProfileAccountingImpactHint.IncomeAccrual]),
+                [SecurityAssetProfileAccountingImpactHintDto.Valuation, SecurityAssetProfileAccountingImpactHintDto.FactorSchedule, SecurityAssetProfileAccountingImpactHintDto.IncomeAccrual]),
             Profile(
                 "real-estate-holding",
                 "Real Estate Holding",
@@ -92,7 +92,7 @@ internal static class SecurityAssetProfileSeeds
                 ],
                 [new(SecurityIdentifierKind.InternalCode, true, "Real-estate holdings require an internal code for close and report-pack coverage.")],
                 ["Diligence", "Owned", "UnderReview", "Sold", "Retired"],
-                [SecurityAssetProfileAccountingImpactHint.Valuation, SecurityAssetProfileAccountingImpactHint.OwnershipPercentage, SecurityAssetProfileAccountingImpactHint.LedgerClassification]),
+                [SecurityAssetProfileAccountingImpactHintDto.Valuation, SecurityAssetProfileAccountingImpactHintDto.OwnershipPercentage, SecurityAssetProfileAccountingImpactHintDto.LedgerClassification]),
             Profile(
                 "private-fund-interest",
                 "Private Fund Interest",
@@ -110,7 +110,7 @@ internal static class SecurityAssetProfileSeeds
                 ],
                 [new(SecurityIdentifierKind.InternalCode, true, "Private-fund interests usually rely on Meridian internal identity.")],
                 ["Committed", "Funding", "Active", "Harvesting", "Liquidated"],
-                [SecurityAssetProfileAccountingImpactHint.CommitmentAccounting, SecurityAssetProfileAccountingImpactHint.NavBasedValuation, SecurityAssetProfileAccountingImpactHint.LedgerClassification]),
+                [SecurityAssetProfileAccountingImpactHintDto.CommitmentAccounting, SecurityAssetProfileAccountingImpactHintDto.NavBasedValuation, SecurityAssetProfileAccountingImpactHintDto.LedgerClassification]),
             Profile(
                 "private-company-equity",
                 "Private Company Equity",
@@ -130,7 +130,7 @@ internal static class SecurityAssetProfileSeeds
                     new(SecurityIdentifierKind.Lei, false, "LEI coverage improves issuer governance when available.")
                 ],
                 ["Held", "Marked", "Restricted", "Exited", "Retired"],
-                [SecurityAssetProfileAccountingImpactHint.Valuation, SecurityAssetProfileAccountingImpactHint.OwnershipPercentage, SecurityAssetProfileAccountingImpactHint.LedgerClassification]),
+                [SecurityAssetProfileAccountingImpactHintDto.Valuation, SecurityAssetProfileAccountingImpactHintDto.OwnershipPercentage, SecurityAssetProfileAccountingImpactHintDto.LedgerClassification]),
             Profile(
                 "co-invest-spv",
                 "Co-invest/SPV",
@@ -146,7 +146,7 @@ internal static class SecurityAssetProfileSeeds
                 ],
                 [new(SecurityIdentifierKind.InternalCode, true, "SPV and co-investment vehicles require a stable internal code.")],
                 ["Committed", "Active", "Monitoring", "Exited", "Retired"],
-                [SecurityAssetProfileAccountingImpactHint.CommitmentAccounting, SecurityAssetProfileAccountingImpactHint.Valuation, SecurityAssetProfileAccountingImpactHint.LedgerClassification])
+                [SecurityAssetProfileAccountingImpactHintDto.CommitmentAccounting, SecurityAssetProfileAccountingImpactHintDto.Valuation, SecurityAssetProfileAccountingImpactHintDto.LedgerClassification])
         ];
 
     private static SecurityAssetProfileDefinitionDto Profile(
