@@ -47,10 +47,11 @@ clients to infer close readiness from provider metadata. Closed operations workf
 publish `OperationsClosePackagePublicationDto` with close-package id, retained manifest id/route,
 evidence hash, sign-off actor/rationale, report pack id, evidence links, and checklist approvals so
 clients can inspect close-package publication without rebuilding package metadata locally. Ledger
-journal line DTOs carry optional Security Master identity, active status, approval reference,
-provenance, and ledger-mapping evidence, and the shared blocker vocabulary includes the posting
-gate failures used when an instrument-bearing posting lacks that proof or when journal/line
-provenance does not reference the resolved Security Master id. The vocabulary also includes symbol
+journal line DTOs carry optional Security Master identity, client-observed active status, approval
+reference, provenance, and ledger-mapping evidence, and the shared blocker vocabulary includes the
+posting gate failures used when an instrument-bearing posting lacks authoritative server-side
+Security Master active-status proof or when journal/line provenance does not reference the resolved
+Security Master id. The vocabulary also includes symbol
 mismatch blockers for journal candidates whose instrument line symbol diverges from the
 journal-level Security Master symbol and mapping mismatch blockers for generic ledger-mapping
 references that do not name the resolved symbol or Security Master id.

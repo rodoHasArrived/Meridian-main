@@ -4,7 +4,14 @@ Last updated: 2026-05-29
 
 This inventory is assembled from the current WPF page registry sources listed below. It records the registered desktop screen contract, not a user-acceptance certification of every workflow.
 
-## Source registries
+Generated manually from the current descriptors in:
+- [`src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs`](../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs)
+- [`src/Meridian.Wpf/Features/Data/DataFeatureModule.cs`](../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs)
+- [`src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs`](../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs)
+- [`src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs`](../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs)
+- [`src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs`](../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs)
+- [`src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs`](../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs)
+- [`src/Meridian.Wpf/Models/ShellNavigationCatalog.Research.cs`](../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Research.cs)
 
 - `src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs`
 - `src/Meridian.Wpf/Features/Data/DataFeatureModule.cs`
@@ -19,6 +26,18 @@ This inventory is assembled from the current WPF page registry sources listed be
 - **Implementation status** is based on registry presence plus a repository scan for the backing XAML view. A shared implementation note means several page tags intentionally route to the same WPF page class.
 - **Known gap/TBI** only records gaps visible from the registry shape and local evidence scan. Absence of a gap here does not replace workflow-level acceptance testing.
 - **Validation or screenshot evidence** includes the registry source line, backing view path, and any matching desktop screenshot already checked into `docs/screenshots/desktop`. Web-only screenshots are not treated as desktop evidence.
+
+## Aliases and canonical workspace names
+
+The desktop shell keeps the visible root navigation aligned to canonical workspace names while preserving legacy route and page-tag aliases for existing automation, deep links, and operator habits. Use the canonical workspace column for inventory, roadmap, and visible-navigation language.
+
+| Alias or legacy name | Canonical workspace / name | Relevant page tag | Page tags / search tags carried by the descriptor | Where the alias is resolved |
+| --- | --- | --- | --- | --- |
+| `Research` / `ResearchWorkspace` | `Strategy` | `StrategyShell` | `ResearchShell`, `ResearchWorkspace`; search tags include `strategy`, `research`, `home`, `workspace`, `monitor` | Page aliases are declared on the `StrategyShell` descriptor in `ShellNavigationCatalog.Research.cs`; layout fallback maps the `research` workspace id to `strategy` in `ShellNavigationCatalog.Layouts.cs`. |
+| `Governance` / `GovernanceWorkspace` | `Accounting` | `AccountingShell` | `GovernanceShell`, `GovernanceWorkspace`; search tags include `accounting`, `ledger`, `workspace`, `control` | Page aliases are declared on the `AccountingShell` descriptor in `ShellNavigationCatalog.Governance.cs`; layout fallback maps the `governance` workspace id to `accounting` in `ShellNavigationCatalog.Layouts.cs`. |
+| `DataOperations` / `Data Operations` | `Data` | `DataShell` | `DataOperationsShell`, `DataOperationsWorkspace`; search tags include `data`, `data operations`, `home`, `workspace` | Page aliases are declared on the `DataShell` descriptor in `DataFeatureModule.cs`; layout fallback maps `data-operations` and `data operations` workspace ids to `data` in `ShellNavigationCatalog.Layouts.cs`. |
+| `OperationsContinuity` / `OperationsClose` | `Fund operations` | `FundLedger` | `FundOperations`, `OperationsContinuity`, `OperationsClose`; search tags include `fund ledger`, `journal`, `operations`, `continuity`, `close readiness` | Page aliases are declared on the `FundLedger` descriptor in `ShellNavigationCatalog.Governance.cs`. |
+| `EvidenceWorkbench` | `Fund audit trail` | `FundAuditTrail` | `EvidenceWorkbench`; search tags include `audit`, `approvals`, `evidence` | Page aliases are declared on the `FundAuditTrail` descriptor in `ShellNavigationCatalog.Governance.cs`. |
 
 ## Summary
 

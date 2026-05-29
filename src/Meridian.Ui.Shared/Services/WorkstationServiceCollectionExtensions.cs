@@ -153,7 +153,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsWorkflowAuditStore>(),
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
                 sp.GetService<ILedgerJournalStore>(),
-                sp.GetService<IOperationsContinuityTransactionalCommitStore>()));
+                sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
+                sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
 
