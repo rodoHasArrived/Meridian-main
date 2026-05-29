@@ -198,13 +198,58 @@ public static class LedgerPeriodPostingGuard
         value.Contains(securityId.ToString("N"), StringComparison.OrdinalIgnoreCase);
 
     private static bool HasApprovalEvidence(string provenance, string lineage) =>
-        provenance.Contains("approved:true", StringComparison.OrdinalIgnoreCase) ||
-        lineage.Contains("sm-approval:", StringComparison.OrdinalIgnoreCase) ||
-        lineage.Contains("approval:", StringComparison.OrdinalIgnoreCase);
+        ContainsDelimitedToken(provenance, "approved:true") ||
+        ContainsEvidencePrefix(lineage, "sm-approval:") ||
+        ContainsEvidencePrefix(lineage, "approval:");
 
     private static bool HasLedgerMappingEvidence(string lineage) =>
-        lineage.Contains("ledger-map:", StringComparison.OrdinalIgnoreCase) ||
-        lineage.Contains("ledger-mapping:", StringComparison.OrdinalIgnoreCase);
+        ContainsEvidencePrefix(lineage, "ledger-map:") ||
+        ContainsEvidencePrefix(lineage, "ledger-mapping:");
+
+    private static bool ContainsDelimitedToken(string value, string token)
+    {
+        var index = value.IndexOf(token, StringComparison.OrdinalIgnoreCase);
+        while (index >= 0)
+        {
+            var tokenEnd = index + token.Length;
+            if (HasTokenBoundaryBefore(value, index) && HasTokenBoundaryAfter(value, tokenEnd))
+            {
+                return true;
+            }
+
+            index = value.IndexOf(token, tokenEnd, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
+    }
+
+    private static bool ContainsEvidencePrefix(string value, string prefix)
+    {
+        var index = value.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+        while (index >= 0)
+        {
+            var valueStart = index + prefix.Length;
+            if (HasTokenBoundaryBefore(value, index) &&
+                valueStart < value.Length &&
+                !IsEvidenceDelimiter(value[valueStart]))
+            {
+                return true;
+            }
+
+            index = value.IndexOf(prefix, valueStart, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
+    }
+
+    private static bool HasTokenBoundaryBefore(string value, int tokenStart) =>
+        tokenStart == 0 || IsEvidenceDelimiter(value[tokenStart - 1]);
+
+    private static bool HasTokenBoundaryAfter(string value, int tokenEnd) =>
+        tokenEnd == value.Length || IsEvidenceDelimiter(value[tokenEnd]);
+
+    private static bool IsEvidenceDelimiter(char value) =>
+        char.IsWhiteSpace(value) || value is ':' or ';' or '|' or ',';
 
     private static void RequireText(string? value, Guid journalEntryId, string fieldName)
     {

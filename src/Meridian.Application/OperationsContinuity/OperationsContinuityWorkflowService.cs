@@ -1649,7 +1649,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                         evidence));
                 }
 
-                if (string.IsNullOrWhiteSpace(line.SecurityMasterApprovalReference))
+                if (!HasSecurityMasterApprovalEvidence(line.SecurityMasterApprovalReference))
                 {
                     blockers.Add(CreateJournalCandidateBlocker(
                         "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING",
@@ -1723,6 +1723,11 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         }
 
         var mapping = mappingReference.Trim();
+        if (!HasLedgerMappingEvidence(mapping))
+        {
+            return false;
+        }
+
         var resolvedSecurityId = securityId.GetValueOrDefault();
         if (resolvedSecurityId != Guid.Empty &&
             (mapping.Contains(resolvedSecurityId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
@@ -1734,6 +1739,45 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         return !string.IsNullOrWhiteSpace(symbol) &&
             mapping.Contains(symbol.Trim(), StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool HasSecurityMasterApprovalEvidence(string? approvalReference) =>
+        ContainsEvidencePrefix(approvalReference, "sm-approval:") ||
+        ContainsEvidencePrefix(approvalReference, "approval:");
+
+    private static bool HasLedgerMappingEvidence(string mappingReference) =>
+        ContainsEvidencePrefix(mappingReference, "ledger-map:") ||
+        ContainsEvidencePrefix(mappingReference, "ledger-mapping:");
+
+    private static bool ContainsEvidencePrefix(string? value, string prefix)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var normalized = value.Trim();
+        var index = normalized.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+        while (index >= 0)
+        {
+            var valueStart = index + prefix.Length;
+            if (HasTokenBoundaryBefore(normalized, index) &&
+                valueStart < normalized.Length &&
+                !IsEvidenceDelimiter(normalized[valueStart]))
+            {
+                return true;
+            }
+
+            index = normalized.IndexOf(prefix, valueStart, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
+    }
+
+    private static bool HasTokenBoundaryBefore(string value, int tokenStart) =>
+        tokenStart == 0 || IsEvidenceDelimiter(value[tokenStart - 1]);
+
+    private static bool IsEvidenceDelimiter(char value) =>
+        char.IsWhiteSpace(value) || value is ':' or ';' or '|' or ',';
 
     private static bool IsInstrumentBearingJournalLine(OperationsLedgerJournalLineDto line)
         => !string.IsNullOrWhiteSpace(line.Symbol) ||

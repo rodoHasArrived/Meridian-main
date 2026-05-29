@@ -214,7 +214,6 @@ public sealed class OperationsContinuityWorkflowServiceTests
         derivation.Derive(workflow).Should().Be(OperationsWorkflowStatusDto.ReadyForClose);
     }
 
-
     [Fact]
     public void Derive_ShouldUseDeterministicHighestActiveStageOrdering()
     {
@@ -1112,6 +1111,74 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectForgedSecurityMasterApprovalReference()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateInstrumentJournalCandidate(workflow.FundAccountId);
+        candidate = candidate with
+        {
+            Lines =
+            [
+                candidate.Lines[0] with { SecurityMasterApprovalReference = "no-sm-approval:denied" },
+                candidate.Lines[1]
+            ]
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-forged-approval-reference",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectForgedSecurityMasterLedgerMappingReference()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var service = CreateService(out _, out var auditStore, journalStore);
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateInstrumentJournalCandidate(workflow.FundAccountId);
+        candidate = candidate with
+        {
+            Lines =
+            [
+                candidate.Lines[0] with { LedgerMappingReference = "no-ledger-map:AAPL" },
+                candidate.Lines[1]
+            ]
+        };
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-forged-mapping-reference",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_LINE_SECURITY_MASTER_MAPPING_MISMATCH");
+        journalStore.Appended.Should().BeEmpty();
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+    [Fact]
     public async Task PostLedgerEntriesAsync_ShouldRejectInstrumentAccountLinesWithoutExplicitSecurityMasterLineage()
     {
         var journalStore = new RecordingLedgerJournalStore();
@@ -1558,7 +1625,6 @@ public sealed class OperationsContinuityWorkflowServiceTests
             blocker.Code == "SM_ACCOUNTING_TERMS_INCOMPLETE" &&
             blocker.Gate == OperationsGateKeyDto.SecurityMaster);
     }
-
 
     [Fact]
     public async Task RunReconciliationAsync_WithSecurityAccountingIssues_ShouldReturnDeterministicSecurityMasterBlockerCode()

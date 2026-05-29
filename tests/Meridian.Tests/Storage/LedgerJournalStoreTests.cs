@@ -246,6 +246,35 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_InstrumentEntry_RejectsForgedNegativeApprovalEvidence()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            approvalReferenceOverride: "no-sm-approval:denied",
+            securityMasterProvenanceOverride: "security-master:bce424708f6b4bd39fc7b8763f8b48b1;snapshot:test-source-hash;unapproved:true");
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without approved Security Master evidence*");
+    }
+
+    [Fact]
+    public void PostingGuard_InstrumentEntry_RejectsForgedNegativeLedgerMappingEvidence()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            ledgerMappingReferenceOverride: "no-ledger-map:AAPL");
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without a Security Master ledger mapping reference*");
+    }
+
+    [Fact]
     public void LedgerJournalMigration_DefinesJournalTablesAndLineageColumns()
     {
         var sql = ReadMigration("V_ledger_001__journal_entries.sql");
@@ -360,18 +389,21 @@ public sealed class LedgerJournalStoreTests
         Guid periodId,
         bool includeSecurityMasterProvenance = true,
         bool includeApprovalEvidence = true,
-        bool includeLedgerMapping = true)
+        bool includeLedgerMapping = true,
+        string? securityMasterProvenanceOverride = null,
+        string? ledgerMappingReferenceOverride = null,
+        string? approvalReferenceOverride = null)
     {
         var journalEntryId = Guid.NewGuid();
         var occurredAt = DateTimeOffset.Parse("2026-01-31T21:00:00Z");
         var securityId = Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1");
         const string symbol = "AAPL";
         const string description = "Approved Security Master instrument posting";
-        var mapping = includeLedgerMapping ? "ledger-map:aapl-gaap-securities" : "missing";
-        var approval = includeApprovalEvidence ? "sm-approval:aapl-controller" : "missing";
-        var provenance = includeApprovalEvidence
+        var mapping = ledgerMappingReferenceOverride ?? (includeLedgerMapping ? "ledger-map:aapl-gaap-securities" : "missing");
+        var approval = approvalReferenceOverride ?? (includeApprovalEvidence ? "sm-approval:aapl-controller" : "missing");
+        var provenance = securityMasterProvenanceOverride ?? (includeApprovalEvidence
             ? $"security-master:{securityId:N};snapshot:test-source-hash;approved:true"
-            : $"security-master:{securityId:N};snapshot:test-source-hash";
+            : $"security-master:{securityId:N};snapshot:test-source-hash");
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["securityMasterLineage"] = $"{symbol}:{securityId:N}:{mapping}:{approval}:{provenance}"
