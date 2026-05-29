@@ -89,11 +89,17 @@ public partial class DenseDataGridControl : UserControl
         };
         foreach (var column in Table?.Columns ?? Array.Empty<WorkstationTableColumnModel>())
         {
+            var binding = new Binding(column.BindingPath);
+            if (!string.IsNullOrWhiteSpace(column.StringFormat))
+            {
+                binding.StringFormat = column.StringFormat;
+            }
+
             gridView.Columns.Add(new GridViewColumn
             {
                 Header = column.Header,
                 Width = column.Width,
-                DisplayMemberBinding = new Binding(column.BindingPath)
+                DisplayMemberBinding = binding
             });
         }
 

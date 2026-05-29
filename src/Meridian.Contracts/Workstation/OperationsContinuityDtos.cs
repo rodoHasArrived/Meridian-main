@@ -225,6 +225,8 @@ public static class OperationsWorkflowContractMatrix
         "LEDGER_POSTING_KIND_REQUIRED",
         "LEDGER_POSTING_REQUIRED",
         "LEDGER_PREVIEW_ID_REQUIRED",
+        "LEDGER_SECURITY_MASTER_APPROVAL_MISSING",
+        "LEDGER_SECURITY_MASTER_MAPPING_MISSING",
         "LEDGER_SECURITY_MASTER_ACCOUNTING_RULE_MISSING",
         "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
         "LEDGER_JOURNAL_PROVENANCE_MISSING",
@@ -364,6 +366,8 @@ public static class OperationsWorkflowContractMatrix
         "FACTOR_SCHEDULE_MISSING",
         "FACTOR_STALE",
         "LEDGER_SECURITY_MASTER_PROVENANCE_MISSING",
+        "LEDGER_SECURITY_MASTER_APPROVAL_MISSING",
+        "LEDGER_SECURITY_MASTER_MAPPING_MISSING",
         "LEDGER_LINE_SECURITY_MASTER_APPROVAL_EVIDENCE_MISSING",
         "LEDGER_LINE_SECURITY_MASTER_APPROVAL_REQUIRED",
         "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED",
@@ -498,7 +502,9 @@ public sealed record OperationsLedgerDraftRequestDto(
     bool HasSecurityMasterProvenance = true,
     bool HasIdempotencyKey = true,
     string? LedgerBatchId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    bool HasSecurityMasterApproval = true,
+    bool HasLedgerMappings = true);
 
 public sealed record OperationsLedgerValidationRequestDto(
     long ExpectedVersion,

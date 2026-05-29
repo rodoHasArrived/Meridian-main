@@ -75,6 +75,9 @@ public sealed class StrategyRunBrowserViewModelTests
             "Net P&L",
             "Fills",
             "Run Id");
+        vm.RunsTable.Columns[0].StringFormat.Should().Be("{0:g}");
+        vm.RunsTable.Columns[4].StringFormat.Should().Be("{0:C2}");
+        vm.RunsTable.Columns[5].StringFormat.Should().Be("{0:C2}");
     }
 
     // ── Filter / search tests ─────────────────────────────────────────────

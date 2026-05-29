@@ -677,7 +677,9 @@ public sealed class EvidenceWorkflowFabricTests
                 Route: "/api/workstation/runs/run-ledger-proof/ledger/journal",
                 GeneratedAt: generatedAt,
                 Hash: null,
-                Retained: true),
+                Retained: true,
+                CanonicalSubjectKind: EvidenceSubjectResolver.StrategyRunKind,
+                CanonicalSubjectId: "run-ledger-proof"),
             new EvidenceArtifactRefDto(
                 "strategy-run:run-ledger-proof:ledger:trial-balance",
                 "ledger-trial-balance",
@@ -685,7 +687,9 @@ public sealed class EvidenceWorkflowFabricTests
                 Route: "/api/workstation/runs/run-ledger-proof/ledger/trial-balance",
                 GeneratedAt: generatedAt,
                 Hash: null,
-                Retained: true)
+                Retained: true,
+                CanonicalSubjectKind: EvidenceSubjectResolver.StrategyRunKind,
+                CanonicalSubjectId: "run-ledger-proof")
         };
         var packet = new EvidencePacketDto(
             Subject: subject,
@@ -1324,7 +1328,9 @@ public sealed class EvidenceWorkflowFabricTests
         => artifact.GetProperty("kind").GetString() == kind &&
            artifact.GetProperty("route").GetString() == route &&
            artifact.GetProperty("path").ValueKind == JsonValueKind.Null &&
-           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null;
+           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null &&
+           artifact.GetProperty("canonicalSubjectKind").GetString() == EvidenceSubjectResolver.StrategyRunKind &&
+           artifact.GetProperty("canonicalSubjectId").GetString() == "run-ledger-proof";
 
     private sealed class StubContributor : IEvidenceContributor
     {

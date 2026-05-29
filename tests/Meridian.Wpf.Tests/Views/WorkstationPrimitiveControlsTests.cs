@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
@@ -28,6 +29,16 @@ public sealed class WorkstationPrimitiveControlsTests
             };
             timeline.Entries.Add(new AuditTimelineEntryModel("Connected", "Polygon.io", "Just now", WorkspaceTone.Success));
 
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                GridAutomationId = "TestDenseGrid",
+                EmptyAutomationId = "TestDenseGridEmpty"
+            };
+
             var host = new StackPanel
             {
                 Children =
@@ -54,12 +65,7 @@ public sealed class WorkstationPrimitiveControlsTests
                     {
                         Badge = new WorkstationBadgeModel("Health", "Healthy", "\uE946", WorkspaceTone.Success)
                     },
-                    new DenseDataGridControl
-                    {
-                        Table = new WorkstationTableModel<RowFixture>(
-                            tableRows,
-                            [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)])
-                    },
+                    denseGrid,
                     new InspectorPanelControl
                     {
                         Panel = new InspectorPanelModel
@@ -101,6 +107,16 @@ public sealed class WorkstationPrimitiveControlsTests
                 window.Show();
                 window.UpdateLayout();
                 host.UpdateLayout();
+
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                VirtualizingPanel.GetIsVirtualizing(rowsList).Should().BeTrue();
+                VirtualizingPanel.GetVirtualizationMode(rowsList).Should().Be(VirtualizationMode.Recycling);
+                ScrollViewer.GetCanContentScroll(rowsList).Should().BeTrue();
+                AutomationProperties.GetAutomationId(rowsList).Should().Be("TestDenseGrid");
+                AutomationProperties.GetName(rowsList).Should().Be("Provider readiness table");
+
+                var emptyPanel = denseGrid.FindName("EmptyPanel").Should().BeOfType<Border>().Subject;
+                AutomationProperties.GetAutomationId(emptyPanel).Should().Be("TestDenseGridEmpty");
             }
             finally
             {

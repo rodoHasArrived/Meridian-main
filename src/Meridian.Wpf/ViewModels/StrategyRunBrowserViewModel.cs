@@ -573,12 +573,12 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
         => new(
             rows,
             [
-                new("Started", nameof(StrategyRunSummary.StartedAt), 132),
+                new("Started", nameof(StrategyRunSummary.StartedAt), 132, "{0:g}"),
                 new("Strategy", nameof(StrategyRunSummary.StrategyName), 180),
                 new("Mode", nameof(StrategyRunSummary.Mode), 80),
                 new("Status", nameof(StrategyRunSummary.Status), 96),
-                new("Equity", nameof(StrategyRunSummary.FinalEquity), 104),
-                new("Net P&L", nameof(StrategyRunSummary.NetPnl), 104),
+                new("Equity", nameof(StrategyRunSummary.FinalEquity), 104, "{0:C2}"),
+                new("Net P&L", nameof(StrategyRunSummary.NetPnl), 104, "{0:C2}"),
                 new("Fills", nameof(StrategyRunSummary.FillCount), 64),
                 new("Run Id", nameof(StrategyRunSummary.RunId), 220)
             ],

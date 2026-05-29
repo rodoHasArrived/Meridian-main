@@ -71,6 +71,10 @@ from reusable WPF primitives: `InstitutionalShellFrameControl`, `ShellRailContro
 is WPF-only and resolved through `ShellNavigationCatalog.GetWorkspaceLayoutDescriptor`: Trading and
 Data use `Terminal`, Portfolio, Accounting, Reporting, and Settings use `Cockpit`, and Strategy uses
 `Workbench`. Legacy workspace names continue to resolve as aliases to the seven canonical roots.
+High-value workbench pages should migrate through the shared workstation controls before broad
+page sweeps; Strategy Runs now uses `DenseDataGridControl` plus tabbed inspector panes for run,
+evidence, comparison, and artifact context while preserving existing page tags and navigation
+commands.
 
 ## Diagrams
 
