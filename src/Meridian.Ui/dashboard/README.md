@@ -106,6 +106,12 @@ and project browser view state for run comparison, realized/unrealized P&L bridg
 trade evidence. Keep those projections in the Portfolio view model so the React screen renders
 shared run evidence instead of recalculating attribution, drawdown, or fill semantics.
 
+Portfolio now includes `/portfolio/family-office`, a family-office route that keeps route metadata,
+summary labels, empty states, disabled reasons, and ownership graph/table accessibility labels in the
+Family Office view-model seam. The React screen renders household net worth, entity and asset-class
+breakdowns, cash/liability posture, private assets, unfunded commitments, reconciliation breaks,
+stale valuation warnings, and a keyboard-navigable ownership graph with a dense table fallback.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in

@@ -45,6 +45,7 @@ describe("workspace metadata", () => {
   it("exposes typed workstation route catalog helpers", () => {
     expect(workstationRoute("tradingReadiness")).toBe("/trading/readiness");
     expect(workstationRoute("strategyFormulaWorkbench")).toBe("/strategy/formula-workbench");
+    expect(workstationRoute("portfolioFamilyOffice")).toBe("/portfolio/family-office");
     expect(workstationRoute("accountingOperationsContinuity")).toBe("/accounting/operations-continuity");
     expect(workstationRoute("settingsAlpacaProviderSetup")).toBe("/settings#alpaca-provider-setup");
     expect(workstationRouteWithQuery("dataQuotes", { symbol: "BRK/B", provider: "Alpaca", empty: null })).toBe(
@@ -130,6 +131,7 @@ describe("workspace metadata", () => {
       "FundTrialBalance",
       "OperationsClose",
       "OperationsContinuity",
+      "PortfolioFamilyOffice",
       "PortfolioShell",
       "ProviderHealth",
       "ProviderTrust",
