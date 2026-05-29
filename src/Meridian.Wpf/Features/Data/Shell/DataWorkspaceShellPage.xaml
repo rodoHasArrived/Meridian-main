@@ -460,12 +460,12 @@
                                        FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       Text="Data" />
+                                       Text="{Binding OperationsSummaryTitleText}" />
                             <TextBlock x:Name="OperationsSummaryDetailText"
                                        Margin="0,6,0,0"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Provider readiness, historical coverage, and storage posture live in the same operator shell." />
+                                       Text="{Binding OperationsSummaryDetailText}" />
                             <UniformGrid Columns="3" Margin="0,14,0,0">
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
                                     <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
@@ -473,11 +473,9 @@
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                         <TextBlock x:Name="SummaryProvidersText"
-                                                   Margin="0,6,0,0"
-                                                   FontSize="15"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   Text="3" />
+                                                   Style="{StaticResource DataShellSummaryMetricValueTextStyle}"
+                                                   Tag="{Binding SummaryProvidersTone}"
+                                                   Text="{Binding SummaryProvidersText}" />
                                         <TextBlock Text="Connectivity posture"
                                                    Margin="0,4,0,0"
                                                    FontSize="10"
@@ -490,11 +488,9 @@
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                         <TextBlock x:Name="SummaryBackfillText"
-                                                   Margin="0,6,0,0"
-                                                   FontSize="15"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource WarningColorBrush}"
-                                                   Text="Queue" />
+                                                   Style="{StaticResource DataShellSummaryMetricValueTextStyle}"
+                                                   Tag="{Binding SummaryBackfillTone}"
+                                                   Text="{Binding SummaryBackfillText}" />
                                         <TextBlock Text="Historical coverage"
                                                    Margin="0,4,0,0"
                                                    FontSize="10"
@@ -507,11 +503,9 @@
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                         <TextBlock x:Name="SummaryStorageText"
-                                                   Margin="0,6,0,0"
-                                                   FontSize="15"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   Text="Watch" />
+                                                   Style="{StaticResource DataShellSummaryMetricValueTextStyle}"
+                                                   Tag="{Binding SummaryStorageTone}"
+                                                   Text="{Binding SummaryStorageText}" />
                                         <TextBlock Text="Durability health"
                                                    Margin="0,4,0,0"
                                                    FontSize="10"
@@ -537,6 +531,7 @@
                                         Style="{StaticResource LinkButtonStyle}" />
                             </Grid>
                             <ItemsControl x:Name="RecentOperationsList"
+                                          ItemsSource="{Binding RecentOperations}"
                                           ItemTemplate="{StaticResource RecentItemTemplate}" />
                         </StackPanel>
                     </Border>

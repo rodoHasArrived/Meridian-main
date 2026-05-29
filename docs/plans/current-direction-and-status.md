@@ -166,9 +166,9 @@ These documents define current direction and should be read in this order:
 | [`README.md`](README.md) | Active plan index and role classification for every plan file in `docs/plans/`. |
 | [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the evidence-backed investment-operations direction. |
 | [`meridian-6-week-roadmap.md`](meridian-6-week-roadmap.md) | Short-horizon execution slice for W2-W4 plus trust-gate maintenance. |
-| [`wave-implementation-checklists.md`](wave-implementation-checklists.md) | Current concrete TODO ledger for W1 maintenance and W2-W4 blocker closure. |
+| [`wave-implementation-checklists.md`](wave-implementation-checklists.md) | Current concrete TODO ledger for W1 maintenance, W2/W3 baseline preservation, and W4 blocker closure. |
 | [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) | Desktop/WPF workflow acceptance matrix for W2 cockpit, W3 continuity, and W4 governance lanes, including shared checks, focused WPF tests, browser parity, and release blockers. |
-| [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for the active W2-W4 path. |
+| [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for the closed W2/W3 baselines and active W4 path. |
 | [`web-ui-development-pivot.md`](web-ui-development-pivot.md) | Browser workstation foundation, shared-surface rules, and desktop/browser coexistence history. |
 | [`meridian-pilot-workflow.md`](meridian-pilot-workflow.md) | Golden-path productization filter: trusted data to governed report pack. |
 | [`paper-trading-cockpit-reliability-sprint.md`](paper-trading-cockpit-reliability-sprint.md) | Wave 2 reliability contract for readiness, replay, controls, and promotion. |
@@ -203,4 +203,4 @@ Before a planning doc marks a slice as complete, verify that it has the evidence
 - W2: readiness endpoint behavior, replay freshness, operator-inbox routing, promotion/checkpoint gates, Lane A desktop acceptance evidence, and browser parity evidence from shared payloads.
 - W3: shared run, portfolio, ledger, brokerage/account, reconciliation, and evidence-packet continuity across the seven-workspace path.
 - W4: reconciliation casework, approval/sign-off, report-pack lifecycle, provenance, and governed output evidence.
-- W5/W6: only after W2-W4 gates stop being speculative blockers.
+- W5/W6: only after active W4 gates stop being speculative blockers and W2/W3 preservation evidence stays green.
