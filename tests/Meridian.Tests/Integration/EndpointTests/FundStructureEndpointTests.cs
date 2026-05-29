@@ -337,41 +337,115 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
-    public async Task AssignLedgerMapping_WithAuditEvidence_UpdatesWorkbenchMapping()
+    public async Task AssignLedgerMapping_WithAccountingSession_UpdatesWorkbenchMappingAndUsesAuthenticatedActor()
+    {
+        var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
+        Environment.SetEnvironmentVariable(
+            "MDC_USERS",
+            """[{"username":"fund-ops","password":"test-pass","role":"Accounting"}]""");
+
+        try
+        {
+            var seed = await SeedFundWorkspaceAsync();
+            var sessionCookie = await LoginAndGetSessionCookieAsync("fund-ops", "test-pass");
+            var request = new LedgerMappingAssignmentRequestDto(
+                AccountId: seed.BankAccountId,
+                LedgerGroupId: "ENDPOINT-ALT",
+                RequestedBy: "spoofed-client-actor",
+                Rationale: "Move the operating cash account to the reviewed close ledger.",
+                EffectiveFrom: new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
+                CorrelationId: "ledger-map-endpoint-test",
+                AssignmentId: Guid.NewGuid());
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/fund-structure/ledger-mapping-assignments")
+            {
+                Content = JsonContent.Create(request)
+            };
+            httpRequest.Headers.Add("Cookie", sessionCookie);
+
+            var response = await _client.SendAsync(httpRequest);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            var result = await response.Content.ReadFromJsonAsync<LedgerMappingAssignmentResultDto>();
+
+            result.Should().NotBeNull();
+            result!.Assignment.NodeId.Should().Be(seed.BankAccountId);
+            result.Assignment.AssignmentType.Should().Be("LedgerGroup");
+            result.Assignment.AssignmentReference.Should().Be("ENDPOINT-ALT");
+            result.Account.Mapping.LedgerGroupId.Value.Should().Be("ENDPOINT-ALT");
+            result.Account.Mapping.Source.Should().Be(LedgerMappingSourceDto.AccountAssignment);
+            result.AuditEvent.Should().Match<LedgerMappingAssignmentAuditEventDto>(audit =>
+                audit.EventType == "ledger-mapping-assigned" &&
+                audit.Actor == "fund-ops" &&
+                audit.Rationale == "Move the operating cash account to the reviewed close ledger." &&
+                audit.CorrelationId == "ledger-map-endpoint-test" &&
+                audit.FromLedgerGroupId == "ENDPOINT-TB" &&
+                audit.ToLedgerGroupId == "ENDPOINT-ALT");
+            result.Workbench.Accounts.Should().Contain(account =>
+                account.AccountId == seed.BankAccountId &&
+                account.Mapping.LedgerGroupId.Value == "ENDPOINT-ALT");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
+        }
+    }
+
+    [Fact]
+    public async Task AssignLedgerMapping_WithReadOnlySession_ReturnsForbidden()
+    {
+        var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
+        Environment.SetEnvironmentVariable(
+            "MDC_USERS",
+            """[{"username":"read-only","password":"test-pass","role":"ReadOnly"}]""");
+
+        try
+        {
+            var seed = await SeedFundWorkspaceAsync();
+            var sessionCookie = await LoginAndGetSessionCookieAsync("read-only", "test-pass");
+            var request = new LedgerMappingAssignmentRequestDto(
+                AccountId: seed.BankAccountId,
+                LedgerGroupId: "ENDPOINT-ALT",
+                RequestedBy: "read-only",
+                Rationale: "Attempt to alter ledger mapping without fund accounting authority.",
+                EffectiveFrom: new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
+                CorrelationId: "ledger-map-readonly-test",
+                AssignmentId: Guid.NewGuid());
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/fund-structure/ledger-mapping-assignments")
+            {
+                Content = JsonContent.Create(request)
+            };
+            httpRequest.Headers.Add("Cookie", sessionCookie);
+
+            var response = await _client.SendAsync(httpRequest);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
+        }
+    }
+
+    [Fact]
+    public async Task AssignLedgerMapping_WithoutSession_ReturnsUnauthorizedInsteadOfTrustingRequestedBy()
     {
         var seed = await SeedFundWorkspaceAsync();
         var request = new LedgerMappingAssignmentRequestDto(
             AccountId: seed.BankAccountId,
             LedgerGroupId: "ENDPOINT-ALT",
-            RequestedBy: "fund-ops",
-            Rationale: "Move the operating cash account to the reviewed close ledger.",
+            RequestedBy: "client-supplied-actor",
+            Rationale: "Attempt to alter ledger mapping without an authenticated session.",
             EffectiveFrom: new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
-            CorrelationId: "ledger-map-endpoint-test",
+            CorrelationId: "ledger-map-unauthenticated-test",
             AssignmentId: Guid.NewGuid());
 
         var response = await _client.PostAsJsonAsync(
             "/api/fund-structure/ledger-mapping-assignments",
             request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var result = await response.Content.ReadFromJsonAsync<LedgerMappingAssignmentResultDto>();
-
-        result.Should().NotBeNull();
-        result!.Assignment.NodeId.Should().Be(seed.BankAccountId);
-        result.Assignment.AssignmentType.Should().Be("LedgerGroup");
-        result.Assignment.AssignmentReference.Should().Be("ENDPOINT-ALT");
-        result.Account.Mapping.LedgerGroupId.Value.Should().Be("ENDPOINT-ALT");
-        result.Account.Mapping.Source.Should().Be(LedgerMappingSourceDto.AccountAssignment);
-        result.AuditEvent.Should().Match<LedgerMappingAssignmentAuditEventDto>(audit =>
-            audit.EventType == "ledger-mapping-assigned" &&
-            audit.Actor == "fund-ops" &&
-            audit.Rationale == "Move the operating cash account to the reviewed close ledger." &&
-            audit.CorrelationId == "ledger-map-endpoint-test" &&
-            audit.FromLedgerGroupId == "ENDPOINT-TB" &&
-            audit.ToLedgerGroupId == "ENDPOINT-ALT");
-        result.Workbench.Accounts.Should().Contain(account =>
-            account.AccountId == seed.BankAccountId &&
-            account.Mapping.LedgerGroupId.Value == "ENDPOINT-ALT");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -733,6 +807,22 @@ public sealed class FundStructureEndpointTests
                 description))
             .ToArray();
         ledger.Post(new JournalEntry(journalId, timestamp, description, ledgerLines));
+    }
+
+    private async Task<string> LoginAndGetSessionCookieAsync(string username, string password)
+    {
+        var loginResponse = await _client.PostAsJsonAsync(
+            "/api/auth/login",
+            new { Username = username, Password = password });
+
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var sessionCookie = loginResponse.Headers
+            .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(header => header.Value)
+            .FirstOrDefault(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
+
+        sessionCookie.Should().NotBeNullOrWhiteSpace("ledger mapping assignments require an authenticated fund-accounting session");
+        return sessionCookie!;
     }
 
     private static Guid TranslateFundProfileId(string fundProfileId)
