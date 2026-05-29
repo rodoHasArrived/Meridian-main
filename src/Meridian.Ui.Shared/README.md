@@ -261,7 +261,9 @@ events.
 Fund-structure endpoints expose `/api/fund-structure/ledger-mapping-view` as the shared accounting
 control surface for account ledger mappings. The endpoint returns server-derived assignment source,
 unmapped-account issue codes, and recommended action so browser and WPF surfaces do not invent
-client-local mapping or posting readiness rules.
+client-local mapping or posting readiness rules. Ledger mapping assignment mutations require an
+authenticated operator with `ManageDirectLending` or `AdminMaintenance`, and audit attribution must
+come from the resolved session actor rather than client-supplied request fields.
 Auth endpoints expose `/api/auth/role-profiles` as the governed write path for custom authority
 profiles. The shared file-backed role-profile store persists profile grants under the storage root,
 merges custom profiles into `/api/auth/roles`, and feeds `UserProfileRegistry` so configured
