@@ -79,6 +79,7 @@ These are the active documents for W2/W3 baseline preservation, W4 delivery, and
 | [current-direction-and-status.md](current-direction-and-status.md) | Single consolidated planning entry point for current direction, project status, and document roles |
 | [evidence-backed-investment-operations-plan.md](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the active investment-operations direction |
 | [sfo-mvp-implementation-design.md](sfo-mvp-implementation-design.md) | Single-family-office MVP scope, concept model, workspace mapping, and explicit MVP exclusions |
+| [entity-aware-workstation-capability-blueprint.md](entity-aware-workstation-capability-blueprint.md) | Entity-aware workstation and capability-module architecture for family-office, fund, and financial-advisor UI composition |
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current time-boxed execution slice for W2/W3 preservation, active W4 delivery, and trust-gate maintenance |
 | [wave-implementation-checklists.md](wave-implementation-checklists.md) | Concrete W1 maintenance, W2/W3 baseline checks, and W4 readiness TODO checklist tied to stage-gate blockers |
 | [desktop-ui-workflow-acceptance-matrix.md](desktop-ui-workflow-acceptance-matrix.md) | Desktop/WPF acceptance matrix that maps W2 cockpit, W3 continuity, and W4 governance scenarios to shared checks, focused WPF tests, browser parity checks, and release blockers |
