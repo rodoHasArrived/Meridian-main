@@ -492,7 +492,7 @@ describe("App", () => {
     await user.keyboard("{Control>}k{/Control}");
     expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
     expect(screen.getByLabelText("Focus actions: 4 focus actions")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "25 workstation commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "26 workstation commands" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
     }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);

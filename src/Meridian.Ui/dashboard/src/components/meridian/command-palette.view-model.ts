@@ -149,6 +149,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync
   },
   {
+    id: "portfolio-family-office",
+    label: "Family office",
+    description: "Review family net worth, entity ownership, asset-class exposure, commitments, breaks, and stale valuations.",
+    route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice
+  },
+  {
     id: "accounting-reconciliation",
     label: "Reconciliation breaks",
     description: "Work position breaks, sign-off detail, and reconciliation recovery.",

@@ -11,12 +11,12 @@ describe("CommandPalette", () => {
 
     expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
     expect(screen.getByText("Route to common operator workflows and canonical workspaces. Current: Portfolio.")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "21 workstation commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "22 workstation commands" })).toBeInTheDocument();
     expect(screen.getByText("Esc to close")).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveFocus();
-    expect(screen.getByText("21 commands available")).toBeInTheDocument();
+    expect(screen.getByText("22 commands available")).toBeInTheDocument();
     expect(screen.getByLabelText("Workspaces: 7 workspaces")).toBeInTheDocument();
-    expect(screen.getByLabelText("Quick routes: 14 quick routes")).toBeInTheDocument();
+    expect(screen.getByLabelText("Quick routes: 15 quick routes")).toBeInTheDocument();
     expect(screen.getByLabelText("Route /portfolio")).toBeInTheDocument();
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveAttribute("aria-current", "page");
   });
@@ -80,7 +80,7 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings");
 
-    expect(screen.getByText("2 of 21 commands match")).toBeInTheDocument();
+    expect(screen.getByText("2 of 22 commands match")).toBeInTheDocument();
     expect(screen.getByLabelText("Workspaces: 1 workspace")).toBeInTheDocument();
     expect(screen.getByLabelText("Quick routes: 1 quick route")).toBeInTheDocument();
     expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
@@ -140,7 +140,7 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command");
 
-    expect(screen.getByText("0 of 21 commands match")).toBeInTheDocument();
+    expect(screen.getByText("0 of 22 commands match")).toBeInTheDocument();
     const search = screen.getByRole("searchbox", { name: "Search command palette" });
     expect(search).toHaveAttribute("aria-describedby", "command-palette-filter-count command-palette-empty-state-detail");
     expect(screen.getByText("Empty")).toBeInTheDocument();
@@ -162,7 +162,7 @@ describe("CommandPalette", () => {
 
     expect(search).toHaveValue("");
     expect(search).toHaveFocus();
-    expect(screen.getByText("21 commands available")).toBeInTheDocument();
+    expect(screen.getByText("22 commands available")).toBeInTheDocument();
     expect(screen.queryByText("No matching commands")).not.toBeInTheDocument();
   });
 
@@ -187,7 +187,7 @@ describe("CommandPalette", () => {
       { initialEntries: ["/data/quotes?symbol=MSFT"] }
     );
 
-    expect(screen.getByRole("navigation", { name: "22 workstation commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "23 workstation commands" })).toBeInTheDocument();
     expect(screen.getByLabelText("Focus actions: 1 focus action")).toBeInTheDocument();
     expect(screen.getByText(/1 ranked focus action available\./)).toBeInTheDocument();
     expect(screen.getByLabelText(
@@ -275,7 +275,7 @@ describe("CommandPalette", () => {
       { initialEntries: ["/trading"] }
     );
 
-    expect(screen.getByRole("navigation", { name: "23 commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "24 commands" })).toBeInTheDocument();
     expect(screen.getByText("1 workflow action - 1 preset")).toBeInTheDocument();
     expect(screen.getByLabelText("Review Security Master, Data Provider Recovery")).toHaveAttribute("href", "/accounting/security-master");
 

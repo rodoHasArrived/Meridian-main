@@ -111,9 +111,12 @@ shared run evidence instead of recalculating attribution, drawdown, or fill sema
 
 Portfolio now includes `/portfolio/family-office`, a family-office route that keeps route metadata,
 summary labels, empty states, disabled reasons, and ownership graph/table accessibility labels in the
-Family Office view-model seam. The React screen renders household net worth, entity and asset-class
-breakdowns, cash/liability posture, private assets, unfunded commitments, reconciliation breaks,
-stale valuation warnings, and a keyboard-navigable ownership graph with a dense table fallback.
+Family Office view-model seam. The screen view model now derives summary panels and ownership graph
+rows from a family-office entity structure shaped like the shared `FamilyOfficeOverviewDto`/
+`FamilyEntityDto` contracts, so React renders entity, asset, commitment, reconciliation, and stale
+valuation projections instead of carrying a separate graph fixture. The workspace navigation and
+command palette surface the route from their route-catalog/view-model seams so discovery labels
+remain centralized.
 
 ## Diagrams
 
