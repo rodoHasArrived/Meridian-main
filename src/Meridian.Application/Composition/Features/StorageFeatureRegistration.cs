@@ -70,7 +70,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         var directLendingOptions = CreateDirectLendingOptions();
         var ledgerOptions = CreateLedgerOptions();
 
-        services.TryAddSingleton(_ => AssetClassValidatorRegistry.CreateDefault());
+        services.TryAddSingleton<ISecurityAssetProfileCatalog>(_ => StaticSecurityAssetProfileCatalog.CreateDefault());
+        services.TryAddSingleton(sp => AssetClassValidatorRegistry.CreateDefault(sp.GetRequiredService<ISecurityAssetProfileCatalog>()));
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
