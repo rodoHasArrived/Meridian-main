@@ -192,6 +192,121 @@ public sealed class OrderManagementSystemGovernanceTests
             entry.Symbol == "AAPL");
     }
 
+    [Fact]
+    public async Task PlaceOrderAsync_WhenPositionLimitExceeded_RejectsOrderWithControlAuditScope()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+
+        await controls.SetSymbolPositionLimitAsync(
+            "AAPL",
+            maxPositionSize: 10m,
+            changedBy: "risk",
+            reason: "Event-risk limit");
+
+        using var oms = new OrderManagementSystem(
+            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            NullLogger<OrderManagementSystem>.Instance,
+            operatorControls: controls,
+            auditTrail: auditTrail,
+            portfolioState: new StaticPortfolioState(new TestPosition("AAPL", 8)));
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 5m,
+            StrategyId = "strategy-1",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["actor"] = "risk",
+                ["correlationId"] = "act-004",
+                ["runId"] = "run-limit"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("exceeds limit 10");
+
+        var entries = await auditTrail.GetRecentAsync(10);
+        entries.Should().Contain(entry =>
+            entry.Action == "OrderRejected" &&
+            entry.Outcome == "Rejected" &&
+            entry.Reason == "POSITION_LIMIT_EXCEEDED" &&
+            entry.Scope == "run:run-limit/strategy:strategy-1/symbol:AAPL" &&
+            entry.Metadata != null &&
+            entry.Metadata["controlDecision"] == "rejected-by-operator-controls" &&
+            entry.Metadata["rejectCode"] == "POSITION_LIMIT_EXCEEDED");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenForceBlockOverrideMatchesRun_RejectsOrderWithManualControlAudit()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+
+        var manualBlock = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.ForceBlockOrders,
+            Reason: "Manual halt for broker incident",
+            CreatedBy: "ops",
+            Symbol: "AAPL",
+            StrategyId: "strategy-1",
+            RunId: "run-force-block"));
+
+        using var oms = new OrderManagementSystem(
+            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            NullLogger<OrderManagementSystem>.Instance,
+            operatorControls: controls,
+            auditTrail: auditTrail,
+            portfolioState: new StaticPortfolioState());
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 2m,
+            StrategyId = "strategy-1",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["actor"] = "ops",
+                ["correlationId"] = "act-005",
+                ["runId"] = "run-force-block"
+            }
+        });
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain(manualBlock.OverrideId);
+
+        var entries = await auditTrail.GetRecentAsync(10);
+        entries.Should().Contain(entry =>
+            entry.Action == "OrderRejected" &&
+            entry.Outcome == "Rejected" &&
+            entry.Reason == "MANUAL_FORCE_BLOCK" &&
+            entry.Scope == "run:run-force-block/strategy:strategy-1/symbol:AAPL" &&
+            entry.Message != null &&
+            entry.Message.Contains("Manual halt for broker incident", StringComparison.OrdinalIgnoreCase) &&
+            entry.Metadata != null &&
+            entry.Metadata["rejectCode"] == "MANUAL_FORCE_BLOCK");
+    }
+
     private static string CreateTempRoot()
     {
         var path = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
@@ -201,11 +316,22 @@ public sealed class OrderManagementSystemGovernanceTests
 
     private sealed class StaticPortfolioState : IPortfolioState
     {
+        public StaticPortfolioState(params IPosition[] positions)
+        {
+            Positions = positions.ToDictionary(static position => position.Symbol, StringComparer.OrdinalIgnoreCase);
+        }
+
         public decimal Cash => 100_000m;
         public decimal PortfolioValue => 100_000m;
         public decimal UnrealisedPnl => 0m;
         public decimal RealisedPnl => 0m;
-        public IReadOnlyDictionary<string, IPosition> Positions { get; } =
-            new Dictionary<string, IPosition>(StringComparer.OrdinalIgnoreCase);
+        public IReadOnlyDictionary<string, IPosition> Positions { get; }
     }
-}
+
+    private sealed record TestPosition(
+        string Symbol,
+        long Quantity,
+        decimal AverageCostBasis = 100m,
+        decimal UnrealizedPnl = 0m,
+        decimal RealizedPnl = 0m) : IPosition;
+    }

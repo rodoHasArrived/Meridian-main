@@ -173,6 +173,21 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
         watchlist.PromotionRationale.Should().Contain("should remain a governed custom profile");
     }
 
+    [Fact]
+    public void GetAllProfiles_WhenPersistedSnapshotIsCorrupt_ThrowsInvalidOperationException()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-asset-profiles", Guid.NewGuid().ToString("N"));
+        var persistencePath = Path.Combine(dataRoot, "governance", "security-asset-profiles.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(persistencePath)!);
+        File.WriteAllText(persistencePath, "{ not-valid-json");
+        var service = new SecurityAssetProfileGovernanceService(new StorageOptions { RootPath = dataRoot });
+
+        var act = () => service.GetAllProfiles();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*security-asset-profiles.json*corrupt*");
+    }
+
     private static SecurityAssetProfileDraftRequestDto CreateDraftRequest(
         string profileId,
         string fieldKey = "navDate",

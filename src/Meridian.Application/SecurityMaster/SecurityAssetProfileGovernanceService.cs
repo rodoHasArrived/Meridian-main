@@ -335,9 +335,11 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                     File.ReadAllText(_persistencePath),
                     JsonOptions) ?? new SecurityAssetProfileGovernanceSnapshot([], []);
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
-                return new SecurityAssetProfileGovernanceSnapshot([], []);
+                throw new InvalidOperationException(
+                    $"Security asset profile governance persistence at '{_persistencePath}' is corrupt and cannot be loaded.",
+                    ex);
             }
         }
     }

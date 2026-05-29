@@ -303,6 +303,29 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_InstrumentEntry_RejectsLineageThatOnlyMatchesBySymbolSubstring()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(period.PeriodId);
+        var firstLine = write.Entry.Lines[0];
+        var mutatedLines = write.Entry.Lines
+            .Select(line => line.EntryId == firstLine.EntryId
+                ? line with { Account = line.Account with { Symbol = "A" } }
+                : line)
+            .ToArray();
+        var mutatedEntry = write.Entry with
+        {
+            Lines = mutatedLines,
+            Metadata = write.Entry.Metadata with { Symbol = "A" }
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write with { Entry = mutatedEntry }, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*declares instrument symbol 'A' without matching Security Master lineage*");
+    }
+
+    [Fact]
     public void PostingGuard_InstrumentEntry_RejectsMultipleSymbolsWithSingleSecurityMasterId()
     {
         var period = BuildAccountingPeriod("Open");

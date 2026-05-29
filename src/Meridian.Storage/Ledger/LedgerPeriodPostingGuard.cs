@@ -166,7 +166,7 @@ public static class LedgerPeriodPostingGuard
         }
 
         if (instrumentSymbols.Length == 0 &&
-            !LedgerMappingReferencesInstrument(lineage, null, securityId))
+            !LineageReferencesInstrument(lineage, null, securityId))
         {
             throw new LedgerValidationException(
                 $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without a Security Master ledger mapping tied to the resolved security id.");
@@ -174,7 +174,7 @@ public static class LedgerPeriodPostingGuard
 
         foreach (var symbol in instrumentSymbols)
         {
-            if (!lineage.Contains(symbol.Trim(), StringComparison.OrdinalIgnoreCase))
+            if (!LineageReferencesInstrument(lineage, symbol, securityId))
             {
                 throw new LedgerValidationException(
                     $"Journal entry '{journalEntry.JournalEntryId}' declares instrument symbol '{symbol.Trim()}' without matching Security Master lineage.");
@@ -238,6 +238,22 @@ public static class LedgerPeriodPostingGuard
         value.Contains(securityId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
         value.Contains(securityId.ToString("N"), StringComparison.OrdinalIgnoreCase);
 
+    private static bool LineageReferencesInstrument(string lineage, string? symbol, Guid securityId)
+    {
+        var normalizedSymbol = symbol?.Trim();
+        foreach (var entry in ExtractLineageEntries(lineage))
+        {
+            if ((!string.IsNullOrWhiteSpace(normalizedSymbol) &&
+                    string.Equals(entry.Symbol, normalizedSymbol, StringComparison.OrdinalIgnoreCase)) ||
+                ReferencesSecurityId(entry.SecurityIdToken, securityId))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static bool HasApprovalEvidence(string provenance, string lineage) =>
         provenance.Contains("approved:true", StringComparison.OrdinalIgnoreCase) ||
         lineage.Contains("sm-approval:", StringComparison.OrdinalIgnoreCase) ||
@@ -290,6 +306,28 @@ public static class LedgerPeriodPostingGuard
                 yield return lineage[start..end].Trim();
                 searchIndex = end;
             }
+        }
+    }
+
+    private static IEnumerable<(string Symbol, string SecurityIdToken)> ExtractLineageEntries(string lineage)
+    {
+        foreach (var rawEntry in lineage.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var firstSeparator = rawEntry.IndexOf(':');
+            if (firstSeparator <= 0)
+            {
+                continue;
+            }
+
+            var secondSeparator = rawEntry.IndexOf(':', firstSeparator + 1);
+            if (secondSeparator <= firstSeparator + 1)
+            {
+                continue;
+            }
+
+            yield return (
+                Symbol: rawEntry[..firstSeparator].Trim(),
+                SecurityIdToken: rawEntry[(firstSeparator + 1)..secondSeparator].Trim());
         }
     }
 
