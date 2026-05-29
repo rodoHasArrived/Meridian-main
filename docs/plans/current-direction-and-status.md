@@ -165,6 +165,7 @@ These documents define current direction and should be read in this order:
 | [`../roadmap/README.md`](../roadmap/README.md), [`../source/README.md`](../source/README.md) | Structured roadmap and source-documentation registries; edit data/renderers rather than generated outputs. |
 | [`README.md`](README.md) | Active plan index and role classification for every plan file in `docs/plans/`. |
 | [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the evidence-backed investment-operations direction. |
+| [`sfo-mvp-implementation-design.md`](sfo-mvp-implementation-design.md) | Single-family-office MVP scope, core concept model, workspace mapping, and out-of-scope guardrails. |
 | [`meridian-6-week-roadmap.md`](meridian-6-week-roadmap.md) | Short-horizon execution slice for W2-W4 plus trust-gate maintenance. |
 | [`wave-implementation-checklists.md`](wave-implementation-checklists.md) | Current concrete TODO ledger for W1 maintenance, W2/W3 baseline preservation, and W4 blocker closure. |
 | [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) | Desktop/WPF workflow acceptance matrix for W2 cockpit, W3 continuity, and W4 governance lanes, including shared checks, focused WPF tests, browser parity, and release blockers. |
