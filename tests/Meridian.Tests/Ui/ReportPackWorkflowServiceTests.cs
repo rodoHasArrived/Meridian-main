@@ -70,7 +70,7 @@ public sealed class ReportPackWorkflowServiceTests
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
             "author",
-            [new ReportPackLineProvenanceDto("trial-balance.cash", "ledger", "ledger-entry-1", "ledger-evidence-1", LedgerEntryId: "ledger-entry-1", ReportValue: "100.00")]);
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
 
@@ -140,6 +140,85 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void Publish_RequiresLedgerProviderSecurityReconciliationAndApprovalPointersForLineProvenance()
+    {
+        var svc = new ReportPackWorkflowService();
+        var missingLedger = CreateApprovedPack(
+            svc,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1") with { LedgerEntryId = null, RunId = "run-1" }]);
+
+        Action missingLedgerPublish = () => PublishWithLedgerEvidence(svc, missingLedger.ReportId);
+
+        missingLedgerPublish.Should().Throw<InvalidOperationException>()
+            .WithMessage("Report pack line provenance requires ledger entries for: trial-balance.cash.");
+
+        var missingProvider = CreateApprovedPack(
+            svc,
+            [CompleteLineProvenance("trial-balance.income", "income-evidence-1") with { ProviderEventId = null }]);
+
+        Action missingProviderPublish = () => PublishWithLedgerEvidence(svc, missingProvider.ReportId, "income-evidence-1");
+
+        missingProviderPublish.Should().Throw<InvalidOperationException>()
+            .WithMessage("Report pack line provenance requires provider events for: trial-balance.income.");
+
+        var missingSecurityMaster = CreateApprovedPack(
+            svc,
+            [CompleteLineProvenance("trial-balance.position", "position-evidence-1") with { SecurityMasterId = null, SecurityDefinitionId = null }]);
+
+        Action missingSecurityMasterPublish = () => PublishWithLedgerEvidence(svc, missingSecurityMaster.ReportId, "position-evidence-1");
+
+        missingSecurityMasterPublish.Should().Throw<InvalidOperationException>()
+            .WithMessage("Report pack line provenance requires Security Master definitions for: trial-balance.position.");
+
+        var missingReconciliation = CreateApprovedPack(
+            svc,
+            [CompleteLineProvenance("trial-balance.nav", "nav-evidence-1") with { ReconciliationRunId = null, ReconciliationCaseId = null, ReconciliationOutcome = null }]);
+
+        Action missingReconciliationPublish = () => PublishWithLedgerEvidence(svc, missingReconciliation.ReportId, "nav-evidence-1");
+
+        missingReconciliationPublish.Should().Throw<InvalidOperationException>()
+            .WithMessage("Report pack line provenance requires reconciliation outcomes for: trial-balance.nav.");
+
+        var missingApproval = CreateApprovedPack(
+            svc,
+            [CompleteLineProvenance("trial-balance.fees", "fees-evidence-1") with { ApprovalId = null }]);
+
+        Action missingApprovalPublish = () => PublishWithLedgerEvidence(svc, missingApproval.ReportId, "fees-evidence-1");
+
+        missingApprovalPublish.Should().Throw<InvalidOperationException>()
+            .WithMessage("Report pack line provenance requires approval references for: trial-balance.fees.");
+    }
+
+    [Fact]
+    public void Publish_AllowsCompleteReportLineProvenanceForRetainedReportPack()
+    {
+        var svc = new ReportPackWorkflowService();
+        var approved = CreateApprovedPack(
+            svc,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+
+        var published = svc.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("ledger-evidence-1", "Line evidence", "/evidence/ledger-evidence-1", "reporting")]);
+
+        var line = published.LineProvenance.Should().ContainSingle().Subject;
+        line.LedgerEntryId.Should().Be("ledger-entry-1");
+        line.ProviderEventId.Should().Be("provider-event-1");
+        line.SecurityMasterId.Should().Be("security-1");
+        line.SecurityDefinitionId.Should().Be("definition-1");
+        line.ReconciliationRunId.Should().Be("recon-run-1");
+        line.ReconciliationOutcome.Should().Be("matched");
+        line.ApprovalId.Should().Be("approval-1");
+        published.State.Should().Be(ReportPackWorkflowStateDto.Published);
+    }
+
+    [Fact]
     public void Create_NormalizesReportValueSessionAndReconciliationRunLineProvenance()
     {
         var svc = new ReportPackWorkflowService();
@@ -159,7 +238,12 @@ public sealed class ReportPackWorkflowServiceTests
                     RunId: " run-1 ",
                     ReportValue: " 125.00 ",
                     SourceSessionId: " paper-session-1 ",
-                    ReconciliationRunId: " recon-run-1 ")
+                    ReconciliationRunId: " recon-run-1 ",
+                    ProviderEventId: " provider-event-1 ",
+                    SecurityMasterId: " security-1 ",
+                    SecurityDefinitionId: " definition-1 ",
+                    ReconciliationOutcome: " matched ",
+                    ApprovalId: " approval-1 ")
             ]);
 
         created.LineProvenance.Should().ContainSingle().Which.Should().BeEquivalentTo(
@@ -171,7 +255,12 @@ public sealed class ReportPackWorkflowServiceTests
                 RunId: "run-1",
                 ReportValue: "125.00",
                 SourceSessionId: "paper-session-1",
-                ReconciliationRunId: "recon-run-1"));
+                ReconciliationRunId: "recon-run-1",
+                ProviderEventId: "provider-event-1",
+                SecurityMasterId: "security-1",
+                SecurityDefinitionId: "definition-1",
+                ReconciliationOutcome: "matched",
+                ApprovalId: "approval-1"));
     }
 
     [Fact]
@@ -399,4 +488,48 @@ public sealed class ReportPackWorkflowServiceTests
             entry.FromState == ReportPackWorkflowStateDto.Published &&
             entry.ToState == ReportPackWorkflowStateDto.Archived);
     }
+
+    private static ReportPackWorkflowRecordDto CreateApprovedPack(
+        ReportPackWorkflowService svc,
+        IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance)
+    {
+        var created = svc.Create(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "author",
+            lineProvenance);
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        return svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+    }
+
+    private static void PublishWithLedgerEvidence(ReportPackWorkflowService svc, Guid reportId, string evidenceId = "ledger-evidence-1") =>
+        svc.Publish(
+            reportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto(evidenceId, "Line evidence", $"/evidence/{evidenceId}", "reporting")]);
+
+    private static ReportPackLineProvenanceDto CompleteLineProvenance(string lineKey, string evidenceId) =>
+        new(
+            lineKey,
+            "ledger",
+            "ledger-entry-1",
+            evidenceId,
+            RunId: "run-1",
+            LedgerEntryId: "ledger-entry-1",
+            ReconciliationCaseId: "case-1",
+            ReportValue: "100.00",
+            SourceSessionId: "provider-session-1",
+            ReconciliationRunId: "recon-run-1",
+            ProviderEventId: "provider-event-1",
+            SecurityMasterId: "security-1",
+            SecurityDefinitionId: "definition-1",
+            ReconciliationOutcome: "matched",
+            ApprovalId: "approval-1");
 }

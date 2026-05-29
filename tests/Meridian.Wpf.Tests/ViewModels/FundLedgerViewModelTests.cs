@@ -29,6 +29,7 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class FundLedgerViewModelTests
 {
     [Fact]
+    [Trait("Category", "W4Acceptance")]
     public void LoadAsync_PopulatesStructureLabels_SecurityCoverage_AndStrategyLevelReconciliation()
     {
         WpfTestThread.Run(async () =>
@@ -222,6 +223,7 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
+    [Trait("Category", "W4Acceptance")]
     public void ResolveSelectedBreakAsync_RefreshesQueueAndKeepsDecisionAuditVisible()
     {
         WpfTestThread.Run(async () =>
@@ -722,6 +724,7 @@ public sealed class FundLedgerViewModelTests
         viewModelSource.Should().NotContain("private int _selectedTabIndex");
     }
     [Fact]
+    [Trait("Category", "W4Acceptance")]
     public void LoadAsync_ReportPackContext_LoadsPreviewAndSelectsReportPackTab()
     {
         WpfTestThread.Run(async () =>
@@ -838,10 +841,21 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackOwnershipText.Should().Contain("sign-off");
                 viewModel.ReportPackSnapshotWarningText.Should().NotBeNullOrWhiteSpace();
                 viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
+                viewModel.ReportPackReadinessState.Title.Should().Be("Report pack evidence linked");
+                viewModel.ReportPackReadinessState.Detail.Should().Contain("preview is ready for operator handoff");
+                viewModel.ReportPackReadinessState.Detail.Should().Contain("Close readiness remains blocked until shared lifecycle gates, reconciliation decisions, and report-pack evidence align.");
                 viewModel.ReportPackReadinessState.ReadinessTone.Should().Be(WorkstationReadinessTone.EvidenceLinked);
-                viewModel.ReportPackReadinessState.ActionPosture!.Target.Should().Be("FundReportPack");
+                viewModel.ReportPackReadinessState.ActionPosture!.Label.Should().Be("Review handoff");
+                viewModel.ReportPackReadinessState.ActionPosture.Target.Should().Be("FundReportPack");
+                viewModel.ReportPackReadinessState.ActionPosture.Detail.Should().Contain("preview freshness");
                 viewModel.ReportPackReadinessState.VisibleEvidenceLinks.Should().Contain(link => link.Label == "Report-pack preview");
+                viewModel.ReportPackReadinessState.VisibleEvidenceLinks.Should().Contain(link => link.Label == "Audit traceability");
+                viewModel.ReportPackReadinessState.RecoveryActions.Should().Contain(action =>
+                    action.Label == "Refresh before distribution" &&
+                    action.Detail.Contains("approval change", StringComparison.OrdinalIgnoreCase));
                 viewModel.ReportPackReadinessState.SignoffRequirement!.Role.Should().NotBeNullOrWhiteSpace();
+                viewModel.ReportPackReadinessState.SignoffRequirement.Status.Should().Contain("Close readiness");
+                viewModel.ReportPackReadinessState.SignoffRequirement.Detail.Should().Contain("current preview");
             }
             finally
             {

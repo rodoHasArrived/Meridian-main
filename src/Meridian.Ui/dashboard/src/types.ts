@@ -1399,6 +1399,76 @@ export interface ReportingRunStatusProjection {
   failureReason: string | null;
 }
 
+export interface ReportingWorkflowEvidenceLink {
+  evidenceId: string;
+  label: string;
+  route: string | null;
+  source: string | null;
+  capturedAtUtc: string | null;
+}
+
+export interface ReportingWorkflowAuditEntry {
+  at: string;
+  actor: string;
+  action: string;
+  fromState: string | null;
+  toState: string | null;
+  note: string | null;
+}
+
+export interface ReportingWorkflowChangedLine {
+  lineKey: string;
+  previousValue: string;
+  currentValue: string;
+  evidenceLinks: ReportingWorkflowEvidenceLink[] | null;
+}
+
+export interface ReportingWorkflowRestatement {
+  reasonCode: string;
+  approver: string | null;
+  priorVersionReportId: string | null;
+  changedLines: ReportingWorkflowChangedLine[];
+  evidenceLinks: ReportingWorkflowEvidenceLink[] | null;
+}
+
+export interface ReportingWorkflowLineProvenance {
+  lineKey: string;
+  sourceKind: string;
+  sourceId: string;
+  evidenceId: string | null;
+  runId: string | null;
+  ledgerEntryId: string | null;
+  reconciliationCaseId: string | null;
+  reportValue: string | null;
+  sourceSessionId: string | null;
+  reconciliationRunId: string | null;
+}
+
+export interface ReportingWorkflowPublication {
+  channel: string;
+  publishedAt: string | null;
+  publishedBy: string | null;
+  manifestRoute: string | null;
+  evidenceLinks: ReportingWorkflowEvidenceLink[] | null;
+}
+
+export interface ReportingWorkflowRecord {
+  reportId: string;
+  fundProfileId: string;
+  fundAccountId: string;
+  period: string;
+  templateId: { name: string; version: number };
+  state: string;
+  version: number;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  auditTrail: ReportingWorkflowAuditEntry[];
+  restatement: ReportingWorkflowRestatement | null;
+  lineProvenance: ReportingWorkflowLineProvenance[];
+  publication: ReportingWorkflowPublication | null;
+}
+
 export interface GovernanceReportingSummary {
   profileCount: number;
   recommendedProfiles: string[];
@@ -1407,6 +1477,7 @@ export interface GovernanceReportingSummary {
   summary: string;
   templates?: ReportingTemplateMetadata[];
   recentRuns?: ReportingRunStatusProjection[];
+  workflowRecords?: ReportingWorkflowRecord[];
 }
 
 export interface GovernanceWorkspaceResponse {

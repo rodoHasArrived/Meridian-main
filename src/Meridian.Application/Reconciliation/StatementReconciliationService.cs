@@ -303,11 +303,14 @@ public sealed class StatementReconciliationService
 
             var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
             var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
-            var symbol = mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber);
+            var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
+            var rowKind = ToStatementRowKind(activityType);
+            var symbol = rowKind == StatementRowKind.CashBalance
+                ? mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty
+                : mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber);
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);
             var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, rowNumber);
             var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, rowNumber);
-            var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
             var tradeDate = mapped.GetRequiredDate(StatementCanonicalField.TradeDate, rowNumber);
             var settlementDate = mapped.GetOptional(StatementCanonicalField.SettlementDate);
             var currency = mapped.GetOptional(StatementCanonicalField.Currency) ?? "USD";
@@ -332,7 +335,7 @@ public sealed class StatementReconciliationService
 
             rows.Add(new NormalizedStatementRow(
                 $"{importId}:{rowNumber}",
-                ToStatementRowKind(activityType),
+                rowKind,
                 symbol,
                 quantity,
                 cashAmount == 0m ? price * quantity : cashAmount,

@@ -124,6 +124,8 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingWorkspaceShellViewModelTests|FullyQualifiedName~TradingWorkspaceShellPageTests|FullyQualifiedName~MainPageUiWorkflowTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~FundLedgerViewModelTests|FullyQualifiedName~FundAccountsViewModelTests|FullyQualifiedName~CashFlowViewModelTests|FullyQualifiedName~AccountPortfolioViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+npm --prefix src/Meridian.Ui/dashboard run test:w4
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "Category=W4Acceptance" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 ```
 
 Broaden only when shared DTOs, endpoint behavior, route metadata, source README contracts, or both browser and desktop consumers changed.
@@ -136,5 +138,6 @@ Before accepting any desktop workflow slice, confirm:
 - Shared endpoint/read-model behavior exists or is intentionally unchanged.
 - WPF presents shared state and does not fork business logic.
 - Browser parity is either verified or the mismatch is logged as a blocker.
+- W4 Done evidence includes the shared browser parity filter (`npm --prefix src/Meridian.Ui/dashboard run test:w4`) and the WPF `Category=W4Acceptance` filter so close checklist, reconciliation casework, and report-pack publication drift blocks the claim.
 - The matching pilot-readiness stage is green or has a blocker with owner, expected evidence, and target follow-up.
 - The status/planning docs identify the evidence packet or explicitly say the claim is support evidence only.

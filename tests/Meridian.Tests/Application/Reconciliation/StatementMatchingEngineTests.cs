@@ -63,7 +63,7 @@ public sealed class StatementMatchingEngineTests
         result.Results.Should().Contain(match => match.Kind == StatementMatchKind.Cash
             && match.RuleIds.Contains("statement-cash-tolerance-v1")
             && match.Variance.Amount == 0.05m
-            && match.Tolerance.Amount == 0.10m);
+            && match.Tolerance.Quantity == 0.10m);
         result.Results.Should().Contain(match => match.Kind == StatementMatchKind.Transaction
             && match.RuleIds.Contains("statement-transaction-tolerance-v1")
             && match.Variance.Quantity == 0.01m

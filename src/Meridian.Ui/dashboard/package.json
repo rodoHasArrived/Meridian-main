@@ -10,7 +10,8 @@
     "screenshots": "node ../../../scripts/dev/capture-web-screenshots.mjs",
     "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
     "test:vitest": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:w4": "vitest run src/screens/w4-acceptance-parity.test.ts src/screens/operations-continuity-screen.view-model.test.ts src/screens/reporting-screen.view-model.test.ts"
   },
   "dependencies": {
     "lucide-react": "0.468.0",

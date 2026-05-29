@@ -35,12 +35,13 @@ public sealed class ExecutionRouteContractParityTests
         var app = builder.Build();
         app.MapExecutionEndpoints(new JsonSerializerOptions());
 
-        return app.Services
-            .GetRequiredService<EndpointDataSource>()
-            .Endpoints
+        return ((IEndpointRouteBuilder)app)
+            .DataSources
+            .SelectMany(static source => source.Endpoints)
             .OfType<RouteEndpoint>()
             .Select(endpoint => endpoint.RoutePattern.RawText)
             .Where(route => !string.IsNullOrWhiteSpace(route))
+            .Select(route => route!)
             .ToHashSet(StringComparer.Ordinal);
     }
 }
