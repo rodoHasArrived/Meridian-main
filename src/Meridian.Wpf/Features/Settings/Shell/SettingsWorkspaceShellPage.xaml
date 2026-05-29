@@ -15,66 +15,6 @@
       AutomationProperties.AutomationId="SettingsWorkspaceShellPage">
 
     <Page.Resources>
-        <DataTemplate x:Key="QueueItemTemplate" DataType="{x:Type models:WorkspaceQueueItem}">
-            <Border Style="{StaticResource WorkspaceToneQueueCardStyle}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <WrapPanel Margin="0,0,0,8">
-                            <TextBlock Text="{Binding Title}"
-                                       FontSize="14"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            <Border Style="{StaticResource WorkspaceToneBadgeStyle}" Margin="10,0,8,0">
-                                <TextBlock Text="{Binding StatusLabel}"
-                                           FontSize="10"
-                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
-                            </Border>
-                            <Border Style="{StaticResource NeutralBadgeStyle}">
-                                <TextBlock Text="{Binding CountLabel}"
-                                           FontSize="10"
-                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
-                            </Border>
-                        </WrapPanel>
-
-                        <TextBlock Text="{Binding Detail}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                   TextWrapping="Wrap" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Center"
-                                Margin="16,0,0,0">
-                        <Button Tag="{Binding PrimaryActionId}"
-                                Content="{Binding PrimaryActionLabel}"
-                                Click="OnItemPrimaryActionClick"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Margin="0,0,8,0" />
-                        <Button Tag="{Binding SecondaryActionId}"
-                                Content="{Binding SecondaryActionLabel}"
-                                Click="OnItemSecondaryActionClick">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SecondaryActionLabel}" Value="">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
-        </DataTemplate>
-
         <DataTemplate x:Key="QuickLinkTemplate" DataType="{x:Type models:WorkspaceRecentItem}">
             <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}">
                 <StackPanel>
@@ -102,7 +42,8 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="20"
+          AutomationProperties.AutomationId="WorkspaceHomeSettingsCockpitTemplate">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -117,11 +58,13 @@
                                            Grid.Row="1"
                                            CommandGroup="{Binding CommandGroup}"
                                            CommandInvoked="OnCommandBarCommandInvoked"
-                                           Margin="0,16,0,0" />
+                                           Margin="0,16,0,0"
+                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceSettings" />
 
         <Border Grid.Row="2"
                 Style="{StaticResource SectionCardStyle}"
-                Margin="0,16,0,16">
+                Margin="0,16,0,16"
+                AutomationProperties.AutomationId="WorkspaceEvidenceStripSettings">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.5*" />
@@ -229,9 +172,11 @@
                         <StackPanel>
                             <TextBlock Text="Operations Review"
                                        Style="{StaticResource CardHeaderStyle}" />
-                            <ItemsControl ItemsSource="{Binding OperationsItems}"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}"
-                                          Margin="0,12,0,0" />
+                            <views:WorkspaceDecisionQueueControl ItemsSource="{Binding OperationsItems}"
+                                                                 Columns="1"
+                                                                 QueueAutomationId="SettingsOperationsDecisionQueue"
+                                                                 DecisionInvoked="OnSettingsDecisionInvoked"
+                                                                 Margin="0,12,0,0" />
                         </StackPanel>
                     </Border>
 
@@ -239,16 +184,19 @@
                         <StackPanel>
                             <TextBlock Text="Support Review"
                                        Style="{StaticResource CardHeaderStyle}" />
-                            <ItemsControl ItemsSource="{Binding SupportItems}"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}"
-                                          Margin="0,12,0,0" />
+                            <views:WorkspaceDecisionQueueControl ItemsSource="{Binding SupportItems}"
+                                                                 Columns="1"
+                                                                 QueueAutomationId="SettingsSupportDecisionQueue"
+                                                                 DecisionInvoked="OnSettingsDecisionInvoked"
+                                                                 Margin="0,12,0,0" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </ScrollViewer>
 
             <Border Grid.Column="2"
-                    Style="{StaticResource WorkspaceWorkbenchCardStyle}">
+                    Style="{StaticResource WorkspaceWorkbenchCardStyle}"
+                    AutomationProperties.AutomationId="WorkspaceInspectorHostSettings">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />

@@ -24,6 +24,7 @@ import type {
   EvidenceNode,
   EvidencePacket,
   EvidencePacketExportResponse,
+  EvidenceSlaAssessment,
   EvidenceStatus,
   EvidenceSubject,
   WorkflowAction
@@ -79,6 +80,7 @@ export interface EvidenceNodeArtifactRowViewModel {
   generatedLabel: string;
   retainedLabel: string;
   hashLabel: string;
+  canonicalSubjectLabel: string | null;
   ariaLabel: string;
 }
 
@@ -158,6 +160,47 @@ export interface EvidenceLineageSelectionViewModel {
   selectRow: (rowId: string) => void;
 }
 
+export interface EvidenceAssuranceComponentRowViewModel {
+  id: string;
+  label: string;
+  scoreLabel: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  detail: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceSlaAssessmentRowViewModel {
+  id: string;
+  policyLabel: string;
+  evidenceId: string;
+  evidenceKindLabel: string;
+  sourceSystem: string;
+  ageLabel: string;
+  freshnessLabel: string;
+  severityLabel: string;
+  breached: boolean;
+  tone: EvidenceStatusTone;
+  message: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceAssurancePanelViewModel {
+  title: string;
+  scoreLabel: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  summaryLabel: string;
+  componentRows: EvidenceAssuranceComponentRowViewModel[];
+  slaRows: EvidenceSlaAssessmentRowViewModel[];
+  breachedSlaRows: EvidenceSlaAssessmentRowViewModel[];
+  orphanEvidenceIds: string[];
+  orphanSummaryLabel: string;
+  orphanTone: EvidenceStatusTone;
+  noOrphanRuleLabel: string;
+  validationIssueLabel: string;
+}
+
 export type EvidencePacketActionControl = "link" | "validate" | "export";
 export type EvidencePacketActionTone = "primary" | "success" | "warning" | "danger" | "muted";
 
@@ -199,6 +242,22 @@ export interface EvidenceExportResultViewModel {
   routeHref: string | null;
   routeLabel: string | null;
   routeAriaLabel: string | null;
+  vaultIdLabel: string | null;
+  storageKindLabel: string | null;
+  artifactSummaryLabel: string | null;
+  artifactRows: EvidenceVaultArtifactRowViewModel[];
+}
+
+export interface EvidenceVaultArtifactRowViewModel {
+  id: string;
+  kind: string;
+  relativePath: string;
+  sizeLabel: string;
+  hashLabel: string;
+  sourceLabel: string;
+  canonicalSubjectLabel: string;
+  retainedLabel: string;
+  ariaLabel: string;
 }
 
 export interface EvidenceWorkbenchViewModel {
@@ -229,6 +288,7 @@ export interface EvidenceWorkbenchViewModel {
   statusLabel: string;
   statusTone: EvidenceStatusTone;
   generatedLabel: string;
+  assurancePanel: EvidenceAssurancePanelViewModel;
   lineagePanel: EvidenceLineagePanelViewModel;
   nodeGroups: EvidenceNodeGroupViewModel[];
   hasPacketActions: boolean;
@@ -237,6 +297,8 @@ export interface EvidenceWorkbenchViewModel {
   packetActions: EvidencePacketActionViewModel[];
   missingEvidence: string[];
   staleEvidence: string[];
+  orphanEvidence: string[];
+  slaBreaches: string[];
   relatedWorkItemIds: string[];
   warnings: string[];
   canExport: boolean;
@@ -521,6 +583,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     statusLabel: completeness ? formatStatus(completeness.status) : "Not loaded",
     statusTone: completeness ? mapStatusTone(completeness.status) : "muted",
     generatedLabel: input.packet ? formatDate(input.packet.generatedAt) : "Not generated",
+    assurancePanel: buildEvidenceAssurancePanel(completeness),
     lineagePanel: buildEvidenceLineagePanel(input.packet?.edges ?? [], input.packet?.subject ?? null),
     nodeGroups: groupNodes(input.packet?.nodes ?? []),
     hasPacketActions: packetActions.length > 0,
@@ -529,6 +592,8 @@ export function buildEvidenceWorkbenchViewModel(input: {
     packetActions,
     missingEvidence: completeness?.missingIds ?? [],
     staleEvidence: completeness?.staleIds ?? [],
+    orphanEvidence: completeness?.orphanEvidenceIds ?? [],
+    slaBreaches: (completeness?.slaAssessments ?? []).filter((assessment) => assessment.isBreached).map((assessment) => assessment.message),
     relatedWorkItemIds: collectWorkItemIds(input.packet?.nodes ?? []),
     warnings: input.packet?.warnings ?? [],
     canExport: input.packet !== null && !input.exportBusy,
@@ -545,6 +610,74 @@ export function buildEvidenceWorkbenchViewModel(input: {
     reloadEvidence: input.reloadEvidence ?? noopReloadEvidence,
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
+  };
+}
+
+export function buildEvidenceAssurancePanel(
+  completeness: EvidenceCompleteness | null
+): EvidenceAssurancePanelViewModel {
+  const assurance = completeness?.assuranceScore;
+  const score = assurance?.score ?? completeness?.score ?? null;
+  const status = assurance?.status ?? completeness?.status ?? "Unknown";
+  const slaRows = (assurance?.slaAssessments ?? completeness?.slaAssessments ?? []).map(buildSlaAssessmentRow);
+  const breachedSlaRows = slaRows.filter((row) => row.breached);
+  const orphanEvidenceIds = completeness?.orphanEvidenceIds ?? [];
+  const blockingIssueCount = completeness?.blockingIssueCount ?? 0;
+  const warningIssueCount = completeness?.warningIssueCount ?? 0;
+  const componentRows = (assurance?.components ?? []).map((component) => ({
+    id: component.componentId,
+    label: component.label,
+    scoreLabel: `${component.score}%`,
+    statusLabel: formatStatus(component.status),
+    statusTone: mapStatusTone(component.status),
+    detail: component.detail,
+    ariaLabel: `${component.label} assurance component, ${component.score}% ${formatStatus(component.status)}. ${component.detail}`
+  }));
+
+  return {
+    title: "Meridian Assurance",
+    scoreLabel: score === null ? "No assurance score" : `${score}% assurance`,
+    statusLabel: formatStatus(status),
+    statusTone: mapStatusTone(status),
+    summaryLabel: `${componentRows.length} ${componentRows.length === 1 ? "component" : "components"}, ${breachedSlaRows.length} SLA ${breachedSlaRows.length === 1 ? "breach" : "breaches"}`,
+    componentRows,
+    slaRows,
+    breachedSlaRows,
+    orphanEvidenceIds,
+    orphanSummaryLabel: orphanEvidenceIds.length === 0
+      ? "No orphan evidence"
+      : `${orphanEvidenceIds.length} orphan ${orphanEvidenceIds.length === 1 ? "node" : "nodes"}`,
+    orphanTone: orphanEvidenceIds.length === 0 ? "success" : "danger",
+    noOrphanRuleLabel: orphanEvidenceIds.length === 0
+      ? "No-orphan rule satisfied"
+      : "No-orphan rule breached",
+    validationIssueLabel: `${blockingIssueCount} blocking, ${warningIssueCount} warning`
+  };
+}
+
+function buildSlaAssessmentRow(assessment: EvidenceSlaAssessment): EvidenceSlaAssessmentRowViewModel {
+  const policyLabel = formatKind(assessment.policyId);
+  const evidenceKindLabel = formatKind(assessment.evidenceKind);
+  const ageLabel = assessment.ageMinutes === null ? "No age" : `${assessment.ageMinutes} min`;
+  const freshnessLabel = `${assessment.freshnessMinutes} min limit`;
+  const severityLabel = formatKind(assessment.severity.toLowerCase());
+  const tone = assessment.isBreached
+    ? assessment.severity === "Critical" ? "danger" : "warning"
+    : "success";
+
+  return {
+    id: `${assessment.policyId}:${assessment.evidenceId}`,
+    policyLabel,
+    evidenceId: assessment.evidenceId,
+    evidenceKindLabel,
+    sourceSystem: assessment.sourceSystem || "Unknown source",
+    ageLabel,
+    freshnessLabel,
+    severityLabel,
+    breached: assessment.isBreached,
+    tone,
+    message: assessment.message,
+    ariaLabel: `${policyLabel} for ${assessment.evidenceId}, ${assessment.isBreached ? "breached" : "fresh"}. ${assessment.message}`
   };
 }
 
@@ -744,6 +877,7 @@ function buildEvidenceNodeRow(node: EvidenceNode): EvidenceNodeRowViewModel {
 
 function buildEvidenceArtifactRow(artifact: EvidenceNode["artifactRefs"][number]): EvidenceNodeArtifactRowViewModel {
   const target = artifact.path ?? artifact.route ?? artifact.artifactId;
+  const canonicalSubjectLabel = formatCanonicalSubject(artifact.canonicalSubjectKind, artifact.canonicalSubjectId);
   return {
     id: artifact.artifactId,
     kind: formatKind(artifact.kind),
@@ -751,7 +885,8 @@ function buildEvidenceArtifactRow(artifact: EvidenceNode["artifactRefs"][number]
     generatedLabel: formatDate(artifact.generatedAt),
     retainedLabel: artifact.retained ? "Retained" : "Transient",
     hashLabel: artifact.hash ?? "No hash",
-    ariaLabel: `${formatKind(artifact.kind)} artifact ${artifact.artifactId}, ${artifact.retained ? "retained" : "transient"}`
+    canonicalSubjectLabel,
+    ariaLabel: `${formatKind(artifact.kind)} artifact ${artifact.artifactId}, ${artifact.retained ? "retained" : "transient"}${canonicalSubjectLabel ? `, ${canonicalSubjectLabel}` : ""}`
   };
 }
 
@@ -934,14 +1069,62 @@ function buildExportResultViewModel(result: EvidencePacketExportResponse | null)
   const routeHref = normalizeManifestRoute(result.manifestRoute);
   const nodeLabel = result.evidenceCount === 1 ? "1 node" : `${result.evidenceCount} nodes`;
   const warningLabel = result.warningCount === 1 ? "1 warning" : `${result.warningCount} warnings`;
+  const artifactRows = (result.vaultIdentity?.artifacts ?? []).map(buildVaultArtifactRow);
+  const artifactLabel = artifactRows.length === 1 ? "1 retained artifact" : `${artifactRows.length} retained artifacts`;
   return {
     title: result.retained ? "Manifest retained" : "Manifest generated",
     manifestPath: result.manifestPath,
-    summaryLabel: `${nodeLabel}, ${warningLabel}`,
+    summaryLabel: `${nodeLabel}, ${warningLabel}${result.vaultIdentity ? `, ${artifactLabel}` : ""}`,
     routeHref,
     routeLabel: routeHref ? "Open manifest" : null,
-    routeAriaLabel: routeHref ? `Open retained evidence manifest at ${result.manifestPath}` : null
+    routeAriaLabel: routeHref ? `Open retained evidence manifest at ${result.manifestPath}` : null,
+    vaultIdLabel: result.vaultIdentity?.vaultId ?? null,
+    storageKindLabel: result.vaultIdentity ? formatKind(result.vaultIdentity.storageKind) : null,
+    artifactSummaryLabel: result.vaultIdentity ? artifactLabel : null,
+    artifactRows
   };
+}
+
+function buildVaultArtifactRow(artifact: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["artifacts"][number]): EvidenceVaultArtifactRowViewModel {
+  const sourceLabel = artifact.sourceRoute ?? artifact.sourcePath ?? "No source";
+  const canonicalSubjectLabel = formatCanonicalSubject(artifact.canonicalSubjectKind, artifact.canonicalSubjectId) ?? "No canonical subject";
+  return {
+    id: artifact.artifactId,
+    kind: formatKind(artifact.kind),
+    relativePath: artifact.relativePath,
+    sizeLabel: formatBytes(artifact.sizeBytes),
+    hashLabel: artifact.contentHashSha256,
+    sourceLabel,
+    canonicalSubjectLabel,
+    retainedLabel: `Retained ${formatDate(artifact.retainedAt)}`,
+    ariaLabel: `${formatKind(artifact.kind)} retained vault artifact ${artifact.artifactId}, ${formatBytes(artifact.sizeBytes)}, ${canonicalSubjectLabel}`
+  };
+}
+
+function formatCanonicalSubject(kind?: string | null, id?: string | null) {
+  if (!kind || !id) {
+    return null;
+  }
+
+  return `${formatKind(kind)} ${id}`;
+}
+
+function formatBytes(value: number) {
+  if (!Number.isFinite(value) || value < 0) {
+    return "Unknown size";
+  }
+
+  if (value < 1024) {
+    return `${value} B`;
+  }
+
+  const kib = value / 1024;
+  if (kib < 1024) {
+    return `${kib.toFixed(kib >= 10 ? 0 : 1)} KiB`;
+  }
+
+  const mib = kib / 1024;
+  return `${mib.toFixed(mib >= 10 ? 0 : 1)} MiB`;
 }
 
 function normalizeManifestRoute(value: string): string | null {

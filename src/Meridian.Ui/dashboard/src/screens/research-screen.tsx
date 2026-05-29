@@ -651,6 +651,24 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           <CardDescription>Review retained runs, compare candidates, and open promotion history from the web workstation.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <section aria-label={vm.runHistorySummary.ariaLabel} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {vm.runHistorySummary.cards.map((card) => (
+              <div key={card.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="eyebrow-label">{card.label}</div>
+                    <div className="mt-2 font-mono text-lg font-semibold text-foreground">{card.value}</div>
+                  </div>
+                  <Badge variant={card.badgeVariant}>{card.badgeLabel}</Badge>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+              </div>
+            ))}
+            <p className="sr-only">{vm.runHistorySummary.normalizedResultText}</p>
+            <p className="sr-only">{vm.runHistorySummary.modeCoverageText}</p>
+            <p className="sr-only">{vm.runHistorySummary.engineCoverageText}</p>
+            <p className="sr-only">{vm.runHistorySummary.liveAdjacentText}</p>
+          </section>
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
             <DenseDataTable
               columns={runColumns}
@@ -765,7 +783,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             {vm.diffPanel.metrics.length > 0 && (
-              <section aria-label={vm.diffPanel.summaryLabel} className="grid gap-3 sm:grid-cols-3">
+              <section aria-label={vm.diffPanel.summaryLabel} className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
                 {vm.diffPanel.metrics.map((metric) => (
                   <div key={metric.id} role="group" aria-label={metric.ariaLabel} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3">
                     <div className="eyebrow-label">{metric.label}</div>
@@ -774,6 +792,20 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 ))}
               </section>
             )}
+            <section aria-label="Run diff artifact completeness" className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-3">
+              <div className="eyebrow-label">Version, engine, and artifact context</div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.diffPanel.metadataSummary}</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.diffPanel.artifactCompletenessSummary}</p>
+              {vm.diffPanel.compatibilityWarnings.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-warning" aria-label="Run diff compatibility warnings">
+                  {vm.diffPanel.compatibilityWarnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-2 text-xs text-muted-foreground">No compatibility warnings.</p>
+              )}
+            </section>
             <div className="grid gap-4 2xl:grid-cols-2">
               <section aria-label={vm.diffPanel.positionSectionLabel} className="rounded-lg border border-border/70 bg-secondary/20 p-4">
                 <div className="flex items-center justify-between gap-3">

@@ -54,9 +54,9 @@ public sealed class OmsIntegrationServiceTests
 
         var diagnostics = service.AdapterDiagnostics();
 
-        diagnostics.Should().Contain(d => d.Boundary is { Kind: OmsAdapterKind.Fix, RequiresRequestSigning: true });
-        diagnostics.Should().Contain(d => d.Boundary is { Kind: OmsAdapterKind.Sftp } && d.Boundary.RetryPolicy.MaxAttempts == 7);
-        diagnostics.Should().Contain(d => d.Boundary is { Kind: OmsAdapterKind.FileDrop, RequiresRequestSigning: false });
+        diagnostics.Should().Contain(d => d.Boundary.Kind == OmsAdapterKind.Fix && d.Boundary.RequiresRequestSigning);
+        diagnostics.Should().Contain(d => d.Boundary.Kind == OmsAdapterKind.Sftp && d.Boundary.RetryPolicy.MaxAttempts == 7);
+        diagnostics.Should().Contain(d => d.Boundary.Kind == OmsAdapterKind.FileDrop && !d.Boundary.RequiresRequestSigning);
     }
 
     [Fact]

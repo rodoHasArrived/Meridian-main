@@ -56,7 +56,7 @@ public sealed class ReportingOrchestrationServiceTests
         var generated = await sut.ExecuteDueSchedulesAsync(schedules, FixedNow, CancellationToken.None);
 
         generated.Select(m => m.RunId).Should().Equal("sched-investor-20260501", "sched-shadow-20260503");
-        generated.Should().OnlyContain(m => m.Trigger == ReportingRunTrigger.Scheduled && m.ScheduleId is not null);
+        generated.Should().OnlyContain(m => m.Trigger == ReportingRunTrigger.Scheduled && m.ScheduleId != null);
         sut.GetAudit("sched-shadow-20260503").Should().ContainSingle(e => e.Action == "RunGenerated" && e.Notes.Contains("trigger=Scheduled"));
     }
 
@@ -86,7 +86,7 @@ public sealed class ReportingOrchestrationServiceTests
         failed!.Status.Should().Be(ReportingRunStatus.Failed);
         failed.AttemptCount.Should().Be(2);
         failed.FailureReason.Should().Be("renderer unavailable");
-        sut.GetAudit(failed.RunId).Count(e => e.Action is "RunRetry" or "RunFailed").Should().Be(2);
+        sut.GetAudit(failed.RunId).Count(e => e.Action == "RunRetry" || e.Action == "RunFailed").Should().Be(2);
     }
 
     private sealed class FailingOnceRenderer : IReportingSectionRenderer

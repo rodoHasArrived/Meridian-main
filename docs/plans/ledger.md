@@ -12,9 +12,43 @@
 - [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
 
 **Status:** Active execution roadmap; F# period management, PostgreSQL ledger persistence, ledger
-book/period APIs, period-close inbox routing, period posting-kind guards, run-ledger drill-ins, and
-the first governed trial-balance report-pack artifact slice are complete. Accrual-to-ledger posting
-and ledger-specific reporting endpoints remain open.
+book/period APIs, period-close inbox routing, period posting-kind guards, run-ledger drill-ins,
+customizable hierarchical chart-of-accounts rollups, ledger-domain income-statement/balance-sheet
+projection, local-to-base currency translation, unrealized FX revaluation line generation, and the
+first fixed-income coupon/accretion/amortization journal projection are complete. The in-memory
+ledger domain now also has book-scoped locked-period guards for post-close/NAV protection and
+shadow-NAV validation reports with governed override drafts, plus deterministic partnership
+investor fee/high-water/allocation projections, tiered preferred-return/carry waterfall
+allocations, signed financial-report artifact generation including a machine-readable
+financial-statements JSON artifact plus tax-lot realized-gains CSV export, and scheduled
+report-export occurrence projection with delivery-manifest and regulatory XML summary artifacts.
+Multi-currency posting now has a local-to-base journal projector that preserves local
+amount/currency/rate evidence while producing balanced base-currency ledger lines.
+Generic automated journal drafts now also cover recurring management-fee, performance-fee,
+commission, and withholding-tax accrual obligations. Daily portfolio pricing now has a
+policy-backed valuation projection with price-source/evidence audit rows and balanced fair-value
+adjustment lines. Account-level tax-lot relief now has deterministic FIFO/LIFO/HIFO/SpecificId
+lot selection and realized gain/loss line projection. Automated journal drafts now have an
+in-memory governed approval-to-posting handoff that requires approval evidence and carries audit
+tags into the posted ledger journal. Ledger-specific period and cross-period reporting endpoints
+now expose trial-balance and P&L summaries from closed accounting periods. The PostgreSQL ledger
+store now persists account-level tax-lot policies and open tax lots for ledger-book/account relief
+inputs. Direct-lending accrual reversals now project adjustment journal writes into soft-closed
+periods when approval metadata is supplied, while originating accruals still require open periods.
+The F# ledger kernel now validates direct-lending `AccrualEntry` lineage and builds deterministic
+loan/period/currency `AccrualSummary` totals for accrual schedules.
+`DailyAccrualWorker` now checks the F# period guard before posting originating accruals and routes
+period-blocked accruals to the Accounting operator inbox with `FundReconciliation` navigation.
+Closed-period trial balances now also expose a signed `LedgerTrialBalanceReportDto` with locked-period
+status, aggregate totals, per-account detail rows, accounting-policy lineage, and checksum evidence.
+Closed-period P&L summaries now split realized revenue/expense net income from accrual-basis
+adjustment impact while retaining prior-period variance and policy lineage.
+Direct-lending commands now project ledger-impacting events before persistence and pass the
+resulting `LedgerJournalEntryWrite` records into `IDirectLendingStateStore.SaveAsync`, where
+`PostgresDirectLendingStateStore` appends them through `ITransactionalLedgerJournalStore` inside
+the same serializable transaction as the loan event append. Full XBRL/iXBRL regulatory exports
+remain open beyond the first ledger-domain scheduled regulatory XML summary and tax-lot
+realized-gains artifacts.
 
 ## Overview
 
@@ -44,6 +78,22 @@ baseline.
 | ---- | ------- |
 | `Ledger.cs` | Double-entry ledger; validates and posts `JournalEntry` records, maintains per-account totals |
 | `LedgerAccount.cs` | Named account with type, optional symbol, and optional financial-account ID |
+| `ChartOfAccounts.cs` | Customizable colon-delimited account hierarchy with parent creation and rollup balances |
+| `LedgerFinancialStatementBuilder.cs` | Trial-balance projection into income-statement and balance-sheet read models |
+| `MultiCurrencyLedgerTranslator.cs` | Local-currency balance translation and unrealized FX revaluation journal lines |
+| `MultiCurrencyJournalProjector.cs` | Local-currency journal input conversion into balanced base-currency posting lines |
+| `DailyPortfolioPricingProjector.cs` | Policy-backed daily mark valuation with price evidence and fair-value adjustment lines |
+| `FixedIncomeAmortizationProjector.cs` | Coupon accrual, discount accretion, and premium amortization journal-line projection |
+| `LedgerAccountTaxLotPolicyBook.cs` | Account-level FIFO/LIFO/HIFO/SpecificId relief policy resolution |
+| `LedgerTaxLotReliefProjector.cs` | Account-level tax-lot relief selection and realized gain/loss journal-line projection |
+| `AutomatedJournalDraftProjector.cs` | Balanced journal drafts for dividends, cash interest, corporate-action cash events, and recurring fee/tax/commission accruals |
+| `AutomatedJournalApproval.cs` | Governed automated-journal submit/approve/reject/post lifecycle with retained evidence |
+| `LockedAccountingPeriodBook.cs` | Book-scoped accounting-period lock registry and guarded posting helpers |
+| `ShadowNavValidator.cs` | Actual-vs-shadow NAV validation report and override-draft handoff |
+| `PartnershipInvestorAccountingProjector.cs` | Management-fee, performance-fee, high-water mark, and investor-capital allocation projection |
+| `PartnershipWaterfallProjector.cs` | Preferred-return, carry, and residual tier allocation projection |
+| `LedgerReportPackBuilder.cs` | Signed trial-balance, income-statement, balance-sheet, and manifest artifact generation |
+| `LedgerReportSchedulePlanner.cs` | Monthly, quarterly, and annual report export occurrence projection |
 | `LedgerAccountType.cs` | Asset / Liability / Equity / Revenue / Expense ordinals |
 | `JournalEntry.cs` | Balanced set of `LedgerEntry` lines |
 | `JournalEntryMetadata.cs` | Command/correlation/causation lineage attached to a journal entry |
@@ -92,8 +142,9 @@ null. The dashboard treats a missing or non-route-only ledger artifact ref as a 
 | `Migrations/V_ledger_002__accounting_periods.sql` | `ledger.accounting_periods` plus `period_close_events` audit history and optimistic versioning |
 | `Migrations/V_ledger_003__ledger_books.sql` | `ledger.ledger_books`, fund-structure scope, and book-scoped accounting periods |
 | `Migrations/V_ledger_006__journal_posting_kind.sql` | `posting_kind` columns for originating vs. adjustment journal writes |
-| `ILedgerJournalStore.cs` | Journal, period, close-event, and ledger-book persistence contract |
-| `PostgresLedgerJournalStore.cs` | Npgsql implementation using serializable transactions and optimistic period version guards |
+| `Migrations/V_ledger_009__tax_lot_persistence.sql` | Account-level tax-lot policies plus open-lot persistence for FIFO/LIFO/HIFO/SpecificId relief inputs |
+| `ILedgerJournalStore.cs` | Journal, period, close-event, ledger-book, tax-lot policy, and open-lot persistence contract |
+| `PostgresLedgerJournalStore.cs` | Npgsql implementation using serializable transactions, optimistic period version guards, and tax-lot policy/open-lot upserts |
 | `LedgerPeriodPostingGuard.cs` | Central posting-date and period-status guard for durable ledger writes |
 | `LedgerJournalStoreOptions.cs` | Connection string, schema name, and period-locking configuration |
 | `LedgerStoreExtensions.cs` | DI registration for `ILedgerJournalStore` and `ILedgerBookService` |
@@ -152,6 +203,7 @@ say "basis per configured policy" until accountant review.
 | `Reconciliation.fs` | `ProjectedFlow` / `ActualCashEvent` matching; cash-ledger event types |
 | `ReconciliationClassification.fs` | Canonical break-class taxonomy with reason codes and severity derivation |
 | `ReconciliationRules.fs` | Configurable `MatchingRule` evaluation; `classifyBreaks` batch helper |
+| `AccrualTypes.fs` | Direct-lending accrual entry validation and period summary aggregation |
 | `LedgerReadModels.fs` | `buildTrialBalance` — groups balance inputs into `TrialBalanceRow` output |
 | `PeriodManagement.fs` | `AccountingPeriod`, `PeriodStatus`, `PeriodCloseEvent`, period locking and posting-date guards |
 | `Interop.fs` | Sealed `LedgerInterop` class exposing all F# ledger primitives to C# consumers |
@@ -163,6 +215,7 @@ say "basis per configured policy" until accountant review.
 - Accounting period lifecycle (Open → Soft-Close → Hard-Close)
 - PostgreSQL-backed journal entry persistence with full event lineage
 - Multi-ledger model aligned to the `FundStructure` node hierarchy (fund, sleeve, vehicle, entity, account)
+- Customizable hierarchical chart of accounts for parent/child reporting rollups
 - Period locking and close workflow with operator sign-off
 - Trial balance and period-over-period P&L summary
 - Accrual tracking integrated with direct-lending payment schedules
@@ -171,8 +224,8 @@ say "basis per configured policy" until accountant review.
 
 ### Out of Scope
 
-- Tax-lot accounting and realized-gain computation (separate roadmap item)
-- Mark-to-market / GAAP fair-value adjustments (planned but not in scope here)
+- Full tax-reporting packages beyond ledger-domain realized-gain evidence artifacts
+- Durable mark-to-market / GAAP fair-value adjustment posting (storage/workflow layer work)
 - Full XBRL/iXBRL output (reporting layer, not core ledger kernel)
 - Non-direct-lending instrument accrual templates (future UFL package work)
 
@@ -271,14 +324,17 @@ Delivered prerequisite: direct-lending services already expose `DailyAccrualEntr
 and posting APIs for loan accruals. That is not yet the same as balanced ledger journal projection,
 so the Phase 4 ledger-posting work remains open.
 
-- [ ] `AccrualEntry` and `AccrualSummary` F# types added to `Meridian.FSharp.Ledger` — one entry
+- [x] `AccrualEntry` and `AccrualSummary` F# types added to `Meridian.FSharp.Ledger` — one entry
   per accrual period-slice with reference to the originating loan ID and event lineage
-- [ ] `LoanAccountingProjector` wired to `ILedgerJournalStore` so drawdown, accrual, receipt,
+- [x] `LoanAccountingProjector` wired to `ILedgerJournalStore` so drawdown, accrual, receipt,
   discount/premium amortization, restructuring, and write-off events post balanced journal entries
   in the same database transaction as the loan event append
-- [ ] `IAccrualLedgerService` interface — `AccrueAsync` and `ReverseAccrualAsync` supporting
-  correcting entries within the same open period
-- [ ] `DailyAccrualWorker` extended to check `PeriodManagement.CheckPostingDate` before posting
+- [x] `IAccrualLedgerService` interface — `AccrueAsync` and `ReverseAccrualAsync` supporting
+  correcting entries within open periods and approved adjustment reversals in soft-closed periods
+- [x] `LoanAccountingProjector` resolves direct-lending accrual reversals as adjustment postings,
+  allowing approved reversal writes to target a soft-closed accounting period while keeping
+  originating accrual writes limited to open periods
+- [x] `DailyAccrualWorker` extended to check `PeriodManagement.CheckPostingDate` before posting
   and route failures to the operator inbox as period-blocked items
 
 ## Phase 5 — Reporting and Governed Outputs (Partial)
@@ -286,11 +342,16 @@ so the Phase 4 ledger-posting work remains open.
 **Goal:** Surface verified ledger state as governed report artifacts (trial balance, P&L summary,
 accrual schedule) that can be exported and attached to the operator report pack.
 
-- [ ] `TrialBalanceReportDto` — signed, period-locked trial balance with aggregate-level totals and
+- [x] `LedgerTrialBalanceReportDto` — signed, period-locked trial balance with aggregate-level totals and
   per-account detail rows
-- [ ] `PeriodPnlSummaryDto` — realized income/expense P&L with prior-period comparatives and
+- [x] `LedgerPeriodPnlSummaryDto` — realized income/expense P&L with prior-period comparatives and
   accrual-basis adjustments
-- [ ] `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` endpoints
+- [x] `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` endpoints
+- [x] Ledger-domain signed report-pack artifact builder for trial balance, P&L, balance sheet,
+  financial-statements JSON, tax-lot realized-gains CSV, and manifest checksums from
+  point-in-time statements and supplied realized-gain projections
+- [x] Scheduled export delivery artifacts for report recipients, requested formats, due dates,
+  report-pack signatures, and regulator-facing XML summary totals
 - [x] `FundOperationsWorkspaceReadService` includes `FundLedgerSummary`,
   `FundLedgerReconciliationSnapshot`, selected-ledger filtering, and trial-balance rows in the
   fund-operations workspace projection
@@ -337,8 +398,23 @@ public interface ILedgerBookService
 
 public interface IAccrualLedgerService
 {
-    Task AccrueAsync(Guid loanId, AccrualEntryDto entry, CancellationToken ct = default);
-    Task ReverseAccrualAsync(Guid accrualId, string reason, CancellationToken ct = default);
+    Task<IReadOnlyList<LedgerJournalEntryWrite>> AccrueAsync(
+        Guid loanId,
+        LoanContractDetailDto contract,
+        PostDailyAccrualRequest request,
+        DailyAccrualEntryDto accrual,
+        Guid sourceEventId,
+        DirectLendingEventWriteMetadata metadata,
+        CancellationToken ct = default);
+
+    Task<IReadOnlyList<LedgerJournalEntryWrite>> ReverseAccrualAsync(
+        Guid loanId,
+        LoanContractDetailDto contract,
+        DailyAccrualEntryDto accrual,
+        Guid sourceEventId,
+        DirectLendingEventWriteMetadata metadata,
+        CancellationToken ct = default,
+        LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null);
 }
 ```
 
@@ -371,10 +447,13 @@ Implemented governed report-pack endpoints with ledger/trial-balance artifacts:
 - `GET /api/fund-structure/report-packs` — report-pack history
 - `GET /api/fund-structure/report-packs/{reportId}` — persisted report-pack detail
 
-Planned reporting endpoints:
+Implemented period reporting endpoints:
 
 - `GET /api/ledger/periods/{id}/trial-balance` — trial balance for a specific period
 - `GET /api/ledger/periods/{id}/pnl-summary` — P&L summary with prior-period comparatives
+
+Implemented cross-period reporting endpoints:
+
 - `GET /api/ledger/reports/trial-balance` — cross-period trial-balance export
 - `GET /api/ledger/reports/pnl-summary` — governed P&L summary export
 
@@ -388,7 +467,7 @@ Planned reporting endpoints:
 | L-04 | Period-close work items and operator inbox routing | Complete | L-03 | `src/Meridian.Storage/Ledger`, `src/Meridian.Ui.Shared`, `tests/Meridian.Tests/Storage` |
 | L-05 | Accrual tracking and direct-lending ledger integration | Open | L-03 | `src/Meridian.Application/DirectLending`, `src/Meridian.FSharp.Ledger`, `src/Meridian.Storage/Ledger` |
 | L-06A | Governed report-pack trial-balance artifact slice | Complete | L-03 | `src/Meridian.Ui.Shared`, `src/Meridian.Application`, `tests/Meridian.Tests/Application` |
-| L-06B | Ledger-specific reporting endpoints and P&L summaries | Open | L-04, L-05 | `src/Meridian.Ui.Shared`, `src/Meridian.Application`, `src/Meridian.Contracts` |
+| L-06B | Ledger-specific reporting endpoints and P&L summaries | Complete for API reporting: period-scoped and cross-period trial-balance/P&L routes implemented; richer retained file exports remain future reporting work | L-04, L-05 | `src/Meridian.Ui.Shared`, `src/Meridian.Application`, `src/Meridian.Contracts` |
 
 ## Validation Commands
 

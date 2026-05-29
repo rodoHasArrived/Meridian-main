@@ -76,9 +76,64 @@ public sealed class StatementReconciliationOrchestratorTests
             Assert.Equal(new DateOnly(2026, 5, 29), evidenceLink.StatementPeriodStart);
             Assert.Equal(new DateOnly(2026, 5, 30), evidenceLink.StatementPeriodEnd);
             Assert.Single(intake.Cases);
-            Assert.Equal("fund-ops", intake.Cases[0].Owner);
-            Assert.NotNull(intake.Cases[0].DueAtUtc);
-            Assert.Contains(intake.Cases[0].AuditEvents, e => e.EventType == "ExternalStatementCaseCreated");
+            var reconciliationCase = intake.Cases[0];
+            Assert.Equal("fund-ops", reconciliationCase.Owner);
+            Assert.NotNull(reconciliationCase.DueAtUtc);
+            Assert.Equal("NeedsInvestigation", reconciliationCase.Disposition);
+            Assert.Equal(0, reconciliationCase.AgingDays);
+            Assert.Contains(reconciliationCase.AuditEvents, e => e.EventType == "ExternalStatementCaseCreated");
+            var attachment = Assert.Single(reconciliationCase.Attachments);
+            Assert.Equal("ExternalStatementRow", attachment.EvidenceKind);
+            Assert.Equal("broker", attachment.SourceSystem);
+            Assert.Equal(attachment.ContentHash, reconciliationCase.BreakExplanation?.EvidenceLinks.Last().Replace("statement-hash:", string.Empty, StringComparison.Ordinal));
+            Assert.NotNull(reconciliationCase.BreakExplanation);
+            Assert.Contains("broker", reconciliationCase.BreakExplanation.SourceSystems);
+            Assert.Contains("dividend", reconciliationCase.BreakExplanation.ProbableCause, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Security Master corporate-action evidence", reconciliationCase.BreakExplanation.SuggestedNextAction);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_Creates_Cases_From_Custodian_Statement_Intake()
+    {
+        var store = new InMemoryStatementReconciliationCheckpointStore();
+        var service = new StatementReconciliationService();
+        var orchestrator = new StatementReconciliationOrchestrator(service, store);
+
+        var path = Path.GetTempFileName();
+        await File.WriteAllLinesAsync(path,
+        [
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate",
+            "CUST-1,,0,0,2500.00,cash,2026-05-30",
+            "CUST-1,MSFT,0,0,-15.25,fee,2026-05-30"
+        ]);
+
+        try
+        {
+            var result = await orchestrator.RunAsync(Guid.NewGuid(), "custodian", path, resume: false, CancellationToken.None);
+            var intake = await service.CreateExternalStatementCasesAsync("custodian", path);
+
+            Assert.Equal(StatementReconciliationStage.Completed, result.CurrentStage);
+            Assert.Equal(2, result.ImportedRowCount);
+            Assert.Equal(0, result.MatchCount);
+            Assert.Equal(2, result.UnresolvedCount);
+            Assert.Equal(2, intake.Cases.Count);
+            Assert.All(intake.Cases, reconciliationCase =>
+            {
+                Assert.Equal("fund-ops", reconciliationCase.Owner);
+                Assert.Equal("NeedsInvestigation", reconciliationCase.Disposition);
+                Assert.NotEmpty(reconciliationCase.CommentThreads);
+                Assert.Contains(reconciliationCase.AuditEvents, e => e.EventType == "ExternalStatementCaseCreated");
+                var attachment = Assert.Single(reconciliationCase.Attachments);
+                Assert.Equal("ExternalStatementRow", attachment.EvidenceKind);
+                Assert.Equal("custodian", attachment.SourceSystem);
+                Assert.Contains("custodian", reconciliationCase.BreakExplanation!.SourceSystems);
+                Assert.Contains(reconciliationCase.BreakExplanation.EvidenceLinks, link => link.StartsWith("statement-hash:", StringComparison.Ordinal));
+            });
         }
         finally
         {

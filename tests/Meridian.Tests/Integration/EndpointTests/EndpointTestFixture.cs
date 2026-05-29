@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Meridian.Application.FundAccounts;
+using Meridian.Application.FundStructure;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
@@ -8,6 +10,7 @@ using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -78,6 +81,11 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // The core ConfigStore (Application.UI.ConfigStore) is registered separately by AddMarketDataServices.
         builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
         builder.Services.AddUiSharedServices(statusHandlers, configPath);
+        builder.Services.RemoveAll<IFundStructureService>();
+        builder.Services.AddSingleton<IFundStructureService>(sp =>
+            new InMemoryFundStructureService(
+                sp.GetRequiredService<IFundAccountService>(),
+                persistencePath: null));
 
         _app = builder.Build();
         _app.UseApiKeyAuthentication();

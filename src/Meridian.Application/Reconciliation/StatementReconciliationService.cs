@@ -54,6 +54,7 @@ public sealed class StatementReconciliationService
         var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
         var id = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
         var sourceRows = File.ReadLines(sourcePath)
+            .Skip(1)
             .Select((line, index) => CreateSourceRowReference(id, index + 1, line, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["sourceKind"] = normalizedSourceKind,
@@ -303,11 +304,14 @@ public sealed class StatementReconciliationService
 
             var mapped = new StatementMappedCsvRow(profile, BuildColumnMap(header, parts));
             var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
-            var symbol = mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber);
+            var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
+            var rowKind = ToStatementRowKind(activityType);
+            var symbol = rowKind == StatementRowKind.CashBalance
+                ? mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty
+                : mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber);
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);
             var price = mapped.GetRequiredDecimal(StatementCanonicalField.Price, rowNumber);
             var cashAmount = mapped.GetRequiredDecimal(StatementCanonicalField.CashAmount, rowNumber);
-            var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
             var tradeDate = mapped.GetRequiredDate(StatementCanonicalField.TradeDate, rowNumber);
             var settlementDate = mapped.GetOptional(StatementCanonicalField.SettlementDate);
             var currency = mapped.GetOptional(StatementCanonicalField.Currency) ?? "USD";
@@ -332,7 +336,7 @@ public sealed class StatementReconciliationService
 
             rows.Add(new NormalizedStatementRow(
                 $"{importId}:{rowNumber}",
-                ToStatementRowKind(activityType),
+                rowKind,
                 symbol,
                 quantity,
                 cashAmount == 0m ? price * quantity : cashAmount,
@@ -528,38 +532,45 @@ public sealed class StatementReconciliationService
                 continue;
             }
 
+            var now = DateTimeOffset.UtcNow;
             var classification = _breakClassifier.Classify(StatementBreakClassificationRequest.FromStatementRow(row));
             if (!classification.ShouldCreateCaseQueueItem)
             {
                 continue;
             }
 
+            var explanation = BuildBreakExplanation(row);
+            var attachment = BuildStatementAttachment(row, explanation.EvidenceLinks.FirstOrDefault());
             var evidenceRef = $"statement-row:{row.RowId}";
             cases.Add(new ReconciliationCase(
                 $"case:{row.RowId}",
                 row.RawSnapshot.GetValueOrDefault("importId", row.Fingerprint),
                 "Open",
-                classification.WorkflowRationale,
+                explanation.Summary,
                 0.35m,
                 classification.WorkflowRationale,
-                DateTimeOffset.UtcNow,
+                now,
                 [new ReconciliationCaseHistoryEntry(DateTimeOffset.UtcNow, "None", "Open", "Case created from statement reconciliation service.") { EvidenceId = evidenceRef }])
             {
                 EvidenceReferences = [evidenceRef],
                 Owner = "fund-ops",
                 Priority = ToCasePriority(classification.Severity),
-                DueAtUtc = DateTimeOffset.UtcNow.AddBusinessDays(2),
+                DueAtUtc = now.AddBusinessDays(2),
+                Disposition = "NeedsInvestigation",
+                AgingDays = 0,
+                Attachments = [attachment],
+                BreakExplanation = explanation,
                 CommentThreads =
                 [
                     new ReconciliationCaseCommentThread(
                         "statement-intake",
                         "External statement intake",
                         [
-                            new ReconciliationCaseComment(
+                            new Meridian.Domain.Reconciliation.ReconciliationCaseComment(
                                 Guid.NewGuid().ToString("N"),
-                                $"Created from {row.RawSnapshot.GetValueOrDefault("sourceKind", "external")} statement row {row.RawSnapshot.GetValueOrDefault("rowNumber", row.RowId)}. Recommended action: {classification.RecommendedActionText}.",
+                                $"{explanation.Summary} Suggested next action: {explanation.SuggestedNextAction} Classification action: {classification.RecommendedActionText}.",
                                 "system",
-                                DateTimeOffset.UtcNow)
+                                now)
                         ])
                 ],
                 AuditEvents =
@@ -567,9 +578,9 @@ public sealed class StatementReconciliationService
                     new ReconciliationCaseAuditEvent(
                         Guid.NewGuid().ToString("N"),
                         "ExternalStatementCaseCreated",
-                        DateTimeOffset.UtcNow,
+                        now,
                         "system",
-                        $"Case created for {classification.BreakType} with {classification.Severity} severity.")
+                        $"Case created for {classification.BreakType} with {classification.Severity} severity and evidence {attachment.AttachmentId}.")
                 ]
             });
         }
@@ -577,12 +588,87 @@ public sealed class StatementReconciliationService
         return (matches, cases);
     }
 
+    private static ReconciliationCaseAttachment BuildStatementAttachment(
+        NormalizedStatementRow row,
+        string? evidenceRoute)
+    {
+        var importId = row.RawSnapshot.GetValueOrDefault("importId", row.Fingerprint);
+        var rowNumber = row.RawSnapshot.GetValueOrDefault("rowNumber", row.RowId);
+        var sourceKind = row.RawSnapshot.GetValueOrDefault("sourceKind", "external");
+        return new ReconciliationCaseAttachment(
+            AttachmentId: $"statement-row:{importId}:{rowNumber}",
+            EvidenceKind: "ExternalStatementRow",
+            SourceSystem: sourceKind,
+            SourceReference: row.RowId,
+            ContentHash: row.Fingerprint,
+            Route: evidenceRoute,
+            AttachedAtUtc: DateTimeOffset.UtcNow);
+    }
+
+    private static ReconciliationBreakExplanation BuildBreakExplanation(NormalizedStatementRow row)
+    {
+        var sourceKind = row.RawSnapshot.GetValueOrDefault("sourceKind", "external");
+        var account = row.RawSnapshot.GetValueOrDefault("account", "unknown-account");
+        var rowNumber = row.RawSnapshot.GetValueOrDefault("rowNumber", row.RowId);
+        var importId = row.RawSnapshot.GetValueOrDefault("importId", row.Fingerprint);
+        var activityType = row.RawSnapshot.GetValueOrDefault("activityType", row.Kind.ToString());
+        var evidenceRoute = $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(importId)}#row-{Uri.EscapeDataString(rowNumber)}";
+
+        var (probableCause, ledgerImpact, suggestedNextAction, signoffRole) = row.Kind switch
+        {
+            StatementRowKind.CashBalance => (
+                "External cash balance could not be matched to a retained internal cash snapshot within tolerance.",
+                $"Cash ledger may need a balance adjustment or missing bank/custodian sync review for account {account}.",
+                "Compare the statement cash balance with the latest internal cash ledger and attach the cash-sync evidence packet.",
+                "Fund accounting"),
+            StatementRowKind.Dividend => (
+                "External dividend activity has no deterministic ledger income or receivable match.",
+                $"Dividend income or receivable postings for {DisplaySymbol(row)} may be missing, duplicated, or dated outside the statement window.",
+                "Review Security Master corporate-action evidence, expected dividend journal preview, and broker activity before resolving.",
+                "Controller"),
+            StatementRowKind.Fee => (
+                "External fee activity has no matching expense or cash movement in the ledger.",
+                $"Expense and cash accounts may be understated by {FormatAmount(row.Amount, row.Currency)}.",
+                "Map the broker fee to the fund expense policy, draft the journal impact, and attach approval evidence.",
+                "Fund accounting"),
+            _ => (
+                "External transaction has no deterministic order, fill, ledger, or cash movement match.",
+                $"Ledger, position, and cash balances may be misstated by {FormatAmount(row.Amount, row.Currency)} for {DisplaySymbol(row)}.",
+                "Link the source order/fill/session evidence or create a correcting journal candidate before sign-off.",
+                "Fund operations")
+        };
+
+        return new ReconciliationBreakExplanation(
+            Summary: $"{HumanizeKind(row.Kind)} break from {sourceKind} statement row {rowNumber}.",
+            SourceSystems: [sourceKind, "Meridian ledger", "Meridian positions"],
+            ProbableCause: probableCause,
+            LedgerImpact: ledgerImpact,
+            SuggestedNextAction: suggestedNextAction,
+            RequiredSignoffRole: signoffRole,
+            EvidenceLinks: [evidenceRoute, $"statement-row:{importId}:{rowNumber}", $"statement-hash:{row.Fingerprint}"]);
+    }
+
+    private static string DisplaySymbol(NormalizedStatementRow row) =>
+        string.IsNullOrWhiteSpace(row.Symbol) ? "cash activity" : row.Symbol;
+
+    private static string FormatAmount(decimal amount, string currency) =>
+        $"{currency} {amount:G29}";
+
+    private static string HumanizeKind(StatementRowKind kind) =>
+        kind switch
+        {
+            StatementRowKind.CashBalance => "Cash balance",
+            StatementRowKind.Position => "Position",
+            _ => kind.ToString()
+        };
+
     private static string ToCasePriority(ReconciliationBreakSeverity severity) => severity switch
     {
         ReconciliationBreakSeverity.High or ReconciliationBreakSeverity.Critical => "High",
         ReconciliationBreakSeverity.Medium => "Normal",
         _ => "Low"
     };
+
     private sealed record ParsedStatementLine(
         StatementSourceRowReference SourceRow,
         IReadOnlyDictionary<string, string> RawSnapshot,

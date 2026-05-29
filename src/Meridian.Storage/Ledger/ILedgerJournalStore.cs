@@ -37,6 +37,31 @@ public interface ILedgerJournalStore
         CancellationToken ct = default);
 
     Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);
+
+    Task<LedgerAccountTaxLotPolicyRecord> SaveTaxLotPolicyAsync(
+        LedgerAccountTaxLotPolicyRecord policy,
+        CancellationToken ct = default)
+        => Task.FromException<LedgerAccountTaxLotPolicyRecord>(
+            new NotSupportedException("This ledger journal store does not support tax-lot policy persistence."));
+
+    Task<IReadOnlyList<LedgerAccountTaxLotPolicyRecord>> ListTaxLotPoliciesAsync(
+        Guid ledgerBookId,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<LedgerAccountTaxLotPolicyRecord>>(
+            new NotSupportedException("This ledger journal store does not support tax-lot policy persistence."));
+
+    Task<LedgerTaxLotRecord> SaveTaxLotAsync(
+        LedgerTaxLotRecord lot,
+        CancellationToken ct = default)
+        => Task.FromException<LedgerTaxLotRecord>(
+            new NotSupportedException("This ledger journal store does not support tax-lot persistence."));
+
+    Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsAsync(
+        Guid ledgerBookId,
+        LedgerAccount account,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
+            new NotSupportedException("This ledger journal store does not support tax-lot persistence."));
 }
 
 public interface ITransactionalLedgerJournalStore : ILedgerJournalStore
@@ -117,3 +142,29 @@ public sealed record PeriodCloseEventRecord(
     string ClosedBy,
     string Notes,
     DateTimeOffset RecordedAt);
+
+public sealed record LedgerAccountTaxLotPolicyRecord(
+    Guid PolicyRecordId,
+    Guid LedgerBookId,
+    LedgerAccount Account,
+    LedgerTaxLotReliefMethod ReliefMethod,
+    string PolicyId,
+    DateOnly EffectiveDate,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    string? Rationale = null);
+
+public sealed record LedgerTaxLotRecord(
+    Guid TaxLotRecordId,
+    Guid LedgerBookId,
+    LedgerAccount Account,
+    string LotId,
+    DateOnly AcquiredDate,
+    decimal OriginalQuantity,
+    decimal OpenQuantity,
+    decimal UnitCost,
+    string Currency,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    Guid? SourceJournalEntryId = null,
+    string? EvidenceRef = null);

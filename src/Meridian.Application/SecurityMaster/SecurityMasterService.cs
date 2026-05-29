@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.SecurityMasterInterop;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -64,7 +65,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, currentProjection));
-        var projection = CreateProjectionFromResult(result, currentProjection.Aliases);
+        var projection = CreateProjectionFromResult(
+            result,
+            currentProjection.Aliases,
+            GetProfileBackedAssetClassOverride(currentProjection),
+            GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch));
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
@@ -161,7 +166,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
-        var projection = CreateProjectionFromResult(result, currentProjection.Aliases);
+        var projection = CreateProjectionFromResult(
+            result,
+            currentProjection.Aliases,
+            GetProfileBackedAssetClassOverride(currentProjection),
+            GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null));
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
@@ -198,7 +207,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private async Task<SecurityDetailDto> ExecuteCreateAsync(CreateSecurityRequest request, CancellationToken ct)
     {
         var result = SecurityMasterCommandFacade.Create(SecurityMasterMapping.ToCreateCommand(request));
-        var projection = CreateProjectionFromResult(result);
+        var projection = CreateProjectionFromResult(
+            result,
+            aliases: null,
+            GetProfileBackedAssetClassOverride(request.AssetClass),
+            GetProfileBackedAssetSpecificTermsOverride(request.AssetSpecificTerms));
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
@@ -288,7 +301,9 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     private static SecurityProjectionRecord CreateProjectionFromResult(
         SecurityMasterCommandResultWrapper result,
-        IReadOnlyList<SecurityAliasDto>? aliases = null)
+        IReadOnlyList<SecurityAliasDto>? aliases = null,
+        string? assetClassOverride = null,
+        JsonElement? assetSpecificTermsOverride = null)
     {
         if (!result.IsSuccess || result.Snapshot is null)
         {
@@ -296,8 +311,51 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             throw new InvalidOperationException(errorText);
         }
 
-        return SecurityMasterMapping.ToProjection(result.Snapshot, aliases);
+        var projection = SecurityMasterMapping.ToProjection(result.Snapshot, aliases);
+        return projection with
+        {
+            AssetClass = assetClassOverride ?? projection.AssetClass,
+            AssetSpecificTerms = assetSpecificTermsOverride?.Clone() ?? projection.AssetSpecificTerms
+        };
     }
+
+    private static string? GetProfileBackedAssetClassOverride(SecurityProjectionRecord projection)
+        => IsProfileBackedCustomAsset(projection.AssetClass, projection.AssetSpecificTerms)
+            ? GetProfileBackedAssetClassOverride(projection.AssetClass)
+            : null;
+
+    private static string? GetProfileBackedAssetClassOverride(string assetClass)
+        => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+            ? "CustomAsset"
+            : null;
+
+    private static JsonElement? GetProfileBackedAssetSpecificTermsOverride(
+        SecurityProjectionRecord currentProjection,
+        JsonElement? assetSpecificTermsPatch)
+    {
+        if (assetSpecificTermsPatch is JsonElement patch && IsProfileBackedCustomAsset(currentProjection.AssetClass, patch))
+        {
+            return patch.Clone();
+        }
+
+        return IsProfileBackedCustomAsset(currentProjection.AssetClass, currentProjection.AssetSpecificTerms)
+            ? currentProjection.AssetSpecificTerms.Clone()
+            : null;
+    }
+
+    private static JsonElement? GetProfileBackedAssetSpecificTermsOverride(JsonElement assetSpecificTerms)
+        => IsProfileBackedCustomAsset(assetClass: null, assetSpecificTerms)
+            ? assetSpecificTerms.Clone()
+            : null;
+
+    private static bool IsProfileBackedCustomAsset(string? assetClass, JsonElement assetSpecificTerms)
+        => (string.IsNullOrWhiteSpace(assetClass)
+            || string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+           && assetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
+           && assetSpecificTerms.TryGetProperty("customProfileId", out var customProfileId)
+           && customProfileId.ValueKind == System.Text.Json.JsonValueKind.String
+           && !string.IsNullOrWhiteSpace(customProfileId.GetString());
 
     private async Task<SecurityAliasDto> UpsertAliasAsyncCore(SecurityAliasDto alias, CancellationToken ct)
     {

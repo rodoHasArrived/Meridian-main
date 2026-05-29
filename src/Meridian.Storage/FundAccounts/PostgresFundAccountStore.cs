@@ -225,11 +225,13 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             INSERT INTO {Qualified("account_balance_snapshot")}
                 (snapshot_id, account_id, fund_id, as_of_date, currency,
                  cash_balance, securities_market_value, accrued_interest,
-                 pending_settlement, source, recorded_at, external_reference)
+                 pending_settlement, source, recorded_at, external_reference,
+                 unrealized_pnl, realized_pnl)
             VALUES
                 (@snapshot_id, @account_id, @fund_id, @as_of_date, @currency,
                  @cash_balance, @securities_market_value, @accrued_interest,
-                 @pending_settlement, @source, @recorded_at, @external_reference)
+                 @pending_settlement, @source, @recorded_at, @external_reference,
+                 @unrealized_pnl, @realized_pnl)
             ON CONFLICT (snapshot_id) DO NOTHING
             """;
         cmd.Parameters.AddWithValue("snapshot_id", snapshot.SnapshotId);
@@ -244,6 +246,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         cmd.Parameters.AddWithValue("source", snapshot.Source);
         cmd.Parameters.AddWithValue("recorded_at", snapshot.RecordedAt);
         cmd.Parameters.AddWithValue("external_reference", (object?)snapshot.ExternalReference ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("unrealized_pnl", snapshot.UnrealizedPnl.HasValue ? (object)snapshot.UnrealizedPnl.Value : DBNull.Value);
+        cmd.Parameters.AddWithValue("realized_pnl", snapshot.RealizedPnl.HasValue ? (object)snapshot.RealizedPnl.Value : DBNull.Value);
         await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -256,7 +260,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         sb.AppendLine($"""
             SELECT snapshot_id, account_id, fund_id, as_of_date, currency,
                    cash_balance, securities_market_value, accrued_interest,
-                   pending_settlement, source, recorded_at, external_reference
+                   pending_settlement, source, recorded_at, external_reference,
+                   unrealized_pnl, realized_pnl
             FROM {Qualified("account_balance_snapshot")}
             WHERE account_id = @account_id
             """);
@@ -290,7 +295,9 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 PendingSettlement: reader.IsDBNull(reader.GetOrdinal("pending_settlement")) ? null : reader.GetDecimal(reader.GetOrdinal("pending_settlement")),
                 Source: reader.GetString(reader.GetOrdinal("source")),
                 RecordedAt: reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("recorded_at")),
-                ExternalReference: reader.IsDBNull(reader.GetOrdinal("external_reference")) ? null : reader.GetString(reader.GetOrdinal("external_reference"))));
+                ExternalReference: reader.IsDBNull(reader.GetOrdinal("external_reference")) ? null : reader.GetString(reader.GetOrdinal("external_reference")),
+                UnrealizedPnl: reader.IsDBNull(reader.GetOrdinal("unrealized_pnl")) ? null : reader.GetDecimal(reader.GetOrdinal("unrealized_pnl")),
+                RealizedPnl: reader.IsDBNull(reader.GetOrdinal("realized_pnl")) ? null : reader.GetDecimal(reader.GetOrdinal("realized_pnl"))));
         }
         return results;
     }

@@ -73,8 +73,13 @@ public sealed class BrokeragePortfolioSyncServiceTests
             var view = await service.GetActivityAsync(fundAccountId, cts.Token);
             view.Should().NotBeNull();
             view!.Orders.Should().ContainSingle(order => order.OrderId == "ord-open-1");
-            view.Fills.Should().ContainSingle(fill => fill.OrderId == "ord-fill-1");
+            view.Fills.Should().ContainSingle(fill => fill.OrderId == "ord-fill-1" && fill.RealizedPnl == 125m);
             view.CashTransactions.Should().ContainSingle(cash => cash.TransactionType == "DIV");
+            view.CorporateActions.Should().NotBeNull().And.ContainSingle(action =>
+                action.EventId == "corp-div-aapl" &&
+                action.EventType == "Dividend" &&
+                action.Symbol == "AAPL" &&
+                action.Amount == 0.24m);
 
             var restoredStatus = await service.GetStatusAsync(fundAccountId, cts.Token);
             restoredStatus.Health.Should().Be(WorkstationBrokerageSyncHealth.Healthy);
@@ -1010,7 +1015,8 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         184.25m,
                         DateTimeOffset.UtcNow.AddMinutes(-12),
                         "XNAS",
-                        0m)
+                        0m,
+                        125m)
                 ],
                 [
                     new BrokerageCashTransactionDto(
@@ -1021,6 +1027,18 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         DateTimeOffset.UtcNow.AddDays(-1),
                         "AAPL",
                         "Dividend")
+                ],
+                CorporateActions:
+                [
+                    new BrokerageCorporateActionSnapshotDto(
+                        "corp-div-aapl",
+                        "Dividend",
+                        "AAPL",
+                        DateOnly.FromDateTime(DateTime.UtcNow.Date),
+                        DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-2)),
+                        Amount: 0.24m,
+                        Currency: "USD",
+                        Description: "AAPL dividend")
                 ]));
         }
     }

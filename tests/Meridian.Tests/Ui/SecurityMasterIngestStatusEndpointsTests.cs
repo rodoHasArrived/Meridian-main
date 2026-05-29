@@ -70,6 +70,203 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
     }
 
     [Fact]
+    public async Task MapSecurityMasterEndpoints_SearchRoute_AllowsProfileFilterWithoutTextQuery()
+    {
+        var expected = new SecuritySummaryDto(
+            Guid.NewGuid(),
+            "CustomAsset",
+            SecurityStatusDto.Active,
+            "Private Fund Alpha",
+            "InternalCode:PF-ALPHA",
+            "USD",
+            4);
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        queryService.SearchAsync(Arg.Any<SecuritySearchRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([expected]));
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var commandService = Substitute.For<ISecurityMasterService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+
+        await using var app = await CreateAppAsync(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            commandService,
+            importService,
+            eventStore);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(UiApiRoutes.SecurityMasterSearch, new
+        {
+            customProfileId = "private-fund-interest",
+            profileFieldKey = "gpSponsor",
+            profileFieldValue = "GP Capital"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<SecuritySummaryDto[]>(
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        payload.Should().ContainSingle().Which.DisplayName.Should().Be("Private Fund Alpha");
+        await queryService.Received(1).SearchAsync(
+            Arg.Is<SecuritySearchRequest>(request =>
+                request.CustomProfileId == "private-fund-interest"
+                && request.ProfileFieldKey == "gpSponsor"
+                && request.ProfileFieldValue == "GP Capital"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_AssetProfilesRoute_ReturnsSeededProfiles()
+    {
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var commandService = Substitute.For<ISecurityMasterService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+
+        await using var app = await CreateAppAsync(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            commandService,
+            importService,
+            eventStore);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(UiApiRoutes.SecurityMasterAssetProfiles);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<SecurityAssetProfileDefinitionDto[]>(
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+        payload.Should().NotBeNull();
+        payload!.Select(static profile => profile.ProfileId).Should().Contain(new[]
+        {
+            "structured-credit-io-po",
+            "real-estate-holding",
+            "private-fund-interest",
+            "private-company-equity",
+            "co-invest-spv"
+        });
+        payload.Should().OnlyContain(static profile => profile.Status == SecurityAssetProfileStatusDto.Approved);
+    }
+
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_AssetProfilePromotionCandidatesRoute_ReturnsPackagePromotionAssessments()
+    {
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        using var app = CreateApp(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            importService,
+            eventStore);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(UiApiRoutes.SecurityMasterAssetProfilePromotionCandidates);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<SecurityAssetProfilePromotionCandidateDto[]>(
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        payload.Should().NotBeNull();
+        var structuredCredit = payload!.Should()
+            .ContainSingle(candidate => candidate.ProfileId == "structured-credit-io-po")
+            .Subject;
+        structuredCredit.Readiness.Should().Be(SecurityAssetProfilePromotionReadinessDto.ReadyForFirstClassPackage);
+        structuredCredit.RecommendedPackageId.Should().Be("fixed-income.structured-credit");
+        structuredCredit.Signals.Should().Contain(signal => signal.Code == "projection.factor-schedule");
+    }
+
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_AssetProfileGovernanceRoutes_DraftApproveAndExposeLineage()
+    {
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var commandService = Substitute.For<ISecurityMasterService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+
+        await using var app = await CreateAppAsync(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            commandService,
+            importService,
+            eventStore,
+            UserPermission.AdminMaintenance | UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+        var draftRequest = CreateProfileDraftRequest("custom-private-credit");
+
+        using var draftResponse = await client.PostAsJsonAsync(UiApiRoutes.SecurityMasterAssetProfileDrafts, draftRequest);
+        draftResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var draft = await draftResponse.Content.ReadFromJsonAsync<SecurityAssetProfileGovernanceResultDto>(
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        draft.Should().NotBeNull();
+        draft!.Profile.Status.Should().Be(SecurityAssetProfileStatusDto.Draft);
+
+        using var approveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.SecurityMasterAssetProfileApprove,
+            new SecurityAssetProfileApprovalRequestDto(
+                "custom-private-credit",
+                draft.Profile.Version,
+                new DateOnly(2026, 6, 1),
+                "AP-001",
+                null,
+                "Approve governed custom private credit profile.",
+                "corr-profile-approve"));
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var approved = await approveResponse.Content.ReadFromJsonAsync<SecurityAssetProfileGovernanceResultDto>(
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        approved.Should().NotBeNull();
+        approved!.Profile.Status.Should().Be(SecurityAssetProfileStatusDto.Approved);
+        approved.AuditEvent.Actor.Should().Be("security-admin");
+        approved.AuditEvent.ApprovalReference.Should().Be("AP-001");
+
+        using var lineageResponse = await client.GetAsync("/api/security-master/asset-profiles/custom-private-credit/lineage");
+        lineageResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var lineage = await lineageResponse.Content.ReadFromJsonAsync<SecurityAssetProfileLineageDto>(
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        lineage.Should().NotBeNull();
+        lineage!.Versions.Should().ContainSingle(profile => profile.Status == SecurityAssetProfileStatusDto.Approved);
+        lineage.AuditEvents.Should().Contain(audit => audit.EventType == "security-asset-profile-approved");
+    }
+
+    [Fact]
+    public async Task MapSecurityMasterEndpoints_AssetProfileGovernanceRoutes_RequireAdminMaintenance()
+    {
+        var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var commandService = Substitute.For<ISecurityMasterService>();
+        var importService = Substitute.For<ISecurityMasterImportService>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+
+        await using var app = await CreateAppAsync(
+            queryService,
+            conflictService,
+            ingestStatusService,
+            commandService,
+            importService,
+            eventStore,
+            UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.SecurityMasterAssetProfileDrafts,
+            CreateProfileDraftRequest("custom-private-credit"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task MapSecurityMasterEndpoints_IngestStatusRoute_ReturnsTypedPayload()
     {
         var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
@@ -144,7 +341,8 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
         ISecurityMasterIngestStatusService ingestStatusService,
         ISecurityMasterService commandService,
         ISecurityMasterImportService importService,
-        ISecurityMasterEventStore eventStore)
+        ISecurityMasterEventStore eventStore,
+        UserPermission permissions = UserPermission.ModifySecurityMaster)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -157,12 +355,16 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
         builder.Services.AddSingleton(commandService);
         builder.Services.AddSingleton(importService);
         builder.Services.AddSingleton(eventStore);
+        var assetProfileService = new SecurityAssetProfileGovernanceService();
+        builder.Services.AddSingleton<ISecurityAssetProfileGovernanceService>(assetProfileService);
+        builder.Services.AddSingleton<ISecurityAssetProfileCatalog>(assetProfileService);
         builder.Services.AddSingleton(Substitute.For<ISecurityMasterService>());
 
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster;
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "security-admin";
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             await next();
         });
         app.MapSecurityMasterEndpoints(new JsonSerializerOptions
@@ -173,4 +375,42 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
         await app.StartAsync();
         return app;
     }
+
+    private static SecurityAssetProfileDraftRequestDto CreateProfileDraftRequest(string profileId)
+        => new(
+            ProfileId: profileId,
+            Name: "Custom Private Credit",
+            Category: "PrivateCredit",
+            SubType: "LP Interest",
+            Fields:
+            [
+                new SecurityAssetProfileFieldDefinitionDto(
+                    "navDate",
+                    "NAV date",
+                    SecurityAssetProfileFieldTypeDto.Date,
+                    IsRequired: true,
+                    AllowedValues: [],
+                    Description: "Latest valuation date.",
+                    MinValue: null,
+                    MaxValue: null,
+                    IsProjected: true,
+                    IsSearchable: true)
+            ],
+            IdentifierPreferences:
+            [
+                new SecurityAssetProfileIdentifierPreferenceDto(
+                    SecurityIdentifierKind.InternalCode,
+                    true,
+                    "Private credit profiles require internal identity for close readiness.")
+            ],
+            LifecycleStates: ["Diligence", "Active", "Exited"],
+            AccountingImpactHints:
+            [
+                SecurityAssetProfileAccountingImpactHintDto.NavBasedValuation,
+                SecurityAssetProfileAccountingImpactHintDto.LedgerClassification
+            ],
+            DateOrderRules: [],
+            RequestedBy: null,
+            Rationale: "Stage governed custom private credit profile.",
+            CorrelationId: "corr-profile-draft");
 }

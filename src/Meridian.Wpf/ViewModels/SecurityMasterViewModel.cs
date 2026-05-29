@@ -238,39 +238,34 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         set => SetProperty(ref _selectedDetailTab, value);
     }
 
-    private bool _isRecordCorpActionVisible;
     public bool IsRecordCorpActionVisible
     {
-        get => _isRecordCorpActionVisible;
-        set => SetProperty(ref _isRecordCorpActionVisible, value);
+        get => _printSection.IsRecordCorpActionVisible;
+        set => SetSectionProperty(_printSection.IsRecordCorpActionVisible, value, next => _printSection.IsRecordCorpActionVisible = next);
     }
 
-    private string _corpActType = "Dividend";
     public string CorpActType
     {
-        get => _corpActType;
-        set => SetProperty(ref _corpActType, value);
+        get => _printSection.CorpActType;
+        set => SetSectionProperty(_printSection.CorpActType, value, next => _printSection.CorpActType = next);
     }
 
-    private string _corpActExDate = string.Empty;
     public string CorpActExDate
     {
-        get => _corpActExDate;
-        set => SetProperty(ref _corpActExDate, value);
+        get => _printSection.CorpActExDate;
+        set => SetSectionProperty(_printSection.CorpActExDate, value, next => _printSection.CorpActExDate = next);
     }
 
-    private decimal _corpActAmount;
     public decimal CorpActAmount
     {
-        get => _corpActAmount;
-        set => SetProperty(ref _corpActAmount, value);
+        get => _printSection.CorpActAmount;
+        set => SetSectionProperty(_printSection.CorpActAmount, value, next => _printSection.CorpActAmount = next);
     }
 
-    private string _corpActCurrency = "USD";
     public string CorpActCurrency
     {
-        get => _corpActCurrency;
-        set => SetProperty(ref _corpActCurrency, value);
+        get => _printSection.CorpActCurrency;
+        set => SetSectionProperty(_printSection.CorpActCurrency, value, next => _printSection.CorpActCurrency = next);
     }
 
     private bool _isBackfillingTradingParams;

@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, application, and workstation contributors
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 **Status:** target-state implementation requirement
 
 ## Summary
@@ -10,6 +10,78 @@
 UFL must support user-configurable custom assets without forcing every new instrument shape to become a compiled `SecurityKind` case on day one. The target design is a composable custom-asset lane: users define governed asset profiles from approved UFL capabilities, Meridian stores those profiles as versioned configuration, and operational workflows can review, validate, project, and eventually promote heavily used profiles into first-class asset packages.
 
 This lane complements, rather than replaces, the existing `OtherSecurity` package. `OtherSecurity` remains the controlled generic-security fallback, while custom asset profiles provide a more structured way for users to model repeatable non-standard instruments with explicit fields, validation rules, projections, and review evidence.
+
+Custom asset profiles are profiles over the shared UFL capability model, not a separate modeling system. They must satisfy the same identity, validation, provider-isolation, projection metadata, workstation-control, and accounting-impact guardrails as compiled asset packages before any maturity claim is made.
+
+## Evidence Boundary
+
+### Implemented
+
+- The UFL index links this lane as a governed custom-asset target.
+- `OtherSecurity` exists as the current generic-security fallback path.
+- `SecurityAssetProfileDefinitionDto`, profile field DTOs, and approval metadata DTOs define the shared contract for versioned profile definitions and pinned profile-backed terms.
+- `StaticSecurityAssetProfileCatalog` seeds approved version-1 starter profiles for Structured Credit IO/PO, Real Estate Holding, Private Fund Interest, Private Company Equity, and Co-invest/SPV.
+- `SecurityValidationService` now recognizes `CustomAsset` records and `OtherSecurity` records with `customProfileId`, validates approved profile-version pinning, typed no-code fields, identifier coverage, range/enum/date/currency/security-link field rules, reserved field names, and profile approval metadata.
+- Security Master create and amend paths preserve profile-backed `CustomAsset` and `OtherSecurity` asset-specific payloads, including `customProfileId`, `profileVersion`, `profileFields`, and immutable profile approval metadata, in the projected record and event payload.
+- `GET /api/security-master/asset-profiles` exposes the approved starter profile catalog for Security Master create/amend workflows, and `/api/security-master/search` accepts profile id, profile version, profile field key, and profile field value filters without requiring a free-text query.
+- `SecurityAssetProfileGovernanceService` persists governed profile drafts, approvals, rollback-created approved versions, and audit lineage under the configured storage root. Security Master profile lineage endpoints expose all versions and governance audit events, while validation continues to accept superseded approved versions for records pinned before a later profile change.
+
+### Partially Implemented
+
+- Profile definitions and deterministic validation now have seeded starter profiles plus a persistence-backed governance service for draft, approval, rollback, and lineage. Create/amend can round-trip pinned profile-backed security terms, canonical read surfaces can list approved profiles, inspect lineage, and filter profile-backed securities by pinned profile metadata or typed field value, and the browser Settings workspace can draft/approve/rollback profiles and create profile-backed `CustomAsset` records pinned to the approved profile version. Shared promotion-candidate assessment now scores approved profiles and recommends candidate first-class package ids, but indexed profile-field projections, operator promotion workflow, and actual first-class package graduation remain future work.
+
+### Target-State Only
+
+- Broader workstation amend wizard surfaces beyond the current browser Settings profile-draft/create flow.
+- Operator promotion workflows that graduate high-volume profiles into dedicated UFL packages after the current assessment signal.
+- Indexed profile-field projections and profile-version lineage beyond the current Security Master projection payload.
+
+### Explicitly Out of Scope
+
+- User-authored arbitrary code or scripts in profile validation.
+- Provider payload passthrough as a substitute for canonical terms.
+- Mobile-specific custom asset flows.
+- Bypassing dedicated UFL packages when a custom profile becomes a stable high-volume requirement.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L0 | target-state only. | profile-backed Security Master identity and common terms | create/amend tests |
+| TermsVersioning | L0 | target-state only. | approved profile versions pinned to security records | versioning tests |
+| Lifecycle | L0 | target-state only. | optional profile-defined lifecycle states and transitions | validation/projection tests |
+| ProjectionRebuild | L0 | target-state only. | profile-field projections with profile version and source-event metadata | rebuild metadata tests |
+| WorkstationControl | L0 | target-state only. | draft, approve, rollback, and promote profile workflows | workflow/endpoint tests |
+| AccountingImpact | L0 | target-state only. | approved accounting-impact hints only, never arbitrary posting logic | validation tests |
+
+## Current Maturity
+
+`L1- governed-reference baseline`: governed profile contracts, seeded approved profile definitions, persistence-backed profile draft/approval/rollback lineage, Security Master validation, create/amend round-tripping for pinned profile-backed records, the profile catalog endpoint, profile lineage endpoint, profile-aware Security Master search, promotion-candidate assessment endpoint, and browser Settings profile-draft/create workflows exist. The lane has not reached full L1 until broader amend workflows and indexed projection lineage are evidenced.
+
+## Next Milestone Contract
+
+**Goal:** advance custom assets to L1 by introducing governed custom profile definitions, typed fields, deterministic validation, profile-version storage, and profile-backed Security Master reference reads.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/SecurityMaster/`
+- `src/Meridian.Contracts/SecurityMaster/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- profile validation tests for field keys, types, required fields, enum values, and reserved names.
+- Security Master create/amend tests proving approved profile-version pinning.
+- endpoint tests for profile definitions and profile-backed securities.
+- rebuild metadata tests proving profile version and source event are projected.
+
+**Exit criteria:** users can configure a governed profile and create a profile-backed security without bypassing canonical identity, validation, lineage, or provider-payload isolation. Current evidence covers seeded approved definitions, persistence-backed draft/approval/rollback lineage, create/amend round-tripping, canonical profile read/search surfaces, promotion-candidate assessment, and the browser Settings profile governance/create UI; broader amend UI, indexed profile-field projection lineage, and package-graduation workflows are still pending.
+
+## Provider Payload Boundary
+
+Custom profiles are not ad hoc provider payload containers. Provider-specific data may be retained as evidence, but profile-backed assets must expose approved typed fields, deterministic validation, canonical Security Master identity, and profile-version lineage.
 
 ## Design Goals
 

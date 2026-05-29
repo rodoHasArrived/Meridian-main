@@ -14,5 +14,7 @@ public interface IPageActivationLifetime
 
     Task ActivateAsync(CancellationToken ct = default);
 
+    void CancelActivation();
+
     void Deactivate();
 }

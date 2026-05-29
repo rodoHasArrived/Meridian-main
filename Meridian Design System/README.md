@@ -1,16 +1,16 @@
 # Meridian Design System
 
 An operator workstation design system for **Meridian** — a trading, portfolio, accounting,
-reporting, strategy, data, and settings platform. The visual language is a deep navy cockpit with
-a sky-cyan "signal" primary, shaped for dense institutional workflows without copying third-party
-terminal products.
+reporting, strategy, data, and settings platform. The visual language is Institutional Ops:
+a quiet deep navy workstation with a restrained sky-cyan "signal" primary, precise status color,
+shallow depth, and dense evidence-first workflows without copying third-party terminal products.
 
 ## Products covered
 
 Meridian ships two distinct UI surfaces, both represented here:
 
-1. **Browser Workstation** (`src/Meridian.Ui/dashboard/`) — the active browser-based operator UI lane. It owns new workstation delivery across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
-2. **Retained WPF Desktop App** (`src/Meridian.Wpf/`) — .NET 10 desktop operator shell retained for shared contracts, regression fixes, and desktop support. It still shares brand assets and icon vocabulary.
+1. **Browser Workstation** (`src/Meridian.Ui/dashboard/`) —  browser-based operator UI lane. It owns new workstation delivery across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+2. **WPF Desktop App** (`src/Meridian.Wpf/`) — .NET 10 desktop operator shell shares brand assets and icon vocabulary.
 
 ## Sources
 
@@ -68,13 +68,13 @@ See `CONTENT_FUNDAMENTALS.md` for the full rules. In short:
 
 See `VISUAL_FOUNDATIONS.md`. In short:
 
-- **Mood:** dark cockpit. Deep navy `#08101A` base with restrained cyan/blue ambient light. The uploaded references support a monitor-like workstation frame, not decorative glow-heavy pages.
+- **Mood:** Institutional Ops. Deep navy `#08101A` base with restrained cyan/blue ambient light. The workstation should feel quiet, dense, and evidence-first, not theatrical or glow-heavy.
 - **Primary:** `#2AB2D4` cyan (the "signal" color — used for active nav, primary buttons, focus rings, the brand mark).
 - **Accent:** `#D69E38` amber (warning, paper environment, caution).
 - **Semantic:** `#26BF86` success · `#D69E38` warning · `#DE5878` danger · `#60A5FA` paper · `#2AB2D4` live.
 - **Corners:** tight — 10px maximum for major panels, 8px cards, 6px controls, 4px chips, 3px tags.
 - **Borders:** precise — `#1F344C` on navy, `#2A4566` for selected rows, active frames, and high-contrast separators.
-- **Shadows:** 1-2px workstation shadows with inset highlights. Large glow and elevation theatre are out.
+- **Shadows:** 1-2px workstation shadows with inset highlights. Hard-offset shadows, large glow, and elevation theatre are out.
 - **Layout:** masthead + left rail + dense content workbench. Uploaded references favor compact filters, selected-row detail panes, KPI-to-evidence flow, and horizontal status windows.
 - **Reference workbench:** Security Master, security detail, and cash-flow/factor schedule surfaces use a command deck, searchable master list, persistent selected detail frame, dense schedules, controls, notes, and audit evidence in one selected-security context.
 - **Motion:** 200ms ease transitions on hover/press. No bouncing. No parallax. Spinners only for async refresh.

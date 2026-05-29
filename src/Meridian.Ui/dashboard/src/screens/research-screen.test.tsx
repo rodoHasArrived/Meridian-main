@@ -67,6 +67,10 @@ describe("ResearchScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<ResearchScreen data={twoRuns} />);
 
+    expect(screen.getByLabelText("Strategy run history coverage")).toHaveTextContent("Common model");
+    expect(screen.getByLabelText("Strategy run history coverage")).toHaveTextContent("Backtest 1; Paper 1; Live 0");
+    expect(screen.getByLabelText("Strategy run history coverage")).toHaveTextContent("2 normalized engines: Lean, Meridian Native");
+
     await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
 
     const dialog = screen.getByRole("dialog", { name: "Mean Reversion FX" });
@@ -429,8 +433,36 @@ describe("ResearchScreen", () => {
         baseNetPnl: 3200,
         targetNetPnl: 4400,
         baseTotalReturn: 0.042,
-        targetTotalReturn: 0.052
-      }
+        targetTotalReturn: 0.052,
+        finalEquityDelta: 2500,
+        maxDrawdownDelta: -750,
+        sharpeRatioDelta: 0.25,
+        baseFinalEquity: 100000,
+        targetFinalEquity: 102500,
+        baseMaxDrawdown: 1800,
+        targetMaxDrawdown: 1050,
+        baseSharpeRatio: 1.41,
+        targetSharpeRatio: 1.66
+      },
+      compatibilityWarnings: ["Fill-level evidence is incomplete for at least one run."],
+      baseArtifactCompleteness: {
+        hasPortfolio: true,
+        hasLedger: true,
+        hasCashFlow: true,
+        hasFills: true,
+        hasAuditTrail: true
+      },
+      targetArtifactCompleteness: {
+        hasPortfolio: true,
+        hasLedger: false,
+        hasCashFlow: true,
+        hasFills: false,
+        hasAuditTrail: true
+      },
+      baseMode: "Backtest",
+      targetMode: "Paper",
+      baseEngine: "MeridianNative",
+      targetEngine: "BrokerPaper"
     };
     vi.spyOn(api, "diffRuns").mockResolvedValue(diff);
 
@@ -449,6 +481,13 @@ describe("ResearchScreen", () => {
       .toBeInTheDocument();
     expect(screen.getByLabelText("Run diff metric summary")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: /Net P&L delta \+\$1,200/ })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Final equity delta \+\$2,500/ })).toBeInTheDocument();
+    expect(screen.getByLabelText("Run diff artifact completeness")).toHaveTextContent(
+      "Target Paper / BrokerPaper: Ready 3/5"
+    );
+    expect(screen.getByLabelText("Run diff compatibility warnings")).toHaveTextContent(
+      "Fill-level evidence is incomplete for at least one run."
+    );
     expect(screen.getByRole("table", { name: "Position diff rows" })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Parameter diff rows" })).toBeInTheDocument();
     expect(screen.getByLabelText("2 position changes returned")).toBeInTheDocument();

@@ -44,3 +44,27 @@ internal sealed class ProviderHealthPostureSectionViewModel
         ProviderPostureBackgroundBrush = neutralPostureBackgroundBrush;
     }
 }
+
+internal sealed class ProviderHealthManagementSectionViewModel
+{
+    public ProviderManagementRowModel? SelectedProviderManagementRow { get; set; }
+    public string ProviderManagementStatusText { get; set; } = "Provider management evidence is loading.";
+    public string ProviderVerificationStatusText { get; set; } = "Credential verification can be run from Diagnostics.";
+    public WorkstationCommandGroupModel ProviderManagementCommandGroup { get; set; } = new();
+    public WorkstationTableModel<ProviderManagementRowModel> ProviderManagementTable { get; set; }
+    public InspectorPanelModel SelectedProviderInspector { get; set; }
+    public DiagnosticsChecklistModel SelectedProviderDiagnostics { get; set; }
+    public RoutingMatrixModel SelectedProviderRoutingMatrix { get; set; }
+
+    public ProviderHealthManagementSectionViewModel(
+        WorkstationTableModel<ProviderManagementRowModel> providerManagementTable,
+        InspectorPanelModel selectedProviderInspector,
+        DiagnosticsChecklistModel selectedProviderDiagnostics,
+        RoutingMatrixModel selectedProviderRoutingMatrix)
+    {
+        ProviderManagementTable = providerManagementTable;
+        SelectedProviderInspector = selectedProviderInspector;
+        SelectedProviderDiagnostics = selectedProviderDiagnostics;
+        SelectedProviderRoutingMatrix = selectedProviderRoutingMatrix;
+    }
+}

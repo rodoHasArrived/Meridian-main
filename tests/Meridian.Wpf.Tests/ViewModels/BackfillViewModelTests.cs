@@ -163,18 +163,80 @@ public sealed class BackfillViewModelTests
         var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.cs"));
 
         sectionSource.Should().Contain("public ObservableCollection<SymbolProgressInfo> SymbolProgress");
+        sectionSource.Should().Contain("public WorkstationTableModel<SymbolProgressInfo> SymbolProgressTable");
         sectionSource.Should().Contain("public ObservableCollection<ScheduledJobInfo> ScheduledJobs");
         sectionSource.Should().Contain("public ObservableCollection<ResumableJobInfo> ResumableJobs");
         sectionSource.Should().Contain("public ObservableCollection<GapAnalysisItem> GapItems");
+        sectionSource.Should().Contain("public WorkstationTableModel<GapAnalysisItem> GapItemsTable");
         sectionSource.Should().Contain("public string BackfillStatusText");
         sectionSource.Should().Contain("public string GapAnalysisSummaryText");
         sectionSource.Should().Contain("public BackfillWorkbenchSectionViewModel WorkbenchSection");
         viewModelSource.Should().Contain("public ObservableCollection<SymbolProgressInfo> SymbolProgress => WorkbenchSection.SymbolProgress");
+        viewModelSource.Should().Contain("public WorkstationTableModel<SymbolProgressInfo> SymbolProgressTable => WorkbenchSection.SymbolProgressTable");
+        viewModelSource.Should().Contain("public WorkstationTableModel<GapAnalysisItem> GapItemsTable => WorkbenchSection.GapItemsTable");
         viewModelSource.Should().Contain("get => WorkbenchSection.BackfillStatusText");
         viewModelSource.Should().Contain("get => WorkbenchSection.GapAnalysisSummaryText");
         viewModelSource.Should().NotContain("_backfillStatusText");
         viewModelSource.Should().NotContain("_overallProgressText");
         viewModelSource.Should().NotContain("_hasNoScheduledJobs");
         viewModelSource.Should().NotContain("_gapAnalysisSummaryText");
+    }
+
+    [Fact]
+    public void BackfillWorkbenchSection_ShouldExposeDenseTerminalTables()
+    {
+        var section = new BackfillWorkbenchSectionViewModel();
+
+        section.SymbolProgressTable.Title.Should().Be("Backfill per-symbol progress");
+        section.SymbolProgressTable.Rows.Should().BeSameAs(section.SymbolProgress);
+        section.SymbolProgressTable.Columns.Select(static column => column.Header).Should().ContainInOrder(
+            "Symbol",
+            "Progress",
+            "Bars",
+            "Status",
+            "Elapsed");
+
+        section.GapItemsTable.Title.Should().Be("Backfill gap analysis");
+        section.GapItemsTable.Rows.Should().BeSameAs(section.GapItems);
+        section.GapItemsTable.Columns.Select(static column => column.Header).Should().ContainInOrder(
+            "Symbol",
+            "Coverage",
+            "Gap Days",
+            "Coverage %");
+    }
+
+    [Fact]
+    public void BackfillPageSource_UsesSharedDenseTablesForTerminalLists()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\BackfillPage.xaml"));
+
+        xaml.Should().Contain("workstation:DenseDataGridControl");
+        xaml.Should().Contain("Table=\"{Binding GapItemsTable}\"");
+        xaml.Should().Contain("GridAutomationId=\"BackfillGapAnalysisGrid\"");
+        xaml.Should().Contain("EmptyAutomationId=\"BackfillGapAnalysisSharedEmptyState\"");
+        xaml.Should().Contain("Table=\"{Binding SymbolProgressTable}\"");
+        xaml.Should().Contain("GridAutomationId=\"BackfillSymbolProgressGrid\"");
+        xaml.Should().Contain("EmptyAutomationId=\"BackfillSymbolProgressSharedEmptyState\"");
+    }
+
+    [Fact]
+    public void BackfillStatusSection_ShouldOwnApiStatusAndStatsPresentationWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.cs"));
+
+        sectionSource.Should().Contain("public sealed class BackfillStatusSectionViewModel");
+        sectionSource.Should().Contain("public BackfillResultDto? LastApiStatus");
+        sectionSource.Should().Contain("public Visibility LastStatusVisibility");
+        sectionSource.Should().Contain("public string LastRunStatusText");
+        sectionSource.Should().Contain("public string BackfillStatsTotalBarsText");
+        sectionSource.Should().Contain("public BackfillStatusSectionViewModel StatusSection");
+        viewModelSource.Should().Contain("get => StatusSection.LastApiStatus");
+        viewModelSource.Should().Contain("get => StatusSection.LastRunStatusText");
+        viewModelSource.Should().Contain("get => StatusSection.BackfillStatsTotalBarsText");
+        viewModelSource.Should().NotContain("_lastApiStatus");
+        viewModelSource.Should().NotContain("_lastStatusVisibility");
+        viewModelSource.Should().NotContain("_lastRunStatusText");
+        viewModelSource.Should().NotContain("_backfillStatsTotalBarsText");
     }
 }

@@ -36,8 +36,19 @@ public sealed record BacktestMetrics(
     double Xirr,                    // cash-weighted IRR over all cash flows
     IReadOnlyDictionary<string, SymbolAttribution> SymbolAttribution);
 
-/// <summary>Metadata about the engine that produced a backtest result.</summary>
-public sealed record BacktestEngineMetadata(string EngineId);
+/// <summary>Metadata about the engine and normalization path that produced a backtest result.</summary>
+public sealed record BacktestEngineMetadata(
+    string EngineId,
+    string? ExternalRunId = null,
+    string ResultKind = BacktestResultKinds.Full,
+    IReadOnlyList<string>? CoverageWarnings = null);
+
+/// <summary>Canonical result coverage categories shared by native and external backtest engines.</summary>
+public static class BacktestResultKinds
+{
+    public const string Full = "Full";
+    public const string SummaryOnly = "SummaryOnly";
+}
 
 /// <summary>Complete result of a finished backtest run.</summary>
 public sealed record BacktestResult(

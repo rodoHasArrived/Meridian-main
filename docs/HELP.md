@@ -219,4 +219,4 @@ dotnet run --project src/Meridian/Meridian.csproj -- --simulate-execution --symb
 dotnet run --project src/Meridian/Meridian.csproj -- --simulate-execution --dry-run --symbols AAPL --sim-from 2026-01-01 --sim-to 2026-01-07
 ```
 
-The simulation command writes `fill-tape.jsonl`, `order-lifecycle.jsonl`, `summary.json`, and `queue-diagnostics.jsonl` into the selected output directory.
+The simulation command writes `fill-tape.jsonl`, `order-lifecycle.jsonl`, `summary.json`, and `queue-diagnostics.jsonl` into the selected output directory. Simulation artifacts are labeled `isInferred: true`; `summary.json` includes confidence grade, fill rate, average slippage bps, and warnings, while `queue-diagnostics.jsonl` records displayed size, trade quantity, estimated queue-ahead, and inference reason per event.

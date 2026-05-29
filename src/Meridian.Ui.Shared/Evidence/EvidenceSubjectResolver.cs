@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,9 @@ public sealed class EvidenceSubjectResolver
     public const string ReportPackKind = "report-pack";
     public const string ProviderTrustKind = "provider-trust";
     public const string AnalysisExportKind = "analysis-export";
+    public const string SecurityMasterConflictKind = "security-master-conflict";
+    public const string ApprovalKind = "approval";
+    public const string EvidenceVaultKind = "evidence-vault";
 
     private static readonly HashSet<string> SupportedKinds = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -22,7 +26,10 @@ public sealed class EvidenceSubjectResolver
         StatementRunKind,
         ReportPackKind,
         ProviderTrustKind,
-        AnalysisExportKind
+        AnalysisExportKind,
+        SecurityMasterConflictKind,
+        ApprovalKind,
+        EvidenceVaultKind
     };
 
     private readonly IServiceProvider _services;
@@ -59,7 +66,28 @@ public sealed class EvidenceSubjectResolver
                 Label: "DK1 provider trust gate",
                 Workspace: "Data",
                 Route: "/data",
-                PageTag: "ProviderHealth")
+                PageTag: "ProviderHealth"),
+            new(
+                SubjectId: "open",
+                SubjectKind: SecurityMasterConflictKind,
+                Label: "Open Security Master conflicts",
+                Workspace: "Data",
+                Route: "/data/security-master?view=conflicts",
+                PageTag: "SecurityMaster"),
+            new(
+                SubjectId: "current",
+                SubjectKind: ApprovalKind,
+                Label: "Current operations approval",
+                Workspace: "Accounting",
+                Route: "/accounting",
+                PageTag: "OperationsContinuity"),
+            new(
+                SubjectId: "lookup",
+                SubjectKind: EvidenceVaultKind,
+                Label: "Retained evidence vault lookup",
+                Workspace: "Reporting",
+                Route: "/reporting/evidence?view=vault",
+                PageTag: "EvidenceWorkbench")
         };
 
         var runService = _services.GetService<StrategyRunReadService>();
@@ -73,6 +101,22 @@ public sealed class EvidenceSubjectResolver
                 Workspace: ResolveWorkspace(run.Mode),
                 Route: $"/strategy?runId={Uri.EscapeDataString(run.RunId)}",
                 PageTag: "StrategyRuns")));
+        }
+
+        var operationsService = _services.GetService<IOperationsContinuityWorkflowService>();
+        if (operationsService is not null)
+        {
+            var workflows = await operationsService.ListAsync(ct: ct).ConfigureAwait(false);
+            subjects.AddRange(workflows
+                .OrderByDescending(static workflow => workflow.UpdatedAtUtc)
+                .Take(25)
+                .Select(static workflow => new EvidenceSubjectDto(
+                    SubjectId: workflow.WorkflowId.ToString("D"),
+                    SubjectKind: ApprovalKind,
+                    Label: $"Operations approval {workflow.PeriodId}",
+                    Workspace: "Accounting",
+                    Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
+                    PageTag: "OperationsContinuity")));
         }
 
         return subjects
@@ -155,8 +199,58 @@ public sealed class EvidenceSubjectResolver
                 Workspace: "Reporting",
                 Route: "/reporting",
                 PageTag: "ReportingShell"),
+            SecurityMasterConflictKind => new EvidenceSubjectDto(
+                SubjectId: subjectId,
+                SubjectKind: SecurityMasterConflictKind,
+                Label: string.Equals(subjectId, "open", StringComparison.OrdinalIgnoreCase)
+                    ? "Open Security Master conflicts"
+                    : $"Security Master conflict {subjectId}",
+                Workspace: "Data",
+                Route: "/data/security-master?view=conflicts",
+                PageTag: "SecurityMaster"),
+            ApprovalKind => await ResolveApprovalSubjectAsync(subjectId, ct).ConfigureAwait(false),
+            EvidenceVaultKind => new EvidenceSubjectDto(
+                SubjectId: subjectId,
+                SubjectKind: EvidenceVaultKind,
+                Label: string.Equals(subjectId, "lookup", StringComparison.OrdinalIgnoreCase)
+                    ? "Retained evidence vault lookup"
+                    : $"Retained evidence vault {subjectId}",
+                Workspace: "Reporting",
+                Route: $"/reporting/evidence?vaultId={Uri.EscapeDataString(subjectId)}",
+                PageTag: "EvidenceWorkbench"),
             _ => null
         };
+    }
+
+    private async Task<EvidenceSubjectDto?> ResolveApprovalSubjectAsync(string subjectId, CancellationToken ct)
+    {
+        var service = _services.GetService<IOperationsContinuityWorkflowService>();
+        if (service is not null && Guid.TryParse(subjectId, out var workflowId))
+        {
+            var workflow = await service.GetAsync(workflowId, ct).ConfigureAwait(false);
+            if (workflow is null)
+            {
+                return null;
+            }
+
+            return new EvidenceSubjectDto(
+                SubjectId: workflow.WorkflowId.ToString("D"),
+                SubjectKind: ApprovalKind,
+                Label: $"Operations approval {workflow.PeriodId}",
+                Workspace: "Accounting",
+                Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
+                PageTag: "OperationsContinuity");
+        }
+
+        return new EvidenceSubjectDto(
+            SubjectId: subjectId,
+            SubjectKind: ApprovalKind,
+            Label: string.Equals(subjectId, "current", StringComparison.OrdinalIgnoreCase)
+                ? "Current operations approval"
+                : $"Operations approval {subjectId}",
+            Workspace: "Accounting",
+            Route: "/accounting",
+            PageTag: "OperationsContinuity");
     }
 
     private static string ResolveWorkspace(StrategyRunMode mode)

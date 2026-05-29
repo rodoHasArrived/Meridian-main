@@ -65,7 +65,8 @@ public static class TradeStationPayloadMappers
             Price: payload.Price,
             FilledAt: payload.FilledAt,
             Venue: payload.Venue,
-            Commission: payload.Commission);
+            Commission: payload.Commission,
+            RealizedPnl: payload.RealizedPnl);
     }
 
     public static Meridian.Execution.Sdk.OrderSide MapSide(string? side)
@@ -162,4 +163,5 @@ public sealed record TradeStationFillPayload(
     decimal Price,
     DateTimeOffset FilledAt,
     string? Venue,
-    decimal? Commission);
+    decimal? Commission,
+    decimal? RealizedPnl = null);

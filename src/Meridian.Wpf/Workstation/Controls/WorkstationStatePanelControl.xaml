@@ -22,19 +22,25 @@
                        VerticalAlignment="Center"
                        Margin="0,0,12,0" />
             <StackPanel Grid.Column="1">
-                <TextBlock Text="{Binding ElementName=Root, Path=State.Title}"
+                <TextBlock x:Name="StateTitleText"
+                           Text="{Binding ElementName=Root, Path=State.Title}"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                           TextWrapping="Wrap" />
-                <TextBlock Text="{Binding ElementName=Root, Path=State.Detail}"
+                           TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="{Binding ElementName=Root, Path=TitleAutomationId}" />
+                <TextBlock x:Name="StateDetailText"
+                           Text="{Binding ElementName=Root, Path=State.Detail}"
                            Margin="0,4,0,0"
                            Style="{StaticResource CardDescriptionStyle}"
-                           TextWrapping="Wrap" />
-                <TextBlock Text="{Binding ElementName=Root, Path=State.EvidenceText}"
+                           TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="{Binding ElementName=Root, Path=DetailAutomationId}" />
+                <TextBlock x:Name="StateEvidenceText"
+                           Text="{Binding ElementName=Root, Path=State.EvidenceText}"
                            Margin="0,7,0,0"
                            FontSize="12"
                            Foreground="{StaticResource ConsoleTextMutedBrush}"
-                           TextWrapping="Wrap" />
+                           TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="{Binding ElementName=Root, Path=EvidenceAutomationId}" />
                 <Border Margin="0,10,0,0"
                         Style="{StaticResource WorkstationSignifierEvidenceChipStyle}">
                     <StackPanel>

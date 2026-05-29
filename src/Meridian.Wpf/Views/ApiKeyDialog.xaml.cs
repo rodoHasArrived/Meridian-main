@@ -18,6 +18,10 @@ public partial class ApiKeyDialog : Window
         InitializeComponent();
 
         Title = $"Configure {providerName} API Key";
+        DialogChrome.TitleText = Title;
+        DialogChrome.SubtitleText = isOptional
+            ? "Optional provider credential setup"
+            : "Required provider credential setup";
         DescriptionText.Text = $"Enter your {providerName} API key{(isOptional ? " (optional)" : "")}:";
         HintText.Text = $"Environment variable: {envVarName}";
 

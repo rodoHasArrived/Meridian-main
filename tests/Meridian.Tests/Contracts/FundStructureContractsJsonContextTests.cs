@@ -51,12 +51,16 @@ public sealed class FundStructureContractsJsonContextTests
             "USD",
             100m,
             "manual",
-            PendingSettlement: 10m);
+            PendingSettlement: 10m,
+            UnrealizedPnl: 12.5m,
+            RealizedPnl: -3.25m);
 
         var snapshotJson = JsonSerializer.Serialize(snapshotRequest, FundStructureContractsJsonContext.Default.RecordAccountBalanceSnapshotRequest);
         var snapshotRoundTrip = JsonSerializer.Deserialize(snapshotJson, FundStructureContractsJsonContext.Default.RecordAccountBalanceSnapshotRequest);
         snapshotRoundTrip.Should().NotBeNull();
         snapshotRoundTrip!.PendingSettlement.Should().Be(10m);
+        snapshotRoundTrip.UnrealizedPnl.Should().Be(12.5m);
+        snapshotRoundTrip.RealizedPnl.Should().Be(-3.25m);
     }
 
     [Fact]

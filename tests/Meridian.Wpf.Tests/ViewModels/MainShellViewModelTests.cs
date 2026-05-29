@@ -168,6 +168,29 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void WorkspaceSelection_UpdatesShellPostureAndLayoutAutomationContracts()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CurrentWorkspace.Should().Be("strategy");
+            vm.CurrentShellPosture.Should().Be(ShellPosture.Workbench);
+            vm.WorkspaceHomeTemplateAutomationId.Should().Be("WorkspaceHomeStrategyWorkbenchTemplate");
+
+            vm.SelectWorkspaceCommand.Execute("trading");
+
+            vm.CurrentWorkspace.Should().Be("trading");
+            vm.CurrentShellPosture.Should().Be(ShellPosture.Terminal);
+            vm.CurrentShellPostureName.Should().Be("Terminal");
+            vm.WorkspaceHomeTemplateAutomationId.Should().Be("WorkspaceHomeTradingTerminalTemplate");
+            vm.WorkspaceEvidenceStripAutomationId.Should().Be("WorkspaceEvidenceStripTrading");
+            vm.WorkspaceCommandSurfaceAutomationId.Should().Be("WorkspaceCommandSurfaceTrading");
+            vm.WorkspaceInspectorHostAutomationId.Should().Be("WorkspaceInspectorHostTrading");
+        });
+    }
+
+    [Fact]
     public void WorkspaceNavigation_UsesFriendlyContextTagsInsteadOfRawTierNames()
     {
         WpfTestThread.Run(() =>
@@ -531,6 +554,37 @@ public sealed class MainShellViewModelTests
 
             vm.ClipboardBannerText.Should().Contain("6 symbols detected in clipboard");
             vm.ClipboardBannerText.Should().Contain("AAPL, MSFT, NVDA, AMD +2 more");
+        });
+    }
+
+    [Fact]
+    public void MainPageChromeSection_ShouldOwnBannerAndFundStateWithAdapterBindings()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            using var vm = CreateMainPageViewModel(fundContext);
+
+            try
+            {
+                vm.ChromeSection.ActiveFundName.Should().Be(vm.ActiveFundName);
+                vm.ChromeSection.ActiveFundSubtitle.Should().Be(vm.ActiveFundSubtitle);
+                vm.ChromeSection.ActiveFundVisibility.Should().Be(vm.ActiveFundVisibility);
+
+                FixtureModeDetector.Instance.SetFixtureMode(true);
+
+                vm.ChromeSection.FixtureModeBannerText.Should().Be(vm.FixtureModeBannerText);
+                vm.ChromeSection.FixtureModeBannerVisibility.Should().Be(vm.FixtureModeBannerVisibility);
+
+                vm.NavigationService.NavigateTo("Backtest");
+
+                vm.ChromeSection.BackButtonVisibility.Should().Be(vm.BackButtonVisibility);
+                vm.ChromeSection.RecentPagesEmptyVisibility.Should().Be(vm.RecentPagesEmptyVisibility);
+            }
+            finally
+            {
+                FixtureModeDetector.Instance.SetFixtureMode(false);
+            }
         });
     }
 

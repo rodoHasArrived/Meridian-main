@@ -5,6 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
       mc:Ignorable="d"
       d:DesignHeight="900" d:DesignWidth="1400"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
@@ -411,54 +412,13 @@
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    Margin="0,0,0,12" TextWrapping="Wrap" />
 
-                        <ListView ItemsSource="{Binding GapItems}"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  MaxHeight="220"
-                                  Visibility="{Binding IsGapListVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,4" MinHeight="28">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="80" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="70" />
-                                            <ColumnDefinition Width="90" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Symbol}"
-                                                   FontWeight="SemiBold" FontFamily="Consolas"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   VerticalAlignment="Center" />
-                                        <!-- Gap timeline bar -->
-                                        <Grid Grid.Column="1" Margin="8,4" Height="16">
-                                            <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                                    CornerRadius="3" />
-                                            <Border Background="{Binding CoverageBrush}"
-                                                    CornerRadius="3"
-                                                    HorizontalAlignment="Left"
-                                                    Width="{Binding CoverageWidth}">
-                                                <Border.Effect>
-                                                    <DropShadowEffect ShadowDepth="0" BlurRadius="4"
-                                                                      Color="{StaticResource ConsoleAccentGreen}" Opacity="0.4" />
-                                                </Border.Effect>
-                                            </Border>
-                                        </Grid>
-                                        <TextBlock Grid.Column="2" Text="{Binding CoverageText}"
-                                                   HorizontalAlignment="Right" FontFamily="Consolas"
-                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                   FontSize="11"
-                                                   VerticalAlignment="Center" />
-                                        <Border Grid.Column="3" HorizontalAlignment="Right"
-                                                Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
-                                                CornerRadius="8" Padding="8,2" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding GapDaysText}"
-                                                       Foreground="{StaticResource WarningColorBrush}"
-                                                       FontSize="11" FontWeight="SemiBold" />
-                                        </Border>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                        <workstation:DenseDataGridControl
+                            Table="{Binding GapItemsTable}"
+                            GridAutomationId="BackfillGapAnalysisGrid"
+                            EmptyAutomationId="BackfillGapAnalysisSharedEmptyState"
+                            MaxHeight="220"
+                            Visibility="{Binding IsGapListVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.Name="Backfill gap analysis table" />
 
                         <Border x:Name="GapActionPanel"
                                 Visibility="{Binding IsGapActionPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -513,47 +473,12 @@
                                      Foreground="{StaticResource SuccessColorBrush}"
                                      Margin="0,0,0,16" />
 
-                        <ListView ItemsSource="{Binding SymbolProgress}"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  MaxHeight="300">
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,4">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="70" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="80" />
-                                            <ColumnDefinition Width="60" />
-                                            <ColumnDefinition Width="70" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Symbol}"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   VerticalAlignment="Center" />
-                                        <ProgressBar Grid.Column="1" Value="{Binding Progress}" Maximum="100"
-                                                     Height="8" VerticalAlignment="Center"
-                                                     Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                                     Foreground="{StaticResource SuccessColorBrush}"
-                                                     Margin="8,0" />
-                                        <TextBlock Grid.Column="2" Text="{Binding BarsText}"
-                                                   HorizontalAlignment="Right"
-                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                   VerticalAlignment="Center" />
-                                        <Border Grid.Column="3" Background="{Binding StatusBackground}"
-                                                CornerRadius="4" Padding="6,2" VerticalAlignment="Center"
-                                                HorizontalAlignment="Center">
-                                            <TextBlock Text="{Binding StatusText}" FontSize="11"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        </Border>
-                                        <TextBlock Grid.Column="4" Text="{Binding TimeText}"
-                                                   HorizontalAlignment="Right"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                   VerticalAlignment="Center" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                        <workstation:DenseDataGridControl
+                            Table="{Binding SymbolProgressTable}"
+                            GridAutomationId="BackfillSymbolProgressGrid"
+                            EmptyAutomationId="BackfillSymbolProgressSharedEmptyState"
+                            MaxHeight="300"
+                            AutomationProperties.Name="Backfill per-symbol progress table" />
                     </StackPanel>
                 </Border>
 

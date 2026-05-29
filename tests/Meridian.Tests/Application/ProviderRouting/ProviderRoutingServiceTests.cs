@@ -156,6 +156,39 @@ public sealed class ProviderRoutingServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RouteAsync_RoutesFactorScheduleCapabilityForAccountingFeeds()
+    {
+        await SaveConfigAsync(new AppConfig(
+            ProviderConnections: new ProviderConnectionsConfig(
+                Connections:
+                [
+                    new ProviderConnectionConfig(
+                        "factor-feed",
+                        "corporate-actions",
+                        "Factor schedule feed",
+                        ConnectionType: ProviderConnectionType.DataVendor)
+                ],
+                Bindings:
+                [
+                    new ProviderBindingConfig(
+                        "factor-schedule-binding",
+                        ProviderCapabilityKind.FactorSchedule,
+                        "factor-feed")
+                ])));
+
+        var service = CreateService();
+        var result = await service.RouteAsync(new ProviderRouteContext(
+            Capability: ProviderCapabilityKind.FactorSchedule,
+            Workspace: "accounting",
+            AssetClass: "MBS"));
+
+        result.IsSuccess.Should().BeTrue();
+        result.SelectedDecision.Should().NotBeNull();
+        result.SelectedDecision!.Capability.Should().Be(ProviderCapabilityKind.FactorSchedule);
+        result.SelectedDecision.ConnectionId.Should().Be("factor-feed");
+    }
+
+    [Fact]
     public async Task RouteAsync_RebuildsCachedSnapshotWhenConfigChanges()
     {
         await SaveConfigAsync(new AppConfig(

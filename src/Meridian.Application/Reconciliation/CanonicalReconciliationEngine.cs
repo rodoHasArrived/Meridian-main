@@ -182,7 +182,7 @@ public sealed class ReconciliationMatchingEngine
                     var rule = FindCashToleranceRule(candidate, other, toleranceProfile, out var allowed);
                     return new { Cash = other, Rule = rule, Allowed = allowed };
                 })
-                .Where(static item => item.Cash.CashEntryId != candidate.CashEntryId && item.Rule is not null)
+                .Where(item => item.Cash.CashEntryId != candidate.CashEntryId && item.Rule is not null)
                 .ToArray();
             if (near.Length > 0)
             {

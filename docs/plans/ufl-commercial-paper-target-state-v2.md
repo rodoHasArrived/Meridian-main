@@ -1,8 +1,8 @@
-# UFL Commercial Paper Target-State Package V2
+# UFL Commercial Paper Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl commercial paper target state v2** and document explicit in-scope vs out-of-scope items.
@@ -31,6 +31,73 @@ It assumes:
 - downstream treasury and governance services querying canonical projections
 
 This package turns the existing `CommercialPaperTerms` support into an implementation-ready plan for reference data, maturity ladders, issuer views, and APIs.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.CommercialPaper` and `CommercialPaperTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"CommercialPaper"` asset class.
+- Security Master validation enforces nonblank issuer name and nonnegative discount rate when present.
+- `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs` verifies basic create support for commercial paper.
+
+### Partially Implemented
+
+- Canonical terms and create-path projection exist, but commercial-paper reference endpoints, maturity-ladder projections, issuer-funding projections, and rebuild evidence are not delivered in this package.
+
+### Target-State Only
+
+- Commercial-paper lifecycle and issuer-funding projections.
+- Maturity ladder views for short-duration governance.
+- Additive asset-backed classification views.
+- Commercial-paper-specific query contracts and endpoints.
+
+### Explicitly Out of Scope
+
+- Dealer placement logic.
+- Issuance-program management.
+- Credit analytics beyond reference classification.
+- Full short-term funding optimization.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.CommercialPaper`, terms, mapping, validation, and basic create test exist. | canonical CP reference profile and typed terms | F# validation and C# mapping tests |
+| IssuerOrCounterparty | L1 partial | issuer name is captured in canonical terms. | issuer reference and funding projections | endpoint/projection tests |
+| Lifecycle | L0 | target-state only. | issued, active, matured, rolled, and closed states | lifecycle projection tests |
+| CashFlowSchedule | L0 | target-state only. | maturity ladder and discount/accrual projection | schedule tests |
+| ProjectionRebuild | L1 partial | shared Security Master projection path exists. | CP-scoped issuer, ladder, classification, and lifecycle projections | rebuild/checkpoint tests |
+| WorkstationControl | L0 | target-state only. | Data and Accounting review of maturity and issuer exposure evidence | workstation endpoint tests |
+
+## Current Maturity
+
+`L1`: canonical commercial-paper terms, mapping, validation, and basic create support exist. L2/L3 maturity requires reference endpoints plus rebuildable issuer, maturity-ladder, asset-backed, and lifecycle projections.
+
+## Next Milestone Contract
+
+**Goal:** advance commercial paper toward L2/L3 by adding canonical reference reads and rebuildable maturity-ladder, issuer-funding, and classification projections.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/SecurityMaster/`
+- `src/Meridian.Contracts/SecurityMaster/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for CP terms.
+- endpoint contract tests for commercial-paper reference reads.
+- projection/rebuild tests for issuer, maturity, discount, and asset-backed classification metadata.
+- provider-payload isolation tests for canonical CP projections.
+
+**Exit criteria:** commercial-paper users can query canonical issuer and maturity-ladder views with deterministic replay metadata.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as source evidence, but commercial-paper workflows must consume canonical issuer, maturity, discount, classification, and projection metadata.
 
 ## Repo Fit
 
@@ -343,6 +410,6 @@ Meridian treats commercial paper as a canonical short-duration funding instrumen
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

@@ -45,6 +45,7 @@ import { legacyWorkspaceRedirect } from "@/lib/workspace";
 const DataOperationsScreen = lazy(() => import("@/screens/data-operations-screen").then((module) => ({ default: module.DataOperationsScreen })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const GovernanceScreen = lazy(() => import("@/screens/governance-screen").then((module) => ({ default: module.GovernanceScreen })));
+const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
@@ -96,6 +97,11 @@ function AppShell() {
     providerRoutingBindings,
     providerRoutingTrustSnapshots,
     providerRoutingRefreshing,
+    rolePermissionCatalog,
+    securityAssetProfiles,
+    ledgerMappingWorkbench,
+    operationsApprovalPolicyMatrix,
+    operationsCloseCalendar,
     brokeragePortfolio,
     workflowLibrary,
     workflowPresets,
@@ -337,6 +343,7 @@ function AppShell() {
                     />
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} />} />
+                  <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen
                       portfolio={portfolio}
@@ -390,6 +397,11 @@ function AppShell() {
                       providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
                       providerRoutingRefreshing={providerRoutingRefreshing}
                       featureCapabilities={featureCapabilities}
+                      rolePermissionCatalog={rolePermissionCatalog}
+                      securityAssetProfiles={securityAssetProfiles}
+                      ledgerMappingWorkbench={ledgerMappingWorkbench}
+                      operationsApprovalPolicyMatrix={operationsApprovalPolicyMatrix}
+                      operationsCloseCalendar={operationsCloseCalendar}
                       onFeatureCapabilityToggle={updateFeatureCapability}
                       onRefresh={refresh}
                       onProviderRoutingRefresh={refreshProviderRouting}

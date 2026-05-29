@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -24,6 +26,12 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     private string _scheduleReadinessTitle = "Schedule paused";
     private string _scheduleReadinessDetail = "Scheduled maintenance is disabled. Enable it when routine lifecycle work should run automatically.";
     private string _scheduleOperationSummary = "Operations: Compress older files, clean up temp files, verify data integrity";
+    private WorkstationStateModel _scheduleReadinessState = WorkstationStateModel.Empty(
+        "Schedule paused",
+        "Scheduled maintenance is disabled. Enable it when routine lifecycle work should run automatically.",
+        "Enable when ready",
+        "Admin maintenance",
+        "\uE823");
     private bool _canSaveSchedule = true;
 
     // ---- Quick-check state ----
@@ -47,6 +55,12 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     private string _cleanupReadinessTitle = "Preview cleanup before deleting files.";
     private string _cleanupReadinessDetail = "Run a cleanup preview to stage temp files and empty directories before execution is enabled.";
     private string _cleanupReadinessScope = "No cleanup preview loaded.";
+    private WorkstationStateModel _cleanupReadinessState = WorkstationStateModel.Empty(
+        "Preview cleanup before deleting files.",
+        "Run a cleanup preview to stage temp files and empty directories before execution is enabled.",
+        "Preview cleanup",
+        "No cleanup preview loaded.",
+        "\uE74D");
 
     // ---- InfoBar ----
     private bool _isStatusVisible;
@@ -66,6 +80,7 @@ public sealed class AdminMaintenanceViewModel : BindableBase
         CancelExecuteCleanupCommand = new RelayCommand(CancelExecuteCleanup, () =>
             IsCleanupConfirmationVisible && !IsCleanupBusy);
         RefreshSchedulePresentation();
+        RefreshCleanupReadinessState();
     }
 
     // ---- Collections ----
@@ -163,19 +178,37 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     public string ScheduleReadinessTitle
     {
         get => _scheduleReadinessTitle;
-        private set => SetProperty(ref _scheduleReadinessTitle, value);
+        private set
+        {
+            if (SetProperty(ref _scheduleReadinessTitle, value))
+                RefreshScheduleReadinessState();
+        }
     }
 
     public string ScheduleReadinessDetail
     {
         get => _scheduleReadinessDetail;
-        private set => SetProperty(ref _scheduleReadinessDetail, value);
+        private set
+        {
+            if (SetProperty(ref _scheduleReadinessDetail, value))
+                RefreshScheduleReadinessState();
+        }
     }
 
     public string ScheduleOperationSummary
     {
         get => _scheduleOperationSummary;
-        private set => SetProperty(ref _scheduleOperationSummary, value);
+        private set
+        {
+            if (SetProperty(ref _scheduleOperationSummary, value))
+                RefreshScheduleReadinessState();
+        }
+    }
+
+    public WorkstationStateModel ScheduleReadinessState
+    {
+        get => _scheduleReadinessState;
+        private set => SetProperty(ref _scheduleReadinessState, value);
     }
 
     public bool CanSaveSchedule
@@ -184,7 +217,10 @@ public sealed class AdminMaintenanceViewModel : BindableBase
         private set
         {
             if (SetProperty(ref _canSaveSchedule, value))
+            {
+                RefreshScheduleReadinessState();
                 SaveScheduleCommand.NotifyCanExecuteChanged();
+            }
         }
     }
 
@@ -251,6 +287,7 @@ public sealed class AdminMaintenanceViewModel : BindableBase
                 RequestExecuteCleanupCommand.NotifyCanExecuteChanged();
                 ConfirmExecuteCleanupCommand.NotifyCanExecuteChanged();
                 CancelExecuteCleanupCommand.NotifyCanExecuteChanged();
+                RefreshCleanupReadinessState();
             }
         }
     }
@@ -282,6 +319,7 @@ public sealed class AdminMaintenanceViewModel : BindableBase
             {
                 RequestExecuteCleanupCommand.NotifyCanExecuteChanged();
                 ConfirmExecuteCleanupCommand.NotifyCanExecuteChanged();
+                RefreshCleanupReadinessState();
             }
         }
     }
@@ -295,6 +333,7 @@ public sealed class AdminMaintenanceViewModel : BindableBase
             {
                 ConfirmExecuteCleanupCommand.NotifyCanExecuteChanged();
                 CancelExecuteCleanupCommand.NotifyCanExecuteChanged();
+                RefreshCleanupReadinessState();
             }
         }
     }
@@ -302,19 +341,37 @@ public sealed class AdminMaintenanceViewModel : BindableBase
     public string CleanupReadinessTitle
     {
         get => _cleanupReadinessTitle;
-        private set => SetProperty(ref _cleanupReadinessTitle, value);
+        private set
+        {
+            if (SetProperty(ref _cleanupReadinessTitle, value))
+                RefreshCleanupReadinessState();
+        }
     }
 
     public string CleanupReadinessDetail
     {
         get => _cleanupReadinessDetail;
-        private set => SetProperty(ref _cleanupReadinessDetail, value);
+        private set
+        {
+            if (SetProperty(ref _cleanupReadinessDetail, value))
+                RefreshCleanupReadinessState();
+        }
     }
 
     public string CleanupReadinessScope
     {
         get => _cleanupReadinessScope;
-        private set => SetProperty(ref _cleanupReadinessScope, value);
+        private set
+        {
+            if (SetProperty(ref _cleanupReadinessScope, value))
+                RefreshCleanupReadinessState();
+        }
+    }
+
+    public WorkstationStateModel CleanupReadinessState
+    {
+        get => _cleanupReadinessState;
+        private set => SetProperty(ref _cleanupReadinessState, value);
     }
 
     // ---- InfoBar properties ----
@@ -545,6 +602,38 @@ public sealed class AdminMaintenanceViewModel : BindableBase
         ScheduleReadinessDetail = $"Runs {FormatCronExpression(CronExpression)}. {FormatNextRunDetail()}";
     }
 
+    private void RefreshScheduleReadinessState()
+    {
+        var isReady = ScheduleEnabled && CanSaveSchedule;
+        var isBlocked = ScheduleEnabled && !CanSaveSchedule;
+        var kind = isReady
+            ? WorkstationStateKind.Ready
+            : isBlocked ? WorkstationStateKind.Blocked : WorkstationStateKind.Empty;
+        var tone = isReady
+            ? WorkspaceTone.Success
+            : isBlocked ? WorkspaceTone.Warning : WorkspaceTone.Neutral;
+        var readinessTone = isReady
+            ? WorkstationReadinessTone.Ready
+            : isBlocked ? WorkstationReadinessTone.Blocked : WorkstationReadinessTone.Neutral;
+        var actionText = isReady
+            ? "Save schedule"
+            : isBlocked ? "Complete schedule" : "Enable when ready";
+        var targetText = ScheduleEnabled
+            ? FormatCronExpression(CronExpression)
+            : "Admin maintenance";
+
+        ScheduleReadinessState = new WorkstationStateModel(
+            kind,
+            ScheduleReadinessTitle,
+            ScheduleReadinessDetail,
+            actionText,
+            targetText,
+            ScheduleOperationSummary,
+            isReady ? "\uE73E" : "\uE823",
+            tone,
+            readinessTone);
+    }
+
     private bool HasSelectedScheduleOperations() =>
         RunCompression || RunCleanup || RunIntegrityCheck || RunTierMigration;
 
@@ -574,6 +663,54 @@ public sealed class AdminMaintenanceViewModel : BindableBase
         "0 3 1 * *" => "monthly on the 1st at 3 AM",
         _ => cronExpression
     };
+
+    private void RefreshCleanupReadinessState()
+    {
+        var failed = CleanupReadinessTitle.Contains("failed", StringComparison.OrdinalIgnoreCase);
+        var complete = CleanupReadinessTitle.Contains("complete", StringComparison.OrdinalIgnoreCase);
+        var kind = IsCleanupBusy
+            ? WorkstationStateKind.Loading
+            : failed
+                ? WorkstationStateKind.Error
+                : CanExecuteCleanup || complete
+                    ? WorkstationStateKind.Ready
+                    : WorkstationStateKind.Empty;
+        var tone = failed
+            ? WorkspaceTone.Danger
+            : IsCleanupConfirmationVisible
+                ? WorkspaceTone.Warning
+                : CanExecuteCleanup || complete
+                    ? WorkspaceTone.Success
+                    : WorkspaceTone.Neutral;
+        var readinessTone = failed
+            ? WorkstationReadinessTone.Blocked
+            : IsCleanupConfirmationVisible
+                ? WorkstationReadinessTone.SignoffRequired
+                : CanExecuteCleanup || complete
+                    ? WorkstationReadinessTone.Ready
+                    : WorkstationReadinessTone.Neutral;
+        var actionText = IsCleanupBusy
+            ? "Scanning"
+            : IsCleanupConfirmationVisible
+                ? "Confirm delete"
+                : CanExecuteCleanup
+                    ? "Execute cleanup"
+                    : "Preview cleanup";
+        var targetText = IsCleanupConfirmationVisible
+            ? "Operator confirmation required"
+            : CleanupReadinessScope;
+
+        CleanupReadinessState = new WorkstationStateModel(
+            kind,
+            CleanupReadinessTitle,
+            CleanupReadinessDetail,
+            actionText,
+            targetText,
+            CleanupReadinessScope,
+            IsCleanupBusy ? "\uE895" : "\uE74D",
+            tone,
+            readinessTone);
+    }
 
     // ---- Maintenance run ----
 

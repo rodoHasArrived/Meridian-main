@@ -33,7 +33,7 @@ public sealed class StatementFixtureScenarioTests
         var fingerprint = await ComputeFingerprintAsync(path);
         var service = new StatementValidationService(new FakeStatementValidationReferenceData
         {
-            DuplicateImports = [fingerprint]
+            DuplicateImports = new HashSet<string>([fingerprint], StringComparer.OrdinalIgnoreCase)
         });
 
         var result = await service.ValidateAsync(CreateValidationRequest(path));

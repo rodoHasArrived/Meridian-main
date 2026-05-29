@@ -1,3 +1,4 @@
+using System.Windows;
 using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -35,7 +36,9 @@ public sealed class DataWorkspaceShellViewModelTests
             {
                 FocusText = "Provider posture",
                 SummaryText = "Provider state is ready.",
-                BadgeText = "Ready"
+                BadgeText = "Ready",
+                PrimaryActionId = "ProviderHealth",
+                PrimaryActionLabel = "Open provider health"
             },
             HeroMetrics =
             [
@@ -67,10 +70,16 @@ public sealed class DataWorkspaceShellViewModelTests
         viewModel.CommandGroup.Should().BeSameAs(commandGroup);
         viewModel.HeroScopeText.Should().Be("Fund A");
         viewModel.HeroState.FocusText.Should().Be("Provider posture");
+        viewModel.HeroPrimaryActionVisibility.Should().Be(Visibility.Visible);
+        viewModel.HeroSecondaryActionVisibility.Should().Be(Visibility.Collapsed);
         viewModel.HeroMetrics.Should().HaveCount(1);
         viewModel.QueueSummaryText.Should().Be("Provider and storage queues are ready.");
         viewModel.ProviderQueueItems.Should().ContainSingle().Which.Should().BeSameAs(providerQueueItem);
+        viewModel.ProviderQueueListVisibility.Should().Be(Visibility.Visible);
+        viewModel.ProviderQueueStateVisibility.Should().Be(Visibility.Collapsed);
         viewModel.BackfillQueueState.IsEmpty.Should().BeTrue();
+        viewModel.BackfillQueueListVisibility.Should().Be(Visibility.Collapsed);
+        viewModel.BackfillQueueStateVisibility.Should().Be(Visibility.Visible);
         viewModel.SummaryProvidersText.Should().Be("1 healthy");
         viewModel.SummaryProvidersTone.Should().Be(WorkspaceTone.Success);
         viewModel.RecentOperations.Should().ContainSingle();

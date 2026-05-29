@@ -364,6 +364,232 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task LedgerEndpoints_PeriodReportingRoutes_ReturnTrialBalanceAndPnlSummary()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<ILedgerJournalStore>();
+
+        var book = await PostJsonAsync<LedgerBookDto>(
+            client,
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                Guid.Parse("9dc7712e-8aa4-4c65-bc46-f6b8d0884695"),
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund",
+                "USD",
+                AccountingBasis: AccountingBasisKindDto.Gaap,
+                AccountingPolicyId: "gaap-close-v1",
+                AccountingPolicyVersion: "v1"));
+        var prior = await PostJsonAsync<LedgerPeriodDto>(
+            client,
+            UiApiRoutes.LedgerPeriods,
+            new CreateLedgerPeriodRequest(
+                book.LedgerBookId,
+                2026,
+                1,
+                "2026-P01",
+                new DateOnly(2026, 1, 1),
+                new DateOnly(2026, 1, 31)));
+        await store.AppendAsync(BuildBalancedEntry(
+            prior.PeriodId,
+            revenue: 800m,
+            expense: 300m,
+            timestamp: DateTimeOffset.Parse("2026-01-31T21:00:00Z")) with
+        {
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = "gaap-close-v1",
+            AccountingPolicyVersion = "v1"
+        });
+        await PostJsonAsync<LedgerPeriodCloseResultDto>(
+            client,
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", prior.PeriodId.ToString()),
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, ClosedBy: "fund-controller"));
+
+        var current = await PostJsonAsync<LedgerPeriodDto>(
+            client,
+            UiApiRoutes.LedgerPeriods,
+            new CreateLedgerPeriodRequest(
+                book.LedgerBookId,
+                2026,
+                2,
+                "2026-P02",
+                new DateOnly(2026, 2, 1),
+                new DateOnly(2026, 2, 28)));
+        await store.AppendAsync(BuildBalancedEntry(
+            current.PeriodId,
+            revenue: 1_200m,
+            expense: 300m,
+            timestamp: DateTimeOffset.Parse("2026-02-28T21:00:00Z")) with
+        {
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = "gaap-close-v1",
+            AccountingPolicyVersion = "v1"
+        });
+        await store.AppendAsync(BuildExpenseEntry(
+            current.PeriodId,
+            accountName: "Accrued performance fee expense",
+            amount: 50m,
+            timestamp: DateTimeOffset.Parse("2026-02-28T22:00:00Z")) with
+        {
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = "gaap-close-v1",
+            AccountingPolicyVersion = "v1"
+        });
+        await PostJsonAsync<LedgerPeriodCloseResultDto>(
+            client,
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", current.PeriodId.ToString()),
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, ClosedBy: "fund-controller"));
+
+        var trialBalance = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalance, "periodId", current.PeriodId.ToString()),
+            ServerJsonOptions);
+        var pnl = await client.GetFromJsonAsync<LedgerPeriodPnlSummaryDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodPnlSummary, "periodId", current.PeriodId.ToString()),
+            ServerJsonOptions);
+        var trialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", current.PeriodId.ToString()),
+            ServerJsonOptions);
+
+        trialBalance.Should().NotBeNull();
+        trialBalance!.Should().Contain(row =>
+            row.AccountName == "Management fees" &&
+            row.AccountType == nameof(LedgerAccountType.Revenue) &&
+            row.Balance == 1_200m &&
+            row.AccountingBasis == AccountingBasisKindDto.Gaap &&
+            row.AccountingPolicyId == "gaap-close-v1");
+        pnl.Should().NotBeNull();
+        pnl!.TotalRevenue.Should().Be(1_200m);
+        pnl.TotalExpenses.Should().Be(350m);
+        pnl.NetIncome.Should().Be(850m);
+        pnl.PeriodOnPeriodVariance.Should().Be(350m);
+        pnl.RealizedRevenue.Should().Be(1_200m);
+        pnl.RealizedExpenses.Should().Be(300m);
+        pnl.RealizedNetIncome.Should().Be(900m);
+        pnl.AccrualAdjustmentRevenue.Should().Be(0m);
+        pnl.AccrualAdjustmentExpenses.Should().Be(50m);
+        pnl.AccrualBasisAdjustmentNetImpact.Should().Be(-50m);
+        pnl.RevenueLines.Should().ContainSingle(row => row.AccountName == "Management fees");
+        pnl.ExpenseLines.Should().Contain(row => row.AccountName == "Operating expense");
+        pnl.AccrualAdjustmentLines.Should().ContainSingle(row => row.AccountName == "Accrued performance fee expense");
+        trialBalanceReport.Should().NotBeNull();
+        trialBalanceReport!.PeriodId.Should().Be(current.PeriodId);
+        trialBalanceReport.LedgerBookId.Should().Be(book.LedgerBookId);
+        trialBalanceReport.IsPeriodLocked.Should().BeTrue();
+        trialBalanceReport.TotalDebits.Should().Be(1_550m);
+        trialBalanceReport.TotalCredits.Should().Be(1_550m);
+        trialBalanceReport.NetIncome.Should().Be(850m);
+        trialBalanceReport.PeriodOnPeriodVariance.Should().Be(350m);
+        trialBalanceReport.AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
+        trialBalanceReport.AccountingPolicyId.Should().Be("gaap-close-v1");
+        trialBalanceReport.Lines.Should().Contain(row =>
+            row.AccountName == "Management fees" &&
+            row.AccountType == nameof(LedgerAccountType.Revenue) &&
+            row.Balance == 1_200m);
+        trialBalanceReport.Signature.Algorithm.Should().Be("SHA256");
+        trialBalanceReport.Signature.PayloadChecksumSha256.Should().HaveLength(64);
+        trialBalanceReport.Signature.SignedBy.Should().Be("fund-controller");
+    }
+
+    [Fact]
+    public async Task LedgerEndpoints_CrossPeriodReportRoutes_ReturnClosedPeriodTrialBalanceAndPnlReports()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<ILedgerJournalStore>();
+
+        var book = await PostJsonAsync<LedgerBookDto>(
+            client,
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                Guid.Parse("6575e74d-5665-4f7c-a5d1-2d8f205478ab"),
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund",
+                "USD",
+                AccountingBasis: AccountingBasisKindDto.Gaap,
+                AccountingPolicyId: "gaap-close-v1",
+                AccountingPolicyVersion: "v1"));
+
+        var first = await CreatePeriodWithPostingAsync(
+            client,
+            store,
+            book,
+            fiscalYear: 2026,
+            periodNo: 1,
+            label: "2026-P01",
+            start: new DateOnly(2026, 1, 1),
+            end: new DateOnly(2026, 1, 31),
+            revenue: 800m,
+            expense: 300m,
+            closeKind: LedgerPeriodCloseKindDto.HardClose);
+        var second = await CreatePeriodWithPostingAsync(
+            client,
+            store,
+            book,
+            fiscalYear: 2026,
+            periodNo: 2,
+            label: "2026-P02",
+            start: new DateOnly(2026, 2, 1),
+            end: new DateOnly(2026, 2, 28),
+            revenue: 1_200m,
+            expense: 300m,
+            closeKind: LedgerPeriodCloseKindDto.SoftClose);
+        await PostJsonAsync<LedgerPeriodDto>(
+            client,
+            UiApiRoutes.LedgerPeriods,
+            new CreateLedgerPeriodRequest(
+                book.LedgerBookId,
+                2026,
+                3,
+                "2026-P03",
+                new DateOnly(2026, 3, 1),
+                new DateOnly(2026, 3, 31)));
+
+        var query = $"?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-01-01&endDate=2026-02-28";
+        var trialBalance = await client.GetFromJsonAsync<LedgerCrossPeriodTrialBalanceReportDto>(
+            UiApiRoutes.LedgerReportsTrialBalance + query,
+            ServerJsonOptions);
+        var pnl = await client.GetFromJsonAsync<LedgerCrossPeriodPnlReportDto>(
+            UiApiRoutes.LedgerReportsPnlSummary + query,
+            ServerJsonOptions);
+
+        trialBalance.Should().NotBeNull();
+        trialBalance!.Periods.Select(period => period.PeriodId).Should().Equal(first.PeriodId, second.PeriodId);
+        trialBalance.Lines.Should().Contain(line =>
+            line.PeriodId == first.PeriodId &&
+            line.AccountName == "Management fees" &&
+            line.Balance == 800m &&
+            line.AccountingBasis == AccountingBasisKindDto.Gaap);
+        trialBalance.Lines.Should().Contain(line =>
+            line.PeriodId == second.PeriodId &&
+            line.AccountName == "Operating expense" &&
+            line.Balance == 300m);
+        trialBalance.TotalDebits.Should().Be(2_600m);
+        trialBalance.TotalCredits.Should().Be(2_600m);
+        trialBalance.NetIncome.Should().Be(1_400m);
+
+        pnl.Should().NotBeNull();
+        pnl!.Periods.Select(period => period.PeriodId).Should().Equal(first.PeriodId, second.PeriodId);
+        pnl.TotalRevenue.Should().Be(2_000m);
+        pnl.TotalExpenses.Should().Be(600m);
+        pnl.NetIncome.Should().Be(1_400m);
+        pnl.Periods[1].PeriodOnPeriodVariance.Should().Be(400m);
+    }
+
+    [Fact]
+    public async Task LedgerEndpoints_CrossPeriodReportRoutes_RejectInvalidDateRange()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync($"{UiApiRoutes.LedgerReportsPnlSummary}?startDate=2026-03-01&endDate=2026-02-01");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task LedgerEndpoints_CreateBook_WhenUserLacksLedgerMutationPermission_ReturnsForbidden()
     {
         await using var app = await CreateAppAsync(UserPermission.ViewTrades);
@@ -542,6 +768,47 @@ public sealed class LedgerBookServiceTests
         return app;
     }
 
+    private static async Task<LedgerPeriodDto> CreatePeriodWithPostingAsync(
+        HttpClient client,
+        ILedgerJournalStore store,
+        LedgerBookDto book,
+        int fiscalYear,
+        int periodNo,
+        string label,
+        DateOnly start,
+        DateOnly end,
+        decimal revenue,
+        decimal expense,
+        LedgerPeriodCloseKindDto closeKind)
+    {
+        var period = await PostJsonAsync<LedgerPeriodDto>(
+            client,
+            UiApiRoutes.LedgerPeriods,
+            new CreateLedgerPeriodRequest(
+                book.LedgerBookId,
+                fiscalYear,
+                periodNo,
+                label,
+                start,
+                end));
+        await store.AppendAsync(BuildBalancedEntry(
+            period.PeriodId,
+            revenue,
+            expense,
+            new DateTimeOffset(end.ToDateTime(new TimeOnly(21, 0)), TimeSpan.Zero)) with
+        {
+            AccountingBasis = book.AccountingBasis,
+            AccountingPolicyId = book.AccountingPolicyId,
+            AccountingPolicyVersion = book.AccountingPolicyVersion
+        });
+        await PostJsonAsync<LedgerPeriodCloseResultDto>(
+            client,
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", period.PeriodId.ToString()),
+            new CloseLedgerPeriodRequest(closeKind, ClosedBy: "fund-controller"));
+
+        return period;
+    }
+
     private static LedgerJournalEntryWrite BuildBalancedEntry(
         Guid periodId,
         decimal revenue,
@@ -589,6 +856,40 @@ public sealed class LedgerBookServiceTests
 
         return new LedgerJournalEntryWrite(
             new JournalEntry(journalEntryId, occurredAt, description, lines),
+            AggregateId: Guid.NewGuid(),
+            PeriodId: periodId);
+    }
+
+    private static LedgerJournalEntryWrite BuildExpenseEntry(
+        Guid periodId,
+        string accountName,
+        decimal amount,
+        DateTimeOffset timestamp)
+    {
+        var journalEntryId = Guid.NewGuid();
+        var description = $"{accountName} accrual adjustment";
+        var lines = new[]
+        {
+            new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                timestamp,
+                new LedgerAccount(accountName, LedgerAccountType.Expense),
+                debit: amount,
+                credit: 0m,
+                description),
+            new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                timestamp,
+                new LedgerAccount("Accrued liabilities", LedgerAccountType.Liability),
+                debit: 0m,
+                credit: amount,
+                description)
+        };
+
+        return new LedgerJournalEntryWrite(
+            new JournalEntry(journalEntryId, timestamp, description, lines),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
     }

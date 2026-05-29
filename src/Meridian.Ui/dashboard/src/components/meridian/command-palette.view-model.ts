@@ -578,6 +578,7 @@ function buildWorkflowItem(
     operatingScope
   );
   const current = isExactActivePath(pathname, route);
+  const status = workflowActionStatus(action.tone);
 
   return {
     id: `workflow:${workflow.workflowId}:${action.actionId}`,
@@ -586,14 +587,37 @@ function buildWorkflowItem(
     description: `${workflow.title}: ${action.detail || workflow.summary}`,
     route,
     routeLabel: route,
-    statusLabel: current ? "Current" : "Workflow",
-    statusTone: current ? "current" : "neutral",
-    statusVisible: current,
+    statusLabel: current ? "Current" : status.label,
+    statusTone: current ? "current" : status.tone,
+    statusVisible: current || status.visible,
     commandLabel: action.label,
     ariaLabel: `${action.label}, ${workflow.title}`,
     presetId: null,
     active: false
   };
+}
+
+function workflowActionStatus(tone: string): {
+  label: string;
+  tone: CommandPaletteItemStatusTone;
+  visible: boolean;
+} {
+  switch (tone.trim().toLowerCase()) {
+    case "critical":
+    case "danger":
+    case "blocked":
+      return { label: "Blocked", tone: "blocked", visible: true };
+    case "warning":
+    case "review":
+    case "reviewrequired":
+      return { label: "Review", tone: "review", visible: true };
+    case "primary":
+    case "success":
+    case "ready":
+      return { label: "Ready", tone: "ready", visible: true };
+    default:
+      return { label: "Workflow", tone: "neutral", visible: false };
+  }
 }
 
 function buildRouteSummary(

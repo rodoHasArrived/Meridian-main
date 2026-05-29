@@ -367,4 +367,98 @@ public sealed class MarketImpactFillModelTests
         avgHigh.Should().BeGreaterThan(avgLow,
             "higher impact coefficient must push buy fill prices higher");
     }
+
+    [Fact]
+    public void TryFill_WithParticipationCap_ProducesPartialFillAndLeavesOrderWorking()
+    {
+        var model = new MarketImpactFillModel(
+            new FixedCommissionModel(0m),
+            impactCoefficient: 0.1m,
+            slippageBasisPoints: 0m,
+            maxPartialFills: 5,
+            maxParticipationRate: 0.10m);
+        var order = MakeMarketOrder("SPY", 500L);
+        var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 1_000L);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(100L);
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.PartiallyFilled);
+        result.UpdatedOrder.RemainingQuantity.Should().Be(400L);
+        result.RemoveOrder.Should().BeFalse();
+    }
+
+    [Fact]
+    public void TryFill_WithParticipationCapAndNoPartialFills_LeavesOrderUnfilled()
+    {
+        var model = new MarketImpactFillModel(
+            new FixedCommissionModel(0m),
+            impactCoefficient: 0.1m,
+            slippageBasisPoints: 0m,
+            maxPartialFills: 5,
+            maxParticipationRate: 0.10m);
+        var order = MakeMarketOrder("SPY", 500L, allowPartialFills: false);
+        var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 1_000L);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().BeEmpty();
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Pending);
+        result.RemoveOrder.Should().BeFalse();
+    }
+
+    [Fact]
+    public void TryFill_WithZeroParticipationCap_RemainsBackwardCompatible()
+    {
+        var model = new MarketImpactFillModel(
+            new FixedCommissionModel(0m),
+            impactCoefficient: 0.1m,
+            slippageBasisPoints: 0m,
+            maxParticipationRate: 0m);
+        var order = MakeMarketOrder("SPY", 500L);
+        var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 1_000L);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(500L);
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Filled);
+        result.RemoveOrder.Should().BeTrue();
+    }
+
+    [Fact]
+    public void TryFill_WithParticipationCapAndZeroVolumeBar_LeavesOrderWorking()
+    {
+        var model = new MarketImpactFillModel(
+            new FixedCommissionModel(0m),
+            impactCoefficient: 0.1m,
+            slippageBasisPoints: 0m,
+            maxParticipationRate: 0.10m);
+        var order = MakeMarketOrder("SPY", 500L);
+        var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 0L);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().BeEmpty();
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Pending);
+        result.RemoveOrder.Should().BeFalse();
+    }
+
+    [Fact]
+    public void TryFill_WithParticipationCapAboveOne_ClampsToFullBarVolume()
+    {
+        var model = new MarketImpactFillModel(
+            new FixedCommissionModel(0m),
+            impactCoefficient: 0.1m,
+            slippageBasisPoints: 0m,
+            maxParticipationRate: 1.50m);
+        var order = MakeMarketOrder("SPY", 1_500L);
+        var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 1_000L);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Sum(static fill => fill.FilledQuantity).Should().Be(1_000L);
+        result.UpdatedOrder.RemainingQuantity.Should().Be(500L);
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.PartiallyFilled);
+        result.RemoveOrder.Should().BeFalse();
+    }
 }

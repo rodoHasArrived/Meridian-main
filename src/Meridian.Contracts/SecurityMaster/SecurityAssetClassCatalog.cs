@@ -195,6 +195,20 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi
             ]),
         new(
+            AssetClass: "CustomAsset",
+            SupportsCashflowScheduleByDefault: false,
+            UsesFaceValueLots: false,
+            SupportsBasicCreateWorkflow: true,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.Cusip,
+                SecurityIdentifierKind.Isin,
+                SecurityIdentifierKind.Figi,
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Lei
+            ]),
+        new(
             AssetClass: "Swap",
             SupportsCashflowScheduleByDefault: true,
             UsesFaceValueLots: false,

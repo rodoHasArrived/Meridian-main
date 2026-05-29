@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Tests.Storage;
@@ -208,6 +209,7 @@ public sealed class OperationsContinuityPostgresRoundTripTests
         var timestamp = DateTimeOffset.Parse("2026-05-15T16:00:00Z");
         var securityId = Guid.Parse("D3B32FA8-A6FD-4571-ACDA-56D5D6F6C92C");
         var idempotencyKey = $"{securityId:N}:postgres:20260515:AccrueInterestIncome:test-source-hash";
+        var provenance = $"security-master:{securityId:N};snapshot:test-source-hash;approved:true;status:active";
 
         return new OperationsLedgerJournalCandidateDto(
             journalEntryId,
@@ -223,14 +225,26 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                     LedgerAccountType.Asset.ToString(),
                     Debit: 125m,
                     Credit: 0m,
-                    Symbol: "POSTGRES"),
+                    Symbol: "POSTGRES",
+                    SecurityId: securityId,
+                    SecurityMasterApproved: true,
+                    SecurityMasterProvenance: provenance,
+                    LedgerMappingReference: $"ledger-map:POSTGRES:{securityId:N}",
+                    SecurityMasterApprovalReference: "sm-approval:postgres-controller",
+                    SecurityMasterStatus: SecurityStatusDto.Active),
                 new OperationsLedgerJournalLineDto(
                     Guid.NewGuid(),
                     "Interest Income",
                     LedgerAccountType.Revenue.ToString(),
                     Debit: 0m,
                     Credit: 125m,
-                    Symbol: "POSTGRES")
+                    Symbol: "POSTGRES",
+                    SecurityId: securityId,
+                    SecurityMasterApproved: true,
+                    SecurityMasterProvenance: provenance,
+                    LedgerMappingReference: $"ledger-map:POSTGRES:{securityId:N}",
+                    SecurityMasterApprovalReference: "sm-approval:postgres-controller",
+                    SecurityMasterStatus: SecurityStatusDto.Active)
             ],
             CommandId: Guid.NewGuid(),
             CorrelationId: Guid.NewGuid(),
@@ -253,7 +267,7 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                     ["fixture"] = "operations-continuity-postgres"
                 }),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+            SecurityMasterProvenance: provenance);
     }
 
     private static IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks() =>

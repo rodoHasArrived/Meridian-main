@@ -59,6 +59,12 @@ This is the active operator UI lane; keep shared contract parity with the WPF de
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure
 review.
+The Settings workspace also owns the browser asset-profile governance surface for custom Security
+Master assets: it reads approved profiles, drafts profile variants from starter templates, submits
+approval/rollback lineage actions through the shared Security Master endpoints, and creates
+profile-backed `CustomAsset` records pinned to the approved profile version. React should keep this
+as a thin orchestration surface over shared DTOs and API validation; do not add browser-local
+scripted validation rules.
 
 No-host browser previews must keep fixture data visibly labeled as demo data. The shell banner
 routes operators through the typed demo evidence path: watchlist, live quote evidence, trading
@@ -87,8 +93,24 @@ read models; React components only render these values and do not reimplement ma
 validation, or case-state rules.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
-approval gate state enforced by the API and WPF clients.
+approval gate state enforced by the API and WPF clients. The browser checklist summary is also
+derived from those shared task fields: ready, blocked, acknowledged, approval, evidence-pointer,
+and next-due counts are display projections only and must not become client-local close state.
+The close-package panel is likewise a read-only projection of the shared operations-continuity
+publication metadata: signer, sign-off rationale, retained manifest route, evidence hash, report
+pack id, retained evidence links, and checklist control approvals come from the server workflow
+payload rather than browser-local publication state.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
+Portfolio run drill-ins consume the shared attribution, equity-curve, cash-flow, and fill payloads
+and project browser view state for run comparison, realized/unrealized P&L bridge rows, and recent
+trade evidence. Keep those projections in the Portfolio view model so the React screen renders
+shared run evidence instead of recalculating attribution, drawdown, or fill semantics.
+
+Portfolio now includes `/portfolio/family-office`, a family-office route that keeps route metadata,
+summary labels, empty states, disabled reasons, and ownership graph/table accessibility labels in the
+Family Office view-model seam. The React screen renders household net worth, entity and asset-class
+breakdowns, cash/liability posture, private assets, unfunded commitments, reconciliation breaks,
+stale valuation warnings, and a keyboard-navigable ownership graph with a dense table fallback.
 
 ## Diagrams
 

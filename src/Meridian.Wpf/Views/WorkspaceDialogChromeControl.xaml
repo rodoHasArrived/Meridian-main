@@ -1,0 +1,33 @@
+<UserControl x:Class="Meridian.Wpf.Views.WorkspaceDialogChromeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             MinWidth="360"
+             AutomationProperties.AutomationId="{Binding DialogAutomationId, RelativeSource={RelativeSource Self}}"
+             AutomationProperties.Name="{Binding TitleText, RelativeSource={RelativeSource Self}}">
+    <Border Padding="18"
+            Background="{StaticResource ConsoleBackgroundLightBrush}"
+            BorderBrush="{StaticResource ConsoleBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            SnapsToDevicePixels="True">
+        <DockPanel LastChildFill="True">
+            <StackPanel DockPanel.Dock="Top" Margin="0,0,0,14">
+                <TextBlock x:Name="DialogTitleText"
+                           Text="{Binding ElementName=Root, Path=TitleText}"
+                           Style="{StaticResource CardHeaderStyle}"
+                           AutomationProperties.AutomationId="{Binding ElementName=Root, Path=TitleAutomationId}" />
+                <TextBlock x:Name="DialogSubtitleText"
+                           Text="{Binding ElementName=Root, Path=SubtitleText}"
+                           Margin="0,6,0,0"
+                           TextWrapping="Wrap"
+                           Style="{StaticResource CardDescriptionStyle}"
+                           AutomationProperties.AutomationId="{Binding ElementName=Root, Path=SubtitleAutomationId}" />
+            </StackPanel>
+
+            <ContentPresenter x:Name="DialogBodyPresenter"
+                              Content="{Binding ElementName=Root, Path=Body}"
+                              AutomationProperties.AutomationId="{Binding ElementName=Root, Path=BodyAutomationId}" />
+        </DockPanel>
+    </Border>
+</UserControl>

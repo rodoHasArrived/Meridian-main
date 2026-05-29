@@ -9,6 +9,8 @@ import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
 import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  OperationsCloseChecklistTask,
+  OperationsClosePackagePublication,
   OperationsGate,
   OperationsGateKey,
   OperationsGateStatus,
@@ -73,6 +75,51 @@ export interface OperationsContinuityTimelineRow {
   ariaLabel: string;
 }
 
+export interface OperationsContinuityChecklistRow {
+  id: string;
+  label: string;
+  gateLabel: string;
+  ownerLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  dueLabel: string;
+  expiresLabel: string;
+  requiredEvidence: string;
+  approvalLabel: string;
+  evidenceLabel: string;
+  remediationHref: string | null;
+  remediationLabel: string;
+  acknowledgementLabel: string;
+  ariaLabel: string;
+}
+
+export interface OperationsContinuityChecklistSummary {
+  taskCountLabel: string;
+  readyCountLabel: string;
+  blockedCountLabel: string;
+  acknowledgementCountLabel: string;
+  approvalCountLabel: string;
+  evidenceCountLabel: string;
+  dueSoonLabel: string;
+  statusTone: OperationsContinuityTone;
+}
+
+export interface OperationsContinuityClosePackageViewModel {
+  title: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  packageIdLabel: string;
+  reportPackLabel: string;
+  manifestLabel: string;
+  manifestHref: string | null;
+  evidenceHashLabel: string;
+  publishedLabel: string;
+  signerLabel: string;
+  rationaleLabel: string;
+  evidenceLabel: string;
+  approvalLabel: string;
+}
+
 export interface OperationsContinuityNextActionViewModel {
   title: string;
   detail: string;
@@ -122,6 +169,11 @@ export interface OperationsContinuityScreenViewModel {
   blockersLabel: string;
   blockersEmptyText: string;
   blockers: OperationsContinuityBlockerRow[];
+  checklistLabel: string;
+  checklistSummary: OperationsContinuityChecklistSummary;
+  checklistEmptyText: string;
+  checklist: OperationsContinuityChecklistRow[];
+  closePackage: OperationsContinuityClosePackageViewModel;
   timelineLabel: string;
   timelineEmptyText: string;
   timeline: OperationsContinuityTimelineRow[];
@@ -315,6 +367,8 @@ export function buildOperationsContinuityScreenViewModel({
     detailError
   });
   const blockers = buildBlockerRows(effectiveDetail?.blockers ?? collectGateBlockers(gateSource));
+  const checklistSource = effectiveDetail?.closeChecklist ?? [];
+  const checklist = buildChecklistRows(checklistSource);
   const timeline = buildTimelineRows(effectiveDetail?.timeline ?? []);
   const gates = gateSource.map(mapGateRow);
   const rows = workflows.map((workflow) => mapWorkflowRow(workflow, selectedSummary?.workflowId ?? null));
@@ -353,6 +407,11 @@ export function buildOperationsContinuityScreenViewModel({
     blockersLabel: "Blockers",
     blockersEmptyText: detailLoading ? "Loading selected workflow blockers..." : "No blockers are surfaced for the selected workflow.",
     blockers,
+    checklistLabel: "Close checklist",
+    checklistSummary: buildChecklistSummary(checklistSource),
+    checklistEmptyText: detailLoading ? "Loading selected workflow checklist..." : "No close checklist tasks are available for the selected workflow.",
+    checklist,
+    closePackage: buildClosePackageViewModel(effectiveDetail?.closePackage ?? null, detailLoading),
     timelineLabel: "Timeline",
     timelineEmptyText: detailLoading ? "Loading workflow timeline." : "Open workflow detail to inspect the hash-chained timeline.",
     timeline,
@@ -382,6 +441,7 @@ function buildDetailPanel(
       { label: "Approval", value: detail ? splitEnumLabel(detail.approvalState) : "Detail pending" },
       { label: "Sign-off", value: detail ? buildSignoffSummary(detail) : "Detail pending" },
       { label: "Report pack", value: detail ? buildReportPackSummary(detail) : "Detail pending" },
+      { label: "Close package", value: detail ? buildClosePackageSummary(detail.closePackage) : "Detail pending" },
       { label: "Close evidence", value: detail ? buildCloseEvidenceSummary(detail) : "Detail pending" },
       { label: "Latest audit", value: detail ? buildLatestAuditSummary(detail) : "Detail pending" },
       { label: "Break cases", value: detail ? String(detail.breakCases.length) : "Detail pending" },
@@ -415,6 +475,14 @@ function buildReportPackSummary(detail: OperationsContinuityWorkflow): string {
   return readiness.blockingReason?.trim()
     ? `Blocked: ${readiness.blockingReason}`
     : "Blocked until close evidence is complete";
+}
+
+function buildClosePackageSummary(closePackage: OperationsClosePackagePublication | null): string {
+  if (!closePackage) {
+    return "Not published";
+  }
+
+  return `${closePackage.closePackageId} signed by ${closePackage.publishedBy || "unknown"} at ${formatDate(closePackage.publishedAtUtc)}`;
 }
 
 function buildCloseEvidenceSummary(detail: OperationsContinuityWorkflow): string {
@@ -586,6 +654,131 @@ function buildTimelineRows(timeline: OperationsTimelineEntry[]): OperationsConti
     }));
 }
 
+function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsContinuityChecklistRow[] {
+  return tasks.map((task) => {
+    const remediationHref = normalizeLocalWorkstationRoute(task.remediationRoute) ?? null;
+    const acknowledged = task.acknowledgedAtUtc
+      ? `Acknowledged by ${task.acknowledgedBy?.trim() || "unknown"} at ${formatDate(task.acknowledgedAtUtc)}`
+      : task.canAcknowledge
+        ? "Ready for acknowledgement"
+        : task.blockingReason?.trim() || "Acknowledgement blocked until required evidence is complete";
+
+    return {
+      id: task.taskId,
+      label: task.label || gateLabel(task.gate),
+      gateLabel: gateLabel(task.gate),
+      ownerLabel: task.owner?.trim() || "Owner pending",
+      statusLabel: splitEnumLabel(task.status || "Unknown"),
+      statusTone: checklistStatusTone(task.status),
+      dueLabel: task.dueDate ? formatDate(task.dueDate) : "No due date",
+      expiresLabel: task.expiresOn ? formatDate(task.expiresOn) : "No expiration",
+      requiredEvidence: task.requiredEvidence?.trim() || task.evidencePointer?.trim() || "Required evidence pending",
+      approvalLabel: task.requiredApprovalCount === 0
+        ? "No control approvals required"
+        : `${task.requiredApprovalCount} control approval${task.requiredApprovalCount === 1 ? "" : "s"} required`,
+      evidenceLabel: task.evidencePointer?.trim() || "Evidence pointer pending",
+      remediationHref,
+      remediationLabel: remediationHref ? "Open remediation" : "No remediation route",
+      acknowledgementLabel: acknowledged,
+      ariaLabel: `${task.label || gateLabel(task.gate)} checklist task, ${splitEnumLabel(task.status || "Unknown")}, ${task.owner?.trim() || "owner pending"}`
+    };
+  });
+}
+
+function buildClosePackageViewModel(
+  closePackage: OperationsClosePackagePublication | null,
+  loading: boolean
+): OperationsContinuityClosePackageViewModel {
+  if (!closePackage) {
+    return {
+      title: "Close package",
+      statusLabel: loading ? "Loading" : "Not published",
+      statusTone: "neutral",
+      packageIdLabel: loading ? "Package pending" : "No close package published",
+      reportPackLabel: "Report pack pending",
+      manifestLabel: "Retained manifest pending",
+      manifestHref: null,
+      evidenceHashLabel: "Evidence hash pending",
+      publishedLabel: "Publication pending",
+      signerLabel: "Signer pending",
+      rationaleLabel: "Sign-off rationale pending",
+      evidenceLabel: "No retained evidence links",
+      approvalLabel: "No checklist control approvals"
+    };
+  }
+
+  const manifestHref = normalizeLocalWorkstationRoute(closePackage.retainedManifestRoute) ?? null;
+  const evidenceCount = closePackage.evidenceLinks.length;
+  const approvalCount = closePackage.checklistControlApprovals.length;
+
+  return {
+    title: "Close package",
+    statusLabel: "Published",
+    statusTone: "ready",
+    packageIdLabel: closePackage.closePackageId || "Package id pending",
+    reportPackLabel: closePackage.reportPackId ? `Report pack ${closePackage.reportPackId}` : "Report pack pending",
+    manifestLabel: closePackage.retainedManifestId || "Retained manifest pending",
+    manifestHref,
+    evidenceHashLabel: closePackage.evidenceHash || "Evidence hash pending",
+    publishedLabel: `Published ${formatDate(closePackage.publishedAtUtc)}`,
+    signerLabel: closePackage.publishedBy ? `Signed by ${closePackage.publishedBy}` : "Signer pending",
+    rationaleLabel: closePackage.signOffRationale?.trim() || "Sign-off rationale pending",
+    evidenceLabel: evidenceCount === 0
+      ? "No retained evidence links"
+      : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
+    approvalLabel: approvalCount === 0
+      ? "No checklist control approvals"
+      : `${approvalCount} checklist control approval${approvalCount === 1 ? "" : "s"}`
+  };
+}
+
+function buildChecklistSummary(tasks: OperationsCloseChecklistTask[]): OperationsContinuityChecklistSummary {
+  const readyCount = tasks.filter(isChecklistTaskReady).length;
+  const blockedCount = tasks.filter(isChecklistTaskBlocked).length;
+  const acknowledgementCount = tasks.filter((task) => Boolean(task.acknowledgedAtUtc)).length;
+  const approvalCount = tasks.reduce((total, task) => total + Math.max(0, task.requiredApprovalCount ?? 0), 0);
+  const evidenceCount = tasks.filter((task) => Boolean(task.evidencePointer?.trim())).length;
+  const dueSoon = tasks
+    .filter((task) => task.dueDate && !isChecklistTaskReady(task))
+    .sort((left, right) => String(left.dueDate).localeCompare(String(right.dueDate)))[0] ?? null;
+  const tone: OperationsContinuityTone = blockedCount > 0
+    ? "blocked"
+    : tasks.length > 0 && readyCount === tasks.length
+      ? "ready"
+      : tasks.length > 0
+        ? "review"
+        : "neutral";
+
+  return {
+    taskCountLabel: `${tasks.length} close task${tasks.length === 1 ? "" : "s"}`,
+    readyCountLabel: `${readyCount} ready`,
+    blockedCountLabel: `${blockedCount} blocked`,
+    acknowledgementCountLabel: `${acknowledgementCount} acknowledged`,
+    approvalCountLabel: approvalCount === 0
+      ? "No control approvals required"
+      : `${approvalCount} control approval${approvalCount === 1 ? "" : "s"} required`,
+    evidenceCountLabel: `${evidenceCount}/${tasks.length} evidence pointer${tasks.length === 1 ? "" : "s"}`,
+    dueSoonLabel: dueSoon?.dueDate ? `Next due ${formatDate(dueSoon.dueDate)}: ${dueSoon.label || gateLabel(dueSoon.gate)}` : "No open due dates",
+    statusTone: tone
+  };
+}
+
+function isChecklistTaskReady(task: OperationsCloseChecklistTask): boolean {
+  const normalized = task.status?.trim().toLowerCase() ?? "";
+  return normalized === "done" ||
+    normalized === "complete" ||
+    normalized === "completed" ||
+    normalized === "acknowledged" ||
+    Boolean(task.acknowledgedAtUtc);
+}
+
+function isChecklistTaskBlocked(task: OperationsCloseChecklistTask): boolean {
+  const normalized = task.status?.trim().toLowerCase() ?? "";
+  return normalized === "blocked" ||
+    normalized === "expired" ||
+    Boolean(task.blockingReason?.trim());
+}
+
 function collectGateBlockers(gates: OperationsGate[]): OperationsWorkflowBlocker[] {
   return gates.flatMap((gate) => gate.blockers ?? []);
 }
@@ -649,6 +842,23 @@ function severityTone(severity: string | null | undefined): OperationsContinuity
   }
 
   if (normalized === "warning" || normalized === "warn") {
+    return "review";
+  }
+
+  return "neutral";
+}
+
+function checklistStatusTone(status: string | null | undefined): OperationsContinuityTone {
+  const normalized = status?.trim().toLowerCase() ?? "";
+  if (normalized === "done" || normalized === "complete" || normalized === "completed" || normalized === "acknowledged") {
+    return "ready";
+  }
+
+  if (normalized === "blocked" || normalized === "expired") {
+    return "blocked";
+  }
+
+  if (normalized === "review" || normalized === "reviewrequired" || normalized === "pending" || normalized === "open") {
     return "review";
   }
 

@@ -39,6 +39,7 @@ export interface ResearchRunLibraryState {
   loadingState: ResearchLoadingState;
   runs: ResearchRunRecord[];
   runTable: ResearchResultTableState<ResearchRunTableRow>;
+  runHistorySummary: ResearchRunHistorySummaryState;
   plotTool: ResearchPlotToolState;
   activePlotToolView: ResearchPlotToolView;
   plotToolTabs: ResearchPlotToolTab[];
@@ -231,6 +232,24 @@ export interface ResearchRunTableRow {
   raw: ResearchRunRecord;
 }
 
+export interface ResearchRunHistorySummaryState {
+  ariaLabel: string;
+  normalizedResultText: string;
+  modeCoverageText: string;
+  liveAdjacentText: string;
+  engineCoverageText: string;
+  cards: ResearchRunHistorySummaryCard[];
+}
+
+export interface ResearchRunHistorySummaryCard {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  badgeLabel: string;
+  badgeVariant: ResearchComparisonBadgeVariant;
+}
+
 export interface ResearchRunInlineDetailState {
   id: string;
   panelId: string;
@@ -290,6 +309,8 @@ export interface ResearchComparisonTableRow {
   fillCountText: string;
   promotionStateText: string;
   evidenceText: string;
+  artifactCompletenessText: string;
+  warningText: string;
   detailPanelId: string;
   detailExpanded: boolean;
   rowSelectAriaLabel: string;
@@ -367,7 +388,12 @@ export interface ResearchDiffPanelState {
   description: string;
   ariaLabel: string;
   summaryLabel: string;
+  metadataSummary: string;
+  compatibilityLevel: string;
+  lineageRelation: string;
   metrics: ResearchDiffMetricRow[];
+  compatibilityWarnings: string[];
+  artifactCompletenessSummary: string;
   positionChanges: ResearchDiffChangeRow[];
   parameterChanges: ResearchParameterChangeRow[];
   positionTable: ResearchResultTableState<ResearchDiffChangeRow>;
@@ -1137,6 +1163,7 @@ export function buildResearchRunLibraryState({
     inspectedRunId: resolvedInspectedRunId,
     detailPanelId: RESEARCH_RUN_DETAIL_PANEL_ID
   });
+  const runHistorySummary = buildRunHistorySummary(runs);
   const resolvedComparisonRowId = resolveSelectedComparisonRunId(comparison, selectedComparisonRowId);
   const comparisonTable = buildComparisonTable(comparison, resolvedComparisonRowId);
   const selectedComparisonRow = resolvedComparisonRowId
@@ -1191,6 +1218,7 @@ export function buildResearchRunLibraryState({
     loadingState: buildResearchLoadingState(),
     runs,
     runTable,
+    runHistorySummary,
     plotTool,
     activePlotToolView,
     plotToolTabs: buildPlotToolTabs(activePlotToolView),
@@ -1276,6 +1304,66 @@ export function buildResearchLoadingState(): ResearchLoadingState {
     detail: "Waiting for run history, PlotTool state, and promotion evidence.",
     badgeLabel: "Loading",
     routeLabel: "Strategy"
+  };
+}
+
+export function buildRunHistorySummary(runs: ResearchRunRecord[]): ResearchRunHistorySummaryState {
+  const modeCounts = countBy(runs, (run) => run.mode.toLowerCase());
+  const engines = distinctFormattedValues(runs.map((run) => run.engine));
+  const completedCount = runs.filter((run) => run.status === "Completed").length;
+  const liveAdjacentCount = runs.filter((run) => isLiveAdjacentMode(run.mode)).length;
+  const backtestCount = modeCounts.get("backtest") ?? 0;
+  const paperCount = modeCounts.get("paper") ?? 0;
+  const liveCount = modeCounts.get("live") ?? 0;
+  const modeCoverageText = `Backtest ${backtestCount}; Paper ${paperCount}; Live ${liveCount}`;
+  const engineCoverageText = engines.length > 0
+    ? `${engines.length} normalized ${engines.length === 1 ? "engine" : "engines"}: ${engines.join(", ")}`
+    : "No normalized engines loaded";
+  const liveAdjacentText = `${liveAdjacentCount} paper/live-adjacent ${liveAdjacentCount === 1 ? "run" : "runs"}`;
+  const normalizedResultText = runs.length > 0
+    ? `${runs.length} retained ${runs.length === 1 ? "run" : "runs"} using the shared strategy-run result model.`
+    : "No retained strategy runs loaded.";
+
+  return {
+    ariaLabel: "Strategy run history coverage",
+    normalizedResultText,
+    modeCoverageText,
+    liveAdjacentText,
+    engineCoverageText,
+    cards: [
+      {
+        id: "total-runs",
+        label: "Retained runs",
+        value: runs.length.toLocaleString(),
+        detail: `${completedCount.toLocaleString()} completed`,
+        badgeLabel: "Common model",
+        badgeVariant: "outline"
+      },
+      {
+        id: "mode-coverage",
+        label: "Mode coverage",
+        value: `${backtestCount}/${paperCount}/${liveCount}`,
+        detail: modeCoverageText,
+        badgeLabel: liveAdjacentCount > 0 ? "Live-adjacent" : "Backtest only",
+        badgeVariant: liveAdjacentCount > 0 ? "paper" : "research"
+      },
+      {
+        id: "engine-coverage",
+        label: "Engine coverage",
+        value: engines.length.toLocaleString(),
+        detail: engineCoverageText,
+        badgeLabel: engines.length > 1 ? "Cross-engine" : "Single engine",
+        badgeVariant: engines.length > 1 ? "warning" : "outline"
+      },
+      {
+        id: "paper-live",
+        label: "Paper/live lineage",
+        value: liveAdjacentCount.toLocaleString(),
+        detail: liveAdjacentText,
+        badgeLabel: liveAdjacentCount > 0 ? "Operational" : "Pending",
+        badgeVariant: liveAdjacentCount > 0 ? "success" : "warning"
+      }
+    ]
   };
 }
 
@@ -2085,6 +2173,8 @@ export function buildComparisonRow(
   const fillCountText = Number.isFinite(row.fillCount) ? row.fillCount.toLocaleString() : "Unavailable";
   const promotionStateText = formatPromotionState(row.promotionState);
   const evidenceText = buildComparisonEvidenceText(row);
+  const artifactCompletenessText = formatArtifactCompleteness(row.artifactCompleteness);
+  const warningText = formatCompatibilityWarnings(row.compatibilityWarnings);
 
   return {
     runId: row.runId,
@@ -2104,10 +2194,12 @@ export function buildComparisonRow(
     fillCountText,
     promotionStateText,
     evidenceText,
+    artifactCompletenessText,
+    warningText,
     detailPanelId,
     detailExpanded: selectedRunId === row.runId,
     rowSelectAriaLabel: `Inspect ${strategyName} comparison evidence`,
-    ariaLabel: `${strategyName}: ${statusText}; net P&L ${netPnlText}; return ${totalReturnText}; promotion ${promotionStateText}; ${evidenceText}.`
+    ariaLabel: `${strategyName}: ${statusText}; net P&L ${netPnlText}; return ${totalReturnText}; promotion ${promotionStateText}; ${evidenceText}. ${artifactCompletenessText}. ${warningText}.`
   };
 }
 
@@ -2134,7 +2226,9 @@ export function buildComparisonDetail(
       { label: "Sharpe", value: row.sharpeRatioText },
       { label: "Fills", value: row.fillCountText },
       { label: "Promotion", value: row.promotionStateText },
-      { label: "Evidence", value: row.evidenceText }
+      { label: "Evidence", value: row.evidenceText },
+      { label: "Artifacts", value: row.artifactCompletenessText },
+      { label: "Warnings", value: row.warningText }
     ]
   };
 }
@@ -2152,7 +2246,12 @@ export function buildDiffPanel(
       description: "No run diff has been loaded for the selected pair.",
       ariaLabel: "Strategy run diff result is empty",
       summaryLabel: "Run diff metric summary",
+      metadataSummary: "No strategy version or engine context loaded.",
+      compatibilityLevel: "Unknown",
+      lineageRelation: "Unknown",
       metrics: [],
+      compatibilityWarnings: [],
+      artifactCompletenessSummary: "No artifact completeness loaded.",
       positionChanges: [],
       parameterChanges: [],
       positionTable: {
@@ -2212,7 +2311,12 @@ export function buildDiffPanel(
     description: `${runDiff.baseStrategyName} compared with ${runDiff.targetStrategyName}.`,
     ariaLabel: `Strategy run diff for ${runDiff.baseStrategyName} and ${runDiff.targetStrategyName}`,
     summaryLabel: "Run diff metric summary",
+    metadataSummary: buildRunDiffMetadataSummary(runDiff),
+    compatibilityLevel: formatText(runDiff.compatibilityLevel),
+    lineageRelation: formatText(runDiff.lineageRelation),
     metrics: buildDiffMetricRows(runDiff.metrics),
+    compatibilityWarnings: runDiff.compatibilityWarnings ?? [],
+    artifactCompletenessSummary: buildRunDiffArtifactCompletenessSummary(runDiff),
     positionChanges: selectedPositionRows,
     parameterChanges: selectedParameterRows,
     positionTable: {
@@ -2248,6 +2352,9 @@ function buildDiffMetricRows(metrics: MetricsDiff): ResearchDiffMetricRow[] {
   const netPnlValue = formatMoney(metrics.netPnlDelta, true);
   const returnValue = formatSignedPercent(metrics.totalReturnDelta);
   const fillValue = formatSignedCount(metrics.fillCountDelta);
+  const finalEquityValue = formatMoney(metrics.finalEquityDelta ?? null, true);
+  const drawdownValue = formatMoney(metrics.maxDrawdownDelta ?? null, true);
+  const sharpeValue = formatSignedNullableNumber(metrics.sharpeRatioDelta ?? null, 3);
 
   return [
     {
@@ -2270,6 +2377,27 @@ function buildDiffMetricRows(metrics: MetricsDiff): ResearchDiffMetricRow[] {
       value: fillValue,
       tone: toneForSignedValue(metrics.fillCountDelta),
       ariaLabel: `Fill count delta ${fillValue}.`
+    },
+    {
+      id: "final-equity-delta",
+      label: "Final equity delta",
+      value: finalEquityValue,
+      tone: toneForSignedValue(metrics.finalEquityDelta ?? null),
+      ariaLabel: `Final equity delta ${finalEquityValue}. Base ${formatMoney(metrics.baseFinalEquity ?? null)}. Target ${formatMoney(metrics.targetFinalEquity ?? null)}.`
+    },
+    {
+      id: "drawdown-delta",
+      label: "Drawdown delta",
+      value: drawdownValue,
+      tone: toneForDrawdownDelta(metrics.maxDrawdownDelta ?? null),
+      ariaLabel: `Max drawdown delta ${drawdownValue}. Base ${formatMoney(metrics.baseMaxDrawdown ?? null)}. Target ${formatMoney(metrics.targetMaxDrawdown ?? null)}.`
+    },
+    {
+      id: "sharpe-delta",
+      label: "Sharpe delta",
+      value: sharpeValue,
+      tone: toneForSignedValue(metrics.sharpeRatioDelta ?? null),
+      ariaLabel: `Sharpe ratio delta ${sharpeValue}. Base ${formatNullableNumber(metrics.baseSharpeRatio ?? null, 3)}. Target ${formatNullableNumber(metrics.targetSharpeRatio ?? null, 3)}.`
     }
   ];
 }
@@ -2685,6 +2813,33 @@ function formatNullableNumber(value: number | null | undefined, digits: number):
     : "Unavailable";
 }
 
+function formatSignedNullableNumber(value: number | null | undefined, digits: number): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Unavailable";
+  }
+
+  const formatted = Math.abs(value).toFixed(digits);
+  return value > 0 ? `+${formatted}` : value < 0 ? `-${formatted}` : formatted;
+}
+
+function countBy<T>(items: T[], selector: (item: T) => string): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    const key = selector(item);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  return counts;
+}
+
+function distinctFormattedValues(values: Array<string | null | undefined>): string[] {
+  return [...new Set(values.map((value) => formatText(value)).filter((value) => value !== "Unavailable"))].sort();
+}
+
+function isLiveAdjacentMode(mode: string | null | undefined): boolean {
+  return mode?.toLowerCase() === "paper" || mode?.toLowerCase() === "live";
+}
+
 function formatMoney(value: number | null | undefined, signed = false): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return "Unavailable";
@@ -2781,6 +2936,53 @@ function buildComparisonEvidenceText(row: RunComparisonRow): string {
   const ledgerText = row.hasLedger ? "Ledger linked" : "Ledger missing";
   const auditText = row.hasAuditTrail ? "Audit linked" : "Audit missing";
   return `${ledgerText}; ${auditText}`;
+}
+
+function formatArtifactCompleteness(completeness: RunComparisonRow["artifactCompleteness"]): string {
+  if (!completeness) {
+    return "Artifact completeness unavailable";
+  }
+
+  const ready = [
+    completeness.hasPortfolio ? "portfolio" : null,
+    completeness.hasLedger ? "ledger" : null,
+    completeness.hasCashFlow ? "cash-flow" : null,
+    completeness.hasFills ? "fills" : null,
+    completeness.hasAuditTrail ? "audit" : null
+  ].filter(Boolean);
+  const missing = [
+    completeness.hasPortfolio ? null : "portfolio",
+    completeness.hasLedger ? null : "ledger",
+    completeness.hasCashFlow ? null : "cash-flow",
+    completeness.hasFills ? null : "fills",
+    completeness.hasAuditTrail ? null : "audit"
+  ].filter(Boolean);
+
+  return `Ready ${ready.length}/5 (${ready.join(", ") || "none"}); missing ${missing.join(", ") || "none"}`;
+}
+
+function formatCompatibilityWarnings(warnings: string[] | null | undefined): string {
+  return warnings && warnings.length > 0
+    ? warnings.join(" | ")
+    : "No compatibility warnings";
+}
+
+function buildRunDiffArtifactCompletenessSummary(runDiff: RunDiff): string {
+  return [
+    `Base ${runDiff.baseMode ?? "Unknown"} / ${runDiff.baseEngine ?? "Unknown"}: ${formatArtifactCompleteness(runDiff.baseArtifactCompleteness ?? null)}`,
+    `Target ${runDiff.targetMode ?? "Unknown"} / ${runDiff.targetEngine ?? "Unknown"}: ${formatArtifactCompleteness(runDiff.targetArtifactCompleteness ?? null)}`
+  ].join(" | ");
+}
+
+function buildRunDiffMetadataSummary(runDiff: RunDiff): string {
+  const baseStrategy = `${formatText(runDiff.baseStrategyId)} @ ${formatText(runDiff.baseStrategyVersion)}`;
+  const targetStrategy = `${formatText(runDiff.targetStrategyId)} @ ${formatText(runDiff.targetStrategyVersion)}`;
+  return [
+    `Compatibility ${formatText(runDiff.compatibilityLevel)}`,
+    `Lineage ${formatText(runDiff.lineageRelation)}`,
+    `Base ${baseStrategy}`,
+    `Target ${targetStrategy}`
+  ].join(" | ");
 }
 
 function ensurePlotToolWorkspaceChartState(workspace: ResearchPlotWorkspaceState): ResearchPlotWorkspaceState {
@@ -3107,6 +3309,14 @@ function toneForDrawdown(value: number | null | undefined): ResearchComparisonVa
   }
 
   return value < 0 ? "danger" : "success";
+}
+
+function toneForDrawdownDelta(value: number | null | undefined): ResearchComparisonValueTone {
+  if (typeof value !== "number" || !Number.isFinite(value) || value === 0) {
+    return "muted";
+  }
+
+  return value < 0 ? "success" : "danger";
 }
 
 function titleCase(value: string): string {

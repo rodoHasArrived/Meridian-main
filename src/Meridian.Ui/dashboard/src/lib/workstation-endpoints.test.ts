@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  AUTH_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   EXPORT_API_ENDPOINTS,
+  FUND_STRUCTURE_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
@@ -35,6 +37,7 @@ import {
   executionSessionCloseEndpoint,
   executionSessionEndpoint,
   executionSessionReplayEndpoint,
+  executionSymbolPositionLimitEndpoint,
   historicalBarsEndpoint,
   marketDataOrderbookEndpoint,
   marketDataQuoteEndpoint,
@@ -67,6 +70,11 @@ import {
   reconciliationStatementRunEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
+  securityMasterAssetProfileApproveEndpoint,
+  securityMasterAssetProfileDraftsEndpoint,
+  securityMasterAssetProfileLineageEndpoint,
+  securityMasterAssetProfileRollbackEndpoint,
+  securityMasterAssetProfilesEndpoint,
   securityMasterAliasUpsertEndpoint,
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
@@ -93,6 +101,7 @@ import {
   workstationOperationsContinuityBreaksEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
+  workstationOperationsContinuityCloseCalendarEndpoint,
   workstationOperationsContinuityLedgerPreviewEndpoint,
   workstationOperationsContinuityTimelineEndpoint,
   workstationRunAttributionEndpoint,
@@ -114,6 +123,7 @@ import {
   workstationSecurityMasterEntryEndpoint,
   workstationSecurityMasterHistoryEndpoint,
   workstationSecurityMasterIdentityEndpoint,
+  workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
   workstationWorkflowSummaryEndpoint,
@@ -135,6 +145,10 @@ describe("workstation API endpoint catalog", () => {
       reporting: "/api/workstation/reporting",
       workflowSummary: "/api/workstation/workflow-summary",
       operationsContinuity: "/api/workstation/operations/continuity",
+      operationsContinuityApprovalPolicyMatrix: "/api/workstation/operations/continuity/approval-policy-matrix",
+      operationsContinuityApprovalPolicyRules: "/api/workstation/operations/continuity/approval-policy-rules",
+      operationsContinuityCloseCalendar: "/api/workstation/operations/continuity/close-calendar",
+      operationsContinuityCloseCalendarItems: "/api/workstation/operations/continuity/close-calendar-items",
       chiefOfStaff: "/api/workstation/chief-of-staff",
       runHistory: "/api/workstation/runs/history",
       runTimeline: "/api/workstation/runs/timeline",
@@ -192,6 +206,20 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationOperationsContinuityLedgerPreviewEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/ledger-preview"
     );
+    expect(workstationOperationsContinuityCloseCalendarEndpoint()).toBe(
+      "/api/workstation/operations/continuity/close-calendar"
+    );
+    expect(workstationOperationsContinuityCloseCalendarEndpoint({
+      fundAccountId: "fund / 1",
+      periodId: "2026-05"
+    })).toBe(
+      "/api/workstation/operations/continuity/close-calendar?fundAccountId=fund+%2F+1&periodId=2026-05"
+    );
+    expect(AUTH_API_ENDPOINTS.roles).toBe("/api/auth/roles");
+    expect(AUTH_API_ENDPOINTS.roleProfiles).toBe("/api/auth/role-profiles");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench).toBe("/api/fund-structure/ledger-mapping-view");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingAssignments).toBe("/api/fund-structure/ledger-mapping-assignments");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.transactionLabPreview).toBe("/api/fund-structure/accounting/transaction-lab/preview");
   });
 
   it("builds Chief of Staff workstation endpoint routes", () => {
@@ -331,8 +359,18 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationSecurityMasterTrustSnapshotEndpoint("security / 1")).toBe(
       "/api/workstation/security-master/securities/security%20%2F%201/trust-snapshot"
     );
+    expect(workstationSecurityMasterInstrumentPassportEndpoint("security / 1")).toBe(
+      "/api/workstation/security-master/securities/security%20%2F%201/passport"
+    );
     expect(securityMasterEntryEndpoint()).toBe("/api/security-master");
     expect(securityMasterAmendEndpoint()).toBe("/api/security-master/amend");
+    expect(securityMasterAssetProfilesEndpoint()).toBe("/api/security-master/asset-profiles");
+    expect(securityMasterAssetProfileLineageEndpoint("profile / 1")).toBe(
+      "/api/security-master/asset-profiles/profile%20%2F%201/lineage"
+    );
+    expect(securityMasterAssetProfileDraftsEndpoint()).toBe("/api/security-master/asset-profiles/drafts");
+    expect(securityMasterAssetProfileApproveEndpoint()).toBe("/api/security-master/asset-profiles/approve");
+    expect(securityMasterAssetProfileRollbackEndpoint()).toBe("/api/security-master/asset-profiles/rollback");
     expect(securityMasterAliasUpsertEndpoint()).toBe("/api/security-master/aliases/upsert");
     expect(securityMasterCorporateActionsEndpoint("security / 1")).toBe(
       "/api/security-master/security%20%2F%201/corporate-actions"
@@ -470,11 +508,23 @@ describe("workstation API endpoint catalog", () => {
 });
 
 describe("execution control route contract parity", () => {
+  const CONTRACT_EXECUTION_DEFAULT_POSITION_LIMIT = "/api/execution/controls/position-limits/default" as const;
+  const CONTRACT_EXECUTION_SYMBOL_POSITION_LIMIT_TEMPLATE = "/api/execution/controls/position-limits/{symbol}" as const;
   const CONTRACT_EXECUTION_MANUAL_OVERRIDES = "/api/execution/controls/manual-overrides" as const;
   const CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR_TEMPLATE =
     "/api/execution/controls/manual-overrides/{overrideId}/clear" as const;
 
   it("keeps frontend helper constants aligned with backend contracts", () => {
+    expect(
+      EXECUTION_API_ENDPOINTS.defaultPositionLimit,
+      "frontend helper diverged from backend contract: default position-limit route"
+    ).toBe(CONTRACT_EXECUTION_DEFAULT_POSITION_LIMIT);
+
+    expect(
+      executionSymbolPositionLimitEndpoint("AAPL"),
+      "frontend helper diverged from backend contract: symbol position-limit route template"
+    ).toBe(CONTRACT_EXECUTION_SYMBOL_POSITION_LIMIT_TEMPLATE.replace("{symbol}", "AAPL"));
+
     expect(
       EXECUTION_API_ENDPOINTS.manualOverrides,
       "frontend helper diverged from backend contract: manual override create route"

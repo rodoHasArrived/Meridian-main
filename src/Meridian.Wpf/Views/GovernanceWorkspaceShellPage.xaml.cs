@@ -238,21 +238,8 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
     private void OpenReportingLane_Click(object sender, RoutedEventArgs e) => SelectSubarea(GovernanceSubarea.Reporting);
     private void OpenAuditLane_Click(object sender, RoutedEventArgs e) => SelectSubarea(GovernanceSubarea.Audit);
 
-    private void OnQueuePrimaryActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: WorkspaceQueueItem item })
-        {
-            ExecuteAction(item.PrimaryActionId, navigate: false);
-        }
-    }
-
-    private void OnQueueSecondaryActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: WorkspaceQueueItem item })
-        {
-            ExecuteAction(item.SecondaryActionId, navigate: false);
-        }
-    }
+    private void OnGovernanceDecisionInvoked(object sender, WorkspaceDecisionInvokedEventArgs e)
+        => ExecuteAction(e.ActionId, navigate: false);
 
     private void OnRecentActionClick(object sender, RoutedEventArgs e)
     {

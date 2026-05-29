@@ -183,55 +183,55 @@ are `Ready` with no blockers.
 
 ---
 
-## Wave 4 — Governance And Fund Operations (In Progress)
+## Wave 4 — Governance And Fund Operations (Done)
 
-2026-05-28 implementation pass: shared W4 close/casework/report-pack/security endpoint lanes are
-green locally, browser parity is green, and WPF/source route-signifier parity is green. Completion
-remains blocked on a fresh WPF build-backed Lane C run: both sandboxed and approved PowerShell 7
-`dotnet build tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj` attempts return
-`LASTEXITCODE=-1` and leave orphaned `dotnet`/`csc` workers before producing a usable WPF test
-binary.
+2026-05-29 closure pass: Wave 4 is closed by the combined evidence packet in
+`docs/plans/current-direction-and-status.md`. Shared W4 close/casework/report-pack/security endpoint
+lanes are green, browser parity is green, WPF Lane C `Category=W4Acceptance` coverage is green, and
+`PilotAcceptanceHarnessTests` writes an eight-stage pilot readiness artifact with
+`w4Acceptance.isDone=true`. Future checklist work should be treated as regression maintenance unless
+it explicitly belongs to W5 or W6.
 
 ### Completion Checklist
 
-- [ ] **Desktop Wave 4 work closes Lane C scenarios from the desktop acceptance matrix.**
-  - [ ] Prove the happy path for reconciliation case review, sign-off posture, close-lane
+- [x] **Desktop Wave 4 work closes Lane C scenarios from the desktop acceptance matrix.**
+  - [x] Prove the happy path for reconciliation case review, sign-off posture, close-lane
         readiness, and report-pack evidence from one governed context.
-  - [ ] Prove blocker-path behavior for unresolved casework, missing tolerance/sign-off metadata,
+  - [x] Prove blocker-path behavior for unresolved casework, missing tolerance/sign-off metadata,
         approval gaps, report-pack validation failures, or broken evidence chains with clear next
         actions.
-  - [ ] Prove recovery-path behavior where case decisions, approvals/sign-off, or report-pack
+  - [x] Prove recovery-path behavior where case decisions, approvals/sign-off, or report-pack
         regeneration refresh queue, close posture, and audit trail after restart and refresh.
 
-- [ ] **Reconciliation casework is durable and operationally usable.**
-  - [ ] Validate queue lifecycle, assignment, and state transitions.
-  - [ ] Confirm case history/audit records are complete and queryable.
-  - [ ] Ensure casework survives restart and supports resumed operations.
+- [x] **Reconciliation casework is durable and operationally usable.**
+  - [x] Validate queue lifecycle, assignment, and state transitions.
+  - [x] Confirm case history/audit records are complete and queryable.
+  - [x] Ensure casework survives restart and supports resumed operations.
 
-- [ ] **Approval/sign-off workflows include clear provenance.**
-  - [ ] Confirm each approval records actor, timestamp, decision, and rationale.
-  - [ ] Verify rejected/returned paths are captured and recoverable.
-  - [ ] Ensure provenance data is linked to related evidence and artifacts.
+- [x] **Approval/sign-off workflows include clear provenance.**
+  - [x] Confirm each approval records actor, timestamp, decision, and rationale.
+  - [x] Verify rejected/returned paths are captured and recoverable.
+  - [x] Ensure provenance data is linked to related evidence and artifacts.
 
-- [ ] **Governed report-pack lifecycle is complete.**
-  - [ ] Validate build, validation, versioning, and publish steps end-to-end.
-  - [ ] Confirm report-pack outputs include required metadata and evidence links.
-  - [ ] Ensure lifecycle failures are visible with actionable recovery guidance.
+- [x] **Governed report-pack lifecycle is complete.**
+  - [x] Validate build, validation, versioning, and publish steps end-to-end.
+  - [x] Confirm report-pack outputs include required metadata and evidence links.
+  - [x] Ensure lifecycle failures are visible with actionable recovery guidance.
 
-- [ ] **Evidence chains connect operations to final outputs.**
-  - [ ] Verify trace links from trusted data -> run -> ledger -> reconciliation -> report.
-  - [ ] Confirm references are stable and can be re-opened during audit/review.
-  - [ ] Close any broken or ambiguous evidence links before completion.
+- [x] **Evidence chains connect operations to final outputs.**
+  - [x] Verify trace links from trusted data -> run -> ledger -> reconciliation -> report.
+  - [x] Confirm references are stable and can be re-opened during audit/review.
+  - [x] Close any broken or ambiguous evidence links before completion.
 
-- [ ] **Security Master and accounting controls support close/report operations.**
-  - [ ] Validate required security and accounting control checks for close workflows.
-  - [ ] Confirm control outcomes are captured in operator-visible status.
-  - [ ] Ensure exception handling is documented and governed.
+- [x] **Security Master and accounting controls support close/report operations.**
+  - [x] Validate required security and accounting control checks for close workflows.
+  - [x] Confirm control outcomes are captured in operator-visible status.
+  - [x] Ensure exception handling is documented and governed.
 
-- [ ] **W4 pilot-readiness gates are green or explicitly blocked.**
-  - [ ] Check `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, and `GovernedReportPack`.
-  - [ ] For any non-green gate, document blocker, owner, and resolution target.
-  - [ ] Attach evidence references for both current posture and remediation.
+- [x] **W4 pilot-readiness gates are green or explicitly blocked.**
+  - [x] Check `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, and `GovernedReportPack`.
+  - [x] For any non-green gate, document blocker, owner, and resolution target.
+  - [x] Attach evidence references for both current posture and remediation.
 
 ---
 

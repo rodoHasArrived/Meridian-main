@@ -56,7 +56,7 @@ modules:
     layer: Contracts
     status: active
     owner_lane: Contract Compatibility
-    purpose: Shared DTOs and cross-layer contracts used by host, services, dashboard, and WPF.
+    purpose: Shared DTOs, acceptance evidence payloads, and cross-layer contracts used by host, services, dashboard, and WPF.
     readme: src/Meridian.Contracts/README.md
     roadmap_items:
       - W1-DATA-001
@@ -71,10 +71,11 @@ modules:
       - GovernedReportPack
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-05-28
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -556,7 +557,7 @@ modules:
     layer: UI Shared
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Shared UI read models and compatibility shims for browser and desktop surfaces.
+    purpose: Shared UI read models, acceptance filters, and compatibility shims for browser and desktop surfaces.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
       - W2-TRD-001
@@ -568,10 +569,11 @@ modules:
       - GovernedReportPack
     validation:
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-05-28
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard

@@ -10,14 +10,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Meridian.Tests.Ui;
 
 /// <summary>
-/// W3 Fund-Ops Close-Lane Scenario Test.
-/// Exercises the full fund-operations period-close sequence from open to closed:
-/// period start → broker import → ledger postings → reconciliation check →
-/// operator approval → period close with full audit trail.
-/// Mirrors the DirectLendingWorkflowTests style but targets the account-period
-/// close path defined in the W3 roadmap wave.
+/// W4 Fund-Ops Close-Lane Scenario Tests.
+/// Exercises account-period close acceptance around the shared Operations Continuity workflow:
+/// happy path, blocker path, and recovery path from rejected approval back to close.
+/// These tests are support evidence for Wave 4 close governance; they do not by themselves close
+/// broader report-pack publication, durable generalized casework, or browser/WPF parity criteria.
 /// </summary>
 [Trait("Category", "Scenario")]
+[Trait("Category", "W4Acceptance")]
 public sealed class FundOpsCloseLaneScenarioTests
 {
     [Fact]
@@ -177,6 +177,12 @@ public sealed class FundOpsCloseLaneScenarioTests
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed,
             "the period close sequence should end in Closed state");
+
+        AssertCloseReadinessReady(closed.Workflow.CloseReadiness);
+        closed.Workflow.ClosePackage.Should().NotBeNull("close publication should retain the signed close package manifest");
+        closed.Workflow.ClosePackage!.ReportPackId.Should().Be("report-pack-may-2026");
+        closed.Workflow.ClosePackage.EvidenceHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
 
         closed.Workflow.Gates.Should().OnlyContain(
             g => g.Status == OperationsGateStatusDto.Passed,
@@ -366,6 +372,38 @@ public sealed class FundOpsCloseLaneScenarioTests
         blockedSubmit.Blockers[0].Code.Should().NotBeNullOrWhiteSpace(
             "the blocker must carry a machine-readable code so the UI can route the operator correctly");
 
+        var blockedClose = await service.CloseWorkflowAsync(workflowId,
+            new OperationsCloseWorkflowRequestDto(
+                reconciled.Workflow.Version,
+                "ops-user",
+                "Attempting to close before report-pack and approval readiness",
+                "report-pack-not-yet-ready",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+
+        blockedClose.Success.Should().BeFalse("close execution must fail closed while W4 readiness is incomplete");
+        blockedClose.ErrorCode.Should().Be("CLOSE_READINESS_FAILED");
+        blockedClose.CloseReadiness.Should().NotBeNull();
+        blockedClose.CloseReadiness!.IsReadyToClose.Should().BeFalse();
+        blockedClose.CloseReadiness.Score.Should().BeLessThan(100);
+        blockedClose.CloseReadiness.Components.Should().Contain(component =>
+            component.Key == "reports" &&
+            !component.IsReady &&
+            component.RouteHint == "/workstation/reporting");
+        blockedClose.CloseReadiness.Components.Should().Contain(component =>
+            component.Key == "approvals" &&
+            !component.IsReady &&
+            component.RouteHint == "/workstation/accounting");
+        blockedClose.CloseReadiness.Blockers.Select(blocker => blocker.Code).Should().Contain(
+            [
+                "REPORT_PACK_REQUIRED",
+                "APPROVAL_REQUIRED"
+            ]);
+        blockedClose.NextActions.Select(action => action.Code).Should().Contain(
+            [
+                "REPORT_PACK_REQUIRED",
+                "APPROVAL_REQUIRED"
+            ]);
+
         // The approval state stays at Pending — the blocked submit must not record an approval submission.
         // Note: Status derives as ApprovalPending once all four gates are clean, which is expected
         // at this stage of the workflow. What must NOT change is the ApprovalState.
@@ -399,6 +437,160 @@ public sealed class FundOpsCloseLaneScenarioTests
         submitted.Success.Should().BeTrue(
             "submission must succeed once the report pack is marked ready");
         submitted.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
+        submitted.Workflow.CloseReadiness.Should().NotBeNull();
+        submitted.Workflow.CloseReadiness!.Components.Should().Contain(component =>
+            component.Key == "reports" &&
+            component.IsReady &&
+            component.Score == component.Weight);
+        submitted.Workflow.CloseReadiness.Components.Should().Contain(component =>
+            component.Key == "approvals" &&
+            !component.IsReady,
+            "controller approval still has to complete before close can execute");
+    }
+
+    [Fact]
+    public async Task FundOpsPeriodClose_RejectedApprovalCanRecoverThroughLedgerRemediationAndClose()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var fundAccountId = Guid.NewGuid();
+
+        var workflow = await CreateApprovalSubmittedCloseWorkflowAsync(
+            service,
+            fundAccountId,
+            periodId: "2026-05",
+            reportPackId: "report-pack-recovery-1",
+            ledgerBatchId: "ledger-batch-recovery-1");
+
+        var rejected = await service.RejectWorkflowAsync(
+            workflow.WorkflowId,
+            new OperationsRejectWorkflowRequestDto(
+                workflow.Version,
+                "fund-controller",
+                Reviewer: "controller",
+                Rationale: "Ledger evidence needs remediation before close approval.",
+                ReasonCode: "LedgerMismatch"));
+
+        rejected.Success.Should().BeTrue("controller rejection should send the workflow back to the remediation lane");
+        rejected.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.LedgerPostingDraft);
+        rejected.Workflow.ApprovalState.Should().Be(OperationsApprovalStateDto.Rejected);
+        rejected.Workflow.Gates.Single(gate => gate.GateKey == OperationsGateKeyDto.LedgerPosting)
+            .Status.Should().Be(OperationsGateStatusDto.InProgress);
+
+        var redrafted = await service.BuildLedgerDraftAsync(
+            workflow.WorkflowId,
+            new OperationsLedgerDraftRequestDto(
+                rejected.Workflow.Version,
+                "ops-user",
+                PreviewId: "ledger-preview-recovery-2",
+                IsBalanced: true,
+                Rationale: "Remediated controller ledger mismatch."));
+        var revalidated = await service.ValidateLedgerDraftAsync(
+            workflow.WorkflowId,
+            new OperationsLedgerValidationRequestDto(
+                redrafted.Workflow!.Version,
+                "ops-user",
+                IsBalanced: true,
+                PeriodOpen: true,
+                Rationale: "Validated remediated ledger draft."));
+        var reposted = await service.PostLedgerEntriesAsync(
+            workflow.WorkflowId,
+            new OperationsLedgerPostRequestDto(
+                revalidated.Workflow!.Version,
+                "ops-user",
+                LedgerBatchId: "ledger-batch-recovery-2",
+                PostingKind: "period-close",
+                PeriodOpen: true,
+                Rationale: "Posted remediated ledger journals.",
+                JournalCandidate: CreateJournalCandidate(fundAccountId)));
+        var rereconciled = await service.RunReconciliationAsync(
+            workflow.WorkflowId,
+            new OperationsReconciliationRunRequestDto(
+                reposted.Workflow!.Version,
+                "ops-user",
+                "Re-ran reconciliation after ledger remediation.",
+                BreakCases: []));
+        var posture = await service.RefreshGatePostureAsync(
+            workflow.WorkflowId,
+            new OperationsGatePostureRequestDto(
+                rereconciled.Workflow!.Version,
+                "ops-user",
+                ReportPackReady: true,
+                ReportPackId: "report-pack-recovery-2",
+                Rationale: "Regenerated report pack after ledger remediation."));
+        var resubmitted = await service.SubmitForApprovalAsync(
+            workflow.WorkflowId,
+            new OperationsSubmitApprovalRequestDto(
+                posture.Workflow!.Version,
+                "ops-user",
+                Reviewer: "controller",
+                Rationale: "Remediated evidence is ready for controller approval.",
+                ReportPackId: "report-pack-recovery-2",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+        var approved = await service.ApproveWorkflowAsync(
+            workflow.WorkflowId,
+            new OperationsApprovalDecisionRequestDto(
+                resubmitted.Workflow!.Version,
+                "fund-controller",
+                Reviewer: "controller",
+                Rationale: "Reviewed remediated ledger evidence and approved close.",
+                ReportPackId: "report-pack-recovery-2",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+        var closed = await service.CloseWorkflowAsync(
+            workflow.WorkflowId,
+            new OperationsCloseWorkflowRequestDto(
+                approved.Workflow!.Version,
+                "ops-user",
+                Rationale: "Close recovered period after remediation.",
+                ReportPackId: "report-pack-recovery-2",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+
+        closed.Success.Should().BeTrue();
+        closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
+        AssertCloseReadinessReady(closed.Workflow.CloseReadiness);
+        closed.Workflow.ClosePackage.Should().NotBeNull();
+        closed.Workflow.ClosePackage!.ReportPackId.Should().Be("report-pack-recovery-2");
+        closed.Workflow.ClosePackage.EvidenceHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        closed.Workflow.ClosePackage.RetainedManifestRoute.Should().Contain("/close-package/");
+        closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
+
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timeline.Select(entry => entry.EventType).Should().ContainInOrder(
+            "approval-rejected",
+            "ledger-draft-built",
+            "ledger-draft-validated",
+            "ledger-posted",
+            "reconciliation-run",
+            "approval-submitted",
+            "approval-approved",
+            "workflow-closed");
+    }
+
+    private static void AssertCloseReadinessReady(OperationsCloseReadinessDto? readiness)
+    {
+        readiness.Should().NotBeNull("close acceptance must expose the server-derived readiness score");
+        readiness!.IsReadyToClose.Should().BeTrue();
+        readiness.Severity.Should().Be("Info");
+        readiness.Score.Should().Be(100);
+        readiness.Blockers.Should().BeEmpty();
+        readiness.NextActions.Should().BeEmpty();
+        readiness.Components.Should().HaveCount(9);
+        readiness.Components.Select(component => component.Key).Should().BeEquivalentTo(
+        [
+            "security-master",
+            "provider-freshness",
+            "positions",
+            "cash",
+            "ledger",
+            "pricing",
+            "reconciliation",
+            "reports",
+            "approvals"
+        ]);
+        readiness.Components.All(component =>
+            component.IsReady &&
+            component.Score == component.Weight &&
+            component.Severity == "Info" &&
+            component.BlockingReason == null).Should().BeTrue();
     }
 
     private static OperationsContinuityWorkflowService CreateService(
@@ -424,6 +616,69 @@ public sealed class FundOpsCloseLaneScenarioTests
         new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
         new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
     ];
+
+    private static async Task<OperationsContinuityWorkflowDto> CreateApprovalSubmittedCloseWorkflowAsync(
+        OperationsContinuityWorkflowService service,
+        Guid fundAccountId,
+        string periodId,
+        string reportPackId,
+        string ledgerBatchId)
+    {
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            fundAccountId,
+            periodId,
+            null,
+            "custodian",
+            "ops-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+        var import = await service.ImportBrokerDataAsync(
+            workflowId,
+            new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(
+            workflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user", "Normalized broker activity"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(
+            workflowId,
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "ops-user", "Resolved instruments"));
+        var draft = await service.BuildLedgerDraftAsync(
+            workflowId,
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "ops-user", "ledger-preview-recovery-1", true));
+        var validated = await service.ValidateLedgerDraftAsync(
+            workflowId,
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "ops-user", true, true));
+        var posted = await service.PostLedgerEntriesAsync(
+            workflowId,
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version,
+                "ops-user",
+                ledgerBatchId,
+                "period-close",
+                PeriodOpen: true,
+                JournalCandidate: CreateJournalCandidate(fundAccountId)));
+        var reconciled = await service.RunReconciliationAsync(
+            workflowId,
+            new OperationsReconciliationRunRequestDto(posted.Workflow!.Version, "ops-user", "Clean reconciliation", BreakCases: []));
+        var posture = await service.RefreshGatePostureAsync(
+            workflowId,
+            new OperationsGatePostureRequestDto(
+                reconciled.Workflow!.Version,
+                "ops-user",
+                ReportPackReady: true,
+                ReportPackId: reportPackId,
+                Rationale: "Report pack is ready"));
+        var submitted = await service.SubmitForApprovalAsync(
+            workflowId,
+            new OperationsSubmitApprovalRequestDto(
+                posture.Workflow!.Version,
+                "ops-user",
+                Reviewer: "controller",
+                Rationale: "Submit clean close evidence.",
+                ReportPackId: reportPackId,
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+
+        submitted.Success.Should().BeTrue();
+        return submitted.Workflow!;
+    }
 
     private static OperationsLedgerJournalCandidateDto CreateJournalCandidate(Guid? aggregateId = null, Guid? periodId = null)
     {

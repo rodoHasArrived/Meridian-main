@@ -1,10 +1,12 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -318,6 +320,55 @@ public static class ExecutionEndpoints
         .WithName("GetExecutionAudit")
         .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);
 
+        group.MapGet("/audit/search", async (
+            string? searchText,
+            string? runId,
+            string? category,
+            string? action,
+            string? outcome,
+            string? actor,
+            string? symbol,
+            string? correlationId,
+            string? objectKind,
+            string? objectId,
+            string? relatedObjectId,
+            DateTimeOffset? fromUtc,
+            DateTimeOffset? toUtc,
+            int? limit,
+            HttpContext context) =>
+        {
+            var explorer = context.RequestServices.GetService<AuditTrailExplorerService>();
+            if (explorer is null)
+            {
+                var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
+                explorer = auditTrail is null
+                    ? new AuditTrailExplorerService()
+                    : new AuditTrailExplorerService(auditTrail);
+            }
+
+            var result = await explorer.SearchAsync(
+                new AuditTrailExplorerQueryDto(
+                    SearchText: searchText,
+                    RunId: runId,
+                    Category: category,
+                    Action: action,
+                    Outcome: outcome,
+                    Actor: actor,
+                    Symbol: symbol,
+                    CorrelationId: correlationId,
+                    ObjectKind: objectKind,
+                    ObjectId: objectId,
+                    RelatedObjectId: relatedObjectId,
+                    FromUtc: fromUtc,
+                    ToUtc: toUtc,
+                    Limit: limit ?? 100),
+                context.RequestAborted).ConfigureAwait(false);
+
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("SearchExecutionAuditTrail")
+        .Produces<AuditTrailExplorerResultDto>(200);
+
         group.MapGet("/controls", (HttpContext context) =>
         {
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
@@ -356,6 +407,68 @@ public static class ExecutionEndpoints
             return Results.Json(snapshot, jsonOptions);
         })
         .WithName("UpdateExecutionCircuitBreaker")
+        .Produces<ExecutionControlSnapshot>(200)
+        .Produces(403)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces(503);
+
+        group.MapPost("/controls/position-limits/default", async (UpdateExecutionDefaultPositionLimitRequest request, HttpContext context) =>
+        {
+            if (!HasExecutionControlMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
+            if (controls is null)
+            {
+                return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var snapshot = await controls
+                .SetDefaultPositionLimitAsync(request.MaxPositionSize, actor, request.Reason, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return Results.Json(snapshot, jsonOptions);
+        })
+        .WithName("UpdateExecutionDefaultPositionLimit")
+        .Produces<ExecutionControlSnapshot>(200)
+        .Produces(403)
+        .Produces(429)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces(503);
+
+        group.MapPost("/controls/position-limits/{symbol}", async (string symbol, UpdateExecutionSymbolPositionLimitRequest request, HttpContext context) =>
+        {
+            if (!HasExecutionControlMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
+            if (controls is null)
+            {
+                return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var snapshot = await controls
+                .SetSymbolPositionLimitAsync(symbol, request.MaxPositionSize, actor, request.Reason, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return Results.Json(snapshot, jsonOptions);
+        })
+        .WithName("UpdateExecutionSymbolPositionLimit")
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(403)
         .Produces(429)
@@ -1453,6 +1566,16 @@ public sealed record UpdateExecutionCircuitBreakerRequest(
     bool IsOpen,
     string? Reason = null,
     string? CorrelationId = null);
+
+/// <summary>Request to update the default execution position limit.</summary>
+public sealed record UpdateExecutionDefaultPositionLimitRequest(
+    decimal? MaxPositionSize,
+    string? Reason = null);
+
+/// <summary>Request to update or clear a symbol-specific execution position limit.</summary>
+public sealed record UpdateExecutionSymbolPositionLimitRequest(
+    decimal? MaxPositionSize,
+    string? Reason = null);
 
 /// <summary>Request to create an execution manual override.</summary>
 public sealed record CreateExecutionManualOverrideRequest(

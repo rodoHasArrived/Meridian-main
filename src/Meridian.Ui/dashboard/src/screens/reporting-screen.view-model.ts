@@ -4,7 +4,7 @@ import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingTemplateMetadata } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -157,6 +157,30 @@ export interface ReportingWorkflowBackendLink {
   interactionLabel: "Open" | "Reference";
 }
 
+export interface ReportingRestatementChangedLineRow {
+  id: string;
+  lineKey: string;
+  valueBridge: string;
+  evidenceLabel: string;
+  evidenceHref: string | null;
+  ariaLabel: string;
+}
+
+export interface ReportingRestatementReviewPanel {
+  regionLabel: string;
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: Exclude<ReportingBadgeVariant, "default">;
+  summaryText: string;
+  fields: ReportingDetailField[];
+  changedLinesLabel: string;
+  changedLines: ReportingRestatementChangedLineRow[];
+  hasChangedLines: boolean;
+  evidenceSummary: string;
+  emptyText: string;
+}
+
 export interface ReportingWorkflowTaskPanel {
   regionLabel: string;
   eyebrow: string;
@@ -190,6 +214,7 @@ export interface ReportingWorkflowTaskPanel {
   backendLinksLabel: string;
   backendPanelId: string;
   backendLinks: ReportingWorkflowBackendLink[];
+  restatementReview: ReportingRestatementReviewPanel;
 }
 
 export interface ReportingLoadingState {
@@ -505,6 +530,64 @@ export function useReportingScreenViewModel(
   };
 }
 
+export function buildRestatementReviewPanel(records: ReportingWorkflowRecord[] = []): ReportingRestatementReviewPanel {
+  const restatedRecords = records.filter((record) => record.state === "Restated" || record.restatement);
+  const selected = [...restatedRecords].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0] ?? null;
+  const changedLines = selected?.restatement?.changedLines ?? [];
+  const evidenceCount = countRestatementEvidence(selected, changedLines);
+  const statusLabel = selected?.state ?? "No restatements";
+  const approver = selected?.restatement?.approver?.trim() || "approval pending";
+  const reason = selected?.restatement?.reasonCode?.trim() || "No restatement reason captured";
+
+  return {
+    regionLabel: "Report-pack restatement review",
+    title: "Restatement review",
+    description: "Review, approval, and publication-sensitive line changes stay attached to report-pack evidence.",
+    statusLabel,
+    statusVariant: selected ? "warning" : "outline",
+    summaryText: selected
+      ? `${reason} approved by ${approver}.`
+      : "No report-pack restatement record is loaded for this approval packet.",
+    fields: [
+      buildReportingDetailField("Workflow records", String(records.length), records.length > 0 ? "default" : "muted"),
+      buildReportingDetailField("Restated records", String(restatedRecords.length), restatedRecords.length > 0 ? "warning" : "muted"),
+      buildReportingDetailField("Report ID", selected?.reportId ?? "None", selected ? "default" : "muted"),
+      buildReportingDetailField("State", selected?.state ?? "No restatement", selected ? "warning" : "muted"),
+      buildReportingDetailField("Prior version", selected?.restatement?.priorVersionReportId ?? "None", selected?.restatement?.priorVersionReportId ? "default" : "muted"),
+      buildReportingDetailField("Changed lines", String(changedLines.length), changedLines.length > 0 ? "warning" : "muted"),
+      buildReportingDetailField("Audit actions", String(selected?.auditTrail.length ?? 0), selected?.auditTrail.length ? "default" : "muted"),
+      buildReportingDetailField("Publication", selected?.publication?.channel ?? (selected ? "Publication pending" : "No publication"), selected?.publication ? "success" : "muted")
+    ],
+    changedLinesLabel: "Restatement changed lines",
+    changedLines: changedLines.map((line, index) => buildRestatementChangedLineRow(line, index)),
+    hasChangedLines: changedLines.length > 0,
+    evidenceSummary: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+    emptyText: "No changed report lines require restatement review."
+  };
+}
+
+function buildRestatementChangedLineRow(line: ReportingWorkflowChangedLine, index: number): ReportingRestatementChangedLineRow {
+  const evidenceLinks = line.evidenceLinks ?? [];
+  const evidenceCount = evidenceLinks.length;
+  const firstEvidence = evidenceLinks[0] ?? null;
+  return {
+    id: `${line.lineKey || "line"}-${index}`,
+    lineKey: line.lineKey,
+    valueBridge: `${line.previousValue} -> ${line.currentValue}`,
+    evidenceLabel: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+    evidenceHref: firstEvidence?.route ?? null,
+    ariaLabel: `${line.lineKey} changed from ${line.previousValue} to ${line.currentValue} with ${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
+  };
+}
+
+function countRestatementEvidence(selected: ReportingWorkflowRecord | null, changedLines: ReportingWorkflowChangedLine[]): number {
+  if (!selected) {
+    return 0;
+  }
+
+  return changedLines.reduce((total, line) => total + (line.evidenceLinks?.length ?? 0), 0);
+}
+
 function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
   return templates.map((template) => ({
     id: template.templateId,
@@ -703,6 +786,7 @@ function buildWorkflowTaskPanel({
     actionsEmptyAriaLabel: "No selected report-pack export actions",
     backendLinksLabel: "Report-pack backend endpoints",
     backendPanelId: REPORT_PACK_PROFILE_BACKEND_ID,
+    restatementReview: buildRestatementReviewPanel(reporting.workflowRecords ?? []),
     backendLinks: [
       buildWorkflowBackendLink({
         id: "report-pack-catalog",

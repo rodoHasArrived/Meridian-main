@@ -27,6 +27,30 @@ This layer should keep simulation behavior isolated from live execution while pr
 ## Important workflows
 
 Use this module for strategy backtests, simulation runtime behavior, and backtesting evidence.
+Backtest Studio engines must return canonical SDK `BacktestResult` instances so native Meridian and
+external engine runs can flow through the same strategy-run repository, comparison, diff, and
+portfolio drill-in surfaces.
+
+## API / contract notes
+
+- `BacktestRequest.OrderBookQueueAheadFraction` feeds `OrderBookFillModel` when order-book
+  execution is selected. The model infers a bounded queue-ahead quantity from each visible L2
+  level, reducing fillable depth without retaining per-order book state across large replay windows.
+- `BacktestRequest.MaxParticipationRate` caps per-bar participation for bar-midpoint and
+  market-impact fills. A value of `0` preserves the historical full-fill behavior; positive values
+  leave oversized market-impact orders working across bars when partial fills are allowed.
+- `MeridianNativeBacktestStudioEngine` stamps native engine output through
+  `CanonicalBacktestResultNormalizer.FromNative`, matching the metadata contract used by
+  QuantConnect Lean imports.
+
+## Benchmarks and performance
+
+- `MultiSymbolMergeEnumerator` uses a heap for multi-symbol replay and a single-stream fast path
+  for one-symbol runs, avoiding per-event heap churn on large historical windows while preserving
+  cancellation and enumerator disposal.
+- Corporate-action adjustment in `BacktestEngine` adjusts historical bars one event at a time after
+  cached Security Master action lookup, so mixed bar/trade/depth streams do not buffer replay
+  windows before yielding downstream events.
 
 ## Diagrams
 

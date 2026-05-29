@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
@@ -210,19 +211,32 @@ public sealed class SecurityValidationService : ISecurityValidationService
             return issues;
         }
 
-        if (schemaVersion != SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
+        var isProfileBackedRecord = IsProfileBackedRecord(record);
+        var isSupportedSchemaVersion = schemaVersion == SecurityMasterSchemaVersions.LegacyAssetSpecificTerms
+            || (isProfileBackedRecord && schemaVersion == SecurityMasterSchemaVersions.CustomAssetProfileTerms);
+        if (!isSupportedSchemaVersion)
         {
+            var supportedVersions = isProfileBackedRecord
+                ? $"{SecurityMasterSchemaVersions.LegacyAssetSpecificTerms} or {SecurityMasterSchemaVersions.CustomAssetProfileTerms}"
+                : SecurityMasterSchemaVersions.LegacyAssetSpecificTerms.ToString(CultureInfo.InvariantCulture);
             issues.Add(SecurityValidationIssueFactory.Create(
                 SecurityValidationSeverityDto.Error,
                 "SM_ASSET_SPECIFIC_SCHEMA_VERSION_UNSUPPORTED",
                 "Asset-specific schema version is unsupported",
                 $"assetSpecificTerms.schemaVersion '{schemaVersion}' is not supported by the current Security Master compatibility adapter for asset class '{record.AssetClass}'.",
                 ["assetSpecificTerms.schemaVersion", "assetClass"],
-                $"Migrate the payload to schema version {SecurityMasterSchemaVersions.LegacyAssetSpecificTerms} or extend the compatibility adapter before this record is used downstream."));
+                $"Migrate the payload to schema version {supportedVersions} or extend the compatibility adapter before this record is used downstream."));
         }
 
         return issues;
     }
+
+    private static bool IsProfileBackedRecord(SecurityProjectionRecord record)
+        => string.Equals(record.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+           || (record.AssetSpecificTerms.ValueKind == JsonValueKind.Object
+               && record.AssetSpecificTerms.TryGetProperty("customProfileId", out var customProfileId)
+               && customProfileId.ValueKind == JsonValueKind.String
+               && !string.IsNullOrWhiteSpace(customProfileId.GetString()));
 
     private static IReadOnlyList<SecurityValidationIssueDto> ValidateIdentifiers(
         SecurityProjectionRecord record,

@@ -1,9 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Application.OperationsContinuity;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
@@ -156,7 +160,9 @@ public sealed class EvidenceWorkflowFabricTests
         var provider = Node(subject, "provider", "provider-trust", EvidenceStatusDto.Ready);
         var replay = Node(subject, "replay", "paper-replay", EvidenceStatusDto.Ready);
         var reconciliation = Node(subject, "reconciliation", "reconciliation-run", EvidenceStatusDto.Ready);
+        var casework = Node(subject, "casework", "break-queue", EvidenceStatusDto.Ready);
         var approval = Node(subject, "approval", "approval", EvidenceStatusDto.Ready);
+        var closeChecklist = Node(subject, "close-checklist", "close-checklist", EvidenceStatusDto.Ready);
         var report = Node(subject, "report", "report-pack", EvidenceStatusDto.Ready) with
         {
             Freshness = new EvidenceFreshnessDto(
@@ -167,17 +173,27 @@ public sealed class EvidenceWorkflowFabricTests
         var service = new EvidencePacketValidationService();
 
         var result = service.Validate(
-            [provider, replay, reconciliation, approval, report],
+            [provider, replay, reconciliation, casework, approval, closeChecklist, report],
             [],
-            new HashSet<string>(["provider", "replay", "reconciliation", "approval", "report"], StringComparer.OrdinalIgnoreCase),
+            new HashSet<string>(["provider", "replay", "reconciliation", "casework", "approval", "close-checklist", "report"], StringComparer.OrdinalIgnoreCase),
             enforceNoOrphanRule: false);
 
         var policyIds = result.Completeness.SlaPolicies.Select(policy => policy.PolicyId);
         policyIds.Should().Contain("provider-validation-freshness");
         policyIds.Should().Contain("replay-check-freshness");
         policyIds.Should().Contain("reconciliation-freshness");
+        policyIds.Should().Contain("reconciliation-casework-freshness");
         policyIds.Should().Contain("approval-freshness");
+        policyIds.Should().Contain("close-checklist-freshness");
         policyIds.Should().Contain("report-pack-freshness");
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "reconciliation-casework-freshness" &&
+            assessment.EvidenceId == "casework" &&
+            !assessment.IsBreached);
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "close-checklist-freshness" &&
+            assessment.EvidenceId == "close-checklist" &&
+            !assessment.IsBreached);
         result.Completeness.SlaAssessments.Should().Contain(assessment =>
             assessment.PolicyId == "report-pack-freshness" &&
             assessment.EvidenceId == "report" &&
@@ -265,7 +281,9 @@ public sealed class EvidenceWorkflowFabricTests
                     Route: null,
                     GeneratedAt: generatedAt,
                     Hash: null,
-                    Retained: true)
+                    Retained: true,
+                    CanonicalSubjectKind: "run",
+                    CanonicalSubjectId: "run-ledger-retention")
             ]);
         var service = new EvidencePacketValidationService();
 
@@ -339,6 +357,130 @@ public sealed class EvidenceWorkflowFabricTests
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => service.GetPacketAsync(EvidenceSubjectResolver.PaperReadinessKind, "current", cts.Token));
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringSecurityMasterConflictReview_ProjectsOpenConflictCasework()
+    {
+        var conflict = new SecurityMasterConflict(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "IdentifierAmbiguity",
+            "Identifiers.Cusip",
+            "alpaca",
+            "security-a",
+            "polygon",
+            "security-b",
+            DateTimeOffset.UtcNow.AddMinutes(-5),
+            "Open");
+        var service = CreateSecurityMasterConflictGraphService(new StubSecurityMasterConflictService([conflict]));
+
+        var packet = await service.GetPacketAsync(EvidenceSubjectResolver.SecurityMasterConflictKind, "open");
+
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.SecurityMasterConflictKind);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "security-master-conflict-queue" &&
+            node.Status == EvidenceStatusDto.ReviewRequired &&
+            node.RelatedWorkItemIds.Contains($"security-master:conflict:{conflict.ConflictId:N}"));
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "security-master-conflict" &&
+            node.Summary.Contains("Identifiers.Cusip", StringComparison.OrdinalIgnoreCase) &&
+            node.RelatedWorkItemIds.Contains($"security-master:conflict:{conflict.ConflictId:N}"));
+        packet.Edges.Should().Contain(edge =>
+            edge.FromId == "security-master-conflict:open:conflict-queue" &&
+            edge.ToId == $"security-master-conflict:open:conflict-{conflict.ConflictId:N}");
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        packet.Completeness.BlockingWorkItemIds.Should().Contain($"security-master:conflict:{conflict.ConflictId:N}");
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "review-required-evidence" &&
+            issue.RelatedWorkItemId == $"security-master:conflict:{conflict.ConflictId:N}");
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringSecurityMasterConflictReview_WarnsWhenConflictServiceMissing()
+    {
+        var service = CreateSecurityMasterConflictGraphService(conflictService: null);
+
+        var packet = await service.GetPacketAsync(EvidenceSubjectResolver.SecurityMasterConflictKind, "open");
+
+        packet.Should().NotBeNull();
+        packet!.Nodes.Should().BeEmpty();
+        packet.Warnings.Should().Contain(warning =>
+            warning.Contains("Security Master conflict service is not registered", StringComparison.OrdinalIgnoreCase));
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringOperationsApprovalReview_ProjectsApprovedWorkflowEvidence()
+    {
+        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved);
+        var service = CreateOperationsApprovalGraphService(new StubOperationsContinuityWorkflowService([workflow]));
+
+        var packet = await service.GetPacketAsync(EvidenceSubjectResolver.ApprovalKind, workflow.WorkflowId.ToString("D"));
+
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.ApprovalKind);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "approval" &&
+            node.Status == EvidenceStatusDto.Ready &&
+            node.Summary.Contains(nameof(OperationsApprovalStateDto.Approved), StringComparison.OrdinalIgnoreCase));
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "approval-audit" &&
+            node.Status == EvidenceStatusDto.Ready);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "report-pack" &&
+            node.Status == EvidenceStatusDto.Ready);
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.Completeness.BlockingWorkItemIds.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringOperationsApprovalReview_FlagsRejectedWorkflowAsBlocked()
+    {
+        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Rejected);
+        var service = CreateOperationsApprovalGraphService(new StubOperationsContinuityWorkflowService([workflow]));
+
+        var packet = await service.GetPacketAsync(EvidenceSubjectResolver.ApprovalKind, workflow.WorkflowId.ToString("D"));
+
+        packet.Should().NotBeNull();
+        packet!.Nodes.Should().Contain(node =>
+            node.Kind == "approval" &&
+            node.Status == EvidenceStatusDto.Blocked &&
+            node.RelatedWorkItemIds.Contains($"operations-approval:rejected:{workflow.WorkflowId:N}"));
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Blocked);
+        packet.Completeness.BlockingWorkItemIds.Should().Contain($"operations-approval:rejected:{workflow.WorkflowId:N}");
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringOperationsApprovalReview_UsesLatestWorkflowForCurrentSubject()
+    {
+        var older = CreateOperationsWorkflow(OperationsApprovalStateDto.Pending, updatedAtUtc: DateTimeOffset.UtcNow.AddHours(-2));
+        var latest = CreateOperationsWorkflow(OperationsApprovalStateDto.Submitted, updatedAtUtc: DateTimeOffset.UtcNow.AddMinutes(-5));
+        var service = CreateOperationsApprovalGraphService(new StubOperationsContinuityWorkflowService([older, latest]));
+
+        var packet = await service.GetPacketAsync(EvidenceSubjectResolver.ApprovalKind, "current");
+
+        packet.Should().NotBeNull();
+        packet!.Nodes.Should().Contain(node =>
+            node.Kind == "approval" &&
+            node.Summary.Contains(latest.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) &&
+            node.RelatedWorkItemIds.Contains($"operations-approval:review:{latest.WorkflowId:N}"));
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringOperationsApprovalReview_WarnsWhenWorkflowServiceMissing()
+    {
+        var service = CreateOperationsApprovalGraphService(workflowService: null);
+
+        var packet = await service.GetPacketAsync(EvidenceSubjectResolver.ApprovalKind, "current");
+
+        packet.Should().NotBeNull();
+        packet!.Nodes.Should().BeEmpty();
+        packet.Warnings.Should().Contain(warning =>
+            warning.Contains("Operations Continuity workflow service is not registered", StringComparison.OrdinalIgnoreCase));
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
     }
 
     [Fact]
@@ -547,7 +689,9 @@ public sealed class EvidenceWorkflowFabricTests
                 Route: "/api/workstation/runs/run-ledger-proof/ledger/journal",
                 GeneratedAt: generatedAt,
                 Hash: null,
-                Retained: true),
+                Retained: true,
+                CanonicalSubjectKind: EvidenceSubjectResolver.StrategyRunKind,
+                CanonicalSubjectId: "run-ledger-proof"),
             new EvidenceArtifactRefDto(
                 "strategy-run:run-ledger-proof:ledger:trial-balance",
                 "ledger-trial-balance",
@@ -555,7 +699,9 @@ public sealed class EvidenceWorkflowFabricTests
                 Route: "/api/workstation/runs/run-ledger-proof/ledger/trial-balance",
                 GeneratedAt: generatedAt,
                 Hash: null,
-                Retained: true)
+                Retained: true,
+                CanonicalSubjectKind: EvidenceSubjectResolver.StrategyRunKind,
+                CanonicalSubjectId: "run-ledger-proof")
         };
         var packet = new EvidencePacketDto(
             Subject: subject,
@@ -585,6 +731,337 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RetainsLocalArtifactPayloads()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var sourceDirectory = Path.Combine(root, "source-artifacts");
+        Directory.CreateDirectory(sourceDirectory);
+        var statementPath = Path.Combine(sourceDirectory, "broker-statement.csv");
+        var statementBytes = Encoding.UTF8.GetBytes("account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,AAPL,1,190,0,position,2026-05-28\n");
+        await File.WriteAllBytesAsync(statementPath, statementBytes);
+        var statementHash = Convert.ToHexString(SHA256.HashData(statementBytes)).ToLowerInvariant();
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "statement-artifact-1",
+            "broker-statement",
+            statementPath,
+            "/api/workstation/reconciliation/statement-runs/import-1",
+            DateTimeOffset.UtcNow,
+            statementHash,
+            Retained: true,
+            CanonicalSubjectKind: EvidenceSubjectResolver.ReportPackKind,
+            CanonicalSubjectId: "close-2026-05");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "statement-node", "broker-statement", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["statement-node"], ["statement-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention"));
+
+        response.VaultIdentity.Should().NotBeNull();
+        response.VaultIdentity!.StorageKind.Should().Be("file-bundle");
+        var retained = response.VaultIdentity.Artifacts.Should().ContainSingle().Which;
+        retained.ArtifactId.Should().Be("statement-artifact-1");
+        retained.Kind.Should().Be("broker-statement");
+        retained.ContentHashSha256.Should().Be(statementHash);
+        retained.SizeBytes.Should().Be(statementBytes.LongLength);
+        retained.SourceRoute.Should().Be("/api/workstation/reconciliation/statement-runs/import-1");
+        retained.CanonicalSubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
+        retained.CanonicalSubjectId.Should().Be("close-2026-05");
+        var retainedPath = Path.Combine(root, retained.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        File.Exists(retainedPath).Should().BeTrue();
+        (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(statementBytes);
+
+        var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        var manifestJson = await File.ReadAllTextAsync(manifestPath);
+        manifestJson.Should().Contain("\"storageKind\": \"file-bundle\"");
+        manifestJson.Should().Contain("\"artifacts\": [");
+        manifestJson.Should().Contain("\"relativePath\": \"workstation/evidence/_vault/");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RetainsScreenshotArtifactPayloads()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var sourceDirectory = Path.Combine(root, "source-artifacts");
+        Directory.CreateDirectory(sourceDirectory);
+        var screenshotPath = Path.Combine(sourceDirectory, "close-checklist.png");
+        var screenshotBytes = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p94AAAAASUVORK5CYII=");
+        await File.WriteAllBytesAsync(screenshotPath, screenshotBytes);
+        var screenshotHash = Convert.ToHexString(SHA256.HashData(screenshotBytes)).ToLowerInvariant();
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "close-checklist-screenshot",
+            "screenshot",
+            screenshotPath,
+            "/workstation/accounting/operations-continuity/workflow-1#close-checklist",
+            DateTimeOffset.UtcNow,
+            screenshotHash,
+            Retained: true,
+            CanonicalSubjectKind: EvidenceSubjectResolver.ReportPackKind,
+            CanonicalSubjectId: "close-2026-05");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "close-checklist-screenshot", "screenshot", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["close-checklist-screenshot"], ["close-checklist-screenshot"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "close checklist screenshot retention"));
+
+        response.VaultIdentity.Should().NotBeNull();
+        response.VaultIdentity!.StorageKind.Should().Be("file-bundle");
+        var retained = response.VaultIdentity.Artifacts.Should().ContainSingle().Which;
+        retained.ArtifactId.Should().Be("close-checklist-screenshot");
+        retained.Kind.Should().Be("screenshot");
+        retained.ContentHashSha256.Should().Be(screenshotHash);
+        retained.SourceRoute.Should().Be("/workstation/accounting/operations-continuity/workflow-1#close-checklist");
+        retained.CanonicalSubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
+        retained.CanonicalSubjectId.Should().Be("close-2026-05");
+        retained.RelativePath.Should().EndWith(".png");
+        var retainedPath = Path.Combine(root, retained.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        File.Exists(retainedPath).Should().BeTrue();
+        (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(screenshotBytes);
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringVaultArtifactReview_ProjectsRetainedManifestAndArtifacts()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-vault-workbench", Guid.NewGuid().ToString("N"));
+        var sourceDirectory = Path.Combine(root, "source-artifacts");
+        Directory.CreateDirectory(sourceDirectory);
+        var statementPath = Path.Combine(sourceDirectory, "custodian-statement.csv");
+        var statementBytes = Encoding.UTF8.GetBytes("account,symbol,quantity,price\nA1,MSFT,2,410\n");
+        await File.WriteAllBytesAsync(statementPath, statementBytes);
+        var statementHash = Convert.ToHexString(SHA256.HashData(statementBytes)).ToLowerInvariant();
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var retainedArtifact = new EvidenceArtifactRefDto(
+            "custodian-statement-1",
+            "custodian-statement",
+            statementPath,
+            "/api/workstation/reconciliation/statement-runs/stmt-1",
+            DateTimeOffset.UtcNow,
+            statementHash,
+            Retained: true,
+            CanonicalSubjectKind: "reconciliation-case",
+            CanonicalSubjectId: "case-123");
+        var sourcePacket = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "statement-node", "custodian-statement", EvidenceStatusDto.Ready, artifacts: [retainedArtifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["statement-node"], ["statement-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+        var exported = await store.WriteManifestAsync(sourcePacket, new EvidencePacketExportRequest("operator", "vault workbench coverage"));
+        var services = new ServiceCollection()
+            .AddSingleton<IEvidenceArtifactStore>(store)
+            .BuildServiceProvider();
+        var graph = new EvidenceGraphService(
+            new EvidenceSubjectResolver(services),
+            new EvidenceTemplateRegistry(),
+            [new EvidenceVaultEvidenceContributor(services)],
+            NullLogger<EvidenceGraphService>.Instance);
+
+        var packet = await graph.GetPacketAsync(EvidenceSubjectResolver.EvidenceVaultKind, exported.VaultIdentity!.VaultId);
+
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.EvidenceVaultKind);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "evidence-vault-manifest" &&
+            node.Summary.Contains(exported.VaultIdentity.VaultId, StringComparison.Ordinal));
+        var artifactNode = packet.Nodes.Should().ContainSingle(node => node.Kind == "retained-vault-artifact").Which;
+        artifactNode.Status.Should().Be(EvidenceStatusDto.Ready);
+        artifactNode.Summary.Should().Contain("custodian-statement-1");
+        artifactNode.ArtifactRefs.Should().ContainSingle(artifact =>
+            artifact.ArtifactId.EndsWith(":retained-payload", StringComparison.Ordinal) &&
+            artifact.Kind == "custodian-statement" &&
+            artifact.Hash == statementHash &&
+            artifact.CanonicalSubjectKind == "reconciliation-case" &&
+            artifact.CanonicalSubjectId == "case-123");
+        packet.Edges.Should().Contain(edge =>
+            edge.Relationship == "retains" &&
+            edge.ToId == artifactNode.EvidenceId);
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.Completeness.OrphanEvidenceIds.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RejectsMissingRetainedArtifactPayloads()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "statement-artifact-missing",
+            "broker-statement",
+            Path.Combine(root, "missing.csv"),
+            null,
+            DateTimeOffset.UtcNow,
+            null,
+            Retained: true,
+            CanonicalSubjectKind: EvidenceSubjectResolver.ReportPackKind,
+            CanonicalSubjectId: "close-2026-05");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "statement-node", "broker-statement", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["statement-node"], ["statement-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention"));
+
+        await act.Should().ThrowAsync<FileNotFoundException>()
+            .WithMessage("*statement-artifact-missing*source file was not found*");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RejectsRetainedArtifactWithoutCanonicalSubject()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var sourceDirectory = Path.Combine(root, "source-artifacts");
+        Directory.CreateDirectory(sourceDirectory);
+        var statementPath = Path.Combine(sourceDirectory, "broker-statement.csv");
+        await File.WriteAllTextAsync(statementPath, "account,symbol,quantity\nA1,AAPL,1\n");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "statement-artifact-orphan",
+            "broker-statement",
+            statementPath,
+            "/api/workstation/reconciliation/statement-runs/import-1",
+            DateTimeOffset.UtcNow,
+            null,
+            Retained: true);
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "statement-node", "broker-statement", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["statement-node"], ["statement-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*statement-artifact-orphan*missing canonical subject linkage*");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RejectsUnsupportedCanonicalSubjectKind()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var sourceDirectory = Path.Combine(root, "source-artifacts");
+        Directory.CreateDirectory(sourceDirectory);
+        var statementPath = Path.Combine(sourceDirectory, "broker-statement.csv");
+        await File.WriteAllTextAsync(statementPath, "account,symbol,quantity\nA1,AAPL,1\n");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "statement-artifact-unsupported-subject",
+            "broker-statement",
+            statementPath,
+            "/api/workstation/reconciliation/statement-runs/import-1",
+            DateTimeOffset.UtcNow,
+            null,
+            Retained: true,
+            CanonicalSubjectKind: "scratchpad",
+            CanonicalSubjectId: "close-2026-05");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "statement-node", "broker-statement", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["statement-node"], ["statement-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "statement retention"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*statement-artifact-unsupported-subject*unsupported canonical subject kind 'scratchpad'*");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RejectsRouteOnlyRetainedArtifactWithoutCanonicalSubject()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "approval-route-only",
+            "approval",
+            Path: null,
+            Route: "/api/workstation/operations-continuity/workflows/workflow-1/approval",
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Hash: null,
+            Retained: true);
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "approval-node", "approval", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["approval-node"], ["approval-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var act = () => store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "approval retention"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*approval-route-only*missing canonical subject linkage*");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_RetainsRouteOnlyArtifactWithCanonicalSubjectInManifest()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var artifact = new EvidenceArtifactRefDto(
+            "approval-route-only",
+            "approval",
+            Path: null,
+            Route: "/api/workstation/operations-continuity/workflows/workflow-1/approval",
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Hash: null,
+            Retained: true,
+            CanonicalSubjectKind: EvidenceSubjectResolver.ApprovalKind,
+            CanonicalSubjectId: "workflow-1");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [Node(subject, "approval-node", "approval", EvidenceStatusDto.Ready, artifacts: [artifact])],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, ["approval-node"], ["approval-node"], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "approval retention"));
+        var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        var manifestJson = await File.ReadAllTextAsync(manifestPath);
+
+        response.VaultIdentity.Should().NotBeNull();
+        response.VaultIdentity!.StorageKind.Should().Be("file-manifest");
+        response.VaultIdentity.Artifacts.Should().BeEmpty();
+        manifestJson.Should().Contain("\"artifactId\": \"approval-route-only\"");
+        manifestJson.Should().Contain("\"canonicalSubjectKind\": \"approval\"");
+        manifestJson.Should().Contain("\"canonicalSubjectId\": \"workflow-1\"");
+    }
+
+    [Fact]
     public async Task EvidenceEndpoints_VaultSearch_RejectsEmptyLookup()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-search-empty-{Guid.NewGuid():N}");
@@ -605,12 +1082,13 @@ public sealed class EvidenceWorkflowFabricTests
         await using var app = await CreateEvidenceAppAsync(root);
         var client = app.GetTestClient();
 
-        await client.PostAsJsonAsync(
+        var exportResponse = await client.PostAsJsonAsync(
             "/api/workstation/evidence/subjects/report-pack/current/export-manifest",
             new EvidencePacketExportRequest("operator", "seed")
             {
                 Linkage = new EvidenceSubjectLinkageDto("report-pack/current", "run-123", "period-2026-05", "rp-55", "case-77")
             });
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var response = await client.PostAsJsonAsync(
             "/api/workstation/evidence/vault/search",
@@ -631,6 +1109,179 @@ public sealed class EvidenceWorkflowFabricTests
             new EvidenceTemplateRegistry(),
             contributors,
             NullLogger<EvidenceGraphService>.Instance);
+    }
+
+    private static EvidenceGraphService CreateSecurityMasterConflictGraphService(ISecurityMasterConflictService? conflictService)
+    {
+        var services = new ServiceCollection();
+        if (conflictService is not null)
+        {
+            services.AddSingleton(conflictService);
+        }
+
+        var provider = services.BuildServiceProvider();
+        return new EvidenceGraphService(
+            new EvidenceSubjectResolver(provider),
+            new EvidenceTemplateRegistry(),
+            [new SecurityMasterConflictEvidenceContributor(provider)],
+            NullLogger<EvidenceGraphService>.Instance);
+    }
+
+    private static EvidenceGraphService CreateOperationsApprovalGraphService(IOperationsContinuityWorkflowService? workflowService)
+    {
+        var services = new ServiceCollection();
+        if (workflowService is not null)
+        {
+            services.AddSingleton(workflowService);
+        }
+
+        var provider = services.BuildServiceProvider();
+        return new EvidenceGraphService(
+            new EvidenceSubjectResolver(provider),
+            new EvidenceTemplateRegistry(),
+            [new OperationsApprovalEvidenceContributor(provider)],
+            NullLogger<EvidenceGraphService>.Instance);
+    }
+
+    private static OperationsContinuityWorkflowDto CreateOperationsWorkflow(
+        OperationsApprovalStateDto approvalState,
+        DateTimeOffset? updatedAtUtc = null)
+    {
+        var workflowId = Guid.NewGuid();
+        var fundAccountId = Guid.NewGuid();
+        var periodId = "2026-05";
+        var now = updatedAtUtc ?? DateTimeOffset.UtcNow;
+        var eventType = approvalState switch
+        {
+            OperationsApprovalStateDto.Approved => "approval-approved",
+            OperationsApprovalStateDto.Rejected => "approval-rejected",
+            OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned => "approval-submitted",
+            _ => "workflow-started"
+        };
+        var approval = new OperationsApprovalDto(
+            ApprovalId: $"approval-{workflowId:N}",
+            Status: approvalState,
+            Operator: "ops-controller",
+            Reviewer: "fund-controller",
+            Rationale: "Evidence-backed close review.",
+            SubmittedAtUtc: now.AddMinutes(-10),
+            DecidedAtUtc: approvalState is OperationsApprovalStateDto.Approved or OperationsApprovalStateDto.Rejected
+                ? now.AddMinutes(-2)
+                : null,
+            EvidenceLinks:
+            [
+                new OperationsEvidenceLinkDto(
+                    $"approval-evidence-{workflowId:N}",
+                    "Approval packet",
+                    $"/api/workstation/operations/continuity/{workflowId:D}",
+                    "approval",
+                    now)
+            ]);
+
+        return new OperationsContinuityWorkflowDto(
+            WorkflowId: workflowId,
+            FundAccountId: fundAccountId,
+            PeriodId: periodId,
+            SecurityMasterSnapshotId: Guid.NewGuid(),
+            BrokerSource: "alpaca",
+            CreatedAtUtc: now.AddHours(-1),
+            UpdatedAtUtc: now,
+            Version: 7,
+            Status: approvalState == OperationsApprovalStateDto.Approved
+                ? OperationsWorkflowStatusDto.ReadyForClose
+                : OperationsWorkflowStatusDto.ApprovalPending,
+            BrokerIntakeState: OperationsBrokerIntakeStateDto.Complete,
+            SecurityMasterState: OperationsSecurityMasterStateDto.Complete,
+            LedgerPostingState: OperationsLedgerPostingStateDto.Complete,
+            ReconciliationState: OperationsReconciliationStateDto.Complete,
+            ApprovalState: approvalState,
+            Gates:
+            [
+                new OperationsGateDto(
+                    OperationsGateKeyDto.Approval,
+                    "Approval and close readiness",
+                    approvalState == OperationsApprovalStateDto.Approved
+                        ? OperationsGateStatusDto.Passed
+                        : OperationsGateStatusDto.ReviewRequired,
+                    true,
+                    "Requires operator, reviewer, rationale, and linked evidence before close.",
+                    [],
+                    [],
+                    approvalState == OperationsApprovalStateDto.Approved ? now : null,
+                    approvalState == OperationsApprovalStateDto.Approved ? "fund-controller" : null)
+            ],
+            Timeline:
+            [
+                new OperationsTimelineEntryDto(
+                    Guid.NewGuid(),
+                    now,
+                    workflowId,
+                    fundAccountId,
+                    periodId,
+                    eventType,
+                    OperationsWorkflowStatusDto.ApprovalPending,
+                    approvalState == OperationsApprovalStateDto.Approved
+                        ? OperationsWorkflowStatusDto.ReadyForClose
+                        : OperationsWorkflowStatusDto.ApprovalPending,
+                    OperationsGateKeyDto.Approval,
+                    OperationsGateStatusDto.ReviewRequired,
+                    approvalState == OperationsApprovalStateDto.Approved
+                        ? OperationsGateStatusDto.Passed
+                        : OperationsGateStatusDto.ReviewRequired,
+                    "fund-controller",
+                    "Evidence-backed close review.",
+                    $"corr-{workflowId:N}",
+                    null,
+                    [],
+                    null,
+                    $"hash-{workflowId:N}")
+            ],
+            BreakCases: [],
+            LedgerPreview: null,
+            Approvals: [approval],
+            ReportPackReadiness: new OperationsReportPackReadinessDto(
+                true,
+                $"report-pack-{workflowId:N}",
+                null,
+                [
+                    new OperationsEvidenceLinkDto(
+                        $"report-pack-{workflowId:N}",
+                        "Report pack",
+                        "/api/fund-structure/report-packs/current",
+                        "report-pack",
+                        now)
+                ]),
+            CloseChecklist:
+            [
+                new OperationsCloseChecklistTaskDto(
+                    "approval-control",
+                    OperationsGateKeyDto.Approval,
+                    "Controller approval",
+                    "fund-controller",
+                    "Approval packet",
+                    1,
+                    null,
+                    null,
+                    "Complete",
+                    null,
+                    $"approval-evidence-{workflowId:N}",
+                    "/accounting",
+                    false,
+                    now,
+                    "fund-controller")
+            ],
+            EvidenceLinks:
+            [
+                new OperationsEvidenceLinkDto(
+                    $"workflow-evidence-{workflowId:N}",
+                    "Workflow evidence",
+                    $"/api/workstation/operations/continuity/{workflowId:D}",
+                    "approval",
+                    now)
+            ],
+            Blockers: [],
+            NextActions: [],
+            CloseReadiness: null);
     }
 
     private static async Task<WebApplication> CreateEvidenceAppAsync(string root)
@@ -689,7 +1340,9 @@ public sealed class EvidenceWorkflowFabricTests
         => artifact.GetProperty("kind").GetString() == kind &&
            artifact.GetProperty("route").GetString() == route &&
            artifact.GetProperty("path").ValueKind == JsonValueKind.Null &&
-           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null;
+           artifact.GetProperty("hash").ValueKind == JsonValueKind.Null &&
+           artifact.GetProperty("canonicalSubjectKind").GetString() == EvidenceSubjectResolver.StrategyRunKind &&
+           artifact.GetProperty("canonicalSubjectId").GetString() == "run-ledger-proof";
 
     private sealed class StubContributor : IEvidenceContributor
     {
@@ -715,5 +1368,147 @@ public sealed class EvidenceWorkflowFabricTests
             context.CancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(_contribute(context));
         }
+    }
+
+    private sealed class StubSecurityMasterConflictService(IReadOnlyList<SecurityMasterConflict> conflicts)
+        : ISecurityMasterConflictService
+    {
+        private readonly Dictionary<Guid, SecurityMasterConflict> _conflicts = conflicts.ToDictionary(static conflict => conflict.ConflictId);
+
+        public Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<SecurityMasterConflict>>(
+                _conflicts.Values
+                    .Where(static conflict => string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
+                    .ToArray());
+        }
+
+        public Task<SecurityMasterConflict?> GetConflictAsync(Guid conflictId, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(_conflicts.GetValueOrDefault(conflictId));
+        }
+
+        public Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(_conflicts.GetValueOrDefault(request.ConflictId));
+        }
+
+        public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class StubOperationsContinuityWorkflowService(IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
+        : IOperationsContinuityWorkflowService
+    {
+        private readonly Dictionary<Guid, OperationsContinuityWorkflowDto> _workflows =
+            workflows.ToDictionary(static workflow => workflow.WorkflowId);
+
+        public Task<OperationsTransitionResultDto> StartWorkflowAsync(OperationsStartWorkflowRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> ImportBrokerDataAsync(Guid workflowId, OperationsTransitionRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> NormalizeBrokerTransactionsAsync(Guid workflowId, OperationsTransitionRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> RefreshGatePostureAsync(Guid workflowId, OperationsGatePostureRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> ResolveSecurityMasterMappingsAsync(Guid workflowId, OperationsSecurityMasterResolveRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> ApproveSecurityMasterOverrideAsync(Guid workflowId, string overrideId, OperationsSecurityMasterOverrideApprovalRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> BuildLedgerDraftAsync(Guid workflowId, OperationsLedgerDraftRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> ValidateLedgerDraftAsync(Guid workflowId, OperationsLedgerValidationRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> PostLedgerEntriesAsync(Guid workflowId, OperationsLedgerPostRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> ResolveBreakCaseAsync(Guid workflowId, string breakId, OperationsResolveBreakCaseRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> SubmitForApprovalAsync(Guid workflowId, OperationsSubmitApprovalRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> ApproveWorkflowAsync(Guid workflowId, OperationsApprovalDecisionRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> RejectWorkflowAsync(Guid workflowId, OperationsRejectWorkflowRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> CloseWorkflowAsync(Guid workflowId, OperationsCloseWorkflowRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> ReopenWorkflowAsync(Guid workflowId, OperationsReopenWorkflowRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>> ListAsync(
+            Guid? fundAccountId = null,
+            string? periodId = null,
+            OperationsWorkflowStatusDto? status = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var summaries = _workflows.Values
+                .Where(workflow => !fundAccountId.HasValue || workflow.FundAccountId == fundAccountId.Value)
+                .Where(workflow => string.IsNullOrWhiteSpace(periodId) || string.Equals(workflow.PeriodId, periodId, StringComparison.OrdinalIgnoreCase))
+                .Where(workflow => !status.HasValue || workflow.Status == status.Value)
+                .Select(static workflow => new OperationsContinuityWorkflowSummaryDto(
+                    workflow.WorkflowId,
+                    workflow.FundAccountId,
+                    workflow.PeriodId,
+                    workflow.SecurityMasterSnapshotId,
+                    workflow.BrokerSource,
+                    workflow.Status,
+                    workflow.Version,
+                    workflow.CreatedAtUtc,
+                    workflow.UpdatedAtUtc,
+                    workflow.Gates,
+                    workflow.NextActions))
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>>(summaries);
+        }
+
+        public Task<OperationsContinuityWorkflowDto?> GetAsync(Guid workflowId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(_workflows.GetValueOrDefault(workflowId));
+        }
+
+        public Task<IReadOnlyList<OperationsTimelineEntryDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<OperationsTimelineEntryDto>>(
+                _workflows.TryGetValue(workflowId, out var workflow) ? workflow.Timeline : []);
+        }
+
+        public Task<IReadOnlyList<OperationsCloseChecklistTaskDto>> GetChecklistAsync(Guid workflowId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<OperationsCloseChecklistTaskDto>>(
+                _workflows.TryGetValue(workflowId, out var workflow) ? workflow.CloseChecklist : []);
+        }
+
+        public Task<OperationsTransitionResultDto> AcknowledgeChecklistTaskAsync(
+            Guid workflowId,
+            string taskId,
+            OperationsChecklistAcknowledgeRequestDto request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
     }
 }

@@ -1,34 +1,35 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-05-28
 
 ## Current Execution TODOs
 
-- [ ] Keep the DK1 packet, provider-validation matrix, delivery-readiness dash, and contract-compatibility matrix synchronized after any provider evidence change.
-- [ ] Drive W2 cockpit acceptance through replay freshness, operator-inbox routing, promotion controls, and browser Trading scenario evidence.
-- [ ] Convert shared run, portfolio, ledger, brokerage/account, and reconciliation support into W3 continuity evidence across the seven-workspace path.
+- [ ] Keep the DK1 packet, provider-validation matrix, kernel-readiness dashboard, and contract-compatibility matrix synchronized after any provider evidence change.
+- [ ] Keep W2 cockpit acceptance green through replay freshness, operator-inbox routing, promotion controls, and browser Trading scenario evidence.
+- [ ] Keep the closed W3 shared run, portfolio, ledger, brokerage/account, and reconciliation continuity baseline green across the seven-workspace path.
 - [ ] Prove W4 casework, approvals, report-pack lifecycle, provenance, and close/reopen controls with durable evidence before marking governance readiness complete.
 - [ ] Assign owners and target sprints to provider capability gaps and keep adapter-readiness follow-up tied to the capability matrix.
-- [ ] Use [`wave-implementation-checklists.md`](wave-implementation-checklists.md) as the working TODO ledger for W1 maintenance and W2-W4 blocker cleanup.
+- [ ] Use [`wave-implementation-checklists.md`](wave-implementation-checklists.md) as the working TODO ledger for W1 maintenance, W2/W3 baseline preservation, and W4 blocker cleanup.
 
 **Horizon:** 2026-05-18 through 2026-06-28
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
-This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md), interpreted through the consolidated current-direction entry point in [`current-direction-and-status.md`](current-direction-and-status.md). It is intentionally narrower than the canonical roadmap and advances the active Wave 2-4 core operator-readiness path while keeping the closed Wave 1 trust gate synchronized.
+This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md), interpreted through the consolidated current-direction entry point in [`current-direction-and-status.md`](current-direction-and-status.md). It is intentionally narrower than the canonical roadmap and now preserves the closed W1/W2/W3 baselines while advancing the active W4 governance/fund-operations close and report gate.
 
 Planning review note 2026-05-18: the plan remains the active short-horizon execution slice after
 the full `docs/plans` review and consolidated current-direction pass. It does not promote
 later-wave Backtest Studio, live-readiness, optional advanced research, or UFL target-state work
-ahead of the Wave 2 cockpit, Wave 3 continuity, Wave 4 governance, and Wave 1 trust-gate
+ahead of the preserved Wave 2 cockpit baseline, preserved Wave 3 continuity baseline, active Wave 4 governance, and Wave 1 trust-gate
 maintenance path.
 
-Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) when assigning owners, sequencing dependencies, or checking workstream-level exit criteria inside the active Waves 2-4 path.
+Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) when assigning owners, sequencing dependencies, or checking workstream-level exit criteria for W2/W3 preservation and active W4 acceptance work.
 
 Implementation stance for this plan:
 
 - keep this artifact as a **technical dependency plan**, not owner-assigned sprint slices
-- include detailed W3/W4 pre-work even when the execution horizon is six weeks
-- allow limited parallel W3 pre-work before DK2 is fully green, while keeping DK2 entry and exit criteria as the release-claim gate
+- preserve W2 and W3 as closed maintenance baselines and route new acceptance work to W4 unless the canonical program state changes
+- keep detailed W4 pre-work in this horizon so close, report, reconciliation, and evidence-governance slices can land without reopening W2/W3
+- treat May 28 W4 support evidence as progress toward Lane C, not as close/report readiness, until the full WPF build-backed and browser/shared close/case/report proof is green
 
 ---
 
@@ -37,9 +38,8 @@ Implementation stance for this plan:
 The next six weeks should focus on four outcomes:
 
 1. keep the closed Wave 1 provider-confidence and checkpoint-evidence gate green and preserve the signed DK1 pilot parity packet around the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`, freshly generated date-stamped parity-packet artifacts, and valid packet-bound sign-off evidence
-2. harden the Wave 2 paper-trading cockpit that is already visible through shared web and
-   active desktop/browser surfaces
-3. deepen Wave 3 shared run / portfolio / ledger continuity across workspaces while validating browser and WPF operator workflows through shared contracts
+2. preserve the closed Wave 2 paper-trading cockpit baseline through shared web and active desktop/browser surfaces
+3. preserve the closed Wave 3 shared run / portfolio / ledger continuity baseline across workspaces while validating browser and WPF operator workflows through shared contracts
 4. land the first Wave 4 governance and fund-operations slices on top of the delivered Security Master baseline
 
 The commercial filter for these outcomes is the **Meridian Assurance Loop**: Data Trust Passport -> Run Evidence Graph -> Promotion Passport -> Accounting-Grade Paper Trading -> Governed Report Pack. This filter should sharpen the six-week scope; it should not create a new wave or allow planned commercial modules to be described as complete before shared contracts, retained evidence, and browser-visible workflows exist.
@@ -62,7 +62,7 @@ Explicit non-goals in this window:
 This plan starts from the current repo state:
 
 - the web dashboard in `src/Meridian.Ui/dashboard/` and the WPF shell in `src/Meridian.Wpf/` are both active operator UI lanes; shared contracts, local/web API endpoints, and shared read models should carry behavior before either client composes it
-- current browser workstation support now includes shared workflow library/preset commands in grouped command-palette sections with hash-aware `/settings#alpaca-provider-setup` routing, dedicated Portfolio brokerage-sync evidence with account-filter focus restoration and next actions into provider repair, Trading readiness, and cockpit review, Portfolio position/run dense tables with row-driven detail panels, Overview portfolio-at-a-glance plus Today panel and status/refresh view-model state, sidebar sub-items plus richer menu/command grouping, menu-linked screenshot-route coverage, Reporting report-pack task state plus GET-versus-POST endpoint-link safety and the `/reporting/evidence` workbench, Settings backend capability coverage plus Alpaca paper-key verification, provider-setup success handoffs into live quotes/backfill/readiness/Security Master validation routes, Data Security Master print-packet readiness, Data backfill dense-table queue selection with keyboard-expanded detail, browser Security Master search-result selection with identity drill-ins, details/lots/operator overrides plus conflict refresh/retry state, browser Accounting reconciliation dense-table selection, keyboard-expanded detail, no-host break-queue fixture, and empty-state guidance, Trading readiness UTC as-of labels, Trading loading-state panel and selectable Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, live quote/order-book/watchlist/Price Alerts workflows with multi-symbol quote snapshots and view-model-owned no-quote/empty-value/busy copy, selectable recent-trade detail inspection, click-to-trade order-ticket staging, intraday and historical price charts, a gated `/strategy/quant-lab` browser surface backed by `/api/quant/run`, `/api/quant/parameters`, and `/api/quant/templates`, Quant Notebook cell/data-fetch helpers, visual Strategy Designer at `/strategy/designer`, Covered Call support at `/strategy/covered-call` with dense chain preview, saved-run history, and selectable trade-timeline detail state, hardened command-palette/mega-menu focus handling, Meridian Design System reference workbench/tokenized-color support, shared API clients for portfolio aggregate/exposure, and shared evidence subject/packet/graph/validation/manifest-export APIs. Treat these as Wave 2-4 support evidence, not as completed cockpit, reporting, Backtest Studio, Evidence Vault, report-line provenance, durable reconciliation casework, or live-readiness claims
+- current browser workstation support now includes shared workflow library/preset commands in grouped command-palette sections with hash-aware `/settings#alpaca-provider-setup` routing, dedicated Portfolio brokerage-sync evidence with account-filter focus restoration and next actions into provider repair, Trading readiness, and cockpit review, Portfolio position/run dense tables with row-driven detail panels, Overview portfolio-at-a-glance plus Today panel and status/refresh view-model state, sidebar sub-items plus richer menu/command grouping, menu-linked screenshot-route coverage, Reporting report-pack task state plus GET-versus-POST endpoint-link safety and the `/reporting/evidence` workbench, Settings backend capability coverage plus Alpaca paper-key verification, provider-setup success handoffs into live quotes/backfill/readiness/Security Master validation routes, Data Security Master print-packet readiness, Data backfill dense-table queue selection with keyboard-expanded detail, browser Security Master search-result selection with identity drill-ins, details/lots/operator overrides plus conflict refresh/retry state, browser Accounting reconciliation dense-table selection, keyboard-expanded detail, no-host break-queue fixture, and empty-state guidance, Trading readiness UTC as-of labels, Trading loading-state panel and selectable Recent Fills detail support, full-console readiness checkpoint gates with provider-setup repair handoffs for BrokerageSync blockers, live quote/order-book/watchlist/Price Alerts workflows with multi-symbol quote snapshots and view-model-owned no-quote/empty-value/busy copy, selectable recent-trade detail inspection, click-to-trade order-ticket staging, intraday and historical price charts, a gated `/strategy/quant-lab` browser surface backed by `/api/quant/run`, `/api/quant/parameters`, and `/api/quant/templates`, Quant Notebook cell/data-fetch helpers, visual Strategy Designer at `/strategy/designer`, Covered Call support at `/strategy/covered-call` with dense chain preview, saved-run history, and selectable trade-timeline detail state, hardened command-palette/mega-menu focus handling, Meridian Design System reference workbench/tokenized-color support, shared API clients for portfolio aggregate/exposure, and shared evidence subject/packet/graph/validation/manifest-export APIs. Treat these as W2/W3 preservation evidence and W4 support evidence, not as completed reporting, Backtest Studio, Evidence Vault, report-line provenance, durable reconciliation casework, or live-readiness claims
 - current brokerage/account-sync support includes fund-account brokerage links, positions/activity reads, cash-adjusted performance, cash-flow summaries, household portfolio rollups, Alpaca paper connection verification/revocation, and a read-only Robinhood aggregation adapter. Use it to strengthen Wave 3/Wave 4 continuity while keeping external-statement acceptance, reconciliation casework, and controlled live-readiness open
 - current governance/accounting support now also includes ledger `posting_kind` preservation with
   period posting guards, report-pack validation/lifecycle metadata, evidence-vault manifest
@@ -108,14 +108,14 @@ This plan starts from the current repo state:
 - the current repo contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest results empty-state guidance, Position Blotter, Notification Center history recovery, Trading Hours session and holiday-calendar guidance, Welcome, Storage archive posture, System Health triage, Activity Log triage/export/clear state, Watchlist posture plus pinned-first display, Messaging Hub delivery posture with refresh recency, StrategyRuns filter-aware recovery/run-scope presentation and comparison guidance, QuantScript run-history handoffs, Security Master runtime/search recovery, Fund Accounts account-queue/provider-routing/shared-data and balance-evidence briefing states, workspace queue tone styles, the workspace shell context strip, route-aware operator queue button state with shell-context attention cues, the Trading desk briefing hero's stale-replay count detail, the Research desk briefing hero's run-detail / portfolio / promotion-review handoffs, the feature-owned Data shell's provider / backfill / storage / session / export / environment-mode handoffs, the Provider Health posture briefing, local single-instance mutex plus launch-argument forwarding behavior, and workflow page-state automation markers, so this window should validate workflow value rather than start a second desktop UX track
 - the latest shell-support evidence adds Welcome readiness progress for connection/symbol/storage posture, Storage archive posture for daily growth/capacity/last-scan handoffs, Storage preview scope/guidance for archive-path decisions, OrderBook order-flow posture for depth/tape/spread monitoring, compact shared deep-page command chrome that preserves related-workflow and trust-state context, actionable shell-context attention details, a provider-degradation next action that opens `ProviderHealth`, brokerage-sync queue routing into `AccountPortfolio`, bounded run review-packet queue items, and Trading hero attention states for warning or critical shared work items; treat these as validation support for operator orientation and routing, not as separate readiness exits
 - fixture/offline desktop workflow mode is now presented as neutral demo data and isolated workflow automation restores shared project assets without pinning the WPF target framework before building the desktop shell with the pinned WPF framework and confirming page tags, so test evidence should distinguish demo-state validation from operational readiness
-- the WPF screenshot-refresh workflow now has scheduled, push, and manual dispatch coverage for catalog/manual capture groups, least-privilege default permissions, diagnostic artifacts, and a single post-matrix commit job; use this as screenshot/manual evidence plumbing, not as proof of Wave 2-4 workflow acceptance
+- the WPF screenshot-refresh workflow now has scheduled, push, and manual dispatch coverage for catalog/manual capture groups, least-privilege default permissions, diagnostic artifacts, and a single post-matrix commit job; use this as screenshot/manual evidence plumbing, not as proof of closed W2/W3 baseline preservation or active W4 workflow acceptance
 - the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay consistency/freshness, controls, recent risk/control audit evidence, missing-field explainability warnings, promotion, DK1 trust-gate packet/sign-off projection, brokerage-sync, acceptance-gate/overall-readiness posture, and stable operator work items, plus an initial `/api/workstation/operator/inbox` aggregation contract for readiness, actionable latest-run review-packet, and reconciliation work items that the WPF main shell consumes through route-aware queue-button navigation, Account Portfolio routing for brokerage-sync blockers, run review-packet routing, and active-account `fundAccountId` propagation; `PromotionApprovalChecklist` defines required review items for paper and live promotion approvals, and the run review packet now emits stable route-aware work items for cross-workspace blockers
-- shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces; the Ledger-compatible CLI journal report path is useful local accounting support evidence, but broader shared ledger continuity and governance reporting remain Wave 3/Wave 4 work
+- shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces; the Ledger-compatible CLI journal report path is useful local accounting support evidence. The W3 shared run / portfolio / ledger continuity baseline is closed, while governance reporting remains W4 work.
 - promotion endpoints and workstation promotion surfaces are already in code
 - Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces, with current support evidence from browser search-result selection, identity drill-ins, details/lots/operator overrides, UFL/reference-data projections for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit, plus factor-schedule accounting treatment for MBS, ABS, loan, and amortizing-loan instruments
 - governance already has concrete seams for reconciliation, cash-flow summaries, reporting profiles, and direct-lending foundations
 - the closed Wave 1 trust gate remains the first release gate for every downstream claim
-- DK1 provider-trust status is ready for Wave 2 handoff: the 2026-04-27 parity packet is signed by Data Operations, Provider Reliability, and Trading with valid packet binding, all pilot samples ready, validated evidence documents, and validated explainability/calibration contracts. Future provider-evidence changes still require a fresh date-stamped packet and matching `packetReview` sign-off; promotion handoff is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation DK2 is now early in progress through a file-backed break queue with review, resolve/dismiss, audit-history routes, seeded exception-route/tolerance/sign-off metadata, and calibration-summary profile rollups
+- DK1 provider-trust status remains a closed Wave 2 baseline: the 2026-04-27 parity packet is signed by Data Operations, Provider Reliability, and Trading with valid packet binding, all pilot samples ready, validated evidence documents, and validated explainability/calibration contracts. Future provider-evidence changes still require a fresh date-stamped packet and matching `packetReview` sign-off; promotion review, governed report-pack publication, and durable reconciliation casework now belong to the active W4 close/report/evidence gate rather than reopening W2/W3.
 
 ---
 
@@ -124,13 +124,13 @@ This plan starts from the current repo state:
 ### Active in this window
 
 - **Wave 1:** closed trust-gate maintenance
-- **Wave 2:** paper-trading cockpit hardening
-- **Wave 3:** shared run / portfolio / ledger continuity
+- **Wave 2:** paper-trading cockpit baseline maintenance
+- **Wave 3:** shared run / portfolio / ledger continuity baseline maintenance
 - **Wave 4:** governance and fund-operations productization on top of the delivered Security Master baseline
 
 ### Delivery guardrails in this window
 
-- keep WPF workflow-first consolidation and MVVM extraction limited to work that directly supports active Wave 2-4 flows
+- keep WPF workflow-first consolidation and MVVM extraction limited to work that preserves W2/W3 baselines or directly supports active W4 flows
 - keep desktop launch/deep-link routing, screenshot workflows, single-instance forwarding, UI-automation page-state markers, and fixture/demo-mode cues aligned to WPF workspace shell routes so compatibility automation verifies the same desktop support surfaces operators can still open; screenshot-refresh CI should remain a validation evidence lane with diagnostic artifact retention and a single final commit step
 - keep validation and documentation synchronized with executable evidence, not summary language; the DK1 `pilotReplaySampleSet` is now part of that evidence contract
 - keep shared DTOs, read models, workflow services, and export seams as the integration boundary across active work
@@ -142,16 +142,12 @@ This plan starts from the current repo state:
 - **Wave 6:** live integration readiness, except where Wave 1-2 work clarifies prerequisites
 - optional advanced research / scale tracks
 
-### Detailed pre-work beyond this six-week window (required planning depth)
+### Detailed W4 pre-work beyond this six-week window (required planning depth)
 
-The six-week horizon remains the execution target, but detailed pre-work is required now for W3/W4 so follow-on implementation can start without architectural drift.
-
-#### W3 pre-work package (dependency-first)
-
-- keep shared run-lineage, continuity-warning, and Strategy Engine pre-run payload contracts as the single cross-workspace source
-- finish service-backed projection boundaries that separate operator payload builders from fixture/fallback builders
-- lock brokerage/custodian raw-snapshot versus normalized-projection persistence boundaries and freshness/divergence semantics
-- pre-validate operating-context propagation rules for fund/entity/sleeve/vehicle/account routing across deep links and shell handoffs
+The six-week horizon remains the execution target, but W4 needs deeper planning so follow-on
+implementation can start without architectural drift. W3 shared run / portfolio / ledger continuity
+is a closed baseline; related run, brokerage, ledger, and reconciliation work in this window should
+be described as baseline maintenance or W4 governance support, not as W3 pre-work.
 
 #### W4 pre-work package (dependency-first)
 
@@ -159,12 +155,7 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 - lock governed report-pack lifecycle states and approval/rejection/provenance transitions before wider UI expansion
 - define one fund-operations projection contract that joins account posture, reconciliation posture, and report readiness
 - define inbox-v2 remediation-playbook contract fields (owner, severity, route, next action, evidence link) before multi-surface rollout
-
-#### Parallelism policy for W3 during DK2 entry
-
-- allowed: contract shaping, projection extraction, deterministic scenario harnesses, and read-only continuity seams
-- not allowed: Wave 3 completion claims, governance handoff claims, or UI flows that depend on unresolved DK2 parity/calibration outcomes
-- required: every parallel W3 item must declare its dependency on pending DK2 gates and remain release-neutral until DK2 is green
+- keep any run, brokerage, ledger, or reconciliation continuity changes tied to the closed W3 baseline green while W4 owns new close/report/evidence claims
 
 ---
 
@@ -179,7 +170,7 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 - the WPF Data shell and Provider Health posture briefing remain consumers of shared provider, backfill, storage, session, and export state instead of becoming separate operational-readiness models
 - Storage archive posture remains a Data Operations support improvement: it should project daily growth, capacity horizon, last-scan, and scan-failure guidance from already-loaded analytics without becoming a separate storage readiness gate
 
-### Outcome 2: Wave 2 paper trading is dependable, not just visible
+### Outcome 2: Wave 2 paper trading stays dependable
 
 - the shared workstation cockpit is tightened around positions, orders, fills, replay, sessions, risk flows, and Position Blotter selection/action-readiness flows already in code
 - the WPF Trading desk briefing hero is validated as a consumer of shared active-run, workflow-summary, and operator-readiness state rather than a separate cockpit model
@@ -188,7 +179,7 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 - the trading cockpit now surfaces a single operator acceptance contract for session persistence, replay confidence, audit/control evidence, risk/control explainability warnings, promotion-review readiness, DK1 trust posture, brokerage-sync posture, overall readiness, and operator work items, with an initial shared operator-inbox endpoint, route-aware WPF shell queue-button consumption, Account Portfolio routing for brokerage-sync blockers, run review-packet routing for actionable latest-run blockers, and shell-context attention cues available for readiness, Security Master, and reconciliation queue aggregation
 - the local replay-audit hardening slice now records replay consistency, compared fill/order/ledger evidence counts, last-persisted timestamps, and primary mismatch reason so readiness reconstruction has durable audit metadata to read from, and the readiness gate drops back to review-required when those compared counts no longer match the active session
 
-### Outcome 3: Wave 3 shared-model continuity is stronger across workspaces
+### Outcome 3: Wave 3 shared-model continuity stays green across workspaces
 
 - `Strategy`, `Trading`, `Portfolio`, `Accounting`, and `Reporting` rely more consistently on the shared run, portfolio, and ledger model
 - run comparison, fills, attribution, ledger, cash-flow, and reconciliation flows feel more like one system than adjacent slices
@@ -219,9 +210,9 @@ The six-week horizon remains the execution target, but detailed pre-work is requ
 | Week | Focus | Goals | Deliverables |
 | --- | --- | --- | --- |
 | 1 | DK1 / Wave 1 closeout confirmation | preserve the signed trust gate and remove planning contradictions around the active provider set and pilot replay/sample standard | refreshed validation summary with `pilotReplaySampleSet`; signed 2026-04-27 DK1 parity packet; valid packet-bound sign-off evidence; synchronized provider/runtime evidence list; explicit deferred-provider wording; dashboard evidence links; future-review rerun guidance |
-| 2 | Wave 2 entry | keep the trust gate green while starting cockpit hardening | cockpit hardening checklist; operator acceptance targets tied back to the passing Wave 1 gate |
-| 3 | Wave 2 operator lane | tighten the existing trading cockpit into a more dependable operator workflow | session and replay acceptance criteria; promotion approval/rejection rationale checklist; cockpit operator-path checklist |
-| 4 | Wave 3 continuity | reduce cross-workspace seams between Research, Trading, and Governance while validating browser and WPF workflows through shared contracts | run-model continuity backlog; fills/attribution/ledger/reconciliation linkage notes; web/workstation validation targets tied to active flows |
+| 2 | Wave 2 maintenance | keep the closed cockpit baseline green while exercising replay, inbox, and promotion evidence | cockpit maintenance checklist; operator acceptance targets tied back to the closed W1/W2 gates |
+| 3 | Wave 2 operator evidence | preserve the existing trading cockpit acceptance lane through shared contracts and regression evidence | session and replay regression criteria; promotion approval/rejection rationale checklist; cockpit operator-path maintenance checklist |
+| 4 | Wave 3 maintenance / Wave 4 setup | keep shared run / portfolio / ledger continuity green while moving new governance claims into W4 | run-model continuity regression targets; fills/attribution/ledger/reconciliation linkage checks; W4 close/report/evidence validation targets |
 | 5 | Wave 4 governance slice | connect the delivered Security Master baseline to concrete governance product slices | account/entity and strategy-structure targets; first multi-ledger/cash-flow/reconciliation slice decisions; reporting/profile follow-ons |
 | 6 | Hardening and closeout | make the six-week baseline easy to continue from without widening scope | docs/status refresh; acceptance-criteria review; narrowed follow-on backlog that still stays within Waves 1-4 |
 

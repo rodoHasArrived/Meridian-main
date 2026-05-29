@@ -46,11 +46,11 @@ items:
     workspace:
       - Trading
     owner_lane: Execution and Fund Accounts
-    status: in_progress
-    health: yellow
+    status: done
+    health: green
     priority: critical
-    evidence_posture: support_evidence
-    current_summary: Trading readiness, operator inbox routing, and replay durability are the active cockpit-readiness concerns.
+    evidence_posture: complete
+    current_summary: Closed in the 2026-05-27 evidence slice through shared readiness/operator-inbox tests, browser Trading parity, focused WPF Lane A tests, and green TrustedData, PaperPromotion, and PaperSession pilot gates.
     exit_criteria:
       - Trading readiness endpoint works for global and account-scoped checks.
       - Operator inbox exposes actionable readiness and reconciliation routing.
@@ -69,9 +69,9 @@ items:
     evidence:
       - type: test-plan
         path: docs/testing/WAVE2_ACCEPTANCE_TESTS.md
-    blockers:
-      - Operator acceptance evidence still needs the final cockpit-readiness pass.
-    last_reviewed: 2026-05-20
+      - type: status
+        path: docs/plans/current-direction-and-status.md
+    last_reviewed: 2026-05-28
 
   - id: W2-PROMO-001
     title: Paper promotion evidence and operator acceptance
@@ -82,11 +82,11 @@ items:
       - Strategy
       - Trading
     owner_lane: Execution and Fund Accounts
-    status: planned
-    health: yellow
+    status: done
+    health: green
     priority: high
-    evidence_posture: support_evidence
-    current_summary: Promotion review must connect research lineage, paper-session evidence, and operator approval in one auditable path.
+    evidence_posture: complete
+    current_summary: Closed with W2 acceptance evidence; PaperPromotion is green in the 2026-05-27 pilot readiness run and promotion review remains the governed handoff into W4 casework/reporting work.
     exit_criteria:
       - Promotion candidates show evidence lineage before acceptance.
       - Operator approval records link to the paper-session context.
@@ -98,7 +98,10 @@ items:
       - SRC-UI-DASHBOARD
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-05-20
+    evidence:
+      - type: status
+        path: docs/plans/current-direction-and-status.md
+    last_reviewed: 2026-05-28
 
   - id: W3-CONT-001
     title: Research to paper continuity
@@ -109,11 +112,11 @@ items:
       - Strategy
       - Trading
     owner_lane: Strategy and Research
-    status: planned
+    status: done
     health: green
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: Strategy research outputs need traceable handoff into paper-session validation and promotion review.
+    evidence_posture: complete
+    current_summary: Closed in the 2026-05-27 evidence slice through shared brokerage/continuity/pilot tests, focused WPF portfolio/accounting/cash-flow tests, browser route/API parity, and green ResearchRun, RunComparison, PortfolioLedgerReview, and Reconciliation pilot gates.
     exit_criteria:
       - Research lineage persists through paper-session handoff.
       - Strategy run evidence links to promotion candidates.
@@ -125,7 +128,10 @@ items:
       - SRC-UI-DASHBOARD
     diagrams:
       - DIA-BROWSER-WORKSTATION
-    last_reviewed: 2026-05-20
+    evidence:
+      - type: status
+        path: docs/plans/current-direction-and-status.md
+    last_reviewed: 2026-05-28
 
   - id: W4-RECON-001
     title: Portfolio ledger reconciliation readiness
@@ -136,11 +142,11 @@ items:
       - Portfolio
       - Accounting
     owner_lane: Governance and Ledger
-    status: planned
-    health: yellow
+    status: done
+    health: green
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: Ledger and reconciliation workflows need evidence-linked acceptance before governed reporting can claim readiness.
+    evidence_posture: complete
+    current_summary: Closed in the 2026-05-29 W4 evidence slice through operations-continuity close-lane coverage, reconciliation casework, browser Accounting parity, WPF Lane C acceptance, and green PortfolioLedgerReview/Reconciliation pilot gates.
     exit_criteria:
       - Reconciliation queue actions link to ledger evidence.
       - Break resolution and sign-off states are operator-visible.
@@ -152,7 +158,14 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-05-20
+    evidence:
+      - type: status
+        path: docs/plans/current-direction-and-status.md
+      - type: test
+        path: tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs
+      - type: test
+        path: tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs
+    last_reviewed: 2026-05-29
 
   - id: W4-RPT-001
     title: Governed report pack readiness
@@ -163,11 +176,11 @@ items:
       - Reporting
       - Accounting
     owner_lane: Governance and Ledger
-    status: planned
-    health: yellow
+    status: done
+    health: green
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: Report-pack generation needs approval, export evidence, and clear ownership before being treated as governed output.
+    evidence_posture: complete
+    current_summary: Closed in the 2026-05-29 W4 evidence slice through governed report-pack workflow/provenance, publication/restatement readiness, evidence-vault manifest support, browser Reporting parity, and the green GovernedReportPack pilot gate.
     exit_criteria:
       - Report-pack lifecycle includes approval evidence.
       - Export output records are linked to source data and acceptance status.
@@ -179,7 +192,14 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-05-20
+    evidence:
+      - type: status
+        path: docs/plans/current-direction-and-status.md
+      - type: test
+        path: tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs
+    last_reviewed: 2026-05-29
 
   - id: W5-BTSTUDIO-001
     title: Backtesting studio evidence loop

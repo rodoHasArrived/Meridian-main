@@ -327,7 +327,7 @@ public sealed class StatementMatchingEngine
         StatementMatchingToleranceProfile tolerance,
         List<StatementMatchResult> results)
     {
-        foreach (var statement in statements.Where(statement => !matchedStatements.Contains(statement.MatchId)))
+        foreach (var statement in statements.Where(statement => !matchedStatements.Contains(((IStatementMatchItem)statement).MatchId)))
         {
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Position,
@@ -341,7 +341,7 @@ public sealed class StatementMatchingEngine
                 "Broker statement position did not match any internal portfolio position."));
         }
 
-        foreach (var internalItem in internalItems.Where(internalItem => !matchedInternal.Contains(internalItem.MatchId)))
+        foreach (var internalItem in internalItems.Where(internalItem => !matchedInternal.Contains(((IStatementMatchItem)internalItem).MatchId)))
         {
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Position,
@@ -364,7 +364,7 @@ public sealed class StatementMatchingEngine
         StatementMatchingToleranceProfile tolerance,
         List<StatementMatchResult> results)
     {
-        foreach (var statement in statements.Where(statement => !matchedStatements.Contains(statement.MatchId)))
+        foreach (var statement in statements.Where(statement => !matchedStatements.Contains(((IStatementMatchItem)statement).MatchId)))
         {
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Cash,
@@ -378,7 +378,7 @@ public sealed class StatementMatchingEngine
                 "Broker statement cash balance did not match any internal cash balance."));
         }
 
-        foreach (var internalItem in internalItems.Where(internalItem => !matchedInternal.Contains(internalItem.MatchId)))
+        foreach (var internalItem in internalItems.Where(internalItem => !matchedInternal.Contains(((IStatementMatchItem)internalItem).MatchId)))
         {
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Cash,
@@ -401,7 +401,7 @@ public sealed class StatementMatchingEngine
         StatementMatchingToleranceProfile tolerance,
         List<StatementMatchResult> results)
     {
-        foreach (var statement in statements.Where(statement => !matchedStatements.Contains(statement.MatchId)))
+        foreach (var statement in statements.Where(statement => !matchedStatements.Contains(((IStatementMatchItem)statement).MatchId)))
         {
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Transaction,
@@ -415,7 +415,7 @@ public sealed class StatementMatchingEngine
                 "Broker statement transaction did not match any internal ledger transaction."));
         }
 
-        foreach (var internalItem in internalItems.Where(internalItem => !matchedInternal.Contains(internalItem.MatchId)))
+        foreach (var internalItem in internalItems.Where(internalItem => !matchedInternal.Contains(((IStatementMatchItem)internalItem).MatchId)))
         {
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Transaction,

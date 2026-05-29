@@ -160,7 +160,8 @@ public sealed record StrategyRunPromotionSummary(
     string? ApprovalStatus = null,
     string? ManualOverrideId = null,
     string? ApprovedBy = null,
-    IReadOnlyList<string>? ApprovalChecklist = null);
+    IReadOnlyList<string>? ApprovalChecklist = null,
+    IReadOnlyList<string>? EvidenceReferences = null);
 
 /// <summary>
 /// Shared governance summary used by audit and control surfaces.
@@ -570,6 +571,73 @@ public sealed record RunComparisonDto(
     string CashFlowHealth = "Missing",
     IReadOnlyList<string>? CompatibilityWarnings = null,
     StrategyRunArtifactCompleteness? ArtifactCompleteness = null);
+
+/// <summary>Request to compare multiple strategy runs side by side.</summary>
+public sealed record RunComparisonRequest(
+    IReadOnlyList<string> RunIds,
+    IReadOnlyList<string>? Modes = null);
+
+/// <summary>Request to diff two strategy runs.</summary>
+public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);
+
+/// <summary>Result of a run-vs-run diff showing position, parameter, and metric changes.</summary>
+public sealed record StrategyRunDiff(
+    string BaseRunId,
+    string TargetRunId,
+    string BaseStrategyName,
+    string TargetStrategyName,
+    IReadOnlyList<PositionDiffEntry> AddedPositions,
+    IReadOnlyList<PositionDiffEntry> RemovedPositions,
+    IReadOnlyList<PositionDiffEntry> ModifiedPositions,
+    IReadOnlyList<ParameterDiff> ParameterChanges,
+    MetricsDiff Metrics,
+    IReadOnlyList<string>? CompatibilityWarnings = null,
+    StrategyRunArtifactCompleteness? BaseArtifactCompleteness = null,
+    StrategyRunArtifactCompleteness? TargetArtifactCompleteness = null,
+    StrategyRunMode? BaseMode = null,
+    StrategyRunMode? TargetMode = null,
+    StrategyRunEngine? BaseEngine = null,
+    StrategyRunEngine? TargetEngine = null,
+    string? BaseStrategyId = null,
+    string? TargetStrategyId = null,
+    string? BaseStrategyVersion = null,
+    string? TargetStrategyVersion = null,
+    string LineageRelation = "Unrelated",
+    string CompatibilityLevel = "Compatible");
+
+/// <summary>A single position change between two runs.</summary>
+public sealed record PositionDiffEntry(
+    string Symbol,
+    long BaseQuantity,
+    long TargetQuantity,
+    decimal BasePnl,
+    decimal TargetPnl,
+    string ChangeType);
+
+/// <summary>A single parameter change between two runs.</summary>
+public sealed record ParameterDiff(
+    string Key,
+    string? BaseValue,
+    string? TargetValue);
+
+/// <summary>High-level metrics delta between two runs.</summary>
+public sealed record MetricsDiff(
+    decimal NetPnlDelta,
+    decimal TotalReturnDelta,
+    int FillCountDelta,
+    decimal? BaseNetPnl,
+    decimal? TargetNetPnl,
+    decimal? BaseTotalReturn,
+    decimal? TargetTotalReturn,
+    decimal? FinalEquityDelta = null,
+    decimal? MaxDrawdownDelta = null,
+    double? SharpeRatioDelta = null,
+    decimal? BaseFinalEquity = null,
+    decimal? TargetFinalEquity = null,
+    decimal? BaseMaxDrawdown = null,
+    decimal? TargetMaxDrawdown = null,
+    double? BaseSharpeRatio = null,
+    double? TargetSharpeRatio = null);
 
 // ---------------------------------------------------------------------------
 // Track C drill-in models

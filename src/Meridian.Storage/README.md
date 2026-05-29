@@ -24,11 +24,38 @@ This layer persists durable state and evidence. It should expose storage seams w
 - `Archival/` - write-ahead log and archive package support.
 - `Interfaces/` and `Sinks/` - storage sink contracts and implementations.
 - `Replay/`, `Ledger/`, and `SecurityMaster/` - durable domain-specific stores.
+- `FundAccounts/` - account definitions, balance snapshots, statement batches, reconciliation
+  results, and account readiness persistence. Balance snapshots include optional realized and
+  unrealized P&L columns for provider-ledger shadow-book comparison evidence.
 - `Packaging/`, `Export/`, and `Maintenance/` - operational storage workflows.
 
 ## Important workflows
 
 Use this module for persistence, replay evidence, storage maintenance, package import/export, and durable operator evidence.
+
+Ledger journal appends are fail-closed for instrument-bearing postings. Any journal line that
+targets securities, dividends, accrued interest, corporate actions, options, futures MTM, short
+securities, or a symbol-scoped ledger account must carry Security Master provenance plus approved
+lineage that includes active Security Master status and a ledger mapping reference tied to the
+resolved line symbol or Security Master id before `ILedgerJournalStore` accepts it. Instrument
+account lines must also carry an explicit line symbol, so entry-level Security Master metadata
+cannot mask an unattributed securities, receivable, option, futures, or short-position posting.
+Metadata-level instrument symbols are checked against the same lineage and mapping evidence as
+line-level symbols, so an entry cannot declare one symbol at the journal level while posting another
+instrument line.
+Until durable journal writes carry line-level Security Master ids, a single journal entry may not
+combine multiple instrument symbols behind one entry-level Security Master id.
+
+Ledger tax-lot state is persisted as account-scoped policy records plus open-lot records in the
+ledger schema. `ILedgerJournalStore` owns durable FIFO/LIFO/HIFO/SpecificId policy lookup inputs and
+open-lot balances for a ledger book/account, while relief projection, approval workflow, and
+tax-reporting exports remain outside the storage layer.
+
+Direct-lending state persistence can include projected ledger journals in the same database
+transaction as the loan event append. `PostgresDirectLendingStateStore.SaveAsync` accepts
+`LedgerJournalEntryWrite` records and appends them through `ITransactionalLedgerJournalStore` with
+the active `NpgsqlConnection` and serializable transaction, so a failed ledger append rolls back the
+loan state/event/projection/outbox write as one unit.
 
 ## Diagrams
 

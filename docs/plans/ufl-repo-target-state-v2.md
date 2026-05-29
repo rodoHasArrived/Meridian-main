@@ -1,8 +1,8 @@
-# UFL Repo Target-State Package V2
+# UFL Repo Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl repo target state v2** and document explicit in-scope vs out-of-scope items.
@@ -31,6 +31,74 @@ It assumes:
 - downstream treasury, governance, and reconciliation services querying canonical projections
 
 This package turns the existing `RepoTerms` support into an implementation-ready plan for repo reference data, lifecycle and collateral views, and APIs.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.Repo` and `RepoTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"Repo"` asset class.
+- Security Master validation enforces nonblank counterparty, ordered dates, and nonnegative repo rate and haircut when present.
+- `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs` verifies basic create support for repo instruments.
+
+### Partially Implemented
+
+- Canonical terms and create-path projection exist, but repo reference endpoints, lifecycle projections, collateral/exposure projections, and rebuild evidence are not delivered in this package.
+
+### Target-State Only
+
+- Repo lifecycle and exposure projections.
+- Collateral and counterparty-grouping views.
+- Maturity and unwind-state projections.
+- Repo-specific query contracts and endpoints.
+
+### Explicitly Out of Scope
+
+- Tri-party settlement.
+- Collateral inventory optimization.
+- Securities lending.
+- Full financing-operations messaging.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.Repo`, terms, mapping, validation, and basic create test exist. | canonical repo agreement profile metadata | F# validation and C# mapping tests |
+| IssuerOrCounterparty | L1 partial | counterparty term exists. | counterparty lineage and exposure projections | endpoint/projection tests |
+| Lifecycle | L0 | target-state only. | open, active, matured, unwound, and closed states | lifecycle projection tests |
+| CollateralOrMargin | L1 partial | collateral type and haircut terms exist. | collateral, haircut, and exposure projections | collateral/exposure tests |
+| CashFlowSchedule | L0 | target-state only. | repo rate, maturity, and cash movement schedule projection | schedule tests |
+| ProjectionRebuild | L1 partial | shared Security Master projection path exists. | repo-scoped lifecycle, collateral, exposure, and counterparty projections | rebuild/checkpoint tests |
+| AccountingImpact | L0 | target-state only. | controlled accounting/reconciliation handoff for repo financing events | accounting/reconciliation tests |
+
+## Current Maturity
+
+`L1 partial`: canonical repo terms, mapping, validation, and basic create support exist. L2 maturity requires reference and exposure reads; L3 maturity requires asset-scoped lifecycle, collateral, counterparty, and rebuild metadata tests.
+
+## Next Milestone Contract
+
+**Goal:** advance repos to L2 by adding reference, collateral, counterparty, and exposure read surfaces over canonical repo terms.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/SecurityMaster/`
+- `src/Meridian.Contracts/SecurityMaster/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for repo terms.
+- endpoint contract tests for repo reference and exposure reads.
+- projection/rebuild tests for lifecycle, counterparty, collateral, haircut, and maturity metadata.
+- provider-payload isolation tests for canonical repo projections.
+
+**Exit criteria:** repo consumers can query canonical agreement, counterparty, collateral, haircut, and maturity views without provider-specific payload dependency.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as evidence, but repo workflows must consume canonical agreement terms, counterparty references, collateral/exposure projections, and rebuild metadata.
 
 ## Repo Fit
 
@@ -347,6 +415,6 @@ Meridian treats a repo as a canonical financing agreement with explainable lifec
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

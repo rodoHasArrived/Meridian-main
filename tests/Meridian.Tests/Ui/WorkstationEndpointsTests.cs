@@ -28,7 +28,6 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.Ledger;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -38,7 +37,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
+using ReconciliationCaseSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationCaseSummaryDto;
+using ReconciliationQueueAccountStatusDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using StatementImportSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.StatementImportSummaryDto;
 
 namespace Meridian.Tests.Ui;
 
@@ -1149,6 +1152,12 @@ public sealed partial class WorkstationEndpointsTests
         accounting.NextAction.Label.Should().Be("Review Reconciliation Breaks");
         accounting.NextAction.TargetPageTag.Should().Be("FundReconciliation");
         accounting.PrimaryBlocker.IsBlocking.Should().BeTrue();
+        summary.AssuranceScore.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        summary.AssuranceScore.Score.Should().BeLessThan(100);
+        summary.AssuranceScore.Components.Should().Contain(component =>
+            component.ComponentId == "accounting" &&
+            component.Status == EvidenceStatusDto.ReviewRequired &&
+            component.Detail.Contains("Reconciliation breaks require review", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -1163,6 +1172,11 @@ public sealed partial class WorkstationEndpointsTests
         var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
         summary.Should().NotBeNull();
         summary!.Workspaces.Should().HaveCount(7);
+        summary.AssuranceScore.Should().NotBeNull();
+        summary.AssuranceScore.Components.Should().HaveCount(7);
+        summary.AssuranceScore.Components.Should().Contain(component =>
+            component.ComponentId == "trading" &&
+            component.Status == EvidenceStatusDto.ReviewRequired);
         summary.Workspaces.Select(workspace => workspace.WorkspaceId).Should().BeEquivalentTo(
             "trading",
             "portfolio",
@@ -3364,14 +3378,12 @@ public sealed partial class WorkstationEndpointsTests
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunById, "runId", "statement-run-1"),
             ServerJsonOptions);
         run.Should().NotBeNull();
-        run!.OpenExceptionCount.Should().Be(1);
-        run.EvidenceLinks.Should().ContainSingle(link =>
-            link.RunId == "statement-run-1"
-            && link.SourceFileHash == "HASH-1"
-            && link.BrokerCustodian == "custodian"
-            && link.Account == "external-account-1"
-            && link.BreakIds.Contains("break-1")
-            && link.CaseIds.Contains("case-1"));
+        run!.MatchSummary.Should().NotBeNull();
+        run.MatchSummary!.BreakCount.Should().Be(1);
+        run.Breaks.Should().ContainSingle(statementBreak =>
+            statementBreak.BreakId == "break-1"
+            && statementBreak.Status == "Open"
+            && statementBreak.Severity == StatementValidationSeverity.Error);
         run!.RunId.Should().Be("statement-run-1");
 
         var validation = await client.GetFromJsonAsync<StatementRunValidationDto>(
@@ -3738,7 +3750,7 @@ public sealed partial class WorkstationEndpointsTests
             item.ToleranceBand == 1m &&
             item.RequiredSignoffRole == "Fund operations lead" &&
             item.SignoffStatus == "pending-signoff" &&
-            item.ResolutionNote is null);
+            item.ResolutionNote == null);
         first!.Count(item => item.SourceType == "statement").Should().Be(1);
         second.Count(item => item.SourceType == "statement").Should().Be(1);
 
@@ -3789,6 +3801,10 @@ public sealed partial class WorkstationEndpointsTests
             profile.TotalBreakCount > 0 &&
             profile.PendingSignoffCount > 0);
         summary.Summary.Should().Contain("reconciliation");
+        summary.BreakCountTrend.Should().BeGreaterThanOrEqualTo(0);
+        summary.AutoMatchRate.Should().BeInRange(0m, 1m);
+        summary.T0ClosureRate.Should().BeInRange(0m, 1m);
+        summary.BreakCountAlertThreshold.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -3857,6 +3873,9 @@ public sealed partial class WorkstationEndpointsTests
         summary.SignedOffCount.Should().Be(summary.TotalBreakCount);
         summary.Profiles.Should().OnlyContain(profile => profile.PendingSignoffCount == 0);
         summary.Summary.Should().Contain("ready for governance sign-off");
+        summary.BreakCountTrend.Should().BeLessThanOrEqualTo(0);
+        summary.T0ClosureRate.Should().Be(1m);
+        summary.T0ClosureRateAlertTriggered.Should().BeFalse();
     }
 
     [Fact]
@@ -4333,6 +4352,71 @@ public sealed partial class WorkstationEndpointsTests
             candidate.IsWinningSource &&
             candidate.SourceSystem == "golden-edm" &&
             candidate.SourceRecordId == "EDM-123");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterInstrumentPassport_ShouldReturnProviderConfidenceRows()
+    {
+        var securityId = Guid.Parse("69696969-6969-6969-6969-696969696969");
+        var effectiveFrom = new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero);
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Apple Inc.", "AAPL"),
+            new SecurityDetailDto(
+                SecurityId: securityId,
+                AssetClass: "Equity",
+                Status: SecurityStatusDto.Active,
+                DisplayName: "Apple Inc.",
+                Currency: "USD",
+                CommonTerms: CreateEmptyJson(),
+                AssetSpecificTerms: CreateEmptyJson(),
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Ticker,
+                        "AAPL",
+                        true,
+                        effectiveFrom,
+                        Provider: "alpaca")
+                ],
+                Aliases:
+                [
+                    new SecurityAliasDto(
+                        AliasId: Guid.Parse("F7AA8916-C40E-44F9-B427-9351F09F6C95"),
+                        SecurityId: securityId,
+                        AliasKind: "ProviderSymbol",
+                        AliasValue: "AAPL",
+                        Provider: "alpaca",
+                        Scope: SecurityAliasScope.Execution,
+                        Reason: "Broker symbol mapping",
+                        CreatedBy: "ops",
+                        CreatedAt: effectiveFrom,
+                        ValidFrom: effectiveFrom,
+                        ValidTo: null,
+                        IsEnabled: true)
+                ],
+                Version: 4,
+                EffectiveFrom: effectiveFrom,
+                EffectiveTo: null));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([]));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/passport");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var passport = await response.Content.ReadFromJsonAsync<InstrumentPassportDto>(ServerJsonOptions);
+
+        passport.Should().NotBeNull();
+        passport!.SecurityId.Should().Be(securityId);
+        passport.ProviderConfidence.Should().ContainSingle(item =>
+            item.Provider == "alpaca" &&
+            item.Symbol == "AAPL" &&
+            item.ProviderSource == "Identifier" &&
+            item.ConfidenceScore >= 85m);
     }
 
     [Fact]
@@ -5304,18 +5388,25 @@ public sealed partial class WorkstationEndpointsTests
         });
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
-        await store.RecordRunAsync(BuildRun(
-            runId: "diff-base",
-            strategyId: "s-diff",
-            strategyName: "Diff Base",
-            runType: RunType.Backtest,
-            startedAt: new DateTimeOffset(2026, 3, 20, 10, 0, 0, TimeSpan.Zero)));
-        await store.RecordRunAsync(BuildRun(
-            runId: "diff-target",
-            strategyId: "s-diff-2",
-            strategyName: "Diff Target",
-            runType: RunType.Paper,
-            startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)));
+        await store.RecordRunAsync(BuildReconciliationReadyRun("diff-base") with
+        {
+            StrategyId = "diff-strategy",
+            StrategyName = "Diff Base",
+            ParameterSet = new Dictionary<string, string>
+            {
+                ["strategyVersion"] = "v1.0.0"
+            }
+        });
+        await store.RecordRunAsync(BuildActivePaperRun("diff-target", withBreaks: false) with
+        {
+            StrategyId = "diff-strategy",
+            StrategyName = "Diff Target",
+            ParentRunId = "diff-base",
+            ParameterSet = new Dictionary<string, string>
+            {
+                ["strategyVersion"] = "v1.1.0"
+            }
+        });
 
         var client = app.GetTestClient();
         var response = await client.PostAsJsonAsync("/api/workstation/runs/diff",
@@ -5328,9 +5419,26 @@ public sealed partial class WorkstationEndpointsTests
         doc.RootElement.GetProperty("baseStrategyName").GetString().Should().Be("Diff Base");
         doc.RootElement.GetProperty("targetStrategyName").GetString().Should().Be("Diff Target");
         doc.RootElement.GetProperty("metrics").GetProperty("netPnlDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.GetProperty("metrics").GetProperty("finalEquityDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.GetProperty("metrics").GetProperty("maxDrawdownDelta").GetDecimal().Should().Be(0m);
+        doc.RootElement.GetProperty("metrics").GetProperty("sharpeRatioDelta").GetDouble().Should().Be(0d);
+        doc.RootElement.GetProperty("baseMode").GetString().Should().Be("Backtest");
+        doc.RootElement.GetProperty("targetMode").GetString().Should().Be("Paper");
+        doc.RootElement.GetProperty("baseEngine").GetString().Should().Be("MeridianNative");
+        doc.RootElement.GetProperty("targetEngine").GetString().Should().Be("BrokerPaper");
+        doc.RootElement.GetProperty("baseStrategyId").GetString().Should().Be("diff-strategy");
+        doc.RootElement.GetProperty("targetStrategyId").GetString().Should().Be("diff-strategy");
+        doc.RootElement.GetProperty("baseStrategyVersion").GetString().Should().Be("v1.0.0");
+        doc.RootElement.GetProperty("targetStrategyVersion").GetString().Should().Be("v1.1.0");
+        doc.RootElement.GetProperty("lineageRelation").GetString().Should().Be("DirectChild");
+        doc.RootElement.GetProperty("compatibilityLevel").GetString().Should().Be("CrossEngine");
         doc.RootElement.TryGetProperty("baseArtifactCompleteness", out _).Should().BeTrue();
         doc.RootElement.TryGetProperty("targetArtifactCompleteness", out _).Should().BeTrue();
         doc.RootElement.TryGetProperty("compatibilityWarnings", out _).Should().BeTrue();
+        doc.RootElement.GetProperty("compatibilityWarnings").EnumerateArray()
+            .Select(static warning => warning.GetString())
+            .Should()
+            .Contain(warning => warning!.Contains("Strategy version comparison active", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -7567,34 +7675,11 @@ public sealed partial class WorkstationEndpointsTests
             PositionMatches: 3,
             CashMatches: 2,
             TransactionMatches: 1,
-            OpenExceptionCount: 1,
-            EvidenceLinks:
-            [
-                new StatementRunEvidenceLinkDto(
-                    EvidenceId: "statement-run:statement-run-1",
-                    EvidenceRoute: "/api/workstation/evidence/statement-run/statement-run-1",
-                    RunId: "statement-run-1",
-                    SourceFileHash: "HASH-1",
-                    BrokerCustodian: "custodian",
-                    Account: "external-account-1",
-                    StatementPeriodStart: "2026-05-01",
-                    StatementPeriodEnd: "2026-05-27",
-                    MappingProfileId: "mapping-v1",
-                    MappingProfileVersion: 1,
-                    ToleranceProfileId: "tolerance-v1",
-                    ToleranceProfileVersion: 2,
-                    ValidationSummary: "Passed: 0 issue(s), 0 error(s), 0 warning(s).",
-                    MatchSummary: "6/7 item(s) matched; 1 break(s); 1 case(s).",
-                    BreakIds: ["break-1"],
-                    CaseIds: ["case-1"],
-                    ImportedBy: "ops@example.test",
-                    ImportedAtUtc: "2026-05-27T12:00:00Z",
-                    ReconciledBy: "ops@example.test",
-                    ReconciledAtUtc: "2026-05-27T12:01:00Z")
-            ]);
+            OpenExceptionCount: 1);
 
         public List<StatementRunCreateDto> CreatedRequests { get; } = [];
         public List<string> ReconciledRunIds { get; } = [];
+        public List<(string RunId, StatementRunReconcileRequestDto Request)> ReconciledRequests { get; } = [];
 
         public Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
         {
@@ -7655,6 +7740,7 @@ public sealed partial class WorkstationEndpointsTests
         {
             ct.ThrowIfCancellationRequested();
             ReconciledRunIds.Add(runId);
+            ReconciledRequests.Add((runId, request));
             return Task.FromResult<StatementRunDto?>(
                 string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
                     ? BuildRunDto(runId, StatementRunStatus.ReviewRequired)

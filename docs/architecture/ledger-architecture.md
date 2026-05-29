@@ -81,6 +81,203 @@ var realized  = LedgerAccounts.RealizedGain;
 var dividends = LedgerAccounts.DividendIncome;
 ```
 
+### `ChartOfAccounts`
+
+`ChartOfAccounts` registers customizable colon-delimited account paths such as
+`Assets:Cash:Brokerage`, creates missing parent accounts, rejects parent/child account-type
+conflicts, and aggregates flat trial-balance balances up the hierarchy. This keeps the core ledger
+compatible with fixed built-in accounts while supporting fund-specific chart-of-accounts structures
+for reporting and close workflows.
+
+### `LedgerFinancialStatementBuilder`
+
+`LedgerFinancialStatementBuilder` projects a current or point-in-time trial balance into
+income-statement rows, balance-sheet rows, net income, ending equity, and an accounting-equation
+variance. Totals are computed from the flat trial balance to avoid double-counting parent rollups;
+rows use the chart hierarchy for operator-facing statement sections.
+
+Closed-period trial-balance endpoints also expose `LedgerTrialBalanceReportDto`, which wraps the
+same server-derived period rows with locked-period status, debit/credit/net-income totals,
+accounting-policy lineage, and a SHA-256 checksum signature. The line-list route remains available
+for simple grids, while the report route gives export and audit surfaces a single signed payload.
+Closed-period P&L endpoints expose realized revenue/expense net income separately from
+accrual-basis adjustment impact, using retained ledger line labels and lineage markers to identify
+accrual adjustments while preserving the existing total revenue, expense, and net-income values.
+
+### `LedgerReportPackBuilder`
+
+`LedgerReportPackBuilder` packages point-in-time financial statements into export-ready ledger
+artifacts. Given a `LedgerReportPackRequest`, it builds trial-balance, income-statement,
+balance-sheet, financial-statements JSON, tax-lot realized-gains CSV, line-provenance, and
+manifest artifacts, computes SHA-256 checksums for each artifact, and signs the report-pack
+payload with a deterministic integrity checksum plus the generator identity and timestamp. The
+request can carry a matching `LockedAccountingPeriod` so report manifests preserve period-lock
+evidence without making the ledger domain responsible for persistence, workflow approval, or
+endpoint routing. When account-level tax-lot relief projections are supplied, the tax export
+records sale date, account scope, relief method, relieved lots, proceeds, cost basis, and
+per-lot realized gain/loss; otherwise the artifact remains header-only for stable pack shape.
+
+### `LedgerReportSchedulePlanner`
+
+`LedgerReportSchedulePlanner` projects governed report schedules into concrete export occurrences.
+A `LedgerReportSchedule` captures the fund, report name, monthly/quarterly/annual cadence, first
+period start, due-day offset, base currency, requested formats, recipients, and creator evidence.
+`LedgerScheduledReportExportPackageBuilder` then binds a signed report pack to one scheduled
+occurrence and emits delivery artifacts: a recipient/format manifest for all scheduled exports and
+a regulator-facing XML summary when `RegulatoryXml` is requested. The XML artifact carries period,
+fund, due-date, signature, and statement-total evidence for downstream reporting tools; full
+XBRL/iXBRL taxonomy production remains outside the core ledger kernel.
+The planner emits period identifiers, report IDs, as-of timestamps, due timestamps, recipients, and
+formats, and each occurrence can create a `LedgerReportPackRequest`. Delivery, permission checks,
+artifact storage, and notification remain outside the ledger domain.
+
+### `MultiCurrencyLedgerTranslator`
+
+`MultiCurrencyLedgerTranslator` converts local-currency account balances into a reporting/base
+currency using explicit FX rates. Currency comes from account-level configuration or ISO-style
+account symbols such as the `EUR` symbol on `LedgerAccounts.CashInCurrency("EUR")`. When carrying
+base balances are supplied, it can produce balanced unrealized FX revaluation lines against the
+monetary asset or liability account and the scoped unrealized FX gain/loss accounts.
+
+### `MultiCurrencyJournalProjector`
+
+`MultiCurrencyJournalProjector` handles the posting side of multi-currency accounting. It accepts
+local-currency debit/credit lines, local currency codes, and FX rates to the reporting currency,
+rounds converted amounts to currency precision, verifies that the converted base-currency debits
+and credits balance, and exposes both the posting lines and local-currency evidence. The output can
+be passed to `Ledger.PostLines`, while local amount, currency, and FX-rate evidence remain attached
+to the projection for audit and close review.
+
+### `DailyPortfolioPricingProjector`
+
+`DailyPortfolioPricingProjector` applies a fund-specific `DailyPortfolioPricingPolicy` to daily
+position marks. Each `DailyPortfolioPriceMark` carries quantity, cost price, mark price, source,
+evidence reference, optional account scope, and instrument type so listed close prices, broker
+quotes, and OTC model marks keep their audit trail. The projector returns per-position valuation
+rows plus balanced fair-value adjustment lines: gains debit the security carrying account and
+credit scoped unrealized gain; losses debit scoped unrealized loss and credit the security carrying
+account. It does not fetch market data or approve valuation policy; those remain provider,
+governance, and workflow responsibilities.
+
+### `FixedIncomeAmortizationProjector`
+
+`FixedIncomeAmortizationProjector` produces balanced journal-line drafts for fixed-income coupon
+accrual, discount accretion, and premium amortization. Coupon accrual debits accrued interest
+receivable and credits coupon income. Discount accretion increases the carrying-value asset and
+credits coupon income. Premium amortization debits coupon income and credits the carrying-value
+asset, reducing interest income over the amortization period.
+
+### `LedgerAccountTaxLotPolicyBook`
+
+`LedgerAccountTaxLotPolicyBook` resolves tax-lot relief policy at the `LedgerAccount` boundary.
+It keeps ledger accounting aware of whether a security account should use FIFO, LIFO, HIFO, or
+specific-lot identification without adding a dependency from `Meridian.Ledger` back to execution
+lot selectors. Execution and front-office lot engines can map the ledger enum to their selector
+implementations while report and close workflows retain account-level policy evidence.
+
+### `LedgerTaxLotReliefProjector`
+
+`LedgerTaxLotReliefProjector` applies the resolved account-level relief method to open ledger tax
+lots and returns the accounting projection for a sale. FIFO, LIFO, HIFO, and SpecificId all share
+the same validation path: the sale quantity must be positive, sale price cannot be negative, and
+open lots must cover the requested relief quantity. SpecificId requires explicit lot identifiers
+and rejects unknown or duplicate selections.
+
+The projector permits partial-lot relief, rounds per-lot cost basis to currency precision, debits
+scoped cash for proceeds, credits the security carrying account for cost basis, and posts the
+realized gain or loss to the scoped gain/loss account. It is intentionally deterministic and
+in-memory; persistence and approval remain responsibilities of the storage and workflow layers,
+while report packs can export supplied projections for tax-reporting evidence.
+
+The PostgreSQL ledger store now owns the durable inputs for this projection. `ILedgerJournalStore`
+persists account-scoped tax-lot policies and open tax lots by ledger book/account, including
+FIFO/LIFO/HIFO/SpecificId method, effective-date policy evidence, original/open quantity, unit cost,
+currency, optional source journal entry, and evidence reference. The store does not perform relief
+selection or approve tax outcomes; application/workflow code must load the policy and open lots,
+run the ledger projector, and route the resulting journal through the governed posting path.
+
+### `AutomatedJournalDraftProjector`
+
+`AutomatedJournalDraftProjector` turns normalized recurring/lifecycle events into balanced journal
+drafts before approval or durable posting. The first supported event set covers dividend
+declarations, dividend receipts, cash-interest credits, corporate-action income, and
+corporate-action expenses. It also accrues recurring obligations for management fees, performance
+fees, commissions, and withholding taxes by debiting the expense account and crediting a scoped
+payable account instead of assuming immediate cash settlement. Drafts include normalized metadata
+and optional source-event tags so approval, reconciliation, and reporting flows can trace the
+automated journal back to the upstream event.
+
+`AutomatedJournalApproval` is the governed handoff from a projected draft into the ledger. It
+records submit, approve, reject, and post transitions with actor, reason, timestamp, and evidence
+links. Approval and posting require evidence, rejected drafts cannot be posted, and approved drafts
+convert to a `JournalEntry` with stable journal/line identifiers plus audit tags for source event,
+approval ID, approval status, and approver. The aggregate posts to the in-memory `Ledger`; durable
+storage and operator workflow queues remain application/storage responsibilities.
+
+Direct-lending accrual reversals use the same adjustment discipline. `LoanAccountingProjector`
+keeps originating accrual projections limited to open accounting periods, but resolves reversal
+projections with `LedgerPostingKindDto.Adjustment` so approved reversals can target soft-closed
+periods and then pass through the central ledger posting guard for final approval and period-state
+validation.
+
+Direct-lending command persistence is transactionally coupled to ledger journal persistence.
+`PostgresDirectLendingCommandService` projects ledger-impacting drawdown, accrual, receipt,
+discount/premium amortization, restructuring, and write-off events before calling
+`IDirectLendingStateStore.SaveAsync`; the generated loan event id is carried as the ledger
+`SourceEventId`. `PostgresDirectLendingStateStore` then appends those `LedgerJournalEntryWrite`
+records through `ITransactionalLedgerJournalStore` using the same `NpgsqlConnection` and
+serializable `NpgsqlTransaction` as the loan state, event, projection, outbox, and snapshot writes.
+If the ledger append fails, the loan event append is not committed.
+
+`DailyAccrualWorker` applies the same period-state discipline before it posts recurring daily
+accruals. When the worker can resolve the loan's ledger-book period scope, it calls
+`LedgerInterop.CheckPostingDate` for the accrual date as an originating posting. A blocked period
+does not fall through to `PostDailyAccrualAsync`; the worker logs the block and upserts a
+`LedgerPeriodClose` operator-inbox item in the Accounting workspace with
+`/accounting/reconciliation` and `FundReconciliation` navigation so controllers can resolve the
+period issue from the normal reconciliation workbench.
+
+### `LockedAccountingPeriodBook`
+
+`LockedAccountingPeriodBook` is the in-memory, book-key-scoped period-lock companion for
+`ProjectLedgerBook`. It records immutable `LockedAccountingPeriod` audit facts with period range,
+lock owner, lock timestamp, and reason, then guards `Post` and `PostLines` calls before the target
+ledger mutates. Locks are scoped by `LedgerBookKey`, so a published actuals period can reject late
+May journals while a separate shadow-NAV or scenario ledger remains available for independent
+validation. Overlapping locks for the same book are rejected to keep close evidence unambiguous.
+
+### `ShadowNavValidator`
+
+`ShadowNavValidator` compares a published/actual ledger book to an independent shadow-NAV ledger
+book at a selected close timestamp. It builds point-in-time financial statements for both books,
+uses net assets (`assets - liabilities`) as NAV, and emits account-level variance findings from the
+two trial balances. `ShadowNavValidationPolicy` keeps NAV and account tolerances plus reviewer
+metadata with the report. When a variance exceeds tolerance, the report can produce a
+`ShadowNavOverrideDraft` that carries the policy, reviewer group, variance evidence, and source
+ledger keys into the later approval workflow without mutating either book.
+
+### `PartnershipInvestorAccountingProjector`
+
+`PartnershipInvestorAccountingProjector` prepares partnership accounting journal drafts for
+management fees, performance fees, high-water marks, and investor capital allocations. Inputs carry
+the fund, period, beginning NAV, ending NAV before fees, high-water mark, fee rates, and investor or
+feeder/SPV allocation weights. The projector calculates the management fee from beginning NAV,
+performance fee from gains above the high-water mark after management fees, allocable profit/loss
+after fees, and the updated high-water mark. Output lines are balanced: fee expenses offset fee
+payables, profits debit retained earnings and credit investor capital, and losses debit investor
+capital and credit retained earnings. This is a deterministic projection for review and posting; it
+does not persist the journal or replace accountant-approved waterfall policy configuration.
+
+### `PartnershipWaterfallProjector`
+
+`PartnershipWaterfallProjector` handles tiered partnership distributions after period profit is
+known. A `PartnershipWaterfallAllocationInput` carries the fund, period, distributable profit,
+investors, and ordered waterfall tiers. Each tier can cap the amount it consumes and split that
+tier across one or more investors, enabling preferred-return, catch-up, carried-interest, and
+residual distribution structures for master-feeder, SPV, and series accounting. The projection
+preserves tier-level allocation evidence, rolls allocations up to investor capital totals, and
+emits balanced retained-earnings-to-investor-capital journal lines.
+
 ---
 
 ## How backtesting posts to the ledger
@@ -265,6 +462,14 @@ reconciliation.
 - Ledger entry ID uniqueness
 - Consistent timestamps across all lines in an entry
 
+### AccrualTypes
+
+`LedgerInterop.ValidateAccrualEntry` and `BuildAccrualSummary` keep direct-lending accrual inputs
+deterministic before they are projected into journals. The kernel validates required loan/source
+event lineage, currency, period-slice dates, non-negative interest/fee/penalty amounts, and
+aggregate version, then summarizes valid entries by loan, reporting period, and normalized
+currency.
+
 ### Reconciliation
 
 `Reconciliation.reconcilePayment` and `Reconciliation.reconcileEventStream` compare projected cash flows to actual `CashLedgerEvent` values:
@@ -339,7 +544,21 @@ Ledger data is exposed through the workstation endpoints under `/api/workstation
 | `POST /api/workstation/operations/continuity/{workflowId}/close` | Closes the approved workflow when all gates pass |
 | `POST /api/workstation/operations/continuity/{workflowId}/reopen` | Reopens a closed workflow only with governed admin and incident metadata |
 
-These endpoints are implemented in `WorkstationEndpoints.cs` and map to route constants in `UiApiRoutes`.
+Ledger book, period, and closed-period reporting endpoints are exposed under `/api/ledger/`:
+
+| Route | Description |
+|-------|-------------|
+| `GET /api/ledger/books` | Lists ledger books with optional fund, node, and accounting-basis filters |
+| `POST /api/ledger/books` | Creates or returns the ledger book for a fund-structure node and accounting basis |
+| `GET /api/ledger/periods` | Lists accounting periods with optional book, fund, node, status, open-only, and accounting-basis filters |
+| `POST /api/ledger/periods` | Creates a period scoped to a ledger book |
+| `POST /api/ledger/periods/{periodId}/close` | Performs soft-close or hard-close, computes close summary, and contributes a FundReconciliation operator-inbox work item |
+| `GET /api/ledger/periods/{periodId}/trial-balance` | Returns closed-period trial-balance rows with accounting-basis and policy metadata |
+| `GET /api/ledger/periods/{periodId}/pnl-summary` | Returns closed-period revenue, expense, net-income, prior-period variance, open-break count, and signoff posture |
+| `GET /api/ledger/reports/trial-balance` | Returns cross-period closed-period trial-balance rows filtered by book, fund, node, accounting basis, and date range |
+| `GET /api/ledger/reports/pnl-summary` | Returns cross-period closed-period revenue, expense, net-income totals, and per-period P&L summaries |
+
+These endpoints are implemented in `WorkstationEndpoints.cs` and `LedgerEndpoints.cs`, then map to route constants in `UiApiRoutes`.
 
 ---
 

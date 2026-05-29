@@ -9,10 +9,10 @@ public sealed class StatementValidationServiceTests
     {
         var referenceData = new FakeStatementValidationReferenceData
         {
-            KnownAccounts = [],
-            MappingProfiles = [],
-            ToleranceProfiles = [],
-            DuplicateImports = ["placeholder"]
+            KnownAccounts = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            MappingProfiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            ToleranceProfiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            DuplicateImports = new HashSet<string>(["placeholder"], StringComparer.OrdinalIgnoreCase)
         };
         var service = new StatementValidationService(referenceData);
 
@@ -46,7 +46,7 @@ public sealed class StatementValidationServiceTests
             var fingerprint = await ComputeFingerprintAsync(filePath);
             var service = new StatementValidationService(new FakeStatementValidationReferenceData
             {
-                DuplicateImports = [fingerprint]
+                DuplicateImports = new HashSet<string>([fingerprint], StringComparer.OrdinalIgnoreCase)
             });
 
             var result = await service.ValidateAsync(CreateRequest(filePath));

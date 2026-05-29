@@ -207,6 +207,13 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
 
     public void Stop() => Deactivate();
 
+    public void CancelActivation()
+    {
+        CancelAndDispose(Interlocked.Exchange(ref _loadSymbolsCts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _liveDataCts, null));
+        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
+    }
+
     public void Deactivate()
     {
         if (!_isActive)
@@ -218,9 +225,7 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
         _connectionService.StateChanged -= OnConnectionStateChanged;
         _refreshTimer.Stop();
         _statsTimer.Stop();
-        CancelAndDispose(Interlocked.Exchange(ref _loadSymbolsCts, null));
-        CancelAndDispose(Interlocked.Exchange(ref _liveDataCts, null));
-        CancelAndDispose(Interlocked.Exchange(ref _activationCts, null));
+        CancelActivation();
     }
 
     public void PauseResume()
@@ -295,19 +300,29 @@ public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifet
             var previousCts = Interlocked.Exchange(ref _loadSymbolsCts, loadSymbolsCts);
             CancelAndDispose(previousCts);
 
+            loadSymbolsCts.Token.ThrowIfCancellationRequested();
             var symbolService = _symbolManagementService;
             var result = await symbolService.GetAllSymbolsAsync(loadSymbolsCts.Token);
-            AvailableSymbols.Clear();
+            loadSymbolsCts.Token.ThrowIfCancellationRequested();
+
+            var nextSymbols = new List<string>();
 
             if (result.Success && result.Symbols.Count > 0)
             {
-                AvailableSymbols.AddRange(result.Symbols.Select(s => s.Symbol));
+                nextSymbols.AddRange(result.Symbols.Select(s => s.Symbol));
             }
             else
             {
                 var configSymbols = await _configService.GetConfiguredSymbolsAsync(loadSymbolsCts.Token);
+                loadSymbolsCts.Token.ThrowIfCancellationRequested();
                 if (configSymbols.Length > 0)
-                    AvailableSymbols.AddRange(configSymbols.Select(s => s.Symbol));
+                    nextSymbols.AddRange(configSymbols.Select(s => s.Symbol));
+            }
+
+            if (nextSymbols.Count > 0)
+            {
+                AvailableSymbols.Clear();
+                AvailableSymbols.AddRange(nextSymbols);
             }
         }
         catch (OperationCanceledException) { }

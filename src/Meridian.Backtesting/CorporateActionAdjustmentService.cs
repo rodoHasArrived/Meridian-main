@@ -47,6 +47,14 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         return adjustedBars;
     }
 
+    public async Task<HistoricalBar> AdjustBarAsync(
+        HistoricalBar bar,
+        string ticker,
+        CancellationToken ct = default)
+    {
+        var sortedActions = await GetSortedCorporateActionsAsync(ticker, ct).ConfigureAwait(false);
+        return sortedActions is null ? bar : ApplyAdjustments(bar, sortedActions);
+    }
 
     public async IAsyncEnumerable<HistoricalBar> AdjustAsync(
         IAsyncEnumerable<HistoricalBar> bars,

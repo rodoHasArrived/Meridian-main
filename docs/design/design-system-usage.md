@@ -23,6 +23,12 @@ retained desktop compatibility work.
 
 - Prefer shared dashboard primitives and design-system tokens over one-off
   screen-specific colors, spacing, card styles, and table styles.
+- Keep semantic workflow states on the shared success, warning, danger, info, and muted contract.
+  Browser evidence/readiness surfaces map `Ready` to success, review/stale posture to warning,
+  blocker posture to danger, current/running posture to info, and secondary metadata to muted
+  outline badges. WPF queue and inspector cards map `Success`/`Warning`/`Danger`/`Info` through
+  shared tone resources. Screenshot/evidence automation must fail blank, low-entropy, stale,
+  wrong-route, or manifest-orphan captures before they can become durable evidence.
 - Keep workflow labels, disabled reasons, selected state, and accessibility
   labels in view models or shared read models where the screen architecture
   supports it.

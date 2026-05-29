@@ -134,8 +134,8 @@ It should be read with:
 ## Cross-Wave Dependency Rules
 
 1. Wave 1 trust-gate evidence stays green before any Wave 2-4 readiness claim is promoted.
-2. Wave 2 durable promotion traceability is a prerequisite for **Wave 3 exit claims** and Wave 4 governance handoff; limited Wave 3 pre-work may proceed in parallel when it stays release-neutral and does not bypass DK2 entry/exit criteria.
-3. Wave 3 shared run continuity must become the system of record before any client-specific shell work is allowed to widen; browser and WPF UI scope must consume shared contracts rather than define client-local business state.
+2. The closed Wave 2 durable-promotion baseline remains the prerequisite evidence for the closed Wave 3 baseline and for Wave 4 governance handoff; W4 work may preserve or extend that evidence only when it does not redefine W2/W3 exit criteria.
+3. The closed Wave 3 shared-run-continuity baseline remains the system-of-record seam for any wider client-specific shell work; browser and WPF UI scope must consume shared contracts rather than define client-local business state.
 4. Brokerage and custodian sync must land through execution and fund-account seams before governance can claim account-freshness or external-state continuity.
 5. Governance casework must move out of endpoint-local or in-memory storage before report publishing and exception-SLA claims are treated as durable.
 6. Accounting-led commercial slices must start with shared contract/readiness definitions such as accounting-impact previews, close checklist/readiness, statement-import reconciliation cases, Security Master confidence, report restatement tracking, controls-policy summaries, and evidence packet readiness before web dashboard workflow expansion.
@@ -147,7 +147,7 @@ It should be read with:
 12. Detailed W3/W4 pre-work definition is mandatory even during Wave 2/DK2 execution windows so downstream work can start without contract drift.
 13. Desktop/WPF delivery is measured by [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md); support evidence is not an exit claim unless the row's happy/blocker/recovery evidence is complete.
 14. For desktop work, prioritize high-traffic page-body workflow outcomes before additional shell chrome or framing polish.
-15. Do not widen live-readiness language while Wave 2 cockpit reliability remains non-green in Lane A acceptance and pilot-readiness stage posture.
+15. Do not widen live-readiness language while W4 close/report governance remains non-green in pilot-readiness stage posture and desktop/browser parity evidence.
 
 ---
 
@@ -155,8 +155,8 @@ It should be read with:
 
 ### Objective
 
-Turn the current paper-trading cockpit from "visible" into "dependable" by making session continuity, replay proof, promotion review, and operator triage durable and explainable.
-Wave 2 closure remains the first desktop-forward gate; W3 and W4 scope should not dilute cockpit reliability completion.
+Preserve the closed paper-trading cockpit baseline by keeping session continuity, replay proof, promotion review, and operator triage durable and explainable.
+Wave 2 is Done as of 2026-05-27; W4 scope should not dilute or redefine the cockpit reliability baseline.
 
 ### W2-A: Paper Cockpit Reliability Gate
 
@@ -220,7 +220,7 @@ Wave 2 closure remains the first desktop-forward gate; W3 and W4 scope should no
 
 ### Objective
 
-Make the shared run, portfolio, ledger, cash-flow, and reconciliation model feel like one system across research, trading, governance, the active browser and WPF workstations, and WPF desktop surfaces.
+Preserve the closed shared run, portfolio, ledger, cash-flow, and reconciliation baseline as one system across research, trading, governance, the active browser and WPF workstations, and WPF desktop surfaces.
 
 Current WPF evidence now includes RunCashFlow guidance for selected-run, missing-run, no-event, and loaded retained cash-flow summaries. Keep that in the Wave 3 continuity lane; governance-wide cash-flow projections and reporting still belong to Wave 4.
 
@@ -383,6 +383,7 @@ Finish governance and fund-operations productization by making casework, report 
 - **Repo anchors:** `tests/`, `docs/status/provider-validation-matrix.md`, `docs/plans/paper-trading-cockpit-reliability-sprint.md`
 - **Deliverables:**
   - named scenario suites for `Backtest -> Paper`, paper-session restore, promotion review, run continuity, brokerage divergence, reconciliation break review, and report publish
+  - W4 close-workflow acceptance coverage through `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs`, including Operations Continuity happy path, blocker path, and rejected-approval recovery path
   - command matrix that maps each scenario to the narrowest useful validation command
   - Wave 4 evidence records that use a deterministic template requiring scenario name, fixture window, API assertions, workstation assertions, artifact location, and regression owner (tracked in [`../status/evidence/wave4-evidence-template.md`](../status/evidence/wave4-evidence-template.md))
 - **Exit criteria:**
@@ -416,14 +417,18 @@ These records establish the minimum acceptance payload for Wave 4 readiness proo
 
 ## Recommended Delivery Order
 
-1. W2-A Paper Cockpit Reliability Gate
-2. W2-B Durable Promotion Trace and Review Packet
-3. X1 Scenario Acceptance Harness baseline for Wave 2
-4. W2-C Operator Triage Queue v1
-5. W3-A Shared Run Continuity as System of Record
-6. W3-B Projection-Layer Extraction and Consumer Alignment
-7. W3-C Brokerage and Custodian Sync Control Plane
-8. W3-D Structure-Aware Operating Context and Shell Handoff
+W2 and W3 are now closed baselines in `PROGRAM_STATE.md`; the sequence below is retained as the
+historical dependency shape and as the maintenance order for regression evidence. New delivery
+claims in this addendum should start at W4 unless the canonical program state changes.
+
+1. Maintain W2-A Paper Cockpit Reliability Gate evidence
+2. Maintain W2-B Durable Promotion Trace and Review Packet evidence
+3. Maintain X1 Scenario Acceptance Harness baseline for Wave 2
+4. Maintain W2-C Operator Triage Queue v1 evidence
+5. Maintain W3-A Shared Run Continuity as System of Record evidence
+6. Maintain W3-B Projection-Layer Extraction and Consumer Alignment evidence
+7. Maintain W3-C Brokerage and Custodian Sync Control Plane evidence
+8. Maintain W3-D Structure-Aware Operating Context and Shell Handoff evidence
 9. W4-A Durable Governance Casework
 10. W4-B Governed Report-Pack Generation and Publishing
 11. W4-C Fund-Operations Workspace Consolidation
@@ -431,15 +436,15 @@ These records establish the minimum acceptance payload for Wave 4 readiness proo
 
 ### Controlled parallel pre-work allowance
 
-Limited parallel W3 pre-work is allowed before DK2 is fully green when all constraints below hold:
+Limited W2/W3 maintenance work may run in parallel with W4 delivery when all constraints below hold:
 
-- scope is restricted to contract-first shaping, projection extraction, read-only continuity seams, and deterministic scenario harnesses
-- work items are explicitly tagged as `release-neutral pre-work` and cannot be used for Wave 3/Wave 4 completion claims
-- no pre-work item may change DK2 gate definitions, bypass reconciliation calibration/sign-off requirements, or weaken promotion/export parity checks
-- each parallel item must keep rollback-safe boundaries and document unresolved DK2 dependencies in the PR description
+- scope is restricted to regression evidence, contract compatibility, projection repair, read-only continuity seams, and deterministic scenario harnesses
+- work items are explicitly tagged as closed-baseline maintenance and cannot be used for new Wave 4 completion claims
+- no maintenance item may change W2/W3 gate definitions, bypass reconciliation calibration/sign-off requirements, or weaken promotion/export parity checks
+- each parallel item must keep rollback-safe boundaries and document whether it preserves W2/W3 evidence or supports a separate W4 claim
 
 This ordering keeps the work honest:
 
-- Wave 2 proves the operator lane.
-- Wave 3 turns that lane into the shared system of record.
-- Wave 4 builds durable governance workflows on top of the same seams.
+- Wave 2 remains the closed operator-lane baseline.
+- Wave 3 remains the closed shared-system-of-record baseline.
+- Wave 4 builds durable governance workflows on top of the same seams without reopening W2/W3.

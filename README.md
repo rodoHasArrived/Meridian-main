@@ -186,8 +186,21 @@ hashing, and workstation definitions/validate-run endpoints for Covered Call and
 flows. The repo also now has structured roadmap and source documentation registries under
 `docs/roadmap/` and `docs/source/`, generated source README coverage, stale-doc/hash validation,
 and a provider capability matrix for adapter readiness. Treat these as contract, planning, and
-documentation-control support evidence; they do not close cockpit, shared-continuity,
-governance/reporting, or live-readiness gates.
+documentation-control support evidence; they do not reopen the closed W2/W3 baselines or close
+W4 governance/reporting or live-readiness gates.
+
+Current May 28 support evidence shifts the active acceptance focus to W4. Shared and browser
+support now covers operations-continuity close workflow routes, reconciliation casework, governed
+report-pack workflow/provenance, browser Accounting/Reporting parity, Investment Accounting
+Transaction Lab previews, report restatement review, richer run comparison/drill-in support,
+shared workflow route parity, and screenshot/evidence route validation guards. Treat these as W4
+support evidence only until the full close/case/report/evidence workflow proof and WPF Lane C
+acceptance lane are green.
+
+Current Security Master custom-asset support also includes a shared asset-profile
+promotion-candidate assessment endpoint. This can identify governed profile-backed assets that may
+deserve first-class UFL package design, but it is not a delivered package-graduation workflow or
+operator acceptance gate.
 
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
@@ -285,7 +298,7 @@ Use these documents together when planning or implementing new work:
 
 - [docs/plans/current-direction-and-status.md](docs/plans/current-direction-and-status.md) for the consolidated current direction, status, and plan-file roles
 - [docs/status/ROADMAP_COMBINED.md](docs/status/ROADMAP_COMBINED.md) for the shortest roadmap and target-state summary
-- [docs/status/ROADMAP.md](docs/status/ROADMAP.md) for the canonical wave order: Wave 1 provider confidence and checkpoint evidence, Wave 2 paper-trading cockpit hardening, Wave 3 shared run / portfolio / ledger continuity, and Wave 4 governance and fund-operations productization on top of the delivered Security Master baseline
+- [docs/status/ROADMAP.md](docs/status/ROADMAP.md) for the canonical wave order: closed Wave 1 provider confidence and checkpoint evidence, closed Wave 2 paper-trading cockpit baseline, closed Wave 3 shared run / portfolio / ledger continuity baseline, and active Wave 4 governance and fund-operations productization on top of the delivered Security Master baseline
 - [docs/plans/evidence-backed-investment-operations-plan.md](docs/plans/evidence-backed-investment-operations-plan.md) for the product-category filter, commercial differentiation bets, sequencing rule, and archive-placement rule
 - [docs/plans/meridian-6-week-roadmap.md](docs/plans/meridian-6-week-roadmap.md) for the current time-boxed Waves 1-4 execution slice
 - [docs/status/provider-validation-matrix.md](docs/status/provider-validation-matrix.md) for the current provider-confidence evidence gate; the completed Wave 1 blueprint is archived at [archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md)

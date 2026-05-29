@@ -19,9 +19,9 @@
       "Backup Owner": "Workstation Shell and UX",
       "Escalation SLA": "4 hours / 1 business day",
       "Dependency Owners": "Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger",
-      "Status": "In Progress",
-      "Target Date": "2026-05-29",
-      "Evidence Link": "[`ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-workstation-paper-trading-cockpit-completion)"
+      "Status": "Done",
+      "Target Date": "2026-05-27",
+      "Evidence Link": "[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md)"
     },
     {
       "Wave": "W3",
@@ -30,9 +30,9 @@
       "Backup Owner": "Workstation Shell and UX",
       "Escalation SLA": "1 business day / 2 business days",
       "Dependency Owners": "Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation",
-      "Status": "In Progress",
-      "Target Date": "2026-06-26",
-      "Evidence Link": "[`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity)"
+      "Status": "Done",
+      "Target Date": "2026-05-27",
+      "Evidence Link": "[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md)"
     },
     {
       "Wave": "W4",
@@ -41,9 +41,9 @@
       "Backup Owner": "Shared Workflow and Contracts",
       "Escalation SLA": "1 business day / 2 business days",
       "Dependency Owners": "Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop",
-      "Status": "In Progress",
-      "Target Date": "2026-07-24",
-      "Evidence Link": "[`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline)"
+      "Status": "Done",
+      "Target Date": "2026-05-29",
+      "Evidence Link": "[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md)"
     },
     {
       "Wave": "W5",

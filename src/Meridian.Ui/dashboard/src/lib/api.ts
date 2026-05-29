@@ -33,6 +33,9 @@ import type {
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
+  InvestmentAccountingTransactionLabPreview,
+  InvestmentAccountingTransactionLabRequest,
+  InstrumentPassport,
   LedgerJournalLine,
   LedgerSummary,
   LedgerTrialBalanceLine,
@@ -75,11 +78,18 @@ import type {
   StrategyRunSummaryApiRecord,
   ResearchWorkspaceResponse,
   RunAttributionSummary,
+  RunCashFlowSummary,
   RunComparisonRow,
   RunDiff,
   RunFillSummary,
   OperatorOverridesDto,
   OperatorOverridesPatchRequest,
+  SecurityAssetProfileApprovalRequest,
+  SecurityAssetProfileDefinition,
+  SecurityAssetProfileDraftRequest,
+  SecurityAssetProfileGovernanceResult,
+  SecurityAssetProfileLineage,
+  SecurityAssetProfileRollbackRequest,
   SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry,
@@ -110,12 +120,27 @@ import type {
   WorkflowPresetSaveRequest,
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride,
-  FeatureCapabilitySettingsResponse
+  UpdateExecutionPositionLimitRequest,
+  FeatureCapabilitySettingsResponse,
+  LedgerMappingAssignmentRequest,
+  LedgerMappingAssignmentResult,
+  LedgerMappingWorkbench,
+  OperationsApprovalPolicyMatrix,
+  OperationsApprovalPolicyRuleUpsertRequest,
+  OperationsApprovalPolicyRuleUpsertResult,
+  OperationsCloseCalendar,
+  OperationsCloseCalendarItemUpsertRequest,
+  OperationsCloseCalendarItemUpsertResult,
+  RolePermissionCatalog,
+  RolePermissionProfileUpsertRequest,
+  RolePermissionProfileUpsertResult
 } from "@/types";
 import {
+  AUTH_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   EXPORT_API_ENDPOINTS,
+  FUND_STRUCTURE_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
   PROVIDER_ROUTING_API_ENDPOINTS,
@@ -135,6 +160,7 @@ import {
   executionManualOverrideClearEndpoint,
   executionOrderCancelEndpoint,
   executionPositionCloseEndpoint,
+  executionSymbolPositionLimitEndpoint,
   executionSessionCloseEndpoint,
   executionSessionEndpoint,
   executionSessionReplayEndpoint,
@@ -146,6 +172,7 @@ import {
   marketDataQuotesSnapshotEndpoint,
   marketDataTradesEndpoint,
   portfolioHouseholdEndpoint,
+  portfolioRunCashFlowsEndpoint,
   portfolioSymbolExposureEndpoint,
   promotionEvaluateEndpoint,
   providerCredentialEndpoint,
@@ -175,6 +202,11 @@ import {
   reconciliationStatementRunsEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
+  securityMasterAssetProfileApproveEndpoint,
+  securityMasterAssetProfileDraftsEndpoint,
+  securityMasterAssetProfileLineageEndpoint,
+  securityMasterAssetProfileRollbackEndpoint,
+  securityMasterAssetProfilesEndpoint,
   securityMasterAliasUpsertEndpoint,
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
@@ -196,6 +228,7 @@ import {
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
+  workstationOperationsContinuityCloseCalendarEndpoint,
   workstationChiefOfStaffDecisionEndpoint,
   workstationChiefOfStaffHealthEndpoint,
   workstationChiefOfStaffSessionEndpoint,
@@ -221,6 +254,7 @@ import {
   workstationSecurityMasterEntryEndpoint,
   workstationSecurityMasterHistoryEndpoint,
   workstationSecurityMasterIdentityEndpoint,
+  workstationSecurityMasterInstrumentPassportEndpoint,
   workstationSecurityMasterSearchEndpoint,
   workstationSecurityMasterTrustSnapshotEndpoint,
   workstationTradingReadinessEndpoint,
@@ -483,6 +517,69 @@ export function getFeatureCapabilities(options: ApiRequestOptions = {}) {
   return getJson<FeatureCapabilitySettingsResponse>(WORKSTATION_API_ENDPOINTS.featureCapabilities, options);
 }
 
+export function getRolePermissionCatalog(options: ApiRequestOptions = {}) {
+  return getJson<RolePermissionCatalog>(AUTH_API_ENDPOINTS.roles, options);
+}
+
+export function createRolePermissionProfile(
+  request: RolePermissionProfileUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<RolePermissionProfileUpsertResult>(AUTH_API_ENDPOINTS.roleProfiles, request, options);
+}
+
+export function getSecurityAssetProfiles(options: ApiRequestOptions = {}) {
+  return getJson<SecurityAssetProfileDefinition[]>(securityMasterAssetProfilesEndpoint(), options);
+}
+
+export function getSecurityAssetProfileLineage(profileId: string, options: ApiRequestOptions = {}) {
+  return getJson<SecurityAssetProfileLineage>(securityMasterAssetProfileLineageEndpoint(profileId), options);
+}
+
+export function draftSecurityAssetProfile(
+  request: SecurityAssetProfileDraftRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<SecurityAssetProfileGovernanceResult>(securityMasterAssetProfileDraftsEndpoint(), request, options);
+}
+
+export function approveSecurityAssetProfile(
+  request: SecurityAssetProfileApprovalRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<SecurityAssetProfileGovernanceResult>(securityMasterAssetProfileApproveEndpoint(), request, options);
+}
+
+export function rollbackSecurityAssetProfile(
+  request: SecurityAssetProfileRollbackRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<SecurityAssetProfileGovernanceResult>(securityMasterAssetProfileRollbackEndpoint(), request, options);
+}
+
+export function getLedgerMappingWorkbench(options: ApiRequestOptions = {}) {
+  return getJson<LedgerMappingWorkbench>(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench, options);
+}
+
+export function assignLedgerMapping(request: LedgerMappingAssignmentRequest, options: ApiRequestOptions = {}) {
+  return postJson<LedgerMappingAssignmentResult>(
+    FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingAssignments,
+    request,
+    options
+  );
+}
+
+export function previewInvestmentAccountingTransaction(
+  request: InvestmentAccountingTransactionLabRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<InvestmentAccountingTransactionLabPreview>(
+    FUND_STRUCTURE_API_ENDPOINTS.transactionLabPreview,
+    request,
+    options
+  );
+}
+
 export function setFeatureCapability(capabilityKey: string, isEnabled: boolean, options: ApiRequestOptions = {}) {
   return putJson<FeatureCapabilitySettingsResponse>(
     `${WORKSTATION_API_ENDPOINTS.featureCapabilities}/${encodeURIComponent(capabilityKey)}`,
@@ -500,6 +597,39 @@ export function getOperationsContinuityWorkflows(
 
 export function getOperationsContinuityWorkflow(workflowId: string, options: ApiRequestOptions = {}) {
   return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
+}
+
+export function getOperationsApprovalPolicyMatrix(options: ApiRequestOptions = {}) {
+  return getJson<OperationsApprovalPolicyMatrix>(WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix, options);
+}
+
+export function upsertOperationsApprovalPolicyRule(
+  request: OperationsApprovalPolicyRuleUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsApprovalPolicyRuleUpsertResult>(
+    WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyRules,
+    request,
+    options
+  );
+}
+
+export function getOperationsCloseCalendar(
+  filters: { fundAccountId?: string; periodId?: string } = {},
+  options: ApiRequestOptions = {}
+) {
+  return getJson<OperationsCloseCalendar>(workstationOperationsContinuityCloseCalendarEndpoint(filters), options);
+}
+
+export function upsertOperationsCloseCalendarItem(
+  request: OperationsCloseCalendarItemUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsCloseCalendarItemUpsertResult>(
+    WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendarItems,
+    request,
+    options
+  );
 }
 
 export function getChiefOfStaffSessions(query: ChiefOfStaffSessionQuery = {}, options: ApiRequestOptions = {}) {
@@ -610,6 +740,7 @@ export interface ApprovePromotionRequest {
   approvedBy: string;
   approvalReason: string;
   approvalChecklist?: string[];
+  evidenceReferences?: string[];
   reviewNotes?: string;
   manualOverrideId?: string;
 }
@@ -684,6 +815,14 @@ export function getExecutionAudit(take = 20) {
 
 export function getExecutionControls() {
   return getJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.controls);
+}
+
+export function updateExecutionDefaultPositionLimit(request: UpdateExecutionPositionLimitRequest) {
+  return postJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.defaultPositionLimit, request);
+}
+
+export function updateExecutionSymbolPositionLimit(symbol: string, request: UpdateExecutionPositionLimitRequest) {
+  return postJson<ExecutionControlSnapshot>(executionSymbolPositionLimitEndpoint(symbol), request);
 }
 
 export function getRiskRules() {
@@ -795,6 +934,10 @@ export function getRunEquityCurve(runId: string) {
   return getJson<EquityCurveSummary>(workstationRunEquityCurveEndpoint(runId));
 }
 
+export function getRunCashFlows(runId: string) {
+  return getJson<RunCashFlowSummary>(portfolioRunCashFlowsEndpoint(runId));
+}
+
 export function getRunLedger(runId: string) {
   return getJson<LedgerSummary>(workstationRunLedgerEndpoint(runId));
 }
@@ -873,6 +1016,10 @@ export function getSecurityEconomicDefinition(securityId: string) {
 
 export function getSecurityTrustSnapshot(securityId: string) {
   return getJson<SecurityMasterTrustSnapshot>(workstationSecurityMasterTrustSnapshotEndpoint(securityId));
+}
+
+export function getSecurityInstrumentPassport(securityId: string) {
+  return getJson<InstrumentPassport>(workstationSecurityMasterInstrumentPassportEndpoint(securityId));
 }
 
 export function createSecurityMasterEntry(request: Record<string, unknown>) {

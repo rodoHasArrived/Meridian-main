@@ -1012,6 +1012,52 @@ public sealed class StrategyRunReadServiceTests
     }
 
     [Fact]
+    public async Task GetRunComparisonDtosAsync_WithLeanSummaryOnlyResult_SurfaceCanonicalCoverageWarnings()
+    {
+        using var leanDocument = System.Text.Json.JsonDocument.Parse("""
+        {
+          "Period": { "Start": "2026-02-01T00:00:00Z", "End": "2026-02-28T00:00:00Z" },
+          "Portfolio": { "StartingCapital": "100000" },
+          "Statistics": {
+            "Total Return": "9%",
+            "Sharpe Ratio": "1.25",
+            "Total Trades": "12"
+          }
+        }
+        """);
+        var store = new StrategyRunStore();
+        var leanResult = CanonicalBacktestResultNormalizer.FromLeanResult(
+            leanDocument.RootElement,
+            "lean-summary-1",
+            "Lean Mean Reversion");
+        await store.RecordRunAsync(
+            StrategyRunEntry.Start(
+                    strategyId: "lean-mean-reversion",
+                    strategyName: "Lean Mean Reversion",
+                    runType: RunType.Backtest,
+                    runId: "lean-summary-1",
+                    engine: "Lean")
+                .Complete(leanResult));
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var dtos = await service.GetRunComparisonDtosAsync(["lean-summary-1"]);
+
+        dtos.Should().ContainSingle();
+        var dto = dtos[0];
+        dto.Engine.Should().Be(StrategyRunEngine.Lean);
+        dto.FinalEquity.Should().Be(109_000m);
+        dto.TotalTrades.Should().Be(12);
+        dto.ArtifactCompleteness.Should().NotBeNull();
+        dto.ArtifactCompleteness!.HasFills.Should().BeFalse();
+        dto.CompatibilityWarnings.Should().Contain(warning => warning.Contains("SummaryOnly canonical coverage", StringComparison.Ordinal));
+        dto.CompatibilityWarnings.Should().Contain(warning => warning.Contains("summary metrics only", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task GetRunComparisonDtosAsync_WithParentRunId_IncludesParentageChain()
     {
         var store = new StrategyRunStore();

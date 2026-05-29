@@ -24,12 +24,27 @@ public partial class DenseDataGridControl : UserControl
             typeof(DenseDataGridControl),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
+    public static readonly DependencyProperty GridAutomationIdProperty =
+        DependencyProperty.Register(
+            nameof(GridAutomationId),
+            typeof(string),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata("DenseDataGridRows"));
+
+    public static readonly DependencyProperty EmptyAutomationIdProperty =
+        DependencyProperty.Register(
+            nameof(EmptyAutomationId),
+            typeof(string),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata("DenseDataGridEmptyState"));
+
     private INotifyCollectionChanged? _observedRows;
 
     public DenseDataGridControl()
     {
         InitializeComponent();
         Loaded += (_, _) => UpdateEmptyState();
+        Unloaded += (_, _) => DetachRowsCollection();
     }
 
     public WorkstationTableModel? Table
@@ -44,6 +59,18 @@ public partial class DenseDataGridControl : UserControl
         set => SetValue(SelectedItemProperty, value);
     }
 
+    public string GridAutomationId
+    {
+        get => (string)GetValue(GridAutomationIdProperty);
+        set => SetValue(GridAutomationIdProperty, value);
+    }
+
+    public string EmptyAutomationId
+    {
+        get => (string)GetValue(EmptyAutomationIdProperty);
+        set => SetValue(EmptyAutomationIdProperty, value);
+    }
+
     private static void OnTableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is DenseDataGridControl control)
@@ -56,14 +83,23 @@ public partial class DenseDataGridControl : UserControl
 
     private void RebuildColumns()
     {
-        var gridView = new GridView();
+        var gridView = new GridView
+        {
+            ColumnHeaderContainerStyle = TryFindResource("DenseGridColumnHeaderStyle") as Style
+        };
         foreach (var column in Table?.Columns ?? Array.Empty<WorkstationTableColumnModel>())
         {
+            var binding = new Binding(column.BindingPath);
+            if (!string.IsNullOrWhiteSpace(column.StringFormat))
+            {
+                binding.StringFormat = column.StringFormat;
+            }
+
             gridView.Columns.Add(new GridViewColumn
             {
                 Header = column.Header,
                 Width = column.Width,
-                DisplayMemberBinding = new Binding(column.BindingPath)
+                DisplayMemberBinding = binding
             });
         }
 
@@ -72,10 +108,7 @@ public partial class DenseDataGridControl : UserControl
 
     private void AttachRowsCollection()
     {
-        if (_observedRows is not null)
-        {
-            _observedRows.CollectionChanged -= OnRowsChanged;
-        }
+        DetachRowsCollection();
 
         _observedRows = Table?.Rows as INotifyCollectionChanged;
         if (_observedRows is not null)
@@ -86,6 +119,17 @@ public partial class DenseDataGridControl : UserControl
 
     private void OnRowsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         => UpdateEmptyState();
+
+    private void DetachRowsCollection()
+    {
+        if (_observedRows is null)
+        {
+            return;
+        }
+
+        _observedRows.CollectionChanged -= OnRowsChanged;
+        _observedRows = null;
+    }
 
     private void UpdateEmptyState()
     {

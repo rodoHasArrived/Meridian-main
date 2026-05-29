@@ -2,19 +2,20 @@
 
 ## Mood & atmosphere
 
-Meridian is a **dark cockpit**. Not a dark mode — a cockpit. The baseline is a deep desaturated navy (`#0A1524`) overlaid with an ambient glow:
+Meridian is an **Institutional Ops workstation**: quiet, dense, evidence-first, and built for fund operations staff who need to compare status, exceptions, approvals, books, reconciliation, and reports without visual noise. It is still dark-first, but the goal is not a theatrical trading cockpit. The baseline is a deep desaturated navy (`#08101A`) overlaid with a faint static ambient layer:
 
 ```css
 background-image:
-  radial-gradient(ellipse at 6% 0%, rgba(42, 178, 212, 0.08) 0%, transparent 40%),
-  radial-gradient(ellipse at 96% 96%, rgba(96, 165, 250, 0.05) 0%, transparent 38%),
+  radial-gradient(ellipse at 6% 0%, rgba(42, 178, 212, 0.06) 0%, transparent 38%),
+  radial-gradient(ellipse at 96% 96%, rgba(96, 165, 250, 0.04) 0%, transparent 36%),
   linear-gradient(180deg, rgba(8,16,26,1) 0%, rgba(8,16,26,1) 100%);
 ```
 
-The uploaded workstation render reinforces a monitor-like shell: dark perimeter, compact masthead,
-persistent left rail, and cyan used as a signal, not decoration. Ambient light stays faint and static.
+The workstation shell uses a dark perimeter, compact masthead, persistent left rail, and cyan as a signal, not decoration. Ambient light stays faint and static.
 **This is the only decorative gradient allowed.** Everything else that looks like a gradient is a
 brand mark or a chart encoding.
+
+Institutional Ops rejects hard-offset poster shadows, glow-heavy buttons, animated decoration, and soft marketing cards. Surfaces should look drawn, not lit.
 
 ## Reference-derived structure
 
@@ -129,6 +130,7 @@ rounded marketing cards.
 
 Every surface pairs an **inner highlight** with a shallow workstation shadow. Floating dialogs may
 use `--shadow-float`; tables, nav, and workbench panels should not look like marketing cards.
+Hard-offset shadows and neon glows are not part of the production workstation language.
 
 ## Backgrounds & imagery
 

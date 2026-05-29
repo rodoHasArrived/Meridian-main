@@ -28,6 +28,20 @@ This layer should expose stable backtesting integration seams without owning run
 
 Use this module when a backtesting contract must be shared across runtime and strategy code.
 
+## API / contract notes
+
+- `BacktestRequest.OrderBookQueueAheadFraction` configures queue-aware order-book replay. The
+  default `0` preserves immediate visible-depth fills; positive values infer that a fraction of
+  each executable level is queued ahead of the simulated order.
+- `BacktestRequest.MaxParticipationRate` applies to bar-midpoint and market-impact execution. The
+  default `0` keeps backward-compatible full-bar fills; positive values cap the filled quantity to
+  the configured fraction of traded bar volume and carry the remainder forward when partial fills
+  are allowed.
+- `CanonicalBacktestResultNormalizer` is the shared result-normalization seam for Backtest Studio
+  engines. Native results are marked with full canonical coverage, while QuantConnect Lean imports
+  normalize into the same `BacktestResult` storage model with `SummaryOnly` coverage metadata and
+  compatibility warnings for missing fill, cash-flow, attribution, and ledger artifacts.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

@@ -71,6 +71,8 @@ import {
   stopReplay,
   submitChiefOfStaffDecision,
   submitOrder,
+  updateExecutionDefaultPositionLimit,
+  updateExecutionSymbolPositionLimit,
   updateWorkflowPreset
 } from "@/lib/api";
 
@@ -132,6 +134,8 @@ describe("trading endpoint wiring", () => {
   it("wires execution controls and manual override endpoints", async () => {
     const controller = new AbortController();
     await getExecutionControls();
+    await updateExecutionDefaultPositionLimit({ maxPositionSize: 75, reason: "desk risk cap" });
+    await updateExecutionSymbolPositionLimit("AAPL", { maxPositionSize: 10, reason: "event risk" });
     await getTradingReadiness({ signal: controller.signal });
     await createExecutionManualOverride({
       kind: "BypassOrderControls",
@@ -142,6 +146,20 @@ describe("trading endpoint wiring", () => {
     await closePosition("paper:AAPL");
 
     expect(fetchMock).toHaveBeenCalledWith("/api/execution/controls", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/execution/controls/position-limits/default",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ maxPositionSize: 75, reason: "desk risk cap" })
+      })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/execution/controls/position-limits/AAPL",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ maxPositionSize: 10, reason: "event risk" })
+      })
+    );
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/workstation/trading/readiness",
       expect.objectContaining({ signal: controller.signal })
@@ -167,17 +185,23 @@ describe("trading endpoint wiring", () => {
 
   it("keeps API methods aligned to contract-manual override paths", async () => {
     const CONTRACT_EXECUTION_CONTROLS = "/api/execution/controls" as const;
+    const CONTRACT_EXECUTION_DEFAULT_POSITION_LIMIT = "/api/execution/controls/position-limits/default" as const;
+    const CONTRACT_EXECUTION_SYMBOL_POSITION_LIMIT = "/api/execution/controls/position-limits/MSFT" as const;
     const CONTRACT_EXECUTION_MANUAL_OVERRIDES = "/api/execution/controls/manual-overrides" as const;
     const CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR =
       "/api/execution/controls/manual-overrides/ovr-contract/clear" as const;
 
     await getExecutionControls();
+    await updateExecutionDefaultPositionLimit({ maxPositionSize: null, reason: "clear" });
+    await updateExecutionSymbolPositionLimit("MSFT", { maxPositionSize: 25 });
     await createExecutionManualOverride({ kind: "BypassOrderControls", reason: "contract-check" });
     await clearExecutionManualOverride("ovr-contract");
 
     expect(fetchMock).toHaveBeenNthCalledWith(1, CONTRACT_EXECUTION_CONTROLS, expect.anything());
-    expect(fetchMock).toHaveBeenNthCalledWith(2, CONTRACT_EXECUTION_MANUAL_OVERRIDES, expect.objectContaining({ method: "POST" }));
-    expect(fetchMock).toHaveBeenNthCalledWith(3, CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR, expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, CONTRACT_EXECUTION_DEFAULT_POSITION_LIMIT, expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenNthCalledWith(3, CONTRACT_EXECUTION_SYMBOL_POSITION_LIMIT, expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenNthCalledWith(4, CONTRACT_EXECUTION_MANUAL_OVERRIDES, expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenNthCalledWith(5, CONTRACT_EXECUTION_MANUAL_OVERRIDE_CLEAR, expect.objectContaining({ method: "POST" }));
   });
 
   it("uses dev fixtures for workstation bootstrap GETs when the API host is missing", async () => {

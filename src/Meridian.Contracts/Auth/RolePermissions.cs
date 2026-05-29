@@ -253,10 +253,44 @@ public sealed record RolePermissionProfileDto(
     string Description,
     bool IsBuiltIn,
     IReadOnlyList<string> Permissions,
-    long PermissionMask);
+    long PermissionMask,
+    string? BaseRole = null,
+    string? CreatedBy = null,
+    DateTimeOffset? CreatedAtUtc = null,
+    string? UpdatedBy = null,
+    DateTimeOffset? UpdatedAtUtc = null,
+    string? LastRationale = null,
+    string? LastAuditId = null);
 
 public sealed record PermissionCatalogItemDto(
     string Name,
     long Value,
     string Group,
     string Description);
+
+public sealed record RolePermissionProfileUpsertRequestDto(
+    string ProfileName,
+    string DisplayName,
+    string? Description,
+    string BaseRole,
+    IReadOnlyList<string> PermissionNames,
+    string RequestedBy,
+    string Rationale,
+    string? CorrelationId = null);
+
+public sealed record RolePermissionProfileUpsertResultDto(
+    RolePermissionProfileDto Profile,
+    RolePermissionCatalogDto Catalog,
+    RolePermissionProfileAuditEventDto AuditEvent);
+
+public sealed record RolePermissionProfileAuditEventDto(
+    string AuditId,
+    string EventType,
+    DateTimeOffset OccurredAtUtc,
+    string Actor,
+    string Rationale,
+    string CorrelationId,
+    string ProfileName,
+    string BaseRole,
+    IReadOnlyList<string> PermissionNames,
+    long PermissionMask);

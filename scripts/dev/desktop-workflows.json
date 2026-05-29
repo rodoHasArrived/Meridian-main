@@ -161,7 +161,7 @@
         },
         {
           "title": "Settings",
-          "pageTag": "Settings",
+          "pageTag": "SettingsShell",
           "captureName": "05-settings",
           "notes": "Finish in Settings so configuration-related startup issues can be inspected quickly."
         }

@@ -41,6 +41,11 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ProviderHealthCollectionsSectionViewModel _collectionsSection = new();
     private readonly ProviderHealthPostureSectionViewModel _postureSection = new(NeutralPostureBrush, NeutralPostureBackgroundBrush);
+    private readonly ProviderHealthManagementSectionViewModel _managementSection = new(
+        BuildProviderManagementTable(new ObservableCollection<ProviderManagementRowModel>()),
+        BuildEmptyInspector(),
+        BuildEmptyDiagnostics(),
+        BuildEmptyRoutingMatrix());
 
     private readonly DispatcherTimer _refreshTimer;
     private readonly DispatcherTimer _staleCheckTimer;
@@ -150,24 +155,29 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureBackgroundBrush, value, next => _postureSection.ProviderPostureBackgroundBrush = next);
     }
 
-    private ProviderManagementRowModel? _selectedProviderManagementRow;
     public ProviderManagementRowModel? SelectedProviderManagementRow
     {
-        get => _selectedProviderManagementRow;
+        get => _managementSection.SelectedProviderManagementRow;
         set
         {
-            if (SetProperty(ref _selectedProviderManagementRow, value))
+            if (SetProviderHealthSectionProperty(_managementSection.SelectedProviderManagementRow, value, next => _managementSection.SelectedProviderManagementRow = next))
             {
                 UpdateProviderManagementSummary();
             }
         }
     }
 
-    private string _providerManagementStatusText = "Provider management evidence is loading.";
-    public string ProviderManagementStatusText { get => _providerManagementStatusText; private set => SetProperty(ref _providerManagementStatusText, value); }
+    public string ProviderManagementStatusText
+    {
+        get => _managementSection.ProviderManagementStatusText;
+        private set => SetProviderHealthSectionProperty(_managementSection.ProviderManagementStatusText, value, next => _managementSection.ProviderManagementStatusText = next);
+    }
 
-    private string _providerVerificationStatusText = "Credential verification can be run from Diagnostics.";
-    public string ProviderVerificationStatusText { get => _providerVerificationStatusText; private set => SetProperty(ref _providerVerificationStatusText, value); }
+    public string ProviderVerificationStatusText
+    {
+        get => _managementSection.ProviderVerificationStatusText;
+        private set => SetProviderHealthSectionProperty(_managementSection.ProviderVerificationStatusText, value, next => _managementSection.ProviderVerificationStatusText = next);
+    }
 
     public WorkstationStateModel ProviderPostureState
     {
@@ -181,40 +191,34 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         private set => SetProviderHealthSectionProperty(_postureSection.ProviderPostureBadge, value, next => _postureSection.ProviderPostureBadge = next);
     }
 
-    private WorkstationCommandGroupModel _providerManagementCommandGroup = new();
     public WorkstationCommandGroupModel ProviderManagementCommandGroup
     {
-        get => _providerManagementCommandGroup;
-        private set => SetProperty(ref _providerManagementCommandGroup, value);
+        get => _managementSection.ProviderManagementCommandGroup;
+        private set => SetProviderHealthSectionProperty(_managementSection.ProviderManagementCommandGroup, value, next => _managementSection.ProviderManagementCommandGroup = next);
     }
 
-    private WorkstationTableModel<ProviderManagementRowModel> _providerManagementTable =
-        BuildProviderManagementTable(new ObservableCollection<ProviderManagementRowModel>());
     public WorkstationTableModel<ProviderManagementRowModel> ProviderManagementTable
     {
-        get => _providerManagementTable;
-        private set => SetProperty(ref _providerManagementTable, value);
+        get => _managementSection.ProviderManagementTable;
+        private set => SetProviderHealthSectionProperty(_managementSection.ProviderManagementTable, value, next => _managementSection.ProviderManagementTable = next);
     }
 
-    private InspectorPanelModel _selectedProviderInspector = BuildEmptyInspector();
     public InspectorPanelModel SelectedProviderInspector
     {
-        get => _selectedProviderInspector;
-        private set => SetProperty(ref _selectedProviderInspector, value);
+        get => _managementSection.SelectedProviderInspector;
+        private set => SetProviderHealthSectionProperty(_managementSection.SelectedProviderInspector, value, next => _managementSection.SelectedProviderInspector = next);
     }
 
-    private DiagnosticsChecklistModel _selectedProviderDiagnostics = BuildEmptyDiagnostics();
     public DiagnosticsChecklistModel SelectedProviderDiagnostics
     {
-        get => _selectedProviderDiagnostics;
-        private set => SetProperty(ref _selectedProviderDiagnostics, value);
+        get => _managementSection.SelectedProviderDiagnostics;
+        private set => SetProviderHealthSectionProperty(_managementSection.SelectedProviderDiagnostics, value, next => _managementSection.SelectedProviderDiagnostics = next);
     }
 
-    private RoutingMatrixModel _selectedProviderRoutingMatrix = BuildEmptyRoutingMatrix();
     public RoutingMatrixModel SelectedProviderRoutingMatrix
     {
-        get => _selectedProviderRoutingMatrix;
-        private set => SetProperty(ref _selectedProviderRoutingMatrix, value);
+        get => _managementSection.SelectedProviderRoutingMatrix;
+        private set => SetProviderHealthSectionProperty(_managementSection.SelectedProviderRoutingMatrix, value, next => _managementSection.SelectedProviderRoutingMatrix = next);
     }
 
     public AuditTimelineModel ProviderActivityTimeline { get; } = new()
@@ -230,6 +234,8 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
     internal ProviderHealthCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
     internal ProviderHealthPostureSectionViewModel PostureSection => _postureSection;
+
+    internal ProviderHealthManagementSectionViewModel ManagementSection => _managementSection;
 
     private bool SetProviderHealthSectionProperty<T>(
         T currentValue,
@@ -308,6 +314,14 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
 
     public void Stop() => Deactivate();
 
+    public void CancelActivation()
+    {
+        var refreshCts = Interlocked.Exchange(ref _cts, null);
+        CancelAndDispose(refreshCts);
+        var activationCts = Interlocked.Exchange(ref _activationCts, null);
+        CancelAndDispose(activationCts);
+    }
+
     public void Deactivate()
     {
         if (!_isActive)
@@ -321,10 +335,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         _refreshTimer.Stop();
         _staleCheckTimer.Stop();
         StopSparklineTimer();
-        var refreshCts = Interlocked.Exchange(ref _cts, null);
-        CancelAndDispose(refreshCts);
-        var activationCts = Interlocked.Exchange(ref _activationCts, null);
-        CancelAndDispose(activationCts);
+        CancelActivation();
     }
 
     public async Task RefreshAsync(CancellationToken ct = default)

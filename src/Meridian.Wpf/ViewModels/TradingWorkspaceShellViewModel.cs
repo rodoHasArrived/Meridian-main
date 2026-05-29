@@ -1,6 +1,7 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.ViewModels;
@@ -57,6 +58,9 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private string _tradingHeroTargetText = TradingWorkspaceShellPresentationDefaults.DeskHero.TargetLabel;
     private Visibility _tradingHeroSecondaryActionVisibility = Visibility.Visible;
     private IReadOnlyList<TradingActivePositionItem> _activePositions = Array.Empty<TradingActivePositionItem>();
+    private WorkstationTableModel<TradingActivePositionItem> _activePositionsTable =
+        BuildActivePositionsTable(Array.Empty<TradingActivePositionItem>());
+    private TradingActivePositionItem? _selectedActivePosition;
     private Visibility _noPositionsVisibility = Visibility.Collapsed;
     private ActiveRunContext? _activeRunContext;
     private WorkflowNextAction? _currentWorkflowAction;
@@ -362,11 +366,73 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
         private set => SetProperty(ref _activePositions, value);
     }
 
+    public WorkstationTableModel<TradingActivePositionItem> ActivePositionsTable
+    {
+        get => _activePositionsTable;
+        private set => SetProperty(ref _activePositionsTable, value);
+    }
+
+    public TradingActivePositionItem? SelectedActivePosition
+    {
+        get => _selectedActivePosition;
+        set
+        {
+            if (!SetProperty(ref _selectedActivePosition, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(SelectedActivePositionTitle));
+            RaisePropertyChanged(nameof(SelectedActivePositionDetail));
+            RaisePropertyChanged(nameof(SelectedActivePositionPnlText));
+            RaisePropertyChanged(nameof(SelectedActivePositionModeText));
+            RaisePropertyChanged(nameof(SelectedActivePositionEvidenceText));
+            RaisePropertyChanged(nameof(SelectedActivePositionActionDetail));
+            RaisePropertyChanged(nameof(HasSelectedActivePosition));
+            RaisePropertyChanged(nameof(SelectedActivePositionVisibility));
+            RaisePropertyChanged(nameof(NoSelectedActivePositionVisibility));
+        }
+    }
+
     public Visibility NoPositionsVisibility
     {
         get => _noPositionsVisibility;
         private set => SetProperty(ref _noPositionsVisibility, value);
     }
+
+    public string SelectedActivePositionTitle => SelectedActivePosition is null
+        ? "No position selected"
+        : $"{SelectedActivePosition.Symbol} | {SelectedActivePosition.QuantityLabel}";
+
+    public string SelectedActivePositionDetail => SelectedActivePosition is null
+        ? "Select an active position row to inspect strategy, mode, P&L, and next desk actions."
+        : $"{SelectedActivePosition.StrategyName} is open in {SelectedActivePosition.ModeLabel} mode.";
+
+    public string SelectedActivePositionPnlText => SelectedActivePosition is null
+        ? "P&L unavailable."
+        : $"Unrealized {SelectedActivePosition.UnrealizedPnlFormatted}; realized {SelectedActivePosition.RealizedPnlFormatted}.";
+
+    public string SelectedActivePositionModeText => SelectedActivePosition is null
+        ? "Mode unavailable."
+        : $"Mode: {SelectedActivePosition.ModeLabel}";
+
+    public string SelectedActivePositionEvidenceText => SelectedActivePosition is null
+        ? SelectedActivePositionDetail
+        : $"{SelectedActivePositionDetail} {SelectedActivePositionPnlText}";
+
+    public string SelectedActivePositionActionDetail => SelectedActivePosition is null
+        ? "Select an active position before taking desk actions."
+        : $"{SelectedActivePositionModeText}. Review linked orders, constraints, and promotion evidence before desk action.";
+
+    public bool HasSelectedActivePosition => SelectedActivePosition is not null;
+
+    public Visibility SelectedActivePositionVisibility => SelectedActivePosition is null
+        ? Visibility.Collapsed
+        : Visibility.Visible;
+
+    public Visibility NoSelectedActivePositionVisibility => SelectedActivePosition is null
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
     internal ActiveRunContext? ActiveRunContext => _activeRunContext;
 
@@ -469,7 +535,10 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
         MarketCoreText = state.MarketCoreText;
         RiskRailText = state.RiskRailText;
         DeskActionStatusText = state.DeskActionStatusText;
+        var previousSelection = SelectedActivePosition;
         ActivePositions = state.ActivePositions;
+        ActivePositionsTable = BuildActivePositionsTable(state.ActivePositions);
+        RestoreSelectedActivePosition(previousSelection, state.ActivePositions);
         NoPositionsVisibility = state.ActivePositions.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         ShellContext = state.ShellContext;
         CommandGroup = state.CommandGroup;
@@ -478,6 +547,40 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 
         ApplyStatusCard(state.StatusCard);
         ApplyDeskHero(state.DeskHero);
+    }
+
+    internal static WorkstationTableModel<TradingActivePositionItem> BuildActivePositionsTable(
+        IReadOnlyList<TradingActivePositionItem> rows)
+        => new(
+            rows,
+            [
+                new("Symbol", nameof(TradingActivePositionItem.Symbol), 86),
+                new("Strategy", nameof(TradingActivePositionItem.StrategyName), 180),
+                new("Qty", nameof(TradingActivePositionItem.QuantityLabel), 86),
+                new("Unrealized", nameof(TradingActivePositionItem.UnrealizedPnlFormatted), 110),
+                new("Realized", nameof(TradingActivePositionItem.RealizedPnlFormatted), 100),
+                new("Mode", nameof(TradingActivePositionItem.ModeLabel), 80)
+            ],
+            "Active trading positions",
+            "No active positions",
+            "Start a paper/live run or switch context to populate active positions.");
+
+    private void RestoreSelectedActivePosition(
+        TradingActivePositionItem? previousSelection,
+        IReadOnlyList<TradingActivePositionItem> positions)
+    {
+        if (positions.Count == 0)
+        {
+            SelectedActivePosition = null;
+            return;
+        }
+
+        SelectedActivePosition = previousSelection is null
+            ? positions[0]
+            : positions.FirstOrDefault(position =>
+                string.Equals(position.Symbol, previousSelection.Symbol, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(position.StrategyName, previousSelection.StrategyName, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(position.ModeLabel, previousSelection.ModeLabel, StringComparison.OrdinalIgnoreCase)) ?? positions[0];
     }
 
     private void ApplyStatusCard(TradingStatusCardPresentation presentation)

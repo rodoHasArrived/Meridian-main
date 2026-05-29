@@ -1,6 +1,6 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-05-27
+**Last Updated:** 2026-05-28
 **Status:** Active tracking document (theme backlog scope)
 
 **Scope:** Themed improvement priorities and recommended focus areas (not the flat execution task ledger).
@@ -23,7 +23,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 | W1 | Data Operations + Provider Reliability | Data Confidence and Validation | Trading Workstation | 4 hours / 1 business day | Trading Workstation; Shared Platform Interop; Governance and Ledger | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
 | W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
 | W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | Done | 2026-05-27 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
-| W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | Done | 2026-05-29 | [`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md) |
 | W5 | Research Platform | Strategy and Research | Shared Workflow and Contracts | 2 business days / 3 business days | Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
 | W6 | Execution + Brokerage Integrations | Execution and Brokerage Integrations | Governance and Ledger | 4 hours / 1 business day | Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
 <!-- program-state:end -->
@@ -77,7 +77,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 ### Portfolio Health Snapshot
 
 - **Completion ratio (core theme backlog only):** 100% complete (35/35), 0% partial (0/35), 0% open (0/35).
-- **Core improvement themes A-G are closed** for the baseline improvement backlog and do not indicate Wave 2-4 closure.
+- **Core improvement themes A-G are closed** for the baseline improvement backlog and do not define current wave closure; canonical W2/W3 closure and W4 status live in `PROGRAM_STATE.md`.
 - **Theme J canonicalization is closed** through J8 (backlog scope), including drift reporting and fixture-maintenance workflow support.
 - **Kernel migration parity program initiated:** blueprint and status tracking are now defined for fixture-driven C# ↔ F# boundary parity (`score`/`severity`/`reason`) with expected-divergence controls and CI gating for kernel-related PRs. Track rollout in [`docs/plans/kernel-parity-migration-blueprint.md`](../plans/kernel-parity-migration-blueprint.md) and the archived bootstrap placeholder in [`archive/docs/summaries/KERNEL_PARITY_STATUS-placeholder-2026-04-20.md`](../../archive/docs/summaries/KERNEL_PARITY_STATUS-placeholder-2026-04-20.md).
 - **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization Baseline) are complete. K1, K2, and K3 remain active, and the browser and WPF workstation lanes is now backed by WPF compatibility evidence through metadata-driven navigation, workspace-shell pages, shared deep-page shell hosting, Trading/Research/Data desk briefing heroes, the feature-owned Data shell module, Trading Hours session briefing, OrderBook order-flow posture, Welcome readiness progress, Storage archive posture plus preview scope/guidance, compact hosted-page command chrome, actionable shell-context attention detail, Watchlist pinned-first staging, Fund Accounts balance-evidence briefing, route-aware operator queue attention with actionable run review-packet items, DI fixes, registered-page sweep coverage, and hardened scheduled/manual WPF screenshot evidence capture.
@@ -111,7 +111,7 @@ Use this document and `FULL_IMPLEMENTATION_TODO.md` as the active normalized bac
 | 8 | G2 remainder, J8 canary | Full trace propagation and canonicalization drift detection/reporting land | ✅ Done |
 | 9 | K0, route/health reliability | WPF Fluent theme, SVG icons, LiveCharts2 charting, Synthetic provider default, workflow guide, CI screenshots, duplicate route/registration fixes | ✅ Done |
 | 10 | K1 shell consolidation, page-level redesign, Wave 1 provider confidence | `ShellNavigationCatalog`, workspace shell pages, and current WPF shell consolidation plus high-traffic page redesign (Live Data, Provider, Backfill, Data Quality); active Wave 1 gate closed around Alpaca/Robinhood/Yahoo plus checkpoint and Parquet evidence closure | ✅ Done |
-| 11 | Wave 2 cockpit hardening, governance/reporting follow-ons | Existing web paper-trading cockpit hardened across positions, orders, fills, P&L, risk, replay, sessions, and promotion; governance cash-flow/report-pack follow-ons on top of delivered Security Master productization | 🔄 Active |
+| 11 | Closed Wave 2 cockpit baseline, active governance/reporting follow-ons | Existing web paper-trading cockpit hardened across positions, orders, fills, P&L, risk, replay, sessions, and promotion; remaining active work is governance cash-flow/report-pack follow-ons on top of delivered Security Master productization | 🔄 Active |
 
 ---
 
@@ -1482,9 +1482,9 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-**Last Updated:** 2026-05-27
+**Last Updated:** 2026-05-28
 **Maintainer:** Project Team
-**Status:** ✅ Active tracking document — core improvements backlog complete (35/35) and Theme J complete (8/8); Theme K plus Waves 2-4 delivery remains active per ROADMAP/PROGRAM_STATE
+**Status:** ✅ Active tracking document — core improvements backlog complete (35/35) and Theme J complete (8/8); Theme K continues as workstation/productization support while W2/W3/W4 are closed baselines per ROADMAP/PROGRAM_STATE
 **Next Review:** Weekly engineering sync (or immediately after any status change)
 
 
@@ -1514,7 +1514,7 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - the Trading shell now includes a desk briefing hero that derives focus, readiness tone, and next handoff from active-run, workflow-summary, and shared operator-readiness inputs instead of a separate shell-local readiness model
 - the Research shell now includes a desk briefing hero that derives focus, selected-run posture, run-detail / portfolio drill-ins, and paper-promotion handoff state from shared workstation run data instead of a separate shell-local research model
 - the current shell support slice also includes Trading Hours session-specific briefings, OrderBook order-flow posture, RunCashFlow empty-state guidance, Welcome readiness progress, Storage archive posture plus preview scope/guidance, actionable shell-context attention detail, Watchlist pinned-first staging, run review-packet operator-inbox items, and Fund Accounts balance-evidence briefing as workflow-support evidence rather than separate readiness gates
-- WPF screenshot refresh now supports scheduled/push/manual catalog and manual capture groups, publishes diagnostic artifacts, and commits screenshot PNG changes once after the capture matrix; keep this in the validation-evidence lane rather than treating it as Wave 2-4 acceptance
+- WPF screenshot refresh now supports scheduled/push/manual catalog and manual capture groups, publishes diagnostic artifacts, and commits screenshot PNG changes once after the capture matrix; keep this in the validation-evidence lane rather than treating it as closed W2/W3 baseline preservation or active W4 acceptance
 - RunCashFlow now shows selected-run, missing-run, no-event, and loaded cash-flow guidance from retained run summaries; keep this in the shared-run continuity lane rather than treating it as completed governance cash-flow modeling
 - the mixed `MainPageUiWorkflowTests` bundle is stable again through isolated workspace persistence in the automation facade and shell-contract assertions that avoid unrelated singleton drift
 - `MainPageSmokeTests`, `MainPageUiWorkflowTests`, `RunMatUiSmokeTests`, `NavigationPageSmokeTests`, `WorkstationPageSmokeTests`, `NavigationServiceTests`, and `FullNavigationSweepTests` now run under `NavigationServiceSerialCollection`, keeping the mixed shell bundle deterministic while still validating full registered-page reachability

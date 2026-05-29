@@ -15,12 +15,27 @@ export const WORKSTATION_API_ENDPOINTS = {
   workflowLibrary: "/api/workstation/workflows",
   workflowPresets: "/api/workstation/workflows/presets",
   operationsContinuity: "/api/workstation/operations/continuity",
+  operationsContinuityApprovalPolicyMatrix: "/api/workstation/operations/continuity/approval-policy-matrix",
+  operationsContinuityApprovalPolicyRules: "/api/workstation/operations/continuity/approval-policy-rules",
+  operationsContinuityCloseCalendar: "/api/workstation/operations/continuity/close-calendar",
+  operationsContinuityCloseCalendarItems: "/api/workstation/operations/continuity/close-calendar-items",
   chiefOfStaff: "/api/workstation/chief-of-staff",
   runHistory: "/api/workstation/runs/history",
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
   evidenceSubjects: "/api/workstation/evidence/subjects",
   evidenceTemplates: "/api/workstation/evidence/templates"
+} as const;
+
+export const AUTH_API_ENDPOINTS = {
+  roles: "/api/auth/roles",
+  roleProfiles: "/api/auth/role-profiles"
+} as const;
+
+export const FUND_STRUCTURE_API_ENDPOINTS = {
+  ledgerMappingWorkbench: "/api/fund-structure/ledger-mapping-view",
+  ledgerMappingAssignments: "/api/fund-structure/ledger-mapping-assignments",
+  transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview"
 } as const;
 
 export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
@@ -38,6 +53,8 @@ export const EXECUTION_API_ENDPOINTS = {
   sessionsCreate: "/api/execution/sessions/create",
   audit: "/api/execution/audit",
   controls: "/api/execution/controls",
+  defaultPositionLimit: "/api/execution/controls/position-limits/default",
+  symbolPositionLimits: "/api/execution/controls/position-limits",
   manualOverrides: "/api/execution/controls/manual-overrides"
 } as const;
 
@@ -94,6 +111,10 @@ export const STRATEGY_ENGINE_API_ENDPOINTS = {
 
 export const SECURITY_MASTER_API_ENDPOINTS = {
   base: "/api/security-master",
+  assetProfiles: "/api/security-master/asset-profiles",
+  assetProfileDrafts: "/api/security-master/asset-profiles/drafts",
+  assetProfileApprove: "/api/security-master/asset-profiles/approve",
+  assetProfileRollback: "/api/security-master/asset-profiles/rollback",
   workstationSecurities: "/api/workstation/security-master/securities",
   workstationConflictsBulkResolve: "/api/workstation/security-master/conflicts/bulk-resolve"
 } as const;
@@ -262,6 +283,13 @@ export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId:
   return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/ledger-preview`;
 }
 
+export function workstationOperationsContinuityCloseCalendarEndpoint(options: {
+  fundAccountId?: string;
+  periodId?: string;
+} = {}): string {
+  return `${WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendar}${queryString(options)}`;
+}
+
 export function workstationChiefOfStaffSessionsEndpoint(options: {
   workspace?: string;
   fundProfileId?: string;
@@ -398,6 +426,10 @@ export function executionManualOverrideClearEndpoint(overrideId: string): string
   return `${EXECUTION_API_ENDPOINTS.manualOverrides}/${pathSegment(overrideId, "overrideId")}/clear`;
 }
 
+export function executionSymbolPositionLimitEndpoint(symbol: string): string {
+  return `${EXECUTION_API_ENDPOINTS.symbolPositionLimits}/${pathSegment(symbol, "symbol")}`;
+}
+
 export function replayFilesEndpoint(symbol?: string): string {
   return `${REPLAY_API_ENDPOINTS.files}${queryString({ symbol })}`;
 }
@@ -459,6 +491,10 @@ export function workstationRunEquityCurveEndpoint(runId: string): string {
   return `${workstationRunBaseEndpoint(runId)}/equity-curve`;
 }
 
+export function portfolioRunCashFlowsEndpoint(runId: string): string {
+  return `/api/portfolio/${pathSegment(runId, "runId")}/cash-flows`;
+}
+
 export function workstationRunLedgerTrialBalanceEndpoint(runId: string, accountType?: string): string {
   return `${workstationRunLedgerEndpoint(runId)}/trial-balance${queryString({ accountType })}`;
 }
@@ -491,12 +527,36 @@ export function workstationSecurityMasterTrustSnapshotEndpoint(securityId: strin
   return `${workstationSecurityMasterEntryEndpoint(securityId)}/trust-snapshot`;
 }
 
+export function workstationSecurityMasterInstrumentPassportEndpoint(securityId: string): string {
+  return `${workstationSecurityMasterEntryEndpoint(securityId)}/passport`;
+}
+
 export function securityMasterEntryEndpoint(): string {
   return SECURITY_MASTER_API_ENDPOINTS.base;
 }
 
 export function securityMasterAmendEndpoint(): string {
   return `${SECURITY_MASTER_API_ENDPOINTS.base}/amend`;
+}
+
+export function securityMasterAssetProfilesEndpoint(): string {
+  return SECURITY_MASTER_API_ENDPOINTS.assetProfiles;
+}
+
+export function securityMasterAssetProfileLineageEndpoint(profileId: string): string {
+  return `${SECURITY_MASTER_API_ENDPOINTS.assetProfiles}/${pathSegment(profileId, "profileId")}/lineage`;
+}
+
+export function securityMasterAssetProfileDraftsEndpoint(): string {
+  return SECURITY_MASTER_API_ENDPOINTS.assetProfileDrafts;
+}
+
+export function securityMasterAssetProfileApproveEndpoint(): string {
+  return SECURITY_MASTER_API_ENDPOINTS.assetProfileApprove;
+}
+
+export function securityMasterAssetProfileRollbackEndpoint(): string {
+  return SECURITY_MASTER_API_ENDPOINTS.assetProfileRollback;
 }
 
 export function securityMasterAliasUpsertEndpoint(): string {

@@ -29,6 +29,7 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class FundLedgerViewModelTests
 {
     [Fact]
+    [Trait("Category", "W4Acceptance")]
     public void LoadAsync_PopulatesStructureLabels_SecurityCoverage_AndStrategyLevelReconciliation()
     {
         WpfTestThread.Run(async () =>
@@ -190,12 +191,19 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReconciliationDetailLifecycleText.Should().Contain("records ownership");
                 viewModel.ReconciliationDetailSignoffText.Should().Contain("Pending Signoff");
                 viewModel.ReconciliationDetailSignoffText.Should().Contain("Fund operations lead");
+                viewModel.ReconciliationNextBestActionText.Should().Contain("Attach broker statement evidence");
+                viewModel.ReconciliationBlockerReasonText.Should().Contain("Broker statement market value");
+                viewModel.ReconciliationBlockerReasonText.Should().Contain("Ledger impact:");
+                viewModel.ReconciliationEvidenceLinksText.Should().Contain("statement-hash:price-gap");
                 viewModel.ReconciliationSection.GovernanceSignifierState.Kind.Should().Be(WorkstationStateKind.Blocked);
                 viewModel.ReconciliationSection.GovernanceSignifierState.ActionPosture!.Label.Should().Be("Start Review");
                 viewModel.ReconciliationSection.GovernanceSignifierState.SignoffRequirement!.Role.Should().Be("Fund operations lead");
                 viewModel.ReconciliationSection.GovernanceSignifierState.VisibleEvidenceLinks
                     .Should()
                     .Contain(link => link.Target.Contains("/api/workstation/reconciliation/break-queue/", StringComparison.Ordinal));
+                viewModel.ReconciliationSection.GovernanceSignifierState.VisibleEvidenceLinks
+                    .Should()
+                    .Contain(link => link.Label == "Explain the Break evidence" && link.Target.Contains("statement-hash:price-gap", StringComparison.Ordinal));
                 viewModel.SupportsSelectedBreakActions.Should().BeTrue();
                 viewModel.CanStartReviewSelectedBreak.Should().BeTrue();
                 viewModel.CanResolveSelectedBreak.Should().BeFalse();
@@ -215,6 +223,7 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
+    [Trait("Category", "W4Acceptance")]
     public void ResolveSelectedBreakAsync_RefreshesQueueAndKeepsDecisionAuditVisible()
     {
         WpfTestThread.Run(async () =>
@@ -688,6 +697,34 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
+    public void FundLedgerWorkbenchSection_ShouldOwnRouteChromeAndReportPackPresentationWithAdapterBindings()
+    {
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Sections.cs"));
+        var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.cs"));
+
+        sectionSource.Should().Contain("internal sealed class FundLedgerWorkbenchSectionViewModel");
+        sectionSource.Should().Contain("public string CurrentWorkbenchModeText");
+        sectionSource.Should().Contain("public string RouteBannerTitleText");
+        sectionSource.Should().Contain("public bool HasRouteBanner");
+        sectionSource.Should().Contain("public string ReconciliationOwnershipText");
+        sectionSource.Should().Contain("public string ReportPackOwnershipText");
+        sectionSource.Should().Contain("public WorkstationStateModel ReportPackReadinessState");
+        sectionSource.Should().Contain("public int SelectedTabIndex");
+        viewModelSource.Should().Contain("internal FundLedgerWorkbenchSectionViewModel WorkbenchSection");
+        viewModelSource.Should().Contain("get => WorkbenchSection.CurrentWorkbenchModeText");
+        viewModelSource.Should().Contain("get => WorkbenchSection.RouteBannerTitleText");
+        viewModelSource.Should().Contain("get => WorkbenchSection.ReportPackReadinessState");
+        viewModelSource.Should().Contain("get => WorkbenchSection.SelectedTabIndex");
+        viewModelSource.Should().NotContain("private string _currentWorkbenchModeText");
+        viewModelSource.Should().NotContain("private string _routeBannerTitleText");
+        viewModelSource.Should().NotContain("private bool _hasRouteBanner");
+        viewModelSource.Should().NotContain("private string _reconciliationOwnershipText");
+        viewModelSource.Should().NotContain("private string _reportPackOwnershipText");
+        viewModelSource.Should().NotContain("private WorkstationStateModel _reportPackReadinessState");
+        viewModelSource.Should().NotContain("private int _selectedTabIndex");
+    }
+    [Fact]
+    [Trait("Category", "W4Acceptance")]
     public void LoadAsync_ReportPackContext_LoadsPreviewAndSelectsReportPackTab()
     {
         WpfTestThread.Run(async () =>
@@ -804,10 +841,21 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackOwnershipText.Should().Contain("sign-off");
                 viewModel.ReportPackSnapshotWarningText.Should().NotBeNullOrWhiteSpace();
                 viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
+                viewModel.ReportPackReadinessState.Title.Should().Be("Report pack evidence linked");
+                viewModel.ReportPackReadinessState.Detail.Should().Contain("preview is ready for operator handoff");
+                viewModel.ReportPackReadinessState.Detail.Should().Contain("Close readiness remains blocked until shared lifecycle gates, reconciliation decisions, and report-pack evidence align.");
                 viewModel.ReportPackReadinessState.ReadinessTone.Should().Be(WorkstationReadinessTone.EvidenceLinked);
-                viewModel.ReportPackReadinessState.ActionPosture!.Target.Should().Be("FundReportPack");
+                viewModel.ReportPackReadinessState.ActionPosture!.Label.Should().Be("Review handoff");
+                viewModel.ReportPackReadinessState.ActionPosture.Target.Should().Be("FundReportPack");
+                viewModel.ReportPackReadinessState.ActionPosture.Detail.Should().Contain("preview freshness");
                 viewModel.ReportPackReadinessState.VisibleEvidenceLinks.Should().Contain(link => link.Label == "Report-pack preview");
+                viewModel.ReportPackReadinessState.VisibleEvidenceLinks.Should().Contain(link => link.Label == "Audit traceability");
+                viewModel.ReportPackReadinessState.RecoveryActions.Should().Contain(action =>
+                    action.Label == "Refresh before distribution" &&
+                    action.Detail.Contains("approval change", StringComparison.OrdinalIgnoreCase));
                 viewModel.ReportPackReadinessState.SignoffRequirement!.Role.Should().NotBeNullOrWhiteSpace();
+                viewModel.ReportPackReadinessState.SignoffRequirement.Status.Should().Contain("Close readiness");
+                viewModel.ReportPackReadinessState.SignoffRequirement.Detail.Should().Contain("current preview");
             }
             finally
             {
@@ -1016,7 +1064,14 @@ public sealed class FundLedgerViewModelTests
             ToleranceProfileId: "price-variance-ops",
             ToleranceBand: 100m,
             RequiredSignoffRole: "Fund operations lead",
-            SignoffStatus: "pending-signoff");
+            SignoffStatus: "pending-signoff",
+            BreakExplanation: new ReconciliationBreakExplanationDto(
+                Summary: "Broker statement market value break from custodian row 9.",
+                SourceSystems: ["broker", "Meridian ledger"],
+                ProbableCause: "Broker statement market value could not be tied to the retained ledger posting.",
+                LedgerImpact: "Securities value and cash close readiness remain blocked by USD 12.50.",
+                SuggestedNextAction: "Attach broker statement evidence, review the ledger posting, and route to Fund operations lead.",
+                EvidenceLinks: ["/api/workstation/reconciliation/statement-runs/run-fund-ops#row-9", "statement-hash:price-gap"]));
 
     private static ReconciliationRunDetail BuildStrategyDetail(string runId)
         => new(

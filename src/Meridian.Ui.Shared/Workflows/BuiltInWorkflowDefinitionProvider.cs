@@ -159,6 +159,21 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         "FundTrialBalance",
                         "Primary"),
                     Action(
+                        WorkflowActionIds.AccountingReviewOperationsContinuity,
+                        "Review Close Workflow",
+                        "Open the governed close workflow with gates, blockers, checklist, timeline, and evidence.",
+                        "OperationsContinuity",
+                        "Warning",
+                        routePrefixes: [UiApiRoutes.OperationsContinuity]),
+                    Action(
+                        WorkflowActionIds.AccountingReviewCloseReadiness,
+                        "Review Close Readiness",
+                        "Inspect close readiness score, blockers, checklist controls, and next recovery actions.",
+                        "OperationsClose",
+                        "Warning",
+                        routePrefixes: [UiApiRoutes.OperationsContinuityCloseReadiness],
+                        routeContains: ["/close-readiness"]),
+                    Action(
                         WorkflowActionIds.AccountingReviewAuditTrail,
                         "Review Audit Trail",
                         "Inspect approvals, replay evidence, and trust-gate audit history.",

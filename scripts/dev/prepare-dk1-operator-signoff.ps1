@@ -102,6 +102,41 @@ function Test-ApprovedDecision {
     return @("approved", "signed", "complete", "completed") -contains $Decision.Trim().ToLowerInvariant()
 }
 
+function ConvertTo-PacketBindingUtcTicks {
+    param([object]$Value)
+
+    if ($null -eq $Value) {
+        return $null
+    }
+
+    try {
+        if ($Value -is [datetime]) {
+            return $Value.ToUniversalTime().Ticks
+        }
+
+        if ($Value -is [datetimeoffset]) {
+            return $Value.UtcDateTime.Ticks
+        }
+
+        $styles = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+        return ([datetimeoffset]::Parse([string]$Value, [System.Globalization.CultureInfo]::InvariantCulture, $styles)).UtcDateTime.Ticks
+    }
+    catch {
+        return $null
+    }
+}
+
+function Test-PacketBindingGeneratedAtEquals {
+    param(
+        [object]$Expected,
+        [object]$Actual
+    )
+
+    $expectedTicks = ConvertTo-PacketBindingUtcTicks -Value $Expected
+    $actualTicks = ConvertTo-PacketBindingUtcTicks -Value $Actual
+    return $null -ne $expectedTicks -and $null -ne $actualTicks -and $expectedTicks -eq $actualTicks
+}
+
 function Get-Dk1PacketReview {
     param([Parameter(Mandatory)][string]$Path)
 
@@ -330,7 +365,7 @@ function Get-OperatorSignoffReview {
             if (-not [string]::Equals($expectedPacketPath, $actualPacketPath, [System.StringComparison]::OrdinalIgnoreCase)) {
                 $packetBindingMissingRequirements.Add("packetPath")
             }
-            if (-not [string]::Equals($expectedGeneratedAtUtc, $actualGeneratedAtUtc, [System.StringComparison]::OrdinalIgnoreCase)) {
+            if (-not (Test-PacketBindingGeneratedAtEquals -Expected $expectedGeneratedAtUtc -Actual $actualGeneratedAtUtc)) {
                 $packetBindingMissingRequirements.Add("packetGeneratedAtUtc")
             }
             if (-not [string]::Equals($expectedStatus, $actualStatus, [System.StringComparison]::OrdinalIgnoreCase)) {

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import {
   useOperationsContinuityScreenViewModel,
   type OperationsContinuityBlockerRow,
+  type OperationsContinuityChecklistRow,
   type OperationsContinuityGateRow,
   type OperationsContinuityTimelineRow,
   type OperationsContinuityTone,
@@ -119,6 +120,65 @@ const blockerColumns: DenseDataTableColumn<OperationsContinuityBlockerRow>[] = [
     id: "evidence",
     label: "Evidence",
     render: (row) => <span className="text-xs text-muted-foreground">{row.evidenceLabel}</span>
+  }
+];
+
+const checklistColumns: DenseDataTableColumn<OperationsContinuityChecklistRow>[] = [
+  {
+    id: "task",
+    label: "Task",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.requiredEvidence}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+  },
+  {
+    id: "owner",
+    label: "Owner",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block font-mono text-foreground/80">{row.ownerLabel}</span>
+        <span className="block text-muted-foreground">{row.approvalLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "due",
+    label: "Due",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.dueLabel}</span>
+        <span className="block text-muted-foreground">{row.expiresLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block font-mono text-muted-foreground">{row.evidenceLabel}</span>
+        {row.remediationHref ? (
+          <Link to={row.remediationHref} aria-label={`Open remediation for ${row.label}`}>
+            {row.remediationLabel}
+          </Link>
+        ) : (
+          <span className="block text-muted-foreground">{row.remediationLabel}</span>
+        )}
+      </span>
+    )
+  },
+  {
+    id: "acknowledgement",
+    label: "Acknowledgement",
+    render: (row) => <span className="text-xs leading-5 text-muted-foreground">{row.acknowledgementLabel}</span>
   }
 ];
 
@@ -331,6 +391,110 @@ export function OperationsContinuityScreen() {
           </CardContent>
         </Card>
 
+        <Card className="panel-surface">
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.checklistLabel}
+                </CardTitle>
+                <CardDescription>Shared close-control tasks required before approval and close transitions.</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.checklistSummary.statusTone]}>
+                {vm.checklistSummary.taskCountLabel}
+              </Badge>
+            </div>
+            <div
+              role="list"
+              aria-label="Close checklist control summary"
+              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2"
+            >
+              <span role="listitem">{vm.checklistSummary.readyCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.blockedCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.acknowledgementCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.approvalCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.evidenceCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.dueSoonLabel}</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={checklistColumns}
+              rows={vm.checklist}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.checklistEmptyText}
+              ariaLabel="Operations continuity close checklist"
+            />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4">
+        <Card className={cn("border", tonePanel[vm.closePackage.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle>{vm.closePackage.title}</CardTitle>
+                <CardDescription>Governed close publication from the shared operations-continuity workflow.</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.closePackage.statusTone]}>{vm.closePackage.statusLabel}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <dl
+              aria-label="Close package publication summary"
+              className="grid gap-3 text-xs leading-5 sm:grid-cols-2 lg:grid-cols-4"
+            >
+              <div>
+                <dt className="eyebrow-label">Package</dt>
+                <dd className="break-words font-mono text-foreground">{vm.closePackage.packageIdLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Report pack</dt>
+                <dd className="break-words text-foreground">{vm.closePackage.reportPackLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Manifest</dt>
+                <dd className="break-words font-mono text-foreground">
+                  {vm.closePackage.manifestHref ? (
+                    <Link to={vm.closePackage.manifestHref} aria-label="Open retained close package manifest">
+                      {vm.closePackage.manifestLabel}
+                    </Link>
+                  ) : vm.closePackage.manifestLabel}
+                </dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Evidence hash</dt>
+                <dd className="break-all font-mono text-foreground">{vm.closePackage.evidenceHashLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Publication</dt>
+                <dd className="text-foreground">{vm.closePackage.publishedLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Sign-off</dt>
+                <dd className="text-foreground">{vm.closePackage.signerLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Evidence</dt>
+                <dd className="text-foreground">{vm.closePackage.evidenceLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Approvals</dt>
+                <dd className="text-foreground">{vm.closePackage.approvalLabel}</dd>
+              </div>
+              <div className="sm:col-span-2 lg:col-span-4">
+                <dt className="eyebrow-label">Rationale</dt>
+                <dd className="text-foreground">{vm.closePackage.rationaleLabel}</dd>
+              </div>
+            </dl>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4">
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

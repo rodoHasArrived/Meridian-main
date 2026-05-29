@@ -104,6 +104,36 @@ public static class LedgerAccounts
     public static LedgerAccount RetainedEarningsFor(string financialAccountId) =>
         CreateScoped("Retained Earnings", LedgerAccountType.Equity, financialAccountId);
 
+    public static LedgerAccount InvestorCapitalFor(string investorId) =>
+        CreateScoped("Investor Capital", LedgerAccountType.Equity, investorId);
+
+    public static LedgerAccount ManagementFeeExpenseFor(string fundId) =>
+        CreateScoped("Management Fee Expense", LedgerAccountType.Expense, fundId);
+
+    public static LedgerAccount ManagementFeePayableFor(string fundId) =>
+        CreateScoped("Management Fee Payable", LedgerAccountType.Liability, fundId);
+
+    public static LedgerAccount PerformanceFeeExpenseFor(string fundId) =>
+        CreateScoped("Performance Fee Expense", LedgerAccountType.Expense, fundId);
+
+    public static LedgerAccount PerformanceFeePayableFor(string fundId) =>
+        CreateScoped("Performance Fee Payable", LedgerAccountType.Liability, fundId);
+
+    public static LedgerAccount CommissionPayableFor(string financialAccountId) =>
+        CreateScoped("Commission Payable", LedgerAccountType.Liability, financialAccountId);
+
+    public static LedgerAccount WithholdingTaxExpenseFor(string financialAccountId) =>
+        CreateScoped("Withholding Tax Expense", LedgerAccountType.Expense, financialAccountId);
+
+    public static LedgerAccount WithholdingTaxPayableFor(string financialAccountId) =>
+        CreateScoped("Withholding Tax Payable", LedgerAccountType.Liability, financialAccountId);
+
+    public static LedgerAccount UnrealizedFxGainFor(string financialAccountId) =>
+        CreateScoped("Unrealized FX Gain", LedgerAccountType.Revenue, financialAccountId);
+
+    public static LedgerAccount UnrealizedFxLossFor(string financialAccountId) =>
+        CreateScoped("Unrealized FX Loss", LedgerAccountType.Expense, financialAccountId);
+
     /// <summary>Dividend expense owed on short positions or other negative dividend adjustments.</summary>
     public static readonly LedgerAccount DividendExpense =
         new("Dividend Expense", LedgerAccountType.Expense);

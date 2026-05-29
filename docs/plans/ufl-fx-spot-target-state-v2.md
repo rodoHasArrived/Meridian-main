@@ -1,8 +1,8 @@
-# UFL FX Spot Target-State Package V2
+# UFL FX Spot Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl fx spot target state v2** and document explicit in-scope vs out-of-scope items.
@@ -31,6 +31,75 @@ It assumes:
 - replay-safe rebuilds across aliases, lifecycle state, and venue metadata
 
 This package turns the existing `FxSpotTerms` support into a concrete implementation plan for pair identity, alias resolution, trading profile, and treasury/execution APIs.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.FxSpot` and `FxSpotTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"FxSpot"` asset class into the canonical domain.
+- Security Master validation enforces nonblank base and quote currencies and prevents identical currency values.
+- `src/Meridian.Application/FxSpot/IFxSpotReferenceService.cs` and `FxSpotProjectionService` define FX reference reads.
+- `src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs` exposes FX spot reference-data endpoints.
+
+### Partially Implemented
+
+- Canonical pair terms and reference surfaces exist, but alias-resolution, venue profile, tradability lifecycle, and rebuild-specific projection evidence remains partial.
+
+### Target-State Only
+
+- FX alias-resolution and venue-profile projections.
+- Pair lifecycle and tradability views.
+- Treasury and execution query contracts beyond basic reference reads.
+- Optional session and settlement metadata overlays.
+
+### Explicitly Out of Scope
+
+- Forwards.
+- FX swaps.
+- Non-deliverable forwards.
+- CLS settlement.
+- Cross-currency exposure analytics.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.FxSpot`, terms, mapping, validation, and reference services exist. | canonical pair profile metadata | F# validation and C# mapping tests |
+| ProviderAlias | L1/L2 partial | reference services can resolve canonical pairs. | provider and venue alias projection with deterministic normalization | alias projection tests |
+| Lifecycle | L0 | target-state only. | tradability, restricted, inactive, and review states | lifecycle projection tests |
+| TermsVersioning | L1 partial | base/quote pair terms exist. | settlement/session metadata versioning | terms versioning tests |
+| ProjectionRebuild | L1/L2 partial | FX projection service and endpoint shape exist. | pair, alias, venue, and lifecycle projections with rebuild metadata | rebuild/checkpoint tests |
+| WorkstationControl | L0 | target-state only. | treasury and execution review controls for pair status and alias conflicts | workstation endpoint tests |
+
+## Current Maturity
+
+`L1/L2 partial`: canonical FX pair terms, validation, and reference surfaces exist. L3 maturity requires alias, venue, lifecycle, and rebuild metadata tests.
+
+## Next Milestone Contract
+
+**Goal:** advance FX spot to L3 by adding provider-independent pair, alias, venue, tradability, and rebuild metadata projections.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/FxSpot/`
+- `src/Meridian.Contracts/FxSpot/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for FX pair terms.
+- endpoint contract tests for pair code and currency reads.
+- projection/rebuild tests for alias, venue, lifecycle, and source-event metadata.
+- provider-payload isolation tests for canonical pair projections.
+
+**Exit criteria:** FX spot consumers can query canonical pair and venue views without depending on provider-native pair codes.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as source evidence, but FX spot workflows must consume canonical pair identities, aliases, venue projections, lifecycle state, and rebuild metadata.
 
 ## Repo Fit
 
@@ -345,6 +414,6 @@ Meridian treats FX spot as a canonical directional pair identity with stable ali
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

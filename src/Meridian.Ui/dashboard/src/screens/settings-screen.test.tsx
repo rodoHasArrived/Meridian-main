@@ -6,16 +6,30 @@ import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
 import type {
   BrokerageConnectionStatus,
+  LedgerMappingWorkbench,
+  OperationsApprovalPolicyMatrix,
+  OperationsCloseCalendar,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
+  RolePermissionCatalog,
+  SecurityAssetProfileDefinition,
   SessionInfo,
   SystemOverviewResponse
 } from "@/types";
 
 const apiMocks = vi.hoisted(() => ({
+  approveSecurityAssetProfile: vi.fn(),
+  assignLedgerMapping: vi.fn(),
+  createSecurityMasterEntry: vi.fn(),
+  createRolePermissionProfile: vi.fn(),
+  draftSecurityAssetProfile: vi.fn(),
+  getSecurityAssetProfileLineage: vi.fn(),
+  rollbackSecurityAssetProfile: vi.fn(),
+  upsertOperationsApprovalPolicyRule: vi.fn(),
+  upsertOperationsCloseCalendarItem: vi.fn(),
   connectAlpacaConnection: vi.fn(),
   revokeAlpacaConnection: vi.fn(),
   testProviderConnection: vi.fn(),
@@ -26,6 +40,15 @@ const apiMocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/api", async (importActual) => ({
   ...(await importActual<typeof import("@/lib/api")>()),
+  approveSecurityAssetProfile: apiMocks.approveSecurityAssetProfile,
+  assignLedgerMapping: apiMocks.assignLedgerMapping,
+  createSecurityMasterEntry: apiMocks.createSecurityMasterEntry,
+  createRolePermissionProfile: apiMocks.createRolePermissionProfile,
+  draftSecurityAssetProfile: apiMocks.draftSecurityAssetProfile,
+  getSecurityAssetProfileLineage: apiMocks.getSecurityAssetProfileLineage,
+  rollbackSecurityAssetProfile: apiMocks.rollbackSecurityAssetProfile,
+  upsertOperationsApprovalPolicyRule: apiMocks.upsertOperationsApprovalPolicyRule,
+  upsertOperationsCloseCalendarItem: apiMocks.upsertOperationsCloseCalendarItem,
   connectAlpacaConnection: apiMocks.connectAlpacaConnection,
   revokeAlpacaConnection: apiMocks.revokeAlpacaConnection,
   testProviderConnection: apiMocks.testProviderConnection,
@@ -197,9 +220,192 @@ const portfolio: PortfolioWorkspaceResponse = {
   cashFlow: null
 };
 
+const rolePermissionCatalog: RolePermissionCatalog = {
+  roles: [
+    {
+      role: "Accounting",
+      displayName: "Accounting",
+      description: "Accounting and fund-operations access.",
+      isBuiltIn: true,
+      permissions: ["ViewTrades", "ManageDirectLending"],
+      permissionMask: 0
+    }
+  ],
+  permissions: [
+    { name: "ViewTrades", value: 0, group: "Trading", description: "View trade records." },
+    { name: "ManageDirectLending", value: 0, group: "Direct lending", description: "Manage direct lending." }
+  ]
+};
+
+const ledgerMappingWorkbench: LedgerMappingWorkbench = {
+  asOf: "2026-05-28T00:00:00Z",
+  accountCount: 2,
+  mappedAccountCount: 1,
+  unmappedAccountCount: 1,
+  ledgerGroups: [
+    {
+      ledgerGroupId: "direct-lending",
+      displayName: "Direct lending",
+      accountIds: [],
+      investmentPortfolioIds: [],
+      clientIds: [],
+      fundIds: [],
+      sleeveIds: [],
+      vehicleIds: []
+    }
+  ],
+  accounts: [
+    {
+      accountId: "account-2",
+      accountCode: "OPS-2",
+      displayName: "Operations account",
+      accountType: "ManagedAccount",
+      operationalStatus: "Active",
+      baseCurrency: "USD",
+      institution: null,
+      fundId: null,
+      sleeveId: null,
+      vehicleId: null,
+      entityId: null,
+      portfolioId: null,
+      ledgerReference: null,
+      mapping: {
+        ledgerGroupId: "unassigned",
+        source: "Unassigned",
+        sourceNodeId: null,
+        sourceNodeKind: null,
+        sourceReference: null,
+        requiresUserMapping: true,
+        issueCodes: ["ledger-mapping.missing"]
+      },
+      recommendedAction: "Assign a ledger group before close."
+    }
+  ]
+};
+
+const approvalPolicyMatrix: OperationsApprovalPolicyMatrix = {
+  policyId: "ops-close",
+  version: "2026.05",
+  generatedAtUtc: "2026-05-28T00:00:00Z",
+  rows: [
+    {
+      policyKey: "ready-for-close",
+      workflowArea: "Account close",
+      action: "Approve close",
+      gate: "Approval",
+      trigger: "ReadyForClose",
+      requiredPermission: "AdminMaintenance",
+      submitterRole: "Accounting",
+      reviewerRole: "Admin",
+      requiredDistinctApprovals: 2,
+      requiresIndependentReviewer: true,
+      requiresReportPack: true,
+      requiresChecklistControlApprovals: true,
+      evidenceRequirement: "Report pack and checklist controls",
+      auditEventType: "close-approved",
+      route: "/accounting/operations-continuity",
+      severity: "High"
+    }
+  ]
+};
+
+const closeCalendar: OperationsCloseCalendar = {
+  generatedAtUtc: "2026-05-28T00:00:00Z",
+  items: [
+    {
+      workflowId: "workflow-1",
+      fundAccountId: "fund-1",
+      periodId: "2026-05",
+      status: "Blocked",
+      version: 4,
+      nextDueDate: "2026-05-31",
+      nextDueTaskId: "task-1",
+      nextDueLabel: "Resolve ledger mapping",
+      nextDueOwner: "Accounting",
+      readinessSeverity: "Warning",
+      readinessScore: 70,
+      isReadyToClose: false,
+      blockerCount: 1,
+      openChecklistCount: 2,
+      requiredApprovalCount: 2,
+      completedApprovalCount: 1,
+      route: "/accounting/operations-continuity"
+    }
+  ]
+};
+
+const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
+  {
+    profileId: "private-fund-interest",
+    version: 1,
+    name: "Private Fund Interest",
+    category: "AlternativeAsset",
+    subType: "PrivateFundInterest",
+    status: "Approved",
+    fields: [
+      {
+        key: "sponsor",
+        label: "Sponsor",
+        fieldType: "Text",
+        isRequired: true,
+        allowedValues: [],
+        description: null,
+        minValue: null,
+        maxValue: null,
+        isProjected: true,
+        isSearchable: true
+      },
+      {
+        key: "navDate",
+        label: "NAV date",
+        fieldType: "Date",
+        isRequired: true,
+        allowedValues: [],
+        description: null,
+        minValue: null,
+        maxValue: null,
+        isProjected: true,
+        isSearchable: true
+      },
+      {
+        key: "commitment",
+        label: "Commitment",
+        fieldType: "Decimal",
+        isRequired: false,
+        allowedValues: [],
+        description: null,
+        minValue: 0,
+        maxValue: null,
+        isProjected: true,
+        isSearchable: false
+      }
+    ],
+    identifierPreferences: [
+      { kind: "InternalCode", isRequiredForClose: true, reason: "Private funds require an internal code." }
+    ],
+    lifecycleStates: ["Committed", "Funded", "Harvesting"],
+    accountingImpactHints: ["CommitmentAccounting", "NavBasedValuation"],
+    dateOrderRules: [],
+    effectiveFrom: "2026-05-01",
+    effectiveTo: null,
+    approvedBy: "Security Master Council",
+    approvedAtUtc: "2026-05-01T00:00:00Z",
+    changeReason: "Seed template"
+  }
+];
+
 describe("SettingsScreen", () => {
   beforeEach(() => {
+    apiMocks.approveSecurityAssetProfile.mockReset();
     apiMocks.connectAlpacaConnection.mockReset();
+    apiMocks.createSecurityMasterEntry.mockReset();
+    apiMocks.draftSecurityAssetProfile.mockReset();
+    apiMocks.getSecurityAssetProfileLineage.mockReset();
+    apiMocks.assignLedgerMapping.mockReset();
+    apiMocks.createRolePermissionProfile.mockReset();
+    apiMocks.rollbackSecurityAssetProfile.mockReset();
+    apiMocks.upsertOperationsApprovalPolicyRule.mockReset();
+    apiMocks.upsertOperationsCloseCalendarItem.mockReset();
     apiMocks.revokeAlpacaConnection.mockReset();
     apiMocks.testProviderConnection.mockReset();
     apiMocks.putProviderCredentials.mockReset();
@@ -255,6 +461,374 @@ describe("SettingsScreen", () => {
       name: "Open Settings diagnostic endpoints from profile authentication posture"
     })).toHaveAttribute("href", "/settings#diagnostic-endpoints");
     expect(document.querySelector("#diagnostic-endpoints")).toBeInTheDocument();
+  });
+
+  it("renders fund operations controls for mappings, roles, approvals, and close calendar", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={{ ...session, role: "Accounting" }}
+        overview={overview}
+        rolePermissionCatalog={rolePermissionCatalog}
+        ledgerMappingWorkbench={ledgerMappingWorkbench}
+        operationsApprovalPolicyMatrix={approvalPolicyMatrix}
+        operationsCloseCalendar={closeCalendar}
+      />
+    );
+
+    const controlCenter = screen.getByRole("list", { name: "Fund operations configuration surfaces" });
+    expect(within(controlCenter).getByText("Ledger Mapping Workbench")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("Role and Permission Studio")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("Approval Policy Matrix")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("Account Close Calendar")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("1 unmapped")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("Accounting active")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("1 rules")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("1 blocked")).toBeInTheDocument();
+    expect(within(controlCenter).getByRole("link", { name: "Open role and permission catalog endpoint" })).toHaveAttribute(
+      "href",
+      "/api/auth/roles"
+    );
+    expect(within(controlCenter).getByRole("link", { name: "Open raw endpoint for Account Close Calendar" })).toHaveAttribute(
+      "href",
+      "/api/workstation/operations/continuity/close-calendar"
+    );
+  });
+
+  it("renders asset profile governance and profile-backed creation fields", () => {
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        securityAssetProfiles={securityAssetProfiles}
+      />
+    );
+
+    const profileRows = screen.getByRole("list", { name: "1 asset profile" });
+    expect(within(profileRows).getByText("Private Fund Interest")).toBeInTheDocument();
+    expect(within(profileRows).getByText("InternalCode")).toBeInTheDocument();
+    expect(screen.getByRole("form", { name: "Draft asset profile" })).toBeInTheDocument();
+
+    const createForm = screen.getByRole("form", { name: "Create profile-backed security" });
+    expect(within(createForm).getByLabelText("Profile-backed security display name")).toBeInTheDocument();
+    expect(within(createForm).getByLabelText("Profile field Sponsor")).toBeInTheDocument();
+    expect(within(createForm).getByLabelText("Profile field NAV date")).toBeInTheDocument();
+  });
+
+  it("creates profile-backed securities pinned to the approved profile version", async () => {
+    const user = userEvent.setup();
+    const onRefresh = vi.fn();
+    apiMocks.createSecurityMasterEntry.mockResolvedValue({
+      securityId: "sec-private-fund",
+      displayName: "Meridian Private Fund I",
+      status: "Active",
+      classification: {
+        assetClass: "CustomAsset",
+        subType: "PrivateFundInterest",
+        primaryIdentifierKind: "InternalCode",
+        primaryIdentifierValue: "PF-I",
+        matchedIdentifierKind: null,
+        matchedIdentifierValue: null,
+        matchedProvider: null
+      },
+      economicDefinition: {
+        currency: "USD",
+        version: 1,
+        effectiveFrom: "2026-05-29T00:00:00Z",
+        effectiveTo: null,
+        subType: "PrivateFundInterest",
+        assetFamily: "AlternativeAsset",
+        issuerType: null
+      }
+    });
+
+    renderWithRouter(
+      <SettingsScreen
+        session={{ ...session, displayName: "Ops Lead" }}
+        overview={overview}
+        securityAssetProfiles={securityAssetProfiles}
+        onRefresh={onRefresh}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Create profile-backed security" });
+    await user.type(within(form).getByLabelText("Profile-backed security display name"), "Meridian Private Fund I");
+    await user.type(within(form).getByLabelText("Profile-backed security internal code"), "PF-I");
+    await user.type(within(form).getByLabelText("Profile field Sponsor"), "Meridian GP");
+    await user.type(within(form).getByLabelText("Profile field NAV date"), "2026-04-30");
+    await user.click(within(form).getByRole("button", { name: /Create security/i }));
+
+    expect(apiMocks.createSecurityMasterEntry).toHaveBeenCalledWith(expect.objectContaining({
+      assetClass: "CustomAsset",
+      updatedBy: "Ops Lead",
+      sourceRecordId: "asset-profile:private-fund-interest:v1",
+      assetSpecificTerms: expect.objectContaining({
+        schemaVersion: 3,
+        customProfileId: "private-fund-interest",
+        profileVersion: 1,
+        category: "AlternativeAsset",
+        profileFields: expect.objectContaining({
+          sponsor: "Meridian GP",
+          navDate: "2026-04-30"
+        }),
+        profileApproval: expect.objectContaining({
+          approvalReference: "profile:private-fund-interest:v1"
+        })
+      }),
+      identifiers: [
+        expect.objectContaining({
+          kind: "InternalCode",
+          value: "PF-I",
+          isPrimary: true
+        })
+      ]
+    }));
+    expect(onRefresh).toHaveBeenCalledOnce();
+    expect(await within(form).findByText("Security created for Meridian Private Fund I.")).toBeInTheDocument();
+  });
+
+  it("submits ledger mapping assignments with audit rationale", async () => {
+    const user = userEvent.setup();
+    apiMocks.assignLedgerMapping.mockResolvedValue({
+      assignment: {
+        assignmentId: "assignment-1",
+        nodeId: "account-2",
+        assignmentType: "LedgerGroup",
+        assignmentReference: "direct-lending",
+        effectiveFrom: "2026-05-28T00:00:00Z",
+        effectiveTo: null,
+        isPrimary: true
+      },
+      account: {
+        ...ledgerMappingWorkbench.accounts[0],
+        mapping: {
+          ...ledgerMappingWorkbench.accounts[0].mapping,
+          ledgerGroupId: "direct-lending",
+          requiresUserMapping: false
+        }
+      },
+      auditEvent: {
+        auditId: "audit-1",
+        eventType: "ledger-mapping-assigned",
+        occurredAtUtc: "2026-05-28T00:00:00Z",
+        actor: "Accounting",
+        rationale: "Reviewed by fund operations",
+        correlationId: "settings-ledger-map-1",
+        accountId: "account-2",
+        accountCode: "OPS-2",
+        fromLedgerGroupId: null,
+        toLedgerGroupId: "direct-lending",
+        assignmentId: "assignment-1"
+      },
+      workbench: ledgerMappingWorkbench
+    });
+    const onRefresh = vi.fn();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={{ ...session, role: "Accounting", displayName: "Ops Lead" }}
+        overview={overview}
+        ledgerMappingWorkbench={ledgerMappingWorkbench}
+        onRefresh={onRefresh}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Assign ledger mapping" });
+    await user.clear(within(form).getByLabelText("Ledger mapping rationale"));
+    await user.type(within(form).getByLabelText("Ledger mapping rationale"), "Reviewed by fund operations");
+    await user.click(within(form).getByRole("button", { name: /Save mapping/i }));
+
+    expect(apiMocks.assignLedgerMapping).toHaveBeenCalledWith(expect.objectContaining({
+      accountId: "account-2",
+      ledgerGroupId: "direct-lending",
+      requestedBy: "Ops Lead",
+      rationale: "Reviewed by fund operations"
+    }));
+    expect(onRefresh).toHaveBeenCalledOnce();
+    expect(await within(form).findByText("Ledger mapping saved for OPS-2.")).toBeInTheDocument();
+    expect(within(form).getByText("Audit audit-1")).toBeInTheDocument();
+  });
+
+  it("creates role profiles with explicit permissions and audit rationale", async () => {
+    const user = userEvent.setup();
+    apiMocks.createRolePermissionProfile.mockResolvedValue({
+      profile: {
+        role: "Close Reviewer",
+        displayName: "Close Reviewer",
+        description: "Close review authority.",
+        isBuiltIn: false,
+        permissions: ["ViewTrades", "ManageDirectLending"],
+        permissionMask: 3,
+        baseRole: "Accounting",
+        createdBy: "Ops Lead",
+        createdAtUtc: "2026-05-28T00:00:00Z",
+        updatedBy: "Ops Lead",
+        updatedAtUtc: "2026-05-28T00:00:00Z",
+        lastRationale: "Scoped close reviewer",
+        lastAuditId: "role-audit-1"
+      },
+      catalog: rolePermissionCatalog,
+      auditEvent: {
+        auditId: "role-audit-1",
+        eventType: "role-permission-profile-upserted",
+        occurredAtUtc: "2026-05-28T00:00:00Z",
+        actor: "Ops Lead",
+        rationale: "Scoped close reviewer",
+        correlationId: "settings-role-profile-1",
+        profileName: "Close Reviewer",
+        baseRole: "Accounting",
+        permissionNames: ["ViewTrades", "ManageDirectLending"],
+        permissionMask: 3
+      }
+    });
+    const onRefresh = vi.fn();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={{ ...session, role: "Accounting", displayName: "Ops Lead" }}
+        overview={overview}
+        rolePermissionCatalog={rolePermissionCatalog}
+        onRefresh={onRefresh}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Create role profile" });
+    await user.type(within(form).getByLabelText("Role profile name"), "Close Reviewer");
+    await user.clear(within(form).getByLabelText("Role profile rationale"));
+    await user.type(within(form).getByLabelText("Role profile rationale"), "Scoped close reviewer");
+    await user.click(within(form).getByRole("button", { name: /Save profile/i }));
+
+    expect(apiMocks.createRolePermissionProfile).toHaveBeenCalledWith(expect.objectContaining({
+      profileName: "Close Reviewer",
+      displayName: "Close Reviewer",
+      baseRole: "Accounting",
+      permissionNames: ["ViewTrades", "ManageDirectLending"],
+      requestedBy: "Ops Lead",
+      rationale: "Scoped close reviewer"
+    }));
+    expect(onRefresh).toHaveBeenCalledOnce();
+    expect(await within(form).findByText("Role profile saved for Close Reviewer.")).toBeInTheDocument();
+    expect(within(form).getByText("Audit role-audit-1")).toBeInTheDocument();
+  });
+
+  it("updates approval policy rules with reviewer and evidence controls", async () => {
+    const user = userEvent.setup();
+    apiMocks.upsertOperationsApprovalPolicyRule.mockResolvedValue({
+      rule: {
+        ...approvalPolicyMatrix.rows[0],
+        reviewerRole: "Controller",
+        requiredDistinctApprovals: 3,
+        evidenceRequirement: "Controller packet and checklist control evidence."
+      },
+      matrix: approvalPolicyMatrix,
+      auditEvent: {
+        auditId: "approval-policy-audit-1",
+        eventType: "operations-approval-policy-rule-upserted",
+        occurredAtUtc: "2026-05-28T00:00:00Z",
+        actor: "Ops Lead",
+        rationale: "Tighten close approval governance",
+        correlationId: "settings-approval-policy-1",
+        policyKey: approvalPolicyMatrix.rows[0].policyKey,
+        action: approvalPolicyMatrix.rows[0].action,
+        gate: approvalPolicyMatrix.rows[0].gate,
+        requiredDistinctApprovals: 3,
+        requiresIndependentReviewer: true,
+        requiresReportPack: true,
+        requiresChecklistControlApprovals: true
+      }
+    });
+    const onRefresh = vi.fn();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={{ ...session, role: "Accounting", displayName: "Ops Lead" }}
+        overview={overview}
+        operationsApprovalPolicyMatrix={approvalPolicyMatrix}
+        onRefresh={onRefresh}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Configure approval policy rule" });
+    await user.clear(within(form).getByLabelText("Approval policy reviewer role"));
+    await user.type(within(form).getByLabelText("Approval policy reviewer role"), "Controller");
+    await user.clear(within(form).getByLabelText("Approval policy required distinct approvals"));
+    await user.type(within(form).getByLabelText("Approval policy required distinct approvals"), "3");
+    await user.clear(within(form).getByLabelText("Approval policy evidence requirement"));
+    await user.type(
+      within(form).getByLabelText("Approval policy evidence requirement"),
+      "Controller packet and checklist control evidence."
+    );
+    await user.clear(within(form).getByLabelText("Approval policy rationale"));
+    await user.type(within(form).getByLabelText("Approval policy rationale"), "Tighten close approval governance");
+    await user.click(within(form).getByRole("button", { name: /Save policy/i }));
+
+    expect(apiMocks.upsertOperationsApprovalPolicyRule).toHaveBeenCalledWith(expect.objectContaining({
+      policyKey: "ready-for-close",
+      reviewerRole: "Controller",
+      requiredDistinctApprovals: 3,
+      evidenceRequirement: "Controller packet and checklist control evidence.",
+      requestedBy: "Ops Lead",
+      rationale: "Tighten close approval governance"
+    }));
+    expect(onRefresh).toHaveBeenCalledOnce();
+    expect(await within(form).findByText("Approval policy saved for Approve close.")).toBeInTheDocument();
+    expect(within(form).getByText("Audit approval-policy-audit-1")).toBeInTheDocument();
+  });
+
+  it("configures account close calendar ownership with audit rationale", async () => {
+    const user = userEvent.setup();
+    apiMocks.upsertOperationsCloseCalendarItem.mockResolvedValue({
+      item: {
+        ...closeCalendar.items[0],
+        nextDueDate: "2026-06-03",
+        nextDueOwner: "Controller"
+      },
+      calendar: closeCalendar,
+      auditEvent: {
+        auditId: "close-calendar-audit-1",
+        eventType: "operations-close-calendar-item-upserted",
+        occurredAtUtc: "2026-05-28T00:00:00Z",
+        actor: "Ops Lead",
+        rationale: "Move close task to controller queue",
+        correlationId: "settings-close-calendar-1",
+        workflowId: "workflow-1",
+        fundAccountId: "fund-1",
+        periodId: "2026-05",
+        taskId: "task-1",
+        dueDate: "2026-06-03",
+        owner: "Controller"
+      }
+    });
+    const onRefresh = vi.fn();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={{ ...session, role: "Accounting", displayName: "Ops Lead" }}
+        overview={overview}
+        operationsCloseCalendar={closeCalendar}
+        onRefresh={onRefresh}
+      />
+    );
+
+    const form = screen.getByRole("form", { name: "Configure account close calendar" });
+    await user.clear(within(form).getByLabelText("Close calendar due date"));
+    await user.type(within(form).getByLabelText("Close calendar due date"), "2026-06-03");
+    await user.clear(within(form).getByLabelText("Close calendar owner"));
+    await user.type(within(form).getByLabelText("Close calendar owner"), "Controller");
+    await user.clear(within(form).getByLabelText("Close calendar rationale"));
+    await user.type(within(form).getByLabelText("Close calendar rationale"), "Move close task to controller queue");
+    await user.click(within(form).getByRole("button", { name: /Save calendar/i }));
+
+    expect(apiMocks.upsertOperationsCloseCalendarItem).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-1",
+      taskId: "task-1",
+      dueDate: "2026-06-03",
+      owner: "Controller",
+      requestedBy: "Ops Lead",
+      rationale: "Move close task to controller queue"
+    }));
+    expect(onRefresh).toHaveBeenCalledOnce();
+    expect(await within(form).findByText("Close calendar saved for 2026-05.")).toBeInTheDocument();
+    expect(within(form).getByText("Audit close-calendar-audit-1")).toBeInTheDocument();
   });
 
   it("renders provider connection center with continuity repair links", () => {

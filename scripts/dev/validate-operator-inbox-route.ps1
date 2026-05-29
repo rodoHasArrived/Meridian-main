@@ -4,7 +4,7 @@ param(
     [string]$Configuration = "Release",
     [string]$Framework = "net10.0-windows10.0.19041.0",
     [string]$OutputRoot = "artifacts/wpf-validation/operator-inbox-route",
-    [string]$Filter = "FullyQualifiedName~MainPageUiWorkflowTests|FullyQualifiedName~TradingWorkspaceShellPageTests|FullyQualifiedName~WorkspaceShellContextStripControlTests"
+    [string]$Filter = "FullyQualifiedName~MainPage_OperatorInbox|FullyQualifiedName~TradingWorkspaceShellPageTests|FullyQualifiedName~WorkspaceShellContextStripControlTests"
 )
 
 Set-StrictMode -Version Latest

@@ -145,6 +145,43 @@ public sealed class OrderManagementSystemTests : IDisposable
             o.Status == OrderStatus.Cancelled);
     }
 
+    [Fact]
+    public async Task CancelOrderAsync_WhenAuditTrailConfigured_RecordsCancelledOutcome()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            auditTrail: auditTrail);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "TSLA",
+            Side = OrderSide.Sell,
+            Type = OrderType.Limit,
+            Quantity = 3m,
+            LimitPrice = 200m,
+            StrategyId = "strategy-live"
+        });
+
+        var cancelResult = await oms.CancelOrderAsync(placed.OrderId);
+
+        cancelResult.Success.Should().BeTrue();
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "OrderCancelled" &&
+            entry.Outcome == OrderStatus.Cancelled.ToString() &&
+            entry.OrderId == placed.OrderId &&
+            entry.Symbol == "TSLA" &&
+            entry.Scope == "strategy:strategy-live/symbol:TSLA" &&
+            entry.Metadata != null &&
+            entry.Metadata["reportType"] == ExecutionReportType.Cancelled.ToString());
+    }
+
     // ---- GetCompletedOrders — take limit is respected ----
 
     [Fact]
@@ -251,7 +288,16 @@ public sealed class OrderManagementSystemTests : IDisposable
                 Timestamp = DateTimeOffset.UtcNow
             });
 
-        using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            auditTrail: auditTrail);
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
             Symbol = "AAPL",
@@ -268,6 +314,88 @@ public sealed class OrderManagementSystemTests : IDisposable
         result.OrderState.Should().NotBeNull();
         result.OrderState!.Status.Should().Be(OrderStatus.Accepted);
         oms.GetOrder(placed.OrderId)!.Status.Should().Be(OrderStatus.Accepted);
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "OrderCancelRejected" &&
+            entry.Outcome == OrderStatus.Rejected.ToString() &&
+            entry.OrderId == placed.OrderId &&
+            entry.Symbol == "AAPL" &&
+            entry.Message == "too late to cancel");
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_WhenAuditTrailConfigured_RecordsModificationOutcome()
+    {
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("ibkr");
+        gateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var request = callInfo.Arg<OrderRequest>();
+                return new ExecutionReport
+                {
+                    OrderId = request.ClientOrderId ?? "ord-1",
+                    ClientOrderId = request.ClientOrderId,
+                    ReportType = ExecutionReportType.New,
+                    Symbol = request.Symbol,
+                    Side = request.Side,
+                    OrderStatus = OrderStatus.Accepted,
+                    OrderQuantity = request.Quantity,
+                    Timestamp = DateTimeOffset.UtcNow
+                };
+            });
+        gateway.ModifyOrderAsync(Arg.Any<string>(), Arg.Any<OrderModification>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var orderId = callInfo.ArgAt<string>(0);
+                return new ExecutionReport
+                {
+                    OrderId = orderId,
+                    ReportType = ExecutionReportType.Modified,
+                    Symbol = "MSFT",
+                    Side = OrderSide.Buy,
+                    OrderStatus = OrderStatus.Accepted,
+                    OrderQuantity = 12m,
+                    Timestamp = DateTimeOffset.UtcNow
+                };
+            });
+
+        var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            auditTrail: auditTrail);
+
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "MSFT",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 100m
+        });
+
+        var result = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification
+        {
+            NewQuantity = 12m,
+            NewLimitPrice = 101m
+        });
+
+        result.Success.Should().BeTrue();
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "OrderModified" &&
+            entry.BrokerName == "ibkr" &&
+            entry.OrderId == placed.OrderId &&
+            entry.Symbol == "MSFT" &&
+            entry.Metadata != null &&
+            entry.Metadata["newQuantity"] == "12" &&
+            entry.Metadata["newLimitPrice"] == "101");
     }
 
     [Fact]

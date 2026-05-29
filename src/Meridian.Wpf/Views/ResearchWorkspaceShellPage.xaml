@@ -18,7 +18,8 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Page.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="20"
+          AutomationProperties.AutomationId="WorkspaceHomeStrategyWorkbenchTemplate">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MinHeight="200" />
@@ -30,7 +31,8 @@
         <ScrollViewer Grid.Row="1"
                       Margin="0,16,0,0"
                       VerticalScrollBarVisibility="Auto"
-                      Padding="8,4,8,16">
+                      Padding="8,4,8,16"
+                      AutomationProperties.AutomationId="WorkspaceEvidenceStripStrategy">
             <StackPanel MaxWidth="1400">
                 <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
                     <Grid>
@@ -160,7 +162,8 @@
                 <views:WorkspaceCommandBarControl x:Name="CommandBar"
                                                   CommandGroup="{Binding CommandGroup}"
                                                   CommandInvoked="OnCommandBarCommandInvoked"
-                                                  Margin="0,0,0,24" />
+                                                  Margin="0,0,0,24"
+                                                  AutomationProperties.AutomationId="WorkspaceCommandSurfaceStrategy" />
 
                 <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
                     <Grid>
@@ -925,7 +928,9 @@
                     </Border>
                 </Grid>
 
-                <Border Style="{StaticResource SectionCardStyle}" Margin="0,24,0,0">
+                <Border Style="{StaticResource SectionCardStyle}"
+                        Margin="0,24,0,0"
+                        AutomationProperties.AutomationId="WorkspaceInspectorHostStrategy">
                     <StackPanel>
                         <TextBlock Text="Workspace Panels"
                                    Style="{StaticResource CardHeaderStyle}"

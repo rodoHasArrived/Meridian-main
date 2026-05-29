@@ -12,6 +12,7 @@ using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.DataQuality;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Models;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -58,6 +59,7 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     public ObservableCollection<SymbolQualityModel> SymbolQuality { get; } = new();
     public ObservableCollection<SymbolQualityModel> FilteredSymbols { get; } = new();
+    public WorkstationTableModel<SymbolQualityModel> SymbolQualityTable { get; }
     public ObservableCollection<GapModel> Gaps { get; } = new();
     public ObservableCollection<AlertModel> Alerts { get; } = new();
     public ObservableCollection<AnomalyModel> Anomalies { get; } = new();
@@ -139,6 +141,30 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     public bool HasNoAnomalies { get => _hasNoAnomalies; private set => SetProperty(ref _hasNoAnomalies, value); }
     private bool _hasNoSymbols = true;
     public bool HasNoSymbols { get => _hasNoSymbols; private set => SetProperty(ref _hasNoSymbols, value); }
+    private SymbolQualityModel? _selectedSymbolQuality;
+    public SymbolQualityModel? SelectedSymbolQuality
+    {
+        get => _selectedSymbolQuality;
+        set
+        {
+            if (!SetProperty(ref _selectedSymbolQuality, value))
+                return;
+
+            if (value is null)
+            {
+                HideSymbolDrilldown();
+            }
+            else
+            {
+                ShowSymbolDrilldown(value);
+            }
+
+            RaisePropertyChanged(nameof(CanCompareSelectedSymbol));
+        }
+    }
+
+    public bool CanCompareSelectedSymbol => SelectedSymbolQuality is not null;
+
     private bool _hasActiveSymbolFilter;
     public bool HasActiveSymbolFilter { get => _hasActiveSymbolFilter; private set => SetProperty(ref _hasActiveSymbolFilter, value); }
     private string _symbolFilterScopeText = "Showing all monitored symbols.";
@@ -196,6 +222,7 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
         _apiClient = new DataQualityApiClient(ApiClientService.Instance);
         _presentationService = new DataQualityPresentationService(_apiClient);
         _refreshCoordinator = new DataQualityRefreshCoordinator(refreshScheduler ?? new PeriodicRefreshScheduler(), RefreshDataAsync, ex => _loggingService.LogError("Failed to refresh data quality", ex));
+        SymbolQualityTable = BuildSymbolQualityTable(FilteredSymbols);
         UpdateTrendState();
     }
 
@@ -235,6 +262,11 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
         _symbolFilter = (query ?? string.Empty).Trim();
         ReplaceCollection(FilteredSymbols, SymbolQuality.Where(s => string.IsNullOrWhiteSpace(_symbolFilter) || s.Symbol.Contains(_symbolFilter, StringComparison.OrdinalIgnoreCase)));
         HasNoSymbols = FilteredSymbols.Count == 0;
+        if (SelectedSymbolQuality is not null && !FilteredSymbols.Any(symbol => string.Equals(symbol.Symbol, SelectedSymbolQuality.Symbol, StringComparison.OrdinalIgnoreCase)))
+        {
+            SelectedSymbolQuality = null;
+        }
+
         UpdateSymbolFilterState();
     }
 
@@ -296,6 +328,21 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
         IsDrilldownVisible = false;
         DrilldownChanged?.Invoke(this, EventArgs.Empty);
     }
+
+    internal static WorkstationTableModel<SymbolQualityModel> BuildSymbolQualityTable(ObservableCollection<SymbolQualityModel> rows)
+        => new(
+            rows,
+            [
+                new("Symbol", nameof(SymbolQualityModel.Symbol), 90),
+                new("Score", nameof(SymbolQualityModel.ScoreFormatted), 80),
+                new("Grade", nameof(SymbolQualityModel.Grade), 60),
+                new("Status", nameof(SymbolQualityModel.Status), 90),
+                new("Issues", nameof(SymbolQualityModel.Issues), 160),
+                new("Last Update", nameof(SymbolQualityModel.LastUpdateFormatted), 120)
+            ],
+            "Data quality by symbol",
+            "No monitored symbols",
+            "Add symbols from the workspace before running quality checks.");
 
     public async Task AcknowledgeAlertAsync(string alertId, CancellationToken ct = default)
     {

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using Meridian.Contracts.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.Hosting;
 
@@ -10,8 +11,6 @@ namespace Meridian.Ui.Shared;
 /// User accounts are resolved via <see cref="UserProfileRegistry"/> which supports both
 /// the legacy single-user environment variable pattern (MDC_USERNAME / MDC_PASSWORD) and the
 /// multi-user pattern (MDC_USERS JSON array).
-/// Sessions retain the authenticated profile rather than reconstructing it per request, preserving
-/// account-specific permission overrides without adding per-request permission parsing.
 /// Authentication defaults to optional in Development/Test and required elsewhere.
 /// Use MDC_AUTH_MODE=optional|required|auto to override the default environment-based mode.
 /// </summary>
@@ -43,7 +42,12 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
             return null;
 
         var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
-        _sessions[token] = new SessionEntry(profile, DateTimeOffset.UtcNow + SessionDuration);
+        _sessions[token] = new SessionEntry(
+            profile.Username,
+            profile.Role,
+            profile.PermissionOverride,
+            profile.RoleProfileName,
+            DateTimeOffset.UtcNow + SessionDuration);
         PruneExpiredSessions();
         return token;
     }
@@ -80,7 +84,11 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
             return null;
         }
 
-        return entry.Profile;
+        return new UserProfile(
+            entry.Username,
+            entry.Role,
+            PermissionOverride: entry.PermissionOverride,
+            RoleProfileName: entry.RoleProfileName);
     }
 
     /// <summary>
@@ -98,5 +106,10 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
         }
     }
 
-    private sealed record SessionEntry(UserProfile Profile, DateTimeOffset ExpiresAt);
+    private sealed record SessionEntry(
+        string Username,
+        UserRole Role,
+        UserPermission? PermissionOverride,
+        string? RoleProfileName,
+        DateTimeOffset ExpiresAt);
 }

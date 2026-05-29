@@ -427,6 +427,279 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         return ReadLedgerBook(reader);
     }
 
+    public async Task<LedgerAccountTaxLotPolicyRecord> SaveTaxLotPolicyAsync(
+        LedgerAccountTaxLotPolicyRecord policy,
+        CancellationToken ct = default)
+    {
+        ValidateTaxLotPolicy(policy);
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            insert into {Qualified("tax_lot_policies")} (
+                policy_record_id,
+                ledger_book_id,
+                account_name,
+                account_type,
+                symbol,
+                financial_account_id,
+                relief_method,
+                policy_id,
+                effective_date,
+                rationale,
+                created_at,
+                updated_at)
+            values (
+                @policy_record_id,
+                @ledger_book_id,
+                @account_name,
+                @account_type,
+                @symbol,
+                @financial_account_id,
+                @relief_method,
+                @policy_id,
+                @effective_date,
+                @rationale,
+                @created_at,
+                @updated_at)
+            on conflict (policy_record_id) do update
+            set ledger_book_id = excluded.ledger_book_id,
+                account_name = excluded.account_name,
+                account_type = excluded.account_type,
+                symbol = excluded.symbol,
+                financial_account_id = excluded.financial_account_id,
+                relief_method = excluded.relief_method,
+                policy_id = excluded.policy_id,
+                effective_date = excluded.effective_date,
+                rationale = excluded.rationale,
+                updated_at = excluded.updated_at
+            returning policy_record_id,
+                      ledger_book_id,
+                      account_name,
+                      account_type,
+                      symbol,
+                      financial_account_id,
+                      relief_method,
+                      policy_id,
+                      effective_date,
+                      rationale,
+                      created_at,
+                      updated_at;
+            """;
+        command.Parameters.AddWithValue("policy_record_id", policy.PolicyRecordId);
+        command.Parameters.AddWithValue("ledger_book_id", policy.LedgerBookId);
+        AddAccountParameters(command, policy.Account);
+        command.Parameters.AddWithValue("relief_method", policy.ReliefMethod.ToString());
+        command.Parameters.AddWithValue("policy_id", RequireLineageText(policy.PolicyId, nameof(policy.PolicyId)));
+        command.Parameters.AddWithValue("effective_date", policy.EffectiveDate);
+        command.Parameters.AddWithValue("rationale", (object?)NormalizeOptional(policy.Rationale) ?? DBNull.Value);
+        command.Parameters.AddWithValue("created_at", policy.CreatedAt.UtcDateTime);
+        command.Parameters.AddWithValue("updated_at", policy.UpdatedAt.UtcDateTime);
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException($"Ledger tax-lot policy '{policy.PolicyRecordId}' was not saved.");
+        }
+
+        return ReadTaxLotPolicy(reader);
+    }
+
+    public async Task<IReadOnlyList<LedgerAccountTaxLotPolicyRecord>> ListTaxLotPoliciesAsync(
+        Guid ledgerBookId,
+        CancellationToken ct = default)
+    {
+        if (ledgerBookId == Guid.Empty)
+        {
+            throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select policy_record_id,
+                   ledger_book_id,
+                   account_name,
+                   account_type,
+                   symbol,
+                   financial_account_id,
+                   relief_method,
+                   policy_id,
+                   effective_date,
+                   rationale,
+                   created_at,
+                   updated_at
+            from {Qualified("tax_lot_policies")}
+            where ledger_book_id = @ledger_book_id
+            order by account_name, effective_date desc, policy_id;
+            """;
+        command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+
+        var policies = new List<LedgerAccountTaxLotPolicyRecord>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            policies.Add(ReadTaxLotPolicy(reader));
+        }
+
+        return policies;
+    }
+
+    public async Task<LedgerTaxLotRecord> SaveTaxLotAsync(
+        LedgerTaxLotRecord lot,
+        CancellationToken ct = default)
+    {
+        ValidateTaxLot(lot);
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            insert into {Qualified("tax_lots")} (
+                tax_lot_record_id,
+                ledger_book_id,
+                account_name,
+                account_type,
+                symbol,
+                financial_account_id,
+                lot_id,
+                acquired_date,
+                original_quantity,
+                open_quantity,
+                unit_cost,
+                currency,
+                source_journal_entry_id,
+                evidence_ref,
+                created_at,
+                updated_at)
+            values (
+                @tax_lot_record_id,
+                @ledger_book_id,
+                @account_name,
+                @account_type,
+                @symbol,
+                @financial_account_id,
+                @lot_id,
+                @acquired_date,
+                @original_quantity,
+                @open_quantity,
+                @unit_cost,
+                @currency,
+                @source_journal_entry_id,
+                @evidence_ref,
+                @created_at,
+                @updated_at)
+            on conflict (tax_lot_record_id) do update
+            set ledger_book_id = excluded.ledger_book_id,
+                account_name = excluded.account_name,
+                account_type = excluded.account_type,
+                symbol = excluded.symbol,
+                financial_account_id = excluded.financial_account_id,
+                lot_id = excluded.lot_id,
+                acquired_date = excluded.acquired_date,
+                original_quantity = excluded.original_quantity,
+                open_quantity = excluded.open_quantity,
+                unit_cost = excluded.unit_cost,
+                currency = excluded.currency,
+                source_journal_entry_id = excluded.source_journal_entry_id,
+                evidence_ref = excluded.evidence_ref,
+                updated_at = excluded.updated_at
+            returning tax_lot_record_id,
+                      ledger_book_id,
+                      account_name,
+                      account_type,
+                      symbol,
+                      financial_account_id,
+                      lot_id,
+                      acquired_date,
+                      original_quantity,
+                      open_quantity,
+                      unit_cost,
+                      currency,
+                      source_journal_entry_id,
+                      evidence_ref,
+                      created_at,
+                      updated_at;
+            """;
+        command.Parameters.AddWithValue("tax_lot_record_id", lot.TaxLotRecordId);
+        command.Parameters.AddWithValue("ledger_book_id", lot.LedgerBookId);
+        AddAccountParameters(command, lot.Account);
+        command.Parameters.AddWithValue("lot_id", RequireLineageText(lot.LotId, nameof(lot.LotId)));
+        command.Parameters.AddWithValue("acquired_date", lot.AcquiredDate);
+        command.Parameters.AddWithValue("original_quantity", lot.OriginalQuantity);
+        command.Parameters.AddWithValue("open_quantity", lot.OpenQuantity);
+        command.Parameters.AddWithValue("unit_cost", lot.UnitCost);
+        command.Parameters.AddWithValue("currency", RequireLineageText(lot.Currency, nameof(lot.Currency)).ToUpperInvariant());
+        command.Parameters.AddWithValue("source_journal_entry_id", (object?)lot.SourceJournalEntryId ?? DBNull.Value);
+        command.Parameters.AddWithValue("evidence_ref", (object?)NormalizeOptional(lot.EvidenceRef) ?? DBNull.Value);
+        command.Parameters.AddWithValue("created_at", lot.CreatedAt.UtcDateTime);
+        command.Parameters.AddWithValue("updated_at", lot.UpdatedAt.UtcDateTime);
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException($"Ledger tax lot '{lot.TaxLotRecordId}' was not saved.");
+        }
+
+        return ReadTaxLot(reader);
+    }
+
+    public async Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsAsync(
+        Guid ledgerBookId,
+        LedgerAccount account,
+        CancellationToken ct = default)
+    {
+        if (ledgerBookId == Guid.Empty)
+        {
+            throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
+        }
+
+        ArgumentNullException.ThrowIfNull(account);
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select tax_lot_record_id,
+                   ledger_book_id,
+                   account_name,
+                   account_type,
+                   symbol,
+                   financial_account_id,
+                   lot_id,
+                   acquired_date,
+                   original_quantity,
+                   open_quantity,
+                   unit_cost,
+                   currency,
+                   source_journal_entry_id,
+                   evidence_ref,
+                   created_at,
+                   updated_at
+            from {Qualified("tax_lots")}
+            where ledger_book_id = @ledger_book_id
+              and account_name = @account_name
+              and account_type = @account_type
+              and symbol is not distinct from @symbol
+              and financial_account_id is not distinct from @financial_account_id
+              and open_quantity > 0
+            order by acquired_date, lot_id;
+            """;
+        command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+        AddAccountParameters(command, account);
+
+        var lots = new List<LedgerTaxLotRecord>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            lots.Add(ReadTaxLot(reader));
+        }
+
+        return lots;
+    }
+
     private async Task InsertJournalEntryAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
@@ -946,6 +1219,101 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             ? ReadLedgerBook(reader)
             : null;
     }
+
+    private static void ValidateTaxLotPolicy(LedgerAccountTaxLotPolicyRecord policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        ArgumentNullException.ThrowIfNull(policy.Account);
+
+        if (policy.PolicyRecordId == Guid.Empty)
+        {
+            throw new ArgumentException("Tax-lot policy record id is required.", nameof(policy));
+        }
+
+        if (policy.LedgerBookId == Guid.Empty)
+        {
+            throw new ArgumentException("Ledger book id is required.", nameof(policy));
+        }
+
+        _ = RequireLineageText(policy.PolicyId, nameof(policy.PolicyId));
+    }
+
+    private static void ValidateTaxLot(LedgerTaxLotRecord lot)
+    {
+        ArgumentNullException.ThrowIfNull(lot);
+        ArgumentNullException.ThrowIfNull(lot.Account);
+
+        if (lot.TaxLotRecordId == Guid.Empty)
+        {
+            throw new ArgumentException("Tax-lot record id is required.", nameof(lot));
+        }
+
+        if (lot.LedgerBookId == Guid.Empty)
+        {
+            throw new ArgumentException("Ledger book id is required.", nameof(lot));
+        }
+
+        _ = RequireLineageText(lot.LotId, nameof(lot.LotId));
+        _ = RequireLineageText(lot.Currency, nameof(lot.Currency));
+
+        if (lot.OriginalQuantity <= 0m)
+        {
+            throw new ArgumentOutOfRangeException(nameof(lot), lot.OriginalQuantity, "Original tax-lot quantity must be positive.");
+        }
+
+        if (lot.OpenQuantity < 0m || lot.OpenQuantity > lot.OriginalQuantity)
+        {
+            throw new ArgumentOutOfRangeException(nameof(lot), lot.OpenQuantity, "Open tax-lot quantity must be between zero and original quantity.");
+        }
+
+        if (lot.UnitCost < 0m)
+        {
+            throw new ArgumentOutOfRangeException(nameof(lot), lot.UnitCost, "Tax-lot unit cost cannot be negative.");
+        }
+    }
+
+    private static void AddAccountParameters(NpgsqlCommand command, LedgerAccount account)
+    {
+        command.Parameters.AddWithValue("account_name", RequireLineageText(account.Name, nameof(account.Name)));
+        command.Parameters.AddWithValue("account_type", account.AccountType.ToString());
+        command.Parameters.AddWithValue("symbol", (object?)NormalizeOptional(account.Symbol) ?? DBNull.Value);
+        command.Parameters.AddWithValue("financial_account_id", (object?)NormalizeOptional(account.FinancialAccountId) ?? DBNull.Value);
+    }
+
+    private static LedgerAccount ReadLedgerAccount(NpgsqlDataReader reader, int nameOrdinal)
+        => new(
+            reader.GetString(nameOrdinal),
+            Enum.Parse<LedgerAccountType>(reader.GetString(nameOrdinal + 1), ignoreCase: true),
+            reader.IsDBNull(nameOrdinal + 2) ? null : reader.GetString(nameOrdinal + 2),
+            reader.IsDBNull(nameOrdinal + 3) ? null : reader.GetString(nameOrdinal + 3));
+
+    private static LedgerAccountTaxLotPolicyRecord ReadTaxLotPolicy(NpgsqlDataReader reader)
+        => new(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            ReadLedgerAccount(reader, 2),
+            Enum.Parse<LedgerTaxLotReliefMethod>(reader.GetString(6), ignoreCase: true),
+            reader.GetString(7),
+            DateOnly.FromDateTime(reader.GetDateTime(8)),
+            ReadUtcDateTimeOffset(reader, 10),
+            ReadUtcDateTimeOffset(reader, 11),
+            reader.IsDBNull(9) ? null : reader.GetString(9));
+
+    private static LedgerTaxLotRecord ReadTaxLot(NpgsqlDataReader reader)
+        => new(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            ReadLedgerAccount(reader, 2),
+            reader.GetString(6),
+            DateOnly.FromDateTime(reader.GetDateTime(7)),
+            reader.GetDecimal(8),
+            reader.GetDecimal(9),
+            reader.GetDecimal(10),
+            reader.GetString(11),
+            ReadUtcDateTimeOffset(reader, 14),
+            ReadUtcDateTimeOffset(reader, 15),
+            reader.IsDBNull(12) ? null : reader.GetGuid(12),
+            reader.IsDBNull(13) ? null : reader.GetString(13));
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
     {

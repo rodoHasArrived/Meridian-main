@@ -134,6 +134,19 @@ PYTHON
             --output-dir "$OUTPUT_DIR" \
             --config "$ROUTES_CONFIG"
 
+      - name: Validate web screenshot captures
+        if: ${{ steps.capture_web.outcome == 'success' }}
+        env:
+          OUTPUT_DIR: ${{ steps.validate_output_dir.outputs.safe_output_dir }}
+          ROUTES_CONFIG: ${{ inputs.config }}
+        run: >
+          python scripts/dev/validate-screenshot-captures.py
+          --surface web
+          --output-dir "$OUTPUT_DIR"
+          --web-routes "$ROUTES_CONFIG"
+          --manifest artifacts/web-screenshots/manifest.json
+          --require-fresh
+
       - name: Log web screenshot capture status
         if: ${{ always() }}
         env:

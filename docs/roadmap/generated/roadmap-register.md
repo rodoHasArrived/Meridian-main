@@ -50,16 +50,16 @@ Provider validation packets and DK1 operator sign-off are the baseline evidence 
 | Field | Value |
 | --- | --- |
 | Wave | W2 |
-| Status | planned |
-| Health | yellow |
+| Status | done |
+| Health | green |
 | Priority | high |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | support_evidence |
-| Last reviewed | 2026-05-20 |
+| Evidence posture | complete |
+| Last reviewed | 2026-05-28 |
 
 ### Current Summary
 
-Promotion review must connect research lineage, paper-session evidence, and operator approval in one auditable path.
+Closed with W2 acceptance evidence; PaperPromotion is green in the 2026-05-27 pilot readiness run and promotion review remains the governed handoff into W4 casework/reporting work.
 
 ### Exit Criteria
 
@@ -78,16 +78,16 @@ Promotion review must connect research lineage, paper-session evidence, and oper
 | Field | Value |
 | --- | --- |
 | Wave | W2 |
-| Status | in_progress |
-| Health | yellow |
+| Status | done |
+| Health | green |
 | Priority | critical |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | support_evidence |
-| Last reviewed | 2026-05-20 |
+| Evidence posture | complete |
+| Last reviewed | 2026-05-28 |
 
 ### Current Summary
 
-Trading readiness, operator inbox routing, and replay durability are the active cockpit-readiness concerns.
+Closed in the 2026-05-27 evidence slice through shared readiness/operator-inbox tests, browser Trading parity, focused WPF Lane A tests, and green TrustedData, PaperPromotion, and PaperSession pilot gates.
 
 ### Exit Criteria
 
@@ -109,16 +109,16 @@ Trading readiness, operator inbox routing, and replay durability are the active 
 | Field | Value |
 | --- | --- |
 | Wave | W3 |
-| Status | planned |
+| Status | done |
 | Health | green |
 | Priority | high |
 | Owner lane | Strategy and Research |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-05-20 |
+| Evidence posture | complete |
+| Last reviewed | 2026-05-28 |
 
 ### Current Summary
 
-Strategy research outputs need traceable handoff into paper-session validation and promotion review.
+Closed in the 2026-05-27 evidence slice through shared brokerage/continuity/pilot tests, focused WPF portfolio/accounting/cash-flow tests, browser route/API parity, and green ResearchRun, RunComparison, PortfolioLedgerReview, and Reconciliation pilot gates.
 
 ### Exit Criteria
 
@@ -137,16 +137,16 @@ Strategy research outputs need traceable handoff into paper-session validation a
 | Field | Value |
 | --- | --- |
 | Wave | W4 |
-| Status | planned |
-| Health | yellow |
+| Status | done |
+| Health | green |
 | Priority | high |
 | Owner lane | Governance and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-05-20 |
+| Evidence posture | complete |
+| Last reviewed | 2026-05-29 |
 
 ### Current Summary
 
-Ledger and reconciliation workflows need evidence-linked acceptance before governed reporting can claim readiness.
+Closed in the 2026-05-29 W4 evidence slice through operations-continuity close-lane coverage, reconciliation casework, browser Accounting parity, WPF Lane C acceptance, and green PortfolioLedgerReview/Reconciliation pilot gates.
 
 ### Exit Criteria
 
@@ -165,16 +165,16 @@ Ledger and reconciliation workflows need evidence-linked acceptance before gover
 | Field | Value |
 | --- | --- |
 | Wave | W4 |
-| Status | planned |
-| Health | yellow |
+| Status | done |
+| Health | green |
 | Priority | high |
 | Owner lane | Governance and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-05-20 |
+| Evidence posture | complete |
+| Last reviewed | 2026-05-29 |
 
 ### Current Summary
 
-Report-pack generation needs approval, export evidence, and clear ownership before being treated as governed output.
+Closed in the 2026-05-29 W4 evidence slice through governed report-pack workflow/provenance, publication/restatement readiness, evidence-vault manifest support, browser Reporting parity, and the green GovernedReportPack pilot gate.
 
 ### Exit Criteria
 

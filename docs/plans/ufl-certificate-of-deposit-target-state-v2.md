@@ -1,8 +1,8 @@
-# UFL Certificate of Deposit Target-State Package V2
+# UFL Certificate of Deposit Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl certificate of deposit target state v2** and document explicit in-scope vs out-of-scope items.
@@ -31,6 +31,75 @@ It assumes:
 - downstream accounting and treasury consumers reading canonical projections rather than provider-native payloads
 
 This package turns the existing `CertificateOfDepositTerms` support into an implementation-ready plan for reference data, lifecycle management, treasury views, and APIs.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.CertificateOfDeposit` and `CertificateOfDepositTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"CertificateOfDeposit"` asset class.
+- Security Master validation enforces nonblank issuer name, nonnegative coupon rate, and callable-date ordering relative to maturity.
+- `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs` exposes reference-data reads.
+- `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs` verifies basic create support for certificate-of-deposit instruments.
+
+### Partially Implemented
+
+- Canonical terms and reference reads exist, but CD lifecycle, issuer ladder, callable-state, accrual, and rebuild-specific projection evidence is not complete.
+
+### Target-State Only
+
+- CD lifecycle and maturity projections.
+- Issuer and ladder views for treasury operations.
+- Additive callable-state projections.
+- Accrual and accounting handoff views.
+
+### Explicitly Out of Scope
+
+- Brokered-CD marketplace logic.
+- Secondary-market pricing.
+- Early-redemption penalty engines.
+- Generalized bank-product accounting.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.CertificateOfDeposit`, terms, mapping, validation, and basic create test exist. | keep CD identity aligned with canonical reference profile metadata | F# validation and C# mapping tests |
+| IssuerOrCounterparty | L1/L2 partial | issuer terms and reference endpoint support exist. | issuer lineage and ladder projections | endpoint and projection tests |
+| Lifecycle | L0 | target-state only. | maturity, callable, matured, and closed states | lifecycle projection tests |
+| AccrualConvention | L1 partial | coupon and day-count terms exist. | accrual-convention projection and accounting handoff | accrual tests |
+| CashFlowSchedule | L0 | target-state only. | maturity and expected payment schedule projection | schedule projection tests |
+| ProjectionRebuild | L1/L2 partial | Security Master projection and reference read path exist. | CD-scoped rebuild metadata and checkpoints | rebuild/checkpoint tests |
+| AccountingImpact | L0 | target-state only. | approved journal/reconciliation handoff for maturity and coupon events | accounting/reconciliation tests |
+
+## Current Maturity
+
+`L1/L2 partial`: canonical CD terms, validation, basic create support, and reference endpoint support exist. L3 maturity requires lifecycle, ladder, callable-state, accrual, and rebuild metadata tests.
+
+## Next Milestone Contract
+
+**Goal:** advance certificates of deposit to L3 by adding lifecycle, issuer ladder, callable-state, accrual, and rebuild-safe projection metadata.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/CertificatesOfDeposit/`
+- `src/Meridian.Contracts/CertificatesOfDeposit/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for CD terms.
+- endpoint contract tests for CD reference reads.
+- projection/rebuild tests for maturity, callable state, issuer ladder, and accrual metadata.
+- provider-payload isolation tests for canonical CD projections.
+
+**Exit criteria:** CD reference and lifecycle projections can be rebuilt deterministically with issuer, maturity, callable, and source-event evidence.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as import evidence, but downstream CD workflows must consume canonical Security Master terms, issuer references, lifecycle projections, and rebuild metadata.
 
 ## Repo Fit
 
@@ -345,6 +414,6 @@ Meridian treats a certificate of deposit as a canonical treasury instrument with
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

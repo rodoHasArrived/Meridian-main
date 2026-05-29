@@ -1002,8 +1002,8 @@ describe("governance-screen view model", () => {
     });
   });
 
-  it("adds source-event and approval drill-through details to trial-balance selections", () => {
-    const state = buildGovernanceTrialBalanceViewState({
+  it("adds source-event and approval drill-through details to legacy and array trial-balance selections", () => {
+    const legacyState = buildGovernanceTrialBalanceViewState({
       runId: "run-42",
       rows: [
         {
@@ -1014,20 +1014,46 @@ describe("governance-screen view model", () => {
           balance: 120500,
           entryCount: 12,
           security: null,
-          sourceEventIds: ["evt-cash-1"],
-          approvalIds: ["approval-cash-1"]
-        } as unknown as LedgerTrialBalanceLine
+          sourceEventId: "legacy-source-event"
+        }
       ],
       loading: false,
       error: null
     });
 
-    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
-      { label: "Source events", value: "evt-cash-1" },
+    expect(legacyState.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Source events", value: "legacy-source-event" },
+      { label: "Approvals", value: "No approvals linked" }
+    ]));
+    expect(legacyState.selectedDetail?.auditDrillThroughLabel).toBe("Open source event legacy-source-event");
+    expect(legacyState.selectedDetail?.auditDrillThroughHref).toBe("/accounting/audit?sourceEventId=legacy-source-event");
+
+    const arrayState = buildGovernanceTrialBalanceViewState({
+      runId: "run-42",
+      rows: [
+        {
+          accountName: "Cash",
+          accountType: "Asset",
+          symbol: null,
+          financialAccountId: "acct-cash",
+          balance: 120500,
+          entryCount: 12,
+          security: null,
+          sourceEventIds: ["evt-cash-1", "evt-cash-2"],
+          approvalIds: ["approval-cash-1"]
+        }
+      ],
+      loading: false,
+      error: null
+    });
+
+    expect(arrayState.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Source events", value: "evt-cash-1, evt-cash-2" },
       { label: "Approvals", value: "approval-cash-1" }
     ]));
-    expect(state.selectedDetail?.auditDrillThroughHref).toBe("/accounting/audit?sourceEventId=evt-cash-1");
-    expect(state.selectedDetail?.approvalDrillThroughHref).toBe("/accounting/approvals?approvalId=approval-cash-1");
+    expect(arrayState.selectedDetail?.auditDrillThroughLabel).toBe("Open source event evt-cash-1");
+    expect(arrayState.selectedDetail?.auditDrillThroughHref).toBe("/accounting/audit?sourceEventId=evt-cash-1");
+    expect(arrayState.selectedDetail?.approvalDrillThroughHref).toBe("/accounting/approvals?approvalId=approval-cash-1");
   });
 
   it("filters trial-balance rows by basis and builds a basis bridge", () => {

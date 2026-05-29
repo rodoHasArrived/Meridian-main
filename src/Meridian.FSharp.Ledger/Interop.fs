@@ -12,6 +12,12 @@ type LedgerValidationDto = {
 }
 
 [<CLIMutable>]
+type AccrualValidationDto = {
+    IsValid: bool
+    Errors: string array
+}
+
+[<CLIMutable>]
 type LedgerBalanceResultDto = {
     AccountName: string
     AccountType: int
@@ -185,6 +191,21 @@ type LedgerInterop private () =
 
     static member CalculateNetBalance(accountType: int, debits: decimal, credits: decimal) =
         Posting.calculateNetBalance accountType debits credits
+
+    static member ValidateAccrualEntry(entry: AccrualEntry) =
+        let errors = AccrualEntry.validate entry
+        {
+            IsValid = errors.Length = 0
+            Errors = errors
+        }
+
+    static member BuildAccrualSummary(
+        loanId: Guid,
+        periodStartDate: DateOnly,
+        periodEndDate: DateOnly,
+        currency: string,
+        entries: seq<AccrualEntry>) =
+        AccrualSummary.summarize loanId periodStartDate periodEndDate currency entries
 
     static member BuildTrialBalance(lines: seq<LedgerBalanceInput>) : LedgerBalanceResultDto array =
         LedgerReadModels.buildTrialBalance lines

@@ -930,9 +930,10 @@ public sealed partial class FundLedgerViewModel
         }
 
         ReconciliationCalibrationStatusText = FormatCalibrationStatus(summary.Status);
+        var kpiSummary = $"Break trend {summary.BreakCountTrend:+#;-#;0}; auto-match {summary.AutoMatchRate:P0}; T+0 closure {summary.T0ClosureRate:P0}.";
         ReconciliationCalibrationSummaryText = string.IsNullOrWhiteSpace(summary.Summary)
-            ? "Calibration summary did not include operator guidance."
-            : summary.Summary;
+            ? kpiSummary
+            : $"{summary.Summary} {kpiSummary}";
         ReconciliationCalibrationProfilesText = snapshot.CalibrationProfiles.Count.ToString("N0");
         ReconciliationCalibrationPendingSignoffText = summary.PendingSignoffCount.ToString("N0");
         ReconciliationCalibrationMissingMetadataText = summary.MissingCalibrationMetadataCount.ToString("N0");
@@ -1188,13 +1189,19 @@ public sealed partial class FundLedgerViewModel
             return;
         }
 
-        ReconciliationNextBestActionText = SelectedBreakQueueItem.Status is ReconciliationBreakQueueStatus.Open
-            ? "Review evidence, assign owner, and move the break to InReview."
-            : "Capture operator decision and finalize resolution notes.";
-        ReconciliationBlockerReasonText = string.IsNullOrWhiteSpace(SelectedBreakQueueItem.Reason)
-            ? "Awaiting break summary from workstation host."
-            : SelectedBreakQueueItem.Reason;
-        ReconciliationEvidenceLinksText = $"/api/workstation/reconciliation/break-queue/{SelectedBreakQueueItem.BreakId}";
+        ReconciliationNextBestActionText = string.IsNullOrWhiteSpace(SelectedBreakQueueItem.SuggestedNextActionLabel)
+            ? SelectedBreakQueueItem.Status is ReconciliationBreakQueueStatus.Open
+                ? "Review evidence, assign owner, and move the break to InReview."
+                : "Capture operator decision and finalize resolution notes."
+            : SelectedBreakQueueItem.SuggestedNextActionLabel;
+        ReconciliationBlockerReasonText = SelectedBreakQueueItem.ProbableCauseLabel == "Not reported"
+            ? string.IsNullOrWhiteSpace(SelectedBreakQueueItem.Reason)
+                ? "Awaiting break summary from workstation host."
+                : SelectedBreakQueueItem.Reason
+            : $"{SelectedBreakQueueItem.ProbableCauseLabel} Ledger impact: {SelectedBreakQueueItem.LedgerImpactLabel}";
+        ReconciliationEvidenceLinksText = SelectedBreakQueueItem.EvidenceLinksLabel == "No evidence links reported"
+            ? $"/api/workstation/reconciliation/break-queue/{SelectedBreakQueueItem.BreakId}"
+            : SelectedBreakQueueItem.EvidenceLinksLabel;
         ReconciliationSection.GovernanceSignifierState = BuildSelectedBreakSignifierState(SelectedBreakQueueItem);
     }
 
@@ -1207,9 +1214,9 @@ public sealed partial class FundLedgerViewModel
             _ => "Audit Decision"
         };
         var target = $"/api/workstation/reconciliation/break-queue/{breakRow.BreakId}";
-        var reason = string.IsNullOrWhiteSpace(breakRow.Reason)
+        var reason = string.IsNullOrWhiteSpace(breakRow.ExplanationSummary) || breakRow.ExplanationSummary == "No structured break explanation reported"
             ? "Awaiting break summary from workstation host."
-            : breakRow.Reason;
+            : breakRow.ExplanationSummary;
         var owner = string.IsNullOrWhiteSpace(ReconciliationOperatorText) ||
                     string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
             ? "Owner not confirmed"
@@ -1253,6 +1260,11 @@ public sealed partial class FundLedgerViewModel
                     target,
                     "shared workstation endpoint",
                     ReconciliationDetailLastUpdatedText),
+                new WorkstationEvidenceLinkModel(
+                    "Explain the Break evidence",
+                    breakRow.EvidenceLinksLabel,
+                    breakRow.SourceSystemsLabel,
+                    breakRow.LedgerImpactLabel),
                 new WorkstationEvidenceLinkModel(
                     "Audit trail",
                     "FundAuditTrail",

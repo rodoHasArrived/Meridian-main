@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.FundAccounts;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Features.Settings.Shell;
@@ -10,6 +11,7 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -65,6 +67,8 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<CashFinancingReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ReconciliationReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<FundOperationsWorkspaceReadService>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<IAccountingProjectionQueryService>().Should().BeOfType<AccountingProjectionQueryService>();
+            serviceProvider.GetRequiredService<AccountingCloseViewModel>().Should().NotBeNull();
         });
     }
 

@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Ui.Shared.Services;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -65,6 +66,172 @@ public static class SecurityMasterEndpoints
         .Produces<SecurityValidationReportDto>(StatusCodes.Status200OK);
 
         /// <summary>
+        /// Lists approved custom asset profile definitions available to profile-backed Security Master create/amend workflows.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterAssetProfiles, (
+            [FromServices] AppSecurityMaster.ISecurityAssetProfileCatalog profileCatalog) =>
+        {
+            var profiles = profileCatalog.GetProfiles()
+                .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static profile => profile.Version)
+                .ToArray();
+            return Results.Json(profiles, jsonOptions);
+        })
+        .WithName("ListSecurityMasterAssetProfiles")
+        .Produces<IReadOnlyList<SecurityAssetProfileDefinitionDto>>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Lists approved custom asset profile promotion assessments for first-class UFL package design.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterAssetProfilePromotionCandidates, (
+            [FromServices] AppSecurityMaster.ISecurityAssetProfileGovernanceService governanceService) =>
+        {
+            var candidates = governanceService.GetPromotionCandidates();
+            return Results.Json(candidates, jsonOptions);
+        })
+        .WithName("ListSecurityMasterAssetProfilePromotionCandidates")
+        .Produces<IReadOnlyList<SecurityAssetProfilePromotionCandidateDto>>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Retrieves all versions and governance audit events for one custom asset profile.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterAssetProfileLineage, (
+            string profileId,
+            [FromServices] AppSecurityMaster.ISecurityAssetProfileGovernanceService governanceService) =>
+        {
+            var lineage = governanceService.GetLineage(profileId);
+            return lineage.Versions.Count == 0
+                ? Results.NotFound()
+                : Results.Json(lineage, jsonOptions);
+        })
+        .WithName("GetSecurityMasterAssetProfileLineage")
+        .Produces<SecurityAssetProfileLineageDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Stages a draft custom asset profile version for governed approval.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterAssetProfileDrafts, async (
+            SecurityAssetProfileDraftRequestDto? request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.ISecurityAssetProfileGovernanceService governanceService) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+                return EndpointHelpers.Forbidden();
+
+            if (request is null)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = ["A custom asset profile draft request is required."]
+                });
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+
+            try
+            {
+                var result = await governanceService
+                    .DraftProfileAsync(request with { RequestedBy = actor }, actor, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("DraftSecurityMasterAssetProfile")
+        .Produces<SecurityAssetProfileGovernanceResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        /// <summary>
+        /// Approves a staged custom asset profile draft version for Security Master use.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterAssetProfileApprove, async (
+            SecurityAssetProfileApprovalRequestDto? request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.ISecurityAssetProfileGovernanceService governanceService) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+                return EndpointHelpers.Forbidden();
+
+            if (request is null)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = ["A custom asset profile approval request is required."]
+                });
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+
+            try
+            {
+                var result = await governanceService
+                    .ApproveProfileAsync(request with { RequestedBy = actor }, actor, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("ApproveSecurityMasterAssetProfile")
+        .Produces<SecurityAssetProfileGovernanceResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        /// <summary>
+        /// Creates a new approved custom asset profile version from an earlier approved or superseded version.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterAssetProfileRollback, async (
+            SecurityAssetProfileRollbackRequestDto? request,
+            HttpContext context,
+            [FromServices] AppSecurityMaster.ISecurityAssetProfileGovernanceService governanceService) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+                return EndpointHelpers.Forbidden();
+
+            if (request is null)
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = ["A custom asset profile rollback request is required."]
+                });
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+
+            try
+            {
+                var result = await governanceService
+                    .RollbackProfileAsync(request with { RequestedBy = actor }, actor, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("RollbackSecurityMasterAssetProfile")
+        .Produces<SecurityAssetProfileGovernanceResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        /// <summary>
         /// Resolves a security by external identifier (ISIN, CUSIP, Ticker, FIGI, SEDOL, etc.).
         /// Supports filtering by provider and active status.
         /// </summary>
@@ -102,8 +269,8 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         /// <summary>
-        /// Full-text searches for securities by display name, issuer, or identifiers.
-        /// Supports filtering by asset class, status, and provider.
+        /// Full-text searches for securities by display name, issuer, identifiers, or profile fields.
+        /// Supports active-only filtering, pagination, and profile-backed custom asset filters.
         /// </summary>
         /// <remarks>
         /// <para>Returns a paginated list of security summaries matching the search criteria.</para>
@@ -114,10 +281,10 @@ public static class SecurityMasterEndpoints
             [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
-            if (string.IsNullOrWhiteSpace(request.Query))
+            if (!HasSecuritySearchCriteria(request))
                 return Results.ValidationProblem(new Dictionary<string, string[]>
                 {
-                    ["query"] = ["Query is required."]
+                    ["query"] = ["Query or a custom asset profile filter is required."]
                 });
 
             if (request.Skip < 0)
@@ -474,17 +641,13 @@ public static class SecurityMasterEndpoints
             [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
-            if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
-            {
-                return Results.Unauthorized();
-            }
-
-            if ((permissions & UserPermission.ViewSecurityMaster) != UserPermission.ViewSecurityMaster)
-            {
-                return Results.Forbid();
-            }
-
             var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
+            if (context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
+            {
+                var actor = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
+                await casework.SeedOpenConflictCasesAsync(conflicts, actor, ct).ConfigureAwait(false);
+            }
+
             return Results.Json(conflicts, jsonOptions);
         })
         .WithName("GetSecurityMasterConflicts")
@@ -518,6 +681,12 @@ public static class SecurityMasterEndpoints
             var serverRequest = request with { ResolvedBy = resolvedBy };
 
             var updated = await conflictService.ResolveAsync(serverRequest, ct).ConfigureAwait(false);
+            if (updated is not null &&
+                context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
+            {
+                await casework.ApplyResolvedConflictAsync(updated, serverRequest, ct).ConfigureAwait(false);
+            }
+
             return updated is null
                 ? Results.NotFound()
                 : Results.Json(updated, jsonOptions);
@@ -619,6 +788,11 @@ public static class SecurityMasterEndpoints
         {
             var actor = ResolveActor(context);
             var updated = await store.PatchAsync(securityId, request, actor, ct).ConfigureAwait(false);
+            if (context.RequestServices.GetService<SecurityMasterExceptionCaseworkService>() is { } casework)
+            {
+                await casework.SeedOperatorOverrideCaseAsync(updated, actor, ct).ConfigureAwait(false);
+            }
+
             return Results.Json(updated, jsonOptions);
         })
         .WithName("PatchSecurityMasterOperatorOverrides")
@@ -688,6 +862,13 @@ public static class SecurityMasterEndpoints
 
     private static bool HasModifySecurityMasterPermission(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster);
+
+    private static bool HasSecuritySearchCriteria(SecuritySearchRequest request)
+        => !string.IsNullOrWhiteSpace(request.Query)
+           || !string.IsNullOrWhiteSpace(request.CustomProfileId)
+           || request.ProfileVersion.HasValue
+           || !string.IsNullOrWhiteSpace(request.ProfileFieldKey)
+           || !string.IsNullOrWhiteSpace(request.ProfileFieldValue);
 
     private static string ResolveActor(HttpContext context)
     {

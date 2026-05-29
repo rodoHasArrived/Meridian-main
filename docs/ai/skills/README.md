@@ -88,6 +88,22 @@ Code-defined provider skills may also exist, such as AI documentation maintenanc
 
 ---
 
+## Claude Plugin Skill Packages
+
+Checked-in Claude plugins live under [`.claude/plugins/`](../../../.claude/plugins). Treat them as
+provider-specific helper packages, not replacements for the shared Meridian workflow contract.
+
+| Plugin | Manifest | Skill folders | Role |
+| ------ | -------- | ------------- | ---- |
+| `csharp-dotnet-development` | [`.claude/plugins/csharp-dotnet-development/.github/plugin/plugin.json`](../../../.claude/plugins/csharp-dotnet-development/.github/plugin/plugin.json) | `aspnet-minimal-api-openapi`, `csharp-async`, `csharp-mstest`, `csharp-nunit`, `csharp-tunit`, `csharp-xunit`, `dotnet-best-practices`, `dotnet-upgrade` | General C#/.NET helper skills for async, tests, OpenAPI, best practices, and upgrades |
+| `frontend-web-dev` | [`.claude/plugins/frontend-web-dev/.github/plugin/plugin.json`](../../../.claude/plugins/frontend-web-dev/.github/plugin/plugin.json) | `playwright-explore-website`, `playwright-generate-test` | General frontend and Playwright helper skills |
+
+When a plugin package is added, renamed, or removed, update this table, the plugin-agent section in
+[`../agents/README.md`](../agents/README.md), and the shared inventory contract in
+[`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
+
+---
+
 ## Related Resources
 
 | Resource | Purpose |
@@ -114,4 +130,4 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 
 ---
 
-_Last Updated: 2026-05-23_
+_Last Updated: 2026-05-28_

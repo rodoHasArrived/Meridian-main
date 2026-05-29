@@ -12,9 +12,15 @@ namespace Meridian.Tests.Ui;
 public sealed class ExecutionRouteContractParityTests
 {
     [Fact]
-    public void ExecutionControlManualOverrideRoutes_ShouldMatchContractsAndEndpointMap()
+    public void ExecutionControlRoutes_ShouldMatchContractsAndEndpointMap()
     {
         var mappedRoutes = MapExecutionRoutes();
+
+        mappedRoutes.Should().Contain(UiApiRoutes.ExecutionControlsDefaultPositionLimit,
+            "endpoint map diverged from contracts for execution default position-limit route");
+
+        mappedRoutes.Should().Contain(UiApiRoutes.ExecutionControlsSymbolPositionLimit,
+            "endpoint map diverged from contracts for execution symbol position-limit route");
 
         mappedRoutes.Should().Contain(UiApiRoutes.ExecutionControlsManualOverrides,
             "endpoint map diverged from contracts for execution manual override create route");
@@ -29,12 +35,13 @@ public sealed class ExecutionRouteContractParityTests
         var app = builder.Build();
         app.MapExecutionEndpoints(new JsonSerializerOptions());
 
-        return app.Services
-            .GetRequiredService<EndpointDataSource>()
-            .Endpoints
+        return ((IEndpointRouteBuilder)app)
+            .DataSources
+            .SelectMany(static source => source.Endpoints)
             .OfType<RouteEndpoint>()
             .Select(endpoint => endpoint.RoutePattern.RawText)
             .Where(route => !string.IsNullOrWhiteSpace(route))
+            .Select(route => route!)
             .ToHashSet(StringComparer.Ordinal);
     }
 }

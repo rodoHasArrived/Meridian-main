@@ -70,7 +70,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         var directLendingOptions = CreateDirectLendingOptions();
         var ledgerOptions = CreateLedgerOptions();
 
-        services.TryAddSingleton(_ => AssetClassValidatorRegistry.CreateDefault());
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
@@ -86,6 +85,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             return config.Storage?.ToStorageOptions(dataRoot, compressionEnabled)
                 ?? StorageProfilePresets.CreateFromProfile(null, dataRoot, compressionEnabled);
         });
+        services.TryAddSingleton<ISecurityAssetProfileGovernanceService, SecurityAssetProfileGovernanceService>();
+        services.TryAddSingleton<ISecurityAssetProfileCatalog>(sp => sp.GetRequiredService<ISecurityAssetProfileGovernanceService>());
+        services.TryAddSingleton(sp => AssetClassValidatorRegistry.CreateDefault(sp.GetRequiredService<ISecurityAssetProfileCatalog>()));
 
         // Source registry for data source tracking
         services.AddSingleton<ISourceRegistry>(sp =>
@@ -96,6 +98,18 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         });
 
         // Core storage services
+        services.TryAddSingleton<StorageCatalogService>(sp =>
+        {
+            var storageOptions = sp.GetRequiredService<StorageOptions>();
+            var catalog = new StorageCatalogService(storageOptions.RootPath, storageOptions);
+
+            // Keep the shared catalog ready for ETL and workstation endpoints without requiring
+            // each consumer to perform its own first-use initialization.
+            Task.Run(() => catalog.InitializeAsync()).GetAwaiter().GetResult();
+
+            return catalog;
+        });
+        services.TryAddSingleton<IStorageCatalogService>(sp => sp.GetRequiredService<StorageCatalogService>());
         services.AddSingleton<IFileMaintenanceService, FileMaintenanceService>();
         services.AddSingleton<IQualityTrendStore, FileQualityTrendStore>();
         services.AddSingleton<IDataQualityService, DataQualityService>();
@@ -260,8 +274,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 "Set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
         }
 
-        // Local fixture/dev profile: keep in-memory working sets persisted to local snapshots.
-        services.TryAddSingleton<IFundAccountService>(sp =>
         // Fund accounts and governance structure.
         if (FundAccountsStartup.IsConfigured())
         {

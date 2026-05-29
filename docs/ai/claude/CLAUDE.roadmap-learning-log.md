@@ -2,7 +2,7 @@
 
 Running log of roadmap items studied on the `claude/continue-roadmap-learning-*` branches. Each entry captures what was read, what the current code evidence actually says, and what the next learning session should pick up.
 
-Source of truth for wave status is [`docs/status/PROGRAM_STATE.md`](../../status/PROGRAM_STATE.md); this file only records what was learned, not what is planned.
+Source of truth for wave status is [`docs/plans/current-direction-and-status.md`](../../plans/current-direction-and-status.md) plus the generated roadmap register; this file only records what was learned at the time, not what is planned.
 
 ---
 
@@ -10,7 +10,7 @@ Source of truth for wave status is [`docs/status/PROGRAM_STATE.md`](../../status
 
 **Studied on:** 2026-04-22
 **Branch:** `claude/continue-roadmap-learning-Jr1rw`
-**Why this is "next":** Wave 1 is repo-closed (Done). Wave 2 is the earliest wave still `In Progress` in `PROGRAM_STATE.md`, owned by Trading Workstation, with target 2026-05-29.
+**Why this was "next" on 2026-04-22:** Wave 1 was repo-closed (Done), and Wave 2 was then the earliest wave still treated as in progress. As of the 2026-05-27 evidence slice, W2 is closed as Done; keep this entry as historical learning context, not current roadmap state.
 
 ### Primary sources read
 
@@ -49,9 +49,9 @@ From §"Open Questions" of the sprint blueprint:
 
 ### Takeaways for future work on this branch
 
-- The Wave 2 seam inventory is essentially complete; the sprint is now in its "prove it" phase, not its "build it" phase.
+- Historical 2026-04-22 note: the Wave 2 seam inventory was essentially complete and the sprint was in its proof phase. Current 2026-05-27 status is Done with evidence tracked from the W2 acceptance slice.
 - The highest-value small fix surfaced by this learning pass is the missing `IPromotionRecordStore` registration in `UiServer.cs`. That would unblock the promotion-traceability gate at runtime without any contract changes.
-- Next learning session should pick up Wave 3 (Shared Platform Interop, In Progress, target 2026-06-26) using [`docs/plans/brokerage-portfolio-sync-blueprint.md`](../../plans/brokerage-portfolio-sync-blueprint.md) as the primary reference, and verify how far the shared run/portfolio/ledger DTOs in `src/Meridian.Contracts/Workstation/` have been wired into WPF consumers.
+- Historical 2026-04-22 follow-up: the next learning session was to pick up Wave 3 shared platform interop. Current 2026-05-27 status is Done for the W3 shared run / portfolio / ledger continuity baseline; W4 close, report, reconciliation, and evidence governance remains the active gate.
 
 ### Follow-up: implementations landed on this branch
 

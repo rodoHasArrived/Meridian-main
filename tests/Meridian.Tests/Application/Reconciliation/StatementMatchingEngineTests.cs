@@ -63,7 +63,7 @@ public sealed class StatementMatchingEngineTests
         result.Results.Should().Contain(match => match.Kind == StatementMatchKind.Cash
             && match.RuleIds.Contains("statement-cash-tolerance-v1")
             && match.Variance.Amount == 0.05m
-            && match.Tolerance.Amount == 0.10m);
+            && match.Tolerance.Quantity == 0.10m);
         result.Results.Should().Contain(match => match.Kind == StatementMatchKind.Transaction
             && match.RuleIds.Contains("statement-transaction-tolerance-v1")
             && match.Variance.Quantity == 0.01m
@@ -115,10 +115,10 @@ public sealed class StatementMatchingEngineTests
         result.Results.Should().Contain(match => match.Kind == StatementMatchKind.Position
             && match.RuleIds.Contains("statement-position-break-v1")
             && match.BrokerEvidenceReference == "broker:pos:1"
-            && match.InternalEvidenceReference is null);
+            && match.InternalEvidenceReference == null);
         result.Results.Should().Contain(match => match.Kind == StatementMatchKind.Transaction
             && match.RuleIds.Contains("statement-transaction-break-v1")
-            && match.BrokerEvidenceReference is null
+            && match.BrokerEvidenceReference == null
             && match.InternalEvidenceReference == "internal:tx:1");
     }
 

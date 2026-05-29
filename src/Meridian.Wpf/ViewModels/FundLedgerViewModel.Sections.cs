@@ -26,6 +26,41 @@ internal sealed class FundLedgerCollectionsSectionViewModel
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; } = [];
 }
 
+internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
+{
+    private string _currentWorkbenchModeText = "Overview Mode";
+    private string _currentWorkbenchTitleText = "Overview Workbench";
+    private string _currentWorkbenchSubtitleText = "Fund-wide operating summary, liquidity posture, and exception pressure.";
+    private string _routeBannerTitleText = string.Empty;
+    private string _routeBannerDetailText = string.Empty;
+    private bool _hasRouteBanner;
+    private string _reconciliationOwnershipText = "Assign an operator before reconciliation sign-off.";
+    private string _reconciliationSnapshotWarningText = "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.";
+    private string _reportPackOwnershipText = "Governance operator sign-off is pending.";
+    private string _reportPackSnapshotWarningText = "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.";
+    private WorkstationStateModel _reportPackReadinessState = WorkstationStateModel.Empty(
+        "Report pack waiting for fund context",
+        "Select a fund profile and refresh the preview before distributing reporting artifacts.",
+        "Refresh Preview",
+        "Report Pack");
+    private bool _isReportPackLoading;
+    private int _selectedTabIndex;
+
+    public string CurrentWorkbenchModeText { get => _currentWorkbenchModeText; set => SetProperty(ref _currentWorkbenchModeText, value); }
+    public string CurrentWorkbenchTitleText { get => _currentWorkbenchTitleText; set => SetProperty(ref _currentWorkbenchTitleText, value); }
+    public string CurrentWorkbenchSubtitleText { get => _currentWorkbenchSubtitleText; set => SetProperty(ref _currentWorkbenchSubtitleText, value); }
+    public string RouteBannerTitleText { get => _routeBannerTitleText; set => SetProperty(ref _routeBannerTitleText, value); }
+    public string RouteBannerDetailText { get => _routeBannerDetailText; set => SetProperty(ref _routeBannerDetailText, value); }
+    public bool HasRouteBanner { get => _hasRouteBanner; set => SetProperty(ref _hasRouteBanner, value); }
+    public string ReconciliationOwnershipText { get => _reconciliationOwnershipText; set => SetProperty(ref _reconciliationOwnershipText, value); }
+    public string ReconciliationSnapshotWarningText { get => _reconciliationSnapshotWarningText; set => SetProperty(ref _reconciliationSnapshotWarningText, value); }
+    public string ReportPackOwnershipText { get => _reportPackOwnershipText; set => SetProperty(ref _reportPackOwnershipText, value); }
+    public string ReportPackSnapshotWarningText { get => _reportPackSnapshotWarningText; set => SetProperty(ref _reportPackSnapshotWarningText, value); }
+    public WorkstationStateModel ReportPackReadinessState { get => _reportPackReadinessState; set => SetProperty(ref _reportPackReadinessState, value); }
+    public bool IsReportPackLoading { get => _isReportPackLoading; set => SetProperty(ref _isReportPackLoading, value); }
+    public int SelectedTabIndex { get => _selectedTabIndex; set => SetProperty(ref _selectedTabIndex, value); }
+}
+
 public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
 {
     public ObservableCollection<FundReconciliationBreakQueueRow> BreakQueueItems { get; } = [];

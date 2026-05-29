@@ -19,6 +19,7 @@ public static class LedgerPeriodPostingGuard
         }
 
         ValidateAdjustmentApprovalMetadata(entry);
+        ValidateSecurityMasterLineage(entry);
 
         if (string.Equals(period.Status, "Open", StringComparison.Ordinal))
         {
@@ -93,6 +94,256 @@ public static class LedgerPeriodPostingGuard
             throw new LedgerValidationException(
                 $"Journal entry '{entry.Entry.JournalEntryId}' adjustment approval requires a governance case id or evidence link.");
         }
+    }
+
+    private static void ValidateSecurityMasterLineage(LedgerJournalEntryWrite entry)
+    {
+        var journalEntry = entry.Entry;
+        var instrumentLines = journalEntry.Lines
+            .Where(IsInstrumentBearingLine)
+            .ToArray();
+        var metadata = journalEntry.Metadata;
+        var instrumentBearing = instrumentLines.Length > 0 ||
+            !string.IsNullOrWhiteSpace(metadata.Symbol) ||
+            metadata.SecurityId.GetValueOrDefault() != Guid.Empty;
+
+        if (!instrumentBearing)
+        {
+            return;
+        }
+
+        var securityId = metadata.SecurityId.GetValueOrDefault();
+        if (securityId == Guid.Empty)
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without a resolved Security Master security id.");
+        }
+
+        var metadataSymbol = metadata.Symbol?.Trim();
+        var instrumentSymbols = instrumentLines
+            .Select(static line => line.Account.Symbol?.Trim())
+            .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+            .Select(static symbol => symbol!)
+            .Concat(string.IsNullOrWhiteSpace(metadataSymbol) ? [] : [metadataSymbol!])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (instrumentSymbols.Length > 1)
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts multiple instrument symbols with a single Security Master security id; split the posting or provide line-level Security Master lineage before append.");
+        }
+
+        if (!TryGetMetadataTag(metadata, "securityMasterProvenance", out var provenance) ||
+            !ReferencesSecurityId(provenance, securityId))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without Security Master provenance for security '{securityId}'.");
+        }
+
+        if (!TryGetMetadataTag(metadata, "securityMasterLineage", out var lineage) ||
+            !ReferencesSecurityId(lineage, securityId))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without approved Security Master line lineage for security '{securityId}'.");
+        }
+
+        if (!HasApprovalEvidence(provenance, lineage))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without approved Security Master evidence.");
+        }
+
+        if (!HasActiveSecurityMasterStatus(provenance, lineage))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without active Security Master status evidence.");
+        }
+
+        if (!HasLedgerMappingEvidence(lineage))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without a Security Master ledger mapping reference.");
+        }
+
+        if (instrumentSymbols.Length == 0 &&
+            !LineageReferencesInstrument(lineage, null, securityId))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without a Security Master ledger mapping tied to the resolved security id.");
+        }
+
+        foreach (var symbol in instrumentSymbols)
+        {
+            if (!LineageReferencesInstrument(lineage, symbol, securityId))
+            {
+                throw new LedgerValidationException(
+                    $"Journal entry '{journalEntry.JournalEntryId}' declares instrument symbol '{symbol.Trim()}' without matching Security Master lineage.");
+            }
+
+            if (!LedgerMappingReferencesInstrument(lineage, symbol, securityId))
+            {
+                throw new LedgerValidationException(
+                    $"Journal entry '{journalEntry.JournalEntryId}' declares instrument symbol '{symbol.Trim()}' without a Security Master ledger mapping tied to the resolved symbol or security id.");
+            }
+        }
+
+        foreach (var line in instrumentLines)
+        {
+            var symbol = line.Account.Symbol;
+            if (string.IsNullOrWhiteSpace(symbol))
+            {
+                throw new LedgerValidationException(
+                    $"Journal entry '{journalEntry.JournalEntryId}' posts instrument line '{line.Account.Name}' without an instrument symbol for Security Master lineage.");
+            }
+        }
+    }
+
+    private static bool IsInstrumentBearingLine(LedgerEntry line) =>
+        !string.IsNullOrWhiteSpace(line.Account.Symbol) ||
+        IsInstrumentAccountName(line.Account.Name);
+
+    private static bool IsInstrumentAccountName(string? accountName)
+    {
+        if (string.IsNullOrWhiteSpace(accountName))
+        {
+            return false;
+        }
+
+        var normalized = accountName.Trim();
+        return normalized.Equals("Securities", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Dividend Receivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Accrued Interest Receivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Corporate Action Distribution", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Short Securities Payable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Option Premium Asset", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Option Premium Liability", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("Futures MTM Settlement", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryGetMetadataTag(JournalEntryMetadata metadata, string key, out string value)
+    {
+        value = string.Empty;
+        if (metadata.Tags is null ||
+            !metadata.Tags.TryGetValue(key, out var raw) ||
+            string.IsNullOrWhiteSpace(raw))
+        {
+            return false;
+        }
+
+        value = raw.Trim();
+        return true;
+    }
+
+    private static bool ReferencesSecurityId(string value, Guid securityId) =>
+        value.Contains(securityId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+        value.Contains(securityId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+
+    private static bool LineageReferencesInstrument(string lineage, string? symbol, Guid securityId)
+    {
+        var normalizedSymbol = symbol?.Trim();
+        foreach (var entry in ExtractLineageEntries(lineage))
+        {
+            if ((!string.IsNullOrWhiteSpace(normalizedSymbol) &&
+                    string.Equals(entry.Symbol, normalizedSymbol, StringComparison.OrdinalIgnoreCase)) ||
+                ReferencesSecurityId(entry.SecurityIdToken, securityId))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasApprovalEvidence(string provenance, string lineage) =>
+        provenance.Contains("approved:true", StringComparison.OrdinalIgnoreCase) ||
+        lineage.Contains("sm-approval:", StringComparison.OrdinalIgnoreCase) ||
+        lineage.Contains("approval:", StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasActiveSecurityMasterStatus(string provenance, string lineage) =>
+        ContainsActiveSecurityMasterStatus(provenance) ||
+        ContainsActiveSecurityMasterStatus(lineage);
+
+    private static bool ContainsActiveSecurityMasterStatus(string value) =>
+        value.Contains("security-status:active", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("securitystatus:active", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("status:active", StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasLedgerMappingEvidence(string lineage) =>
+        lineage.Contains("ledger-map:", StringComparison.OrdinalIgnoreCase) ||
+        lineage.Contains("ledger-mapping:", StringComparison.OrdinalIgnoreCase);
+
+    private static bool LedgerMappingReferencesInstrument(string lineage, string? symbol, Guid securityId)
+    {
+        var normalizedSymbol = symbol?.Trim();
+        foreach (var token in ExtractLedgerMappingTokens(lineage))
+        {
+            if ((!string.IsNullOrWhiteSpace(normalizedSymbol) &&
+                    token.Contains(normalizedSymbol, StringComparison.OrdinalIgnoreCase)) ||
+                token.Contains(securityId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+                token.Contains(securityId.ToString("N"), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<string> ExtractLedgerMappingTokens(string lineage)
+    {
+        foreach (var marker in new[] { "ledger-map:", "ledger-mapping:" })
+        {
+            var searchIndex = 0;
+            while (searchIndex < lineage.Length)
+            {
+                var start = lineage.IndexOf(marker, searchIndex, StringComparison.OrdinalIgnoreCase);
+                if (start < 0)
+                {
+                    break;
+                }
+
+                var end = FindLedgerMappingTokenEnd(lineage, start + marker.Length);
+                yield return lineage[start..end].Trim();
+                searchIndex = end;
+            }
+        }
+    }
+
+    private static IEnumerable<(string Symbol, string SecurityIdToken)> ExtractLineageEntries(string lineage)
+    {
+        foreach (var rawEntry in lineage.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var firstSeparator = rawEntry.IndexOf(':');
+            if (firstSeparator <= 0)
+            {
+                continue;
+            }
+
+            var secondSeparator = rawEntry.IndexOf(':', firstSeparator + 1);
+            if (secondSeparator <= firstSeparator + 1)
+            {
+                continue;
+            }
+
+            yield return (
+                Symbol: rawEntry[..firstSeparator].Trim(),
+                SecurityIdToken: rawEntry[(firstSeparator + 1)..secondSeparator].Trim());
+        }
+    }
+
+    private static int FindLedgerMappingTokenEnd(string lineage, int valueStart)
+    {
+        var end = lineage.Length;
+        foreach (var delimiter in new[] { ";", "|", ",", ":sm-approval:", ":approval:", ":status:", ":security-status:", ":securitystatus:", ":security-master:" })
+        {
+            var index = lineage.IndexOf(delimiter, valueStart, StringComparison.OrdinalIgnoreCase);
+            if (index >= 0)
+            {
+                end = Math.Min(end, index);
+            }
+        }
+
+        return end;
     }
 
     private static void RequireText(string? value, Guid journalEntryId, string fieldName)

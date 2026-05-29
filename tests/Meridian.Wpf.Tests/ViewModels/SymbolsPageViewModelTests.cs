@@ -21,21 +21,21 @@ public sealed class SymbolsPageViewModelTests
         viewModel.Should().Contain("public Task StartAsync(CancellationToken ct = default) => ActivateAsync(ct)");
         viewModel.Should().Contain("public void Stop() => Deactivate()");
         viewModel.Should().Contain("CancellationTokenSource.CreateLinkedTokenSource(ActivationToken, ct)");
-        viewModel.Should().Contain("CancelAndDispose(Interlocked.Exchange(ref _loadCts, null))");
-        viewModel.Should().Contain("CancelAndDispose(Interlocked.Exchange(ref _activationCts, null))");
+        viewModel.Should().Contain("CancelWithoutDisposing(Interlocked.Exchange(ref _loadCts, null))");
+        viewModel.Should().Contain("CancelWithoutDisposing(Interlocked.Exchange(ref _activationCts, null))");
+        viewModel.Should().Contain("_getConfiguredSymbolsAsync(loadCts.Token)");
+        viewModel.Should().Contain("activationCts.Dispose();");
     }
 
     [Fact]
     public async Task Deactivate_CancelsInFlightSymbolLoadWithoutClearingLoadedSymbols()
     {
         var loadStarted = new TaskCompletionSource<CancellationToken>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var loadCanceled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var viewModel = CreateViewModel(
             getConfiguredSymbolsAsync: async ct =>
             {
                 loadStarted.SetResult(ct);
-                using var registration = ct.UnsafeRegister(_ => loadCanceled.TrySetResult(), null);
                 await Task.Delay(Timeout.InfiniteTimeSpan, ct);
                 return Array.Empty<SymbolConfigDto>();
             });
@@ -47,7 +47,7 @@ public sealed class SymbolsPageViewModelTests
 
         viewModel.Deactivate();
 
-        await loadCanceled.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await WaitForConditionAsync(() => activeLoadToken.IsCancellationRequested);
         await activationTask.WaitAsync(TimeSpan.FromSeconds(5));
 
         activeLoadToken.IsCancellationRequested.Should().BeTrue();
@@ -55,6 +55,15 @@ public sealed class SymbolsPageViewModelTests
         viewModel.Symbols.Should().ContainSingle(symbol => symbol.Symbol == "SPY");
         viewModel.FilteredSymbols.Should().ContainSingle(symbol => symbol.Symbol == "SPY");
         viewModel.VisibleSymbolScopeText.Should().Be("1 configured symbols");
+    }
+
+    private static async Task WaitForConditionAsync(Func<bool> predicate)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (!predicate())
+        {
+            await Task.Delay(25, timeout.Token);
+        }
     }
 
     [Fact]

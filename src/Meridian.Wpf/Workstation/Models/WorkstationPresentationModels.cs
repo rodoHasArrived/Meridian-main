@@ -226,7 +226,8 @@ public sealed record WorkstationMetricModel(
 public sealed record WorkstationTableColumnModel(
     string Header,
     string BindingPath,
-    double Width = 120);
+    double Width = 120,
+    string StringFormat = "");
 
 public class WorkstationTableModel
 {

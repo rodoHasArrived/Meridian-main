@@ -12,6 +12,8 @@ import {
   type EvidenceLineageDetailViewModel,
   type EvidenceLineagePanelViewModel,
   type EvidenceLineageRowViewModel,
+  type EvidenceAssurancePanelViewModel,
+  type EvidenceSlaAssessmentRowViewModel,
   type EvidenceNodeDetailViewModel,
   type EvidenceNodeGroupViewModel,
   type EvidenceNodeRowViewModel,
@@ -223,6 +225,16 @@ export function EvidenceWorkbenchScreen() {
                         <div className="font-semibold">{vm.exportResultDetail.title}</div>
                         <div className="mt-1 break-all font-mono text-xs">{vm.exportResultDetail.manifestPath}</div>
                         <div className="mt-1 text-xs">{vm.exportResultDetail.summaryLabel}</div>
+                        {vm.exportResultDetail.vaultIdLabel || vm.exportResultDetail.storageKindLabel ? (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {vm.exportResultDetail.vaultIdLabel ? (
+                              <Badge variant="outline">{vm.exportResultDetail.vaultIdLabel}</Badge>
+                            ) : null}
+                            {vm.exportResultDetail.storageKindLabel ? (
+                              <Badge variant="outline">{vm.exportResultDetail.storageKindLabel}</Badge>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
                       {vm.exportResultDetail.routeHref && vm.exportResultDetail.routeLabel && vm.exportResultDetail.routeAriaLabel ? (
                         <Button asChild variant="outline" size="sm">
@@ -238,6 +250,30 @@ export function EvidenceWorkbenchScreen() {
                         </Button>
                       ) : null}
                     </div>
+                    {vm.exportResultDetail.artifactRows.length > 0 ? (
+                      <ul className="mt-3 grid gap-2" aria-label="Retained vault artifacts">
+                        {vm.exportResultDetail.artifactRows.map((artifact) => (
+                          <li
+                            key={artifact.id}
+                            aria-label={artifact.ariaLabel}
+                            className="rounded-sm border border-primary/30 bg-background/40 px-2.5 py-2 text-xs"
+                          >
+                            <div className="flex flex-wrap items-center gap-2 font-semibold">
+                              <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>{artifact.kind}</span>
+                              <Badge variant="success">{artifact.sizeLabel}</Badge>
+                            </div>
+                            <div className="mt-1 break-all font-mono">{artifact.relativePath}</div>
+                            <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
+                              <span className="break-all">{artifact.hashLabel}</span>
+                              <span className="break-all">{artifact.canonicalSubjectLabel}</span>
+                              <span className="break-all">{artifact.sourceLabel}</span>
+                              <span>{artifact.retainedLabel}</span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                 ) : null}
               </CardContent>
@@ -276,6 +312,9 @@ export function EvidenceWorkbenchScreen() {
               ) : null}
               <EvidenceList title="Missing evidence" items={vm.missingEvidence} tone="danger" />
               <EvidenceList title="Stale evidence" items={vm.staleEvidence} tone="warning" />
+              <EvidenceAssurancePanel panel={vm.assurancePanel} />
+              <EvidenceList title="Orphan evidence" items={vm.orphanEvidence} tone={vm.assurancePanel.orphanTone} />
+              <EvidenceList title="SLA breaches" items={vm.slaBreaches} tone={vm.slaBreaches.length ? "warning" : "success"} />
               <EvidenceList title="Related work items" items={vm.relatedWorkItemIds} tone="muted" />
               <EvidenceList title="Warnings" items={vm.warnings} tone="warning" />
             </aside>
@@ -534,6 +573,11 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
                     <span>{artifact.generatedLabel}</span>
                     <span className="break-all">{artifact.hashLabel}</span>
                   </div>
+                  {artifact.canonicalSubjectLabel ? (
+                    <div className="mt-1 break-all font-mono text-[0.7rem] text-muted-foreground">
+                      {artifact.canonicalSubjectLabel}
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -648,6 +692,95 @@ function EvidenceActionPanel({
         </ul>
       </CardContent>
     </Card>
+  );
+}
+
+function EvidenceAssurancePanel({ panel }: { panel: EvidenceAssurancePanelViewModel }) {
+  return (
+    <Card className="panel-surface" role="region" aria-label={panel.title}>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+              {panel.title}
+            </CardTitle>
+            <CardDescription>{panel.summaryLabel}</CardDescription>
+          </div>
+          <Badge variant={badgeVariant[panel.statusTone]}>{panel.scoreLabel}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-2 sm:grid-cols-2">
+          <EvidenceMetric label="Status" value={panel.statusLabel} tone={panel.statusTone} />
+          <EvidenceMetric label="No orphan rule" value={panel.orphanSummaryLabel} tone={panel.orphanTone} />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant={badgeVariant[panel.orphanTone]}>{panel.noOrphanRuleLabel}</Badge>
+          <Badge variant="outline">{panel.validationIssueLabel}</Badge>
+        </div>
+        {panel.componentRows.length > 0 ? (
+          <ul className="space-y-2" aria-label="Assurance score components">
+            {panel.componentRows.map((component) => (
+              <li
+                key={component.id}
+                aria-label={component.ariaLabel}
+                className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2 text-xs"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-semibold text-foreground">{component.label}</span>
+                  <span className="flex flex-wrap gap-2">
+                    <Badge variant={badgeVariant[component.statusTone]}>{component.statusLabel}</Badge>
+                    <Badge variant="outline">{component.scoreLabel}</Badge>
+                  </span>
+                </div>
+                <p className="mt-1 leading-5 text-muted-foreground">{component.detail}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-sm border border-dashed border-border/70 bg-secondary/20 px-2.5 py-2 text-sm text-muted-foreground">
+            Assurance components are not available for this packet.
+          </p>
+        )}
+        <EvidenceSlaRows rows={panel.breachedSlaRows.length > 0 ? panel.breachedSlaRows : panel.slaRows.slice(0, 3)} />
+      </CardContent>
+    </Card>
+  );
+}
+
+function EvidenceSlaRows({ rows }: { rows: EvidenceSlaAssessmentRowViewModel[] }) {
+  if (rows.length === 0) {
+    return (
+      <p className="rounded-sm border border-dashed border-border/70 bg-secondary/20 px-2.5 py-2 text-sm text-muted-foreground">
+        No evidence SLA assessments returned.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="space-y-2" aria-label="Evidence SLA assessments">
+      {rows.map((row) => (
+        <li
+          key={row.id}
+          aria-label={row.ariaLabel}
+          className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2 text-xs"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-semibold text-foreground">{row.policyLabel}</span>
+            <Badge variant={badgeVariant[row.tone]}>{row.breached ? "Breached" : "Fresh"}</Badge>
+          </div>
+          <div className="mt-1 break-all font-mono text-[0.7rem] text-muted-foreground">{row.evidenceId}</div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Badge variant="outline">{row.evidenceKindLabel}</Badge>
+            <Badge variant="outline">{row.ageLabel}</Badge>
+            <Badge variant="outline">{row.freshnessLabel}</Badge>
+            <Badge variant="outline">{row.severityLabel}</Badge>
+          </div>
+          <p className="mt-2 leading-5 text-muted-foreground">{row.message}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 

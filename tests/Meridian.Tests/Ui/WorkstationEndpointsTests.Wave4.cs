@@ -36,6 +36,335 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task OperationsContinuityEndpoints_ApprovalPolicyRuleUpsert_UpdatesMatrixWithAuditEvidence()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuityApprovalPolicyRules,
+            new OperationsApprovalPolicyRuleUpsertRequestDto(
+                PolicyKey: "operations-continuity.approve",
+                WorkflowArea: "Operations close",
+                Action: "Approve submitted workflow",
+                Gate: OperationsGateKeyDto.Approval,
+                Trigger: "Workflow is submitted and assigned reviewer evidence is present.",
+                RequiredPermission: nameof(UserPermission.AdminMaintenance),
+                SubmitterRole: "Accounting operator",
+                ReviewerRole: "Controller",
+                RequiredDistinctApprovals: 3,
+                RequiresIndependentReviewer: true,
+                RequiresReportPack: true,
+                RequiresChecklistControlApprovals: true,
+                EvidenceRequirement: "Controller packet plus three distinct approval-gate control approvals.",
+                AuditEventType: "approval-approved",
+                Route: UiApiRoutes.OperationsContinuityApprovalApprove,
+                Severity: "Critical",
+                RequestedBy: "untrusted-browser-user",
+                Rationale: "Tighten close approval governance for controller review.",
+                CorrelationId: "approval-policy-test"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<OperationsApprovalPolicyRuleUpsertResultDto>(ServerJsonOptions);
+        result.Should().NotBeNull();
+        result!.Rule.PolicyKey.Should().Be("operations-continuity.approve");
+        result.Rule.RequiredDistinctApprovals.Should().Be(3);
+        result.AuditEvent.Actor.Should().Be("ops-user");
+        result.AuditEvent.CorrelationId.Should().Be("approval-policy-test");
+        result.Matrix.Rows.Should().Contain(row =>
+            row.PolicyKey == "operations-continuity.approve" &&
+            row.RequiredDistinctApprovals == 3 &&
+            row.ReviewerRole == "Controller");
+    }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_ApprovalPolicyRuleUpsert_WithoutAdminMaintenance_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuityApprovalPolicyRules,
+            new OperationsApprovalPolicyRuleUpsertRequestDto(
+                PolicyKey: "operations-continuity.approve",
+                WorkflowArea: "Operations close",
+                Action: "Approve submitted workflow",
+                Gate: OperationsGateKeyDto.Approval,
+                Trigger: "Workflow is submitted.",
+                RequiredPermission: nameof(UserPermission.AdminMaintenance),
+                SubmitterRole: "Accounting operator",
+                ReviewerRole: "Controller",
+                RequiredDistinctApprovals: 2,
+                RequiresIndependentReviewer: true,
+                RequiresReportPack: true,
+                RequiresChecklistControlApprovals: true,
+                EvidenceRequirement: "Controller packet.",
+                AuditEventType: "approval-approved",
+                Route: UiApiRoutes.OperationsContinuityApprovalApprove,
+                Severity: "Critical",
+                RequestedBy: "ops-user",
+                Rationale: "Should be rejected."));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_ApprovalPolicyRuleUpsert_InvalidApprovalCount_ReturnsBadRequest()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuityApprovalPolicyRules,
+            new OperationsApprovalPolicyRuleUpsertRequestDto(
+                PolicyKey: "operations-continuity.approve",
+                WorkflowArea: "Operations close",
+                Action: "Approve submitted workflow",
+                Gate: OperationsGateKeyDto.Approval,
+                Trigger: "Workflow is submitted.",
+                RequiredPermission: nameof(UserPermission.AdminMaintenance),
+                SubmitterRole: "Accounting operator",
+                ReviewerRole: "Controller",
+                RequiredDistinctApprovals: 0,
+                RequiresIndependentReviewer: true,
+                RequiresReportPack: true,
+                RequiresChecklistControlApprovals: true,
+                EvidenceRequirement: "Controller packet.",
+                AuditEventType: "approval-approved",
+                Route: UiApiRoutes.OperationsContinuityApprovalApprove,
+                Severity: "Critical",
+                RequestedBy: "ops-user",
+                Rationale: "Invalid count."));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_CloseCalendar_ExposesWorkflowDuePosture()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                fundAccountId,
+                "2026-07",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor"));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+
+        using var calendarResponse = await client.GetAsync($"{UiApiRoutes.OperationsContinuityCloseCalendar}?fundAccountId={fundAccountId}&periodId=2026-07");
+
+        calendarResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var calendar = await calendarResponse.Content.ReadFromJsonAsync<OperationsCloseCalendarDto>(ServerJsonOptions);
+        calendar.Should().NotBeNull();
+        var calendarItem = calendar!.Items.Should().ContainSingle(item =>
+            item.WorkflowId == start!.Workflow!.WorkflowId &&
+            item.FundAccountId == fundAccountId &&
+            item.PeriodId == "2026-07" &&
+            item.Status == OperationsWorkflowStatusDto.CollectingBrokerData &&
+            item.NextDueTaskId == "close-gate-brokeringest" &&
+            item.OpenChecklistCount > 0 &&
+            item.RequiredApprovalCount > 0 &&
+            item.Route.Contains(start.Workflow.WorkflowId.ToString(), StringComparison.OrdinalIgnoreCase)).Subject;
+        calendarItem.ReadinessScore.Should().BeLessThan(100);
+        calendarItem.ReadinessComponents.Should().NotBeNull();
+        calendarItem.ReadinessComponents!.Select(static component => component.Key)
+            .Should()
+            .BeEquivalentTo(
+            [
+                "security-master",
+                "provider-freshness",
+                "positions",
+                "cash",
+                "ledger",
+                "pricing",
+                "reconciliation",
+                "reports",
+                "approvals"
+            ]);
+        calendarItem.ReadinessBlockers.Should().NotBeNullOrEmpty();
+        calendarItem.ReadinessBlockers!.Select(static blocker => blocker.Code)
+            .Should()
+            .Contain(
+            [
+                "SECURITY_MASTER_RESOLUTION_REQUIRED",
+                "BROKER_SYNC_STALE",
+                "BROKER_CASH_COVERAGE_INCOMPLETE",
+                "POSTING_INCOMPLETE",
+                "RECONCILIATION_BREAKS_OPEN",
+                "APPROVAL_MISSING"
+            ]);
+        calendarItem.ReadinessNextActions.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_CloseCalendarItemUpsert_UpdatesDueOwnerWithAuditEvidence()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                fundAccountId,
+                "2026-08",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor"));
+        var startBody = await startResponse.Content.ReadAsStringAsync();
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK, startBody);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var workflowId = start!.Workflow!.WorkflowId;
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuityCloseCalendarItems,
+            new OperationsCloseCalendarItemUpsertRequestDto(
+                WorkflowId: workflowId,
+                TaskId: "close-gate-brokeringest",
+                DueDate: new DateOnly(2026, 8, 3),
+                Owner: "Controller",
+                RequestedBy: "untrusted-browser-user",
+                Rationale: "Move broker intake close task to controller queue.",
+                CorrelationId: "close-calendar-test"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<OperationsCloseCalendarItemUpsertResultDto>(ServerJsonOptions);
+        result.Should().NotBeNull();
+        result!.Item.WorkflowId.Should().Be(workflowId);
+        result.Item.NextDueTaskId.Should().Be("close-gate-brokeringest");
+        result.Item.NextDueDate.Should().Be(new DateOnly(2026, 8, 3));
+        result.Item.NextDueOwner.Should().Be("Controller");
+        result.AuditEvent.Actor.Should().Be("ops-user");
+        result.AuditEvent.CorrelationId.Should().Be("close-calendar-test");
+        result.Calendar.Items.Should().Contain(item =>
+            item.WorkflowId == workflowId &&
+            item.NextDueDate == new DateOnly(2026, 8, 3) &&
+            item.NextDueOwner == "Controller");
+    }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_CloseCalendarItemUpsert_WithoutAdminMaintenance_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuityCloseCalendarItems,
+            new OperationsCloseCalendarItemUpsertRequestDto(
+                WorkflowId: Guid.NewGuid(),
+                TaskId: "close-gate-brokeringest",
+                DueDate: new DateOnly(2026, 8, 3),
+                Owner: "Controller",
+                RequestedBy: "ops-user",
+                Rationale: "Should be rejected."));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_CloseCalendarItemUpsert_InvalidTask_ReturnsBadRequest()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                fundAccountId,
+                "2026-09",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor"));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuityCloseCalendarItems,
+            new OperationsCloseCalendarItemUpsertRequestDto(
+                WorkflowId: start!.Workflow!.WorkflowId,
+                TaskId: "missing-task",
+                DueDate: new DateOnly(2026, 9, 3),
+                Owner: "Controller",
+                RequestedBy: "ops-user",
+                Rationale: "Invalid task."));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_CloseReadiness_ExposesControllerScore()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                FundAccountId: Guid.NewGuid(),
+                PeriodId: "2026-10",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor"));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var workflowId = start!.Workflow!.WorkflowId;
+
+        using var readinessResponse = await client.GetAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityCloseReadiness, "workflowId", workflowId.ToString("D")));
+
+        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var readiness = await readinessResponse.Content.ReadFromJsonAsync<OperationsCloseReadinessDto>(ServerJsonOptions);
+        readiness.Should().NotBeNull();
+        readiness!.IsReadyToClose.Should().BeFalse();
+        readiness.Score.Should().BeLessThan(100);
+        readiness.Components.Select(static component => component.Key)
+            .Should()
+            .BeEquivalentTo(
+            [
+                "security-master",
+                "provider-freshness",
+                "positions",
+                "cash",
+                "ledger",
+                "pricing",
+                "reconciliation",
+                "reports",
+                "approvals"
+            ]);
+        readiness.Blockers.Select(static blocker => blocker.Code)
+            .Should()
+            .Contain(
+            [
+                "SECURITY_MASTER_RESOLUTION_REQUIRED",
+                "BROKER_SYNC_STALE",
+                "POSTING_INCOMPLETE",
+                "RECONCILIATION_BREAKS_OPEN",
+                "EVIDENCE_INCOMPLETE",
+                "APPROVAL_MISSING"
+            ]);
+        readiness.NextActions.Should().OnlyContain(action => !string.IsNullOrWhiteSpace(action.Route));
+    }
+
+    [Fact]
     public async Task OperationsContinuityEndpoints_ListDetailTimeline_ExposeSharedLifecycleEvidence()
     {
         await using var app = await CreateAppAsync(services =>

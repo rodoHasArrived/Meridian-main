@@ -210,6 +210,78 @@ describe("ReportingScreen", () => {
     );
   });
 
+  it("renders report-pack restatement review from shared workflow records", () => {
+    const restatedGovernance: GovernanceWorkspaceResponse = {
+      ...governance,
+      reporting: {
+        ...governance.reporting,
+        workflowRecords: [
+          {
+            reportId: "report-restated-1",
+            fundProfileId: "fund-alpha",
+            fundAccountId: "account-alpha",
+            period: "2026-05",
+            templateId: { name: "monthly-board-pack", version: 1 },
+            state: "Restated",
+            version: 2,
+            createdAt: "2026-05-27T10:00:00Z",
+            createdBy: "reporter",
+            updatedAt: "2026-05-28T12:00:00Z",
+            auditTrail: [
+              {
+                at: "2026-05-28T12:00:00Z",
+                actor: "approver",
+                action: "restated",
+                fromState: "Published",
+                toState: "Restated",
+                note: "pricing-correction"
+              }
+            ],
+            restatement: {
+              reasonCode: "pricing-correction",
+              approver: "fund-controller",
+              priorVersionReportId: "report-published-1",
+              changedLines: [
+                {
+                  lineKey: "nav.total",
+                  previousValue: "1250000",
+                  currentValue: "1249500",
+                  evidenceLinks: [
+                    {
+                      evidenceId: "pricing-evidence-1",
+                      label: "Pricing override",
+                      route: "/reporting/evidence?subject=pricing",
+                      source: "pricing",
+                      capturedAtUtc: "2026-05-28T11:59:00Z"
+                    }
+                  ]
+                }
+              ],
+              evidenceLinks: null
+            },
+            lineProvenance: [],
+            publication: null
+          }
+        ]
+      }
+    };
+
+    renderWithRouter(<ReportingScreen data={restatedGovernance} />, { initialEntries: ["/reporting/report-packs"] });
+
+    const restatement = screen.getByRole("region", { name: "Report-pack restatement review" });
+    expect(within(restatement).getByText("Restatement review")).toBeInTheDocument();
+    expect(within(restatement).getByText("pricing-correction approved by fund-controller.")).toBeInTheDocument();
+    expect(within(restatement).getByText("report-restated-1")).toBeInTheDocument();
+    expect(within(restatement).getByRole("list", { name: "Restatement changed lines" })).toBeInTheDocument();
+    expect(within(restatement).getByLabelText("nav.total changed from 1250000 to 1249500 with 1 evidence link")).toHaveTextContent(
+      "1250000 -> 1249500"
+    );
+    expect(within(restatement).getByRole("link", { name: "Open evidence for nav.total" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subject=pricing"
+    );
+  });
+
   it("keeps report-pack task and inspector action descriptions uniquely identified", () => {
     const { container } = renderWithRouter(<ReportingScreen data={governance} />, {
       initialEntries: ["/reporting/report-packs"]

@@ -78,6 +78,17 @@ public partial class DataQualityPage : Page
         }
     }
 
+    private async void CompareSelectedProvider_Click(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.SelectedSymbolQuality is not { Symbol.Length: > 0 } selected)
+        {
+            return;
+        }
+
+        var comparison = await _viewModel.GetProviderComparisonAsync(selected.Symbol);
+        ShowProviderComparisonInspector(comparison.Symbol, comparison.Providers);
+    }
+
     private void SymbolFilter_TextChanged(object sender, TextChangedEventArgs e)
         => _viewModel.ApplySymbolFilter(SymbolFilterBox.Text?.Trim() ?? string.Empty);
 

@@ -176,4 +176,6 @@ Use the workstation-shell checker for fast structural validation before running 
 - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj`
 - `dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -p:EnableFullWpfBuild=true -p:BuildProjectReferences=false --no-restore`
 
+Run the checker with `src/Meridian.Contracts`, `src/Meridian.Ui.Shared`, and `src/Meridian.Ui/dashboard` included when workflow route or shared-contract parity is in scope. That expanded mode verifies shared accounting, operations-continuity, trading, report-pack target tags, and structured reconciliation "Explain the Break" fields across contracts, shared services, WPF navigation/projections, and browser route/view-model code.
+
 This complements the existing build and test validation for `Meridian.Wpf` by checking the shell-specific UX invariants introduced by the workstation-shell refactor.

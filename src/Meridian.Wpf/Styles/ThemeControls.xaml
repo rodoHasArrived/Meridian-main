@@ -60,52 +60,29 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <!-- Primary button template: gradient fill, elevated feel -->
+    <!-- Primary button template: restrained solid fill, no glow-heavy chrome. -->
     <ControlTemplate x:Key="PrimaryButtonTemplate" TargetType="Button">
         <Border x:Name="border"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="6"
                 Padding="{TemplateBinding Padding}"
-                SnapsToDevicePixels="True">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#20D3F7" Offset="0" />
-                    <GradientStop Color="#1477A8" Offset="1" />
-                </LinearGradientBrush>
-            </Border.Background>
+                SnapsToDevicePixels="True"
+                Background="{StaticResource ConsoleAccentBlueBrush}">
             <ContentPresenter HorizontalAlignment="Center"
                               VerticalAlignment="Center"
                               Focusable="False" />
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="border" Property="Background">
-                    <Setter.Value>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#5BE7FF" Offset="0" />
-                            <GradientStop Color="#1E9ED0" Offset="1" />
-                        </LinearGradientBrush>
-                    </Setter.Value>
-                </Setter>
-                <Setter TargetName="border" Property="Effect">
-                    <Setter.Value>
-                        <DropShadowEffect Color="#20D3F7" BlurRadius="12" ShadowDepth="2" Direction="270" Opacity="0.32" />
-                    </Setter.Value>
-                </Setter>
+                <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha80Brush}" />
+                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ConsoleBorderFocusBrush}" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter TargetName="border" Property="Background">
-                    <Setter.Value>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#106989" Offset="0" />
-                            <GradientStop Color="#0B4C6A" Offset="1" />
-                        </LinearGradientBrush>
-                    </Setter.Value>
-                </Setter>
+                <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentBlueDimBrush}" />
             </Trigger>
             <Trigger Property="IsKeyboardFocused" Value="True">
-                <Setter TargetName="border" Property="BorderBrush" Value="#60A5FA" />
+                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ConsoleBorderFocusBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Opacity" Value="0.45" />
@@ -113,12 +90,12 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <!-- Primary: gradient blue fill, white text, subtle hover shadow -->
+    <!-- Primary: solid signal cyan, one per screen. -->
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource PrimaryButtonTemplate}" />
-        <Setter Property="BorderBrush" Value="#20D3F7" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConsoleAccentBlueBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="Foreground" Value="#05101B" />
         <Setter Property="Padding" Value="16,9" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="SemiBold" />
@@ -184,7 +161,7 @@
     <Style x:Key="WorkspaceQueueStateIconContainerStyle" TargetType="Border">
         <Setter Property="Width" Value="42" />
         <Setter Property="Height" Value="42" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
         <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -214,7 +191,7 @@
     </Style>
 
     <Style x:Key="WorkstationSignifierActionPanelStyle" TargetType="Border">
-        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="CornerRadius" Value="6" />
         <Setter Property="Padding" Value="10,8" />
         <Setter Property="BorderBrush" Value="{StaticResource WorkstationSignifierEvidenceBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -222,7 +199,7 @@
     </Style>
 
     <Style x:Key="WorkstationSignifierEvidenceChipStyle" TargetType="Border">
-        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Padding" Value="8,6" />
         <Setter Property="BorderBrush" Value="{StaticResource WorkstationSignifierEvidenceBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -230,7 +207,7 @@
     </Style>
 
     <Style x:Key="WorkstationSignifierSignoffChipStyle" TargetType="Border">
-        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Padding" Value="8,6" />
         <Setter Property="BorderBrush" Value="{StaticResource WorkstationSignifierSignoffBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -238,7 +215,7 @@
     </Style>
 
     <Style x:Key="WorkstationSignifierRecoveryChipStyle" TargetType="Border">
-        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Padding" Value="8,6" />
         <Setter Property="BorderBrush" Value="{StaticResource WorkstationSignifierRecoveryBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />

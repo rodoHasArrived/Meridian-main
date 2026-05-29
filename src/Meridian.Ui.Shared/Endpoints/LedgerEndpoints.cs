@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
@@ -203,6 +206,182 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapGet(UiApiRoutes.LedgerPeriodTrialBalance, async (Guid periodId, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            return summary is null
+                ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
+                : Results.Json(summary.TrialBalance, jsonOptions);
+        })
+        .WithName("GetLedgerPeriodTrialBalance")
+        .Produces<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerPeriodTrialBalanceReport, async (Guid periodId, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            return summary is null
+                ? Results.NotFound()
+                : Results.Json(BuildTrialBalanceReport(summary, context), jsonOptions);
+        })
+        .WithName("GetLedgerPeriodTrialBalanceReport")
+        .Produces<LedgerTrialBalanceReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerPeriodPnlSummary, async (Guid periodId, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            return summary is null
+                ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
+                : Results.Json(BuildPnlSummary(summary), jsonOptions);
+        })
+        .WithName("GetLedgerPeriodPnlSummary")
+        .Produces<LedgerPeriodPnlSummaryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerReportsTrialBalance, async (
+            Guid? ledgerBookId,
+            string? fundProfileId,
+            Guid? fundStructureNodeId,
+            AccountingBasisKindDto? accountingBasis,
+            DateOnly? startDate,
+            DateOnly? endDate,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!IsValidDateRange(startDate, endDate))
+            {
+                return Results.BadRequest(new { error = "Report start date must be before or equal to the end date." });
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var summaries = await LoadClosedPeriodSummariesAsync(
+                service,
+                ledgerBookId,
+                fundProfileId,
+                fundStructureNodeId,
+                accountingBasis,
+                startDate,
+                endDate,
+                context.RequestAborted).ConfigureAwait(false);
+
+            return Results.Json(
+                BuildTrialBalanceReport(
+                    summaries,
+                    ledgerBookId,
+                    fundProfileId,
+                    fundStructureNodeId,
+                    accountingBasis,
+                    startDate,
+                    endDate),
+                jsonOptions);
+        })
+        .WithName("GetLedgerCrossPeriodTrialBalanceReport")
+        .Produces<LedgerCrossPeriodTrialBalanceReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerReportsPnlSummary, async (
+            Guid? ledgerBookId,
+            string? fundProfileId,
+            Guid? fundStructureNodeId,
+            AccountingBasisKindDto? accountingBasis,
+            DateOnly? startDate,
+            DateOnly? endDate,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!IsValidDateRange(startDate, endDate))
+            {
+                return Results.BadRequest(new { error = "Report start date must be before or equal to the end date." });
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var summaries = await LoadClosedPeriodSummariesAsync(
+                service,
+                ledgerBookId,
+                fundProfileId,
+                fundStructureNodeId,
+                accountingBasis,
+                startDate,
+                endDate,
+                context.RequestAborted).ConfigureAwait(false);
+
+            return Results.Json(
+                BuildPnlReport(
+                    summaries,
+                    ledgerBookId,
+                    fundProfileId,
+                    fundStructureNodeId,
+                    accountingBasis,
+                    startDate,
+                    endDate),
+                jsonOptions);
+        })
+        .WithName("GetLedgerCrossPeriodPnlReport")
+        .Produces<LedgerCrossPeriodPnlReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
     }
 
     private static ILedgerBookService? ResolveService(HttpContext context)
@@ -236,6 +415,294 @@ public static class LedgerEndpoints
             LedgerBookValidationException or LedgerPeriodTransitionException => Results.BadRequest(new { error = exception.Message }),
             _ => Results.Problem(exception.Message)
         };
+
+    private static LedgerPeriodPnlSummaryDto BuildPnlSummary(LedgerPeriodSummaryDto summary)
+    {
+        var revenueLines = summary.TrialBalance
+            .Where(static row => string.Equals(row.AccountType, "Revenue", StringComparison.Ordinal))
+            .ToArray();
+        var expenseLines = summary.TrialBalance
+            .Where(static row => string.Equals(row.AccountType, "Expense", StringComparison.Ordinal))
+            .ToArray();
+        var accrualAdjustmentLines = revenueLines
+            .Concat(expenseLines)
+            .Where(IsAccrualAdjustmentLine)
+            .ToArray();
+        var realizedRevenue = revenueLines
+            .Where(static row => !IsAccrualAdjustmentLine(row))
+            .Sum(static row => row.Balance);
+        var realizedExpenses = expenseLines
+            .Where(static row => !IsAccrualAdjustmentLine(row))
+            .Sum(static row => row.Balance);
+        var accrualAdjustmentRevenue = accrualAdjustmentLines
+            .Where(static row => string.Equals(row.AccountType, "Revenue", StringComparison.Ordinal))
+            .Sum(static row => row.Balance);
+        var accrualAdjustmentExpenses = accrualAdjustmentLines
+            .Where(static row => string.Equals(row.AccountType, "Expense", StringComparison.Ordinal))
+            .Sum(static row => row.Balance);
+
+        return new LedgerPeriodPnlSummaryDto(
+            summary.PeriodId,
+            summary.LedgerBookId,
+            summary.FiscalYear,
+            summary.PeriodNo,
+            summary.Label,
+            TotalRevenue: revenueLines.Sum(static row => row.Balance),
+            TotalExpenses: expenseLines.Sum(static row => row.Balance),
+            summary.NetIncome,
+            summary.PeriodOnPeriodVariance,
+            summary.OpenBreakCount,
+            summary.SignoffStatus,
+            summary.CompletedAt,
+            revenueLines,
+            expenseLines,
+            summary.AccountingBasis,
+            summary.AccountingPolicyId,
+            summary.AccountingPolicyVersion,
+            RealizedRevenue: realizedRevenue,
+            RealizedExpenses: realizedExpenses,
+            RealizedNetIncome: realizedRevenue - realizedExpenses,
+            AccrualAdjustmentRevenue: accrualAdjustmentRevenue,
+            AccrualAdjustmentExpenses: accrualAdjustmentExpenses,
+            AccrualBasisAdjustmentNetImpact: accrualAdjustmentRevenue - accrualAdjustmentExpenses,
+            AccrualAdjustmentLines: accrualAdjustmentLines);
+    }
+
+    private static bool IsAccrualAdjustmentLine(LedgerPeriodTrialBalanceLineDto row)
+        => ContainsAccrualMarker(row.AccountName)
+           || ContainsAccrualMarker(row.RuleId)
+           || ContainsAccrualMarker(row.RuleVersion)
+           || ContainsAccrualMarker(row.SourceEventId);
+
+    private static LedgerTrialBalanceReportDto BuildTrialBalanceReport(LedgerPeriodSummaryDto summary, HttpContext context)
+    {
+        var signedAtUtc = DateTimeOffset.UtcNow;
+        var actor = TryResolveActor(context, out var resolvedActor) ? resolvedActor : "system";
+        var lines = summary.TrialBalance
+            .OrderBy(static row => row.AccountType, StringComparer.Ordinal)
+            .ThenBy(static row => row.AccountName, StringComparer.Ordinal)
+            .ThenBy(static row => row.Symbol, StringComparer.Ordinal)
+            .ThenBy(static row => row.FinancialAccountId, StringComparer.Ordinal)
+            .ToArray();
+        var signature = new LedgerReportSignatureDto(
+            "SHA256",
+            ComputeTrialBalanceReportChecksum(summary, lines),
+            actor,
+            signedAtUtc);
+
+        return new LedgerTrialBalanceReportDto(
+            summary.PeriodId,
+            summary.LedgerBookId,
+            summary.FiscalYear,
+            summary.PeriodNo,
+            summary.Label,
+            IsPeriodLocked: true,
+            summary.TotalDebits,
+            summary.TotalCredits,
+            summary.NetIncome,
+            summary.PeriodOnPeriodVariance,
+            summary.OpenBreakCount,
+            summary.SignoffStatus,
+            summary.CompletedAt,
+            lines,
+            signature,
+            summary.AccountingBasis,
+            summary.AccountingPolicyId,
+            summary.AccountingPolicyVersion);
+    }
+
+    private static string ComputeTrialBalanceReportChecksum(
+        LedgerPeriodSummaryDto summary,
+        IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("ledger-trial-balance-report-v1");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"period-id,{summary.PeriodId:D}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"ledger-book-id,{summary.LedgerBookId:D}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"fiscal-year,{summary.FiscalYear}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"period-no,{summary.PeriodNo}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"label,{EscapeSignatureField(summary.Label)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"total-debits,{FormatSignatureDecimal(summary.TotalDebits)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"total-credits,{FormatSignatureDecimal(summary.TotalCredits)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"net-income,{FormatSignatureDecimal(summary.NetIncome)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"period-variance,{FormatSignatureDecimal(summary.PeriodOnPeriodVariance ?? 0m)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"open-break-count,{summary.OpenBreakCount}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-basis,{summary.AccountingBasis}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-policy-id,{EscapeSignatureField(summary.AccountingPolicyId)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-policy-version,{EscapeSignatureField(summary.AccountingPolicyVersion)}");
+        builder.AppendLine("account-name,account-type,symbol,financial-account-id,debits,credits,balance,entry-count,rule-id,rule-version,source-event-id,source-journal-entry-id");
+
+        foreach (var line in lines)
+        {
+            builder.Append(EscapeSignatureField(line.AccountName));
+            builder.Append(',');
+            builder.Append(line.AccountType);
+            builder.Append(',');
+            builder.Append(EscapeSignatureField(line.Symbol ?? string.Empty));
+            builder.Append(',');
+            builder.Append(EscapeSignatureField(line.FinancialAccountId ?? string.Empty));
+            builder.Append(',');
+            builder.Append(FormatSignatureDecimal(line.DebitTotal));
+            builder.Append(',');
+            builder.Append(FormatSignatureDecimal(line.CreditTotal));
+            builder.Append(',');
+            builder.Append(FormatSignatureDecimal(line.Balance));
+            builder.Append(',');
+            builder.Append(line.EntryCount);
+            builder.Append(',');
+            builder.Append(EscapeSignatureField(line.RuleId ?? string.Empty));
+            builder.Append(',');
+            builder.Append(EscapeSignatureField(line.RuleVersion ?? string.Empty));
+            builder.Append(',');
+            builder.Append(EscapeSignatureField(line.SourceEventId ?? string.Empty));
+            builder.Append(',');
+            builder.AppendLine(line.SourceJournalEntryId?.ToString("D") ?? string.Empty);
+        }
+
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+    }
+
+    private static string FormatSignatureDecimal(decimal value)
+        => value.ToString("0.############################", CultureInfo.InvariantCulture);
+
+    private static string EscapeSignatureField(string value)
+    {
+        if (!value.Contains(',') && !value.Contains('"') && !value.Contains('\n') && !value.Contains('\r'))
+            return value;
+
+        return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
+    }
+
+    private static bool IsValidDateRange(DateOnly? startDate, DateOnly? endDate)
+        => !startDate.HasValue || !endDate.HasValue || startDate.Value <= endDate.Value;
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static async Task<IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)>> LoadClosedPeriodSummariesAsync(
+        ILedgerBookService service,
+        Guid? ledgerBookId,
+        string? fundProfileId,
+        Guid? fundStructureNodeId,
+        AccountingBasisKindDto? accountingBasis,
+        DateOnly? startDate,
+        DateOnly? endDate,
+        CancellationToken cancellationToken)
+    {
+        var periods = await service
+            .ListPeriodsAsync(
+                new LedgerPeriodQuery(
+                    ledgerBookId,
+                    fundProfileId,
+                    fundStructureNodeId,
+                    Status: null,
+                    OpenOnly: false,
+                    accountingBasis),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        var closedPeriods = periods
+            .Where(period => period.Status != LedgerPeriodStatusDto.Open)
+            .Where(period => !startDate.HasValue || period.EndDate >= startDate.Value)
+            .Where(period => !endDate.HasValue || period.StartDate <= endDate.Value)
+            .OrderBy(static period => period.StartDate)
+            .ThenBy(static period => period.PeriodNo)
+            .ToArray();
+
+        var summaries = new List<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)>(closedPeriods.Length);
+        foreach (var period in closedPeriods)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var summary = await service.GetPeriodSummaryAsync(period.PeriodId, cancellationToken).ConfigureAwait(false);
+            if (summary is not null)
+            {
+                summaries.Add((period, summary));
+            }
+        }
+
+        return summaries;
+    }
+
+    private static LedgerCrossPeriodTrialBalanceReportDto BuildTrialBalanceReport(
+        IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> summaries,
+        Guid? ledgerBookId,
+        string? fundProfileId,
+        Guid? fundStructureNodeId,
+        AccountingBasisKindDto? accountingBasis,
+        DateOnly? startDate,
+        DateOnly? endDate)
+    {
+        var lines = summaries
+            .SelectMany(static item => item.summary.TrialBalance.Select(line => new LedgerCrossPeriodTrialBalanceLineDto(
+                item.summary.PeriodId,
+                item.summary.LedgerBookId,
+                item.summary.FiscalYear,
+                item.summary.PeriodNo,
+                item.summary.Label,
+                line.AccountName,
+                line.AccountType,
+                line.Symbol,
+                line.FinancialAccountId,
+                line.DebitTotal,
+                line.CreditTotal,
+                line.Balance,
+                line.EntryCount,
+                line.AccountingBasis,
+                line.AccountingPolicyId,
+                line.AccountingPolicyVersion,
+                line.RuleId,
+                line.RuleVersion,
+                line.SourceEventId,
+                line.SourceJournalEntryId)))
+            .ToArray();
+
+        return new LedgerCrossPeriodTrialBalanceReportDto(
+            DateTimeOffset.UtcNow,
+            ledgerBookId,
+            NormalizeOptional(fundProfileId),
+            fundStructureNodeId,
+            accountingBasis,
+            startDate,
+            endDate,
+            summaries.Select(static item => item.period).ToArray(),
+            lines,
+            summaries.Sum(static item => item.summary.TotalDebits),
+            summaries.Sum(static item => item.summary.TotalCredits),
+            summaries.Sum(static item => item.summary.NetIncome));
+    }
+
+    private static LedgerCrossPeriodPnlReportDto BuildPnlReport(
+        IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> summaries,
+        Guid? ledgerBookId,
+        string? fundProfileId,
+        Guid? fundStructureNodeId,
+        AccountingBasisKindDto? accountingBasis,
+        DateOnly? startDate,
+        DateOnly? endDate)
+    {
+        var periods = summaries
+            .Select(static item => BuildPnlSummary(item.summary))
+            .ToArray();
+
+        return new LedgerCrossPeriodPnlReportDto(
+            DateTimeOffset.UtcNow,
+            ledgerBookId,
+            NormalizeOptional(fundProfileId),
+            fundStructureNodeId,
+            accountingBasis,
+            startDate,
+            endDate,
+            periods,
+            periods.Sum(static period => period.TotalRevenue),
+            periods.Sum(static period => period.TotalExpenses),
+            periods.Sum(static period => period.NetIncome),
+            periods.Sum(static period => period.RealizedNetIncome),
+            periods.Sum(static period => period.AccrualBasisAdjustmentNetImpact));
+    }
+
+    private static bool ContainsAccrualMarker(string? value)
+        => !string.IsNullOrWhiteSpace(value)
+           && value.Contains("accru", StringComparison.OrdinalIgnoreCase);
 
     private static bool TryGetLedgerCloseActor(HttpContext context, out string actor)
     {

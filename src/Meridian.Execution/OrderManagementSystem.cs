@@ -115,9 +115,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
 
         // Operator controls gate — rejects orders when circuit breaker is open (unless bypassed)
+        ExecutionControlDecision? operatorControlDecision = null;
         if (_operatorControls is not null)
         {
-            var controlDecision = _operatorControls.EvaluateOrder(safeRequest, _portfolioState);
+            var controlDecision = _operatorControls.EvaluateOrder(request, _portfolioState, runId);
+            operatorControlDecision = controlDecision;
             if (!controlDecision.IsApproved)
             {
                 _logger.LogWarning("Order {OrderId} for {Symbol} rejected by operator controls: {Reason}",
@@ -137,7 +139,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                         RunId: runId,
                         Symbol: safeRequest.Symbol,
                         CorrelationId: correlationId,
-                        Message: controlDecision.RejectReason), ct).ConfigureAwait(false);
+                        Message: controlDecision.RejectReason,
+                        Reason: controlDecision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
+                        Scope: BuildOrderAuditScope(safeRequest, runId),
+                        Metadata: BuildOrderRejectedByControlAuditMetadata(controlDecision)), ct).ConfigureAwait(false);
                 }
 
                 var rejectedState = CreateRejectedState(orderId, safeRequest, controlDecision.RejectReason);
@@ -285,7 +290,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                     OrderId: orderId,
                     RunId: runId,
                     Symbol: safeRequest.Symbol,
-                    CorrelationId: correlationId), ct).ConfigureAwait(false);
+                    CorrelationId: correlationId,
+                    Reason: operatorControlDecision?.AppliedManualOverrideId is null
+                        ? null
+                        : "ManualOverrideApplied",
+                    Scope: BuildOrderAuditScope(safeRequest, runId),
+                    Metadata: BuildOrderSubmittedAuditMetadata(operatorControlDecision)), ct).ConfigureAwait(false);
             }
 
             // Publish fills to the execution channel so portfolio trackers and other
@@ -354,12 +364,30 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     {
         if (!_orders.TryGetValue(orderId, out var state))
         {
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderCancelRejected",
+                outcome: "Rejected",
+                orderId: orderId,
+                state: null,
+                report: null,
+                message: "Order not found",
+                ct: ct).ConfigureAwait(false);
+
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
         var report = await _gateway.CancelOrderAsync(orderId, ct).ConfigureAwait(false);
         if (report.OrderStatus is not OrderStatus.Cancelled)
         {
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderCancelRejected",
+                outcome: report.OrderStatus.ToString(),
+                orderId: orderId,
+                state: state,
+                report: report,
+                message: report.RejectReason ?? "Cancel request failed",
+                ct: ct).ConfigureAwait(false);
+
             return new OrderResult
             {
                 Success = false,
@@ -372,6 +400,14 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         var updated = ApplyReport(state, report);
         _orders[orderId] = updated;
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
+        await RecordOrderLifecycleAuditAsync(
+            action: "OrderCancelled",
+            outcome: updated.Status.ToString(),
+            orderId: orderId,
+            state: updated,
+            report: report,
+            message: report.RejectReason,
+            ct: ct).ConfigureAwait(false);
 
         return new OrderResult
         {
@@ -386,6 +422,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     {
         if (!_orders.TryGetValue(orderId, out var state))
         {
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderModifyRejected",
+                outcome: "Rejected",
+                orderId: orderId,
+                state: null,
+                report: null,
+                message: "Order not found",
+                ct: ct).ConfigureAwait(false);
+
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
@@ -393,6 +438,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         var updated = ApplyReport(state, report);
         _orders[orderId] = updated;
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
+        await RecordOrderLifecycleAuditAsync(
+            action: report.OrderStatus is OrderStatus.Rejected ? "OrderModifyRejected" : "OrderModified",
+            outcome: updated.Status.ToString(),
+            orderId: orderId,
+            state: updated,
+            report: report,
+            message: report.RejectReason,
+            metadata: BuildOrderModificationAuditMetadata(modification, updated, report),
+            ct: ct).ConfigureAwait(false);
 
         return new OrderResult { Success = true, OrderId = orderId, OrderState = updated };
     }
@@ -521,6 +575,128 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
     private string? ResolveSessionId(string orderId) =>
         _orderSessionIds.TryGetValue(orderId, out var sessionId) ? sessionId : null;
+
+    private static string BuildOrderAuditScope(OrderRequest request, string? runId)
+    {
+        var symbol = string.IsNullOrWhiteSpace(request.Symbol) ? "symbol:unknown" : $"symbol:{request.Symbol.Trim().ToUpperInvariant()}";
+        var strategy = string.IsNullOrWhiteSpace(request.StrategyId) ? "strategy:unknown" : $"strategy:{request.StrategyId.Trim()}";
+        var run = string.IsNullOrWhiteSpace(runId) ? "run:unknown" : $"run:{runId.Trim()}";
+        return $"{run}/{strategy}/{symbol}";
+    }
+
+    private static IReadOnlyDictionary<string, string>? BuildOrderSubmittedAuditMetadata(
+        ExecutionControlDecision? operatorControlDecision)
+    {
+        if (string.IsNullOrWhiteSpace(operatorControlDecision?.AppliedManualOverrideId))
+        {
+            return null;
+        }
+
+        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["manualOverrideId"] = operatorControlDecision.AppliedManualOverrideId,
+            ["controlDecision"] = "approved-by-manual-override"
+        };
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildOrderRejectedByControlAuditMetadata(
+        ExecutionControlDecision operatorControlDecision)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["controlDecision"] = "rejected-by-operator-controls"
+        };
+
+        if (!string.IsNullOrWhiteSpace(operatorControlDecision.RejectCode))
+        {
+            metadata["rejectCode"] = operatorControlDecision.RejectCode;
+        }
+
+        return metadata;
+    }
+
+    private async Task RecordOrderLifecycleAuditAsync(
+        string action,
+        string outcome,
+        string orderId,
+        OrderState? state,
+        ExecutionReport? report,
+        string? message,
+        CancellationToken ct,
+        IReadOnlyDictionary<string, string>? metadata = null)
+    {
+        if (_auditTrail is null)
+        {
+            return;
+        }
+
+        await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+            AuditId: Guid.NewGuid().ToString("N"),
+            Category: "Order",
+            Action: action,
+            Outcome: outcome,
+            OccurredAt: DateTimeOffset.UtcNow,
+            BrokerName: _gateway.GatewayId,
+            OrderId: orderId,
+            RunId: null,
+            Symbol: state?.Symbol ?? report?.Symbol,
+            Message: message,
+            Reason: report?.RejectReason,
+            Scope: state is null ? null : BuildOrderAuditScope(state),
+            Metadata: metadata ?? BuildOrderLifecycleAuditMetadata(state, report)), ct).ConfigureAwait(false);
+    }
+
+    private static string BuildOrderAuditScope(OrderState state)
+    {
+        var symbol = string.IsNullOrWhiteSpace(state.Symbol) ? "symbol:unknown" : $"symbol:{state.Symbol.Trim().ToUpperInvariant()}";
+        var strategy = string.IsNullOrWhiteSpace(state.StrategyId) ? "strategy:unknown" : $"strategy:{state.StrategyId.Trim()}";
+        return $"{strategy}/{symbol}";
+    }
+
+    private static IReadOnlyDictionary<string, string>? BuildOrderLifecycleAuditMetadata(
+        OrderState? state,
+        ExecutionReport? report)
+    {
+        if (state is null && report is null)
+        {
+            return null;
+        }
+
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (state is not null)
+        {
+            metadata["orderQuantity"] = state.Quantity.ToString("G29");
+            metadata["filledQuantity"] = state.FilledQuantity.ToString("G29");
+            metadata["orderType"] = state.Type.ToString();
+            metadata["side"] = state.Side.ToString();
+        }
+
+        if (report is not null)
+        {
+            metadata["reportType"] = report.ReportType.ToString();
+            metadata["reportStatus"] = report.OrderStatus.ToString();
+            metadata["gatewayOrderId"] = report.GatewayOrderId ?? string.Empty;
+        }
+
+        return metadata;
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildOrderModificationAuditMetadata(
+        OrderModification modification,
+        OrderState state,
+        ExecutionReport report)
+    {
+        var metadata = new Dictionary<string, string>(
+            BuildOrderLifecycleAuditMetadata(state, report) ?? new Dictionary<string, string>(),
+            StringComparer.OrdinalIgnoreCase);
+
+        metadata["newQuantity"] = modification.NewQuantity?.ToString("G29") ?? string.Empty;
+        metadata["newLimitPrice"] = modification.NewLimitPrice?.ToString("G29") ?? string.Empty;
+        metadata["newStopPrice"] = modification.NewStopPrice?.ToString("G29") ?? string.Empty;
+        metadata["newTrail"] = modification.NewTrail?.ToString("G29") ?? string.Empty;
+
+        return metadata;
+    }
 
     private async Task RecordOrderRejectionAsync(
         string orderId,

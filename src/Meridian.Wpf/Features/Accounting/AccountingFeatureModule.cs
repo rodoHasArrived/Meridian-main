@@ -1,9 +1,12 @@
+using Meridian.Application.AccountingClose;
+using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Meridian.Wpf.Features.Accounting;
 
@@ -18,6 +21,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddTransient<GovernanceWorkspaceShellStateProvider>();
         services.AddTransient<GovernanceWorkspaceShellViewModel>();
         services.AddTransient<GovernanceWorkspaceShellPage>();
+        services.TryAddSingleton<AccountingPostingService>();
+        services.TryAddSingleton<TrialBalanceProjectionService>();
+        services.TryAddSingleton<MonthEndCloseStateMachine>();
+        services.TryAddSingleton<IAccountingProjectionQueryService, AccountingProjectionQueryService>();
         services.AddTransient<AccountingCloseViewModel>();
     }
 

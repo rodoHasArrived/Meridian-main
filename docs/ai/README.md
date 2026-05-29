@@ -64,7 +64,7 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 
 The checker inventories root assistant entrypoints, Codex configuration, Codex agent profiles,
 Codex desktop prompts, Codex validation checklists, Codex `AGENTS.md`, Codex quality tools under
-`tools/codex/`, Claude configuration, Agent Skills-compatible
+`tools/codex/`, Claude configuration, checked-in Claude plugin packages under `.claude/plugins/`, Agent Skills-compatible
 packages and shared context, Copilot instructions, agents, skills, prompts, repository prompt
 documentation under `docs/prompts/`, local AI maintenance scripts under `scripts/ai/`, AI workflow
 files, `docs/ai/`, MCP prompt/resource/tool surfaces, optional IDE/provider assistant entrypoints for
@@ -107,6 +107,7 @@ Located mainly in `docs/ai/claude/`.
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
 | [`../prompts/README.md`](../prompts/README.md) | Provider-agnostic prompt and automation guidance inventory |
 | `scripts/ai/`, `tools/codex/` | Local AI maintenance scripts and Codex quality tools |
+| [`.claude/plugins/`](../../.claude/plugins) | Checked-in Claude plugin packages with plugin manifests, agents, and skills |
 | [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents) | Codex specialist agent-profile TOML files |
 | [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | Codex repo-local skill catalog |
 
@@ -131,6 +132,7 @@ Located mainly in `docs/ai/claude/`.
 | Agent catalog | [`agents/README.md`](agents/README.md) |
 | Portable skill catalog | [`skills/README.md`](skills/README.md), [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills) |
 | Codex skill catalog | [`codex/README.md`](codex/README.md), [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) |
+| Claude plugin packages | [`skills/README.md`](skills/README.md), [`agents/README.md`](agents/README.md), [`.claude/plugins/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.claude/plugins) |
 | Project overview & conventions | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) |
 | Error prevention | [`ai-known-errors.md`](ai-known-errors.md) |
 | AI inventory drift checks | [`assistant-workflow-contract.md`](assistant-workflow-contract.md), `build/scripts/docs/check-ai-inventory.py` |
@@ -160,7 +162,7 @@ tool-specific rule file to carry shared Meridian policy.
 
 ---
 
-_Last Updated: 2026-05-27_
+_Last Updated: 2026-05-28_
 
 ## Drift failure remediation
 

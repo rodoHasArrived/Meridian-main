@@ -1,8 +1,8 @@
-# UFL CFD Target-State Package V2
+# UFL CFD Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl cfd target state v2** and document explicit in-scope vs out-of-scope items.
@@ -34,6 +34,74 @@ It assumes:
 A CFD is a derivative contract between a client and a broker to exchange the difference in value of an
 underlying asset between the time a contract is opened and when it is closed. The underlying can be an
 equity, index, FX pair, or commodity.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.Cfd` and `CfdTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"Cfd"` asset class into the F# domain.
+- `SecurityMasterCsvParser` accepts `"CFD"` and `"Cfd"` as CSV asset-class values.
+- Security Master validation enforces nonblank underlying asset class and positive leverage when present.
+- `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs` verifies basic create support for CFD instruments.
+
+### Partially Implemented
+
+- Canonical CFD terms and create-path projection exist, but CFD reference endpoints, underlying/exposure reads, margin metadata, and rebuild evidence are not delivered in this package.
+
+### Target-State Only
+
+- Margin requirement projections per CFD instrument.
+- Overnight financing charge model.
+- Reference endpoints for CFD lookup, underlying exposure, and margin query.
+- Workstation controls for leveraged-instrument review.
+
+### Explicitly Out of Scope
+
+- Broker-specific CFD execution connectors.
+- Full margin methodology.
+- Pricing or valuation models.
+- Risk engine implementation beyond reference handoff.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.Cfd`, terms, mapping, CSV aliases, validation, and basic create test exist. | canonical CFD profile metadata | F# validation and C# mapping tests |
+| UnderlyingLink | L1 partial | underlying asset class term exists. | canonical underlying security link or governed underlying descriptor | underlying-link tests |
+| CollateralOrMargin | L0 | target-state only. | margin requirement and leverage projections | margin/exposure tests |
+| Lifecycle | L0 | target-state only. | active, closed, restricted, and review states | lifecycle projection tests |
+| ProjectionRebuild | L1 partial | shared Security Master projection path exists. | CFD-scoped underlying, exposure, margin, and lifecycle projections | rebuild/checkpoint tests |
+| WorkstationControl | L0 | target-state only. | leveraged-instrument review controls for Trading and Data workspaces | workstation endpoint tests |
+
+## Current Maturity
+
+`L1 partial`: canonical CFD terms, mapping, validation, CSV aliasing, and basic create support exist. L2 maturity requires canonical reference, underlying/exposure, and margin read surfaces.
+
+## Next Milestone Contract
+
+**Goal:** advance CFDs to L2 by adding canonical CFD reference reads, underlying/exposure views, and margin metadata.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/SecurityMaster/`
+- `src/Meridian.Contracts/SecurityMaster/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for CFD terms.
+- endpoint contract tests for CFD reference, underlying, exposure, and margin reads.
+- projection/rebuild tests for leverage, underlying, margin, and source-event metadata.
+- provider-payload isolation tests for canonical CFD projections.
+
+**Exit criteria:** CFD consumers can query canonical underlying, leverage, margin, and exposure metadata without relying on broker payload shape.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as source evidence, but CFD workflows must consume canonical Security Master terms, canonical underlying metadata, margin/exposure projections, and rebuild metadata.
 
 ## Repo Fit
 

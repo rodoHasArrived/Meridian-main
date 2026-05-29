@@ -95,6 +95,19 @@ and [`../codex/README.md`](../codex/README.md).
 
 ---
 
+## Claude Plugin Agents (`.claude/plugins/*/agents/`)
+
+Checked-in Claude plugin agents are provider-specific helpers and must still follow the shared
+Meridian workflow contract when used in this repository.
+
+| Plugin | Agent | Purpose |
+| ------ | ----- | ------- |
+| `csharp-dotnet-development` | [`.claude/plugins/csharp-dotnet-development/agents/expert-dotnet-software-engineer.md`](../../../.claude/plugins/csharp-dotnet-development/agents/expert-dotnet-software-engineer.md) | General .NET software engineering guidance from the plugin package |
+| `frontend-web-dev` | [`.claude/plugins/frontend-web-dev/agents/electron-angular-native.md`](../../../.claude/plugins/frontend-web-dev/agents/electron-angular-native.md) | General Electron/Angular/native integration review guidance from the plugin package |
+| `frontend-web-dev` | [`.claude/plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md`](../../../.claude/plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md) | General React/TypeScript frontend guidance from the plugin package |
+
+---
+
 ## Pipeline Position
 
 The intended routing flow is:
@@ -133,4 +146,4 @@ or operator sign-off, or needs a structured briefing with trace/evidence retenti
 
 ---
 
-_Last Updated: 2026-05-26_
+_Last Updated: 2026-05-28_

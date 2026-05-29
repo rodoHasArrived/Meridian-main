@@ -114,7 +114,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         var scheduleBook = BuildScheduleBook(detail, economic, corporateActions, history, winningSource, scheduleSummary);
         var openLotReadModel = await BuildOpenLotReadModelAsync(detail, economic, trading, fundProfileId, nowUtc, ct).ConfigureAwait(false);
 
-        return new SecurityMasterTrustSnapshotDto(
+        var snapshot = new SecurityMasterTrustSnapshotDto(
             SecurityId: detail.SecurityId,
             Security: MapToWorkstationSecurity(detail, economic),
             Identity: new SecurityIdentityDrillInDto(
@@ -150,6 +150,345 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             ScheduleBook = scheduleBook,
             OpenLotReadModel = openLotReadModel
         };
+
+        return snapshot with
+        {
+            InstrumentPassport = BuildInstrumentPassport(snapshot, trading)
+        };
+    }
+
+    public async Task<InstrumentPassportDto?> GetInstrumentPassportAsync(
+        Guid securityId,
+        string? fundProfileId,
+        CancellationToken ct = default)
+    {
+        var snapshot = await GetTrustSnapshotAsync(securityId, fundProfileId, ct).ConfigureAwait(false);
+        return snapshot?.InstrumentPassport;
+    }
+
+    private static InstrumentPassportDto BuildInstrumentPassport(
+        SecurityMasterTrustSnapshotDto snapshot,
+        TradingParametersDto? tradingParameters)
+    {
+        var identifierSummary = snapshot.IdentifierSummary ?? BuildFallbackIdentifierSummary(snapshot.Identity);
+        var lifecycleEvents = snapshot.ChangeHistory
+            ?? snapshot.History
+                .OrderByDescending(static item => item.EventTimestamp)
+                .Select(MapHistoryToLifecycleEvent)
+                .ToArray();
+        var pricing = BuildPassportPricing(snapshot.TrustPosture, tradingParameters);
+
+        return new InstrumentPassportDto(
+            SecurityId: snapshot.SecurityId,
+            Identity: snapshot.Identity,
+            EconomicDefinition: snapshot.EconomicDefinition,
+            IdentifierSummary: identifierSummary,
+            ProviderMappings: identifierSummary.ProviderMappings,
+            LifecycleEvents: lifecycleEvents,
+            CorporateActions: snapshot.CorporateActions,
+            Pricing: pricing,
+            Usage: snapshot.DownstreamImpact,
+            TrustPosture: snapshot.TrustPosture,
+            RetrievedAtUtc: snapshot.RetrievedAtUtc)
+        {
+            ProviderConfidence = BuildProviderConfidence(snapshot, identifierSummary, lifecycleEvents)
+        };
+    }
+
+    private static IReadOnlyList<InstrumentPassportProviderConfidenceDto> BuildProviderConfidence(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents)
+    {
+        var overrideHistory = lifecycleEvents
+            .Where(IsOverrideHistory)
+            .OrderByDescending(static item => item.ChangedAtUtc)
+            .ToArray();
+
+        return DeduplicateProviderConfidenceMappings(identifierSummary.ProviderMappings)
+            .Select(mapping =>
+            {
+                var relatedConflicts = snapshot.ConflictAssessments
+                    .Where(assessment => IsRelatedProviderConflict(mapping, assessment))
+                    .ToArray();
+                var freshnessAsOf = ResolveProviderMappingFreshness(snapshot, mapping, lifecycleEvents);
+                var confidenceScore = ScoreProviderMapping(mapping, snapshot.TrustPosture, relatedConflicts);
+                return new InstrumentPassportProviderConfidenceDto(
+                    Provider: string.IsNullOrWhiteSpace(mapping.Provider) ? "unknown-provider" : mapping.Provider,
+                    ProviderSource: mapping.MappingSource,
+                    MappingKind: mapping.MappingKind,
+                    Symbol: mapping.Value,
+                    NormalizedSymbol: mapping.NormalizedValue,
+                    IsPrimary: mapping.IsPrimary,
+                    IsActive: mapping.IsActive,
+                    FreshnessAsOf: freshnessAsOf,
+                    FreshnessMinutes: freshnessAsOf.HasValue
+                        ? Math.Max(0, (int)(snapshot.RetrievedAtUtc - freshnessAsOf.Value).TotalMinutes)
+                        : null,
+                    ConfidenceScore: confidenceScore,
+                    ConfidenceReason: BuildProviderMappingConfidenceReason(mapping, snapshot.TrustPosture, relatedConflicts),
+                    IdentifierConflictIds: relatedConflicts.Select(static assessment => assessment.Conflict.ConflictId).ToArray(),
+                    IdentifierConflictSummaries: relatedConflicts.Select(BuildProviderIdentifierConflictSummary).ToArray(),
+                    OverrideHistory: overrideHistory);
+            })
+            .OrderByDescending(static item => item.IsPrimary)
+            .ThenByDescending(static item => item.ConfidenceScore)
+            .ThenBy(static item => item.Provider, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.Symbol, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string BuildProviderIdentifierConflictSummary(SecurityMasterConflictAssessmentDto assessment)
+    {
+        var conflict = assessment.Conflict;
+        return $"Identifier conflict {conflict.FieldPath}: {conflict.ProviderA} '{conflict.ValueA}' versus {conflict.ProviderB} '{conflict.ValueB}'. {assessment.ImpactSummary}";
+    }
+
+    private static IReadOnlyList<SecurityMasterProviderSymbolMappingDto> DeduplicateProviderConfidenceMappings(
+        IReadOnlyList<SecurityMasterProviderSymbolMappingDto> providerMappings)
+    {
+        return providerMappings
+            .GroupBy(
+                static mapping => string.Join(
+                    "|",
+                    string.IsNullOrWhiteSpace(mapping.NormalizedProvider)
+                        ? SecurityIdentifierNormalizer.NormalizeProvider(mapping.Provider)
+                        : mapping.NormalizedProvider,
+                    string.IsNullOrWhiteSpace(mapping.NormalizedValue)
+                        ? mapping.Value.Trim().ToUpperInvariant()
+                        : mapping.NormalizedValue),
+                StringComparer.Ordinal)
+            .Select(static group => group
+                .OrderByDescending(static mapping => mapping.IsActive && mapping.IsEnabled)
+                .ThenByDescending(static mapping => mapping.IsPrimary)
+                .ThenBy(static mapping => mapping.MappingSource.Equals("Identifier", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                .ThenByDescending(static mapping => mapping.ValidFrom)
+                .First())
+            .ToArray();
+    }
+
+    private static DateTimeOffset? ResolveProviderMappingFreshness(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterProviderSymbolMappingDto mapping,
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents)
+    {
+        var sourceCandidateAsOf = snapshot.ProvenanceCandidates
+            .Where(candidate =>
+                ProviderMatches(mapping.Provider, candidate.SourceSystem) ||
+                ProviderMatches(mapping.NormalizedProvider, candidate.SourceSystem))
+            .Select(static candidate => candidate.AsOf)
+            .Where(static asOf => asOf.HasValue)
+            .OrderByDescending(static asOf => asOf)
+            .FirstOrDefault();
+        if (sourceCandidateAsOf.HasValue)
+        {
+            return sourceCandidateAsOf;
+        }
+
+        var lifecycleAsOf = lifecycleEvents
+            .Where(item =>
+                Contains(item.SourceSystem, mapping.Provider) ||
+                Contains(item.SourceSystem, mapping.NormalizedProvider) ||
+                item.ChangedFields.Any(field => Contains(field, mapping.MappingKind) || Contains(field, mapping.Value)))
+            .Select(static item => item.ChangedAtUtc)
+            .OrderByDescending(static item => item)
+            .FirstOrDefault();
+
+        return lifecycleAsOf == default ? mapping.ValidFrom : lifecycleAsOf;
+    }
+
+    private static decimal ScoreProviderMapping(
+        SecurityMasterProviderSymbolMappingDto mapping,
+        SecurityMasterTrustPostureDto trustPosture,
+        IReadOnlyList<SecurityMasterConflictAssessmentDto> relatedConflicts)
+    {
+        if (!mapping.IsActive || !mapping.IsEnabled)
+        {
+            return 0m;
+        }
+
+        if (relatedConflicts.Count > 0)
+        {
+            return Math.Min(55m, Math.Max(25m, trustPosture.TrustScore * 0.5m));
+        }
+
+        if (trustPosture.HasOpenConflicts)
+        {
+            return Math.Min(80m, Math.Max(60m, trustPosture.TrustScore));
+        }
+
+        return mapping.IsPrimary
+            ? Math.Min(100m, Math.Max(85m, trustPosture.TrustScore))
+            : Math.Min(90m, Math.Max(70m, trustPosture.TrustScore - 5m));
+    }
+
+    private static string BuildProviderMappingConfidenceReason(
+        SecurityMasterProviderSymbolMappingDto mapping,
+        SecurityMasterTrustPostureDto trustPosture,
+        IReadOnlyList<SecurityMasterConflictAssessmentDto> relatedConflicts)
+    {
+        if (!mapping.IsActive || !mapping.IsEnabled)
+        {
+            return "Provider mapping is inactive or disabled and cannot be trusted for workflow routing.";
+        }
+
+        if (relatedConflicts.Count > 0)
+        {
+            return $"{relatedConflicts.Count} open identifier conflict(s) involve this provider mapping.";
+        }
+
+        if (trustPosture.HasOpenConflicts)
+        {
+            return "Mapping is active, but the instrument still has unrelated open conflicts.";
+        }
+
+        return mapping.IsPrimary
+            ? "Primary active provider mapping with no related open identifier conflicts."
+            : "Active provider mapping with no related open identifier conflicts.";
+    }
+
+    private static bool IsRelatedProviderConflict(
+        SecurityMasterProviderSymbolMappingDto mapping,
+        SecurityMasterConflictAssessmentDto assessment)
+    {
+        var conflict = assessment.Conflict;
+        return ProviderMatches(mapping.Provider, conflict.ProviderA) ||
+               ProviderMatches(mapping.Provider, conflict.ProviderB) ||
+               ProviderMatches(mapping.NormalizedProvider, conflict.ProviderA) ||
+               ProviderMatches(mapping.NormalizedProvider, conflict.ProviderB) ||
+               Contains(conflict.FieldPath, mapping.MappingKind) ||
+               Contains(conflict.FieldPath, mapping.Value);
+    }
+
+    private static bool IsOverrideHistory(SecurityMasterChangeHistoryItemDto item) =>
+        Contains(item.EventType, "Override") ||
+        item.ChangedFields.Any(static field => Contains(field, "override")) ||
+        Contains(item.Reason, "override");
+
+    private static bool ProviderMatches(string? left, string? right) =>
+        !string.IsNullOrWhiteSpace(left) &&
+        !string.IsNullOrWhiteSpace(right) &&
+        string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static InstrumentPassportPricingDto BuildPassportPricing(
+        SecurityMasterTrustPostureDto trustPosture,
+        TradingParametersDto? tradingParameters)
+    {
+        if (tradingParameters is null)
+        {
+            return new InstrumentPassportPricingDto(
+                Status: "Missing",
+                Summary: trustPosture.TradingParametersStatus,
+                TradingParameters: null,
+                LotSize: null,
+                TickSize: null,
+                ContractMultiplier: null,
+                TradingHoursUtc: null,
+                CircuitBreakerThresholdPct: null);
+        }
+
+        var hasUsableIncrement = tradingParameters.LotSize.HasValue || tradingParameters.TickSize.HasValue;
+        var status = trustPosture.TradingParametersComplete || hasUsableIncrement ? "Ready" : "Review";
+        var summary = trustPosture.TradingParametersComplete
+            ? "Trading parameters are complete for pricing and execution workflows."
+            : trustPosture.TradingParametersStatus;
+
+        return new InstrumentPassportPricingDto(
+            Status: status,
+            Summary: summary,
+            TradingParameters: tradingParameters,
+            LotSize: tradingParameters.LotSize,
+            TickSize: tradingParameters.TickSize,
+            ContractMultiplier: tradingParameters.ContractMultiplier,
+            TradingHoursUtc: tradingParameters.TradingHoursUtc,
+            CircuitBreakerThresholdPct: tradingParameters.CircuitBreakerThresholdPct);
+    }
+
+    private static SecurityMasterIdentifierSummaryDto BuildFallbackIdentifierSummary(SecurityIdentityDrillInDto identity)
+    {
+        var activeIdentifiers = identity.Identifiers
+            .Where(static identifier => !identifier.ValidTo.HasValue || identifier.ValidTo.Value > DateTimeOffset.UtcNow)
+            .ToArray();
+        var activeAliases = identity.Aliases
+            .Where(static alias => alias.IsEnabled && (!alias.ValidTo.HasValue || alias.ValidTo.Value > DateTimeOffset.UtcNow))
+            .ToArray();
+        var providerMappings = activeIdentifiers
+            .Where(static identifier => !string.IsNullOrWhiteSpace(identifier.Provider))
+            .Select(static identifier => new SecurityMasterProviderSymbolMappingDto(
+                MappingSource: "Identifier",
+                MappingKind: identifier.Kind.ToString(),
+                Value: identifier.Value,
+                NormalizedValue: identifier.NormalizedValue ?? identifier.Value,
+                Provider: identifier.Provider,
+                NormalizedProvider: identifier.NormalizedProvider ?? identifier.Provider,
+                IsPrimary: identifier.IsPrimary,
+                IsEnabled: true,
+                ValidFrom: identifier.ValidFrom,
+                ValidTo: identifier.ValidTo,
+                IsActive: true))
+            .Concat(activeAliases.Select(static alias => new SecurityMasterProviderSymbolMappingDto(
+                MappingSource: "Alias",
+                MappingKind: alias.AliasKind,
+                Value: alias.AliasValue,
+                NormalizedValue: alias.AliasValue,
+                Provider: alias.Provider,
+                NormalizedProvider: alias.Provider,
+                IsPrimary: false,
+                IsEnabled: alias.IsEnabled,
+                ValidFrom: alias.ValidFrom,
+                ValidTo: alias.ValidTo,
+                IsActive: true)))
+            .OrderByDescending(static mapping => mapping.IsPrimary)
+            .ThenBy(static mapping => mapping.MappingSource, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static mapping => mapping.MappingKind, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static mapping => mapping.Value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var primaryIdentifier = activeIdentifiers.FirstOrDefault(static identifier => identifier.IsPrimary)
+            ?? activeIdentifiers.FirstOrDefault();
+        var distinctProviderCount = providerMappings
+            .Select(static mapping => mapping.NormalizedProvider ?? mapping.Provider)
+            .Where(static provider => !string.IsNullOrWhiteSpace(provider))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+
+        return new SecurityMasterIdentifierSummaryDto(
+            PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
+            PrimaryIdentifierValue: primaryIdentifier?.Value,
+            ActiveIdentifierCount: activeIdentifiers.Length,
+            ActiveAliasCount: activeAliases.Length,
+            ProviderMappingCount: providerMappings.Length,
+            DistinctProviderCount: distinctProviderCount,
+            HasPrimaryIdentifier: primaryIdentifier is not null,
+            HasProviderMappings: providerMappings.Length > 0,
+            Summary: providerMappings.Length > 0
+                ? $"{providerMappings.Length} active provider mapping(s) across {distinctProviderCount} provider(s)."
+                : $"{activeIdentifiers.Length} active identifier(s) and {activeAliases.Length} active alias(es).",
+            ProviderMappings: providerMappings);
+    }
+
+    private static SecurityMasterChangeHistoryItemDto MapHistoryToLifecycleEvent(SecurityMasterEventEnvelope item)
+    {
+        var changedFields = ExtractChangedFields(item.Payload);
+        return new SecurityMasterChangeHistoryItemDto(
+            ChangeId: $"history-{item.StreamVersion}",
+            StreamVersion: item.StreamVersion,
+            EventType: item.EventType,
+            ChangedAtUtc: item.EventTimestamp,
+            EffectiveAtUtc: TryGetJsonDateTimeOffset(item.Payload, "effectiveAtUtc")
+                ?? TryGetJsonDateTimeOffset(item.Payload, "effectiveFrom"),
+            Actor: item.Actor,
+            Origin: InferChangeOrigin(
+                TryGetJsonString(item.Metadata, "sourceSystem") ?? string.Empty,
+                item.Actor),
+            SourceSystem: TryGetJsonString(item.Metadata, "sourceSystem")
+                ?? TryGetJsonString(item.Metadata, "source")
+                ?? "security-history",
+            SourceRecordId: TryGetJsonString(item.Metadata, "sourceRecordId"),
+            Reason: TryGetJsonString(item.Metadata, "reason"),
+            Summary: $"{HumanizeEventType(item.EventType)} recorded for the instrument.",
+            ChangedFields: changedFields,
+            ChangedFieldsSummary: SummarizeChangedFields(changedFields));
     }
 
     public async Task<BulkResolveSecurityMasterConflictsResult> BulkResolveConflictsAsync(
@@ -2233,6 +2572,49 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             .ToArray();
     }
 
+    private static IReadOnlyList<string> ExtractChangedFields(JsonElement payload)
+    {
+        if (payload.ValueKind != JsonValueKind.Object)
+        {
+            return [];
+        }
+
+        var fields = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var property in payload.EnumerateObject())
+        {
+            var field = property.Name;
+            if (field.EndsWith("Terms", StringComparison.OrdinalIgnoreCase))
+            {
+                fields.Add("Economic terms");
+            }
+            else if (field.Contains("identifier", StringComparison.OrdinalIgnoreCase)
+                || field.Contains("alias", StringComparison.OrdinalIgnoreCase))
+            {
+                fields.Add("Identifiers");
+            }
+            else if (field.Contains("status", StringComparison.OrdinalIgnoreCase)
+                || field.Contains("deactivat", StringComparison.OrdinalIgnoreCase))
+            {
+                fields.Add("Lifecycle status");
+            }
+            else if (field.Contains("effective", StringComparison.OrdinalIgnoreCase))
+            {
+                fields.Add("Effective window");
+            }
+            else if (field.Contains("classification", StringComparison.OrdinalIgnoreCase)
+                || field.Contains("assetClass", StringComparison.OrdinalIgnoreCase))
+            {
+                fields.Add("Classification");
+            }
+            else
+            {
+                fields.Add(HumanizeEventType(field));
+            }
+        }
+
+        return fields.ToArray();
+    }
+
     private static string BuildChangeSummary(
         SecurityMasterEventEnvelope envelope,
         SecurityEconomicDefinitionRecord? currentRecord,
@@ -2332,6 +2714,11 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         => tokens.Any(token =>
             sourceSystem.Contains(token, StringComparison.OrdinalIgnoreCase)
             || actor.Contains(token, StringComparison.OrdinalIgnoreCase));
+
+    private static bool Contains(string? value, string? token)
+        => !string.IsNullOrWhiteSpace(value) &&
+           !string.IsNullOrWhiteSpace(token) &&
+           value.Contains(token, StringComparison.OrdinalIgnoreCase);
 
     private static bool JsonElementsEquivalent(JsonElement left, JsonElement right)
         => left.ValueKind == right.ValueKind

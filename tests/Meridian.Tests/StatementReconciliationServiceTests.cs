@@ -26,7 +26,20 @@ public sealed class StatementReconciliationServiceTests
         var result = svc.MatchRows(rows);
         Assert.Single(result.Matches);
         Assert.Single(result.Cases);
-        Assert.Equal("case:2", result.Cases[0].CaseId);
+        var reconciliationCase = result.Cases[0];
+        Assert.Equal("case:2", reconciliationCase.CaseId);
+        Assert.Equal("fund-ops", reconciliationCase.Owner);
+        Assert.Equal("NeedsInvestigation", reconciliationCase.Disposition);
+        Assert.Equal(0, reconciliationCase.AgingDays);
+        Assert.NotNull(reconciliationCase.DueAtUtc);
+        var attachment = Assert.Single(reconciliationCase.Attachments);
+        Assert.Equal("ExternalStatementRow", attachment.EvidenceKind);
+        Assert.Equal("f2", attachment.ContentHash);
+        Assert.NotNull(reconciliationCase.BreakExplanation);
+        Assert.Contains("cash", reconciliationCase.BreakExplanation.ProbableCause, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Meridian ledger", reconciliationCase.BreakExplanation.SourceSystems);
+        Assert.Contains("cash ledger", reconciliationCase.BreakExplanation.LedgerImpact, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Compare the statement cash balance", reconciliationCase.BreakExplanation.SuggestedNextAction);
     }
 
     [Fact]
@@ -121,7 +134,7 @@ public sealed class StatementReconciliationServiceTests
         {
             await File.WriteAllLinesAsync(filePath, ["header", "row1", "row2"]);
             var result = await svc.ImportAsync("local", filePath, CancellationToken.None);
-            Assert.Equal(3, result.RowCount);
+            Assert.Equal(2, result.RowCount);
         }
         finally
         {

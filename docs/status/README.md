@@ -1,7 +1,7 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-05-21
-**Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to evidence-backed investment operations across cockpit hardening, shared-model continuity, accounting, reconciliation, and governed report productization
+**Last Reviewed:** 2026-05-28
+**Current Delivery Theme:** Preserving the closed Wave 1, Wave 2, and Wave 3 evidence baselines while driving the active Wave 4 governance/fund-operations close and report gate through durable casework, approval/sign-off, provenance, report-pack lifecycle, and browser/WPF parity evidence
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/current-direction-and-status.md](../plans/current-direction-and-status.md) for the consolidated planning interpretation and [../plans/README.md](../plans/README.md) for the detailed active blueprint set.
 
@@ -140,8 +140,8 @@ When authoring or editing these doc categories, include the required section hea
 ## Current Status Summary
 
 - **Platform state:** Development / pilot-ready baseline with strong ingestion, storage, replay, and export foundations
-- **Core delivery path:** Waves 1-4 define the core operator-ready baseline; Waves 5-6 deepen the product afterward
-- **Workstation state:** The web dashboard is the active operator UI lane, now with support evidence for Overview Today panel, Price Alerts, Strategy Designer route-action safety for GET versus POST backend actions, Covered Call, Quant Notebook helpers, Trading Recent Fills detail state, full-console readiness checkpoints, provider-routing refresh posture in Settings/Data, abort-backed Reporting exports, and Meridian Design System reference workbench/tokenized-color work; WPF remains support evidence for workflow briefing, provider/activity triage, canonical launch/deep-link, single-instance forwarding, and automation; cockpit hardening, shared-model continuity, durable reconciliation, and governed-report acceptance still remain
+- **Core delivery path:** W1, W2, and W3 are closed baselines; W4 is the active core operator-readiness gate; Waves 5-6 deepen the product afterward
+- **Workstation state:** Browser and WPF are both active operator UI lanes. Current support evidence includes browser Accounting/Reporting W4 parity, shared operations-continuity close routing, route-target parity, retained WPF workflow aliases, and screenshot/evidence validation guards; durable W4 close/case/report acceptance remains open until the full Lane C evidence pack is green.
 - **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it, with operations-continuity close-lane APIs now available as support evidence for broker intake, Security Master resolution, ledger posting, reconciliation, approval, close, and governed reopen
 - **Provider state:** The active Wave 1 gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; broader provider inventory remains deferred outside that closure claim
 - **Documentation state:** Status and plan navigation now starts with the consolidated current-direction document, then the canonical roadmap, production-status posture, and subordinate execution plans; structured roadmap/source registries, generated source README coverage, and stale-doc/hash validation now control documentation freshness; generated TODO scans should exclude repo-local diagnostic tool caches rather than treating `.tools/.store` package documentation as project work

@@ -5,6 +5,9 @@ import {
   getDataWorkspace,
   getGovernanceWorkspace,
   getAlpacaConnectionStatus,
+  getLedgerMappingWorkbench,
+  getOperationsApprovalPolicyMatrix,
+  getOperationsCloseCalendar,
   getProviderConnections,
   getProviderRoutingBindings,
   getProviderRoutingConnections,
@@ -20,6 +23,8 @@ import {
   getWorkflowLibrary,
   getWorkflowPresets,
   getFeatureCapabilities,
+  getRolePermissionCatalog,
+  getSecurityAssetProfiles,
   setFeatureCapability
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
@@ -27,7 +32,11 @@ import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   DataOperationsWorkspaceResponse,
+  FeatureCapabilitySettingsResponse,
   GovernanceWorkspaceResponse,
+  LedgerMappingWorkbench,
+  OperationsApprovalPolicyMatrix,
+  OperationsCloseCalendar,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
@@ -37,11 +46,12 @@ import type {
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
+  RolePermissionCatalog,
+  SecurityAssetProfileDefinition,
   WorkflowPreset,
   WorkflowLibrary,
   WorkflowPresetLibrary,
-  WorkspaceKey,
-  FeatureCapabilitySettingsResponse
+  WorkspaceKey
 } from "@/types";
 
 type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
@@ -61,6 +71,11 @@ interface WorkstationDataState {
   providerRoutingBindings: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] | null;
   providerRoutingRefreshing: boolean;
+  rolePermissionCatalog: RolePermissionCatalog | null;
+  securityAssetProfiles: SecurityAssetProfileDefinition[] | null;
+  ledgerMappingWorkbench: LedgerMappingWorkbench | null;
+  operationsApprovalPolicyMatrix: OperationsApprovalPolicyMatrix | null;
+  operationsCloseCalendar: OperationsCloseCalendar | null;
   brokeragePortfolio: BrokerageHouseholdPortfolio | null;
   workflowLibrary: WorkflowLibrary | null;
   workflowPresets: WorkflowPresetLibrary | null;
@@ -91,6 +106,11 @@ const initialState: WorkstationDataState = {
   providerRoutingBindings: null,
   providerRoutingTrustSnapshots: null,
   providerRoutingRefreshing: false,
+  rolePermissionCatalog: null,
+  securityAssetProfiles: null,
+  ledgerMappingWorkbench: null,
+  operationsApprovalPolicyMatrix: null,
+  operationsCloseCalendar: null,
   brokeragePortfolio: null,
   workflowLibrary: null,
   workflowPresets: null,
@@ -190,6 +210,11 @@ export function useWorkstationData() {
       providerRoutingConnections,
       providerRoutingBindings,
       providerRoutingTrustSnapshots,
+      rolePermissionCatalog,
+      securityAssetProfiles,
+      ledgerMappingWorkbench,
+      operationsApprovalPolicyMatrix,
+      operationsCloseCalendar,
       brokeragePortfolio,
       workflowLibrary,
       workflowPresets,
@@ -208,6 +233,11 @@ export function useWorkstationData() {
       getProviderRoutingConnections(requestOptions),
       getProviderRoutingBindings(requestOptions),
       getProviderRoutingTrustSnapshots(requestOptions),
+      getRolePermissionCatalog(requestOptions),
+      getSecurityAssetProfiles(requestOptions),
+      getLedgerMappingWorkbench(requestOptions),
+      getOperationsApprovalPolicyMatrix(requestOptions),
+      getOperationsCloseCalendar({}, requestOptions),
       getBrokerageHouseholdPortfolio("alpaca", requestOptions),
       getWorkflowLibrary(requestOptions),
       getWorkflowPresets(requestOptions),
@@ -262,6 +292,11 @@ export function useWorkstationData() {
       providerRoutingBindings: readWorkspace(["settings"], providerRoutingBindings),
       providerRoutingTrustSnapshots: readWorkspace(["settings"], providerRoutingTrustSnapshots),
       providerRoutingRefreshing: false,
+      rolePermissionCatalog: readWorkspace(["settings"], rolePermissionCatalog),
+      securityAssetProfiles: readWorkspace(["settings", "data"], securityAssetProfiles),
+      ledgerMappingWorkbench: readWorkspace(["settings"], ledgerMappingWorkbench),
+      operationsApprovalPolicyMatrix: readWorkspace(["settings"], operationsApprovalPolicyMatrix),
+      operationsCloseCalendar: readWorkspace(["settings"], operationsCloseCalendar),
       brokeragePortfolio: readWorkspace(["portfolio"], brokeragePortfolio),
       workflowLibrary: readWorkflow(workflowLibrary),
       workflowPresets: readWorkflow(workflowPresets),

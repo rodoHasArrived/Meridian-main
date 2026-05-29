@@ -91,6 +91,142 @@ public sealed class SecurityMasterAssetClassSupportTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task CreateAsync_ProfileBackedCustomAsset_PreservesPinnedProfileTerms()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+        var assetSpecificTerms = CreatePrivateFundProfileTerms("2026-04-30");
+
+        var detail = await service.CreateAsync(
+            new CreateSecurityRequest(
+                securityId,
+                "CustomAsset",
+                JsonSerializer.SerializeToElement(new
+                {
+                    displayName = "Meridian Private Credit Fund I",
+                    currency = "USD",
+                    issuerName = "GP Capital"
+                }),
+                assetSpecificTerms,
+                new[]
+                {
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.InternalCode,
+                        "PFI-001",
+                        true,
+                        DateTimeOffset.UtcNow.AddDays(-1),
+                        null,
+                        null)
+                },
+                DateTimeOffset.UtcNow,
+                "profile-wizard",
+                "codex",
+                "PROFILE-CREATE-1",
+                "profile backed create"),
+            CancellationToken.None);
+
+        detail.AssetClass.Should().Be("CustomAsset");
+        detail.AssetSpecificTerms.GetProperty("customProfileId").GetString().Should().Be("private-fund-interest");
+        detail.AssetSpecificTerms.GetProperty("profileVersion").GetInt32().Should().Be(1);
+        detail.AssetSpecificTerms.GetProperty("profileFields").GetProperty("navDate").GetString().Should().Be("2026-04-30");
+
+        await store.Received(1).UpsertProjectionAsync(
+            Arg.Is<SecurityProjectionRecord>(projection =>
+                projection.AssetClass == "CustomAsset"
+                && ProjectionCarriesPinnedProfileTerms(projection, "private-fund-interest", "2026-04-30")),
+            Arg.Any<CancellationToken>());
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            0,
+            Arg.Is<IReadOnlyList<SecurityMasterEventEnvelope>>(events =>
+                events.Count == 1
+                && events[0].EventType == "SecurityCreated"
+                && PayloadCarriesPinnedProfileTerms(events[0].Payload, "CustomAsset", "private-fund-interest", "2026-04-30")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AmendTermsAsync_ProfileBackedCustomAsset_PreservesPinnedProfileTerms()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]));
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        snapshotStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<SecuritySnapshotRecord?>(null));
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreateProfileBackedProjection(securityId, CreatePrivateFundProfileTerms("2026-04-30")));
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance);
+        var amendedTerms = CreatePrivateFundProfileTerms("2026-05-31");
+
+        var detail = await service.AmendTermsAsync(
+            new AmendSecurityTermsRequest(
+                securityId,
+                1,
+                null,
+                amendedTerms,
+                Array.Empty<SecurityIdentifierDto>(),
+                Array.Empty<SecurityIdentifierDto>(),
+                DateTimeOffset.UtcNow,
+                "profile-wizard",
+                "codex",
+                "PROFILE-AMEND-1",
+                "update NAV date"),
+            CancellationToken.None);
+
+        detail.AssetClass.Should().Be("CustomAsset");
+        detail.Version.Should().Be(2);
+        detail.AssetSpecificTerms.GetProperty("customProfileId").GetString().Should().Be("private-fund-interest");
+        detail.AssetSpecificTerms.GetProperty("profileFields").GetProperty("navDate").GetString().Should().Be("2026-05-31");
+
+        await store.Received(1).UpsertProjectionAsync(
+            Arg.Is<SecurityProjectionRecord>(projection =>
+                projection.AssetClass == "CustomAsset"
+                && projection.Version == 2
+                && ProjectionCarriesPinnedProfileTerms(projection, "private-fund-interest", "2026-05-31")),
+            Arg.Any<CancellationToken>());
+
+        await eventStore.Received(1).AppendAsync(
+            securityId,
+            1,
+            Arg.Is<IReadOnlyList<SecurityMasterEventEnvelope>>(events =>
+                events.Count == 1
+                && events[0].EventType == "TermsAmended"
+                && PayloadCarriesPinnedProfileTerms(events[0].Payload, "CustomAsset", "private-fund-interest", "2026-05-31")),
+            Arg.Any<CancellationToken>());
+    }
+
     private static JsonElement CreateAssetSpecificTerms(string assetClass)
         => assetClass switch
         {
@@ -195,4 +331,99 @@ public sealed class SecurityMasterAssetClassSupportTests
            && payload.TryGetProperty("economicTerms", out var economicTerms)
            && economicTerms.TryGetProperty("schemaVersion", out var schemaVersion)
            && schemaVersion.GetInt32() == 2;
+
+    private static JsonElement CreatePrivateFundProfileTerms(string navDate)
+        => JsonSerializer.SerializeToElement(new
+        {
+            schemaVersion = SecurityMasterSchemaVersions.CustomAssetProfileTerms,
+            customProfileId = "private-fund-interest",
+            profileVersion = 1,
+            category = "PrivateFunds",
+            subType = "Limited Partner Interest",
+            valuationProfile = new { pricingSource = "AdministratorNAV" },
+            accountingClassification = "PrivateInvestment",
+            profileApproval = new
+            {
+                approvedBy = "risk-committee",
+                approvedAtUtc = DateTimeOffset.Parse("2026-05-29T00:00:00Z"),
+                approvalReference = "PROFILE-APPROVAL-1"
+            },
+            profileFields = new
+            {
+                gpSponsor = "GP Capital",
+                strategy = "Private Credit",
+                vintage = 2025,
+                commitment = 1000000m,
+                fundedAmount = 250000m,
+                unfundedAmount = 750000m,
+                navDate,
+                lockup = "3 years"
+            }
+        });
+
+    private static SecurityProjectionRecord CreateProfileBackedProjection(Guid securityId, JsonElement assetSpecificTerms)
+    {
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        return new SecurityProjectionRecord(
+            securityId,
+            "CustomAsset",
+            SecurityStatusDto.Active,
+            "Meridian Private Credit Fund I",
+            "USD",
+            SecurityIdentifierKind.InternalCode.ToString(),
+            "PFI-001",
+            JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Meridian Private Credit Fund I",
+                currency = "USD",
+                issuerName = "GP Capital"
+            }),
+            assetSpecificTerms,
+            JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "profile-wizard",
+                sourceRecordId = "PROFILE-CREATE-1",
+                asOf = effectiveFrom,
+                updatedBy = "codex",
+                reason = "profile backed create"
+            }),
+            1,
+            effectiveFrom,
+            null,
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.InternalCode,
+                    "PFI-001",
+                    true,
+                    effectiveFrom,
+                    null,
+                    null)
+            ],
+            []);
+    }
+
+    private static bool ProjectionCarriesPinnedProfileTerms(SecurityProjectionRecord projection, string profileId, string navDate)
+        => projection.AssetSpecificTerms.TryGetProperty("customProfileId", out var customProfileId)
+           && customProfileId.GetString() == profileId
+           && projection.AssetSpecificTerms.TryGetProperty("profileVersion", out var profileVersion)
+           && profileVersion.GetInt32() == 1
+           && projection.AssetSpecificTerms.TryGetProperty("profileFields", out var profileFields)
+           && profileFields.TryGetProperty("navDate", out var navDateElement)
+           && navDateElement.GetString() == navDate;
+
+    private static bool PayloadCarriesPinnedProfileTerms(
+        JsonElement payload,
+        string legacyAssetClass,
+        string profileId,
+        string navDate)
+        => payload.TryGetProperty("legacyAssetClass", out var legacyAssetClassElement)
+           && legacyAssetClassElement.GetString() == legacyAssetClass
+           && payload.TryGetProperty("legacyAssetSpecificTerms", out var legacyTerms)
+           && legacyTerms.TryGetProperty("customProfileId", out var customProfileId)
+           && customProfileId.GetString() == profileId
+           && legacyTerms.TryGetProperty("profileVersion", out var profileVersion)
+           && profileVersion.GetInt32() == 1
+           && legacyTerms.TryGetProperty("profileFields", out var profileFields)
+           && profileFields.TryGetProperty("navDate", out var navDateElement)
+           && navDateElement.GetString() == navDate;
 }

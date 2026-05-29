@@ -290,6 +290,13 @@ async function captureRoute(page, capture, outputDir, baseUrl, defaults, minByte
     throw new Error(`Rendered body text length ${textLength} is below minimum ${minTextLength}`);
   }
 
+  const actualUrl = page.url();
+  const expectedPath = new URL(url).pathname;
+  const actualPath = new URL(actualUrl).pathname;
+  if (actualPath !== expectedPath) {
+    throw new Error(`Capture ${capture.name} ended on '${actualPath}', expected '${expectedPath}'.`);
+  }
+
   await fs.mkdir(outputDir, { recursive: true });
   const buffer = await page.screenshot({ path: outputPath, fullPage: true });
   if (buffer.length < minBytes) {
@@ -302,6 +309,9 @@ async function captureRoute(page, capture, outputDir, baseUrl, defaults, minByte
     docLabel: capture.docLabel,
     route: capture.path,
     url,
+    actualUrl,
+    expectedPath,
+    actualPath,
     file: fileName,
     path: outputPath,
     viewport,

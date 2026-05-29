@@ -87,6 +87,7 @@ public static partial class WorkstationEndpoints
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);
         MapFeatureCapabilityEndpoints(group, jsonOptions);
+        MapFamilyOfficeEndpoints(group);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,
@@ -428,6 +429,138 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetOperationsContinuitySummary");
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalPolicyMatrix), (HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsApprovalPolicyMatrixService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations approval policy matrix service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            return Results.Json(service.GetMatrix(), jsonOptions);
+        })
+        .WithName("GetOperationsContinuityApprovalPolicyMatrix")
+        .Produces<OperationsApprovalPolicyMatrixDto>(200)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalPolicyRules), async (
+            OperationsApprovalPolicyRuleUpsertRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations approval policy rule request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsApprovalPolicyMatrixService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations approval policy matrix service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                var trustedRequest = request with { RequestedBy = currentUser };
+                var result = await service.UpsertRuleAsync(trustedRequest, currentUser, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("UpsertOperationsContinuityApprovalPolicyRule")
+        .Produces<OperationsApprovalPolicyRuleUpsertResultDto>(200)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendar), async (
+            Guid? fundAccountId,
+            string? periodId,
+            HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsCloseCalendarService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations close calendar service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var calendar = await service.GetCalendarAsync(fundAccountId, periodId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(calendar, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityCloseCalendar")
+        .Produces<OperationsCloseCalendarDto>(200)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendarItems), async (
+            OperationsCloseCalendarItemUpsertRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations close calendar item request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsCloseCalendarService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations close calendar service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                var trustedRequest = request with { RequestedBy = currentUser };
+                var result = await service.UpsertItemAsync(trustedRequest, currentUser, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("UpsertOperationsContinuityCloseCalendarItem")
+        .Produces<OperationsCloseCalendarItemUpsertResultDto>(200)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403);
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
             OperationsStartWorkflowRequestDto? request,
             HttpContext context) =>
@@ -481,6 +614,29 @@ public static partial class WorkstationEndpoints
             return workflow is null ? Results.NotFound() : Results.Json(workflow, jsonOptions);
         })
         .WithName("GetOperationsContinuityDetail");
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseReadiness), async (Guid workflowId, HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return workflow?.CloseReadiness is null
+                ? Results.NotFound()
+                : Results.Json(workflow.CloseReadiness, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityCloseReadiness")
+        .Produces<OperationsCloseReadinessDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityTimeline), async (Guid workflowId, HttpContext context) =>
         {
@@ -1212,11 +1368,18 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await service.CreateStatementRunAsync(request, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var trustedRequest = request with { ImportedBy = currentUser };
+            var detail = await service.CreateStatementRunAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
         .WithName("CreateStatementRun")
         .Produces<StatementRunDto>(201)
+        .Produces(401)
         .Produces(403)
         .Produces(404)
         .Produces(501);
@@ -1291,11 +1454,18 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation API service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await service.ReconcileStatementRunAsync(runId, request, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var detail = await service.ReconcileStatementRunAsync(runId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
         })
         .WithName("ReconcileStatementRun")
         .Produces<StatementRunDto>(200)
+        .Produces(401)
         .Produces(403)
         .Produces(404)
         .Produces(501);
@@ -1572,8 +1742,29 @@ public static partial class WorkstationEndpoints
         .WithName("EditReconciliationBreakComment")
         .Produces<ReconciliationBreakQueueItem>(200);
 
-        group.MapDelete("/reconciliation/break-queue/{breakId}/comments/{commentId}", async (string breakId, string commentId, ReconciliationCaseworkCommand request, HttpContext context) =>
-            await ApplyReconciliationCaseworkEndpointAsync(breakId, request with { Action = ReconciliationCaseworkAction.DeleteComment, CommentId = commentId }, context, jsonOptions).ConfigureAwait(false))
+        group.MapDelete("/reconciliation/break-queue/{breakId}/comments/{commentId}", async (
+            string breakId,
+            string commentId,
+            [FromQuery] long expectedVersion,
+            [FromQuery] string? reason,
+            [FromQuery] string? commandId,
+            [FromQuery] string? correlationId,
+            [FromQuery] string? source,
+            HttpContext context) =>
+            await ApplyReconciliationCaseworkEndpointAsync(
+                breakId,
+                new ReconciliationCaseworkCommand(
+                    breakId,
+                    ReconciliationCaseworkAction.DeleteComment,
+                    Actor: string.Empty,
+                    CommandId: string.IsNullOrWhiteSpace(commandId) ? Guid.NewGuid().ToString("N") : commandId,
+                    CorrelationId: string.IsNullOrWhiteSpace(correlationId) ? Guid.NewGuid().ToString("N") : correlationId,
+                    Source: string.IsNullOrWhiteSpace(source) ? "workstation-api" : source,
+                    ExpectedVersion: expectedVersion,
+                    Reason: reason,
+                    CommentId: commentId),
+                context,
+                jsonOptions).ConfigureAwait(false))
         .WithName("DeleteReconciliationBreakComment")
         .Produces<ReconciliationBreakQueueItem>(200);
 
@@ -1945,6 +2136,39 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetSecurityMasterWorkstationTrustSnapshot")
         .Produces<SecurityMasterTrustSnapshotDto>(200)
+        .Produces(403)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSecurityMasterInstrumentPassport), async (
+            Guid securityId,
+            string? fundProfileId,
+            HttpContext context) =>
+        {
+            if (!EndpointAuthorization.HasAnyPermission(
+                    context,
+                    UserPermission.ViewSecurityMaster,
+                    UserPermission.ModifySecurityMaster))
+            {
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+
+            var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
+            if (workbenchService is null)
+            {
+                return Results.Problem("Security Master workbench service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var passport = await workbenchService
+                .GetInstrumentPassportAsync(securityId, fundProfileId, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return passport is null
+                ? Results.NotFound()
+                : Results.Json(passport, jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationInstrumentPassport")
+        .Produces<InstrumentPassportDto>(200)
         .Produces(403)
         .Produces(404)
         .Produces(501);
@@ -6415,8 +6639,22 @@ public static partial class WorkstationEndpoints
             PendingSignoffCount: pendingSignoffCount,
             SignedOffCount: signedOffCount,
             MissingCalibrationMetadataCount: missingCalibrationMetadataCount,
-            Profiles: profiles);
+            Profiles: profiles)
+        {
+            BreakCountTrend = activeBreakCount - resolvedBreakCount,
+            AutoMatchRate = CalculateAutoMatchRate(totalBreakCount, activeBreakCount),
+            T0ClosureRate = CalculateT0ClosureRate(totalBreakCount, resolvedBreakCount, dismissedBreakCount),
+            BreakCountAlertThreshold = 25,
+            AutoMatchRateAlertThreshold = 0.85m,
+            T0ClosureRateAlertThreshold = 0.90m
+        };
     }
+
+    private static decimal CalculateAutoMatchRate(int totalBreakCount, int activeBreakCount)
+        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)Math.Max(0, totalBreakCount - activeBreakCount) / totalBreakCount, 4);
+
+    private static decimal CalculateT0ClosureRate(int totalBreakCount, int resolvedBreakCount, int dismissedBreakCount)
+        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)(resolvedBreakCount + dismissedBreakCount) / totalBreakCount, 4);
 
     private static ReconciliationCalibrationProfileSummaryDto BuildCalibrationProfileSummary(
         IGrouping<(string Profile, string Route), ReconciliationBreakQueueItem> group)
@@ -7118,7 +7356,6 @@ public static partial class WorkstationEndpoints
         string? AccountName,
         string Reason);
 
-
     private sealed record ProviderTrustRationalePayload(
         string Status,
         string TrustScore,
@@ -7127,51 +7364,3 @@ public static partial class WorkstationEndpoints
         string RecommendedAction,
         string GateImpact);
 }
-
-/// <summary>Request to compare multiple strategy runs side by side.</summary>
-public sealed record RunComparisonRequest(
-    IReadOnlyList<string> RunIds,
-    IReadOnlyList<string>? Modes = null);
-
-/// <summary>Request to diff two strategy runs.</summary>
-public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);
-
-/// <summary>Result of a run-vs-run diff showing position, parameter, and metric changes.</summary>
-public sealed record StrategyRunDiff(
-    string BaseRunId,
-    string TargetRunId,
-    string BaseStrategyName,
-    string TargetStrategyName,
-    IReadOnlyList<PositionDiffEntry> AddedPositions,
-    IReadOnlyList<PositionDiffEntry> RemovedPositions,
-    IReadOnlyList<PositionDiffEntry> ModifiedPositions,
-    IReadOnlyList<ParameterDiff> ParameterChanges,
-    MetricsDiff Metrics,
-    IReadOnlyList<string>? CompatibilityWarnings = null,
-    StrategyRunArtifactCompleteness? BaseArtifactCompleteness = null,
-    StrategyRunArtifactCompleteness? TargetArtifactCompleteness = null);
-
-/// <summary>A single position change between two runs.</summary>
-public sealed record PositionDiffEntry(
-    string Symbol,
-    long BaseQuantity,
-    long TargetQuantity,
-    decimal BasePnl,
-    decimal TargetPnl,
-    string ChangeType);
-
-/// <summary>A single parameter change between two runs.</summary>
-public sealed record ParameterDiff(
-    string Key,
-    string? BaseValue,
-    string? TargetValue);
-
-/// <summary>High-level metrics delta between two runs.</summary>
-public sealed record MetricsDiff(
-    decimal NetPnlDelta,
-    decimal TotalReturnDelta,
-    int FillCountDelta,
-    decimal? BaseNetPnl,
-    decimal? TargetNetPnl,
-    decimal? BaseTotalReturn,
-    decimal? TargetTotalReturn);

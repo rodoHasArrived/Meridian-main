@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-27
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Wpf
@@ -34,8 +34,6 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
-The Reporting workspace remains a first-class desktop operator lane for governed report packs. It should consume the same shared reporting projections as the browser surface for template families, approval state, lineage completeness, retry/failure posture, and release readiness.
-
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
@@ -49,16 +47,63 @@ cash-flow drill-in presents the same run, portfolio, ledger, cash-flow, reconcil
 posture used by shared workstation continuity endpoints.
 Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
 queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
-note, audit event, and pending close sign-off posture visible in the retained detail panel.
-The same Accounting workbench also projects shared statement-run endpoints for statement runs,
-validation issues, unresolved statement breaks, and case-action recovery links so desktop operators
-can review broker/custodian evidence without WPF-local reconciliation logic.
-The Fund Ledger break queue also surfaces shared casework hardening fields (owner, priority, SLA badge, age band, breach state, root cause, resolution code, comment/evidence counts, last activity, and sign-off checklist) from the shared Accounting read model instead of inventing WPF-only state.
+note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
+visible in the retained detail panel. The WPF queue projection carries the same source systems,
+probable cause, ledger impact, suggested next action, and evidence links as the browser governance
+detail so desktop operators do not rebuild reconciliation narratives locally.
+Shared close-workflow target tags stay explicit in desktop routing: `OperationsContinuity` and
+`OperationsClose` are WPF aliases for the Fund Operations page, with navigation parameters that
+land on the overview and report-pack readiness tabs while the browser resolves both tags to
+`/accounting/operations-continuity`.
+Shared evidence workflow target routing is also explicit: `EvidenceWorkbench` resolves to the WPF
+Fund Audit Trail surface while the browser resolves the same shared tag to `/reporting/evidence`.
+The route-registry parity test covers all built-in workflow entry and action target tags so shared
+workflow catalog updates cannot silently become browser-only or desktop-only.
 Shared workstation affordance primitives under `Workstation/Models` and `Workstation/Controls`
 standardize action posture, readiness tone, evidence links, recovery actions, and sign-off
 requirements for W4 close/report surfaces. Fund Ledger reconciliation and Report Pack handoff
 surfaces consume these primitives so blocker, evidence, recovery, and sign-off signifiers stay
 visible without creating desktop-only business rules.
+`MainPage` remains the route-compatible desktop shell entry point, but shell chrome is now composed
+from reusable WPF primitives: `InstitutionalShellFrameControl`, `ShellRailControl`,
+`ShellMastheadControl`, `WorkspaceEvidenceStripControl`, `WorkspaceCommandSurfaceControl`,
+`InstitutionalCommandPaletteControl`, and `WorkspaceInspectorHostControl`. Workspace shell posture
+is WPF-only and resolved through `ShellNavigationCatalog.GetWorkspaceLayoutDescriptor`: Trading and
+Data use `Terminal`, Portfolio, Accounting, Reporting, and Settings use `Cockpit`, and Strategy uses
+`Workbench`. Legacy workspace names continue to resolve as aliases to the seven canonical roots.
+`WorkspaceCommandSurfaceControl` and `WorkspaceEvidenceStripControl` take explicit automation ID
+properties from the active workspace layout descriptor so shell chrome can be reused without
+depending on ambient `MainPage` bindings.
+Modal surfaces should migrate through `WorkspaceDialogChromeControl`; provider API-key setup,
+watchlist saving, and scheduled-job editing now use that shared dialog chrome with stable title,
+subtitle, body, input, and action automation IDs.
+Standalone command-palette chrome should use the same shell tokens and stable automation IDs instead
+of page-local colors or shadow effects.
+High-value workbench pages should migrate through the shared workstation controls before broad
+page sweeps; Strategy Runs now uses `DenseDataGridControl` plus tabbed inspector panes for run,
+evidence, comparison, and artifact context while preserving existing page tags and navigation
+commands.
+Settings/Admin cockpit work uses `WorkstationStatePanelControl` for schedule and cleanup readiness
+state so maintenance blockers, confirmation posture, and evidence summaries reuse the same
+`WorkspaceTone` semantics as other operational pages.
+Data Quality terminal work uses `DenseDataGridControl` for the symbol-quality table with
+view-model-owned selected-row drilldown and provider-comparison command state, keeping the Data
+workspace on shared dense-table behavior without changing data-quality service contracts.
+Data terminal provider, backfill, and storage decision queues now use
+`WorkspaceDecisionQueueControl` while retaining existing queue-region empty/loading/error state
+templates and view-model-owned action resolution.
+Backfill terminal work uses `DenseDataGridControl` for gap-analysis and per-symbol-progress tables,
+with table descriptors owned by `BackfillWorkbenchSectionViewModel` so long-running provider
+catch-up workflows reuse the shared dense-table/empty-state surface.
+Trading terminal work uses `DenseDataGridControl` for active positions and view-model-owned
+selected-position inspector state so paper/live desk review keeps row selection, P&L, mode, and
+next-action context in the shared dense table surface. `WorkspaceInspectorHostControl` owns
+empty, selected, loading, and error inspector states with caller-supplied automation IDs so
+workspace pages can migrate selected-row detail without changing route/page tags.
+Accounting, Portfolio, Reporting, and Settings/Admin cockpit home decisions bind to view-model-owned `WorkspaceQueueItem`
+collections through `WorkspaceDecisionQueueControl`, preserving existing page tags while reusing
+`WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
+decisions, including primary, secondary, and blocked cockpit actions.
 
 ## Diagrams
 
@@ -95,7 +140,3 @@ behavior into view models. Do not duplicate product logic that belongs in shared
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/development/wpf-implementation-notes.md`
 - `docs/source/generated/source-module-index.md`
-
-## Accounting close operator views
-
-The WPF accounting lane uses `AccountingCloseViewModel` to surface trial-balance rows, roll-forward rows, close-state text, and audit drill-through details from the shared UI services projection layer. Keep posting/translation business rules in `src/Meridian.Application/AccountingClose/` and avoid moving close gating into XAML code-behind.

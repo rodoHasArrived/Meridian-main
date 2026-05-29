@@ -27,6 +27,11 @@ This layer should hold reusable execution contracts without binding them to one 
 ## Important workflows
 
 Use this module when execution integration contracts need to be shared by multiple execution implementations.
+Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
+or custodian supplies it; callers should leave the field null rather than infer it from fill
+notional. Activity snapshots can also carry provider corporate-action/factor events such as
+splits, dividends, amortization, paydowns, and factor updates when the upstream feed supplies
+account-scoped evidence.
 
 ## Diagrams
 

@@ -85,13 +85,14 @@ public sealed record ManualOverrideRequest(
 public sealed record ExecutionControlDecision(
     bool IsApproved,
     string? RejectReason = null,
-    string? AppliedManualOverrideId = null)
+    string? AppliedManualOverrideId = null,
+    string? RejectCode = null)
 {
     public static ExecutionControlDecision Approved(string? appliedManualOverrideId = null) =>
         new(true, null, appliedManualOverrideId);
 
-    public static ExecutionControlDecision Rejected(string reason) =>
-        new(false, reason, null);
+    public static ExecutionControlDecision Rejected(string reason, string? rejectCode = null) =>
+        new(false, reason, null, rejectCode);
 }
 
 /// <summary>
@@ -411,7 +412,7 @@ public sealed class ExecutionOperatorControlService
     /// <summary>
     /// Evaluates a new order against the current operator controls.
     /// </summary>
-    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState)
+    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -422,12 +423,13 @@ public sealed class ExecutionOperatorControlService
 
             var forceBlock = _manualOverrides.Values.FirstOrDefault(overrideEntry =>
                 string.Equals(overrideEntry.Kind, ExecutionManualOverrideKinds.ForceBlockOrders, StringComparison.OrdinalIgnoreCase) &&
-                OverrideMatchesOrder(overrideEntry, request));
+                OverrideMatchesOrder(overrideEntry, request, runId));
 
             if (forceBlock is not null)
             {
                 return ExecutionControlDecision.Rejected(
-                    $"Manual override {forceBlock.OverrideId} is blocking new orders: {forceBlock.Reason}");
+                    $"Manual override {forceBlock.OverrideId} is blocking new orders: {forceBlock.Reason}",
+                    "MANUAL_FORCE_BLOCK");
             }
 
             string? requestedOverrideId = null;
@@ -437,12 +439,13 @@ public sealed class ExecutionOperatorControlService
                 ExecutionManualOverrideKinds.BypassOrderControls,
                 request.Symbol,
                 request.StrategyId,
-                runId: null);
+                runId);
 
             if (_circuitBreaker.IsOpen && bypassOverride is null)
             {
                 return ExecutionControlDecision.Rejected(
-                    _circuitBreaker.Reason ?? "Execution circuit breaker is open.");
+                    _circuitBreaker.Reason ?? "Execution circuit breaker is open.",
+                    "CIRCUIT_BREAKER_OPEN");
             }
 
             var limit = ResolvePositionLimitLocked(request.Symbol);
@@ -461,7 +464,8 @@ public sealed class ExecutionOperatorControlService
                 if (Math.Abs(projectedQuantity) > limit.Value)
                 {
                     return ExecutionControlDecision.Rejected(
-                        $"Projected position {projectedQuantity:G29} exceeds limit {limit.Value:G29} for {normalizedSymbol}.");
+                        $"Projected position {projectedQuantity:G29} exceeds limit {limit.Value:G29} for {normalizedSymbol}.",
+                        "POSITION_LIMIT_EXCEEDED");
                 }
             }
 
@@ -636,9 +640,10 @@ public sealed class ExecutionOperatorControlService
             : _defaultMaxPositionSize;
     }
 
-    private static bool OverrideMatchesOrder(ExecutionManualOverride overrideEntry, OrderRequest request) =>
+    private static bool OverrideMatchesOrder(ExecutionManualOverride overrideEntry, OrderRequest request, string? runId) =>
         MatchesOptionalTarget(overrideEntry.Symbol, request.Symbol) &&
-        MatchesOptionalTarget(overrideEntry.StrategyId, request.StrategyId);
+        MatchesOptionalTarget(overrideEntry.StrategyId, request.StrategyId) &&
+        MatchesOptionalTarget(overrideEntry.RunId, runId);
 
     private static bool MatchesOptionalTarget(string? configuredTarget, string? actualTarget)
     {

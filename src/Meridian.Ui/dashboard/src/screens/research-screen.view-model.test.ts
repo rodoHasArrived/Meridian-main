@@ -17,6 +17,7 @@ import {
   buildPromotionHistoryTable,
   buildResearchCommandStates,
   buildResearchRunLibraryState,
+  buildRunHistorySummary,
   buildRunDetail,
   buildRunTable,
   nextPlotToolViewForKey,
@@ -87,7 +88,15 @@ const comparison: RunComparisonRow[] = [
     lastUpdatedAt: "2026-03-26T10:00:00Z",
     promotionState: "CandidateForPaper",
     hasLedger: false,
-    hasAuditTrail: false
+    hasAuditTrail: false,
+    compatibilityWarnings: ["Cross-engine comparison active (MeridianNative, Lean)."],
+    artifactCompleteness: {
+      hasPortfolio: true,
+      hasLedger: false,
+      hasCashFlow: true,
+      hasFills: true,
+      hasAuditTrail: false
+    }
   }
 ];
 
@@ -107,8 +116,42 @@ const diff: RunDiff = {
     baseNetPnl: 3200,
     targetNetPnl: 4400,
     baseTotalReturn: 0.042,
-    targetTotalReturn: 0.052
-  }
+    targetTotalReturn: 0.052,
+    finalEquityDelta: 2500,
+    maxDrawdownDelta: -750,
+    sharpeRatioDelta: 0.25,
+    baseFinalEquity: 100000,
+    targetFinalEquity: 102500,
+    baseMaxDrawdown: 1800,
+    targetMaxDrawdown: 1050,
+    baseSharpeRatio: 1.41,
+    targetSharpeRatio: 1.66
+  },
+  compatibilityWarnings: ["Fill-level evidence is incomplete for at least one run."],
+  baseArtifactCompleteness: {
+    hasPortfolio: true,
+    hasLedger: true,
+    hasCashFlow: true,
+    hasFills: true,
+    hasAuditTrail: true
+  },
+  targetArtifactCompleteness: {
+    hasPortfolio: true,
+    hasLedger: false,
+    hasCashFlow: true,
+    hasFills: false,
+    hasAuditTrail: true
+  },
+  baseMode: "Backtest",
+  targetMode: "Paper",
+  baseEngine: "MeridianNative",
+  targetEngine: "BrokerPaper",
+  baseStrategyId: "strategy-alpha",
+  targetStrategyId: "strategy-alpha",
+  baseStrategyVersion: "v1.0.0",
+  targetStrategyVersion: "v1.1.0",
+  lineageRelation: "DirectChild",
+  compatibilityLevel: "CrossEngine"
 };
 
 const history: PromotionRecord[] = [
@@ -344,6 +387,8 @@ describe("research-screen view model", () => {
     expect(comparisonTable.rows[0].equityText).toBe("Equity Unavailable");
     expect(comparisonTable.rows[0].promotionStateText).toBe("Candidate for paper");
     expect(comparisonTable.rows[0].evidenceText).toBe("Ledger missing; Audit missing");
+    expect(comparisonTable.rows[0].artifactCompletenessText).toBe("Ready 3/5 (portfolio, cash-flow, fills); missing ledger, audit");
+    expect(comparisonTable.rows[0].warningText).toBe("Cross-engine comparison active (MeridianNative, Lean).");
     expect(comparisonTable.rows[0].detailExpanded).toBe(true);
     expect(comparisonTable.rows[0].detailPanelId).toBe("strategy-run-comparison-selected-detail");
     expect(comparisonTable.rows[0].rowSelectAriaLabel).toBe("Inspect Mean Reversion FX comparison evidence");
@@ -378,6 +423,18 @@ describe("research-screen view model", () => {
     expect(emptyDiff.metrics[0]).toMatchObject({ label: "Net P&L delta", value: "+$1,200", tone: "success" });
     expect(emptyDiff.metrics[1]).toMatchObject({ label: "Return delta", value: "+1.00%", tone: "success" });
     expect(emptyDiff.metrics[2]).toMatchObject({ label: "Fill delta", value: "+5", tone: "success" });
+    expect(emptyDiff.metrics[3]).toMatchObject({ label: "Final equity delta", value: "+$2,500", tone: "success" });
+    expect(emptyDiff.metrics[4]).toMatchObject({ label: "Drawdown delta", value: "-$750", tone: "success" });
+    expect(emptyDiff.metrics[5]).toMatchObject({ label: "Sharpe delta", value: "+0.250", tone: "success" });
+    expect(emptyDiff.compatibilityWarnings).toEqual(["Fill-level evidence is incomplete for at least one run."]);
+    expect(emptyDiff.metadataSummary).toBe(
+      "Compatibility CrossEngine | Lineage DirectChild | Base strategy-alpha @ v1.0.0 | Target strategy-alpha @ v1.1.0"
+    );
+    expect(emptyDiff.compatibilityLevel).toBe("CrossEngine");
+    expect(emptyDiff.lineageRelation).toBe("DirectChild");
+    expect(emptyDiff.artifactCompletenessSummary).toBe(
+      "Base Backtest / MeridianNative: Ready 5/5 (portfolio, ledger, cash-flow, fills, audit); missing none | Target Paper / BrokerPaper: Ready 3/5 (portfolio, cash-flow, audit); missing ledger, fills"
+    );
     expect(emptyDiff.hasPositionChanges).toBe(false);
     expect(emptyDiff.hasParameterChanges).toBe(false);
     expect(emptyDiff.positionSectionLabel).toBe("0 position changes returned");
@@ -978,6 +1035,43 @@ describe("research-screen view model", () => {
     expect(state.canCompare).toBe(true);
     expect(state.canDiff).toBe(true);
     expect(state.selectionText).toBe("Index Momentum vs Carry Alpha");
+  });
+
+  it("summarizes shared run history across backtest, paper, and engines", () => {
+    const summary = buildRunHistorySummary(runs);
+
+    expect(summary).toMatchObject({
+      normalizedResultText: "3 retained runs using the shared strategy-run result model.",
+      modeCoverageText: "Backtest 2; Paper 1; Live 0",
+      liveAdjacentText: "1 paper/live-adjacent run",
+      engineCoverageText: "2 normalized engines: Lean, Meridian Native"
+    });
+    expect(summary.cards).toEqual([
+      expect.objectContaining({
+        id: "total-runs",
+        value: "3",
+        detail: "1 completed",
+        badgeLabel: "Common model"
+      }),
+      expect.objectContaining({
+        id: "mode-coverage",
+        value: "2/1/0",
+        badgeLabel: "Live-adjacent",
+        badgeVariant: "paper"
+      }),
+      expect.objectContaining({
+        id: "engine-coverage",
+        value: "2",
+        badgeLabel: "Cross-engine",
+        badgeVariant: "warning"
+      }),
+      expect.objectContaining({
+        id: "paper-live",
+        value: "1",
+        badgeLabel: "Operational",
+        badgeVariant: "success"
+      })
+    ]);
   });
 
   it("keeps pair-selection continuity when compare returns empty rows", () => {

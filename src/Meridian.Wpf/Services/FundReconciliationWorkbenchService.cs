@@ -271,8 +271,22 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             PendingSignoffCount: pendingSignoffCount,
             SignedOffCount: signedOffCount,
             MissingCalibrationMetadataCount: missingCalibrationMetadataCount,
-            Profiles: profiles);
+            Profiles: profiles)
+        {
+            BreakCountTrend = activeBreakCount - resolvedBreakCount,
+            AutoMatchRate = CalculateAutoMatchRate(totalBreakCount, activeBreakCount),
+            T0ClosureRate = CalculateT0ClosureRate(totalBreakCount, resolvedBreakCount, dismissedBreakCount),
+            BreakCountAlertThreshold = 25,
+            AutoMatchRateAlertThreshold = 0.85m,
+            T0ClosureRateAlertThreshold = 0.90m
+        };
     }
+    private static decimal CalculateAutoMatchRate(int totalBreakCount, int activeBreakCount)
+        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)Math.Max(0, totalBreakCount - activeBreakCount) / totalBreakCount, 4);
+
+    private static decimal CalculateT0ClosureRate(int totalBreakCount, int resolvedBreakCount, int dismissedBreakCount)
+        => totalBreakCount <= 0 ? 1m : decimal.Round((decimal)(resolvedBreakCount + dismissedBreakCount) / totalBreakCount, 4);
+
     private static FundReconciliationBreakQueueRow MapBreakQueueRow(
         ReconciliationBreakQueueItem item,
         IReadOnlyDictionary<string, string> runNames)
@@ -280,6 +294,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         var strategyName = string.IsNullOrWhiteSpace(item.StrategyName) && runNames.TryGetValue(item.RunId, out var resolvedName)
             ? resolvedName
             : item.StrategyName;
+        var explanation = item.BreakExplanation;
 
         return new FundReconciliationBreakQueueRow(
             BreakId: item.BreakId,
@@ -307,23 +322,46 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ResolutionNote: item.ResolutionNote,
             Severity: item.Severity,
             ExceptionRouteLabel: string.IsNullOrWhiteSpace(item.ExceptionRoute) ? "Unrouted" : item.ExceptionRoute,
-            ToleranceProfileLabel: string.IsNullOrWhiteSpace(item.ToleranceProfileId) ? "Unassigned" : item.ToleranceProfileId,
-            RequiredSignoffRoleLabel: string.IsNullOrWhiteSpace(item.RequiredSignoffRole) ? "Not configured" : item.RequiredSignoffRole,
-            SignoffStatusLabel: Humanize(item.SignoffStatus),
-            PriorityLabel: Humanize(item.Priority),
-            SlaBadge: BuildSlaBadge(item),
-            AgeBandLabel: string.IsNullOrWhiteSpace(item.AgeBand) ? "0-4h" : item.AgeBand,
+             ToleranceProfileLabel: string.IsNullOrWhiteSpace(item.ToleranceProfileId) ? "Unassigned" : item.ToleranceProfileId,
+             RequiredSignoffRoleLabel: string.IsNullOrWhiteSpace(item.RequiredSignoffRole) ? "Not configured" : item.RequiredSignoffRole,
+             SignoffStatusLabel: Humanize(item.SignoffStatus),
+             ExplanationSummary: string.IsNullOrWhiteSpace(explanation?.Summary)
+                 ? item.ExplainabilitySummary ?? item.Reason
+                 : explanation.Summary,
+            SourceSystemsLabel: JoinOrDefault(explanation?.SourceSystems, "Not reported"),
+            ProbableCauseLabel: string.IsNullOrWhiteSpace(explanation?.ProbableCause) ? "Not reported" : explanation.ProbableCause,
+            LedgerImpactLabel: string.IsNullOrWhiteSpace(explanation?.LedgerImpact) ? "Not reported" : explanation.LedgerImpact,
+             SuggestedNextActionLabel: string.IsNullOrWhiteSpace(explanation?.SuggestedNextAction)
+                 ? item.RecommendedAction ?? "Review evidence, assign owner, and move the break through the governed case lifecycle."
+                 : explanation.SuggestedNextAction,
+             EvidenceLinksLabel: JoinOrDefault(explanation?.EvidenceLinks, "No evidence links reported"),
+             PriorityLabel: Humanize(item.Priority),
+             SlaBadge: BuildSlaBadge(item),
+             AgeBandLabel: string.IsNullOrWhiteSpace(item.AgeBand) ? "0-4h" : item.AgeBand,
             BreachStateLabel: Humanize(item.SlaState),
             RootCauseCodeLabel: string.IsNullOrWhiteSpace(item.RootCauseCode) ? "Unset" : item.RootCauseCode,
             ResolutionCodeLabel: string.IsNullOrWhiteSpace(item.ResolutionCode) ? "Unset" : item.ResolutionCode,
             CommentCount: item.CommentCount,
-            EvidenceCount: item.EvidenceCount,
-            LastActivityText: item.LastActivityAt.HasValue ? FormatTimestamp(item.LastActivityAt.Value) : FormatTimestamp(item.LastUpdatedAt),
-            SignOffChecklist: BuildSignOffChecklist(item));
-    }
+             EvidenceCount: item.EvidenceCount,
+             LastActivityText: item.LastActivityAt.HasValue ? FormatTimestamp(item.LastActivityAt.Value) : FormatTimestamp(item.LastUpdatedAt),
+             SignOffChecklist: BuildSignOffChecklist(item));
+     }
 
-    private static string BuildSlaBadge(ReconciliationBreakQueueItem item)
-        => item.SlaDueAt.HasValue
+     private static string JoinOrDefault(IReadOnlyList<string>? values, string fallback)
+     {
+         var nonBlankValues = values?
+             .Where(value => !string.IsNullOrWhiteSpace(value))
+             .ToArray();
+         if (nonBlankValues is null || nonBlankValues.Length == 0)
+         {
+             return fallback;
+         }
+
+         return string.Join(", ", nonBlankValues);
+     }
+
+     private static string BuildSlaBadge(ReconciliationBreakQueueItem item)
+         => item.SlaDueAt.HasValue
             ? $"{Humanize(item.SlaState)} · due {FormatTimestamp(item.SlaDueAt.Value)}"
             : Humanize(item.SlaState);
 
@@ -333,9 +371,9 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         checks.Add(string.IsNullOrWhiteSpace(item.RootCauseCode) ? "root cause missing" : "root cause captured");
         checks.Add(string.IsNullOrWhiteSpace(item.ResolutionCode) ? "resolution code missing" : "resolution coded");
         checks.Add(item.EvidenceCount > 0 ? $"{item.EvidenceCount} evidence link(s)" : "evidence missing");
-        checks.Add(item.SignedOffAt.HasValue ? "signed off" : "dual-control sign-off pending");
-        return string.Join("; ", checks);
-    }
+         checks.Add(item.SignedOffAt.HasValue ? "signed off" : "dual-control sign-off pending");
+         return string.Join("; ", checks);
+     }
 
     private static FundReconciliationCalibrationProfileRow MapCalibrationProfileRow(
         ReconciliationCalibrationProfileSummaryDto profile)

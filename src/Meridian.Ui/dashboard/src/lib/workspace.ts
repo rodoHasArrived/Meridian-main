@@ -61,6 +61,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   portfolio: "/portfolio",
   portfolioAttribution: "/portfolio/attribution",
   portfolioBrokerageSync: "/portfolio/brokerage-sync",
+  portfolioFamilyOffice: "/portfolio/family-office",
   accounting: "/accounting",
   accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingLedger: "/accounting/ledger",
@@ -107,7 +108,7 @@ const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
   settings: WORKSTATION_ROUTE_CATALOG.settings
 };
 
-const PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> = {
+export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> = {
   AccountPortfolio: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   AccountingShell: WORKSTATION_ROUTE_CATALOG.accounting,
   OperationsContinuity: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
@@ -121,6 +122,7 @@ const PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> = {
   FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
   FundReportPack: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
   FundTrialBalance: WORKSTATION_ROUTE_CATALOG.accountingLedger,
+  PortfolioFamilyOffice: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
   PortfolioShell: WORKSTATION_ROUTE_CATALOG.portfolio,
   ProviderHealth: WORKSTATION_ROUTE_CATALOG.dataProviders,
   ProviderTrust: WORKSTATION_ROUTE_CATALOG.dataProviders,
@@ -194,7 +196,7 @@ export function workflowTargetPath(
   targetPageTag: string | null | undefined,
   workspaceId: string | null | undefined
 ) {
-  const tagRoute = targetPageTag ? PAGE_TAG_ROUTES[targetPageTag] : undefined;
+  const tagRoute = targetPageTag ? WORKSTATION_PAGE_TAG_ROUTES[targetPageTag] : undefined;
   if (tagRoute) {
     return tagRoute;
   }

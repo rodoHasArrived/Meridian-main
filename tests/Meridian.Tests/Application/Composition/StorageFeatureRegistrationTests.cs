@@ -11,8 +11,10 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Store;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage.DirectLending;
+using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -73,6 +75,24 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             sd.ImplementationType == typeof(DirectLendingOutboxDispatcher));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(DailyAccrualWorker));
+    }
+
+    [Fact]
+    public void Register_AddsStorageCatalogService_ForEtlAndCatalogConsumers()
+    {
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(StorageCatalogService));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IStorageCatalogService));
     }
 
     [Fact]

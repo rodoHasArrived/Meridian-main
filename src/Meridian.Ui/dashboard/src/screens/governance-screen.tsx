@@ -956,6 +956,70 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                 )}
               </div>
               <div className="border-t border-border/70 pt-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">{reconciliation.transactionLabView.title}</h3>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{reconciliation.transactionLabView.description}</p>
+                  </div>
+                  <Badge variant={reconciliation.transactionLabView.statusTone === "default" ? "outline" : reconciliation.transactionLabView.statusTone} dot>
+                    {reconciliation.transactionLabView.requestSummaryLabel}
+                  </Badge>
+                </div>
+                <p
+                  role={reconciliation.transactionLabView.statusRole}
+                  className={cn(
+                    "mt-3 rounded-md border px-3 py-2 text-sm",
+                    reconciliation.transactionLabView.statusTone === "default" ? "border-border/70 bg-secondary/25 text-muted-foreground" : "",
+                    reconciliation.transactionLabView.statusTone === "success" ? "border-success/30 bg-success/10 text-success" : "",
+                    reconciliation.transactionLabView.statusTone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "",
+                    reconciliation.transactionLabView.statusTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : ""
+                  )}
+                >
+                  {reconciliation.transactionLabView.statusText}
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                    <span className="block text-muted-foreground">Journal</span>
+                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.journalLineCountLabel}</span>
+                  </div>
+                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                    <span className="block text-muted-foreground">Ledger impact</span>
+                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.ledgerImpactLabel}</span>
+                  </div>
+                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                    <span className="block text-muted-foreground">Reconciliation</span>
+                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.reconciliationLabel}</span>
+                  </div>
+                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
+                    <span className="block text-muted-foreground">Evidence</span>
+                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.evidenceLabel}</span>
+                  </div>
+                </div>
+                {reconciliation.transactionLabView.impactRows.length > 0 ? (
+                  <div className="mt-3 space-y-2" aria-label="Transaction Lab trial-balance impact">
+                    {reconciliation.transactionLabView.impactRows.map((row) => (
+                      <div key={row.id} className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
+                        <span className="min-w-0 truncate text-foreground">{row.label}</span>
+                        <Badge variant={row.tone === "default" ? "outline" : row.tone}>{row.value}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-3 w-full"
+                  disabled={!reconciliation.transactionLabView.canPreview}
+                  disabledReason={reconciliation.transactionLabView.disabledReason}
+                  busy={reconciliation.transactionLabView.busy}
+                  busyLabel={reconciliation.transactionLabView.previewButtonLabel}
+                  aria-label={reconciliation.transactionLabView.previewButtonAriaLabel}
+                  onClick={() => void reconciliation.runTransactionLabPreview()}
+                >
+                  {reconciliation.transactionLabView.previewButtonLabel}
+                </Button>
+              </div>
+              <div className="border-t border-border/70 pt-4">
                 <h3 className="text-sm font-semibold text-foreground">Reporting exports</h3>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">Entry points for report/export handoff using existing export infrastructure.</p>
               </div>
@@ -1644,7 +1708,7 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }
             <BookCheck className="h-4 w-4 text-primary" />
             Calibration summary
           </CardTitle>
-          <CardDescription>Tolerance profile health across all active reconciliation break routes.</CardDescription>
+          <CardDescription>Tolerance profile health, break trend, auto-match rate, and T+0 closure rate across active reconciliation routes.</CardDescription>
         </div>
         <Button
           type="button"
@@ -1685,7 +1749,7 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }
               </div>
               <span className="shrink-0 font-mono text-xs text-muted-foreground">as of {view.asOfLabel}</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-9">
               {view.metricRows.map((metric) => (
                 <div
                   key={metric.id}

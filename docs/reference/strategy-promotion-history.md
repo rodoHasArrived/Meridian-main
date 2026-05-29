@@ -20,6 +20,7 @@
 - `ApprovalReason`
 - `ReviewNotes`
 - `ApprovalChecklist`
+- `EvidenceReferences`
 - `ApprovedBy`
 - `ManualOverrideId`
 - `AuditReference`
@@ -27,6 +28,9 @@
 Approvals require the canonical checklist for the target mode before a target run is created.
 `Backtest -> Paper` approvals must include DK1 trust packet, run lineage, portfolio/ledger
 continuity, and risk-control review. `Paper -> Live` approvals must also include live-override
-review.
+review plus explicit evidence references for each live checklist item. Live evidence references
+use the checklist item as a stable prefix, for example
+`LIVE_OVERRIDE_REVIEWED:manual-override/{overrideId}`, so a restarted service can validate the
+durable history before exposing it.
 
 The `/api/promotion/history` endpoint returns this model directly, so these fields are exposed in endpoint payloads.

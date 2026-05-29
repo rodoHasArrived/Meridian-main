@@ -43,6 +43,12 @@ public sealed class FundReconciliationWorkbenchServiceTests
             profile.ToleranceProfileId == "price-variance-ops" &&
             profile.ExceptionRoute == "fund-ops-review" &&
             profile.PendingSignoffCount == 2);
+        snapshot.BreakQueueItems[0].ExplanationSummary.Should().Be("Broker statement amount mismatch requires controller review.");
+        snapshot.BreakQueueItems[0].SourceSystemsLabel.Should().Be("broker, Meridian ledger");
+        snapshot.BreakQueueItems[0].ProbableCauseLabel.Should().Contain("provider market value");
+        snapshot.BreakQueueItems[0].LedgerImpactLabel.Should().Contain("Securities value");
+        snapshot.BreakQueueItems[0].SuggestedNextActionLabel.Should().Contain("Attach broker statement");
+        snapshot.BreakQueueItems[0].EvidenceLinksLabel.Should().Contain("statement-hash:open-large");
     }
 
     [Fact]
@@ -182,7 +188,14 @@ public sealed class FundReconciliationWorkbenchServiceTests
                 ToleranceProfileId: "price-variance-ops",
                 ToleranceBand: 100m,
                 RequiredSignoffRole: "Fund operations lead",
-                SignoffStatus: "pending-signoff"),
+                SignoffStatus: "pending-signoff",
+                BreakExplanation: new ReconciliationBreakExplanationDto(
+                    Summary: "Broker statement amount mismatch requires controller review.",
+                    SourceSystems: ["broker", "Meridian ledger"],
+                    ProbableCause: "Broker provider market value could not be matched to retained ledger support.",
+                    LedgerImpact: "Securities value and cash close readiness remain blocked by USD 25.",
+                    SuggestedNextAction: "Attach broker statement evidence and review the ledger posting before sign-off.",
+                    EvidenceLinks: ["/api/workstation/reconciliation/statement-runs/run-fund-ops#row-open-large", "statement-hash:open-large"])),
             new ReconciliationBreakQueueItem(
                 BreakId: "run-fund-ops:reviewed-gap",
                 RunId: "run-fund-ops",

@@ -213,6 +213,100 @@ public static class FundStructureEndpoints
         .Produces<FundStructureAssignmentDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
+        group.MapPost("/ledger-mapping-assignments", async (JsonElement body, HttpContext context) =>
+        {
+            LedgerMappingAssignmentRequestDto? request;
+            try
+            {
+                request = JsonSerializer.Deserialize<LedgerMappingAssignmentRequestDto>(body.GetRawText(), jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.Problem(
+                    $"Ledger mapping assignment request is invalid JSON. {ex.Message}",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (!TryValidateLedgerMappingAssignmentRequest(request, out var validationError))
+            {
+                return Results.Problem(validationError, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+
+            var actor = EndpointAuthorization.TryResolveActor(context, out var authenticatedActor)
+                ? authenticatedActor
+                : request!.RequestedBy.Trim();
+            var effectiveFrom = request!.EffectiveFrom ?? DateTimeOffset.UtcNow;
+            var beforeView = await service.GetAccountingViewAsync(
+                    new AccountingStructureQuery(ActiveOnly: true, AsOf: effectiveFrom),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            var beforeWorkbench = LedgerMappingWorkbenchService.Build(beforeView, effectiveFrom);
+            var beforeAccount = beforeWorkbench.Accounts.FirstOrDefault(account => account.AccountId == request.AccountId);
+            if (beforeAccount is null)
+            {
+                return Results.Problem(
+                    $"Account {request.AccountId} was not found in the accounting structure view.",
+                    statusCode: StatusCodes.Status404NotFound);
+            }
+
+            var assignmentRequest = new AssignFundStructureNodeRequest(
+                request.AssignmentId ?? Guid.NewGuid(),
+                request.AccountId,
+                LedgerGroupingRules.LedgerGroupAssignmentType,
+                request.LedgerGroupId,
+                effectiveFrom,
+                actor,
+                IsPrimary: true);
+            assignmentRequest = NormalizeLedgerGroupAssignmentRequest(assignmentRequest, out var assignmentReferenceError);
+            if (assignmentReferenceError is not null)
+            {
+                return Results.Problem(assignmentReferenceError, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            FundStructureAssignmentDto assignment;
+            try
+            {
+                assignment = await service.AssignNodeAsync(assignmentRequest, context.RequestAborted).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is ArgumentException or FormatException or InvalidOperationException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var afterView = await service.GetAccountingViewAsync(
+                    new AccountingStructureQuery(ActiveOnly: true, AsOf: effectiveFrom),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            var afterWorkbench = LedgerMappingWorkbenchService.Build(afterView, effectiveFrom);
+            var afterAccount = afterWorkbench.Accounts.FirstOrDefault(account => account.AccountId == request.AccountId)
+                ?? beforeAccount;
+            var audit = new LedgerMappingAssignmentAuditEventDto(
+                Guid.NewGuid(),
+                "ledger-mapping-assigned",
+                DateTimeOffset.UtcNow,
+                actor,
+                request.Rationale.Trim(),
+                string.IsNullOrWhiteSpace(request.CorrelationId) ? $"ledger-map-{assignment.AssignmentId:N}" : request.CorrelationId.Trim(),
+                request.AccountId,
+                beforeAccount.AccountCode,
+                beforeAccount.Mapping.RequiresUserMapping ? null : beforeAccount.Mapping.LedgerGroupId.Value,
+                assignment.AssignmentReference,
+                assignment.AssignmentId);
+
+            return Results.Json(
+                new LedgerMappingAssignmentResultDto(assignment, afterAccount, audit, afterWorkbench),
+                jsonOptions,
+                statusCode: StatusCodes.Status201Created);
+        })
+        .WithName("AssignLedgerMapping")
+        .Produces<LedgerMappingAssignmentResultDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
+
         group.MapGet("/graph", async (HttpContext context) =>
         {
             var service = ResolveService(context);
@@ -583,8 +677,72 @@ public static class FundStructureEndpoints
             return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.Create(fundProfileId, fundAccountId, period, templateId, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
         });
 
-        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.PendingApproval));
+        group.MapPost("/reporting/packs", (ReportPackCreateRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            return Results.Json(
+                svc.Create(request.FundProfileId, request.FundAccountId, request.Period, request.TemplateId, actor, request.LineProvenance),
+                jsonOptions,
+                statusCode: StatusCodes.Status201Created);
+        })
+        .WithName("CreateReportingPackWorkflow")
+        .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status201Created);
+
+        group.MapPost("/reporting/packs/{reportId:guid}/validate", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Validated));
+        group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.InReview));
         group.MapPost("/reporting/packs/{reportId:guid}/approve", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Approved));
+        group.MapPost("/reporting/packs/{reportId:guid}/reject", (Guid reportId, ReportPackRejectRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveAuthorizedActorAndRole(context, out var actor, out var role))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                var auditRequest = request with
+                {
+                    Actor = actor,
+                    ActorRole = role
+                };
+                return Results.Json(svc.Reject(reportId, auditRequest), statusCode: StatusCodes.Status200OK);
+            }
+            catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("RejectReportingPackWorkflow")
+        .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
         group.MapPost("/reporting/packs/{reportId:guid}/publish", (Guid reportId, ReportPackPublishRequestDto request, HttpContext context) =>
         {
             if (!HasReportingWorkflowPermission(context))
@@ -623,6 +781,39 @@ public static class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         });
+
+        group.MapPost("/reporting/packs/{reportId:guid}/restatements", (Guid reportId, ReportPackRestateRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!TryResolveAuthorizedActorAndRole(context, out var actor, out var role))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                var approver = string.IsNullOrWhiteSpace(request.Approver) ? actor : request.Approver.Trim();
+                return Results.Json(svc.Restate(reportId, actor, role, request.ReasonCode, approver, request.PriorVersionReportId, request.ChangedLines), jsonOptions);
+            }
+            catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("RestateReportingPackWorkflow")
+        .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status200OK);
+
+        group.MapPost("/reporting/packs/{reportId:guid}/archive", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Archived));
 
         group.MapPost("/reporting/packs/{reportId:guid}/restate", (Guid reportId, string reasonCode, Guid priorVersionReportId, ReportPackChangedLineDto[] changedLines, HttpContext context) =>
         {
@@ -676,6 +867,48 @@ public static class FundStructureEndpoints
         .WithName("GetFundReportPack")
         .Produces<FundReportPackSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet("/report-packs/{reportId:guid}/ledger-provenance", async (Guid reportId, string scopeKey, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<LedgerAmountProvenanceService>();
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var result = await service.GetAsync(reportId, scopeKey, context.RequestAborted).ConfigureAwait(false);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetFundReportPackLedgerProvenance")
+        .Produces<LedgerAmountProvenanceDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPost("/accounting/transaction-lab/preview", (InvestmentAccountingTransactionLabRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<InvestmentAccountingTransactionLabService>();
+            if (service is null)
+            {
+                return Results.Problem("Investment Accounting Transaction Lab service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                return Results.Json(service.Preview(request), jsonOptions);
+            }
+            catch (Exception ex) when (ex is ArgumentException or ArgumentOutOfRangeException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("PreviewInvestmentAccountingTransactionLab")
+        .Produces<InvestmentAccountingTransactionLabPreviewDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden);
     }
 
 
@@ -950,6 +1183,45 @@ public static class FundStructureEndpoints
             && expectedSchemaVersion != GovernanceReportPackContract.CurrentSchemaVersion)
         {
             error = $"expectedSchemaVersion must be {GovernanceReportPackContract.CurrentSchemaVersion}.";
+            return false;
+        }
+
+        error = string.Empty;
+        return true;
+    }
+
+    private static bool TryValidateLedgerMappingAssignmentRequest(
+        LedgerMappingAssignmentRequestDto? request,
+        out string error)
+    {
+        if (request is null)
+        {
+            error = "A request body is required.";
+            return false;
+        }
+
+        if (request.AccountId == Guid.Empty)
+        {
+            error = "accountId is required.";
+            return false;
+        }
+
+        if (!LedgerGroupId.TryCreate(request.LedgerGroupId, out var ledgerGroupId)
+            || ledgerGroupId == LedgerGroupId.Unassigned)
+        {
+            error = $"ledgerGroupId is invalid. {LedgerGroupId.ValidationMessage}";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.RequestedBy))
+        {
+            error = "requestedBy is required for ledger mapping audit evidence.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Rationale))
+        {
+            error = "rationale is required for ledger mapping audit evidence.";
             return false;
         }
 

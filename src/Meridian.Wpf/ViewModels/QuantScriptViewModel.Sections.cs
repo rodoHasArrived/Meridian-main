@@ -33,3 +33,20 @@ internal sealed class QuantScriptSelectionSectionViewModel : BindableBase
     public QuantScriptTemplateDefinition? SelectedTemplate { get => _selectedTemplate; set => SetProperty(ref _selectedTemplate, value); }
     public QuantScriptExecutionRecord? SelectedExecutionRecord { get => _selectedExecutionRecord; set => SetProperty(ref _selectedExecutionRecord, value); }
 }
+
+internal sealed class QuantScriptRunStateSectionViewModel : BindableBase
+{
+    private bool _isRunning;
+    private double _progressFraction;
+    private string _statusText = "Ready";
+    private string _elapsedText = "--";
+    private string _memoryText = "--";
+    private int _activeResultsTab;
+
+    public bool IsRunning { get => _isRunning; set => SetProperty(ref _isRunning, value); }
+    public double ProgressFraction { get => _progressFraction; set => SetProperty(ref _progressFraction, value); }
+    public string StatusText { get => _statusText; set => SetProperty(ref _statusText, value); }
+    public string ElapsedText { get => _elapsedText; set => SetProperty(ref _elapsedText, value); }
+    public string MemoryText { get => _memoryText; set => SetProperty(ref _memoryText, value); }
+    public int ActiveResultsTab { get => _activeResultsTab; set => SetProperty(ref _activeResultsTab, value); }
+}

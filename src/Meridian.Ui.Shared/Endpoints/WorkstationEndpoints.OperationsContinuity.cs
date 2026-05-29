@@ -63,6 +63,119 @@ public static partial class WorkstationEndpoints
         .Produces<OperationsApprovalPolicyMatrixDto>(200)
         .Produces(403);
 
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityApprovalPolicyRules), async (
+            OperationsApprovalPolicyRuleUpsertRequestDto? request,
+            HttpContext context,
+            [FromServices] IOperationsApprovalPolicyMatrixService? service) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations approval policy rule request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem("Operations approval policy matrix service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                var trustedRequest = request with { RequestedBy = currentUser };
+                var result = await service.UpsertRuleAsync(trustedRequest, currentUser, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("UpsertOperationsContinuityApprovalPolicyRule")
+        .Produces<OperationsApprovalPolicyRuleUpsertResultDto>(200)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendar), async (
+            Guid? fundAccountId,
+            string? periodId,
+            HttpContext context,
+            [FromServices] IOperationsCloseCalendarService? service) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem("Operations close calendar service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var calendar = await service.GetCalendarAsync(fundAccountId, periodId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(calendar, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityCloseCalendar")
+        .Produces<OperationsCloseCalendarDto>(200)
+        .Produces(403);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendarItems), async (
+            OperationsCloseCalendarItemUpsertRequestDto? request,
+            HttpContext context,
+            [FromServices] IOperationsCloseCalendarService? service) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "An operations close calendar item request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem("Operations close calendar service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                var trustedRequest = request with { RequestedBy = currentUser };
+                var result = await service.UpsertItemAsync(trustedRequest, currentUser, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("UpsertOperationsContinuityCloseCalendarItem")
+        .Produces<OperationsCloseCalendarItemUpsertResultDto>(200)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403);
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
             OperationsStartWorkflowRequestDto? request,
             HttpContext context,
@@ -113,6 +226,31 @@ public static partial class WorkstationEndpoints
             return workflow is null ? Results.NotFound() : Results.Json(workflow, jsonOptions);
         })
         .WithName("GetOperationsContinuityDetail");
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseReadiness), async (
+            Guid workflowId,
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var workflow = await service.GetAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return workflow?.CloseReadiness is null
+                ? Results.NotFound()
+                : Results.Json(workflow.CloseReadiness, jsonOptions);
+        })
+        .WithName("GetOperationsContinuityCloseReadiness")
+        .Produces<OperationsCloseReadinessDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuityTimeline), async (
             Guid workflowId,

@@ -1,8 +1,8 @@
-# UFL Direct Lending Target-State Package V2
+# UFL Direct Lending Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl direct lending target state v2** and document explicit in-scope vs out-of-scope items.
@@ -35,7 +35,7 @@ It assumes:
 - a transactional outbox for reliable downstream processing
 - a formal servicer-ingestion and revision-control layer that supports both position-level and transaction-detail servicer reporting
 
-This is a specialized, implementation-ready vertical slice beneath the broader governance and fund-ops planning set documented elsewhere in Meridian. The broad roadmap stays authoritative for overall sequencing; this blueprint makes the direct-lending target state concrete.
+This is a specialized, implementation-ready vertical slice beneath the broader governance and fund-ops planning set documented elsewhere in Meridian. The broad roadmap stays authoritative for overall sequencing; this profile makes the direct-lending target state concrete while mapping its deeper behavior back to the shared UFL capability model.
 
 ## Repo Fit
 
@@ -75,6 +75,80 @@ The current Meridian baseline now includes:
 - active validation coverage in `tests/Meridian.DirectLending.Tests/`, `tests/Meridian.Tests/Application/DirectLendingServiceTests.cs`, and `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`.
 
 Use this document as a target-state package that extends the baseline above rather than replacing it.
+
+## Evidence Boundary
+
+### Implemented
+
+- Direct-lending endpoints exist in `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs` across contracts, servicing, projections, cash/allocation reads, fees, write-offs, prepayment penalties, journals, reconciliation, servicer reports, rebuild checkpoints, portfolio summary, and full rebuild operations.
+- Service and orchestration layers exist in `src/Meridian.Application/DirectLending/` with command metadata ingestion, event-lineage writes, projection workflows, outbox dispatch, and rebuild support.
+- PostgreSQL-backed stores and migration runner support exist in `src/Meridian.Storage/DirectLending/`.
+- DTOs and options exist in `src/Meridian.Contracts/DirectLending/`.
+- Validation coverage exists in `tests/Meridian.DirectLending.Tests/`, `tests/Meridian.Tests/Application/DirectLendingServiceTests.cs`, and `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`.
+
+### Partially Implemented
+
+- Direct lending is the deepest UFL vertical and reaches into L3/L4 behavior, but full L5 accounting/reconciliation hardening still depends on outbox workers, period controls, reconciliation closure, and production-grade evidence packets.
+- Sharpino-backed aggregates remain target-state; the current implementation uses the existing Meridian direct-lending service and storage shape.
+
+### Target-State Only
+
+- Full Sharpino write-model migration.
+- Complete async worker orchestration for projection, journals, reconciliation, and servicer ingestion.
+- Production hardening for period locks, close controls, dead-letter handling, and audit-ready L5 evidence.
+
+### Explicitly Out of Scope
+
+- Syndication.
+- Participations.
+- Impairment/ECL.
+- Complex restructuring.
+- Full multi-currency.
+- Non-direct-lending asset classes.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.DirectLoan` and direct-lending contracts exist. | keep canonical loan identity aligned with UFL profile metadata | F# validation and contract tests |
+| IssuerOrCounterparty | L3 partial | borrower/counterparty data flows through direct-lending contracts and stores. | stronger borrower/counterparty evidence and controls | storage/integration tests |
+| TermsVersioning | L3 partial | command metadata, event lineage, and projection workflows exist. | stricter version compatibility and Sharpino migration path | event/rebuild tests |
+| CashFlowSchedule | L3 partial | projection workflows and projected cash-flow concepts exist. | immutable projection engine hardening | projection integration tests |
+| AccrualConvention | L3 partial | accrual and servicing behavior are in the vertical slice. | period-aware accrual controls | accrual/period-control tests |
+| AccountingImpact | L4 partial | journals and reconciliation endpoints are part of the current baseline. | L5 close/reconciliation hardening and evidence packets | journal/reconciliation tests |
+| ProjectionRebuild | L3 partial | rebuild checkpoints and full rebuild operations exist. | common UFL projection metadata alignment | rebuild/checkpoint tests |
+| WorkstationControl | L4 partial | workstation endpoint and workflow support exists. | operator close controls and rollback evidence | workstation workflow tests |
+
+## Current Maturity
+
+`L3/L4 partial`: direct lending has implemented projection, rebuild, endpoint, storage, and operational workflow evidence beyond most UFL assets. It should be treated as the exemplar for deep vertical operations, not as the minimum template for reference-heavy assets. L5 remains target-state until accounting/reconciliation close controls and evidence packets are fully validated.
+
+## Next Milestone Contract
+
+**Goal:** advance direct lending toward L5 by hardening outbox workers, period-aware accounting controls, reconciliation closure, and evidence packets over the existing implementation baseline.
+
+**Files likely touched:**
+
+- `src/Meridian.Application/DirectLending/`
+- `src/Meridian.Storage/DirectLending/`
+- `src/Meridian.Contracts/DirectLending/`
+- `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs`
+- `tests/Meridian.DirectLending.Tests/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- integration tests for projection rebuild from event lineage.
+- journal and period-control tests.
+- reconciliation endpoint and persistence tests.
+- servicer-ingestion and outbox metadata tests.
+- docs/status evidence packet for any L5 claim.
+
+**Exit criteria:** L5 is not claimed until journals, period controls, reconciliation, reporting evidence, and replay behavior are proven together.
+
+## Provider Payload Boundary
+
+Servicer files and provider payloads may be retained as source evidence. Direct-lending workflows must consume canonical loan identity, contract terms, accepted servicing revisions, projection runs, and reconciliation records before any journal or reporting effect.
 
 ## Scope
 

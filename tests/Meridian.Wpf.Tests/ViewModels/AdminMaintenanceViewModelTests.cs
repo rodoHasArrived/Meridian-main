@@ -1,5 +1,7 @@
 using Meridian.Ui.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
@@ -37,12 +39,17 @@ public sealed class AdminMaintenanceViewModelTests
         viewModel.CleanupSizeText.Should().Be("2.0 KB");
         viewModel.CleanupReadinessTitle.Should().Be("Cleanup preview ready");
         viewModel.CleanupReadinessScope.Should().Contain("2 file(s) staged");
+        viewModel.CleanupReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
+        viewModel.CleanupReadinessState.EvidenceText.Should().Contain("2 file(s) staged");
+        viewModel.CleanupReadinessState.Tone.Should().Be(WorkspaceTone.Success);
         viewModel.CanExecuteCleanup.Should().BeTrue();
         viewModel.RequestExecuteCleanupCommand.CanExecute(null).Should().BeTrue();
 
         viewModel.RequestExecuteCleanupCommand.Execute(null);
 
         viewModel.IsCleanupConfirmationVisible.Should().BeTrue();
+        viewModel.CleanupReadinessState.ReadinessTone.Should().Be(WorkstationReadinessTone.SignoffRequired);
+        viewModel.CleanupReadinessState.ActionText.Should().Be("Confirm delete");
         viewModel.ConfirmExecuteCleanupCommand.CanExecute(null).Should().BeTrue();
 
         viewModel.CancelExecuteCleanupCommand.Execute(null);
@@ -87,6 +94,8 @@ public sealed class AdminMaintenanceViewModelTests
         viewModel.CanExecuteCleanup.Should().BeFalse();
         viewModel.CleanupItems.Should().BeEmpty();
         viewModel.CleanupReadinessTitle.Should().Be("Cleanup complete");
+        viewModel.CleanupReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
+        viewModel.CleanupReadinessState.ActionText.Should().Be("Preview cleanup");
         viewModel.CleanupReadinessDetail.Should().Contain("1 file(s) were deleted");
         viewModel.StatusTitle.Should().Be("Success");
     }
@@ -132,6 +141,9 @@ public sealed class AdminMaintenanceViewModelTests
         viewModel.ScheduleReadinessDetail.Should().Contain("weekly on Saturday at 3 AM");
         viewModel.ScheduleOperationSummary.Should().Contain("Compress older files");
         viewModel.ScheduleOperationSummary.Should().Contain("migrate to archive tier");
+        viewModel.ScheduleReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);
+        viewModel.ScheduleReadinessState.Tone.Should().Be(WorkspaceTone.Success);
+        viewModel.ScheduleReadinessState.EvidenceText.Should().Contain("migrate to archive tier");
         viewModel.CanSaveSchedule.Should().BeTrue();
         viewModel.SaveScheduleCommand.CanExecute(null).Should().BeTrue();
     }
@@ -156,6 +168,9 @@ public sealed class AdminMaintenanceViewModelTests
         viewModel.SaveScheduleCommand.CanExecute(null).Should().BeFalse();
         viewModel.ScheduleReadinessTitle.Should().Be("Schedule needs an operation");
         viewModel.ScheduleOperationSummary.Should().Be("Operations: none selected");
+        viewModel.ScheduleReadinessState.Kind.Should().Be(WorkstationStateKind.Blocked);
+        viewModel.ScheduleReadinessState.Tone.Should().Be(WorkspaceTone.Warning);
+        viewModel.ScheduleReadinessState.ActionText.Should().Be("Complete schedule");
         viewModel.StatusTitle.Should().Be("Schedule incomplete");
     }
 
@@ -194,15 +209,19 @@ public sealed class AdminMaintenanceViewModelTests
         var codeBehind = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\AdminMaintenancePage.xaml.cs"));
 
         xaml.Should().Contain("AutomationProperties.AutomationId=\"AdminMaintenanceScheduleReadiness\"");
-        xaml.Should().Contain("Text=\"{Binding ScheduleReadinessTitle}\"");
-        xaml.Should().Contain("Text=\"{Binding ScheduleReadinessDetail}\"");
-        xaml.Should().Contain("Text=\"{Binding ScheduleOperationSummary}\"");
+        xaml.Should().Contain("workstation:WorkstationStatePanelControl");
+        xaml.Should().Contain("State=\"{Binding ScheduleReadinessState}\"");
+        xaml.Should().Contain("TitleAutomationId=\"AdminMaintenanceScheduleReadinessTitle\"");
+        xaml.Should().Contain("DetailAutomationId=\"AdminMaintenanceScheduleReadinessDetail\"");
+        xaml.Should().Contain("EvidenceAutomationId=\"AdminMaintenanceScheduleOperationSummary\"");
         xaml.Should().Contain("Command=\"{Binding SaveScheduleCommand}\"");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"AdminMaintenanceSaveScheduleButton\"");
         xaml.Should().Contain("AutomationProperties.Name=\"Admin maintenance cleanup readiness\"");
-        xaml.Should().Contain("Text=\"{Binding CleanupReadinessTitle}\"");
-        xaml.Should().Contain("Text=\"{Binding CleanupReadinessDetail}\"");
-        xaml.Should().Contain("Text=\"{Binding CleanupReadinessScope}\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"AdminMaintenanceCleanupReadiness\"");
+        xaml.Should().Contain("State=\"{Binding CleanupReadinessState}\"");
+        xaml.Should().Contain("TitleAutomationId=\"AdminMaintenanceCleanupReadinessTitle\"");
+        xaml.Should().Contain("DetailAutomationId=\"AdminMaintenanceCleanupReadinessDetail\"");
+        xaml.Should().Contain("EvidenceAutomationId=\"AdminMaintenanceCleanupReadinessScope\"");
         xaml.Should().Contain("Command=\"{Binding PreviewCleanupCommand}\"");
         xaml.Should().Contain("Command=\"{Binding RequestExecuteCleanupCommand}\"");
         xaml.Should().Contain("Visibility=\"{Binding IsCleanupConfirmationVisible");

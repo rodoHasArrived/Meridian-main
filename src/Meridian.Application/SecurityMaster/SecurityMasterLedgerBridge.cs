@@ -92,6 +92,11 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     posted++;
                     break;
 
+                case "PrincipalPaydown" or "FactorPaydown" or "FactorReduction" when action.DistributionRatio.HasValue:
+                    PostFactorPaydown(ledger, action, normalizedTicker, ts, meta);
+                    posted++;
+                    break;
+
                 default:
                     _logger.LogDebug(
                         "SecurityMasterLedgerBridge: skipping unhandled event type {EventType} for {Ticker}",
@@ -180,6 +185,31 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     LedgerAccounts.Cash, amount, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
                     LedgerAccounts.CorpActionDistribution(ticker), 0m, amount, description),
+            ],
+            meta);
+
+        ledger.Post(entry);
+    }
+
+    private static void PostFactorPaydown(
+        DomainLedger ledger,
+        CorporateActionDto action,
+        string ticker,
+        DateTimeOffset ts,
+        JournalEntryMetadata meta)
+    {
+        var amount = action.DistributionRatio!.Value;
+        var description = $"Principal paydown {ticker} ex {action.ExDate:yyyy-MM-dd} factor delta {amount:N6}";
+
+        var entry = new JournalEntry(
+            action.CorpActId,
+            ts,
+            description,
+            [
+                new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
+                    LedgerAccounts.Cash, amount, 0m, description),
+                new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
+                    LedgerAccounts.Securities(ticker), 0m, amount, description),
             ],
             meta);
 

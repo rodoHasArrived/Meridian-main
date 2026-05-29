@@ -1,14 +1,14 @@
 # Meridian Current Direction And Status
 
-**Last Reviewed:** 2026-05-27
+**Last Reviewed:** 2026-05-29
 
 ## Current Planning TODOs
 
-- [ ] Keep desktop acceptance matrix rows as the delivery unit for W2/W3/W4 desktop slices: lane, scenario, shared-contract check, and focused test evidence.
-- [ ] Prioritize high-traffic page-body workflow outcomes (run -> portfolio -> ledger -> reconciliation and casework/sign-off/reporting) over additional shell framing work.
-- [ ] Keep support evidence and exit claims separate in roadmap/status updates; do not mark exits from support-only proofs.
-- [ ] Keep browser and desktop parity checks coupled to shared endpoint/read-model payloads for every desktop workflow change.
-- [ ] Keep Wave 2 cockpit reliability as the active release gate; do not widen live-readiness language until Lane A criteria stay continuously green.
+- [ ] Preserve W1-W4 as closed evidence baselines; new governance work must be scoped as maintenance, hardening, or W5/W6 prerequisite evidence rather than reopening W4.
+- [ ] Keep desktop acceptance matrix rows as the regression unit for W2/W3/W4 desktop slices: lane, scenario, shared-contract check, and focused test evidence.
+- [ ] Prioritize W5 Backtest Studio planning and W6 live-readiness prerequisites without widening live-readiness language beyond the existing read-only/paper-first constraints.
+- [ ] Keep browser and desktop parity checks coupled to shared endpoint/read-model payloads for every governance maintenance change.
+- [ ] Keep support evidence and exit claims separate in roadmap/status updates; W4 is closed only by the 2026-05-29 close/report acceptance packet, not by unrelated support-only proofs.
 - [ ] Re-run structured roadmap/source stale-doc and hash checks after docs or source ownership changes.
 
 **Role:** Single planning entry point for current direction, project status, and document roles.
@@ -46,9 +46,9 @@ Wave status labels and target dates are canonical in [`../status/PROGRAM_STATE.m
 | W1 Provider confidence and checkpoint evidence | Done | Repo-closed trust gate. Keep DK1 packet, provider matrix, checkpoint, and evidence docs synchronized when provider evidence changes. |
 | W2 Paper-trading cockpit | Done | Closed in the 2026-05-27 evidence slice: shared W2 readiness/operator-inbox tests, browser Trading parity tests, focused WPF Lane A tests, and pilot `TrustedData`, `PaperPromotion`, and `PaperSession` gates are green. |
 | W3 Shared run / portfolio / ledger continuity | Done | Closed in the 2026-05-27 evidence slice: shared brokerage/continuity/pilot tests, focused WPF portfolio/accounting/cash-flow tests, browser route/API parity tests, and pilot `ResearchRun`, `RunComparison`, `PortfolioLedgerReview`, and `Reconciliation` gates are green. |
-| W4 Governance and fund operations | In Progress | Critical path. Security Master baseline and reconciliation/report-pack support exist; durable casework, sign-off, close/report lifecycle, and provenance still need end-to-end acceptance evidence. |
-| W5 Backtest Studio unification | Planned | Later wave. Do not pull forward ahead of W2-W4 unless the roadmap explicitly changes. |
-| W6 Live integration readiness | Planned | Later wave. Keep read-only/paper-first defaults until trust, paper, reconciliation, and promotion gates are materially closed. |
+| W4 Governance and fund operations | Done | Closed in the 2026-05-29 evidence slice: shared W4 operations-continuity and report-pack endpoint tests, `FundOpsCloseLaneScenarioTests`, browser W4 parity tests, focused WPF `Category=W4Acceptance` tests, and `PilotAcceptanceHarnessTests` make `TrustedData`, `PortfolioLedgerReview`, `Reconciliation`, and `GovernedReportPack` green with W4 acceptance evidence for casework, close checklist, reporting approval, publication, restatement readiness, and evidence-vault support. |
+| W5 Backtest Studio unification | Planned | Next planned wave after the closed W1-W4 baselines. Do not pull live-readiness work forward under W5 unless the roadmap explicitly changes. |
+| W6 Live integration readiness | Planned | Later wave. Keep read-only/paper-first defaults; W6 still needs explicit live-readiness acceptance despite closed W1-W4 gates. |
 | Optional advanced tracks | Optional | L3, performance, scale-out, advanced research, and similar work should not compete with the core operator-ready path. |
 
 Current acceleration evidence: `PilotAcceptanceHarnessTests` is the canonical executable harness
@@ -57,8 +57,7 @@ for the golden path from trusted data through governed report pack. A passing ru
 `artifacts/pilot-acceptance/latest/pilot-readiness.md` with eight stage gates, blockers, evidence
 IDs, ledger references, and validation text. `.github/workflows/golden-path-validation.yml` now
 turns that harness into a repeatable acceptance lane and uploads the generated readiness dashboard
-as `pilot-acceptance-evidence`. This advances support evidence for W2-W4; it does not by itself
-close operator acceptance, live readiness, desktop/browser parity, mobile, W5, or W6.
+as `pilot-acceptance-evidence`. As of the 2026-05-29 W4 closure slice, this harness is the acceptance packet for the W4 close/report gate when paired with the shared endpoint, browser parity, and WPF Lane C filters listed below; it still does not close live readiness, mobile, W5, or W6.
 
 2026-05-27 W2/W3 closure evidence: the current implementation slice repaired the shared
 W2/W3 compile and contract drift, reran the build-enabled shared acceptance filter
@@ -96,8 +95,8 @@ environment, warning, and trust-snapshot refresh state into Data and Settings. S
 backend actions now mark GET endpoints as browser-openable and POST validation/preview/backtest
 commands as reference-only, and Reporting export commands carry abort signals so superseded profile
 exports cannot publish stale status under the wrong selection. These reduce operator confusion and
-late-response races, but they do not close W2 cockpit acceptance, W3 continuity, W4 report-pack
-lifecycle, Backtest Studio, or live-readiness gates.
+late-response races. They preserve the closed W2 cockpit and W3 continuity baselines, but they do
+not close W4 report-pack lifecycle, Backtest Studio, or live-readiness gates.
 
 May 20 hardening evidence remains support evidence: brokerage order placement fails closed without
 required validation/sign-off artifacts, ledger and promotion write routes have explicit
@@ -116,9 +115,39 @@ matrix, and roadmap/source documentation truth now flows through structured regi
 stale-doc and hash validation. These improve execution control, shared-contract discipline, and
 documentation freshness, but they do not change W2-W4 status labels.
 
-W2/W3/W4 claim discipline: every new roadmap or status claim for these waves must either map to a
-`pilot-readiness.*` stage gate that turns green in the latest harness output or name the blocker in
-that stage gate's `blockers` list. The current stage mapping is:
+May 28 support evidence confirms that active acceptance has shifted to W4 rather than reopening
+W2/W3. Shared/browser/source-route checks now cover operations-continuity close workflow routes,
+reconciliation casework, fund-operations workspace reads, report-pack workflow/provenance, Security
+Master endpoint mapping, fund-structure report-pack and cash-flow endpoints, browser
+Accounting/Reporting W4 parity, `FundOpsCloseLaneScenarioTests`, and `PilotAcceptanceHarnessTests`.
+Additional support slices add Explain-the-Break parity, Investment Accounting Transaction Lab
+previews, report restatement review, richer run comparison and portfolio drill-in support, shared
+workflow route parity, and screenshot/evidence wrong-route validation. These preserve W2/W3 and
+advance W4 support; they do not close W4 until Lane C close/case/report/evidence acceptance is
+green, including the build-backed WPF lane.
+
+May 29 documentation review: Security Master custom-asset profile governance now has shared
+promotion-candidate assessment support through `SecurityAssetProfileGovernanceService`,
+`SecurityAssetProfilePromotionCandidateDto`, and
+`/api/security-master/asset-profiles/promotion-candidates`. Treat this as W4/UFL support evidence
+for identifying profile-backed assets that may justify a first-class package; actual package
+graduation, operator promotion workflow, indexed profile-field projections, and broader acceptance
+remain open.
+
+
+2026-05-29 W4 closure evidence: governance/fund-operations close is now a closed baseline. The
+acceptance packet consists of `PilotAcceptanceHarnessTests` proving all eight pilot stage gates ready
+and `w4Acceptance.isDone=true`; `FundOpsCloseLaneScenarioTests` proving the close lane from broker
+import/normalization through checklist, reconciliation, approval, close, and reopen; shared endpoint
+coverage in `WorkstationEndpointsTests.Wave4`; browser parity through `npm --prefix
+src/Meridian.Ui/dashboard run test:w4`; and focused retained-desktop coverage through
+`dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "Category=W4Acceptance"
+/p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true`. Treat future close/report work as W4
+maintenance unless it explicitly belongs to W5 Backtest Studio or W6 live-readiness prerequisites.
+
+W2/W3/W4 claim discipline: these waves are closed baselines. Every new roadmap or status claim for
+these waves must either preserve a `pilot-readiness.*` stage gate that remains green in the latest
+harness output or name the regression blocker in that stage gate's `blockers` list. The current stage mapping is:
 
 | Wave | Pilot-readiness stage gate(s) that can support a claim | If not green, record blocker there |
 | --- | --- | --- |
@@ -129,10 +158,9 @@ that stage gate's `blockers` list. The current stage mapping is:
 Desktop/WPF workflow claims also must map to
 [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md). That matrix
 is the desktop acceptance filter for Lane A W2 cockpit reliability, Lane B W3 run -> portfolio ->
-ledger continuity, and Lane C W4 reconciliation/governance close flow. It requires a shared
+ledger continuity, and Lane C W4 reconciliation/governance close regression flow. It requires a shared
 contract/read-model check, focused WPF evidence, browser parity or an explicit mismatch blocker, and
-the matching pilot-readiness stage posture before any desktop slice is described as accepted.
-Treat support evidence separately from exit claims and keep claims scoped to the exact matrix scenario.
+the matching pilot-readiness stage posture before any desktop slice is described as preserving the accepted baseline. Treat support evidence separately from exit claims and keep claims scoped to the exact matrix scenario.
 
 ## Active Planning Set
 
@@ -146,10 +174,11 @@ These documents define current direction and should be read in this order:
 | [`../roadmap/README.md`](../roadmap/README.md), [`../source/README.md`](../source/README.md) | Structured roadmap and source-documentation registries; edit data/renderers rather than generated outputs. |
 | [`README.md`](README.md) | Active plan index and role classification for every plan file in `docs/plans/`. |
 | [`evidence-backed-investment-operations-plan.md`](evidence-backed-investment-operations-plan.md) | Product-category filter and archive rule for the evidence-backed investment-operations direction. |
+| [`sfo-mvp-implementation-design.md`](sfo-mvp-implementation-design.md) | Single-family-office MVP scope, core concept model, workspace mapping, and out-of-scope guardrails. |
 | [`meridian-6-week-roadmap.md`](meridian-6-week-roadmap.md) | Short-horizon execution slice for W2-W4 plus trust-gate maintenance. |
-| [`wave-implementation-checklists.md`](wave-implementation-checklists.md) | Current concrete TODO ledger for W1 maintenance and W2-W4 blocker closure. |
+| [`wave-implementation-checklists.md`](wave-implementation-checklists.md) | Current concrete TODO ledger for W1 maintenance, W2/W3 baseline preservation, and W4 blocker closure. |
 | [`desktop-ui-workflow-acceptance-matrix.md`](desktop-ui-workflow-acceptance-matrix.md) | Desktop/WPF workflow acceptance matrix for W2 cockpit, W3 continuity, and W4 governance lanes, including shared checks, focused WPF tests, browser parity, and release blockers. |
-| [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for the active W2-W4 path. |
+| [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) | Owner lanes, dependencies, and exit criteria for the closed W2/W3 baselines and active W4 path. |
 | [`web-ui-development-pivot.md`](web-ui-development-pivot.md) | Browser workstation foundation, shared-surface rules, and desktop/browser coexistence history. |
 | [`meridian-pilot-workflow.md`](meridian-pilot-workflow.md) | Golden-path productization filter: trusted data to governed report pack. |
 | [`paper-trading-cockpit-reliability-sprint.md`](paper-trading-cockpit-reliability-sprint.md) | Wave 2 reliability contract for readiness, replay, controls, and promotion. |
@@ -163,7 +192,7 @@ These documents define current direction and should be read in this order:
 These plans remain useful, but they are not current readiness drivers unless the roadmap explicitly pulls them forward:
 
 - Backtest Studio and research acceleration plans are Wave 5 material.
-- UFL target-state packages are active reference designs for asset coverage and Security Master depth, not readiness-closure documents.
+- UFL asset profiles are active reference designs for asset coverage and Security Master depth, not readiness-closure documents.
 - Options, portfolio-level backtesting, database, runbook registry, kernel parity, L3 inference, QuantScript multi-instance, and assembly-performance plans are technical or later-wave references.
 - Commercial package names such as Meridian Evidence OS, Report Factory, Controls, PaperOps, and FundOps are positioning language until their shared contracts, browser workflows, evidence retention, and governed outputs are accepted.
 
@@ -184,4 +213,4 @@ Before a planning doc marks a slice as complete, verify that it has the evidence
 - W2: readiness endpoint behavior, replay freshness, operator-inbox routing, promotion/checkpoint gates, Lane A desktop acceptance evidence, and browser parity evidence from shared payloads.
 - W3: shared run, portfolio, ledger, brokerage/account, reconciliation, and evidence-packet continuity across the seven-workspace path.
 - W4: reconciliation casework, approval/sign-off, report-pack lifecycle, provenance, and governed output evidence.
-- W5/W6: only after W2-W4 gates stop being speculative blockers.
+- W5/W6: only after active W4 gates stop being speculative blockers and W2/W3 preservation evidence stays green.

@@ -50,6 +50,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private readonly NotebookExecutionSession _session = new();
     private readonly QuantScriptCollectionsSectionViewModel _collectionsSection = new();
     private readonly QuantScriptSelectionSectionViewModel _selectionSection = new();
+    private readonly QuantScriptRunStateSectionViewModel _runStateSection = new();
     private DispatcherTimer? _elapsedTimer;
     private System.Diagnostics.Stopwatch? _runStopwatch;
     private FileSystemWatcher? _fileWatcher;
@@ -65,16 +66,11 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private DateTime _toDate = DateTime.Today;
     private string _selectedInterval = "Daily (Custom)";
     private string _scriptSource = string.Empty;
-    private bool _isRunning;
     private bool _isDirty;
-    private double _progressFraction;
-    private string _statusText = "Ready";
-    private string _elapsedText = "--";
-    private string _memoryText = "--";
-    private int _activeResultsTab;
 
     internal QuantScriptCollectionsSectionViewModel CollectionsSection => _collectionsSection;
     internal QuantScriptSelectionSectionViewModel SelectionSection => _selectionSection;
+    internal QuantScriptRunStateSectionViewModel RunStateSection => _runStateSection;
 
     public QuantScriptViewModel(
         IScriptRunner runner,
@@ -307,11 +303,16 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     public bool IsRunning
     {
-        get => _isRunning;
+        get => RunStateSection.IsRunning;
         private set
         {
-            if (!SetProperty(ref _isRunning, value))
+            if (RunStateSection.IsRunning == value)
+            {
                 return;
+            }
+
+            RunStateSection.IsRunning = value;
+            RaisePropertyChanged();
 
             RaisePropertyChanged(nameof(CanRun));
             RaisePropertyChanged(nameof(CanDeleteCell));
@@ -319,12 +320,52 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
     }
 
-    public double ProgressFraction { get => _progressFraction; private set => SetProperty(ref _progressFraction, value); }
-    public string StatusText { get => _statusText; private set => SetProperty(ref _statusText, value); }
-    public string ElapsedText { get => _elapsedText; private set => SetProperty(ref _elapsedText, value); }
-    public string MemoryText { get => _memoryText; private set => SetProperty(ref _memoryText, value); }
+    public double ProgressFraction
+    {
+        get => RunStateSection.ProgressFraction;
+        private set => SetRunStateSectionProperty(RunStateSection.ProgressFraction, number => RunStateSection.ProgressFraction = number, value);
+    }
+
+    public string StatusText
+    {
+        get => RunStateSection.StatusText;
+        private set => SetRunStateSectionProperty(RunStateSection.StatusText, text => RunStateSection.StatusText = text, value);
+    }
+
+    public string ElapsedText
+    {
+        get => RunStateSection.ElapsedText;
+        private set => SetRunStateSectionProperty(RunStateSection.ElapsedText, text => RunStateSection.ElapsedText = text, value);
+    }
+
+    public string MemoryText
+    {
+        get => RunStateSection.MemoryText;
+        private set => SetRunStateSectionProperty(RunStateSection.MemoryText, text => RunStateSection.MemoryText = text, value);
+    }
+
     public bool CanRun => !IsRunning && SelectedCell is not null;
-    public int ActiveResultsTab { get => _activeResultsTab; set => SetProperty(ref _activeResultsTab, value); }
+    public int ActiveResultsTab
+    {
+        get => RunStateSection.ActiveResultsTab;
+        set => SetRunStateSectionProperty(RunStateSection.ActiveResultsTab, tab => RunStateSection.ActiveResultsTab = tab, value);
+    }
+
+    private bool SetRunStateSectionProperty<T>(
+        T current,
+        Action<T> apply,
+        T value,
+        [System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(current, value))
+        {
+            return false;
+        }
+
+        apply(value);
+        RaisePropertyChanged(propertyName);
+        return true;
+    }
 
     public IAsyncRelayCommand RunScriptCommand { get; }
     public IAsyncRelayCommand RunAllCommand { get; }

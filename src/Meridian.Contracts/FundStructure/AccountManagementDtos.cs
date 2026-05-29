@@ -15,7 +15,9 @@ public sealed record AccountBalanceSnapshotDto(
     decimal? PendingSettlement,
     string Source,
     DateTimeOffset RecordedAt,
-    string? ExternalReference);
+    string? ExternalReference,
+    decimal? UnrealizedPnl = null,
+    decimal? RealizedPnl = null);
 
 /// <summary>A single position line from a custodian statement.</summary>
 public sealed record CustodianPositionLineDto(
@@ -63,7 +65,9 @@ public sealed record RecordAccountBalanceSnapshotRequest(
     decimal? SecuritiesMarketValue = null,
     decimal? AccruedInterest = null,
     decimal? PendingSettlement = null,
-    string? ExternalReference = null);
+    string? ExternalReference = null,
+    decimal? UnrealizedPnl = null,
+    decimal? RealizedPnl = null);
 
 /// <summary>Request to ingest a custodian position statement.</summary>
 public sealed record IngestCustodianStatementRequest(

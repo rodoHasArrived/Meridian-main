@@ -1,8 +1,8 @@
-# UFL Cash Sweep Target-State Package V2
+# UFL Cash Sweep Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl cash sweep target state v2** and document explicit in-scope vs out-of-scope items.
@@ -31,6 +31,74 @@ It assumes:
 - downstream treasury and governance services querying canonical projections
 
 This package turns the existing `CashSweepTerms` support into an implementation-ready plan for cash-sweep reference data, operational views, and APIs.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.CashSweep` and `CashSweepTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"CashSweep"` asset class.
+- Security Master validation enforces nonblank program name, nonblank sweep vehicle type, and nonnegative yield rate when present.
+- `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs` verifies basic create support for cash-sweep instruments.
+
+### Partially Implemented
+
+- Canonical terms and create-path projection exist through Security Master, but cash-sweep reference endpoints, routing projections, cutoff projections, yield projections, and program-grouping views are not evidenced as delivered in this package.
+
+### Target-State Only
+
+- Routing and target-account projections.
+- Yield-history and operational cutoff projections.
+- Sweep-program grouping views.
+- Cash-sweep-specific query contracts and endpoints.
+
+### Explicitly Out of Scope
+
+- Broker-specific operational connectors.
+- Intraday cash-forecast engines.
+- Money-market-fund internals beyond referenced sweep vehicles.
+- Generalized cash-allocation optimization.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.CashSweep`, terms, mapping, validation, and basic create test exist. | keep canonical sweep-program identity aligned with Security Master profile metadata | F# validation and C# mapping tests |
+| IssuerOrCounterparty | L0 | none named as delivered. | optional institution or program sponsor linkage when needed | reference/projection tests |
+| Lifecycle | L0 | target-state only. | active, restricted, suspended, inactive, and cutoff-sensitive lifecycle state | lifecycle projection tests |
+| CashFlowSchedule | L0 | target-state only. | sweep frequency and expected cash-movement metadata | projection tests |
+| ProjectionRebuild | L1 partial | shared Security Master projection path exists. | asset-scoped routing, yield, cutoff, and grouping projections with rebuild metadata | rebuild/checkpoint tests |
+| WorkstationControl | L0 | target-state only. | treasury and governance review of sweep status, cutoff, and yield evidence | workstation endpoint tests |
+| AccountingImpact | L0 | target-state only. | approved accounting-impact handoff for sweep cash movements | reconciliation/accounting tests |
+
+## Current Maturity
+
+`L1 partial`: canonical cash-sweep terms, mapping, validation, and basic create support exist. L2/L3 maturity requires stable reference reads plus rebuild-safe routing, yield, cutoff, and grouping projections.
+
+## Next Milestone Contract
+
+**Goal:** advance cash sweeps toward L2/L3 by adding canonical reference reads and rebuildable routing, yield, cutoff, and program-grouping projections.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/SecurityMaster/`
+- `src/Meridian.Contracts/SecurityMaster/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation tests for required program and sweep-vehicle fields.
+- endpoint contract tests for cash-sweep reference reads.
+- projection/rebuild tests proving routing, yield, cutoff, and grouping metadata survive replay.
+- provider-payload isolation tests proving downstream views consume canonical terms.
+
+**Exit criteria:** cash-sweep consumers can query canonical sweep-program reference data and cite projection metadata without depending on broker payload shape.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as import evidence, but cash-sweep workflows must consume canonical Security Master terms, aliases, routing projections, yield projections, and rebuild metadata.
 
 ## Repo Fit
 
@@ -343,6 +411,6 @@ Meridian treats a cash-sweep program as a canonical treasury identity with expla
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
