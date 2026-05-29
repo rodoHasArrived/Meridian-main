@@ -19,9 +19,17 @@ python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary
 ```
 
 Each checklist row has a stable `desktop-screen-*` ID, root workspace, implementation status,
-source evidence paths, workflow coverage, and the narrow validation command to run when that screen
-changes. Desktop workflow steps can reference those IDs with `blueprintChecklistIds` so screenshot
-and manual automation stay traceable back to the blueprint.
+maturity label, source evidence paths, workflow coverage, and the narrow validation command to run
+when that screen changes. Desktop workflow steps can reference those IDs with
+`blueprintChecklistIds` so screenshot and manual automation stay traceable back to the blueprint.
+
+Maturity labels use a controlled vocabulary: `Ready`, `Active but partial`,
+`Fixture/demo-backed`, `UI shell only`, `TBI`, and `Needs verification`. Every maturity label must
+name evidence from at least one permitted source: WPF view-model/service implementation under
+`src/Meridian.Wpf/`, shared endpoint/read-model contracts under `src/Meridian.Ui.Services/` or
+`src/Meridian.Ui.Shared/`, focused tests under `tests/`, acceptance evidence under `docs/status/`
+or `artifacts/`, or screenshots under `docs/screenshots/desktop/`. Do not treat the existence of a
+XAML page alone as maturity evidence.
 
 The design target is an institutional workstation:
 
