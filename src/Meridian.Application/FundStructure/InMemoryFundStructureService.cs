@@ -595,6 +595,7 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
                 EffectiveTo = request.EffectiveTo,
                 Notes = request.Notes
             };
+            ValidateOwnershipLinkMutationLocked(updated, existing.OwnershipLinkId);
             _ownershipLinks[updated.OwnershipLinkId] = updated;
             RebuildOwnershipProjectionsLocked();
             result = (updated, CaptureSnapshotLocked());
@@ -673,17 +674,7 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
                 throw new InvalidOperationException("Replacement expiration cannot be earlier than the replaced link's effective-from timestamp.");
             }
 
-            _ownershipLinks[existing.OwnershipLinkId] = existing with { EffectiveTo = replacedEffectiveTo };
-            if (parentKind == FundStructureNodeKindDto.Account)
-            {
-                _linkedAccountIds.Add(request.ParentNodeId);
-            }
-
-            if (childKind == FundStructureNodeKindDto.Account)
-            {
-                _linkedAccountIds.Add(request.ChildNodeId);
-            }
-
+            var expired = existing with { EffectiveTo = replacedEffectiveTo };
             var replacement = new OwnershipLinkDto(
                 request.ReplacementOwnershipLinkId,
                 request.ParentNodeId,
@@ -694,6 +685,28 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
                 request.EffectiveFrom,
                 EffectiveTo: null,
                 request.Notes);
+
+            var existingLinksForValidation = _ownershipLinks.Values
+                .Select(link => link.OwnershipLinkId == existing.OwnershipLinkId ? expired : link)
+                .ToList();
+            ValidateOwnershipLinkMutationLocked(
+                replacement,
+                replacement.OwnershipLinkId,
+                existingLinksForValidation,
+                parentKind,
+                childKind);
+
+            _ownershipLinks[existing.OwnershipLinkId] = expired;
+            if (parentKind == FundStructureNodeKindDto.Account)
+            {
+                _linkedAccountIds.Add(request.ParentNodeId);
+            }
+
+            if (childKind == FundStructureNodeKindDto.Account)
+            {
+                _linkedAccountIds.Add(request.ChildNodeId);
+            }
+
             _ownershipLinks[replacement.OwnershipLinkId] = replacement;
             RebuildOwnershipProjectionsLocked();
             result = (replacement, CaptureSnapshotLocked());
@@ -3676,6 +3689,37 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         {
             throw new InvalidOperationException($"Entity {entityId} was not found.");
         }
+    }
+
+
+    private void ValidateOwnershipLinkMutationLocked(
+        OwnershipLinkDto candidate,
+        Guid linkIdBeingMutated,
+        IReadOnlyCollection<OwnershipLinkDto>? existingLinksOverride = null,
+        FundStructureNodeKindDto? knownParentKind = null,
+        FundStructureNodeKindDto? knownChildKind = null)
+    {
+        var parentKind = knownParentKind ?? ResolveStoredNodeKindForMutationLocked(candidate.ParentNodeId, "Parent");
+        var childKind = knownChildKind ?? ResolveStoredNodeKindForMutationLocked(candidate.ChildNodeId, "Child");
+        var nodeKinds = CaptureNodeKindsLocked();
+        nodeKinds[candidate.ParentNodeId] = parentKind;
+        nodeKinds[candidate.ChildNodeId] = childKind;
+        _policyService.ValidateOwnershipLink(
+            candidate,
+            parentKind,
+            childKind,
+            existingLinksOverride ?? _ownershipLinks.Values.Where(link => link.OwnershipLinkId != linkIdBeingMutated).ToList(),
+            nodeKinds);
+    }
+
+    private FundStructureNodeKindDto ResolveStoredNodeKindForMutationLocked(Guid nodeId, string role)
+    {
+        if (TryGetStoredNodeKindLocked(nodeId, out var kind))
+        {
+            return kind;
+        }
+
+        throw new InvalidOperationException($"{role} node {nodeId} was not found.");
     }
 
     private Dictionary<Guid, FundStructureNodeKindDto> CaptureNodeKindsLocked()

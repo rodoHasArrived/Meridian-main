@@ -327,6 +327,30 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task UpdateOwnershipLinkAsync_WhenRelationshipNoLongerMatchesNodeKinds_ThrowsInvalidOperation()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+        var linkId = Guid.NewGuid();
+
+        await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            linkId,
+            fixture.FundId,
+            fixture.DirectFundPortfolioId,
+            OwnershipRelationshipTypeDto.AllocatesTo,
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.StructureService.UpdateOwnershipLinkAsync(
+            new UpdateOwnershipLinkRequest(
+                linkId,
+                OwnershipRelationshipTypeDto.Owns,
+                now,
+                "test",
+                Notes: "invalid relationship mutation")));
+    }
+
+    [Fact]
     public async Task ReplaceOwnershipLinkAsync_ExpiresOriginalAndCreatesReplacementInActiveGraph()
     {
         var fixture = await CreateHybridFixtureAsync();
@@ -363,6 +387,37 @@ public sealed class InMemoryFundStructureServiceTests
         Assert.DoesNotContain(activeGraph.OwnershipLinks, link => link.OwnershipLinkId == originalLinkId);
         Assert.Contains(activeGraph.OwnershipLinks, link => link.OwnershipLinkId == replacementLinkId);
         Assert.Equal(now.AddDays(1), allLinksGraph.OwnershipLinks.Single(link => link.OwnershipLinkId == originalLinkId).EffectiveTo);
+    }
+
+    [Fact]
+    public async Task ReplaceOwnershipLinkAsync_WhenReplacementRelationshipNoLongerMatchesNodeKinds_ThrowsInvalidOperation()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
+        var originalLinkId = Guid.NewGuid();
+
+        await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            originalLinkId,
+            fixture.FundId,
+            fixture.DirectFundPortfolioId,
+            OwnershipRelationshipTypeDto.AllocatesTo,
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.StructureService.ReplaceOwnershipLinkAsync(
+            new ReplaceOwnershipLinkRequest(
+                originalLinkId,
+                Guid.NewGuid(),
+                fixture.FundId,
+                fixture.DirectFundPortfolioId,
+                OwnershipRelationshipTypeDto.Owns,
+                now.AddDays(1),
+                "test",
+                Notes: "invalid replacement")));
+
+        var graph = await fixture.StructureService.GetOrganizationStructureAsync(
+            new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: false, AsOf: now.AddDays(2)));
+        Assert.Null(graph.OwnershipLinks.Single(link => link.OwnershipLinkId == originalLinkId).EffectiveTo);
     }
 
     [Fact]

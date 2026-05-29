@@ -431,6 +431,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 EffectiveTo = request.EffectiveTo,
                 Notes = request.Notes
             };
+            ValidateOwnershipLinkMutation(snap, updated, existing.OwnershipLinkId);
             snap.OwnershipLinks[updated.OwnershipLinkId] = updated;
             RebuildOwnershipProjections(snap);
             await PersistChangedAsync(snap, ct).ConfigureAwait(false);
@@ -490,10 +491,7 @@ public sealed class PostgresFundStructureService : IFundStructureService
             if (replacedEffectiveTo < existing.EffectiveFrom)
                 throw new InvalidOperationException("Replacement expiration cannot be earlier than the replaced link's effective-from timestamp.");
 
-            snap.OwnershipLinks[existing.OwnershipLinkId] = existing with { EffectiveTo = replacedEffectiveTo };
-            if (parentKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ParentNodeId);
-            if (childKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ChildNodeId);
-
+            var expired = existing with { EffectiveTo = replacedEffectiveTo };
             var replacement = new OwnershipLinkDto(
                 request.ReplacementOwnershipLinkId,
                 request.ParentNodeId,
@@ -504,6 +502,22 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 request.EffectiveFrom,
                 EffectiveTo: null,
                 request.Notes);
+
+            var existingLinksForValidation = snap.OwnershipLinks.Values
+                .Select(link => link.OwnershipLinkId == existing.OwnershipLinkId ? expired : link)
+                .ToList();
+            ValidateOwnershipLinkMutation(
+                snap,
+                replacement,
+                replacement.OwnershipLinkId,
+                existingLinksForValidation,
+                parentKind,
+                childKind);
+
+            snap.OwnershipLinks[existing.OwnershipLinkId] = expired;
+            if (parentKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ParentNodeId);
+            if (childKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ChildNodeId);
+
             snap.OwnershipLinks[replacement.OwnershipLinkId] = replacement;
             RebuildOwnershipProjections(snap);
             await PersistChangedAsync(snap, ct).ConfigureAwait(false);
@@ -1230,6 +1244,38 @@ public sealed class PostgresFundStructureService : IFundStructureService
         {
             snap.InvestmentPortfolios[parentPortfolio.InvestmentPortfolioId] = parentPortfolio with { AccountIds = AppendUnique(parentPortfolio.AccountIds, link.ChildNodeId) };
         }
+    }
+
+
+    private void ValidateOwnershipLinkMutation(
+        MutableSnapshot snap,
+        OwnershipLinkDto candidate,
+        Guid linkIdBeingMutated,
+        IReadOnlyCollection<OwnershipLinkDto>? existingLinksOverride = null,
+        FundStructureNodeKindDto? knownParentKind = null,
+        FundStructureNodeKindDto? knownChildKind = null)
+    {
+        var parentKind = knownParentKind ?? ResolveNodeKindForMutation(snap, candidate.ParentNodeId, "Parent");
+        var childKind = knownChildKind ?? ResolveNodeKindForMutation(snap, candidate.ChildNodeId, "Child");
+        var nodeKinds = CaptureNodeKinds(snap);
+        nodeKinds[candidate.ParentNodeId] = parentKind;
+        nodeKinds[candidate.ChildNodeId] = childKind;
+        _policy.ValidateOwnershipLink(
+            candidate,
+            parentKind,
+            childKind,
+            existingLinksOverride ?? snap.OwnershipLinks.Values.Where(link => link.OwnershipLinkId != linkIdBeingMutated).ToList(),
+            nodeKinds);
+    }
+
+    private static FundStructureNodeKindDto ResolveNodeKindForMutation(MutableSnapshot snap, Guid nodeId, string role)
+    {
+        if (TryGetNodeKind(snap, nodeId, out var kind))
+        {
+            return kind;
+        }
+
+        throw new InvalidOperationException($"{role} node {nodeId} was not found.");
     }
 
     // ── Static utilities ──────────────────────────────────────────────────────
