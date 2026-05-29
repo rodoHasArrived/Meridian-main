@@ -387,6 +387,16 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 EffectiveTo: null,
                 request.Notes);
 
+            var nodeKinds = CaptureNodeKinds(snap);
+            nodeKinds[request.ParentNodeId] = parentKind.Value;
+            nodeKinds[request.ChildNodeId] = childKind.Value;
+            _policy.ValidateOwnershipLink(
+                link,
+                parentKind.Value,
+                childKind.Value,
+                snap.OwnershipLinks.Values.ToList(),
+                nodeKinds);
+
             if (parentKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ParentNodeId);
             if (childKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ChildNodeId);
 
@@ -1223,6 +1233,27 @@ public sealed class PostgresFundStructureService : IFundStructureService
     }
 
     // ── Static utilities ──────────────────────────────────────────────────────
+
+    private static Dictionary<Guid, FundStructureNodeKindDto> CaptureNodeKinds(MutableSnapshot snap)
+    {
+        var nodeKinds = new Dictionary<Guid, FundStructureNodeKindDto>();
+        foreach (var nodeId in snap.Organizations.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Organization;
+        foreach (var nodeId in snap.Businesses.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Business;
+        foreach (var nodeId in snap.Clients.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Client;
+        foreach (var nodeId in snap.Funds.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Fund;
+        foreach (var nodeId in snap.Sleeves.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Sleeve;
+        foreach (var nodeId in snap.Vehicles.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Vehicle;
+        foreach (var nodeId in snap.Entities.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Entity;
+        foreach (var nodeId in snap.InvestmentPortfolios.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.InvestmentPortfolio;
+        foreach (var nodeId in snap.LinkedAccountIds) nodeKinds[nodeId] = FundStructureNodeKindDto.Account;
+        foreach (var link in snap.OwnershipLinks.Values)
+        {
+            nodeKinds.TryAdd(link.ParentNodeId, FundStructureNodeKindDto.Account);
+            nodeKinds.TryAdd(link.ChildNodeId, FundStructureNodeKindDto.Account);
+        }
+
+        return nodeKinds;
+    }
 
     private static OwnershipLinkDto MakeAutoLink(Guid parentId, Guid childId, OwnershipRelationshipTypeDto rel, DateTimeOffset from, string? notes) =>
         new(Guid.NewGuid(), parentId, childId, rel, OwnershipPercent: null, IsPrimary: true, from, EffectiveTo: null, notes);

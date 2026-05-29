@@ -542,6 +542,16 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
                     $"Ownership link {request.OwnershipLinkId} already exists.");
             }
 
+            var nodeKinds = CaptureNodeKindsLocked();
+            nodeKinds[request.ParentNodeId] = parentKind.Value;
+            nodeKinds[request.ChildNodeId] = childKind.Value;
+            _policyService.ValidateOwnershipLink(
+                link,
+                parentKind.Value,
+                childKind.Value,
+                _ownershipLinks.Values.ToList(),
+                nodeKinds);
+
             if (parentKind == FundStructureNodeKindDto.Account)
             {
                 _linkedAccountIds.Add(request.ParentNodeId);
@@ -3666,6 +3676,27 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         {
             throw new InvalidOperationException($"Entity {entityId} was not found.");
         }
+    }
+
+    private Dictionary<Guid, FundStructureNodeKindDto> CaptureNodeKindsLocked()
+    {
+        var nodeKinds = new Dictionary<Guid, FundStructureNodeKindDto>();
+        foreach (var nodeId in _organizations.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Organization;
+        foreach (var nodeId in _businesses.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Business;
+        foreach (var nodeId in _clients.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Client;
+        foreach (var nodeId in _funds.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Fund;
+        foreach (var nodeId in _sleeves.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Sleeve;
+        foreach (var nodeId in _vehicles.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Vehicle;
+        foreach (var nodeId in _entities.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Entity;
+        foreach (var nodeId in _investmentPortfolios.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.InvestmentPortfolio;
+        foreach (var nodeId in _linkedAccountIds) nodeKinds[nodeId] = FundStructureNodeKindDto.Account;
+        foreach (var link in _ownershipLinks.Values)
+        {
+            nodeKinds.TryAdd(link.ParentNodeId, FundStructureNodeKindDto.Account);
+            nodeKinds.TryAdd(link.ChildNodeId, FundStructureNodeKindDto.Account);
+        }
+
+        return nodeKinds;
     }
 
     private OwnershipLinkDto CreateAutoLinkLocked(

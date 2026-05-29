@@ -20,10 +20,6 @@ public sealed record FamilyOfficeOverviewDto(
     IReadOnlyList<FamilyOfficeEvidenceLinkDto> EvidenceLinks);
 
 /// <summary>
-/// Consolidated family balance sheet with evidence fields retained for operator review.
-/// </summary>
-
-/// <summary>
 /// Common endpoint state for family-office workstation reads, including empty and degraded guidance.
 /// </summary>
 public sealed record FamilyOfficeEndpointStateDto(
@@ -44,6 +40,9 @@ public sealed record FamilyOfficeOwnershipGraphResponseDto(
     FamilyOwnershipGraphDto OwnershipGraph,
     FamilyOfficeEndpointStateDto State);
 
+/// <summary>
+/// Consolidated family balance sheet with evidence fields retained for operator review.
+/// </summary>
 public sealed record FamilyBalanceSheetDto(
     string FamilyOfficeId,
     string BaseCurrency,

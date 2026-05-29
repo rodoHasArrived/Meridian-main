@@ -92,6 +92,165 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task LinkNodesAsync_WhenParentAndChildAreSameNode_ThrowsInvalidOperation()
+    {
+        var service = CreateStructureService();
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var organization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG",
+            "Meridian Wealth",
+            "USD",
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            organization.OrganizationId,
+            organization.OrganizationId,
+            OwnershipRelationshipTypeDto.Owns,
+            now,
+            "test")));
+    }
+
+    [Fact]
+    public async Task LinkNodesAsync_WhenRelationshipIsIncompatibleWithNodeKinds_ThrowsInvalidOperation()
+    {
+        var service = CreateStructureService();
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var organization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG",
+            "Meridian Wealth",
+            "USD",
+            now,
+            "test"));
+        var business = await service.CreateBusinessAsync(new CreateBusinessRequest(
+            Guid.NewGuid(),
+            organization.OrganizationId,
+            BusinessKindDto.FundManager,
+            "BUS",
+            "Meridian Funds",
+            "USD",
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            organization.OrganizationId,
+            business.BusinessId,
+            OwnershipRelationshipTypeDto.CustodiesFor,
+            now,
+            "test")));
+    }
+
+    [Fact]
+    public async Task LinkNodesAsync_WhenPrimaryLinkAlreadyActiveForChildAndRelationship_ThrowsInvalidOperation()
+    {
+        var service = CreateStructureService();
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var firstOrganization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG-1",
+            "First Organization",
+            "USD",
+            now,
+            "test"));
+        var secondOrganization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG-2",
+            "Second Organization",
+            "USD",
+            now,
+            "test"));
+        var business = await service.CreateBusinessAsync(new CreateBusinessRequest(
+            Guid.NewGuid(),
+            firstOrganization.OrganizationId,
+            BusinessKindDto.FundManager,
+            "BUS",
+            "Meridian Funds",
+            "USD",
+            now,
+            "test"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            secondOrganization.OrganizationId,
+            business.BusinessId,
+            OwnershipRelationshipTypeDto.Owns,
+            now,
+            "test",
+            IsPrimary: true)));
+    }
+
+    [Fact]
+    public async Task LinkNodesAsync_WhenSiblingOwnershipPercentagesWouldExceedOneHundred_ThrowsInvalidOperation()
+    {
+        var service = CreateStructureService();
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var organization = await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            Guid.NewGuid(),
+            "ORG",
+            "Meridian Wealth",
+            "USD",
+            now,
+            "test"));
+        var business = await service.CreateBusinessAsync(new CreateBusinessRequest(
+            Guid.NewGuid(),
+            organization.OrganizationId,
+            BusinessKindDto.FundManager,
+            "BUS",
+            "Meridian Funds",
+            "USD",
+            now,
+            "test"));
+        var fund = await service.CreateFundAsync(new CreateFundRequest(
+            Guid.NewGuid(),
+            business.BusinessId,
+            "FUND",
+            "Flagship Fund",
+            "USD",
+            now,
+            "test"));
+        var firstEntity = await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(),
+            LegalEntityTypeDto.LimitedPartner,
+            "LP-1",
+            "First Limited Partner",
+            "US",
+            "USD",
+            now,
+            "test"));
+        var secondEntity = await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(),
+            LegalEntityTypeDto.LimitedPartner,
+            "LP-2",
+            "Second Limited Partner",
+            "US",
+            "USD",
+            now,
+            "test"));
+
+        await service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            fund.FundId,
+            firstEntity.EntityId,
+            OwnershipRelationshipTypeDto.Owns,
+            now,
+            "test",
+            OwnershipPercent: 60m));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            fund.FundId,
+            secondEntity.EntityId,
+            OwnershipRelationshipTypeDto.Owns,
+            now,
+            "test",
+            OwnershipPercent: 50m)));
+    }
+
+    [Fact]
     public async Task GetOrganizationStructureAsync_ReturnsAdvisorAndFundBusinessesUnderOneOrganization()
     {
         var fixture = await CreateHybridFixtureAsync();
