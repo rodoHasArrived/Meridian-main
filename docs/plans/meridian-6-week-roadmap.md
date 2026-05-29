@@ -1,6 +1,6 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-28
 
 ## Current Execution TODOs
 
@@ -14,7 +14,7 @@
 **Horizon:** 2026-05-18 through 2026-06-28
 **Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
-This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md), interpreted through the consolidated current-direction entry point in [`current-direction-and-status.md`](current-direction-and-status.md). It is intentionally narrower than the canonical roadmap and advances the active Wave 2-4 core operator-readiness path while keeping the closed Wave 1 trust gate synchronized.
+This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md), interpreted through the consolidated current-direction entry point in [`current-direction-and-status.md`](current-direction-and-status.md). It is intentionally narrower than the canonical roadmap and now preserves the closed W1/W2/W3 baselines while advancing the active W4 governance/fund-operations close and report gate.
 
 Planning review note 2026-05-18: the plan remains the active short-horizon execution slice after
 the full `docs/plans` review and consolidated current-direction pass. It does not promote
@@ -22,13 +22,14 @@ later-wave Backtest Studio, live-readiness, optional advanced research, or UFL t
 ahead of the Wave 2 cockpit, Wave 3 continuity, Wave 4 governance, and Wave 1 trust-gate
 maintenance path.
 
-Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) when assigning owners, sequencing dependencies, or checking workstream-level exit criteria inside the active Waves 2-4 path.
+Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) when assigning owners, sequencing dependencies, or checking workstream-level exit criteria for W2/W3 preservation and active W4 acceptance work.
 
 Implementation stance for this plan:
 
 - keep this artifact as a **technical dependency plan**, not owner-assigned sprint slices
 - preserve W2 and W3 as closed maintenance baselines and route new acceptance work to W4 unless the canonical program state changes
 - keep detailed W4 pre-work in this horizon so close, report, reconciliation, and evidence-governance slices can land without reopening W2/W3
+- treat May 28 W4 support evidence as progress toward Lane C, not as close/report readiness, until the full WPF build-backed and browser/shared close/case/report proof is green
 
 ---
 
