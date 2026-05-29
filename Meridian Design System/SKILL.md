@@ -1,6 +1,6 @@
 ---
 name: meridian-design-system
-description: Meridian is a trading, portfolio, accounting, reporting, strategy, data, and settings operator workstation. Dark navy cockpit (#08101A), sky-cyan primary (#2AB2D4), amber warning (#D69E38), tight workstation radii, dense data tables, masthead plus left rail. Three fonts: Space Grotesk (display), IBM Plex Sans (UI), IBM Plex Mono (data). Sentence case, no emoji, monospace for every identifier/number/timestamp. Use `colors_and_type.css`, `INSPIRATION_BRIEF.md`, and `ui_kits/dashboard/`.
+description: Meridian is a trading, portfolio, accounting, reporting, strategy, data, and settings operator workstation. Institutional Ops aesthetic: quiet dark navy (#08101A), restrained sky-cyan primary (#2AB2D4), amber warning (#D69E38), tight workstation radii, shallow shadows, dense data tables, masthead plus left rail. Three fonts: Space Grotesk (display), IBM Plex Sans (UI), IBM Plex Mono (data). Sentence case, no emoji, monospace for every identifier/number/timestamp. Use `colors_and_type.css`, `VISUAL_FOUNDATIONS.md`, and `ui_kits/dashboard/`.
 ---
 
 # Meridian — skill guide
@@ -19,7 +19,7 @@ workspaces (`Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data
 8. `preview/chart-table-standards.html` — evidence chart, dense-table, schedule-table, and row-detail rules.
 9. `ICONOGRAPHY.md` — line-icon rules. Use `assets/icons/*.svg` (47 glyphs, currentColor).
 
-## Fast rules (operator cockpit)
+## Fast rules (Institutional Ops)
 - Background: `bg-app`. Keep ambient light faint and static.
 - Surfaces stack: `bg-card` → `bg-panel` → `bg-soft` → `bg-raise`. Darker is deeper.
 - One primary CTA per screen (`#2AB2D4`). One accent (`#D69E38`) at most alongside.
@@ -28,6 +28,7 @@ workspaces (`Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data
 - Numbers are tabular, signed when directional: `+$100K`, `−2.41%`, `0%`.
 - Tight radii: 10 / 8 / 6 / 4 / 3px.
 - Borders precise: `#1F344C` default, `#2A4566` for selected and active frames.
+- Shadows are shallow inset + 1-2px depth only. No hard-offset shadows or glow-heavy buttons.
 - Use masthead + left rail + toolbar strip for workstation pages.
 - Pair KPI cards with chart/table evidence and selected-record details.
 - Security Master and reference-data screens use a command deck, searchable master table,

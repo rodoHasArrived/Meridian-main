@@ -842,14 +842,14 @@ public sealed class LedgerIntegrationTests
     public void MultiCurrencyLedgerTranslator_TranslatesLocalCurrencyBalancesToBaseCurrency()
     {
         var eurCash = LedgerAccounts.CashInCurrency("eur", "broker-1");
-        var usdCapital = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity, FinancialAccountId: "broker-1");
+        var eurCapital = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity, Symbol: "EUR", FinancialAccountId: "broker-1");
         var ledger = new Meridian.Ledger.Ledger();
         var ts = new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero);
 
-        ledger.PostLines(ts, "EUR subscription translated to USD capital", new[]
+        ledger.PostLines(ts, "EUR subscription in local currency", new[]
         {
             (eurCash, 1_000m, 0m),
-            (usdCapital, 0m, 1_100m),
+            (eurCapital, 0m, 1_000m),
         });
 
         var translation = MultiCurrencyLedgerTranslator.Translate(
