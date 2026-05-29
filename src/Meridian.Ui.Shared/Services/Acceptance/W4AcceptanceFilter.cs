@@ -56,6 +56,18 @@ public sealed class W4AcceptanceFilter
             BuildDetail(status, missingAcceptance, missingSupport, supportEvidence.Length));
     }
 
+    public PilotReadinessArtifactDto ApplyToArtifact(PilotReadinessArtifactDto artifact)
+    {
+        ArgumentNullException.ThrowIfNull(artifact);
+
+        var evaluation = Evaluate(artifact);
+        return artifact with
+        {
+            StageGates = ApplyToGovernedReportPackGate(artifact.StageGates, evaluation),
+            W4Acceptance = evaluation
+        };
+    }
+
     public PilotReadinessStageGateDto ApplyToGovernedReportPackGate(
         PilotReadinessStageGateDto gate,
         PilotW4AcceptanceEvaluationDto evaluation)
