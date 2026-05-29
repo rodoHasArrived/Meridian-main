@@ -1324,7 +1324,15 @@ public sealed class OperationsContinuityWorkflowServiceTests
     public async Task PostLedgerEntriesAsync_ShouldRejectInstrumentLineWithoutActiveSecurityMasterStatus()
     {
         var journalStore = new RecordingLedgerJournalStore();
-        var service = CreateService(out _, out var auditStore, journalStore);
+        var securityId = Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1");
+        var service = CreateService(
+            out _,
+            out var auditStore,
+            journalStore,
+            securityStatuses: new Dictionary<Guid, SecurityStatusDto>
+            {
+                [securityId] = SecurityStatusDto.Inactive
+            });
         var workflow = await CreateLedgerValidatedWorkflowAsync(service);
         var candidate = CreateInstrumentJournalCandidate(
             workflow.FundAccountId,
@@ -1346,6 +1354,40 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timeline.Select(entry => entry.EventType).Should().NotContain("ledger-posted");
+    }
+
+
+    [Fact]
+    public async Task PostLedgerEntriesAsync_ShouldRejectClientSuppliedActiveStatusWhenSecurityMasterIsInactive()
+    {
+        var journalStore = new RecordingLedgerJournalStore();
+        var securityId = Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1");
+        var service = CreateService(
+            out _,
+            out _,
+            journalStore,
+            securityStatuses: new Dictionary<Guid, SecurityStatusDto>
+            {
+                [securityId] = SecurityStatusDto.Inactive
+            });
+        var workflow = await CreateLedgerValidatedWorkflowAsync(service);
+        var candidate = CreateInstrumentJournalCandidate(
+            workflow.FundAccountId,
+            securityMasterStatus: SecurityStatusDto.Active);
+
+        var result = await service.PostLedgerEntriesAsync(workflow.WorkflowId, new OperationsLedgerPostRequestDto(
+            workflow.Version,
+            "ops-user",
+            LedgerBatchId: "ledger-batch-client-spoofed-active-security-master",
+            PostingKind: "period-close",
+            PeriodOpen: true,
+            JournalCandidate: candidate));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("VALIDATION_FAILED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED");
+        journalStore.Appended.Should().BeEmpty();
     }
 
     [Fact]
@@ -2294,7 +2336,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
         out InMemoryOperationsContinuityRepository repository,
         out InMemoryOperationsWorkflowAuditStore auditStore,
         RecordingLedgerJournalStore? ledgerJournalStore = null,
-        bool registerLedgerJournalStore = true)
+        bool registerLedgerJournalStore = true,
+        IReadOnlyDictionary<Guid, SecurityStatusDto>? securityStatuses = null)
     {
         var derivation = new OperationsStatusDerivationService();
         repository = new InMemoryOperationsContinuityRepository(derivation);
@@ -2303,8 +2346,16 @@ public sealed class OperationsContinuityWorkflowServiceTests
             repository,
             auditStore,
             derivation,
-            registerLedgerJournalStore ? ledgerJournalStore ?? new RecordingLedgerJournalStore() : null);
+            registerLedgerJournalStore ? ledgerJournalStore ?? new RecordingLedgerJournalStore() : null,
+            securityMasterQueryService: new StaticSecurityMasterQueryService(securityStatuses ?? DefaultAuthoritativeSecurityStatuses()));
     }
+
+
+    private static IReadOnlyDictionary<Guid, SecurityStatusDto> DefaultAuthoritativeSecurityStatuses() =>
+        new Dictionary<Guid, SecurityStatusDto>
+        {
+            [Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1")] = SecurityStatusDto.Active
+        };
 
     private static IReadOnlyList<OperationsChecklistControlApprovalDto> RequiredChecklistControlApprovals() =>
     [
@@ -2540,6 +2591,60 @@ public sealed class OperationsContinuityWorkflowServiceTests
         }
 
         throw new DirectoryNotFoundException("Unable to locate Meridian repository root.");
+    }
+
+
+    private sealed class StaticSecurityMasterQueryService(IReadOnlyDictionary<Guid, SecurityStatusDto> statuses)
+        : ISecurityMasterQueryService
+    {
+        private static readonly JsonElement EmptyObject = JsonDocument.Parse("{}").RootElement.Clone();
+
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!statuses.TryGetValue(securityId, out var status))
+            {
+                return Task.FromResult<SecurityDetailDto?>(null);
+            }
+
+            return Task.FromResult<SecurityDetailDto?>(new SecurityDetailDto(
+                securityId,
+                "Equity",
+                status,
+                "Apple Inc.",
+                "USD",
+                EmptyObject,
+                EmptyObject,
+                [],
+                [],
+                1,
+                DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+                null));
+        }
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null) =>
+            Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([]);
+
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
+
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
+
+        public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default) =>
+            Task.FromResult<TradingParametersDto?>(null);
+
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<CorporateActionDto>>([]);
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<PreferredEquityTermsDto?>(null);
+
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default) =>
+            Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore

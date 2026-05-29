@@ -131,19 +131,22 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     private readonly IOperationsStatusDerivationService _statusDerivation;
     private readonly ILedgerJournalStore? _ledgerJournalStore;
     private readonly IOperationsContinuityTransactionalCommitStore? _transactionalCommitStore;
+    private readonly ISecurityMasterQueryService? _securityMasterQueryService;
 
     public OperationsContinuityWorkflowService(
         IOperationsContinuityRepository repository,
         IOperationsWorkflowAuditStore auditStore,
         IOperationsStatusDerivationService statusDerivation,
         ILedgerJournalStore? ledgerJournalStore = null,
-        IOperationsContinuityTransactionalCommitStore? transactionalCommitStore = null)
+        IOperationsContinuityTransactionalCommitStore? transactionalCommitStore = null,
+        ISecurityMasterQueryService? securityMasterQueryService = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
         _statusDerivation = statusDerivation ?? throw new ArgumentNullException(nameof(statusDerivation));
         _ledgerJournalStore = ledgerJournalStore;
         _transactionalCommitStore = transactionalCommitStore;
+        _securityMasterQueryService = securityMasterQueryService;
     }
 
     public async Task<OperationsTransitionResultDto> StartWorkflowAsync(
@@ -531,8 +534,12 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 serviceBlockers.Add(blocker);
             }
 
+            var authoritativeSecurityStatuses = requestBlockers.Count == 0
+                ? await ResolveAuthoritativeSecurityStatusesAsync(request.JournalCandidate?.Lines, ct).ConfigureAwait(false)
+                : new Dictionary<Guid, SecurityStatusDto>();
+
             if (requestBlockers.Count == 0 &&
-                !TryBuildJournalWrite(workflow, request, out builtJournalWrite, out var journalBlockers))
+                !TryBuildJournalWrite(workflow, request, authoritativeSecurityStatuses, out builtJournalWrite, out var journalBlockers))
             {
                 return Failure(
                     "VALIDATION_FAILED",
@@ -1430,6 +1437,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     private static bool TryBuildJournalWrite(
         OperationsContinuityWorkflow workflow,
         OperationsLedgerPostRequestDto request,
+        IReadOnlyDictionary<Guid, SecurityStatusDto> authoritativeSecurityStatuses,
         out LedgerJournalEntryWrite journalWrite,
         out IReadOnlyList<OperationsWorkflowBlockerDto> blockers)
     {
@@ -1449,7 +1457,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             return false;
         }
 
-        var validationBlockers = ValidateJournalCandidate(workflow, request, candidate, request.EvidenceLinks);
+        var validationBlockers = ValidateJournalCandidate(workflow, request, candidate, authoritativeSecurityStatuses, request.EvidenceLinks);
         if (validationBlockers.Count > 0)
         {
             blockers = validationBlockers;
@@ -1489,7 +1497,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 candidate.Timestamp,
                 description,
                 lines,
-                ToJournalEntryMetadata(candidate));
+                ToJournalEntryMetadata(candidate, authoritativeSecurityStatuses));
 
             journalWrite = new LedgerJournalEntryWrite(
                 entry,
@@ -1528,6 +1536,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         OperationsContinuityWorkflow workflow,
         OperationsLedgerPostRequestDto request,
         OperationsLedgerJournalCandidateDto candidate,
+        IReadOnlyDictionary<Guid, SecurityStatusDto> authoritativeSecurityStatuses,
         IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks)
     {
         var evidence = NormalizeEvidence(evidenceLinks);
@@ -1665,11 +1674,11 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                         evidence));
                 }
 
-                if (line.SecurityMasterStatus != SecurityStatusDto.Active)
+                if (!TryGetAuthoritativeActiveSecurityStatus(line.SecurityId, authoritativeSecurityStatuses))
                 {
                     blockers.Add(CreateJournalCandidateBlocker(
                         "LEDGER_LINE_SECURITY_MASTER_ACTIVE_STATUS_REQUIRED",
-                        $"Ledger journal candidate line for {lineLabel} requires active Security Master status evidence before posting.",
+                        $"Ledger journal candidate line for {lineLabel} requires active Security Master status from the authoritative Security Master before posting.",
                         evidence));
                 }
 
@@ -1719,6 +1728,36 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         return blockers;
     }
 
+
+    private async Task<IReadOnlyDictionary<Guid, SecurityStatusDto>> ResolveAuthoritativeSecurityStatusesAsync(
+        IReadOnlyList<OperationsLedgerJournalLineDto>? lines,
+        CancellationToken ct)
+    {
+        var securityIds = (lines ?? [])
+            .Where(static line => IsInstrumentBearingJournalLine(line))
+            .Select(static line => line.SecurityId.GetValueOrDefault())
+            .Where(static securityId => securityId != Guid.Empty)
+            .Distinct()
+            .ToArray();
+
+        if (securityIds.Length == 0 || _securityMasterQueryService is null)
+        {
+            return new Dictionary<Guid, SecurityStatusDto>();
+        }
+
+        var statuses = new Dictionary<Guid, SecurityStatusDto>();
+        foreach (var securityId in securityIds)
+        {
+            var security = await _securityMasterQueryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is not null)
+            {
+                statuses[securityId] = security.Status;
+            }
+        }
+
+        return statuses;
+    }
+
     private static bool TryResolveWorkflowPeriodGuid(string workflowPeriodId, out Guid resolvedPeriodId) =>
         Guid.TryParse(workflowPeriodId, out resolvedPeriodId);
 
@@ -1759,6 +1798,24 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             mapping.Contains(symbol.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
+
+    private static bool TryGetAuthoritativeActiveSecurityStatus(
+        Guid? securityId,
+        IReadOnlyDictionary<Guid, SecurityStatusDto> authoritativeSecurityStatuses) =>
+        TryGetAuthoritativeSecurityStatus(securityId, authoritativeSecurityStatuses, out var status) &&
+        status == SecurityStatusDto.Active;
+
+    private static bool TryGetAuthoritativeSecurityStatus(
+        Guid? securityId,
+        IReadOnlyDictionary<Guid, SecurityStatusDto> authoritativeSecurityStatuses,
+        out SecurityStatusDto status)
+    {
+        status = default;
+        var resolvedSecurityId = securityId.GetValueOrDefault();
+        return resolvedSecurityId != Guid.Empty &&
+            authoritativeSecurityStatuses.TryGetValue(resolvedSecurityId, out status);
+    }
+
     private static bool IsInstrumentBearingJournalLine(OperationsLedgerJournalLineDto line)
         => !string.IsNullOrWhiteSpace(line.Symbol) ||
            line.SecurityId.GetValueOrDefault() != Guid.Empty ||
@@ -1784,7 +1841,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             normalized.Equals("Futures MTM Settlement", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static JournalEntryMetadata? ToJournalEntryMetadata(OperationsLedgerJournalCandidateDto candidate)
+    private static JournalEntryMetadata? ToJournalEntryMetadata(
+        OperationsLedgerJournalCandidateDto candidate,
+        IReadOnlyDictionary<Guid, SecurityStatusDto> authoritativeSecurityStatuses)
     {
         var metadata = candidate.Metadata;
         if (metadata is null)
@@ -1811,7 +1870,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             tags["securityMasterProvenance"] = candidate.SecurityMasterProvenance.Trim();
         }
 
-        var securityMasterLineage = BuildSecurityMasterLineageTag(candidate.Lines);
+        var securityMasterLineage = BuildSecurityMasterLineageTag(candidate.Lines, authoritativeSecurityStatuses);
         if (!string.IsNullOrWhiteSpace(securityMasterLineage))
         {
             tags["securityMasterLineage"] = securityMasterLineage;
@@ -1834,11 +1893,13 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             Tags: tags.Count == 0 ? null : tags);
     }
 
-    private static string? BuildSecurityMasterLineageTag(IReadOnlyList<OperationsLedgerJournalLineDto>? lines)
+    private static string? BuildSecurityMasterLineageTag(
+        IReadOnlyList<OperationsLedgerJournalLineDto>? lines,
+        IReadOnlyDictionary<Guid, SecurityStatusDto> authoritativeSecurityStatuses)
     {
         var mappedLines = (lines ?? [])
             .Where(static line => !string.IsNullOrWhiteSpace(line.Symbol))
-            .Select(static line =>
+            .Select(line =>
             {
                 var symbol = line.Symbol!.Trim();
                 var securityIdValue = line.SecurityId.GetValueOrDefault();
@@ -1854,9 +1915,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 var approval = string.IsNullOrWhiteSpace(line.SecurityMasterApprovalReference)
                     ? "missing"
                     : line.SecurityMasterApprovalReference.Trim();
-                var status = line.SecurityMasterStatus is null
-                    ? "missing"
-                    : $"security-status:{line.SecurityMasterStatus.Value}";
+                var status = TryGetAuthoritativeSecurityStatus(line.SecurityId, authoritativeSecurityStatuses, out var authoritativeStatus)
+                    ? $"security-status:{authoritativeStatus}"
+                    : "missing";
                 return $"{symbol}:{securityId}:{mapping}:{approval}:{status}:{provenance}";
             })
             .ToArray();

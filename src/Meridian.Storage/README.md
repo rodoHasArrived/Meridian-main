@@ -36,7 +36,7 @@ Use this module for persistence, replay evidence, storage maintenance, package i
 Ledger journal appends are fail-closed for instrument-bearing postings. Any journal line that
 targets securities, dividends, accrued interest, corporate actions, options, futures MTM, short
 securities, or a symbol-scoped ledger account must carry Security Master provenance plus approved
-lineage that includes active Security Master status and a ledger mapping reference before
+lineage that includes a structured active Security Master status tag and a ledger mapping reference before
 `ILedgerJournalStore` accepts it. Instrument account lines must also carry an explicit line symbol,
 so entry-level Security Master metadata cannot mask an unattributed securities, receivable, option,
 futures, or short-position posting.
