@@ -112,10 +112,10 @@ statement, and validation producers can enforce the same retained-artifact vocab
 Audit Trail Explorer contracts live under `Workstation/AuditTrailExplorerDtos.cs` and normalize
 retained audit records into cross-object timeline rows with object kind, object id, actor,
 correlation, related-object ids, metadata, and evidence routes. Keep these query and result
-payloads contract-owned so browser and WPF clients search the same audit vocabulary instead of
-inventing client-local timelines. Manual override rows now use `OperatorAction` object kind keyed
-by override id, and circuit breaker rows use `ExecutionControl` object kind with control-route
-evidence links for operations review.
+payloads contract-owned, including object-kind/object-id and related-object filters, so browser and
+WPF clients search the same audit vocabulary instead of inventing client-local timelines. Manual
+override rows now use `OperatorAction` object kind keyed by override id, and circuit breaker rows
+use `ExecutionControl` object kind with control-route evidence links for operations review.
 
 Instrument Passport contracts are attached to the shared Security Master workstation trust
 workbench payloads. `InstrumentPassportDto` carries identifier and provider mappings, lifecycle

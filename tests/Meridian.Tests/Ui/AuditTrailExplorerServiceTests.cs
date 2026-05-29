@@ -264,6 +264,108 @@ public sealed class AuditTrailExplorerServiceTests
     }
 
     [Fact]
+    public async Task SearchAsync_FiltersByNormalizedObjectAndRelatedObjectsAcrossSources()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var workflowId = Guid.NewGuid();
+            var fundAccountId = Guid.NewGuid();
+            var sharedRunId = "run-close";
+            await using var auditTrail = CreateAuditTrail(root);
+            await auditTrail.RecordAsync(new ExecutionAuditEntry(
+                AuditId: "audit-execution",
+                Category: "Promotion",
+                Action: "LivePromotionApproved",
+                Outcome: "Approved",
+                OccurredAt: DateTimeOffset.Parse("2026-05-28T16:00:00Z"),
+                Actor: "trader",
+                RunId: sharedRunId,
+                CorrelationId: "corr-promotion",
+                Message: "Promotion approved for close run"));
+            await auditTrail.RecordAsync(new ExecutionAuditEntry(
+                AuditId: "audit-unrelated",
+                Category: "Order",
+                Action: "OrderSubmitted",
+                Outcome: "Accepted",
+                OccurredAt: DateTimeOffset.Parse("2026-05-28T16:01:00Z"),
+                Actor: "trader",
+                RunId: "run-other",
+                CorrelationId: "corr-other"));
+
+            var operationsTimeline = new OperationsTimelineEntryDto(
+                AuditId: Guid.Parse("00000000-0000-0000-0000-000000000123"),
+                OccurredAtUtc: DateTimeOffset.Parse("2026-05-28T16:00:00Z"),
+                WorkflowId: workflowId,
+                FundAccountId: fundAccountId,
+                PeriodId: "2026-05",
+                EventType: "approval-submitted",
+                FromState: OperationsWorkflowStatusDto.ApprovalPending,
+                ToState: OperationsWorkflowStatusDto.ApprovalPending,
+                Gate: OperationsGateKeyDto.Approval,
+                FromGateStatus: OperationsGateStatusDto.InProgress,
+                ToGateStatus: OperationsGateStatusDto.InProgress,
+                Actor: "controller",
+                Rationale: "Ready for sign-off",
+                CorrelationId: "corr-approval",
+                CorrelationKeys: new OperationsContinuityCorrelationKeysDto(
+                    RunId: sharedRunId,
+                    FundAccountId: fundAccountId,
+                    LedgerBatchId: "ledger-batch-1",
+                    ReconciliationCaseId: "case-closed"),
+                References:
+                [
+                    new OperationsEvidenceLinkDto(
+                        "approval-evidence",
+                        "Approval evidence",
+                        "/api/workstation/operations/continuity/approval/case-closed",
+                        "approval",
+                        DateTimeOffset.Parse("2026-05-28T16:00:00Z"))
+                ],
+                PreviousHash: "prev",
+                CurrentHash: "hash");
+            var service = new AuditTrailExplorerService(
+                auditTrail,
+                new StubOperationsContinuityWorkflowService(
+                    new OperationsContinuityWorkflowSummaryDto(
+                        workflowId,
+                        fundAccountId,
+                        "2026-05",
+                        null,
+                        "custodian",
+                        OperationsWorkflowStatusDto.ApprovalPending,
+                        4,
+                        DateTimeOffset.Parse("2026-05-28T15:00:00Z"),
+                        DateTimeOffset.Parse("2026-05-28T16:00:00Z"),
+                        [],
+                        []),
+                    [operationsTimeline]));
+
+            var objectResult = await service.SearchAsync(new AuditTrailExplorerQueryDto(
+                ObjectKind: "Evidence",
+                ObjectId: "case-closed"));
+            var relatedResult = await service.SearchAsync(new AuditTrailExplorerQueryDto(
+                RelatedObjectId: sharedRunId,
+                Limit: 10));
+            var textResult = await service.SearchAsync(new AuditTrailExplorerQueryDto(
+                SearchText: "/api/workstation/operations/continuity/approval/case-closed"));
+
+            objectResult.Entries.Should().ContainSingle(entry =>
+                entry.ObjectKind == "Evidence" &&
+                entry.ObjectId == "case-closed" &&
+                entry.RelatedObjectIds!.Contains(sharedRunId));
+            relatedResult.Entries.Select(entry => entry.AuditId)
+                .Should().Equal("00000000-0000-0000-0000-000000000123", "audit-execution");
+            textResult.Entries.Should().ContainSingle(entry =>
+                entry.EvidenceRoute == "/api/workstation/operations/continuity/approval/case-closed");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task SearchAsync_WithoutAuditTrail_ReturnsEmptyResult()
     {
         var service = new AuditTrailExplorerService();

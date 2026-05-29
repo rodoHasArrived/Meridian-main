@@ -119,10 +119,13 @@ copied artifact into the same packet graph, preserving hashes, source routes, an
 linkage for browser/WPF parity.
 The shared Audit Trail Explorer service projects retained execution, promotion, order, control, and
 Operations Continuity close/reconciliation/approval timeline records into contract-owned timeline rows and exposes `/api/execution/audit/search` with
-server-side text, run, actor, symbol, action, outcome, correlation, time-window, and limit filters.
-Manual override audit rows resolve to operator-action objects keyed by `overrideId`, while circuit
-breaker rows resolve to execution-control objects with direct control routes, so operations review
-can distinguish who staged a live override from who opened or closed a trading halt.
+server-side text, run, actor, symbol, action, outcome, correlation, normalized object, related
+object, time-window, and limit filters. Timeline ordering is deterministic by occurrence time and
+audit id, and text search includes related-object ids and evidence routes so close, reconciliation,
+approval, promotion, and control evidence can be found through the same endpoint. Manual override
+audit rows resolve to operator-action objects keyed by `overrideId`, while circuit breaker rows
+resolve to execution-control objects with direct control routes, so operations review can
+distinguish who staged a live override from who opened or closed a trading halt.
 Use that shared service for browser and WPF audit search rather than client-local timeline
 normalization.
 The Security Master workstation workbench also exposes a shared Instrument Passport at
@@ -291,9 +294,9 @@ Approved Security Master operator overrides now move their durable exception cas
 resolution, and steward sign-off so close readiness and report-line provenance can distinguish
 pending override casework from approved definition evidence.
 Ledger amount provenance drilldowns now preserve related reconciliation case materiality and aging
-metadata, including severity, variance, tolerance band, sign-off actors, SLA state, age band, and
-business-age hours, so report-line click-throughs can show whether a retained amount is still
-inside controller-owned break review.
+metadata, including severity, variance, tolerance band, sign-off actors, latest sign-off
+actor/time/note, SLA state, age band, and business-age hours, so report-line click-throughs can show
+whether a retained amount is still inside controller-owned break review.
 The Security Master link in the same drilldown now carries the retained display label, source
 system, and evidence id from the report-pack lineage pointer alongside the durable Security Master
 id, so report-line consumers can show the exact definition evidence used for the amount.
