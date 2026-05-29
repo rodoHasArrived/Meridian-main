@@ -153,7 +153,7 @@ public static class LedgerPeriodPostingGuard
                 $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without approved Security Master evidence.");
         }
 
-        if (!HasActiveSecurityMasterStatus(provenance, lineage))
+        if (!HasActiveSecurityMasterStatus(lineage))
         {
             throw new LedgerValidationException(
                 $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without active Security Master status evidence.");
@@ -259,14 +259,11 @@ public static class LedgerPeriodPostingGuard
         lineage.Contains("sm-approval:", StringComparison.OrdinalIgnoreCase) ||
         lineage.Contains("approval:", StringComparison.OrdinalIgnoreCase);
 
-    private static bool HasActiveSecurityMasterStatus(string provenance, string lineage) =>
-        ContainsActiveSecurityMasterStatus(provenance) ||
-        ContainsActiveSecurityMasterStatus(lineage);
-
-    private static bool ContainsActiveSecurityMasterStatus(string value) =>
-        value.Contains("security-status:active", StringComparison.OrdinalIgnoreCase) ||
-        value.Contains("securitystatus:active", StringComparison.OrdinalIgnoreCase) ||
-        value.Contains("status:active", StringComparison.OrdinalIgnoreCase);
+    private static bool HasActiveSecurityMasterStatus(string lineage) =>
+        lineage.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(static line => line.Split(':', StringSplitOptions.TrimEntries)
+                .Any(static token => string.Equals(token, "security-status", StringComparison.OrdinalIgnoreCase)) &&
+                line.Contains("security-status:active", StringComparison.OrdinalIgnoreCase));
 
     private static bool HasLedgerMappingEvidence(string lineage) =>
         lineage.Contains("ledger-map:", StringComparison.OrdinalIgnoreCase) ||

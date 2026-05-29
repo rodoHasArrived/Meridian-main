@@ -246,6 +246,21 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_InstrumentEntry_RejectsActiveStatusFromProvenanceOnly()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            includeActiveSecurityMasterStatus: false,
+            includeProvenanceActiveSecurityStatus: true);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without active Security Master status evidence*");
+    }
+
+    [Fact]
     public void PostingGuard_InstrumentEntry_RequiresSecurityMasterLedgerMapping()
     {
         var period = BuildAccountingPeriod("Open");
@@ -544,10 +559,11 @@ public sealed class LedgerJournalStoreTests
         const string description = "Approved Security Master instrument posting";
         var mapping = includeLedgerMapping ? ledgerMappingReference ?? "ledger-map:aapl-gaap-securities" : "missing";
         var approval = includeApprovalEvidence ? "sm-approval:aapl-controller" : "missing";
-        var activeStatus = includeActiveSecurityMasterStatus ? "status:active" : "missing";
+        var activeStatus = includeActiveSecurityMasterStatus ? "security-status:active" : "missing";
+        var provenanceStatus = includeProvenanceActiveSecurityStatus ? ";security-status:active" : string.Empty;
         var provenance = includeApprovalEvidence
-            ? $"security-master:{securityId:N};snapshot:test-source-hash;approved:true;{activeStatus}"
-            : $"security-master:{securityId:N};snapshot:test-source-hash";
+            ? $"security-master:{securityId:N};snapshot:test-source-hash;approved:true{provenanceStatus}"
+            : $"security-master:{securityId:N};snapshot:test-source-hash{provenanceStatus}";
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["securityMasterLineage"] = $"{symbol}:{securityId:N}:{mapping}:{approval}:{activeStatus}:{provenance}"

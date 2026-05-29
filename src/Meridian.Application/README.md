@@ -60,9 +60,9 @@ and UI presentation concerns in their owning layers.
   explicit approval reference, provenance, and ledger-mapping evidence for every instrument-bearing
   journal line before the durable journal can be appended, including securities-style account lines
   that omit symbol metadata. Candidate and line-level provenance must reference the resolved
-  Security Master id carried by the journal metadata or instrument line, line status must still be
-  active, and instrument line symbols must match the journal-level Security Master symbol before
-  posting. Ledger-mapping references must also identify the same resolved symbol or Security Master
+  Security Master id carried by the journal metadata or instrument line, line status must be
+  re-read from the server-side Security Master and still be active, and instrument line symbols
+  must match the journal-level Security Master symbol before posting. Ledger-mapping references must also identify the same resolved symbol or Security Master
   id instead of using a generic account mapping token.
 - `Reconciliation/` - statement reconciliation orchestration and broker/custodian intake that
   validates canonical external statement files, creates durable reconciliation cases for unresolved
