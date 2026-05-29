@@ -54,14 +54,25 @@ flowchart LR
 - Validation/policy rules that do not require storage are owned by `IFundStructurePolicyService` (`FundStructurePolicyService`) so PostgreSQL-backed services can reuse identical domain checks.
 - During PostgreSQL adoption, new persistence adapters should implement dedicated persistence ports and be injected into orchestration services rather than embedding storage calls inside domain rule paths.
 
-### Method Category Map (Current In-Memory Services)
+### Method Category Map (Current Fund Structure Services)
 
+- `IFundStructureService`
+  - Creation commands: `CreateOrganizationAsync`, `CreateBusinessAsync`, `CreateClientAsync`, `CreateFundAsync`, `CreateSleeveAsync`, `CreateVehicleAsync`, `CreateLegalEntityAsync`, `CreateInvestmentPortfolioAsync`.
+  - Ownership lifecycle commands: `LinkNodesAsync`, `UpdateOwnershipLinkAsync`, `ExpireOwnershipLinkAsync`, `ReplaceOwnershipLinkAsync`, `ValidateOwnershipGraphAsync`.
+  - Assignment commands: `AssignNodeAsync`.
+  - Query projection: `GetOrganizationStructureAsync`, `GetFundStructureGraphAsync`, `GetAdvisoryViewAsync`, `GetFundOperatingViewAsync`, `GetAccountingViewAsync`, `GetCashFlowViewAsync`.
 - `InMemoryFundStructureService`
-  - Command handling: `Create*Async`, `UpdateOwnershipLinkAsync`, `AssignAccountAsync`, `SynchronizeWithSharedDataAsync`.
-  - Query projection: `Get*Async`, `Query*Async`, `GetGovernanceCashFlowAsync`.
-  - Validation/policy: delegated to `IFundStructurePolicyService` for pure rules; existence/graph invariants remain service-local for now.
-  - Workflow orchestration: parent-link creation, shared-data synchronization, cross-service composition with account/security-master services.
-  - Storage concerns: snapshot capture/load/save via `IFundStructureStateStore`.
+  - Command handling: implements the full `IFundStructureService` creation, ownership lifecycle, validation, and assignment surface.
+  - Query projection: organization graph, legacy fund graph, advisory, fund operating, accounting, and cash-flow views.
+  - Validation/policy: delegates pure portfolio-parent rules to `IFundStructurePolicyService`; owns existence checks, ownership-link lifecycle checks, and cycle validation.
+  - Workflow orchestration: parent-link creation, ownership projection rebuilds after link lifecycle changes, shared-data synchronization, cross-service composition with account/security-master services.
+  - Storage concerns: snapshot capture/load/save via `IFundStructureStateStore`, including updated, expired, and replacement ownership links.
+- `PostgresFundStructureService`
+  - Command handling: implements the same `IFundStructureService` creation, ownership lifecycle, validation, and assignment surface over `IFundStructureStore`.
+  - Query projection: mirrors the in-memory graph, advisory, fund operating, and accounting projections; cash-flow view remains unsupported and returns `null`.
+  - Validation/policy: reuses `FundStructurePolicyService` for pure rules and service-local ownership existence/cycle validation for persisted links.
+  - Workflow orchestration: loads a mutable snapshot, applies lifecycle mutations, rebuilds ownership projections, and upserts changed rows through the store.
+  - Storage concerns: persists organizations, businesses, clients, funds, sleeves, vehicles, entities, portfolios, ownership links, and assignments via `IFundStructureStore`.
 - `InMemoryFundAccountService` (peer)
   - Command handling: account creation/update/deactivation and reconciliation write flows.
   - Query projection: account query/read methods and filtered projections.

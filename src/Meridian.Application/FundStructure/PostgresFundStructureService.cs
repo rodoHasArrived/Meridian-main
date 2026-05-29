@@ -398,6 +398,123 @@ public sealed class PostgresFundStructureService : IFundStructureService
         finally { _writeLock.Release(); }
     }
 
+    public async Task<OwnershipLinkDto> UpdateOwnershipLinkAsync(
+        UpdateOwnershipLinkRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+            if (!snap.OwnershipLinks.TryGetValue(request.OwnershipLinkId, out var existing))
+                throw new InvalidOperationException($"Ownership link {request.OwnershipLinkId} was not found.");
+
+            var updated = existing with
+            {
+                RelationshipType = request.RelationshipType,
+                OwnershipPercent = request.OwnershipPercent,
+                IsPrimary = request.IsPrimary,
+                EffectiveFrom = request.EffectiveFrom,
+                EffectiveTo = request.EffectiveTo,
+                Notes = request.Notes
+            };
+            snap.OwnershipLinks[updated.OwnershipLinkId] = updated;
+            RebuildOwnershipProjections(snap);
+            await PersistChangedAsync(snap, ct).ConfigureAwait(false);
+            return updated;
+        }
+        finally { _writeLock.Release(); }
+    }
+
+    public async Task<OwnershipLinkDto> ExpireOwnershipLinkAsync(
+        ExpireOwnershipLinkRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+            if (!snap.OwnershipLinks.TryGetValue(request.OwnershipLinkId, out var existing))
+                throw new InvalidOperationException($"Ownership link {request.OwnershipLinkId} was not found.");
+            if (request.EffectiveTo < existing.EffectiveFrom)
+                throw new InvalidOperationException("Ownership link expiration cannot be earlier than its effective-from timestamp.");
+
+            var notes = string.IsNullOrWhiteSpace(request.Notes) ? existing.Notes : request.Notes;
+            var expired = existing with { EffectiveTo = request.EffectiveTo, Notes = notes };
+            snap.OwnershipLinks[expired.OwnershipLinkId] = expired;
+            RebuildOwnershipProjections(snap);
+            await PersistChangedAsync(snap, ct).ConfigureAwait(false);
+            return expired;
+        }
+        finally { _writeLock.Release(); }
+    }
+
+    public async Task<OwnershipLinkDto> ReplaceOwnershipLinkAsync(
+        ReplaceOwnershipLinkRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        var parentKind = await ResolveNodeKindAsync(request.ParentNodeId, ct).ConfigureAwait(false);
+        var childKind = await ResolveNodeKindAsync(request.ChildNodeId, ct).ConfigureAwait(false);
+        if (parentKind is null) throw new InvalidOperationException($"Parent node {request.ParentNodeId} was not found.");
+        if (childKind is null) throw new InvalidOperationException($"Child node {request.ChildNodeId} was not found.");
+
+        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+            if (!snap.OwnershipLinks.TryGetValue(request.OwnershipLinkId, out var existing))
+                throw new InvalidOperationException($"Ownership link {request.OwnershipLinkId} was not found.");
+            if (snap.OwnershipLinks.ContainsKey(request.ReplacementOwnershipLinkId))
+                throw new InvalidOperationException($"Ownership link {request.ReplacementOwnershipLinkId} already exists.");
+
+            var replacedEffectiveTo = request.ReplacedEffectiveTo ?? request.EffectiveFrom;
+            if (replacedEffectiveTo < existing.EffectiveFrom)
+                throw new InvalidOperationException("Replacement expiration cannot be earlier than the replaced link's effective-from timestamp.");
+
+            snap.OwnershipLinks[existing.OwnershipLinkId] = existing with { EffectiveTo = replacedEffectiveTo };
+            if (parentKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ParentNodeId);
+            if (childKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ChildNodeId);
+
+            var replacement = new OwnershipLinkDto(
+                request.ReplacementOwnershipLinkId,
+                request.ParentNodeId,
+                request.ChildNodeId,
+                request.RelationshipType,
+                request.OwnershipPercent,
+                request.IsPrimary,
+                request.EffectiveFrom,
+                EffectiveTo: null,
+                request.Notes);
+            snap.OwnershipLinks[replacement.OwnershipLinkId] = replacement;
+            RebuildOwnershipProjections(snap);
+            await PersistChangedAsync(snap, ct).ConfigureAwait(false);
+            return replacement;
+        }
+        finally { _writeLock.Release(); }
+    }
+
+    public async Task<OwnershipGraphValidationResultDto> ValidateOwnershipGraphAsync(
+        ValidateOwnershipGraphRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+        var asOf = request.AsOf ?? DateTimeOffset.UtcNow;
+        var issues = ValidateOwnershipGraph(snap, request.ActiveOnly, asOf);
+        return new OwnershipGraphValidationResultDto(issues.Count == 0, asOf, issues);
+    }
+
     public async Task<FundStructureAssignmentDto> AssignNodeAsync(
         AssignFundStructureNodeRequest request,
         CancellationToken ct = default)
@@ -831,6 +948,163 @@ public sealed class PostgresFundStructureService : IFundStructureService
     }
 
     // ── Back-reference update ─────────────────────────────────────────────────
+
+    private static void RebuildOwnershipProjections(MutableSnapshot snap)
+    {
+        foreach (var (id, organization) in snap.Organizations.ToList())
+            snap.Organizations[id] = organization with { BusinessIds = [] };
+        foreach (var (id, business) in snap.Businesses.ToList())
+        {
+            snap.Businesses[id] = business with
+            {
+                ClientIds = [],
+                FundIds = [],
+                InvestmentPortfolioIds = []
+            };
+        }
+        foreach (var (id, client) in snap.Clients.ToList())
+            snap.Clients[id] = client with { InvestmentPortfolioIds = [] };
+        foreach (var (id, fund) in snap.Funds.ToList())
+        {
+            snap.Funds[id] = fund with
+            {
+                BusinessId = null,
+                SleeveIds = [],
+                VehicleIds = [],
+                EntityIds = [],
+                InvestmentPortfolioIds = [],
+                AccountIds = []
+            };
+        }
+        foreach (var (id, sleeve) in snap.Sleeves.ToList())
+            snap.Sleeves[id] = sleeve with { InvestmentPortfolioIds = [], AccountIds = [] };
+        foreach (var (id, vehicle) in snap.Vehicles.ToList())
+            snap.Vehicles[id] = vehicle with { InvestmentPortfolioIds = [], AccountIds = [] };
+        foreach (var (id, portfolio) in snap.InvestmentPortfolios.ToList())
+        {
+            snap.InvestmentPortfolios[id] = portfolio with
+            {
+                ClientId = null,
+                FundId = null,
+                SleeveId = null,
+                VehicleId = null,
+                EntityId = null,
+                AccountIds = []
+            };
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        foreach (var link in snap.OwnershipLinks.Values
+            .Where(link => IsOwnershipLinkVisible(link, activeOnly: true, now))
+            .OrderBy(static link => link.EffectiveFrom)
+            .ThenBy(static link => link.OwnershipLinkId))
+        {
+            ApplyOwnershipLink(link, snap);
+        }
+    }
+
+    private static List<OwnershipGraphValidationIssueDto> ValidateOwnershipGraph(
+        MutableSnapshot snap,
+        bool activeOnly,
+        DateTimeOffset asOf)
+    {
+        var issues = new List<OwnershipGraphValidationIssueDto>();
+        var links = snap.OwnershipLinks.Values
+            .Where(link => IsOwnershipLinkVisible(link, activeOnly, asOf))
+            .ToList();
+        foreach (var link in links)
+        {
+            if (link.ParentNodeId == link.ChildNodeId)
+            {
+                issues.Add(new OwnershipGraphValidationIssueDto(
+                    "ownership.self-link",
+                    "Ownership links cannot point a node to itself.",
+                    link.OwnershipLinkId,
+                    link.ParentNodeId));
+            }
+            if (!TryGetNodeKind(snap, link.ParentNodeId, out _))
+            {
+                issues.Add(new OwnershipGraphValidationIssueDto(
+                    "ownership.parent-not-found",
+                    $"Parent node {link.ParentNodeId} was not found.",
+                    link.OwnershipLinkId,
+                    link.ParentNodeId));
+            }
+            if (!TryGetNodeKind(snap, link.ChildNodeId, out _))
+            {
+                issues.Add(new OwnershipGraphValidationIssueDto(
+                    "ownership.child-not-found",
+                    $"Child node {link.ChildNodeId} was not found.",
+                    link.OwnershipLinkId,
+                    link.ChildNodeId));
+            }
+        }
+
+        var adjacency = links
+            .GroupBy(static link => link.ParentNodeId)
+            .ToDictionary(static group => group.Key, static group => group.Select(link => (link.ChildNodeId, link.OwnershipLinkId)).ToList());
+        var visiting = new HashSet<Guid>();
+        var visited = new HashSet<Guid>();
+        foreach (var nodeId in adjacency.Keys.ToList())
+        {
+            DetectOwnershipCycles(nodeId, adjacency, visiting, visited, issues);
+        }
+        return issues;
+    }
+
+    private static bool TryGetNodeKind(MutableSnapshot snap, Guid nodeId, out FundStructureNodeKindDto kind)
+    {
+        if (snap.Organizations.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Organization; return true; }
+        if (snap.Businesses.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Business; return true; }
+        if (snap.Clients.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Client; return true; }
+        if (snap.Funds.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Fund; return true; }
+        if (snap.Sleeves.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Sleeve; return true; }
+        if (snap.Vehicles.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Vehicle; return true; }
+        if (snap.InvestmentPortfolios.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.InvestmentPortfolio; return true; }
+        if (snap.Entities.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Entity; return true; }
+        if (snap.LinkedAccountIds.Contains(nodeId)) { kind = FundStructureNodeKindDto.Account; return true; }
+        kind = default;
+        return false;
+    }
+
+    private static bool DetectOwnershipCycles(
+        Guid nodeId,
+        IReadOnlyDictionary<Guid, List<(Guid ChildNodeId, Guid OwnershipLinkId)>> adjacency,
+        HashSet<Guid> visiting,
+        HashSet<Guid> visited,
+        List<OwnershipGraphValidationIssueDto> issues)
+    {
+        if (visited.Contains(nodeId)) return false;
+        if (!visiting.Add(nodeId))
+        {
+            issues.Add(new OwnershipGraphValidationIssueDto(
+                "ownership.cycle",
+                $"Ownership graph contains a cycle at node {nodeId}.",
+                NodeId: nodeId));
+            return true;
+        }
+        if (adjacency.TryGetValue(nodeId, out var children))
+        {
+            foreach (var (childNodeId, ownershipLinkId) in children)
+            {
+                if (DetectOwnershipCycles(childNodeId, adjacency, visiting, visited, issues))
+                {
+                    issues.Add(new OwnershipGraphValidationIssueDto(
+                        "ownership.cycle-link",
+                        $"Ownership link {ownershipLinkId} participates in a cycle.",
+                        ownershipLinkId,
+                        childNodeId));
+                    return true;
+                }
+            }
+        }
+        visiting.Remove(nodeId);
+        visited.Add(nodeId);
+        return false;
+    }
+
+    private static bool IsOwnershipLinkVisible(OwnershipLinkDto link, bool activeOnly, DateTimeOffset asOf) =>
+        !activeOnly || (link.EffectiveFrom <= asOf && (link.EffectiveTo is null || link.EffectiveTo > asOf));
 
     private static void ApplyOwnershipLink(OwnershipLinkDto link, MutableSnapshot snap)
     {

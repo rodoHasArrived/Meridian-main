@@ -45,6 +45,22 @@ public interface IFundStructureService
         LinkFundStructureNodesRequest request,
         CancellationToken ct = default);
 
+    Task<OwnershipLinkDto> UpdateOwnershipLinkAsync(
+        UpdateOwnershipLinkRequest request,
+        CancellationToken ct = default);
+
+    Task<OwnershipLinkDto> ExpireOwnershipLinkAsync(
+        ExpireOwnershipLinkRequest request,
+        CancellationToken ct = default);
+
+    Task<OwnershipLinkDto> ReplaceOwnershipLinkAsync(
+        ReplaceOwnershipLinkRequest request,
+        CancellationToken ct = default);
+
+    Task<OwnershipGraphValidationResultDto> ValidateOwnershipGraphAsync(
+        ValidateOwnershipGraphRequest request,
+        CancellationToken ct = default);
+
     Task<FundStructureAssignmentDto> AssignNodeAsync(
         AssignFundStructureNodeRequest request,
         CancellationToken ct = default);

@@ -86,8 +86,9 @@ and UI presentation concerns in their owning layers.
   are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
-  mapping workbench orchestration. Ledger mapping resolution stays server-side and reuses
-  fund-structure assignments before falling back to account ledger references.
+  mapping workbench orchestration. Ownership links have first-class lifecycle commands for update,
+  expiration, replacement, and graph validation, and ledger mapping resolution stays server-side and
+  reuses fund-structure assignments before falling back to account ledger references.
 - `FundAccounts/` - internal account balance snapshots, statement intake, account readiness, and
   provider-link history. Balance snapshots preserve optional realized and unrealized P&L values so
   shared provider-ledger reconciliation can compare broker marks with retained internal book

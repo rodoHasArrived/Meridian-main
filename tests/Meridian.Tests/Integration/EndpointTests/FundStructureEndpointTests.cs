@@ -30,6 +30,97 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
+    public async Task OwnershipLifecycleEndpoints_UpdateExpireAndValidateGraph()
+    {
+        var structureService = _fixture.Services.GetRequiredService<IFundStructureService>();
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        var portfolioId = Guid.NewGuid();
+        var linkId = Guid.NewGuid();
+        var now = new DateTimeOffset(2026, 04, 12, 0, 0, 0, TimeSpan.Zero);
+
+        await structureService.CreateOrganizationAsync(new CreateOrganizationRequest(
+            organizationId,
+            $"ORG-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Organization",
+            "USD",
+            now,
+            "endpoint-test"));
+        await structureService.CreateBusinessAsync(new CreateBusinessRequest(
+            businessId,
+            organizationId,
+            BusinessKindDto.FundManager,
+            $"BUS-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Business",
+            "USD",
+            now,
+            "endpoint-test"));
+        await structureService.CreateFundAsync(new CreateFundRequest(
+            fundId,
+            $"FND-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Fund",
+            "USD",
+            now,
+            "endpoint-test",
+            BusinessId: businessId));
+        await structureService.CreateInvestmentPortfolioAsync(new CreateInvestmentPortfolioRequest(
+            portfolioId,
+            businessId,
+            $"PRT-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Portfolio",
+            "USD",
+            now,
+            "endpoint-test",
+            FundId: fundId));
+        await structureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            linkId,
+            fundId,
+            portfolioId,
+            OwnershipRelationshipTypeDto.AllocatesTo,
+            now,
+            "endpoint-test"));
+
+        var updateResponse = await _client.PutAsJsonAsync(
+            $"/api/fund-structure/links/{linkId}",
+            new UpdateOwnershipLinkRequest(
+                Guid.Empty,
+                OwnershipRelationshipTypeDto.Owns,
+                now,
+                "endpoint-test",
+                OwnershipPercent: 60m,
+                IsPrimary: true,
+                Notes: "endpoint update"));
+        var validateResponse = await _client.PostAsJsonAsync(
+            "/api/fund-structure/links/validate",
+            new ValidateOwnershipGraphRequest(AsOf: now.AddHours(1)));
+        var expireResponse = await _client.PostAsJsonAsync(
+            $"/api/fund-structure/links/{linkId}/expire",
+            new ExpireOwnershipLinkRequest(
+                Guid.Empty,
+                now.AddDays(1),
+                "endpoint-test",
+                "endpoint expiration"));
+
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        expireResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await updateResponse.Content.ReadFromJsonAsync<OwnershipLinkDto>();
+        var validation = await validateResponse.Content.ReadFromJsonAsync<OwnershipGraphValidationResultDto>();
+        var expired = await expireResponse.Content.ReadFromJsonAsync<OwnershipLinkDto>();
+
+        updated.Should().NotBeNull();
+        updated!.OwnershipLinkId.Should().Be(linkId);
+        updated.RelationshipType.Should().Be(OwnershipRelationshipTypeDto.Owns);
+        updated.OwnershipPercent.Should().Be(60m);
+        validation.Should().NotBeNull();
+        validation!.IsValid.Should().BeTrue();
+        expired.Should().NotBeNull();
+        expired!.EffectiveTo.Should().Be(now.AddDays(1));
+        expired.Notes.Should().Be("endpoint expiration");
+    }
+
+    [Fact]
     public async Task GetWorkspaceView_WithSeededFundProfile_ReturnsWorkspaceProjection()
     {
         var seed = await SeedFundWorkspaceAsync();
