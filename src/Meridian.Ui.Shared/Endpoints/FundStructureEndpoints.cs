@@ -24,7 +24,16 @@ public static class FundStructureEndpoints
             if (workflow is null)
                 return ServiceUnavailable();
 
-            var draft = JsonSerializer.Deserialize<FundStructureSetupDraftDto>(body.GetRawText(), jsonOptions);
+            FundStructureSetupDraftDto? draft;
+            try
+            {
+                draft = JsonSerializer.Deserialize<FundStructureSetupDraftDto>(body.GetRawText(), jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.Problem($"Setup draft is invalid JSON. {ex.Message}", statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var result = workflow.Preview(draft);
             return Results.Json(result, jsonOptions);
         })
@@ -371,13 +380,22 @@ public static class FundStructureEndpoints
                 return Results.Problem(validationError, statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (!HasLedgerMappingAssignmentPermission(context))
+            {
+                return EndpointAuthorization.TryGetPermissions(context, out _)
+                    ? EndpointHelpers.Forbidden()
+                    : Results.Unauthorized();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = ResolveService(context);
             if (service is null)
                 return ServiceUnavailable();
 
-            var actor = EndpointAuthorization.TryResolveActor(context, out var authenticatedActor)
-                ? authenticatedActor
-                : request!.RequestedBy.Trim();
             var effectiveFrom = request!.EffectiveFrom ?? DateTimeOffset.UtcNow;
             var beforeView = await service.GetAccountingViewAsync(
                     new AccountingStructureQuery(ActiveOnly: true, AsOf: effectiveFrom),
@@ -1117,6 +1135,9 @@ public static class FundStructureEndpoints
 
     private static FundOperationsWorkspaceReadService? ResolveWorkspaceService(HttpContext context) =>
         context.RequestServices.GetService<FundOperationsWorkspaceReadService>();
+
+    private static bool HasLedgerMappingAssignmentPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
 
     private static bool HasReportingWorkflowPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);

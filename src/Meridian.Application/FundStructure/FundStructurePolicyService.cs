@@ -38,11 +38,41 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
         }
 
         ValidateOwnershipWindow(candidate.EffectiveFrom, candidate.EffectiveTo);
+        EnsureKnownKinds(candidate, existingLinks, nodeKinds);
         EnsureRelationshipIsCompatible(candidate.RelationshipType, parentKind, childKind);
         EnsurePrimaryUniqueness(candidate, existingLinks);
         EnsureOwnershipPercent(candidate, existingLinks);
         EnsureNoActiveCycle(candidate, existingLinks);
-        EnsureKnownKinds(existingLinks, nodeKinds);
+    }
+
+    public void ValidateOwnershipUpdate(
+        OwnershipLinkDto existingLink,
+        OwnershipLinkDto updatedLink,
+        FundStructureNodeKindDto parentKind,
+        FundStructureNodeKindDto childKind,
+        IReadOnlyCollection<OwnershipLinkDto> existingLinks,
+        IReadOnlyDictionary<Guid, FundStructureNodeKindDto> nodeKinds)
+    {
+        ArgumentNullException.ThrowIfNull(existingLink);
+        ArgumentNullException.ThrowIfNull(updatedLink);
+
+        if (existingLink.OwnershipLinkId != updatedLink.OwnershipLinkId)
+        {
+            throw new InvalidOperationException("Ownership amendments must keep the existing ownership link identifier.");
+        }
+
+        if (existingLink.ParentNodeId != updatedLink.ParentNodeId || existingLink.ChildNodeId != updatedLink.ChildNodeId)
+        {
+            throw new InvalidOperationException("Ownership amendments cannot move a link to a different parent or child node.");
+        }
+
+        ValidateOwnershipLink(updatedLink, parentKind, childKind, existingLinks, nodeKinds);
+    }
+
+    public void ValidateOwnershipExpiration(OwnershipLinkDto existingLink, DateTimeOffset effectiveTo)
+    {
+        ArgumentNullException.ThrowIfNull(existingLink);
+        ValidateOwnershipWindow(existingLink.EffectiveFrom, effectiveTo);
     }
 
     public void ValidateOwnershipWindow(DateTimeOffset effectiveFrom, DateTimeOffset? effectiveTo)
@@ -66,13 +96,6 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
             throw new InvalidOperationException("Replacement ownership links must use a new identifier.");
         }
 
-        if (existingLink.ParentNodeId != replacementLink.ParentNodeId
-            || existingLink.ChildNodeId != replacementLink.ChildNodeId
-            || existingLink.RelationshipType != replacementLink.RelationshipType)
-        {
-            throw new InvalidOperationException("Replacement ownership links must amend the same parent, child, and relationship type.");
-        }
-
         if (!existingLink.EffectiveTo.HasValue)
         {
             throw new InvalidOperationException("The existing ownership link must be expired before replacement.");
@@ -82,6 +105,42 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
         {
             throw new InvalidOperationException("Replacement ownership windows cannot overlap the expired link.");
         }
+    }
+
+    public void ValidateOwnershipReplacement(
+        OwnershipLinkDto existingLink,
+        OwnershipLinkDto expiredExistingLink,
+        OwnershipLinkDto replacementLink,
+        FundStructureNodeKindDto parentKind,
+        FundStructureNodeKindDto childKind,
+        IReadOnlyCollection<OwnershipLinkDto> existingLinks,
+        IReadOnlyDictionary<Guid, FundStructureNodeKindDto> nodeKinds)
+    {
+        ArgumentNullException.ThrowIfNull(existingLink);
+        ArgumentNullException.ThrowIfNull(expiredExistingLink);
+        ArgumentNullException.ThrowIfNull(replacementLink);
+
+        if (existingLink.OwnershipLinkId != expiredExistingLink.OwnershipLinkId)
+        {
+            throw new InvalidOperationException("Replacement expiration must amend the existing ownership link.");
+        }
+
+        if (existingLink.ParentNodeId != expiredExistingLink.ParentNodeId
+            || existingLink.ChildNodeId != expiredExistingLink.ChildNodeId
+            || existingLink.RelationshipType != expiredExistingLink.RelationshipType)
+        {
+            throw new InvalidOperationException("Replacement expiration cannot change the existing parent, child, or relationship type.");
+        }
+
+        ValidateOwnershipReplacement(expiredExistingLink, replacementLink);
+
+        var simulatedLinks = existingLinks
+            .Where(link => link.OwnershipLinkId != existingLink.OwnershipLinkId
+                && link.OwnershipLinkId != replacementLink.OwnershipLinkId)
+            .Append(expiredExistingLink)
+            .ToList();
+
+        ValidateOwnershipLink(replacementLink, parentKind, childKind, simulatedLinks, nodeKinds);
     }
 
     public void ValidateCashFlowQuery(GovernanceCashFlowQuery query)
@@ -227,7 +286,7 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
     {
         var activeLinks = existingLinks
             .Where(link => link.OwnershipLinkId != candidate.OwnershipLinkId)
-            .Where(link => IsActiveAt(link, candidate.EffectiveFrom))
+            .Where(link => WindowsOverlap(candidate, link))
             .ToList();
 
         var visited = new HashSet<Guid>();
@@ -255,9 +314,15 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
     }
 
     private static void EnsureKnownKinds(
+        OwnershipLinkDto candidate,
         IReadOnlyCollection<OwnershipLinkDto> existingLinks,
         IReadOnlyDictionary<Guid, FundStructureNodeKindDto> nodeKinds)
     {
+        if (!nodeKinds.ContainsKey(candidate.ParentNodeId) || !nodeKinds.ContainsKey(candidate.ChildNodeId))
+        {
+            throw new InvalidOperationException("Ownership validation requires node kind metadata for the candidate link.");
+        }
+
         foreach (var link in existingLinks)
         {
             if (!nodeKinds.ContainsKey(link.ParentNodeId) || !nodeKinds.ContainsKey(link.ChildNodeId))
@@ -269,9 +334,6 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
 
     private static bool RelationshipUsesPercent(OwnershipRelationshipTypeDto relationshipType) =>
         relationshipType is OwnershipRelationshipTypeDto.Owns or OwnershipRelationshipTypeDto.AllocatesTo;
-
-    private static bool IsActiveAt(OwnershipLinkDto link, DateTimeOffset instant) =>
-        link.EffectiveFrom <= instant && (!link.EffectiveTo.HasValue || link.EffectiveTo.Value > instant);
 
     private static bool WindowsOverlap(OwnershipLinkDto left, OwnershipLinkDto right)
     {

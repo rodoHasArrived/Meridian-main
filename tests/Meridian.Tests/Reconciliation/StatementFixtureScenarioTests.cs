@@ -27,6 +27,31 @@ public sealed class StatementFixtureScenarioTests
     }
 
     [Fact]
+    public async Task Scenario_MonthEndShadowedStatementHeader_ReconciliationRejectsDuplicateCanonicalColumns()
+    {
+        var source = Path.Combine(Path.GetTempPath(), $"meridian-shadowed-statement-{Guid.NewGuid():N}.csv");
+        await File.WriteAllLinesAsync(source,
+        [
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate,quantity",
+            "A1,SPY,10,500,0,position,2026-05-29,0"
+        ]);
+        try
+        {
+            var service = new StatementReconciliationService();
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(async () =>
+                await service.ReconcileAsync("broker", source, CancellationToken.None));
+
+            Assert.Contains("duplicate columns", exception.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("quantity", exception.Message, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            File.Delete(source);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_MonthEndDuplicateStatement_ValidationCreatesDuplicateBlocker()
     {
         var path = FixturePath("statement-clean-reconciles.csv");

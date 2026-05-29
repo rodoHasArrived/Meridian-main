@@ -12,7 +12,25 @@ public interface IFundStructurePolicyService
         IReadOnlyCollection<OwnershipLinkDto> existingLinks,
         IReadOnlyDictionary<Guid, FundStructureNodeKindDto> nodeKinds);
 
+    void ValidateOwnershipUpdate(
+        OwnershipLinkDto existingLink,
+        OwnershipLinkDto updatedLink,
+        FundStructureNodeKindDto parentKind,
+        FundStructureNodeKindDto childKind,
+        IReadOnlyCollection<OwnershipLinkDto> existingLinks,
+        IReadOnlyDictionary<Guid, FundStructureNodeKindDto> nodeKinds);
+
+    void ValidateOwnershipExpiration(OwnershipLinkDto existingLink, DateTimeOffset effectiveTo);
     void ValidateOwnershipWindow(DateTimeOffset effectiveFrom, DateTimeOffset? effectiveTo);
     void ValidateOwnershipReplacement(OwnershipLinkDto existingLink, OwnershipLinkDto replacementLink);
+    void ValidateOwnershipReplacement(
+        OwnershipLinkDto existingLink,
+        OwnershipLinkDto expiredExistingLink,
+        OwnershipLinkDto replacementLink,
+        FundStructureNodeKindDto parentKind,
+        FundStructureNodeKindDto childKind,
+        IReadOnlyCollection<OwnershipLinkDto> existingLinks,
+        IReadOnlyDictionary<Guid, FundStructureNodeKindDto> nodeKinds);
+
     void ValidateCashFlowQuery(GovernanceCashFlowQuery query);
 }

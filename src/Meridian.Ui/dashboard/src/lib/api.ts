@@ -1768,9 +1768,9 @@ export interface FundStructureSetupResult {
 }
 
 export async function validateFundStructureSetupDraft(draft: FundStructureSetupDraft, options: ApiRequestOptions = {}): Promise<FundStructureSetupPreview> {
-  return postJson<FundStructureSetupPreview>("/api/fund-structure/setup-drafts/validate", draft, options);
+  return postJson<FundStructureSetupPreview>(FUND_STRUCTURE_API_ENDPOINTS.setupDraftValidate, draft, options);
 }
 
 export async function createFundStructureSetupDraft(draft: FundStructureSetupDraft, options: ApiRequestOptions = {}): Promise<FundStructureSetupResult> {
-  return postJson<FundStructureSetupResult>("/api/fund-structure/setup-drafts/create", draft, options);
+  return postJson<FundStructureSetupResult>(FUND_STRUCTURE_API_ENDPOINTS.setupDraftCreate, draft, options);
 }
