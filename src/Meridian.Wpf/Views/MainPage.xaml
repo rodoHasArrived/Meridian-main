@@ -46,8 +46,10 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <views:WorkspaceCommandSurfaceControl Grid.Row="0" />
-                    <views:WorkspaceEvidenceStripControl Grid.Row="1" />
+                    <views:WorkspaceCommandSurfaceControl Grid.Row="0"
+                                                          SurfaceAutomationId="{Binding WorkspaceCommandSurfaceAutomationId}" />
+                    <views:WorkspaceEvidenceStripControl Grid.Row="1"
+                                                        StripAutomationId="{Binding WorkspaceEvidenceStripAutomationId}" />
 
                     <views:WorkspaceShellContextStripControl x:Name="WorkspaceShellContextStrip"
                                                             Grid.Row="2"

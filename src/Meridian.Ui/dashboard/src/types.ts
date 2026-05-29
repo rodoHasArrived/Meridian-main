@@ -535,6 +535,7 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   reportPackReadiness: OperationsReportPackReadiness;
   closeChecklist: OperationsCloseChecklistTask[];
   closeReadiness: OperationsCloseReadiness | null;
+  closePackage: OperationsClosePackagePublication | null;
   evidenceLinks: OperationsEvidenceLink[];
   blockers: OperationsWorkflowBlocker[];
 }
@@ -544,6 +545,7 @@ export interface OperationsCloseChecklistTask {
   gate: OperationsGateKey;
   label: string;
   owner: string;
+  requiredEvidence: string;
   dueDate: string | null;
   requiredApprovalCount: number;
   expiresOn: string | null;
@@ -554,6 +556,25 @@ export interface OperationsCloseChecklistTask {
   canAcknowledge: boolean;
   acknowledgedAtUtc: string | null;
   acknowledgedBy: string | null;
+}
+
+export interface OperationsClosePackagePublication {
+  closePackageId: string;
+  reportPackId: string;
+  retainedManifestId: string;
+  retainedManifestRoute: string;
+  evidenceHash: string;
+  publishedAtUtc: string;
+  publishedBy: string;
+  signOffRationale: string;
+  evidenceLinks: OperationsEvidenceLink[];
+  checklistControlApprovals: OperationsChecklistControlApproval[];
+}
+
+export interface OperationsChecklistControlApproval {
+  taskId: string;
+  approvedBy: string;
+  approvedAtUtc: string;
 }
 
 export interface OperationsCloseReadiness {

@@ -10,6 +10,7 @@ import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsCloseChecklistTask,
+  OperationsClosePackagePublication,
   OperationsGate,
   OperationsGateKey,
   OperationsGateStatus,
@@ -103,6 +104,22 @@ export interface OperationsContinuityChecklistSummary {
   statusTone: OperationsContinuityTone;
 }
 
+export interface OperationsContinuityClosePackageViewModel {
+  title: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  packageIdLabel: string;
+  reportPackLabel: string;
+  manifestLabel: string;
+  manifestHref: string | null;
+  evidenceHashLabel: string;
+  publishedLabel: string;
+  signerLabel: string;
+  rationaleLabel: string;
+  evidenceLabel: string;
+  approvalLabel: string;
+}
+
 export interface OperationsContinuityNextActionViewModel {
   title: string;
   detail: string;
@@ -156,6 +173,7 @@ export interface OperationsContinuityScreenViewModel {
   checklistSummary: OperationsContinuityChecklistSummary;
   checklistEmptyText: string;
   checklist: OperationsContinuityChecklistRow[];
+  closePackage: OperationsContinuityClosePackageViewModel;
   timelineLabel: string;
   timelineEmptyText: string;
   timeline: OperationsContinuityTimelineRow[];
@@ -393,6 +411,7 @@ export function buildOperationsContinuityScreenViewModel({
     checklistSummary: buildChecklistSummary(checklistSource),
     checklistEmptyText: detailLoading ? "Loading selected workflow checklist..." : "No close checklist tasks are available for the selected workflow.",
     checklist,
+    closePackage: buildClosePackageViewModel(effectiveDetail?.closePackage ?? null, detailLoading),
     timelineLabel: "Timeline",
     timelineEmptyText: detailLoading ? "Loading workflow timeline." : "Open workflow detail to inspect the hash-chained timeline.",
     timeline,
@@ -422,6 +441,7 @@ function buildDetailPanel(
       { label: "Approval", value: detail ? splitEnumLabel(detail.approvalState) : "Detail pending" },
       { label: "Sign-off", value: detail ? buildSignoffSummary(detail) : "Detail pending" },
       { label: "Report pack", value: detail ? buildReportPackSummary(detail) : "Detail pending" },
+      { label: "Close package", value: detail ? buildClosePackageSummary(detail.closePackage) : "Detail pending" },
       { label: "Close evidence", value: detail ? buildCloseEvidenceSummary(detail) : "Detail pending" },
       { label: "Latest audit", value: detail ? buildLatestAuditSummary(detail) : "Detail pending" },
       { label: "Break cases", value: detail ? String(detail.breakCases.length) : "Detail pending" },
@@ -455,6 +475,14 @@ function buildReportPackSummary(detail: OperationsContinuityWorkflow): string {
   return readiness.blockingReason?.trim()
     ? `Blocked: ${readiness.blockingReason}`
     : "Blocked until close evidence is complete";
+}
+
+function buildClosePackageSummary(closePackage: OperationsClosePackagePublication | null): string {
+  if (!closePackage) {
+    return "Not published";
+  }
+
+  return `${closePackage.closePackageId} signed by ${closePackage.publishedBy || "unknown"} at ${formatDate(closePackage.publishedAtUtc)}`;
 }
 
 function buildCloseEvidenceSummary(detail: OperationsContinuityWorkflow): string {
@@ -644,7 +672,7 @@ function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsCo
       statusTone: checklistStatusTone(task.status),
       dueLabel: task.dueDate ? formatDate(task.dueDate) : "No due date",
       expiresLabel: task.expiresOn ? formatDate(task.expiresOn) : "No expiration",
-      requiredEvidence: task.evidencePointer?.trim() || "Evidence pointer pending",
+      requiredEvidence: task.requiredEvidence?.trim() || task.evidencePointer?.trim() || "Required evidence pending",
       approvalLabel: task.requiredApprovalCount === 0
         ? "No control approvals required"
         : `${task.requiredApprovalCount} control approval${task.requiredApprovalCount === 1 ? "" : "s"} required`,
@@ -655,6 +683,53 @@ function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsCo
       ariaLabel: `${task.label || gateLabel(task.gate)} checklist task, ${splitEnumLabel(task.status || "Unknown")}, ${task.owner?.trim() || "owner pending"}`
     };
   });
+}
+
+function buildClosePackageViewModel(
+  closePackage: OperationsClosePackagePublication | null,
+  loading: boolean
+): OperationsContinuityClosePackageViewModel {
+  if (!closePackage) {
+    return {
+      title: "Close package",
+      statusLabel: loading ? "Loading" : "Not published",
+      statusTone: "neutral",
+      packageIdLabel: loading ? "Package pending" : "No close package published",
+      reportPackLabel: "Report pack pending",
+      manifestLabel: "Retained manifest pending",
+      manifestHref: null,
+      evidenceHashLabel: "Evidence hash pending",
+      publishedLabel: "Publication pending",
+      signerLabel: "Signer pending",
+      rationaleLabel: "Sign-off rationale pending",
+      evidenceLabel: "No retained evidence links",
+      approvalLabel: "No checklist control approvals"
+    };
+  }
+
+  const manifestHref = normalizeLocalWorkstationRoute(closePackage.retainedManifestRoute) ?? null;
+  const evidenceCount = closePackage.evidenceLinks.length;
+  const approvalCount = closePackage.checklistControlApprovals.length;
+
+  return {
+    title: "Close package",
+    statusLabel: "Published",
+    statusTone: "ready",
+    packageIdLabel: closePackage.closePackageId || "Package id pending",
+    reportPackLabel: closePackage.reportPackId ? `Report pack ${closePackage.reportPackId}` : "Report pack pending",
+    manifestLabel: closePackage.retainedManifestId || "Retained manifest pending",
+    manifestHref,
+    evidenceHashLabel: closePackage.evidenceHash || "Evidence hash pending",
+    publishedLabel: `Published ${formatDate(closePackage.publishedAtUtc)}`,
+    signerLabel: closePackage.publishedBy ? `Signed by ${closePackage.publishedBy}` : "Signer pending",
+    rationaleLabel: closePackage.signOffRationale?.trim() || "Sign-off rationale pending",
+    evidenceLabel: evidenceCount === 0
+      ? "No retained evidence links"
+      : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
+    approvalLabel: approvalCount === 0
+      ? "No checklist control approvals"
+      : `${approvalCount} checklist control approval${approvalCount === 1 ? "" : "s"}`
+  };
 }
 
 function buildChecklistSummary(tasks: OperationsCloseChecklistTask[]): OperationsContinuityChecklistSummary {

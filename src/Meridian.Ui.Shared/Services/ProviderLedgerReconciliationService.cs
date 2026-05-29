@@ -2250,8 +2250,12 @@ public sealed class ProviderLedgerReconciliationService
                 $"evidenceSource={candidate.EvidenceSource}",
                 $"amount={FormatAmount(candidate.Amount)}",
                 ledgerEffect is null ? null : $"ledgerEffect={ledgerEffect.LedgerEffectKind}",
+                ledgerEffect?.EffectiveDate is null ? null : $"effectiveDate={ledgerEffect.EffectiveDate.Value:yyyy-MM-dd}",
+                ledgerEffect?.Factor is null ? null : $"factor={FormatAmount(ledgerEffect.Factor)}",
+                ledgerEffect?.CashAmount is null ? null : $"cashAmount={FormatAmount(ledgerEffect.CashAmount)}",
                 ledgerEffect?.PrincipalAmount is null ? null : $"principalAmount={FormatAmount(ledgerEffect.PrincipalAmount)}",
                 ledgerEffect?.IncomeAmount is null ? null : $"incomeAmount={FormatAmount(ledgerEffect.IncomeAmount)}",
+                string.IsNullOrWhiteSpace(ledgerEffect?.Currency) ? null : $"currency={ledgerEffect.Currency}",
                 ledgerEffect is null ? null : $"journalLines={ledgerEffect.JournalLines.Count}",
                 $"status={candidate.Status}"
             }.Where(static part => !string.IsNullOrWhiteSpace(part)));

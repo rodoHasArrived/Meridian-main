@@ -244,7 +244,11 @@ public sealed record LedgerAmountProvenanceEvidenceDto(
     string? LedgerEffectKind = null,
     decimal? PrincipalAmount = null,
     decimal? IncomeAmount = null,
-    int? JournalPreviewLineCount = null);
+    int? JournalPreviewLineCount = null,
+    DateOnly? EffectiveDate = null,
+    decimal? Factor = null,
+    decimal? CashAmount = null,
+    string? Currency = null);
 
 public sealed record LedgerAmountSecurityMasterLinkDto(
     string Symbol,

@@ -432,6 +432,69 @@ export function OperationsContinuityScreen() {
       </section>
 
       <section className="grid gap-4">
+        <Card className={cn("border", tonePanel[vm.closePackage.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle>{vm.closePackage.title}</CardTitle>
+                <CardDescription>Governed close publication from the shared operations-continuity workflow.</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.closePackage.statusTone]}>{vm.closePackage.statusLabel}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <dl
+              aria-label="Close package publication summary"
+              className="grid gap-3 text-xs leading-5 sm:grid-cols-2 lg:grid-cols-4"
+            >
+              <div>
+                <dt className="eyebrow-label">Package</dt>
+                <dd className="break-words font-mono text-foreground">{vm.closePackage.packageIdLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Report pack</dt>
+                <dd className="break-words text-foreground">{vm.closePackage.reportPackLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Manifest</dt>
+                <dd className="break-words font-mono text-foreground">
+                  {vm.closePackage.manifestHref ? (
+                    <Link to={vm.closePackage.manifestHref} aria-label="Open retained close package manifest">
+                      {vm.closePackage.manifestLabel}
+                    </Link>
+                  ) : vm.closePackage.manifestLabel}
+                </dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Evidence hash</dt>
+                <dd className="break-all font-mono text-foreground">{vm.closePackage.evidenceHashLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Publication</dt>
+                <dd className="text-foreground">{vm.closePackage.publishedLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Sign-off</dt>
+                <dd className="text-foreground">{vm.closePackage.signerLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Evidence</dt>
+                <dd className="text-foreground">{vm.closePackage.evidenceLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Approvals</dt>
+                <dd className="text-foreground">{vm.closePackage.approvalLabel}</dd>
+              </div>
+              <div className="sm:col-span-2 lg:col-span-4">
+                <dt className="eyebrow-label">Rationale</dt>
+                <dd className="text-foreground">{vm.closePackage.rationaleLabel}</dd>
+              </div>
+            </dl>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4">
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
