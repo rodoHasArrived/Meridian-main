@@ -34,6 +34,10 @@ fund/accounting reports.
 income-statement and balance-sheet rows with net-income and accounting-equation checks.
 `MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares
 balanced unrealized FX revaluation journal lines for monetary asset/liability accounts.
+`FixedIncomeAmortizationProjector` produces balanced coupon accrual, discount accretion, and
+premium amortization lines for bond accounting workflows before persistence or approval posting.
+`LedgerAccountTaxLotPolicyBook` resolves FIFO/LIFO/HIFO/SpecificId relief methods at the ledger
+account level so accounting statements can follow front-office lot-relief policy.
 
 ## Diagrams
 

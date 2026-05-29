@@ -33,6 +33,11 @@ This layer persists durable state and evidence. It should expose storage seams w
 
 Use this module for persistence, replay evidence, storage maintenance, package import/export, and durable operator evidence.
 
+Ledger journal appends are fail-closed for instrument-bearing postings. Any journal line that
+targets securities, dividends, accrued interest, corporate actions, options, futures MTM, short
+securities, or a symbol-scoped ledger account must carry Security Master provenance plus approved
+lineage that includes a ledger mapping reference before `ILedgerJournalStore` accepts it.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

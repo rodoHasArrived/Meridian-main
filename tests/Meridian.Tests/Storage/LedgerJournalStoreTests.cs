@@ -193,6 +193,59 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_InstrumentEntry_AllowsApprovedMappedSecurityMasterLineage()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(period.PeriodId);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void PostingGuard_InstrumentEntry_RequiresSecurityMasterProvenance()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            includeSecurityMasterProvenance: false);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without Security Master provenance*");
+    }
+
+    [Fact]
+    public void PostingGuard_InstrumentEntry_RequiresSecurityMasterApprovalEvidence()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            includeApprovalEvidence: false);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without approved Security Master evidence*");
+    }
+
+    [Fact]
+    public void PostingGuard_InstrumentEntry_RequiresSecurityMasterLedgerMapping()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            includeLedgerMapping: false);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without a Security Master ledger mapping reference*");
+    }
+
+    [Fact]
     public void LedgerJournalMigration_DefinesJournalTablesAndLineageColumns()
     {
         var sql = ReadMigration("V_ledger_001__journal_entries.sql");
@@ -301,6 +354,71 @@ public sealed class LedgerJournalStoreTests
                 ]),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
+    }
+
+    private static LedgerJournalEntryWrite BuildInstrumentJournalWrite(
+        Guid periodId,
+        bool includeSecurityMasterProvenance = true,
+        bool includeApprovalEvidence = true,
+        bool includeLedgerMapping = true)
+    {
+        var journalEntryId = Guid.NewGuid();
+        var occurredAt = DateTimeOffset.Parse("2026-01-31T21:00:00Z");
+        var securityId = Guid.Parse("BCE42470-8F6B-4BD3-9FC7-B8763F8B48B1");
+        const string symbol = "AAPL";
+        const string description = "Approved Security Master instrument posting";
+        var mapping = includeLedgerMapping ? "ledger-map:aapl-gaap-securities" : "missing";
+        var approval = includeApprovalEvidence ? "sm-approval:aapl-controller" : "missing";
+        var provenance = includeApprovalEvidence
+            ? $"security-master:{securityId:N};snapshot:test-source-hash;approved:true"
+            : $"security-master:{securityId:N};snapshot:test-source-hash";
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["securityMasterLineage"] = $"{symbol}:{securityId:N}:{mapping}:{approval}:{provenance}"
+        };
+        if (includeSecurityMasterProvenance)
+        {
+            tags["securityMasterProvenance"] = provenance;
+        }
+
+        return new LedgerJournalEntryWrite(
+            new JournalEntry(
+                journalEntryId,
+                occurredAt,
+                description,
+                [
+                    new LedgerEntry(
+                        Guid.NewGuid(),
+                        journalEntryId,
+                        occurredAt,
+                        new LedgerAccount("Securities", LedgerAccountType.Asset, symbol),
+                        debit: 100m,
+                        credit: 0m,
+                        description),
+                    new LedgerEntry(
+                        Guid.NewGuid(),
+                        journalEntryId,
+                        occurredAt,
+                        new LedgerAccount("Cash", LedgerAccountType.Asset),
+                        debit: 0m,
+                        credit: 100m,
+                        description)
+                ],
+                new JournalEntryMetadata(
+                    ActivityType: "operations-continuity",
+                    Symbol: symbol,
+                    SecurityId: securityId,
+                    LedgerBook: "fund-close",
+                    Tags: tags)),
+            AggregateId: Guid.NewGuid(),
+            PeriodId: periodId,
+            CommandId: Guid.NewGuid(),
+            AccountingPolicyId: "legacy-v1",
+            AccountingPolicyVersion: "legacy-v1",
+            RuleId: "operations-continuity-instrument-posting",
+            RuleVersion: "v1",
+            SourceEventId: Guid.NewGuid(),
+            PostingKind: LedgerPostingKindDto.Originating);
     }
 
     private static LedgerAccountingPeriod BuildAccountingPeriod(string status) =>

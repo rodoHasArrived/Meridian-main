@@ -15,8 +15,9 @@
 book/period APIs, period-close inbox routing, period posting-kind guards, run-ledger drill-ins,
 customizable hierarchical chart-of-accounts rollups, ledger-domain income-statement/balance-sheet
 projection, local-to-base currency translation, unrealized FX revaluation line generation, and the
-first governed trial-balance report-pack artifact slice are complete. Accrual-to-ledger posting and
-ledger-specific reporting endpoints remain open.
+first fixed-income coupon/accretion/amortization journal projection are complete. Durable
+accrual-to-ledger posting, account-level tax-lot policy persistence, and ledger-specific reporting
+endpoints remain open.
 
 ## Overview
 
@@ -49,6 +50,8 @@ baseline.
 | `ChartOfAccounts.cs` | Customizable colon-delimited account hierarchy with parent creation and rollup balances |
 | `LedgerFinancialStatementBuilder.cs` | Trial-balance projection into income-statement and balance-sheet read models |
 | `MultiCurrencyLedgerTranslator.cs` | Local-currency balance translation and unrealized FX revaluation journal lines |
+| `FixedIncomeAmortizationProjector.cs` | Coupon accrual, discount accretion, and premium amortization journal-line projection |
+| `LedgerAccountTaxLotPolicyBook.cs` | Account-level FIFO/LIFO/HIFO/SpecificId relief policy resolution |
 | `LedgerAccountType.cs` | Asset / Liability / Equity / Revenue / Expense ordinals |
 | `JournalEntry.cs` | Balanced set of `LedgerEntry` lines |
 | `JournalEntryMetadata.cs` | Command/correlation/causation lineage attached to a journal entry |

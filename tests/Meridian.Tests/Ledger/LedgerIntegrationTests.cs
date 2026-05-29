@@ -896,6 +896,112 @@ public sealed class LedgerIntegrationTests
             line.credit == 50m);
     }
 
+    [Fact]
+    public void FixedIncomeAmortizationProjector_ProjectsCouponAndDiscountAccretionLines()
+    {
+        var carryingAccount = LedgerAccounts.Securities("corp2029", "broker-1");
+
+        var projection = FixedIncomeAmortizationProjector.Project(new FixedIncomeAmortizationInput(
+            "corp2029",
+            carryingAccount,
+            CouponAccrual: 20m,
+            DiscountAccretion: 5m,
+            PremiumAmortization: 0m,
+            FinancialAccountId: "broker-1"));
+
+        projection.Symbol.Should().Be("CORP2029");
+        projection.IsBalanced.Should().BeTrue();
+        projection.TotalDebits.Should().Be(25m);
+        projection.TotalCredits.Should().Be(25m);
+        projection.Lines.Should().Contain(line =>
+            line.account.Name == "Accrued Interest Receivable" &&
+            line.account.Symbol == "CORP2029" &&
+            line.debit == 20m);
+        projection.Lines.Should().Contain(line => line.account == carryingAccount && line.debit == 5m);
+        projection.Lines.Where(line => line.account.Name == "Coupon Income").Sum(line => line.credit).Should().Be(25m);
+    }
+
+    [Fact]
+    public void FixedIncomeAmortizationProjector_ProjectsPremiumAmortizationAsIncomeReduction()
+    {
+        var carryingAccount = LedgerAccounts.Securities("muni2031");
+
+        var projection = FixedIncomeAmortizationProjector.Project(new FixedIncomeAmortizationInput(
+            "muni2031",
+            carryingAccount,
+            CouponAccrual: 0m,
+            DiscountAccretion: 0m,
+            PremiumAmortization: 7.5m));
+
+        projection.IsBalanced.Should().BeTrue();
+        projection.Lines.Should().Contain(line => line.account == LedgerAccounts.CouponIncome && line.debit == 7.5m);
+        projection.Lines.Should().Contain(line => line.account == carryingAccount && line.credit == 7.5m);
+    }
+
+    [Fact]
+    public void FixedIncomeAmortizationProjector_RejectsNegativeAmounts()
+    {
+        var carryingAccount = LedgerAccounts.Securities("UST2030");
+
+        var act = () => FixedIncomeAmortizationProjector.Project(new FixedIncomeAmortizationInput(
+            "UST2030",
+            carryingAccount,
+            CouponAccrual: 0m,
+            DiscountAccretion: -1m,
+            PremiumAmortization: 0m));
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void LedgerAccountTaxLotPolicyBook_ResolvesAccountSpecificReliefMethod()
+    {
+        var policyBook = new LedgerAccountTaxLotPolicyBook();
+        var account = LedgerAccounts.Securities("AAPL", "broker-1");
+        var effectiveDate = new DateOnly(2026, 1, 1);
+
+        var registered = policyBook.Register(
+            account,
+            LedgerTaxLotReliefMethod.Hifo,
+            "policy-hifo-aapl",
+            effectiveDate,
+            "Minimize realized gains for this sleeve.");
+
+        var resolved = policyBook.Resolve(account, new DateOnly(2026, 5, 28));
+
+        resolved.Should().Be(registered);
+        resolved.ReliefMethod.Should().Be(LedgerTaxLotReliefMethod.Hifo);
+        resolved.PolicyId.Should().Be("policy-hifo-aapl");
+        resolved.Rationale.Should().Be("Minimize realized gains for this sleeve.");
+    }
+
+    [Fact]
+    public void LedgerAccountTaxLotPolicyBook_UsesDefaultWhenAccountPolicyIsMissing()
+    {
+        var policyBook = new LedgerAccountTaxLotPolicyBook(LedgerTaxLotReliefMethod.Lifo);
+        var account = LedgerAccounts.Securities("MSFT", "broker-2");
+
+        var resolved = policyBook.Resolve(account, new DateOnly(2026, 5, 28));
+
+        resolved.Account.Should().Be(account);
+        resolved.ReliefMethod.Should().Be(LedgerTaxLotReliefMethod.Lifo);
+        resolved.PolicyId.Should().Be("default");
+    }
+
+    [Fact]
+    public void LedgerAccountTaxLotPolicyBook_RejectsPoliciesBeforeEffectiveDate()
+    {
+        var policyBook = new LedgerAccountTaxLotPolicyBook();
+        var account = LedgerAccounts.Securities("TSLA");
+        policyBook.Register(account, LedgerTaxLotReliefMethod.SpecificId, "policy-specific", new DateOnly(2026, 6, 1));
+
+        var act = () => policyBook.Resolve(account, new DateOnly(2026, 5, 28));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*not effective until 2026-06-01*");
+    }
+
     private static JournalEntry BuildGeneratedBalancedJournal(
         int lineCountSeed,
         int amountSeed,

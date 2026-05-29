@@ -104,6 +104,22 @@ account symbols such as the `EUR` symbol on `LedgerAccounts.CashInCurrency("EUR"
 base balances are supplied, it can produce balanced unrealized FX revaluation lines against the
 monetary asset or liability account and the scoped unrealized FX gain/loss accounts.
 
+### `FixedIncomeAmortizationProjector`
+
+`FixedIncomeAmortizationProjector` produces balanced journal-line drafts for fixed-income coupon
+accrual, discount accretion, and premium amortization. Coupon accrual debits accrued interest
+receivable and credits coupon income. Discount accretion increases the carrying-value asset and
+credits coupon income. Premium amortization debits coupon income and credits the carrying-value
+asset, reducing interest income over the amortization period.
+
+### `LedgerAccountTaxLotPolicyBook`
+
+`LedgerAccountTaxLotPolicyBook` resolves tax-lot relief policy at the `LedgerAccount` boundary.
+It keeps ledger accounting aware of whether a security account should use FIFO, LIFO, HIFO, or
+specific-lot identification without adding a dependency from `Meridian.Ledger` back to execution
+lot selectors. Execution and front-office lot engines can map the ledger enum to their selector
+implementations while report and close workflows retain account-level policy evidence.
+
 ---
 
 ## How backtesting posts to the ledger

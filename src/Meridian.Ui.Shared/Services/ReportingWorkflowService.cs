@@ -193,11 +193,14 @@ public sealed class ReportPackWorkflowService
     private static void EnsureRole(ReportPackWorkflowStateDto target, string role)
     {
         var normalized = role.Trim().ToLowerInvariant();
-        var allowed = target switch
+
+        var allowed =
+            target == ReportPackWorkflowStateDto.InReview ||
+            target == ReportPackWorkflowStateDto.Validated ||
+            target == ReportPackWorkflowStateDto.PendingApproval
+                ? normalized is "operator" or "reviewer" or "validator"
+                : target switch
         {
-            ReportPackWorkflowStateDto.InReview => normalized is "operator" or "reviewer" or "validator",
-            ReportPackWorkflowStateDto.Validated => normalized is "operator" or "reviewer" or "validator",
-            ReportPackWorkflowStateDto.PendingApproval => normalized is "operator" or "reviewer" or "validator",
             ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
             ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
             ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
