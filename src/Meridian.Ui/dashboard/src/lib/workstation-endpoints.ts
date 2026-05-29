@@ -33,6 +33,8 @@ export const AUTH_API_ENDPOINTS = {
 } as const;
 
 export const FUND_STRUCTURE_API_ENDPOINTS = {
+  setupDraftValidate: "/api/fund-structure/setup-drafts/validate",
+  setupDraftCreate: "/api/fund-structure/setup-drafts/create",
   ledgerMappingWorkbench: "/api/fund-structure/ledger-mapping-view",
   ledgerMappingAssignments: "/api/fund-structure/ledger-mapping-assignments",
   transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview"

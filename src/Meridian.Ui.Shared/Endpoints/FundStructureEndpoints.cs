@@ -24,7 +24,16 @@ public static class FundStructureEndpoints
             if (workflow is null)
                 return ServiceUnavailable();
 
-            var draft = JsonSerializer.Deserialize<FundStructureSetupDraftDto>(body.GetRawText(), jsonOptions);
+            FundStructureSetupDraftDto? draft;
+            try
+            {
+                draft = JsonSerializer.Deserialize<FundStructureSetupDraftDto>(body.GetRawText(), jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.Problem($"Setup draft is invalid JSON. {ex.Message}", statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var result = workflow.Preview(draft);
             return Results.Json(result, jsonOptions);
         })
