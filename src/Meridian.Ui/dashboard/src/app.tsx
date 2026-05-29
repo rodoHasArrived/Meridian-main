@@ -45,6 +45,7 @@ import { legacyWorkspaceRedirect } from "@/lib/workspace";
 const DataOperationsScreen = lazy(() => import("@/screens/data-operations-screen").then((module) => ({ default: module.DataOperationsScreen })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const GovernanceScreen = lazy(() => import("@/screens/governance-screen").then((module) => ({ default: module.GovernanceScreen })));
+const AlternativesScreen = lazy(() => import("@/screens/alternatives-screen").then((module) => ({ default: module.AlternativesScreen })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
@@ -344,6 +345,7 @@ function AppShell() {
                   )} />
                   <Route path="/trading/*" element={<TradingScreen data={trading} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
+                  <Route path="/portfolio/alternatives" element={<AlternativesScreen />} />
                   <Route path="/portfolio/*" element={(
                     <PortfolioScreen
                       portfolio={portfolio}

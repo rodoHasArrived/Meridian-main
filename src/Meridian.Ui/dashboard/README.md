@@ -147,6 +147,16 @@ npm --prefix src/Meridian.Ui/dashboard run build
 Do not create mobile-first workflows or native mobile clients. Prefer shared read models and
 endpoint contracts for behavior also consumed by WPF or host workflows.
 
+## Portfolio alternatives browser surface
+
+Portfolio now includes `/portfolio/alternatives` as a private alternatives register reachable from
+Portfolio navigation and the family-office route. The screen keeps fixture/import-backed private
+asset records in a browser view-model seam until custodian and private-market integrations are
+available, and renders explicit operator warnings for `manual valuation`, `statement imported`,
+`unreconciled`, `missing source document`, and `stale NAV` across the asset list, detail drawer,
+commitment summary, valuation history, document/evidence panel, capital activity timeline, and stale
+data warnings.
+
 ## Related docs
 
 - `src/Meridian.Ui/README.md`

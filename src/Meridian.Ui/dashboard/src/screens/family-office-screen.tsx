@@ -1,10 +1,12 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { AlertTriangle, Boxes, GitBranch, Landmark, Network, TableProperties, WalletCards } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { cn } from "@/lib/utils";
 import {
   buildFamilyOfficeScreenViewModel,
@@ -140,6 +142,9 @@ export function FamilyOfficeScreen() {
             ) : null}
           </div>
           <div className="flex flex-wrap gap-2 lg:justify-end">
+            <Button asChild variant="outline" size="sm">
+              <Link to={WORKSTATION_ROUTE_CATALOG.portfolioAlternatives}>Open alternatives register</Link>
+            </Button>
             {vm.statusChips.map((chip) => (
               <span
                 key={chip.label}
