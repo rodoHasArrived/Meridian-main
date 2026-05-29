@@ -102,7 +102,8 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="20"
+          AutomationProperties.AutomationId="WorkspaceHomeSettingsCockpitTemplate">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -117,11 +118,13 @@
                                            Grid.Row="1"
                                            CommandGroup="{Binding CommandGroup}"
                                            CommandInvoked="OnCommandBarCommandInvoked"
-                                           Margin="0,16,0,0" />
+                                           Margin="0,16,0,0"
+                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceSettings" />
 
         <Border Grid.Row="2"
                 Style="{StaticResource SectionCardStyle}"
-                Margin="0,16,0,16">
+                Margin="0,16,0,16"
+                AutomationProperties.AutomationId="WorkspaceEvidenceStripSettings">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.5*" />
@@ -248,7 +251,8 @@
             </ScrollViewer>
 
             <Border Grid.Column="2"
-                    Style="{StaticResource WorkspaceWorkbenchCardStyle}">
+                    Style="{StaticResource WorkspaceWorkbenchCardStyle}"
+                    AutomationProperties.AutomationId="WorkspaceInspectorHostSettings">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
