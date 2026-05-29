@@ -79,6 +79,15 @@ ledger activity, reconciliation status, and report-pack output.
 4. **One golden path:** prove onboarding -> imports/documents -> account/private-asset setup -> capital activity -> reconciliation -> report pack -> stakeholder access review.
 5. **Conservative readiness language:** SFO MVP status should remain planned/in-progress until the golden path has focused tests and operator acceptance evidence.
 
+## Implementation Slices
+
+| Slice | Goal | Workspaces touched | Acceptance evidence |
+| --- | --- | --- | --- |
+| 1. Shared SFO model | Define the concept contracts, identifiers, lifecycle state, and `EvidenceLink` relationships needed by all operator surfaces. | Portfolio, Accounting, Reporting, Data, Settings | Contract tests or schema fixtures show every core concept can carry evidence references and workspace ownership metadata. |
+| 2. Onboarding and ownership graph | Create one family-office fixture with family members, entities, ownership nodes/edges, and account assignments. | Accounting, Settings, Portfolio | Operator fixture proves entity setup, role assignment, ownership rollup, and account-to-entity lineage without creating a new root workspace. |
+| 3. Private assets and capital activity | Attach private-asset records, valuation evidence, capital notices, ledger impact, and reconciliation status to the fixture. | Portfolio, Accounting, Data | Import/reconciliation evidence traces each private asset and capital activity item back to source documents or provider/custodian feeds. |
+| 4. Report pack and stakeholder room | Generate a report pack from approved balance-sheet, holdings, exposure, capital-activity, and exception evidence. | Reporting, Settings, Data | Access-policy tests or acceptance notes prove only authorized stakeholders can view the appropriate report-pack sections and evidence appendix. |
+
 ## Out Of Scope For MVP
 
 - Legal advice or legal-document drafting.
