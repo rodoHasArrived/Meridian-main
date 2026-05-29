@@ -80,10 +80,10 @@ rules. The shared W4 acceptance filter keeps governed report-pack acceptance evi
 evidence-vault manifest/export support so pilot readiness cannot mark W4 done from support
 artifacts alone. The shared fund-structure endpoints expose report-pack workflow creation,
 validation, submission, approval, review rejection, publication, restatement, history, and archival
-routes backed by shared contracts; review rejection records the reason, actor/role metadata, and
-optional evidence links, and rejected packs must return through draft, validation, submission, and
-approval before publication. Restatement changed lines must carry evidence links before the workflow
-can advance. Publication also rejects line provenance that omits the reported value or lacks a run,
+routes backed by shared contracts; review rejection is valid from `InReview`, records the reason,
+actor/role metadata, and optional evidence links, and rejected packs must return through draft,
+submission, and approval before publication. Restatement changed lines must carry evidence links before
+the workflow can advance. Publication also rejects line provenance that omits the reported value or lacks a run,
 source-session, ledger-entry, reconciliation-case, or reconciliation-run pointer, and each retained
 line must carry ledger, provider-event, Security Master definition, reconciliation-outcome, and
 approval references before publication. That keeps value-level report lineage enforceable in the

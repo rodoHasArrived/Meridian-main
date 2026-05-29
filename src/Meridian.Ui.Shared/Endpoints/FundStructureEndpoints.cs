@@ -739,6 +739,7 @@ public static class FundStructureEndpoints
             }
         })
         .WithName("RejectReportingPackWorkflow")
+        .Accepts<ReportPackRejectRequestDto>("application/json")
         .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)

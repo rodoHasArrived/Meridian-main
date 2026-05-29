@@ -429,6 +429,7 @@ public enum ReportPackWorkflowStateDto
     Published = 4,
     Restated = 5,
     Archived = 6,
+    /// <summary>Reviewer-returned report pack that must be resubmitted before approval and publication.</summary>
     Rejected = 7,
     PendingApproval = 8
 }
@@ -465,6 +466,7 @@ public sealed record ReportPackPublicationManifestDto(
     string SignedOffBy,
     DateTimeOffset SignedOffAt,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks);
+/// <summary>Request payload for publishing an approved report pack into retained evidence storage.</summary>
 public sealed record ReportPackPublishRequestDto(
     string SignedOffBy,
     string EvidenceHash,
@@ -472,6 +474,7 @@ public sealed record ReportPackPublishRequestDto(
     string RetainedManifestPath,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
     string? Note = null);
+/// <summary>Request payload for rejecting an in-review report pack with reviewer metadata and supporting evidence.</summary>
 public sealed record ReportPackRejectRequestDto(
     string Reason,
     string Actor,
@@ -483,12 +486,14 @@ public sealed record ReportPackCreateRequestDto(
     string Period,
     VersionedReportTemplateIdDto TemplateId,
     IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null);
+/// <summary>Durable metadata captured when a published report pack is restated.</summary>
 public sealed record ReportPackRestatementMetadataDto(
     string ReasonCode,
     string Approver,
     Guid PriorVersionReportId,
     IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
     IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+/// <summary>Durable rejection decision retained on a report pack after review-state rejection.</summary>
 public sealed record ReportPackRejectionMetadataDto(
     string Reason,
     string Actor,

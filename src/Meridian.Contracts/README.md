@@ -60,8 +60,9 @@ provenance exists but approved identity or accounting mapping proof is still mis
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
 retained manifest path, retained evidence links, report-line provenance, create requests, publish
-requests, explicit rejection requests with reason, actor/role, and optional evidence-link metadata,
-and restatement requests with approver, prior-version, changed-line, and evidence-link metadata.
+requests, explicit `Rejected` state support, explicit review-state rejection requests with reason,
+actor/role, and optional evidence-link metadata, and restatement requests with approver,
+prior-version, changed-line, and evidence-link metadata.
 Pilot readiness contracts also carry W4 acceptance evidence categories and roles so acceptance proof
 can be distinguished from evidence-vault manifest/export support in serialized artifacts.
 Report-line provenance carries the reported value plus run, source-session, ledger-entry,
