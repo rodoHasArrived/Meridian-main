@@ -34,6 +34,9 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
+The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
+
+
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext

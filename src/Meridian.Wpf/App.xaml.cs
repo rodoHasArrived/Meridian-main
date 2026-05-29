@@ -275,6 +275,7 @@ public partial class App : System.Windows.Application
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Meridian",
                 "fund-structure.json")));
+        services.AddSingleton<FundStructureSetupWorkflowService>();
         services.AddSingleton<EnvironmentDesignerService>(_ => new EnvironmentDesignerService(
             Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -340,6 +341,7 @@ public partial class App : System.Windows.Application
 
         // ── Additional pages not yet catalog-backed ─────────────────────────
         services.AddTransient<FundProfileSelectionPage>();
+        services.AddTransient<FundStructureSetupPage>();
         services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();
@@ -373,6 +375,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.ProviderViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundStructureSetupViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundAccountsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundLedgerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
