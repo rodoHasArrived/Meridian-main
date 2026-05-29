@@ -78,6 +78,9 @@ commands.
 Settings/Admin cockpit work uses `WorkstationStatePanelControl` for schedule and cleanup readiness
 state so maintenance blockers, confirmation posture, and evidence summaries reuse the same
 `WorkspaceTone` semantics as other operational pages.
+Data Quality terminal work uses `DenseDataGridControl` for the symbol-quality table with
+view-model-owned selected-row drilldown and provider-comparison command state, keeping the Data
+workspace on shared dense-table behavior without changing data-quality service contracts.
 
 ## Diagrams
 

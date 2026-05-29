@@ -34,7 +34,10 @@ public sealed class AssetClassValidatorRegistry
         => _validators.TryGetValue(assetClass, out validator!);
 
     public static AssetClassValidatorRegistry CreateDefault()
-        => new(DefaultAssetClassValidators.Create());
+        => CreateDefault(StaticSecurityAssetProfileCatalog.CreateDefault());
+
+    public static AssetClassValidatorRegistry CreateDefault(ISecurityAssetProfileCatalog assetProfileCatalog)
+        => new(DefaultAssetClassValidators.Create(assetProfileCatalog));
 }
 
 internal static class SecurityValidationIssueFactory
@@ -59,8 +62,13 @@ internal static class SecurityValidationIssueFactory
 
 internal static class DefaultAssetClassValidators
 {
-    public static IReadOnlyList<ISecurityAssetClassValidator> Create()
-        =>
+    public static IReadOnlyList<ISecurityAssetClassValidator> Create(ISecurityAssetProfileCatalog assetProfileCatalog)
+    {
+        ArgumentNullException.ThrowIfNull(assetProfileCatalog);
+        var optionalProfileValidator = new SecurityAssetProfileAssetClassValidator("OtherSecurity", assetProfileCatalog, requireProfileReference: false);
+        var requiredProfileValidator = new SecurityAssetProfileAssetClassValidator("CustomAsset", assetProfileCatalog, requireProfileReference: true);
+
+        return
         [
             new JsonAssetClassValidator(
                 "Equity",
@@ -155,10 +163,15 @@ internal static class DefaultAssetClassValidators
                     FieldRule.RequiredString("sweepVehicleType", "SM_CASH_SWEEP_VEHICLE_REQUIRED", "Cash sweep vehicle type is missing", "Cash sweeps must include a sweep vehicle type."),
                     FieldRule.OptionalNonNegative("yieldRate", "SM_CASH_SWEEP_YIELD_RATE_INVALID", "Cash sweep yield is invalid", "Cash sweep yield rates must be zero or greater.")
                 ]),
-            new JsonAssetClassValidator(
+            new CompositeAssetClassValidator(
                 "OtherSecurity",
                 [
-                    FieldRule.RequiredString("category", "SM_OTHER_SECURITY_CATEGORY_REQUIRED", "Other security category is missing", "OtherSecurity records must include a category.")
+                    new JsonAssetClassValidator(
+                        "OtherSecurity",
+                        [
+                            FieldRule.RequiredString("category", "SM_OTHER_SECURITY_CATEGORY_REQUIRED", "Other security category is missing", "OtherSecurity records must include a category.")
+                        ]),
+                    optionalProfileValidator
                 ]),
             new JsonAssetClassValidator(
                 "Swap",
@@ -199,8 +212,10 @@ internal static class DefaultAssetClassValidators
                     FieldRule.RequiredAllowedString("warrantType", ["Put", "Call"], "SM_WARRANT_TYPE_INVALID", "Warrant type is invalid", "Warrant type must be Put or Call."),
                     FieldRule.OptionalPositive("strike", "SM_WARRANT_STRIKE_INVALID", "Warrant strike is invalid", "Warrant strike must be greater than zero when supplied."),
                     FieldRule.OptionalPositive("multiplier", "SM_WARRANT_MULTIPLIER_INVALID", "Warrant multiplier is invalid", "Warrant multiplier must be greater than zero when supplied.")
-                ])
+                ]),
+            requiredProfileValidator
         ];
+    }
 }
 
 internal sealed class JsonAssetClassValidator : ISecurityAssetClassValidator

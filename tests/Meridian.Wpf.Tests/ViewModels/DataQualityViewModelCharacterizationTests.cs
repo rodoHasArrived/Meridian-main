@@ -99,6 +99,68 @@ public sealed class DataQualityViewModelCharacterizationTests
     }
 
     [Fact]
+    public void SymbolQualityTable_ShouldExposeDenseTerminalColumns()
+    {
+        using var viewModel = CreateSubject();
+
+        viewModel.SymbolQualityTable.Title.Should().Be("Data quality by symbol");
+        viewModel.SymbolQualityTable.Rows.Should().BeSameAs(viewModel.FilteredSymbols);
+        viewModel.SymbolQualityTable.Columns.Select(static column => column.Header).Should().ContainInOrder(
+            "Symbol",
+            "Score",
+            "Grade",
+            "Status",
+            "Issues",
+            "Last Update");
+    }
+
+    [Fact]
+    public void SelectedSymbolQuality_ShouldOwnDrilldownStateAndCompareAvailability()
+    {
+        using var viewModel = CreateSubject();
+        var symbol = new SymbolQualityModel
+        {
+            Symbol = "SPY",
+            Score = 98.1,
+            ScoreFormatted = "98.1%",
+            Grade = "A",
+            Status = "Healthy",
+            Issues = "None",
+            LastUpdate = DateTimeOffset.UtcNow,
+            LastUpdateFormatted = "Now"
+        };
+
+        viewModel.SelectedSymbolQuality = symbol;
+
+        viewModel.CanCompareSelectedSymbol.Should().BeTrue();
+        viewModel.IsDrilldownVisible.Should().BeTrue();
+        viewModel.DrilldownSymbolHeader.Should().Contain("SPY");
+
+        viewModel.SelectedSymbolQuality = null;
+
+        viewModel.CanCompareSelectedSymbol.Should().BeFalse();
+        viewModel.IsDrilldownVisible.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ApplySymbolFilter_WhenSelectedRowIsFilteredOut_ShouldClearDrilldown()
+    {
+        using var viewModel = CreateSubject();
+        var selected = new SymbolQualityModel { Symbol = "AAPL", ScoreFormatted = "99.0%", Grade = "A", Status = "Healthy" };
+        viewModel.SymbolQuality.Add(selected);
+        viewModel.SymbolQuality.Add(new SymbolQualityModel { Symbol = "MSFT" });
+        viewModel.ApplySymbolFilter(string.Empty);
+        viewModel.SelectedSymbolQuality = selected;
+
+        viewModel.ApplySymbolFilter("MSFT");
+
+        viewModel.SelectedSymbolQuality.Should().BeNull();
+        viewModel.CanCompareSelectedSymbol.Should().BeFalse();
+        viewModel.IsDrilldownVisible.Should().BeFalse();
+        viewModel.FilteredSymbols.Should().ContainSingle(symbol => symbol.Symbol == "MSFT");
+    }
+
+    [Fact]
     public void ApplySymbolFilter_WhenLibraryIsEmpty_KeepsSetupEmptyState()
     {
         using var viewModel = CreateSubject();
