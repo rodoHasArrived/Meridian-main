@@ -14,6 +14,35 @@ import type {
 const workflowId = "w4-close-2026-05";
 const fundAccountId = "fund-account-alpha";
 
+type W4AcceptanceEvidenceCategory =
+  | "ReconciliationCasework"
+  | "AccountingCloseChecklist"
+  | "ReportingReviewApproval"
+  | "GovernedReportPackPublication"
+  | "RestatementReadiness"
+  | "EvidenceVaultManifestExportSupport";
+
+type W4AcceptanceEvidenceRole = "Acceptance" | "Support";
+
+interface W4AcceptanceEvidenceContract {
+  readonly category: W4AcceptanceEvidenceCategory;
+  readonly role: W4AcceptanceEvidenceRole;
+  readonly evidenceId: string;
+  readonly route: string;
+}
+
+const requiredW4AcceptanceCategories: readonly W4AcceptanceEvidenceCategory[] = [
+  "ReconciliationCasework",
+  "AccountingCloseChecklist",
+  "ReportingReviewApproval",
+  "GovernedReportPackPublication",
+  "RestatementReadiness"
+];
+
+const requiredW4SupportCategories: readonly W4AcceptanceEvidenceCategory[] = [
+  "EvidenceVaultManifestExportSupport"
+];
+
 const closedGates: OperationsGate[] = [
   {
     gateKey: "BrokerIngest",
@@ -440,6 +469,45 @@ const reporting: GovernanceReportingSummary = {
   ]
 };
 
+const lifecycleW4AcceptanceEvidence: readonly W4AcceptanceEvidenceContract[] = [
+  {
+    category: "ReconciliationCasework",
+    role: "Acceptance",
+    evidenceId: "case-signed-off-evidence",
+    route: "/accounting/reconciliation/recon-break-42/evidence"
+  },
+  {
+    category: "AccountingCloseChecklist",
+    role: "Acceptance",
+    evidenceId: "close-package-manifest",
+    route: "/accounting/operations-continuity/w4-close-2026-05/close-package/close-package-2026-05-manifest"
+  },
+  {
+    category: "ReportingReviewApproval",
+    role: "Acceptance",
+    evidenceId: "approval-evidence-1",
+    route: "/accounting/approvals/approval-close-2026-05"
+  },
+  {
+    category: "GovernedReportPackPublication",
+    role: "Acceptance",
+    evidenceId: "publication-evidence",
+    route: "/reporting/report-packs/report-published-2026-05/manifest"
+  },
+  {
+    category: "RestatementReadiness",
+    role: "Acceptance",
+    evidenceId: "restatement-review-evidence",
+    route: "/reporting/report-packs/report-run-review-2026-05/restatement"
+  },
+  {
+    category: "EvidenceVaultManifestExportSupport",
+    role: "Support",
+    evidenceId: "report-pack-ready-evidence",
+    route: "/reporting/report-packs/report-pack-2026-05/manifest"
+  }
+];
+
 describe("W4 acceptance browser parity", () => {
   it("blocks W4 Done evidence unless close checklist, signed reconciliation casework, and report-pack readiness hand off as one lifecycle", () => {
     const closeVm = buildOperationsContinuityScreenViewModel({
@@ -474,6 +542,24 @@ describe("W4 acceptance browser parity", () => {
       href: "/reporting/report-packs",
       disabled: false
     });
+
+    const acceptanceCategories = lifecycleW4AcceptanceEvidence
+      .filter((item) => item.role === "Acceptance")
+      .map((item) => item.category);
+    const supportCategories = lifecycleW4AcceptanceEvidence
+      .filter((item) => item.role === "Support")
+      .map((item) => item.category);
+    expect(acceptanceCategories).toEqual(requiredW4AcceptanceCategories);
+    expect(supportCategories).toEqual(requiredW4SupportCategories);
+    expect(lifecycleW4AcceptanceEvidence.map((item) => item.evidenceId)).toEqual([
+      "case-signed-off-evidence",
+      "close-package-manifest",
+      "approval-evidence-1",
+      "publication-evidence",
+      "restatement-review-evidence",
+      "report-pack-ready-evidence"
+    ]);
+    expect(lifecycleW4AcceptanceEvidence.every((item) => item.route.startsWith("/"))).toBe(true);
 
     const reconciliationVm = buildReconciliationBreakQueueState({
       breakQueue: [signedOffBreak],

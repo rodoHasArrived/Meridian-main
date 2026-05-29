@@ -33,6 +33,27 @@ class GoldenPathValidationWorkflowTests(unittest.TestCase):
             self.workflow,
         )
 
+    def test_workflow_blocks_pilot_acceptance_on_w4_parity_filters(self) -> None:
+        for expected in [
+            "browser-w4-parity:",
+            "wpf-w4-acceptance:",
+            "npm --prefix src/Meridian.Ui/dashboard run test:w4",
+            "--filter \"Category=W4Acceptance\"",
+            "needs:",
+            "- browser-w4-parity",
+            "- wpf-w4-acceptance",
+        ]:
+            self.assertIn(expected, self.workflow)
+
+    def test_workflow_triggers_on_w4_browser_and_desktop_surfaces(self) -> None:
+        for watched_path in [
+            "src/Meridian.Ui/dashboard/package.json",
+            "src/Meridian.Ui/dashboard/src/screens/**",
+            "src/Meridian.Wpf/**",
+            "tests/Meridian.Wpf.Tests/**",
+        ]:
+            self.assertIn(watched_path, self.workflow)
+
     def test_workflow_triggers_on_shared_golden_path_surfaces(self) -> None:
         for watched_path in [
             "src/Meridian.Application/Commands/LedgerCliCommand.cs",
