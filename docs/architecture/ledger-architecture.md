@@ -129,6 +129,15 @@ corporate-action expenses. Drafts include normalized metadata and optional sourc
 approval, reconciliation, and reporting flows can trace the automated journal back to the upstream
 event.
 
+### `LockedAccountingPeriodBook`
+
+`LockedAccountingPeriodBook` is the in-memory, book-key-scoped period-lock companion for
+`ProjectLedgerBook`. It records immutable `LockedAccountingPeriod` audit facts with period range,
+lock owner, lock timestamp, and reason, then guards `Post` and `PostLines` calls before the target
+ledger mutates. Locks are scoped by `LedgerBookKey`, so a published actuals period can reject late
+May journals while a separate shadow-NAV or scenario ledger remains available for independent
+validation. Overlapping locks for the same book are rejected to keep close evidence unambiguous.
+
 ---
 
 ## How backtesting posts to the ledger

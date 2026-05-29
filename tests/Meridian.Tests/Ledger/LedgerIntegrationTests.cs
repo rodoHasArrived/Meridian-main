@@ -1058,6 +1058,106 @@ public sealed class LedgerIntegrationTests
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
+    [Fact]
+    public void LockedAccountingPeriodBook_RejectsPostingInsideLockedPeriod()
+    {
+        var projectLedgers = new ProjectLedgerBook("fund-alpha");
+        var locks = new LockedAccountingPeriodBook();
+        var key = new LedgerBookKey("fund-alpha", "Fund", LedgerViewKind.Actual);
+        var cash = LedgerAccounts.CashAccount("broker-1");
+        var revenue = LedgerAccounts.DividendIncomeFor("broker-1");
+        var periodStart = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
+        var periodEnd = new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero);
+
+        locks.LockPeriod(
+            key,
+            "2026-05",
+            periodStart,
+            periodEnd,
+            new DateTimeOffset(2026, 6, 2, 12, 0, 0, TimeSpan.Zero),
+            "nav-controller",
+            "Published May NAV.");
+
+        var act = () => locks.PostLines(
+            projectLedgers,
+            key,
+            new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero),
+            "late dividend",
+            new[] { (cash, 15m, 0m), (revenue, 0m, 15m) });
+
+        act.Should()
+            .Throw<LedgerValidationException>()
+            .WithMessage("*2026-05*locked*");
+        projectLedgers.GetOrCreate(key).JournalEntryCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void LockedAccountingPeriodBook_AllowsPostingOutsideLockedPeriodAndScopesByBook()
+    {
+        var projectLedgers = new ProjectLedgerBook("fund-alpha");
+        var locks = new LockedAccountingPeriodBook();
+        var actualKey = new LedgerBookKey("fund-alpha", "Fund", LedgerViewKind.Actual);
+        var shadowKey = new LedgerBookKey("fund-alpha", "ShadowNAV", LedgerViewKind.Actual);
+        var cash = LedgerAccounts.CashAccount("broker-1");
+        var revenue = LedgerAccounts.CashInterestIncomeFor("broker-1");
+
+        locks.LockPeriod(
+            actualKey,
+            "2026-05",
+            new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            DateTimeOffset.UtcNow,
+            "nav-controller",
+            "Published May NAV.");
+
+        locks.PostLines(
+            projectLedgers,
+            actualKey,
+            new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            "June interest",
+            new[] { (cash, 5m, 0m), (revenue, 0m, 5m) });
+        locks.PostLines(
+            projectLedgers,
+            shadowKey,
+            new DateTimeOffset(2026, 5, 15, 0, 0, 0, TimeSpan.Zero),
+            "shadow nav adjustment",
+            new[] { (cash, 7m, 0m), (revenue, 0m, 7m) });
+
+        projectLedgers.GetOrCreate(actualKey).JournalEntryCount.Should().Be(1);
+        projectLedgers.GetOrCreate(shadowKey).JournalEntryCount.Should().Be(1);
+        locks.TryFindLock(actualKey, new DateTimeOffset(2026, 5, 10, 0, 0, 0, TimeSpan.Zero), out var lockedPeriod).Should().BeTrue();
+        lockedPeriod!.LockedBy.Should().Be("nav-controller");
+    }
+
+    [Fact]
+    public void LockedAccountingPeriodBook_RejectsOverlappingLocksForSameBook()
+    {
+        var locks = new LockedAccountingPeriodBook();
+        var key = new LedgerBookKey("fund-alpha", "Fund");
+
+        locks.LockPeriod(
+            key,
+            "2026-05",
+            new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 5, 31, 23, 59, 59, TimeSpan.Zero),
+            DateTimeOffset.UtcNow,
+            "nav-controller",
+            "Published May NAV.");
+
+        var act = () => locks.LockPeriod(
+            key,
+            "2026-05-overlap",
+            new DateTimeOffset(2026, 5, 15, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 6, 15, 23, 59, 59, TimeSpan.Zero),
+            DateTimeOffset.UtcNow,
+            "nav-controller",
+            "Duplicate close range.");
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*overlaps*");
+    }
+
     private static JournalEntry BuildGeneratedBalancedJournal(
         int lineCountSeed,
         int amountSeed,

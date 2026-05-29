@@ -40,6 +40,9 @@ premium amortization lines for bond accounting workflows before persistence or a
 account level so accounting statements can follow front-office lot-relief policy.
 `AutomatedJournalDraftProjector` produces balanced drafts for dividend declarations, dividend
 receipts, cash-interest credits, and corporate-action cash events before workflow approval/posting.
+`LockedAccountingPeriodBook` records book-scoped accounting period locks and rejects late journal
+postings that fall inside a locked range, preserving published NAV and close evidence while still
+allowing separate books such as shadow-NAV ledgers to continue independently.
 
 ## Diagrams
 

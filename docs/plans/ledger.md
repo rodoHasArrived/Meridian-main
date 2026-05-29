@@ -15,7 +15,8 @@
 book/period APIs, period-close inbox routing, period posting-kind guards, run-ledger drill-ins,
 customizable hierarchical chart-of-accounts rollups, ledger-domain income-statement/balance-sheet
 projection, local-to-base currency translation, unrealized FX revaluation line generation, and the
-first fixed-income coupon/accretion/amortization journal projection are complete. Durable
+first fixed-income coupon/accretion/amortization journal projection are complete. The in-memory
+ledger domain now also has book-scoped locked-period guards for post-close/NAV protection. Durable
 accrual-to-ledger posting, journal automation persistence/approval, account-level tax-lot policy
 persistence, and ledger-specific reporting endpoints remain open.
 
@@ -53,6 +54,7 @@ baseline.
 | `FixedIncomeAmortizationProjector.cs` | Coupon accrual, discount accretion, and premium amortization journal-line projection |
 | `LedgerAccountTaxLotPolicyBook.cs` | Account-level FIFO/LIFO/HIFO/SpecificId relief policy resolution |
 | `AutomatedJournalDraftProjector.cs` | Balanced journal drafts for dividends, cash interest, and corporate-action cash events |
+| `LockedAccountingPeriodBook.cs` | Book-scoped accounting-period lock registry and guarded posting helpers |
 | `LedgerAccountType.cs` | Asset / Liability / Equity / Revenue / Expense ordinals |
 | `JournalEntry.cs` | Balanced set of `LedgerEntry` lines |
 | `JournalEntryMetadata.cs` | Command/correlation/causation lineage attached to a journal entry |
