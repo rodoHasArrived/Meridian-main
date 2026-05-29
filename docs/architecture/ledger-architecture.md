@@ -96,6 +96,11 @@ income-statement rows, balance-sheet rows, net income, ending equity, and an acc
 variance. Totals are computed from the flat trial balance to avoid double-counting parent rollups;
 rows use the chart hierarchy for operator-facing statement sections.
 
+Closed-period trial-balance endpoints also expose `LedgerTrialBalanceReportDto`, which wraps the
+same server-derived period rows with locked-period status, debit/credit/net-income totals,
+accounting-policy lineage, and a SHA-256 checksum signature. The line-list route remains available
+for simple grids, while the report route gives export and audit surfaces a single signed payload.
+
 ### `LedgerReportPackBuilder`
 
 `LedgerReportPackBuilder` packages point-in-time financial statements into export-ready ledger

@@ -253,10 +253,12 @@ controller-facing readiness score used by workflow detail and close calendar pay
 provider freshness, Security Master completeness, ledger posting, reconciliation-break,
 report-pack, and approval blockers server-owned so browser and WPF clients do not recalculate close
 status.
-`/api/ledger/periods/{periodId}/trial-balance` and `/api/ledger/periods/{periodId}/pnl-summary`
-expose closed-period ledger reports from the shared ledger book service. They keep trial balance,
-revenue, expense, net income, prior-period variance, open-break count, and signoff posture
-server-derived for browser and WPF accounting surfaces.
+`/api/ledger/periods/{periodId}/trial-balance`,
+`/api/ledger/periods/{periodId}/trial-balance-report`, and
+`/api/ledger/periods/{periodId}/pnl-summary` expose closed-period ledger reports from the shared
+ledger book service. They keep trial balance, signed period-locked report totals, revenue,
+expense, net income, prior-period variance, open-break count, and signoff posture server-derived
+for browser and WPF accounting surfaces.
 `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` aggregate those
 closed-period summaries across a selected book, fund, node, accounting basis, and date range for
 regulatory, investor, and internal reporting surfaces.
