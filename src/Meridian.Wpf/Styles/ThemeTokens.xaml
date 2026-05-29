@@ -113,6 +113,7 @@
     <SolidColorBrush x:Key="ErrorColorBrush"               Color="{StaticResource ConsoleAccentRed}" />
     <SolidColorBrush x:Key="InfoColorBrush"                Color="{StaticResource ConsoleAccentBlue}" />
     <SolidColorBrush x:Key="ConsoleAccentBlueBrush"        Color="{StaticResource ConsoleAccentBlue}" />
+    <SolidColorBrush x:Key="ConsoleAccentBlueDimBrush"     Color="{StaticResource ConsoleAccentBlueDim}" />
     <SolidColorBrush x:Key="AccentCyanBrush"               Color="{StaticResource ConsoleAccentCyan}" />
     <SolidColorBrush x:Key="AccentPurpleBrush"             Color="{StaticResource ConsoleAccentPurple}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenDimBrush"    Color="{StaticResource ConsoleAccentGreenDim}" />
