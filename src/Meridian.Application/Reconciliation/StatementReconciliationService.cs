@@ -359,6 +359,7 @@ public sealed class StatementReconciliationService
         }
 
         var actual = header.Split(',', StringSplitOptions.TrimEntries);
+        EnsureUniqueStatementHeaderColumns(actual, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);
         if (!CanonicalCsvHeaderPrefixMatches(actual))
         {
             throw new InvalidDataException("Statement source must use the canonical external statement header: account,symbol,quantity,price,cashAmount,activityType,tradeDate.");
@@ -375,6 +376,7 @@ public sealed class StatementReconciliationService
         }
 
         var actual = header.Split(',', StringSplitOptions.TrimEntries);
+        EnsureUniqueStatementHeaderColumns(actual, profile.ProfileId);
         if (profile.ProfileId.Equals(StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase)
             && !CanonicalCsvHeaderPrefixMatches(actual))
         {
@@ -394,6 +396,24 @@ public sealed class StatementReconciliationService
         return profile;
     }
 
+    private static void EnsureUniqueStatementHeaderColumns(string[] header, string profileId)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var duplicates = new List<string>();
+        foreach (var column in header.Where(column => !string.IsNullOrWhiteSpace(column)))
+        {
+            if (!seen.Add(column) && !duplicates.Contains(column, StringComparer.OrdinalIgnoreCase))
+            {
+                duplicates.Add(column);
+            }
+        }
+
+        if (duplicates.Count > 0)
+        {
+            throw new InvalidDataException($"Statement source contains duplicate columns for mapping profile '{profileId}': {string.Join(", ", duplicates)}.");
+        }
+    }
+
     private static bool CanonicalCsvHeaderPrefixMatches(string[] actual)
     {
         var canonicalColumns = StatementMappingProfileRegistry.Defaults
@@ -411,7 +431,10 @@ public sealed class StatementReconciliationService
         var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         for (var i = 0; i < header.Length; i++)
         {
-            map[header[i]] = i < parts.Length ? parts[i] : string.Empty;
+            if (!map.TryAdd(header[i], i < parts.Length ? parts[i] : string.Empty))
+            {
+                throw new InvalidDataException($"Statement source contains duplicate column '{header[i]}'.");
+            }
         }
 
         return map;
