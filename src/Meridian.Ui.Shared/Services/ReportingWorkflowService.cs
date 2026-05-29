@@ -32,9 +32,16 @@ public sealed class ReportPackWorkflowService
     private static readonly IReadOnlyDictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]> AllowedTransitions =
         new Dictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]>
         {
+<<<<<<< ours
             [ReportPackWorkflowStateDto.Draft] = [ReportPackWorkflowStateDto.InReview, ReportPackWorkflowStateDto.Validated],
             [ReportPackWorkflowStateDto.Validated] = [ReportPackWorkflowStateDto.InReview, ReportPackWorkflowStateDto.Draft],
             [ReportPackWorkflowStateDto.InReview] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Draft],
+=======
+            [ReportPackWorkflowStateDto.Draft] = [ReportPackWorkflowStateDto.Validated],
+            [ReportPackWorkflowStateDto.Validated] = [ReportPackWorkflowStateDto.PendingApproval, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.PendingApproval] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Rejected, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.Rejected] = [ReportPackWorkflowStateDto.Draft],
+>>>>>>> theirs
             [ReportPackWorkflowStateDto.Approved] = [ReportPackWorkflowStateDto.Published],
             [ReportPackWorkflowStateDto.Published] = [ReportPackWorkflowStateDto.Restated, ReportPackWorkflowStateDto.Archived],
             [ReportPackWorkflowStateDto.Restated] = [ReportPackWorkflowStateDto.Archived],
@@ -85,6 +92,33 @@ public sealed class ReportPackWorkflowService
         };
         _records[reportId] = next;
         return next;
+    }
+
+    public ReportPackWorkflowRecordDto Reject(Guid reportId, string reason, string actor, string role, IReadOnlyList<ReportPackEvidenceLinkDto>? evidenceLinks = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(role);
+
+        var transitioned = TransitionCore(reportId, ReportPackWorkflowStateDto.Rejected, actor, role, reason.Trim());
+        var rejectedAt = DateTimeOffset.UtcNow;
+        var next = transitioned with
+        {
+            Rejection = new ReportPackRejectionMetadataDto(
+                reason.Trim(),
+                actor.Trim(),
+                role.Trim(),
+                rejectedAt,
+                evidenceLinks is null ? null : NormalizeEvidenceLinks(evidenceLinks))
+        };
+        _records[reportId] = next;
+        return next;
+    }
+
+    public ReportPackWorkflowRecordDto Reject(Guid reportId, ReportPackRejectRequestDto request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return Reject(reportId, request.Reason, request.Actor, request.ActorRole, request.EvidenceLinks);
     }
 
     public ReportPackWorkflowRecordDto Restate(Guid reportId, string actor, string role, string reasonCode, string approver, Guid priorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> changedLines)
@@ -168,6 +202,11 @@ public sealed class ReportPackWorkflowService
         {
             ReportPackWorkflowStateDto.InReview => normalized is "operator" or "reviewer" or "validator",
             ReportPackWorkflowStateDto.Validated => normalized is "operator" or "reviewer" or "validator",
+<<<<<<< ours
+=======
+            ReportPackWorkflowStateDto.PendingApproval => normalized is "operator" or "reviewer" or "validator",
+            ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
+>>>>>>> theirs
             ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
             ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
             ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",
@@ -195,7 +234,12 @@ public sealed class ReportPackWorkflowService
                 ReconciliationCaseId = string.IsNullOrWhiteSpace(item.ReconciliationCaseId) ? null : item.ReconciliationCaseId.Trim(),
                 ReportValue = string.IsNullOrWhiteSpace(item.ReportValue) ? null : item.ReportValue.Trim(),
                 SourceSessionId = string.IsNullOrWhiteSpace(item.SourceSessionId) ? null : item.SourceSessionId.Trim(),
-                ReconciliationRunId = string.IsNullOrWhiteSpace(item.ReconciliationRunId) ? null : item.ReconciliationRunId.Trim()
+                ReconciliationRunId = string.IsNullOrWhiteSpace(item.ReconciliationRunId) ? null : item.ReconciliationRunId.Trim(),
+                ProviderEventId = string.IsNullOrWhiteSpace(item.ProviderEventId) ? null : item.ProviderEventId.Trim(),
+                SecurityMasterId = string.IsNullOrWhiteSpace(item.SecurityMasterId) ? null : item.SecurityMasterId.Trim(),
+                SecurityDefinitionId = string.IsNullOrWhiteSpace(item.SecurityDefinitionId) ? null : item.SecurityDefinitionId.Trim(),
+                ReconciliationOutcome = string.IsNullOrWhiteSpace(item.ReconciliationOutcome) ? null : item.ReconciliationOutcome.Trim(),
+                ApprovalId = string.IsNullOrWhiteSpace(item.ApprovalId) ? null : item.ApprovalId.Trim()
             })
             .ToArray() ?? [];
 
@@ -243,6 +287,45 @@ public sealed class ReportPackWorkflowService
         {
             throw new InvalidOperationException(
                 $"Report pack line provenance requires run, session, ledger, or reconciliation source pointers for: {string.Join(", ", missingSourcePointers.Order(StringComparer.OrdinalIgnoreCase))}.");
+        }
+
+        EnsureLineProvenanceCategory(
+            lineProvenance,
+            static line => !string.IsNullOrWhiteSpace(line.LedgerEntryId),
+            "ledger entries");
+        EnsureLineProvenanceCategory(
+            lineProvenance,
+            static line => !string.IsNullOrWhiteSpace(line.ProviderEventId),
+            "provider events");
+        EnsureLineProvenanceCategory(
+            lineProvenance,
+            static line => !string.IsNullOrWhiteSpace(line.SecurityMasterId) || !string.IsNullOrWhiteSpace(line.SecurityDefinitionId),
+            "Security Master definitions");
+        EnsureLineProvenanceCategory(
+            lineProvenance,
+            static line => (!string.IsNullOrWhiteSpace(line.ReconciliationRunId) || !string.IsNullOrWhiteSpace(line.ReconciliationCaseId))
+                && !string.IsNullOrWhiteSpace(line.ReconciliationOutcome),
+            "reconciliation outcomes");
+        EnsureLineProvenanceCategory(
+            lineProvenance,
+            static line => !string.IsNullOrWhiteSpace(line.ApprovalId),
+            "approval references");
+    }
+
+    private static void EnsureLineProvenanceCategory(
+        IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance,
+        Func<ReportPackLineProvenanceDto, bool> predicate,
+        string category)
+    {
+        var missing = lineProvenance
+            .Where(line => !predicate(line))
+            .Select(static line => line.LineKey)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (missing.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"Report pack line provenance requires {category} for: {string.Join(", ", missing.Order(StringComparer.OrdinalIgnoreCase))}.");
         }
     }
 

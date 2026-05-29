@@ -404,7 +404,8 @@ public enum ReportPackWorkflowStateDto
     Approved = 3,
     Published = 4,
     Restated = 5,
-    Archived = 6
+    Archived = 6,
+    Rejected = 7
 }
 
 public sealed record VersionedReportTemplateIdDto(string Name, int Version);
@@ -426,7 +427,12 @@ public sealed record ReportPackLineProvenanceDto(
     string? ReconciliationCaseId = null,
     string? ReportValue = null,
     string? SourceSessionId = null,
-    string? ReconciliationRunId = null);
+    string? ReconciliationRunId = null,
+    string? ProviderEventId = null,
+    string? SecurityMasterId = null,
+    string? SecurityDefinitionId = null,
+    string? ReconciliationOutcome = null,
+    string? ApprovalId = null);
 public sealed record ReportPackPublicationManifestDto(
     string ManifestId,
     string RetainedManifestPath,
@@ -441,6 +447,11 @@ public sealed record ReportPackPublishRequestDto(
     string RetainedManifestPath,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
     string? Note = null);
+public sealed record ReportPackRejectRequestDto(
+    string Reason,
+    string Actor,
+    string ActorRole,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
 public sealed record ReportPackCreateRequestDto(
     string FundProfileId,
     string FundAccountId,
@@ -452,6 +463,12 @@ public sealed record ReportPackRestatementMetadataDto(
     string Approver,
     Guid PriorVersionReportId,
     IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+public sealed record ReportPackRejectionMetadataDto(
+    string Reason,
+    string Actor,
+    string ActorRole,
+    DateTimeOffset RejectedAt,
     IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
 public sealed record ReportPackRestateRequestDto(
     string ReasonCode,
@@ -472,4 +489,5 @@ public sealed record ReportPackWorkflowRecordDto(
     IReadOnlyList<ReportPackAuditEventDto> AuditTrail,
     ReportPackRestatementMetadataDto? Restatement,
     IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
-    ReportPackPublicationManifestDto? Publication = null);
+    ReportPackPublicationManifestDto? Publication = null,
+    ReportPackRejectionMetadataDto? Rejection = null);

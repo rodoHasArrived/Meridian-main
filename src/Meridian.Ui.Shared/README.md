@@ -73,7 +73,13 @@ browser and WPF clients do not invent local lifecycle or no-orphan-evidence rule
 acceptance filter keeps governed report-pack acceptance evidence separate from evidence-vault
 manifest/export support so pilot readiness cannot mark W4 done from support artifacts alone. The shared
 fund-structure endpoints expose report-pack workflow creation, validation, submission, approval,
+<<<<<<< ours
 publication, restatement, history, and archival routes backed by shared contracts; restatement
+>>>>>>> theirs
+=======
+review rejection, publication, restatement, history, and archival routes backed by shared contracts;
+review rejection records the reason, actor/role metadata, and optional evidence links, and rejected
+packs must return through draft, validation, submission, and approval before publication. Restatement
 >>>>>>> theirs
 changed lines must carry evidence links before the workflow can advance. Publication also rejects
 line provenance that omits the reported value or lacks a run, source-session, ledger-entry,

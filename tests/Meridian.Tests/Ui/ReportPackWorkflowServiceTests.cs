@@ -185,6 +185,134 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void Reject_AllowsReviewStateAndRecordsReasonMetadata()
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+
+        var rejected = svc.Reject(
+            created.ReportId,
+            "NAV tie-out variance exceeds tolerance",
+            "senior-reviewer",
+            "reviewer",
+            [new ReportPackEvidenceLinkDto("tie-out-1", "Tie-out variance", "/evidence/tie-out-1", "reconciliation")]);
+
+        rejected.State.Should().Be(ReportPackWorkflowStateDto.Rejected);
+        rejected.Rejection.Should().NotBeNull();
+        rejected.Rejection!.Reason.Should().Be("NAV tie-out variance exceeds tolerance");
+        rejected.Rejection.Actor.Should().Be("senior-reviewer");
+        rejected.Rejection.ActorRole.Should().Be("reviewer");
+        rejected.Rejection.EvidenceLinks.Should().ContainSingle(link =>
+            link.EvidenceId == "tie-out-1" &&
+            link.Label == "Tie-out variance" &&
+            link.Route == "/evidence/tie-out-1" &&
+            link.Source == "reconciliation");
+    }
+
+    [Theory]
+    [InlineData(ReportPackWorkflowStateDto.Draft)]
+    [InlineData(ReportPackWorkflowStateDto.Published)]
+    public void Reject_RejectsDraftAndPublishedStates(ReportPackWorkflowStateDto startingState)
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
+
+        if (startingState == ReportPackWorkflowStateDto.Published)
+        {
+            svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
+            svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+            svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+            svc.Publish(
+                created.ReportId,
+                "publisher",
+                "publisher",
+                "controller",
+                "sha256:abc123",
+                "manifest-1",
+                "vault/report-packs/manifest-1.json",
+                [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+        }
+
+        Action act = () => svc.Reject(created.ReportId, "needs reviewer remediation", "senior-reviewer", "reviewer");
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage($"invalid transition {startingState} -> {ReportPackWorkflowStateDto.Rejected}");
+    }
+
+    [Fact]
+    public void Reject_RejectsInvalidRole()
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+
+        Action act = () => svc.Reject(created.ReportId, "needs reviewer remediation", "operator", "operator");
+
+        act.Should().Throw<UnauthorizedAccessException>()
+            .WithMessage("Role 'operator' cannot transition to Rejected.");
+    }
+
+    [Fact]
+    public void Reject_AppendsAuditTrailContents()
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+
+        var rejected = svc.Reject(created.ReportId, "missing controller sign-off evidence", "senior-reviewer", "reviewer");
+
+        rejected.AuditTrail.Should().ContainSingle(entry =>
+            entry.Actor == "senior-reviewer" &&
+            entry.Action == "rejected" &&
+            entry.FromState == ReportPackWorkflowStateDto.PendingApproval &&
+            entry.ToState == ReportPackWorkflowStateDto.Rejected &&
+            entry.Note == "missing controller sign-off evidence");
+    }
+
+    [Fact]
+    public void Publish_RejectsRejectedRecordsUntilResubmittedThroughApprovalLifecycle()
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Reject(created.ReportId, "missing controller sign-off evidence", "senior-reviewer", "reviewer");
+
+        Action publishRejected = () => svc.Publish(
+            created.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+
+        publishRejected.Should().Throw<InvalidOperationException>()
+            .WithMessage("invalid transition Rejected -> Published");
+
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Draft, "author", "operator");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        var published = svc.Publish(
+            created.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+
+        published.State.Should().Be(ReportPackWorkflowStateDto.Published);
+    }
+
+    [Fact]
     public void Restate_RequiresLineageAndReasonMetadata()
     {
         var svc = new ReportPackWorkflowService();
