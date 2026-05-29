@@ -610,6 +610,22 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 
 This section inventories the workflow-centric product model that now sits above the older page inventory.
 
+### Aliases and canonical workspace names
+
+The desktop shell keeps older shell/navigation terms as compatibility aliases while the visible
+workspace model remains `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
+`Settings`. Current alias resolution is registered in the shell page catalog and feature-owned
+Data module; layout lookup also normalizes the legacy workspace ids so deep links and automation
+land on the canonical workspace layout.
+
+| Alias / legacy name | Canonical workspace or page | Relevant page tags | Where the alias is resolved |
+| --- | --- | --- | --- |
+| `Research` / `ResearchWorkspace` | `Strategy` | Canonical `StrategyShell`; aliases `ResearchShell`, `ResearchWorkspace`; workspace id `strategy`; keywords include `strategy` and `research`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Research.cs` registers the Strategy shell page and aliases; `src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs` maps the legacy `research` layout id to `strategy`. |
+| `Governance` / `GovernanceWorkspace` | `Accounting` | Canonical `AccountingShell`; aliases `GovernanceShell`, `GovernanceWorkspace`; workspace id `accounting`; related fund-accounting tags include `FundLedger`, `FundReconciliation`, `FundTrialBalance`, and `FundAuditTrail`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs` registers the Accounting shell page and aliases; `src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs` maps the legacy `governance` layout id to `accounting`. |
+| `DataOperations` / `Data Operations` | `Data` | Canonical `DataShell`; aliases `DataOperationsShell`, `DataOperationsWorkspace`; workspace id `data`; keywords include `data` and `data operations`. | `src/Meridian.Wpf/Features/Data/DataFeatureModule.cs` registers the Data shell page and aliases; `src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs` maps `data-operations` and `data operations` layout ids to `data`. |
+| `OperationsContinuity` / `OperationsClose` | Fund operations | Canonical `FundLedger`; aliases `FundOperations`, `OperationsContinuity`, `OperationsClose`; workspace id `accounting`; title `Fund operations`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs` registers the Fund operations page and close/continuity aliases. |
+| `EvidenceWorkbench` | Fund audit trail | Canonical `FundAuditTrail`; alias `EvidenceWorkbench`; workspace id `accounting`; title `Fund audit trail`. | `src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs` registers the Fund audit trail page and Evidence Workbench alias. |
+
 | Surface | Status | Notes |
 | --------- | -------- | ------- |
 | Research workspace taxonomy | Partial | The active browser and WPF workstations now has a Research run library with retained-run review, two-run compare/diff readiness, promotion-history loading, command-error alerts, and refreshed built workstation assets; desktop vocabulary also aligns on `Research`, and the WPF Research shell has a desk briefing hero for selected-run, run-detail, portfolio, and `Backtest -> Paper` promotion-review handoffs. Deeper research workflow acceptance, strategy-aware launch/preflight, persisted sweep grouping, and Backtest Studio unification remain open |
