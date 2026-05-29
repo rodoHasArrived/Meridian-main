@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Ui.Shared
@@ -92,6 +92,11 @@ account-specific permission overrides and role profile names from `MDC_USERS` re
 for `/api/auth/me` and endpoint authorization checks. Do not reconstruct session users from only the
 built-in role label, because that would reapply the full built-in role permission mask and bypass
 configured restrictions.
+
+Reconciliation casework endpoints must derive trusted operator fields from the authenticated
+session. In particular, governed reopen privilege is admin-derived at the endpoint boundary and
+must not trust a client-supplied `Privileged` flag; sign-off and closed lifecycle transitions remain
+enforced in the shared repository workflow guardrails.
 
 ## Validation
 

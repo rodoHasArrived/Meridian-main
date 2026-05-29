@@ -3871,6 +3871,75 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_CaseworkRoutes_ShouldRejectLifecycleAndPrivilegedSpoofing()
+    {
+        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.ModifySecurityMaster);
+        var repo = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+        var now = DateTimeOffset.UtcNow;
+        var openBreak = new ReconciliationBreakQueueItem(
+            BreakId: $"open-{Guid.NewGuid():N}",
+            RunId: "run-casework-spoof",
+            StrategyName: "reconciliation",
+            Category: ReconciliationBreakCategory.CashMismatch,
+            Status: ReconciliationBreakQueueStatus.Open,
+            Variance: 10m,
+            Reason: "variance",
+            AssignedTo: null,
+            DetectedAt: now,
+            LastUpdatedAt: now);
+        var signedOffBreak = openBreak with
+        {
+            BreakId = $"signed-{Guid.NewGuid():N}",
+            Status = ReconciliationBreakQueueStatus.SignedOff,
+            LifecycleState = ReconciliationCaseLifecycleState.SignedOff,
+            ReviewedBy = "controller-reviewer",
+            ResolvedBy = "controller-a",
+            SignedOffBy = "controller-b",
+            RootCauseCode = "BrokerCashTiming",
+            ResolutionCode = "LedgerAdjusted",
+            EvidenceLinks = ["evidence://close/packet-1"],
+            EvidenceCount = 1,
+            SignoffStatus = "signed-off"
+        };
+        await repo.CreateIfMissingAsync(openBreak);
+        await repo.CreateIfMissingAsync(signedOffBreak);
+        openBreak = (await repo.GetByIdAsync(openBreak.BreakId))!;
+        signedOffBreak = (await repo.GetByIdAsync(signedOffBreak.BreakId))!;
+
+        var client = app.GetTestClient();
+
+        var directSignedOff = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{openBreak.BreakId}/transition",
+            new ReconciliationCaseworkCommand(
+                openBreak.BreakId,
+                ReconciliationCaseworkAction.TransitionStatus,
+                "spoofed-user",
+                Guid.NewGuid().ToString("N"),
+                Guid.NewGuid().ToString("N"),
+                "unit-test",
+                openBreak.Version,
+                Status: ReconciliationCaseLifecycleState.SignedOff,
+                Note: "Attempt direct signed-off transition."),
+            ServerJsonOptions);
+        directSignedOff.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var spoofedPrivilegedReopen = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{signedOffBreak.BreakId}/reopen",
+            new ReconciliationCaseworkCommand(
+                signedOffBreak.BreakId,
+                ReconciliationCaseworkAction.Reopen,
+                "spoofed-user",
+                Guid.NewGuid().ToString("N"),
+                Guid.NewGuid().ToString("N"),
+                "unit-test",
+                signedOffBreak.Version,
+                Reason: "Late broker correction.",
+                Privileged: true),
+            ServerJsonOptions);
+        spoofedPrivilegedReopen.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_RunContinuityRoute_ShouldReturnSharedContinuityPayload()
     {
         await using var app = await CreateAppAsync(services =>

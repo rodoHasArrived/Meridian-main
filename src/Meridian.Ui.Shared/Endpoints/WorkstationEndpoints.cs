@@ -6313,7 +6313,12 @@ public static partial class WorkstationEndpoints
             return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
         }
 
-        var trusted = request with { Actor = currentUser, Source = string.IsNullOrWhiteSpace(request.Source) ? "workstation-api" : request.Source };
+        var trusted = request with
+        {
+            Actor = currentUser,
+            Source = string.IsNullOrWhiteSpace(request.Source) ? "workstation-api" : request.Source,
+            Privileged = HasGovernedWorkflowReopenPermission(context)
+        };
         var transition = await repository.ApplyCaseworkCommandAsync(trusted, context.RequestAborted).ConfigureAwait(false);
         return transition.Status switch
         {

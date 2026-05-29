@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy and Research
-last_reviewed: 2026-05-27
+last_reviewed: 2026-05-28
 ---
 
 # src/Meridian.Strategies
@@ -29,7 +29,7 @@ This layer should preserve strategy lineage from research through paper validati
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
-Reconciliation break queue persistence also owns shared Accounting casework lifecycle enforcement: assignment before investigation, evidence notes for awaiting-evidence, taxonomy before resolution, dual-control sign-off, privileged reopen, SLA computation, immutable audit events with source metadata, threaded comments, and idempotent bulk triage.
+Reconciliation break queue persistence also owns shared Accounting casework lifecycle enforcement: assignment before investigation, evidence notes for awaiting-evidence, taxonomy before resolution, sign-off only after resolved cases have taxonomy, evidence, ready-for-signoff state, and independent dual-control review, privileged reopen only from trusted admin-derived commands, SLA computation, immutable audit events with source metadata, threaded comments, and idempotent bulk triage.
 Reconciliation also projects Security Master accounting inputs for Operations Continuity: fixed
 coupon accruals, expected journal previews, and factor-schedule principal paydowns are generated
 from resolved Security Master economic definitions before ledger/reconciliation gate posture is

@@ -193,7 +193,15 @@ public sealed class ReconciliationBreakQueueRepositoryTests
     public async Task Resolve_signoff_reopen_and_bulk_dry_run_follow_shared_casework_rules()
     {
         var repo = CreateRepository(out _);
-        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { AssignedTo = "controller-a" };
+        var item = CreateItem(ReconciliationBreakQueueStatus.InReview) with
+        {
+            AssignedTo = "controller-a",
+            ReviewedBy = "controller-reviewer",
+            LifecycleState = ReconciliationCaseLifecycleState.Investigating,
+            SignoffStatus = "investigating",
+            EvidenceLinks = ["evidence://close/packet-1"],
+            EvidenceCount = 1
+        };
         await repo.CreateIfMissingAsync(item);
         var current = (await repo.GetByIdAsync(item.BreakId))!;
 
@@ -239,6 +247,54 @@ public sealed class ReconciliationBreakQueueRepositoryTests
 
         var retry = await repo.ApplyBulkCaseworkAsync(dryRunRequest with { Priority = ReconciliationCasePriority.Low });
         retry.Should().BeEquivalentTo(dryRun);
+    }
+
+
+    [Fact]
+    public async Task Casework_rejects_signedoff_transition_and_incomplete_signoff_evidence()
+    {
+        var repo = CreateRepository(out _);
+        var item = CreateItem(ReconciliationBreakQueueStatus.InReview) with
+        {
+            AssignedTo = "controller-a",
+            ReviewedBy = "controller-reviewer",
+            LifecycleState = ReconciliationCaseLifecycleState.Investigating,
+            RootCauseCode = "BrokerCashTiming",
+            ResolutionCode = "LedgerAdjusted",
+            EvidenceLinks = ["evidence://close/packet-1"],
+            EvidenceCount = 1,
+            SignoffStatus = "investigating"
+        };
+        await repo.CreateIfMissingAsync(item);
+        var current = (await repo.GetByIdAsync(item.BreakId))!;
+
+        var directSignedOff = await repo.ApplyCaseworkCommandAsync(Command(current, ReconciliationCaseworkAction.TransitionStatus) with
+        {
+            Status = ReconciliationCaseLifecycleState.SignedOff,
+            Note = "Attempt direct sign-off."
+        });
+        directSignedOff.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.ValidationFailed);
+        directSignedOff.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.IllegalTransition);
+
+        var resolvedWithoutEvidence = CreateItem(ReconciliationBreakQueueStatus.Resolved) with
+        {
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            ReviewedBy = "controller-reviewer",
+            ResolvedBy = "controller-a",
+            RootCauseCode = "BrokerCashTiming",
+            ResolutionCode = "LedgerAdjusted",
+            SignoffStatus = "ready-for-signoff"
+        };
+        await repo.CreateIfMissingAsync(resolvedWithoutEvidence);
+        var missingEvidenceItem = (await repo.GetByIdAsync(resolvedWithoutEvidence.BreakId))!;
+
+        var missingEvidence = await repo.ApplyCaseworkCommandAsync(Command(missingEvidenceItem, ReconciliationCaseworkAction.SignOff) with
+        {
+            Actor = "controller-b",
+            Note = "Independent review complete."
+        });
+        missingEvidence.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.ValidationFailed);
+        missingEvidence.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingEvidence);
     }
 
     [Fact]

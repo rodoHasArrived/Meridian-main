@@ -633,6 +633,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 => Invalid(item, "Assignee is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
             ReconciliationCaseworkAction.TransitionStatus when command.Status is null
                 => Invalid(item, "Target lifecycle status is required.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
+            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.SignedOff || command.Status == ReconciliationCaseLifecycleState.Reopened
+                => Invalid(item, "Use the governed sign-off or privileged reopen action for closed lifecycle states.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
             ReconciliationCaseworkAction.TransitionStatus when !IsLegalLifecycleTransition(item.LifecycleState, command.Status.Value)
                 => Invalid(item, $"Cannot transition case from {item.LifecycleState} to {command.Status}.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Investigating && string.IsNullOrWhiteSpace(item.AssignedTo) && string.IsNullOrWhiteSpace(command.Assignee)
@@ -651,6 +653,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 => Invalid(item, "Resolution code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingResolutionCode),
             ReconciliationCaseworkAction.SignOff when item.LifecycleState != ReconciliationCaseLifecycleState.Resolved
                 => Invalid(item, "Only resolved cases can be signed off.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
+            ReconciliationCaseworkAction.SignOff when !IsReadyForSignOff(item)
+                => Invalid(item, "Resolved cases require taxonomy, evidence, and ready-for-signoff state before sign-off.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence),
+            ReconciliationCaseworkAction.SignOff when !HasIndependentDualControlReview(item)
+                => Invalid(item, "Resolved cases require independent dual-control review before sign-off.", ReconciliationBreakQueueTransitionErrorCode.DualReviewRequired),
             ReconciliationCaseworkAction.SignOff when string.Equals(item.ResolvedBy, command.Actor, StringComparison.OrdinalIgnoreCase)
                 => Invalid(item, "Resolver and signer must be different operators.", ReconciliationBreakQueueTransitionErrorCode.ResolverSignerConflict),
             ReconciliationCaseworkAction.Reopen when item.LifecycleState != ReconciliationCaseLifecycleState.SignedOff
@@ -663,6 +669,17 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
 
     private static ReconciliationBreakQueueTransitionResult Invalid(ReconciliationBreakQueueItem? item, string error, ReconciliationBreakQueueTransitionErrorCode code)
         => new(ReconciliationBreakQueueTransitionStatus.ValidationFailed, item, error, code);
+
+    private static bool IsReadyForSignOff(ReconciliationBreakQueueItem item)
+        => string.Equals(item.SignoffStatus, "ready-for-signoff", StringComparison.OrdinalIgnoreCase) &&
+           !string.IsNullOrWhiteSpace(item.RootCauseCode) &&
+           !string.IsNullOrWhiteSpace(item.ResolutionCode) &&
+           (item.EvidenceCount > 0 || (item.EvidenceLinks?.Count ?? 0) > 0);
+
+    private static bool HasIndependentDualControlReview(ReconciliationBreakQueueItem item)
+        => !string.IsNullOrWhiteSpace(item.ReviewedBy) &&
+           !string.IsNullOrWhiteSpace(item.ResolvedBy) &&
+           !string.Equals(item.ReviewedBy, item.ResolvedBy, StringComparison.OrdinalIgnoreCase);
 
     private static bool IsLegalLifecycleTransition(ReconciliationCaseLifecycleState current, ReconciliationCaseLifecycleState next)
         => current == next || (current, next) switch
