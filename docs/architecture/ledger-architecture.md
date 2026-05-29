@@ -100,16 +100,22 @@ Closed-period trial-balance endpoints also expose `LedgerTrialBalanceReportDto`,
 same server-derived period rows with locked-period status, debit/credit/net-income totals,
 accounting-policy lineage, and a SHA-256 checksum signature. The line-list route remains available
 for simple grids, while the report route gives export and audit surfaces a single signed payload.
+Closed-period P&L endpoints expose realized revenue/expense net income separately from
+accrual-basis adjustment impact, using retained ledger line labels and lineage markers to identify
+accrual adjustments while preserving the existing total revenue, expense, and net-income values.
 
 ### `LedgerReportPackBuilder`
 
 `LedgerReportPackBuilder` packages point-in-time financial statements into export-ready ledger
 artifacts. Given a `LedgerReportPackRequest`, it builds trial-balance, income-statement,
-balance-sheet, and manifest CSV artifacts, computes SHA-256 checksums for each artifact, and signs
-the report-pack payload with a deterministic integrity checksum plus the generator identity and
-timestamp. The request can carry a matching `LockedAccountingPeriod` so report manifests preserve
-period-lock evidence without making the ledger domain responsible for persistence, workflow
-approval, or endpoint routing.
+balance-sheet, financial-statements JSON, tax-lot realized-gains CSV, line-provenance, and
+manifest artifacts, computes SHA-256 checksums for each artifact, and signs the report-pack
+payload with a deterministic integrity checksum plus the generator identity and timestamp. The
+request can carry a matching `LockedAccountingPeriod` so report manifests preserve period-lock
+evidence without making the ledger domain responsible for persistence, workflow approval, or
+endpoint routing. When account-level tax-lot relief projections are supplied, the tax export
+records sale date, account scope, relief method, relieved lots, proceeds, cost basis, and
+per-lot realized gain/loss; otherwise the artifact remains header-only for stable pack shape.
 
 ### `LedgerReportSchedulePlanner`
 
@@ -175,8 +181,8 @@ and rejects unknown or duplicate selections.
 The projector permits partial-lot relief, rounds per-lot cost basis to currency precision, debits
 scoped cash for proceeds, credits the security carrying account for cost basis, and posts the
 realized gain or loss to the scoped gain/loss account. It is intentionally deterministic and
-in-memory; persistence, approval, and tax-reporting export remain responsibilities of the storage,
-workflow, and reporting layers.
+in-memory; persistence and approval remain responsibilities of the storage and workflow layers,
+while report packs can export supplied projections for tax-reporting evidence.
 
 The PostgreSQL ledger store now owns the durable inputs for this projection. `ILedgerJournalStore`
 persists account-scoped tax-lot policies and open tax lots by ledger book/account, including

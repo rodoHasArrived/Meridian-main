@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-28
+last_reviewed: 2026-05-29
 ---
 
 # src/Meridian.Ui.Shared
@@ -47,6 +47,10 @@ layer focus on endpoint validation, dependency resolution, and service orchestra
 Diff responses now include strategy id/version metadata, lineage relation, compatibility level,
 engine/mode context, artifact completeness, and warnings so operators can compare strategy
 versions and execution engines without inferring risk from run names alone.
+Promotion readiness projections also preserve retained checklist and evidence references from the
+strategy promotion record. Live promotion remains review-required when those evidence references
+are absent, which keeps browser and WPF operator states aligned with the server-owned promotion
+gate.
 Lean result ingestion uses `CanonicalBacktestResultNormalizer.FromLeanResult` from
 `Meridian.Backtesting.Sdk` so imported QuantConnect runs enter the same `BacktestResult` storage
 and comparison model as native Backtest Studio output. Summary-only Lean imports must retain their
@@ -92,9 +96,9 @@ contributes structured provider event id/type, required feed, provider evidence 
 Master id metadata to the drilldown. Provider-ledger
 corporate-action/factor casework now also retains ledger-effect metadata, so the drilldown surfaces
 the valuation or journal-support kind, principal/income amount, and journal
-preview line count so report-line users can see how provider factor or cash activity supports the
-ledger amount. Warnings remain only when neither retained lineage nor durable casework can identify
-provider evidence for the amount. Ledger amount provenance also projects retained strategy/run
+preview line count so report-line users can see how provider factor, amortization schedule, or cash
+activity supports the ledger amount. Warnings remain only when neither retained lineage nor durable
+casework can identify provider evidence for the amount. Ledger amount provenance also projects retained strategy/run
 lineage into structured run links, including run id, display label, route, source system, capture
 time, and whether the run pointer was captured at the selected line scope. Browser and WPF
 drilldowns can therefore show the strategy/run origin directly instead of parsing generic evidence
@@ -135,6 +139,16 @@ actions, pricing/trading-parameter readiness, downstream usage, and trust postur
 WPF clients. Each provider mapping also carries a confidence row with source, freshness, confidence
 score, related identifier-conflict IDs, conflict summaries, and override history so clients can show
 provider-to-Security-Master trust without rebuilding mapping logic locally.
+The shared Security Master endpoints also expose the approved starter custom asset profile catalog
+at `/api/security-master/asset-profiles` and allow `/api/security-master/search` requests to filter
+profile-backed securities by custom profile id, pinned profile version, profile field key, or
+profile field value without requiring a text query. Browser and WPF clients should use those
+contract-owned filters instead of parsing profile-backed asset-specific JSON locally.
+The same endpoint group now exposes governed profile lineage plus admin-only draft, approve, and
+rollback actions under `/api/security-master/asset-profiles/*`. These routes require
+`AdminMaintenance` and server-resolved actor metadata, returning audit events with rationale,
+correlation id, profile version, status, and approval reference so clients do not maintain local
+profile governance state.
 Provider-ledger reconciliation is shared service/API behavior: it reads the latest brokerage sync
 projection, compares it with the internal fund-account balance snapshot, validates Security Master
 coverage, and retains the latest detail under workstation data for browser and WPF clients to
@@ -154,7 +168,10 @@ Reconciliation details also emit provider-to-Security-Master confidence passport
 provider position, preserving the resolution path, confidence score, validation issue codes, and
 identifier-conflict evidence alongside the persisted accounting detail. Stale provider evidence now
 caps passport confidence and adds a `PROVIDER_EVIDENCE_STALE` validation issue so controller review
-can distinguish a resolved but stale provider mapping from a fresh resolved mapping. When the shared
+can distinguish a resolved but stale provider mapping from a fresh resolved mapping. Amortization
+schedule events are retained as distinct Security Master schedule feeds with principal/factor
+metadata so fixed-income and structured-product close readiness can prove amortization support
+without flattening it into generic factor evidence. When the shared
 break queue is registered, those stale resolved mappings seed governed Security Master cases with
 provider sync cursors and steward sign-off metadata. When the
 Security Master operator override store is registered, the passport also carries the latest override
@@ -222,6 +239,11 @@ subject. The packet contributor reads `IOperationsContinuityWorkflowService`, re
 the latest close workflow, and projects approval state, retained approval audit events, close
 checklist control posture, report-pack readiness, and route-only approval/rejection links so browser
 and WPF clients do not duplicate close sign-off evidence logic.
+Statement reconciliation mutation endpoints trust the authenticated workstation session actor for
+statement-run intake and reconcile commands. Client-supplied `ImportedBy` or reconcile actor values
+are treated as untrusted payload hints and are replaced at the shared endpoint boundary before the
+reconciliation API service persists durable cases, comments, attachments, SLA metadata, and audit
+events.
 
 Fund-structure endpoints expose `/api/fund-structure/ledger-mapping-view` as the shared accounting
 control surface for account ledger mappings. The endpoint returns server-derived assignment source,
@@ -260,8 +282,8 @@ status.
 `/api/ledger/periods/{periodId}/trial-balance-report`, and
 `/api/ledger/periods/{periodId}/pnl-summary` expose closed-period ledger reports from the shared
 ledger book service. They keep trial balance, signed period-locked report totals, revenue,
-expense, net income, prior-period variance, open-break count, and signoff posture server-derived
-for browser and WPF accounting surfaces.
+expense, realized net income, accrual-basis adjustment impact, prior-period variance,
+open-break count, and signoff posture server-derived for browser and WPF accounting surfaces.
 `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` aggregate those
 closed-period summaries across a selected book, fund, node, accounting basis, and date range for
 regulatory, investor, and internal reporting surfaces.

@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-28
+last_reviewed: 2026-05-29
 ---
 
 # src/Meridian.Application
@@ -76,7 +76,15 @@ and UI presentation concerns in their owning layers.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
-  valuation evidence.
+  valuation evidence. The same folder owns the starter custom asset profile catalog and profile-backed
+  validation rules for approved profile-version pinning, typed no-code field values, profile approval
+  metadata, and identifier coverage. Security Master create/amend orchestration preserves pinned
+  profile-backed `CustomAsset` and `OtherSecurity` payloads in projection and event evidence while
+  reusing the existing generic-security domain backing model. The query service keeps ordinary text
+  search delegated to the storage index and uses the projected Security Master universe only when
+  custom profile id, version, field-key, or field-value filters are supplied. Profile definitions
+  are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter definitions
+  with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. Ledger mapping resolution stays server-side and reuses
   fund-structure assignments before falling back to account ledger references.

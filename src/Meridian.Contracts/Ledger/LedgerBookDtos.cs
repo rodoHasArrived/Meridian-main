@@ -250,7 +250,14 @@ public sealed record LedgerPeriodPnlSummaryDto(
     IReadOnlyList<LedgerPeriodTrialBalanceLineDto> ExpenseLines,
     AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
     string AccountingPolicyId = "legacy-v1",
-    string AccountingPolicyVersion = "legacy-v1");
+    string AccountingPolicyVersion = "legacy-v1",
+    decimal RealizedRevenue = 0m,
+    decimal RealizedExpenses = 0m,
+    decimal RealizedNetIncome = 0m,
+    decimal AccrualAdjustmentRevenue = 0m,
+    decimal AccrualAdjustmentExpenses = 0m,
+    decimal AccrualBasisAdjustmentNetImpact = 0m,
+    IReadOnlyList<LedgerPeriodTrialBalanceLineDto>? AccrualAdjustmentLines = null);
 
 public sealed record LedgerCrossPeriodTrialBalanceLineDto(
     Guid PeriodId,
@@ -299,7 +306,9 @@ public sealed record LedgerCrossPeriodPnlReportDto(
     IReadOnlyList<LedgerPeriodPnlSummaryDto> Periods,
     decimal TotalRevenue,
     decimal TotalExpenses,
-    decimal NetIncome);
+    decimal NetIncome,
+    decimal TotalRealizedNetIncome = 0m,
+    decimal TotalAccrualBasisAdjustmentNetImpact = 0m);
 
 public sealed record LedgerPeriodCloseResultDto(
     LedgerPeriodDto Period,

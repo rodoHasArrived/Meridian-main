@@ -424,6 +424,22 @@ public static class LedgerEndpoints
         var expenseLines = summary.TrialBalance
             .Where(static row => string.Equals(row.AccountType, "Expense", StringComparison.Ordinal))
             .ToArray();
+        var accrualAdjustmentLines = revenueLines
+            .Concat(expenseLines)
+            .Where(IsAccrualAdjustmentLine)
+            .ToArray();
+        var realizedRevenue = revenueLines
+            .Where(static row => !IsAccrualAdjustmentLine(row))
+            .Sum(static row => row.Balance);
+        var realizedExpenses = expenseLines
+            .Where(static row => !IsAccrualAdjustmentLine(row))
+            .Sum(static row => row.Balance);
+        var accrualAdjustmentRevenue = accrualAdjustmentLines
+            .Where(static row => string.Equals(row.AccountType, "Revenue", StringComparison.Ordinal))
+            .Sum(static row => row.Balance);
+        var accrualAdjustmentExpenses = accrualAdjustmentLines
+            .Where(static row => string.Equals(row.AccountType, "Expense", StringComparison.Ordinal))
+            .Sum(static row => row.Balance);
 
         return new LedgerPeriodPnlSummaryDto(
             summary.PeriodId,
@@ -442,8 +458,21 @@ public static class LedgerEndpoints
             expenseLines,
             summary.AccountingBasis,
             summary.AccountingPolicyId,
-            summary.AccountingPolicyVersion);
+            summary.AccountingPolicyVersion,
+            RealizedRevenue: realizedRevenue,
+            RealizedExpenses: realizedExpenses,
+            RealizedNetIncome: realizedRevenue - realizedExpenses,
+            AccrualAdjustmentRevenue: accrualAdjustmentRevenue,
+            AccrualAdjustmentExpenses: accrualAdjustmentExpenses,
+            AccrualBasisAdjustmentNetImpact: accrualAdjustmentRevenue - accrualAdjustmentExpenses,
+            AccrualAdjustmentLines: accrualAdjustmentLines);
     }
+
+    private static bool IsAccrualAdjustmentLine(LedgerPeriodTrialBalanceLineDto row)
+        => ContainsAccrualMarker(row.AccountName)
+           || ContainsAccrualMarker(row.RuleId)
+           || ContainsAccrualMarker(row.RuleVersion)
+           || ContainsAccrualMarker(row.SourceEventId);
 
     private static LedgerTrialBalanceReportDto BuildTrialBalanceReport(LedgerPeriodSummaryDto summary, HttpContext context)
     {
@@ -666,8 +695,14 @@ public static class LedgerEndpoints
             periods,
             periods.Sum(static period => period.TotalRevenue),
             periods.Sum(static period => period.TotalExpenses),
-            periods.Sum(static period => period.NetIncome));
+            periods.Sum(static period => period.NetIncome),
+            periods.Sum(static period => period.RealizedNetIncome),
+            periods.Sum(static period => period.AccrualBasisAdjustmentNetImpact));
     }
+
+    private static bool ContainsAccrualMarker(string? value)
+        => !string.IsNullOrWhiteSpace(value)
+           && value.Contains("accru", StringComparison.OrdinalIgnoreCase);
 
     private static bool TryGetLedgerCloseActor(HttpContext context, out string actor)
     {

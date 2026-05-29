@@ -81,9 +81,21 @@ state so maintenance blockers, confirmation posture, and evidence summaries reus
 Data Quality terminal work uses `DenseDataGridControl` for the symbol-quality table with
 view-model-owned selected-row drilldown and provider-comparison command state, keeping the Data
 workspace on shared dense-table behavior without changing data-quality service contracts.
+Data terminal provider, backfill, and storage decision queues now use
+`WorkspaceDecisionQueueControl` while retaining existing queue-region empty/loading/error state
+templates and view-model-owned action resolution.
 Backfill terminal work uses `DenseDataGridControl` for gap-analysis and per-symbol-progress tables,
 with table descriptors owned by `BackfillWorkbenchSectionViewModel` so long-running provider
 catch-up workflows reuse the shared dense-table/empty-state surface.
+Trading terminal work uses `DenseDataGridControl` for active positions and view-model-owned
+selected-position inspector state so paper/live desk review keeps row selection, P&L, mode, and
+next-action context in the shared dense table surface. `WorkspaceInspectorHostControl` owns
+empty, selected, loading, and error inspector states with caller-supplied automation IDs so
+workspace pages can migrate selected-row detail without changing route/page tags.
+Accounting, Portfolio, Reporting, and Settings/Admin cockpit home decisions bind to view-model-owned `WorkspaceQueueItem`
+collections through `WorkspaceDecisionQueueControl`, preserving existing page tags while reusing
+`WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
+decisions, including primary, secondary, and blocked cockpit actions.
 
 ## Diagrams
 

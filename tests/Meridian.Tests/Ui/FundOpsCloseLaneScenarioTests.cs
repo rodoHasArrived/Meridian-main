@@ -178,6 +178,12 @@ public sealed class FundOpsCloseLaneScenarioTests
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed,
             "the period close sequence should end in Closed state");
 
+        AssertCloseReadinessReady(closed.Workflow.CloseReadiness);
+        closed.Workflow.ClosePackage.Should().NotBeNull("close publication should retain the signed close package manifest");
+        closed.Workflow.ClosePackage!.ReportPackId.Should().Be("report-pack-may-2026");
+        closed.Workflow.ClosePackage.EvidenceHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
+
         closed.Workflow.Gates.Should().OnlyContain(
             g => g.Status == OperationsGateStatusDto.Passed,
             "all gates must be in Passed state for a clean close");
@@ -366,6 +372,38 @@ public sealed class FundOpsCloseLaneScenarioTests
         blockedSubmit.Blockers[0].Code.Should().NotBeNullOrWhiteSpace(
             "the blocker must carry a machine-readable code so the UI can route the operator correctly");
 
+        var blockedClose = await service.CloseWorkflowAsync(workflowId,
+            new OperationsCloseWorkflowRequestDto(
+                reconciled.Workflow.Version,
+                "ops-user",
+                "Attempting to close before report-pack and approval readiness",
+                "report-pack-not-yet-ready",
+                ChecklistControlApprovals: RequiredChecklistControlApprovals()));
+
+        blockedClose.Success.Should().BeFalse("close execution must fail closed while W4 readiness is incomplete");
+        blockedClose.ErrorCode.Should().Be("CLOSE_READINESS_FAILED");
+        blockedClose.CloseReadiness.Should().NotBeNull();
+        blockedClose.CloseReadiness!.IsReadyToClose.Should().BeFalse();
+        blockedClose.CloseReadiness.Score.Should().BeLessThan(100);
+        blockedClose.CloseReadiness.Components.Should().Contain(component =>
+            component.Key == "reports" &&
+            !component.IsReady &&
+            component.RouteHint == "/workstation/reporting");
+        blockedClose.CloseReadiness.Components.Should().Contain(component =>
+            component.Key == "approvals" &&
+            !component.IsReady &&
+            component.RouteHint == "/workstation/accounting");
+        blockedClose.CloseReadiness.Blockers.Select(blocker => blocker.Code).Should().Contain(
+            [
+                "REPORT_PACK_REQUIRED",
+                "APPROVAL_REQUIRED"
+            ]);
+        blockedClose.NextActions.Select(action => action.Code).Should().Contain(
+            [
+                "REPORT_PACK_REQUIRED",
+                "APPROVAL_REQUIRED"
+            ]);
+
         // The approval state stays at Pending — the blocked submit must not record an approval submission.
         // Note: Status derives as ApprovalPending once all four gates are clean, which is expected
         // at this stage of the workflow. What must NOT change is the ApprovalState.
@@ -399,6 +437,15 @@ public sealed class FundOpsCloseLaneScenarioTests
         submitted.Success.Should().BeTrue(
             "submission must succeed once the report pack is marked ready");
         submitted.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
+        submitted.Workflow.CloseReadiness.Should().NotBeNull();
+        submitted.Workflow.CloseReadiness!.Components.Should().Contain(component =>
+            component.Key == "reports" &&
+            component.IsReady &&
+            component.Score == component.Weight);
+        submitted.Workflow.CloseReadiness.Components.Should().Contain(component =>
+            component.Key == "approvals" &&
+            !component.IsReady,
+            "controller approval still has to complete before close can execute");
     }
 
     [Fact]
@@ -499,8 +546,7 @@ public sealed class FundOpsCloseLaneScenarioTests
 
         closed.Success.Should().BeTrue();
         closed.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.Closed);
-        closed.Workflow.CloseReadiness.Should().NotBeNull();
-        closed.Workflow.CloseReadiness!.IsReadyToClose.Should().BeTrue();
+        AssertCloseReadinessReady(closed.Workflow.CloseReadiness);
         closed.Workflow.ClosePackage.Should().NotBeNull();
         closed.Workflow.ClosePackage!.ReportPackId.Should().Be("report-pack-recovery-2");
         closed.Workflow.ClosePackage.EvidenceHash.Should().MatchRegex("^[a-f0-9]{64}$");
@@ -517,6 +563,34 @@ public sealed class FundOpsCloseLaneScenarioTests
             "approval-submitted",
             "approval-approved",
             "workflow-closed");
+    }
+
+    private static void AssertCloseReadinessReady(OperationsCloseReadinessDto? readiness)
+    {
+        readiness.Should().NotBeNull("close acceptance must expose the server-derived readiness score");
+        readiness!.IsReadyToClose.Should().BeTrue();
+        readiness.Severity.Should().Be("Info");
+        readiness.Score.Should().Be(100);
+        readiness.Blockers.Should().BeEmpty();
+        readiness.NextActions.Should().BeEmpty();
+        readiness.Components.Should().HaveCount(9);
+        readiness.Components.Select(component => component.Key).Should().BeEquivalentTo(
+        [
+            "security-master",
+            "provider-freshness",
+            "positions",
+            "cash",
+            "ledger",
+            "pricing",
+            "reconciliation",
+            "reports",
+            "approvals"
+        ]);
+        readiness.Components.All(component =>
+            component.IsReady &&
+            component.Score == component.Weight &&
+            component.Severity == "Info" &&
+            component.BlockingReason == null).Should().BeTrue();
     }
 
     private static OperationsContinuityWorkflowService CreateService(

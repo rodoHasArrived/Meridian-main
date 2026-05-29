@@ -31,8 +31,26 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         return projection is null ? null : SecurityMasterMapping.ToDetail(projection);
     }
 
-    public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
-        => _store.SearchAsync(request, ct);
+    public async Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (!HasProfileSearchCriteria(request))
+        {
+            return await _store.SearchAsync(request, ct).ConfigureAwait(false);
+        }
+
+        var query = request.Query?.Trim() ?? string.Empty;
+        var rows = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+        return rows
+            .Where(record => MatchesSearchRequest(record, request, query))
+            .OrderBy(static record => record.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static record => record.SecurityId)
+            .Skip(Math.Max(0, request.Skip))
+            .Take(Math.Max(0, request.Take))
+            .Select(SecurityMasterDbMapper.ToSummary)
+            .ToArray();
+    }
 
     public async Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
     {
@@ -268,4 +286,129 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     private static bool ProviderMatches(string? provider, string? normalizedProvider, string expectedNormalizedProvider)
         => expectedNormalizedProvider.Length == 0
            || SecurityIdentifierNormalizer.NormalizeProvider(normalizedProvider ?? provider).Equals(expectedNormalizedProvider, StringComparison.Ordinal);
+
+    private static bool HasProfileSearchCriteria(SecuritySearchRequest request)
+        => !string.IsNullOrWhiteSpace(request.CustomProfileId)
+           || request.ProfileVersion.HasValue
+           || !string.IsNullOrWhiteSpace(request.ProfileFieldKey)
+           || !string.IsNullOrWhiteSpace(request.ProfileFieldValue);
+
+    private static bool MatchesSearchRequest(SecurityProjectionRecord record, SecuritySearchRequest request, string query)
+    {
+        if (request.ActiveOnly && record.Status != SecurityStatusDto.Active)
+        {
+            return false;
+        }
+
+        if (!MatchesProfileCriteria(record, request))
+        {
+            return false;
+        }
+
+        return query.Length == 0 || MatchesTextQuery(record, query);
+    }
+
+    private static bool MatchesProfileCriteria(SecurityProjectionRecord record, SecuritySearchRequest request)
+    {
+        if (!IsProfileBacked(record))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.CustomProfileId)
+            && !JsonStringEquals(record.AssetSpecificTerms, "customProfileId", request.CustomProfileId))
+        {
+            return false;
+        }
+
+        if (request.ProfileVersion.HasValue
+            && (!record.AssetSpecificTerms.TryGetProperty("profileVersion", out var profileVersion)
+                || profileVersion.ValueKind != System.Text.Json.JsonValueKind.Number
+                || !profileVersion.TryGetInt32(out var version)
+                || version != request.ProfileVersion.Value))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.ProfileFieldKey)
+            && !TryGetProfileField(record, request.ProfileFieldKey, out _))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.ProfileFieldValue))
+        {
+            if (string.IsNullOrWhiteSpace(request.ProfileFieldKey))
+            {
+                return ProfileFieldsContain(record, request.ProfileFieldValue);
+            }
+
+            return TryGetProfileField(record, request.ProfileFieldKey, out var profileField)
+                   && JsonElementContains(profileField, request.ProfileFieldValue);
+        }
+
+        return true;
+    }
+
+    private static bool IsProfileBacked(SecurityProjectionRecord record)
+        => record.AssetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
+           && record.AssetSpecificTerms.TryGetProperty("customProfileId", out var profileId)
+           && profileId.ValueKind == System.Text.Json.JsonValueKind.String
+           && !string.IsNullOrWhiteSpace(profileId.GetString());
+
+    private static bool MatchesTextQuery(SecurityProjectionRecord record, string query)
+        => Contains(record.DisplayName, query)
+           || Contains(record.AssetClass, query)
+           || Contains(record.PrimaryIdentifierValue, query)
+           || record.Identifiers.Any(identifier => Contains(identifier.Value, query) || Contains(identifier.Kind.ToString(), query))
+           || ProfileFieldsContain(record, query);
+
+    private static bool TryGetProfileField(SecurityProjectionRecord record, string fieldKey, out System.Text.Json.JsonElement profileField)
+    {
+        profileField = default;
+        return record.AssetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
+               && record.AssetSpecificTerms.TryGetProperty("profileFields", out var profileFields)
+               && profileFields.ValueKind == System.Text.Json.JsonValueKind.Object
+               && profileFields.TryGetProperty(fieldKey, out profileField);
+    }
+
+    private static bool ProfileFieldsContain(SecurityProjectionRecord record, string value)
+    {
+        if (record.AssetSpecificTerms.ValueKind != System.Text.Json.JsonValueKind.Object
+            || !record.AssetSpecificTerms.TryGetProperty("profileFields", out var profileFields)
+            || profileFields.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        foreach (var field in profileFields.EnumerateObject())
+        {
+            if (Contains(field.Name, value) || JsonElementContains(field.Value, value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool JsonElementContains(System.Text.Json.JsonElement element, string expected)
+        => element.ValueKind switch
+        {
+            System.Text.Json.JsonValueKind.String => Contains(element.GetString(), expected),
+            System.Text.Json.JsonValueKind.Number => Contains(element.GetRawText(), expected),
+            System.Text.Json.JsonValueKind.True => Contains("true", expected),
+            System.Text.Json.JsonValueKind.False => Contains("false", expected),
+            _ => Contains(element.GetRawText(), expected)
+        };
+
+    private static bool JsonStringEquals(System.Text.Json.JsonElement element, string propertyName, string expected)
+        => element.ValueKind == System.Text.Json.JsonValueKind.Object
+           && element.TryGetProperty(propertyName, out var property)
+           && property.ValueKind == System.Text.Json.JsonValueKind.String
+           && string.Equals(property.GetString(), expected, StringComparison.OrdinalIgnoreCase);
+
+    private static bool Contains(string? value, string expected)
+        => !string.IsNullOrWhiteSpace(value)
+           && value.Contains(expected, StringComparison.OrdinalIgnoreCase);
 }

@@ -214,7 +214,8 @@ public sealed record TradingPromotionReadinessDto(
     string? ApprovalStatus,
     string? ManualOverrideId,
     string? ApprovedBy,
-    IReadOnlyList<string>? ApprovalChecklist = null);
+    IReadOnlyList<string>? ApprovalChecklist = null,
+    IReadOnlyList<string>? EvidenceReferences = null);
 
 public sealed record TradingOperatorSignoffReadinessDto(
     string Status,

@@ -142,7 +142,6 @@ const detail: OperationsContinuityWorkflow = {
       gate: "LedgerPosting",
       label: "Ledger posting controller check",
       owner: "fund-controller",
-      requiredEvidence: "Validated journal draft, retained ledger hash, and controller approval evidence.",
       dueDate: "2026-05-09",
       requiredApprovalCount: 2,
       expiresOn: "2026-05-12",
@@ -155,7 +154,6 @@ const detail: OperationsContinuityWorkflow = {
       acknowledgedBy: null
     }
   ],
-  closePackage: null,
   closeReadiness: null,
   evidenceLinks: [
     {
@@ -222,7 +220,7 @@ describe("Operations Continuity view model", () => {
       label: "Ledger posting controller check",
       gateLabel: "Ledger Posting",
       ownerLabel: "fund-controller",
-      requiredEvidence: "Validated journal draft, retained ledger hash, and controller approval evidence.",
+      requiredEvidence: "ledger-evidence-1",
       approvalLabel: "2 control approvals required",
       evidenceLabel: "ledger-evidence-1",
       remediationHref: "/accounting/ledger",
@@ -230,6 +228,16 @@ describe("Operations Continuity view model", () => {
       acknowledgementLabel: "Ledger validation is still required.",
       statusLabel: "Pending",
       statusTone: "review"
+    });
+    expect(vm.checklistSummary).toMatchObject({
+      taskCountLabel: "1 close task",
+      readyCountLabel: "0 ready",
+      blockedCountLabel: "1 blocked",
+      acknowledgementCountLabel: "0 acknowledged",
+      approvalCountLabel: "2 control approvals required",
+      evidenceCountLabel: "1/1 evidence pointer",
+      dueSoonLabel: "Next due May 09, 00:00 UTC: Ledger posting controller check",
+      statusTone: "blocked"
     });
     expect(vm.timeline[0]).toMatchObject({
       title: "Ledger Draft Blocked",
@@ -420,6 +428,61 @@ describe("Operations Continuity view model", () => {
     expect(vm.blockersEmptyText).toBe("Loading selected workflow blockers...");
     expect(vm.checklistEmptyText).toBe("Loading selected workflow checklist...");
     expect(vm.timelineEmptyText).toBe("Loading workflow timeline.");
+  });
+
+  it("summarizes completed checklist controls from the shared close-checklist contract", () => {
+    const completedDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      closeChecklist: [
+        {
+          ...detail.closeChecklist[0]!,
+          status: "Acknowledged",
+          blockingReason: null,
+          requiredApprovalCount: 1,
+          acknowledgedAtUtc: "2026-05-09T15:30:00Z",
+          acknowledgedBy: "fund-controller"
+        },
+        {
+          taskId: "close-gate-reportpack",
+          gate: "Approval",
+          label: "Report pack sign-off",
+          owner: "fund-admin",
+          dueDate: null,
+          requiredApprovalCount: 1,
+          expiresOn: null,
+          status: "Complete",
+          blockingReason: null,
+          evidencePointer: "report-pack-evidence-1",
+          remediationRoute: "/workstation/reporting",
+          canAcknowledge: false,
+          acknowledgedAtUtc: null,
+          acknowledgedBy: null
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: completedDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.checklistSummary).toMatchObject({
+      taskCountLabel: "2 close tasks",
+      readyCountLabel: "2 ready",
+      blockedCountLabel: "0 blocked",
+      acknowledgementCountLabel: "1 acknowledged",
+      approvalCountLabel: "2 control approvals required",
+      evidenceCountLabel: "2/2 evidence pointers",
+      dueSoonLabel: "No open due dates",
+      statusTone: "ready"
+    });
   });
 
   it("aborts in-flight list requests when the hook unmounts", () => {

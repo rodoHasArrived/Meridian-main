@@ -132,7 +132,7 @@ public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBa
         return TryFindResource(resourceKey) as Brush ?? Brushes.Transparent;
     }
 
-    private void ApplyQueueState(ItemsControl queueList, ContentControl stateContainer, WorkspaceQueueRegionState state)
+    private void ApplyQueueState(FrameworkElement queueList, ContentControl stateContainer, WorkspaceQueueRegionState state)
     {
         if (state.IsVisible)
         {
@@ -161,21 +161,8 @@ public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBa
     private async void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
         => await ExecuteActionAsync(e.Command.Id, navigate: true);
 
-    private async void OnQueuePrimaryActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ExecuteActionAsync(actionId, navigate: false);
-        }
-    }
-
-    private async void OnQueueSecondaryActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ExecuteActionAsync(actionId, navigate: false);
-        }
-    }
+    private async void OnDataDecisionInvoked(object sender, WorkspaceDecisionInvokedEventArgs e)
+        => await ExecuteActionAsync(e.ActionId, navigate: false);
 
     private async void OnRecentActionClick(object sender, RoutedEventArgs e)
     {

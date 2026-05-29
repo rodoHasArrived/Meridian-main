@@ -34,6 +34,7 @@ public static class SecurityKindMapping
             ["Repo"] = [InstrumentType.Repo],
             ["CashSweep"] = [InstrumentType.Deposit],
             ["OtherSecurity"] = [],
+            ["CustomAsset"] = [],
             ["Swap"] = [InstrumentType.Swap],
             ["DirectLoan"] = [InstrumentType.DirectLoan],
             ["Commodity"] = [InstrumentType.Commodity],

@@ -1,6 +1,6 @@
 # Security Master Guide
 
-**Last Updated:** 2026-05-21
+**Last Updated:** 2026-05-29
 **Owner:** Core Team
 **Scope:** Engineering / Operations / Product
 **Review Cadence:** When asset class coverage or API changes
@@ -22,6 +22,7 @@ Security Master is the event-sourced golden record for all financial instruments
 - **Structured validation** — Read-only validation reports surface severity, issue code, affected fields, suggested action, and evidence links before downstream workflows rely on a record
 - **Trust snapshot projections** — Workstation trust snapshots now bundle validation posture, identifier/provider-mapping coverage, and schema-compatibility context beside the selected security
 - **Full-text search** — Query by display name, issuer, or identifier with filtering by asset class and status
+- **Custom asset profile governance** — Approved starter profiles, governed draft/approval/rollback lineage, and profile-backed securities can be read through canonical Security Master API surfaces
 
 ---
 
@@ -89,10 +90,12 @@ Security Master currently supports these asset classes:
 | **Warrant** | Listed or private warrants | Underlying ID, warrant type, strike, expiry |
 | **CashSweep** | Cash sweep programs | Program name, sweep vehicle, sweep frequency, target account type |
 | **OtherSecurity** | Fallback for unmapped instruments | Category, sub-type, maturity, issuer |
+| **CustomAsset** | Profile-backed alternative/private assets | Approved custom profile ID, pinned profile version, typed profile fields, profile approval metadata |
 
 All asset classes also have **common terms:** Display name, Currency (ISO 4217 code), Country of risk, Issuer name, Exchange, Lot size, Tick size.
 
 Shared asset metadata is now centralized in `SecurityAssetClassCatalog`, which keeps workstation capability hints, preferred identifier kinds, and basic create-workflow support aligned across projections and UI workflows. Schema literals are likewise centralized in `SecurityMasterSchemaVersions` so legacy asset-specific payloads and newer economic-definition payloads do not drift across adapters, projections, and trust-snapshot consumers.
+Profile-backed custom assets use `SecurityMasterSchemaVersions.CustomAssetProfileTerms` and can be stored either as `CustomAsset` records or as `OtherSecurity` records with `customProfileId` and `profileVersion` populated.
 
 ---
 
@@ -103,6 +106,11 @@ Shared asset metadata is now centralized in `SecurityAssetClassCatalog`, which k
 POST /api/security-master/create
 ```
 Returns 201 Created with security detail including UUID and version 1.
+Profile-backed `CustomAsset` records and profile-backed `OtherSecurity` records must include
+`schemaVersion = SecurityMasterSchemaVersions.CustomAssetProfileTerms`, `customProfileId`,
+`profileVersion`, `profileFields`, and `profileApproval`. The create path preserves those terms in
+the Security Master projection, snapshot, and event payload while using the existing generic
+security backing model for compiled-domain compatibility.
 
 ### Retrieve by ID
 ```
@@ -123,7 +131,38 @@ Returns a `SecurityValidationReportDto` without mutating the record. The report 
 - `suggestedAction`: the next remediation step
 - `evidenceLinks`: related Security Master records or evidence packet targets when available
 
-Validation currently checks common record shape, legacy asset-specific schema-version compatibility, effective-date windows, identifier presence and primary-identifier rules, projection-vs-identifier primary consistency, duplicate canonical identifiers, provider-symbol conflicts, provenance freshness, pricing-source metadata, accounting-classification metadata, and registry-backed asset-class term rules.
+Validation currently checks common record shape, legacy asset-specific schema-version compatibility, custom asset profile-version pinning, profile approval metadata, typed profile fields, profile identifier coverage, effective-date windows, identifier presence and primary-identifier rules, projection-vs-identifier primary consistency, duplicate canonical identifiers, provider-symbol conflicts, provenance freshness, pricing-source metadata, accounting-classification metadata, and registry-backed asset-class term rules.
+
+### List Custom Asset Profiles
+```
+GET /api/security-master/asset-profiles
+```
+Returns approved custom asset profile definitions used by profile-backed create and amend workflows.
+The catalog includes seeded starter templates plus approved versions from the governed profile
+store. Each definition includes profile id, approved version, typed field schema, required flags,
+enum/range metadata, identifier preferences, lifecycle states, accounting-impact hints, and
+approval metadata.
+
+### Govern Custom Asset Profiles
+```
+GET  /api/security-master/asset-profiles/{profileId}/lineage
+POST /api/security-master/asset-profiles/drafts
+POST /api/security-master/asset-profiles/approve
+POST /api/security-master/asset-profiles/rollback
+```
+Profile governance endpoints require `AdminMaintenance` plus Security Master read access. Draft
+requests stage a deterministic no-code profile version, approval requests make a draft usable for
+new Security Master records, and rollback requests create a new approved version copied from an
+earlier approved or superseded version. Every mutation records actor, rationale, correlation id,
+profile version, status, and approval reference in the lineage response. Superseded profile
+versions remain available to validation so securities pinned to historical approved versions stay
+interpretable after later profile changes.
+
+The browser Settings workspace exposes this governance lane for operators: approved starter
+profiles can be reviewed, copied into drafts, approved or rolled back with lineage evidence, and
+used to create `CustomAsset` records pinned to the approved profile version. The UI submits the same
+typed no-code field definitions and canonical Security Master create payloads documented here; it
+does not run user-authored scripts or treat provider payloads as canonical terms.
 
 ### Resolve by Identifier
 ```
@@ -137,7 +176,11 @@ forward-looking point in time instead of always using the current clock.
 ```
 POST /api/security-master/search
 ```
-Full-text search by display name, issuer, or identifier. Supports filtering by asset class, status, and pagination.
+Full-text search by display name, issuer, identifier, or custom profile field. Supports active-only
+filtering and pagination. Profile-backed searches can provide `customProfileId`, `profileVersion`,
+`profileFieldKey`, and `profileFieldValue`; a text `query` is optional when at least one custom
+profile filter is present. Profile filters match only records with approved pinned
+`customProfileId` / `profileVersion` metadata in the asset-specific terms.
 
 ### Retrieve Event History
 ```
@@ -150,6 +193,9 @@ Returns audit trail of all changes (SecurityCreated, TermsAmended, SecurityDeact
 POST /api/security-master/amend
 ```
 Updates economic terms with optimistic concurrency control. Returns 409 Conflict if version mismatch.
+For profile-backed custom assets, amendments preserve the pinned custom profile metadata and typed
+field values. If an amendment supplies a new profile-backed asset-specific payload, the new payload
+becomes the authoritative pinned profile terms for the resulting version.
 
 ### Deactivate Security
 ```

@@ -3,11 +3,79 @@ using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
+using System.Windows;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class TradingWorkspaceShellViewModelTests
 {
+    [Fact]
+    public void BuildActivePositionsTable_ShouldExposeDenseTerminalColumns()
+    {
+        var rows = new[]
+        {
+            new TradingActivePositionItem
+            {
+                Symbol = "AAPL",
+                StrategyName = "Atlas Intraday",
+                QuantityLabel = "100",
+                UnrealizedPnlFormatted = "$125.00",
+                RealizedPnlFormatted = "$42.00",
+                ModeLabel = "Paper"
+            }
+        };
+
+        var table = TradingWorkspaceShellViewModel.BuildActivePositionsTable(rows);
+
+        table.Title.Should().Be("Active trading positions");
+        table.Rows.Should().BeSameAs(rows);
+        table.EmptyTitle.Should().Be("No active positions");
+        table.Columns.Select(static column => column.Header).Should().ContainInOrder(
+            "Symbol",
+            "Strategy",
+            "Qty",
+            "Unrealized",
+            "Realized",
+            "Mode");
+        table.Columns.Select(static column => column.BindingPath).Should().ContainInOrder(
+            nameof(TradingActivePositionItem.Symbol),
+            nameof(TradingActivePositionItem.StrategyName),
+            nameof(TradingActivePositionItem.QuantityLabel),
+            nameof(TradingActivePositionItem.UnrealizedPnlFormatted),
+            nameof(TradingActivePositionItem.RealizedPnlFormatted),
+            nameof(TradingActivePositionItem.ModeLabel));
+    }
+
+    [Fact]
+    public void SelectedActivePosition_ShouldProjectInspectorState()
+    {
+        var viewModel = new TradingWorkspaceShellViewModel();
+
+        viewModel.SelectedActivePosition.Should().BeNull();
+        viewModel.HasSelectedActivePosition.Should().BeFalse();
+        viewModel.NoSelectedActivePositionVisibility.Should().Be(Visibility.Visible);
+
+        viewModel.SelectedActivePosition = new TradingActivePositionItem
+        {
+            Symbol = "MSFT",
+            StrategyName = "Gamma Rotation",
+            QuantityLabel = "75",
+            UnrealizedPnlFormatted = "$310.00",
+            RealizedPnlFormatted = "$90.00",
+            ModeLabel = "Live"
+        };
+
+        viewModel.SelectedActivePositionTitle.Should().Be("MSFT | 75");
+        viewModel.SelectedActivePositionDetail.Should().Contain("Gamma Rotation");
+        viewModel.SelectedActivePositionPnlText.Should().Contain("Unrealized $310.00");
+        viewModel.SelectedActivePositionModeText.Should().Be("Mode: Live");
+        viewModel.SelectedActivePositionEvidenceText.Should().Contain("realized $90.00");
+        viewModel.SelectedActivePositionActionDetail.Should().Contain("Review linked orders");
+        viewModel.HasSelectedActivePosition.Should().BeTrue();
+        viewModel.SelectedActivePositionVisibility.Should().Be(Visibility.Visible);
+        viewModel.NoSelectedActivePositionVisibility.Should().Be(Visibility.Collapsed);
+    }
+
     [Fact]
     public void BuildDeskHeroState_WithoutOperatingContext_UsesContextRequiredAction()
     {

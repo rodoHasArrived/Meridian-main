@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-05-28
+last_reviewed: 2026-05-29
 ---
 
 # src/Meridian.Contracts
@@ -124,11 +124,28 @@ so browser and WPF clients do not rebuild governed passport semantics locally. P
 rows expose mapping source, freshness, confidence score, identifier-conflict links, and override
 history for each provider symbol mapping.
 
+Security Master custom asset profile contracts live under `SecurityMaster/` and define versioned
+profile definitions, typed field schemas, identifier preferences, lifecycle states, accounting-impact
+hints, pinned profile-backed terms, and approval metadata. Keep these contracts shared so future
+Data, Settings, browser, WPF, and endpoint flows validate the same no-code custom asset model
+instead of accepting client-local JSON shapes.
+`SecurityAssetClassCatalog` also exposes `CustomAsset` so create workflows and projection consumers
+can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
+`SecuritySearchRequest` carries optional `customProfileId`, `profileVersion`, `profileFieldKey`,
+and `profileFieldValue` filters so shared clients can find profile-backed alternative assets
+through the canonical Security Master search route without depending on endpoint-local JSON.
+Profile governance request/result DTOs carry draft, approval, rollback, lineage, audit event,
+rationale, actor, approval-reference, and correlation metadata so Data, Settings, browser, WPF, and
+endpoint tests share the same governed profile lifecycle contract.
+
 Strategy run comparison and diff contracts live in `Workstation/StrategyRunReadModels.cs`.
 Run diff payloads include base/target mode and engine plus final-equity, drawdown, Sharpe,
 return, fill-count, net-P&L deltas, strategy id/version metadata, lineage relation,
 compatibility level, artifact completeness, and warnings so browser, WPF, and service tests can
 compare strategy versions and engines without endpoint-local DTOs.
+Strategy promotion readiness contracts also carry retained approval checklist and evidence
+references so paper-to-live promotion gates remain contract-owned and browser/WPF clients can show
+the same human-approved evidence requirements without local promotion-state rules.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
@@ -194,9 +211,11 @@ Report-line provenance payloads live with the fund-operations workstation contra
 Ledger period and cross-period reporting DTOs expose closed-period trial-balance rows and P&L
 summary totals with accounting-basis, policy, prior-period variance, open-break count, and signoff
 posture so clients can render period close and cross-period reports without recomputing ledger
-semantics locally. `LedgerTrialBalanceReportDto` wraps closed-period trial-balance detail rows with
-locked-period status, aggregate totals, accounting-policy lineage, and a SHA256 report signature so
-browser, WPF, export, and audit clients can verify the same period report payload.
+semantics locally. `LedgerPeriodPnlSummaryDto` also separates realized revenue/expense net income
+from accrual-basis adjustment impact and retains the accrual adjustment lines used for the split.
+`LedgerTrialBalanceReportDto` wraps closed-period trial-balance detail rows with locked-period
+status, aggregate totals, accounting-policy lineage, and a SHA256 report signature so browser, WPF,
+export, and audit clients can verify the same period report payload.
 `LedgerAmountProvenanceDetailDto` is the shared click-through contract for a retained report-pack
 ledger amount: it carries the ledger amount, provider/source evidence pointers, Security Master
 link, reconciliation run and case state, compact related-case owner/status/sign-off routing,

@@ -51,4 +51,43 @@ public sealed partial class WorkstationEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
     }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementRunMutationRoutes_ShouldTrustAuthenticatedActor()
+    {
+        var service = new StubReconciliationApiService();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
+        });
+        var client = app.GetTestClient();
+
+        var create = await client.PostAsJsonAsync(
+            UiApiRoutes.ReconciliationStatementRuns,
+            new StatementRunCreateDto(
+                Broker: "custodian",
+                SourceInstitution: "Sample Custodian",
+                FundAccountId: "fund-1",
+                ExternalAccountId: "external-1",
+                StatementPeriodStart: new DateOnly(2026, 5, 1),
+                StatementPeriodEnd: new DateOnly(2026, 5, 31),
+                SourcePath: @"C:\imports\statement.csv",
+                OriginalFileName: "statement.csv",
+                MappingProfileId: "mapping-v1",
+                ToleranceProfileId: "tolerance-v1",
+                ImportedBy: "browser-spoof"),
+            ServerJsonOptions);
+        var reconcile = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunReconcile, "runId", "statement-run-1"),
+            new StatementRunReconcileRequestDto(Actor: "browser-spoof", Reason: "reconcile"),
+            ServerJsonOptions);
+
+        create.StatusCode.Should().Be(HttpStatusCode.Created);
+        reconcile.StatusCode.Should().Be(HttpStatusCode.OK);
+        service.CreatedRequests.Should().ContainSingle();
+        service.CreatedRequests[0].ImportedBy.Should().Be("ops-user");
+        service.ReconciledRequests.Should().ContainSingle();
+        service.ReconciledRequests[0].RunId.Should().Be("statement-run-1");
+        service.ReconciledRequests[0].Request.Actor.Should().Be("ops-user");
+    }
 }

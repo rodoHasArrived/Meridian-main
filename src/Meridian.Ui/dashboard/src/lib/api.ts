@@ -84,6 +84,12 @@ import type {
   RunFillSummary,
   OperatorOverridesDto,
   OperatorOverridesPatchRequest,
+  SecurityAssetProfileApprovalRequest,
+  SecurityAssetProfileDefinition,
+  SecurityAssetProfileDraftRequest,
+  SecurityAssetProfileGovernanceResult,
+  SecurityAssetProfileLineage,
+  SecurityAssetProfileRollbackRequest,
   SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry,
@@ -196,6 +202,11 @@ import {
   reconciliationStatementRunsEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
+  securityMasterAssetProfileApproveEndpoint,
+  securityMasterAssetProfileDraftsEndpoint,
+  securityMasterAssetProfileLineageEndpoint,
+  securityMasterAssetProfileRollbackEndpoint,
+  securityMasterAssetProfilesEndpoint,
   securityMasterAliasUpsertEndpoint,
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
@@ -517,6 +528,35 @@ export function createRolePermissionProfile(
   return postJson<RolePermissionProfileUpsertResult>(AUTH_API_ENDPOINTS.roleProfiles, request, options);
 }
 
+export function getSecurityAssetProfiles(options: ApiRequestOptions = {}) {
+  return getJson<SecurityAssetProfileDefinition[]>(securityMasterAssetProfilesEndpoint(), options);
+}
+
+export function getSecurityAssetProfileLineage(profileId: string, options: ApiRequestOptions = {}) {
+  return getJson<SecurityAssetProfileLineage>(securityMasterAssetProfileLineageEndpoint(profileId), options);
+}
+
+export function draftSecurityAssetProfile(
+  request: SecurityAssetProfileDraftRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<SecurityAssetProfileGovernanceResult>(securityMasterAssetProfileDraftsEndpoint(), request, options);
+}
+
+export function approveSecurityAssetProfile(
+  request: SecurityAssetProfileApprovalRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<SecurityAssetProfileGovernanceResult>(securityMasterAssetProfileApproveEndpoint(), request, options);
+}
+
+export function rollbackSecurityAssetProfile(
+  request: SecurityAssetProfileRollbackRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<SecurityAssetProfileGovernanceResult>(securityMasterAssetProfileRollbackEndpoint(), request, options);
+}
+
 export function getLedgerMappingWorkbench(options: ApiRequestOptions = {}) {
   return getJson<LedgerMappingWorkbench>(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench, options);
 }
@@ -700,6 +740,7 @@ export interface ApprovePromotionRequest {
   approvedBy: string;
   approvalReason: string;
   approvalChecklist?: string[];
+  evidenceReferences?: string[];
   reviewNotes?: string;
   manualOverrideId?: string;
 }

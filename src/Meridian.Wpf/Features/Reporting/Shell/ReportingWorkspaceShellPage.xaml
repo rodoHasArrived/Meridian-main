@@ -139,60 +139,9 @@
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap" />
 
-                            <UniformGrid Columns="2">
-                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,10">
-                                    <StackPanel>
-                                        <TextBlock Text="Pack assembly" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Text="Fund report pack" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Preview the packet and downstream handoff readiness." Margin="0,6,0,0" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
-                                        <Button Content="Open"
-                                                Tag="FundReportPack"
-                                                Click="OnNavigateButtonClick"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,12,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,10">
-                                    <StackPanel>
-                                        <TextBlock Text="Approval gates" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Text="Run status" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
-                                        <TextBlock Text="Review manifests, retries, and approval blockers." Margin="0,6,0,0" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
-                                        <Button Content="Open"
-                                                Tag="ReportRunStatus"
-                                                Click="OnNavigateButtonClick"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,12,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,0">
-                                    <StackPanel>
-                                        <TextBlock Text="Dashboard exceptions" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Text="Reporting dashboard" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Inspect holdings, maturity, and quality exception signals." Margin="0,6,0,0" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
-                                        <Button Content="Open"
-                                                Tag="Dashboard"
-                                                Click="OnNavigateButtonClick"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,12,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource WorkspaceQueueCardStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="Export delivery" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Text="Analysis exports" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource SuccessColorBrush}" />
-                                        <TextBlock Text="Configure package delivery and reusable presets." Margin="0,6,0,0" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
-                                        <Button Content="Open"
-                                                Tag="AnalysisExport"
-                                                Click="OnNavigateButtonClick"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,12,0,0" />
-                                    </StackPanel>
-                                </Border>
-                            </UniformGrid>
+                            <views:WorkspaceDecisionQueueControl ItemsSource="{Binding CockpitDecisionItems}"
+                                                                 QueueAutomationId="ReportingCockpitDecisionQueue"
+                                                                 DecisionInvoked="OnCockpitDecisionInvoked" />
                         </StackPanel>
                     </Border>
 

@@ -514,6 +514,8 @@ public sealed record ProviderCorporateActionReadinessDto(
     public IReadOnlyList<ProviderSecurityMasterScheduleFeedDto> SecurityMasterScheduleFeeds { get; init; } = [];
 
     public int PrincipalCashTransactionCount { get; init; }
+
+    public int AmortizationScheduleEventCount { get; init; }
 }
 
 public sealed record ProviderLedgerReconciliationDetailDto(

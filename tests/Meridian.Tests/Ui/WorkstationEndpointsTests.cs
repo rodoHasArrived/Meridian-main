@@ -7679,6 +7679,7 @@ public sealed partial class WorkstationEndpointsTests
 
         public List<StatementRunCreateDto> CreatedRequests { get; } = [];
         public List<string> ReconciledRunIds { get; } = [];
+        public List<(string RunId, StatementRunReconcileRequestDto Request)> ReconciledRequests { get; } = [];
 
         public Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
         {
@@ -7739,6 +7740,7 @@ public sealed partial class WorkstationEndpointsTests
         {
             ct.ThrowIfCancellationRequested();
             ReconciledRunIds.Add(runId);
+            ReconciledRequests.Add((runId, request));
             return Task.FromResult<StatementRunDto?>(
                 string.Equals(runId, StatementRun.RunId, StringComparison.OrdinalIgnoreCase)
                     ? BuildRunDto(runId, StatementRunStatus.ReviewRequired)

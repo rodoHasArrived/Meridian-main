@@ -17,6 +17,7 @@ import type {
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
   RolePermissionCatalog,
+  SecurityAssetProfileDefinition,
   SessionInfo,
   SystemOverviewResponse
 } from "@/types";
@@ -310,6 +311,55 @@ const closeCalendar: OperationsCloseCalendar = {
   ]
 };
 
+const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
+  {
+    profileId: "structured-credit-io-po",
+    version: 1,
+    name: "Structured Credit IO/PO",
+    category: "StructuredCredit",
+    subType: "InterestOnly",
+    status: "Approved",
+    fields: [
+      {
+        key: "poolId",
+        label: "Pool ID",
+        fieldType: "Text",
+        isRequired: true,
+        allowedValues: [],
+        description: null,
+        minValue: null,
+        maxValue: null,
+        isProjected: true,
+        isSearchable: true
+      },
+      {
+        key: "currentFactor",
+        label: "Current factor",
+        fieldType: "Decimal",
+        isRequired: true,
+        allowedValues: [],
+        description: null,
+        minValue: 0,
+        maxValue: 1,
+        isProjected: true,
+        isSearchable: false
+      }
+    ],
+    identifierPreferences: [
+      { kind: "Cusip", isRequiredForClose: true, reason: "CUSIP coverage is required when available." },
+      { kind: "InternalCode", isRequiredForClose: true, reason: "Internal code is required for modeled strips." }
+    ],
+    lifecycleStates: ["Modeled", "Validated"],
+    accountingImpactHints: ["FactorSchedule", "IncomeAccrual"],
+    dateOrderRules: [],
+    effectiveFrom: "2026-05-01",
+    effectiveTo: null,
+    approvedBy: "Security Master Council",
+    approvedAtUtc: "2026-05-01T00:00:00Z",
+    changeReason: "Seed template"
+  }
+];
+
 describe("buildSettingsScreenViewModel", () => {
   it("builds session items from session data", () => {
     const vm = buildSettingsScreenViewModel(session, null);
@@ -380,6 +430,32 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.operationsControlCenter.cards.find((card) => card.id === "close-calendar")).toMatchObject({
       statusLabel: "1 blocked",
       endpointHref: "/api/workstation/operations/continuity/close-calendar"
+    });
+  });
+
+  it("summarizes approved asset profiles for governed Security Master creation", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      securityAssetProfiles
+    });
+
+    expect(vm.assetProfileGovernancePanel).toMatchObject({
+      statusLabel: "1 approved",
+      statusVariant: "success",
+      approvedCountLabel: "1",
+      projectedFieldCountLabel: "2",
+      closeIdentifierCountLabel: "2",
+      canCreateSecurity: true,
+      createDisabledReason: null
+    });
+    expect(vm.assetProfileGovernancePanel.rows[0]).toMatchObject({
+      profileId: "structured-credit-io-po",
+      versionLabel: "v1",
+      name: "Structured Credit IO/PO",
+      categoryLabel: "StructuredCredit / InterestOnly",
+      requiredCloseIdentifierLabel: "Cusip, InternalCode",
+      accountingImpactLabel: "FactorSchedule, IncomeAccrual"
     });
   });
 

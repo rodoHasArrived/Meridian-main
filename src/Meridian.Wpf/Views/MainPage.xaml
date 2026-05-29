@@ -111,6 +111,8 @@
                                                                  Margin="0,8,8,8"
                                                                  Width="300"
                                                                  Visibility="Collapsed"
+                                                                 HostAutomationId="{Binding WorkspaceInspectorHostAutomationId}"
+                                                                 AutomationProperties.AutomationId="{Binding WorkspaceInspectorHostAutomationId}"
                                                                  InspectorState="Empty" />
                         </Grid>
                     </DockPanel>
@@ -119,4 +121,3 @@
         </Grid>
     </views:InstitutionalShellFrameControl>
 </Page>
-

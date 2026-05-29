@@ -393,11 +393,30 @@ export function OperationsContinuityScreen() {
 
         <Card className="panel-surface">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
-              {vm.checklistLabel}
-            </CardTitle>
-            <CardDescription>Shared close-control tasks required before approval and close transitions.</CardDescription>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.checklistLabel}
+                </CardTitle>
+                <CardDescription>Shared close-control tasks required before approval and close transitions.</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.checklistSummary.statusTone]}>
+                {vm.checklistSummary.taskCountLabel}
+              </Badge>
+            </div>
+            <div
+              role="list"
+              aria-label="Close checklist control summary"
+              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2"
+            >
+              <span role="listitem">{vm.checklistSummary.readyCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.blockedCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.acknowledgementCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.approvalCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.evidenceCountLabel}</span>
+              <span role="listitem">{vm.checklistSummary.dueSoonLabel}</span>
+            </div>
           </CardHeader>
           <CardContent>
             <DenseDataTable

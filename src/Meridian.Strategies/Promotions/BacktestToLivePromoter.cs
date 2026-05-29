@@ -52,6 +52,7 @@ public sealed class BacktestToLivePromoter
         string? approvalReason = null,
         string? reviewNotes = null,
         string[]? approvalChecklist = null,
+        string[]? evidenceReferences = null,
         string? manualOverrideId = null,
         string? auditReference = null,
         string? promotionId = null)
@@ -74,6 +75,7 @@ public sealed class BacktestToLivePromoter
             ApprovalReason: approvalReason,
             ReviewNotes: reviewNotes,
             ApprovalChecklist: approvalChecklist is { Length: > 0 } ? [.. approvalChecklist] : null,
+            EvidenceReferences: evidenceReferences is { Length: > 0 } ? [.. evidenceReferences] : null,
             AuditReference: auditReference,
             ApprovedBy: approvedBy,
             ManualOverrideId: manualOverrideId);
@@ -122,6 +124,7 @@ public sealed record StrategyPromotionRecord(
     string? ApprovalReason = null,
     string? ReviewNotes = null,
     string[]? ApprovalChecklist = null,
+    string[]? EvidenceReferences = null,
     string? AuditReference = null,
     string? ApprovedBy = null,
     string? ManualOverrideId = null);

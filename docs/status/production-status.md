@@ -2,7 +2,7 @@
 
 <!-- auto-sync:tests -->
 **Version:** 1.7.9
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 **Status:** Development / Pilot Ready - Wave 1 trust gate is closed; Wave 2 paper-trading cockpit and Wave 3 shared-run continuity baselines are closed as of 2026-05-27; Wave 4 governance/fund-operations close and report acceptance remains in progress. Browser and WPF are both active operator UI lanes and must continue to consume shared contracts, endpoints, and read models. Current May 28 support evidence includes W4 operations-continuity endpoint/workflow coverage, reconciliation casework, governed report-pack workflow/provenance, browser Accounting/Reporting parity, explicit operations-continuity workflow targets, Explain-the-Break parity through shared DTO/browser/WPF consumers, Investment Accounting Transaction Lab previews, report restatement review, richer run comparison/drill-in support, shared workflow route parity, and screenshot/evidence route validation guards. These preserve the closed W2/W3 baselines and advance W4 support; they are not full W4 close/report, Evidence Vault/report-line-provenance product, Backtest Studio, or live-readiness exits.
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
@@ -11,8 +11,8 @@ Readiness claim wording in this document must follow [`readiness-claim-language-
 2026-05-19 current-state note: the latest repo evidence adds ledger `posting_kind` guards,
 report-pack validation/lifecycle metadata, evidence-vault manifest lookup, reconciliation case
 storage/audit hardening, account-sync history/readiness DTOs, and an in-flight Security Master
-validation-gate/snapshot slice. These are support evidence for Waves 3-4 and do not change the
-canonical `In Progress` posture for W2-W4.
+validation-gate/snapshot slice. These are support evidence for Wave 4 on top of the closed W2/W3
+baselines and do not change the canonical `In Progress` posture for W4.
 
 2026-05-19 operations-continuity note: shared workflow contracts, application services,
 hash-chained audit timeline, optional transactional ledger/audit/workflow commit support, and
@@ -25,8 +25,9 @@ publication controls, and operator-approved calibration remain open.
 provider-routing connection, binding, credential-source, environment, warning, and trust-snapshot
 state; Strategy Designer route actions now separate browser-openable GET evidence from
 reference-only POST validation, preview, and run-backtest actions; and Reporting export commands now
-abort superseded profile exports. These improve operator safety and route semantics, but they are
-not cockpit acceptance, Backtest Studio, governed report-pack lifecycle, or live-readiness exits.
+abort superseded profile exports. These improve operator safety and route semantics, preserve the
+closed cockpit baseline, and are not Backtest Studio, governed report-pack lifecycle, or
+live-readiness exits.
 
 2026-05-20 hardening note: brokerage order placement now fails closed when required validation or
 sign-off artifacts are missing, ledger and promotion endpoints enforce role authorization,
@@ -148,13 +149,13 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 - Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred or non-blocking inventory for the current wave and should not be described as active Wave 1 blockers
 - provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `run-wave1-provider-validation.ps1`, generated `artifacts/provider-validation/` run outputs, the signed 2026-04-27 DK1 parity packet, packet-bound sign-off evidence, and the latest generated validation summary instead of architecture intent; future DK1 reviews must use a fresh date-stamped packet and matching sign-off whenever evidence changes
 
-### Wave 2: Paper-trading cockpit hardening
+### Wave 2: Paper-trading cockpit closed baseline
 
-- the shared workstation cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
+- the shared workstation cockpit baseline is closed as of 2026-05-27; future changes should keep the acceptance pack green rather than reopening the wave status
 - `/api/workstation/trading/readiness` now gives Wave 2 a single DTO surface for active paper-session state, replay consistency, execution controls, recent risk/control audit evidence, missing-field explainability warnings, DK1 trust-gate packet/sign-off posture, promotion approval checklist state, brokerage sync posture, acceptance-gate/overall-readiness posture, and operator work items; `/api/workstation/operator/inbox` now aggregates those work items with actionable warning/critical run review-packet items from the latest runs, open/in-review reconciliation breaks, and navigation targets as an initial shared operator-inbox contract
 - local replay-audit hardening now records replay consistency, compared fill/order/ledger counts, last-persisted timestamps, and primary mismatch reason into execution-audit metadata so readiness can reconstruct replay evidence after restart or service-layer verification
-- the WPF Trading desk briefing hero consumes active-run, workflow-summary, replay/readiness, controls, DK1 trust-gate, and brokerage-sync signals to route operators toward context selection, audit trail, portfolio, blotter, risk rail, account portfolio, or alerts, while OrderBook now contributes order-flow posture for depth/tape monitoring; this is shell evidence rather than a completed Wave 2 gate
-- session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
+- the WPF Trading desk briefing hero consumes active-run, workflow-summary, replay/readiness, controls, DK1 trust-gate, and brokerage-sync signals to route operators toward context selection, audit trail, portfolio, blotter, risk rail, account portfolio, or alerts, while OrderBook now contributes order-flow posture for depth/tape monitoring; this preserves the closed Wave 2 gate and should remain regression evidence
+- session persistence, replay behavior, audit visibility, and execution-control flows are accepted for the W2 baseline; broader paper-book, close, and live-control depth belongs to W4/W6
 - live-readiness claims must remain downstream of a trustworthy paper workflow
 
 #### Cockpit hardened acceptance gate (objective pass/fail)
@@ -178,9 +179,9 @@ Operator-readiness language for Wave 2 should defer to the canonical `Done` stat
 5. If replay evidence is stale, rerun replay verification and capture the recovered gate/audit reference before final operator acceptance.
 
 
-### Wave 3: Shared run / portfolio / ledger continuity
+### Wave 3: Shared run / portfolio / ledger continuity closed baseline
 
-- the shared run seam exists, but paper/live-adjacent history, cash-flow, and reconciliation continuity are not equally deep in every surface yet
+- the shared run / portfolio / ledger continuity baseline is closed as of 2026-05-27; future work should preserve that evidence while routing broader paper/live-adjacent history, cash-flow projection, and close/report governance depth to W4/W5/W6 as appropriate
 - RunCashFlow now has WPF empty-state guidance for selected-run, missing-run, no-event, and loaded retained cash-flow summaries, which improves the shared-run drill-in but does not finish broader cash-flow modeling
 - portfolio, ledger, fills, attribution, and reconciliation need to feel like one run-centered system rather than adjacent slices
 - brokerage/account-sync support now adds fund-account links, positions/activity reads, household portfolio rollups, performance, cash-flow summaries, Alpaca paper connection verification, and read-only Robinhood aggregation as continuity evidence; operator-approved reconciliation, external-statement acceptance, and live-readiness remain open

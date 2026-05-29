@@ -19,18 +19,22 @@ Custom asset profiles are profiles over the shared UFL capability model, not a s
 
 - The UFL index links this lane as a governed custom-asset target.
 - `OtherSecurity` exists as the current generic-security fallback path.
+- `SecurityAssetProfileDefinitionDto`, profile field DTOs, and approval metadata DTOs define the shared contract for versioned profile definitions and pinned profile-backed terms.
+- `StaticSecurityAssetProfileCatalog` seeds approved version-1 starter profiles for Structured Credit IO/PO, Real Estate Holding, Private Fund Interest, Private Company Equity, and Co-invest/SPV.
+- `SecurityValidationService` now recognizes `CustomAsset` records and `OtherSecurity` records with `customProfileId`, validates approved profile-version pinning, typed no-code fields, identifier coverage, range/enum/date/currency/security-link field rules, reserved field names, and profile approval metadata.
+- Security Master create and amend paths preserve profile-backed `CustomAsset` and `OtherSecurity` asset-specific payloads, including `customProfileId`, `profileVersion`, `profileFields`, and immutable profile approval metadata, in the projected record and event payload.
+- `GET /api/security-master/asset-profiles` exposes the approved starter profile catalog for Security Master create/amend workflows, and `/api/security-master/search` accepts profile id, profile version, profile field key, and profile field value filters without requiring a free-text query.
+- `SecurityAssetProfileGovernanceService` persists governed profile drafts, approvals, rollback-created approved versions, and audit lineage under the configured storage root. Security Master profile lineage endpoints expose all versions and governance audit events, while validation continues to accept superseded approved versions for records pinned before a later profile change.
 
 ### Partially Implemented
 
-- The custom-asset lane is documented as a target-state requirement, but profile definitions, profile-version storage, validation services, and profile-backed Security Master records are not evidenced as delivered.
+- Profile definitions and deterministic validation now have seeded starter profiles plus a persistence-backed governance service for draft, approval, rollback, and lineage. Create/amend can round-trip pinned profile-backed security terms, canonical read surfaces can list approved profiles, inspect lineage, and filter profile-backed securities by pinned profile metadata or typed field value, and the browser Settings workspace can draft/approve/rollback profiles and create profile-backed `CustomAsset` records pinned to the approved profile version. Indexed profile-field projections, promotion workflow, and first-class package graduation remain future work.
 
 ### Target-State Only
 
-- Versioned custom asset profile definitions.
-- Typed field schema validation.
-- Profile approval, rollback, and promotion workflows.
-- Profile-backed Security Master create/amend behavior.
-- Profile-field query projections and profile-version lineage.
+- Broader workstation amend wizard surfaces beyond the current browser Settings profile-draft/create flow.
+- Promotion workflows that graduate high-volume profiles into dedicated UFL packages.
+- Indexed profile-field projections and profile-version lineage beyond the current Security Master projection payload.
 
 ### Explicitly Out of Scope
 
@@ -52,7 +56,7 @@ Custom asset profiles are profiles over the shared UFL capability model, not a s
 
 ## Current Maturity
 
-`L0 target-state`: the custom-asset lane is documented and linked, but implementation has not yet reached L1 until governed profile definitions, validation, version pinning, and canonical reference reads exist.
+`L1- governed-reference baseline`: governed profile contracts, seeded approved profile definitions, persistence-backed profile draft/approval/rollback lineage, Security Master validation, create/amend round-tripping for pinned profile-backed records, the profile catalog endpoint, profile lineage endpoint, profile-aware Security Master search, and browser Settings profile-draft/create workflows exist. The lane has not reached full L1 until broader amend workflows and indexed projection lineage are evidenced.
 
 ## Next Milestone Contract
 
@@ -73,7 +77,7 @@ Custom asset profiles are profiles over the shared UFL capability model, not a s
 - endpoint tests for profile definitions and profile-backed securities.
 - rebuild metadata tests proving profile version and source event are projected.
 
-**Exit criteria:** users can configure a governed profile and create a profile-backed security without bypassing canonical identity, validation, lineage, or provider-payload isolation.
+**Exit criteria:** users can configure a governed profile and create a profile-backed security without bypassing canonical identity, validation, lineage, or provider-payload isolation. Current evidence covers seeded approved definitions, persistence-backed draft/approval/rollback lineage, create/amend round-tripping, canonical profile read/search surfaces, and the browser Settings profile governance/create UI; broader amend UI, indexed profile-field projection lineage, and promotion workflows are still pending.
 
 ## Provider Payload Boundary
 

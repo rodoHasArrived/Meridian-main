@@ -139,60 +139,9 @@
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap" />
 
-                            <UniformGrid Columns="2">
-                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,10">
-                                    <StackPanel>
-                                        <TextBlock Text="Account exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Text="Compare accounts" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Open account and aggregate portfolio views." Margin="0,6,0,0" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
-                                        <Button Content="Open"
-                                                Tag="AccountPortfolio"
-                                                Click="OnNavigateButtonClick"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,12,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,10">
-                                    <StackPanel>
-                                        <TextBlock Text="Fund posture" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Text="Accounts and cash" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Inspect fund accounts before reconciliation or reporting handoff." Margin="0,6,0,0" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
-                                        <Button Content="Open"
-                                                Tag="FundAccounts"
-                                                Click="OnNavigateButtonClick"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,12,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,0">
-                                    <StackPanel>
-                                        <TextBlock Text="Import exceptions" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Text="Portfolio import" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
-                                        <TextBlock Text="Route external snapshots through import and reference-data checks." Margin="0,6,0,0" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
-                                        <Button Content="Open"
-                                                Tag="PortfolioImport"
-                                                Click="OnNavigateButtonClick"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,12,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource WorkspaceQueueCardStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="Specialty exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Text="Direct lending" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Review lending concentration before accounting close and reports." Margin="0,6,0,0" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
-                                        <Button Content="Open"
-                                                Tag="DirectLending"
-                                                Click="OnNavigateButtonClick"
-                                                Style="{StaticResource GhostButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,12,0,0" />
-                                    </StackPanel>
-                                </Border>
-                            </UniformGrid>
+                            <views:WorkspaceDecisionQueueControl ItemsSource="{Binding CockpitDecisionItems}"
+                                                                 QueueAutomationId="PortfolioCockpitDecisionQueue"
+                                                                 DecisionInvoked="OnCockpitDecisionInvoked" />
                         </StackPanel>
                     </Border>
 

@@ -45,12 +45,24 @@ public sealed class GovernanceWorkspaceShellSmokeTests
         xaml.Should().Contain("ReconciliationLaneSummaryText");
         xaml.Should().Contain("ReportingLaneSummaryText");
         xaml.Should().Contain("AuditLaneSummaryText");
+        xaml.Should().Contain("WorkspaceDecisionQueueControl");
+        xaml.Should().Contain("QueueAutomationId=\"AccountingOperationsDecisionQueue\"");
+        xaml.Should().Contain("QueueAutomationId=\"AccountingAccountingDecisionQueue\"");
+        xaml.Should().Contain("QueueAutomationId=\"AccountingReconciliationDecisionQueue\"");
+        xaml.Should().Contain("QueueAutomationId=\"AccountingReportingDecisionQueue\"");
+        xaml.Should().Contain("QueueAutomationId=\"AccountingAuditDecisionQueue\"");
+        xaml.Should().Contain("DecisionInvoked=\"OnGovernanceDecisionInvoked\"");
+        xaml.Should().NotContain("QueueItemTemplate");
 
         code.Should().Contain("GetGovernanceWorkflowSummaryAsync");
         code.Should().Contain("ApplyGovernanceLaneSummaries");
         code.Should().Contain("UpdateGovernanceHero();");
         code.Should().Contain("BuildLaneHeroState(");
         code.Should().Contain("SetLaneSummary(AccountingLaneSummaryText");
+        code.Should().Contain("private void OnGovernanceDecisionInvoked");
+        code.Should().Contain("WorkspaceDecisionInvokedEventArgs e");
+        code.Should().NotContain("OnQueuePrimaryActionClick");
+        code.Should().NotContain("OnQueueSecondaryActionClick");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

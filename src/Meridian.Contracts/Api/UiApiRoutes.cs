@@ -308,6 +308,11 @@ public static class UiApiRoutes
     public const string SecurityMasterValidation = "/api/security-master/{securityId:guid}/validation";
     public const string SecurityMasterResolve = "/api/security-master/resolve";
     public const string SecurityMasterSearch = "/api/security-master/search";
+    public const string SecurityMasterAssetProfiles = "/api/security-master/asset-profiles";
+    public const string SecurityMasterAssetProfileLineage = "/api/security-master/asset-profiles/{profileId}/lineage";
+    public const string SecurityMasterAssetProfileDrafts = "/api/security-master/asset-profiles/drafts";
+    public const string SecurityMasterAssetProfileApprove = "/api/security-master/asset-profiles/approve";
+    public const string SecurityMasterAssetProfileRollback = "/api/security-master/asset-profiles/rollback";
     public const string SecurityMasterHistory = "/api/security-master/{securityId:guid}/history";
     public const string SecurityMasterCreate = "/api/security-master";
     public const string SecurityMasterAmend = "/api/security-master/amend";

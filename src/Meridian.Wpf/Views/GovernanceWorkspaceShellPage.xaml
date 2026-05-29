@@ -15,80 +15,6 @@
       AutomationProperties.AutomationId="GovernanceWorkspaceShellPage">
 
     <Page.Resources>
-        <DataTemplate x:Key="QueueItemTemplate" DataType="{x:Type models:WorkspaceQueueItem}">
-            <Border Style="{StaticResource WorkspaceToneQueueCardStyle}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <WrapPanel Margin="0,0,0,8">
-                            <TextBlock Text="{Binding Title}"
-                                       FontSize="14"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            <Border Style="{StaticResource WorkspaceToneBadgeStyle}" Margin="10,0,8,0">
-                                <TextBlock Text="{Binding StatusLabel}"
-                                           FontSize="10"
-                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
-                            </Border>
-                            <Border Style="{StaticResource NeutralBadgeStyle}">
-                                <TextBlock Text="{Binding CountLabel}"
-                                           FontSize="10"
-                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
-                            </Border>
-                        </WrapPanel>
-
-                        <TextBlock Text="{Binding Detail}"
-                                   FontSize="12"
-                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                   TextWrapping="Wrap" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Center">
-                        <Button Tag="{Binding}"
-                                Content="{Binding PrimaryActionLabel}"
-                                Click="OnQueuePrimaryActionClick"
-                                Margin="0,0,8,0">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-                                    <Setter Property="IsEnabled" Value="True" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsBlocked}" Value="True">
-                                            <Setter Property="IsEnabled" Value="False" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-
-                        <Button Tag="{Binding}"
-                                Content="{Binding SecondaryActionLabel}"
-                                Click="OnQueueSecondaryActionClick">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
-                                    <Setter Property="Visibility" Value="Visible" />
-                                    <Setter Property="IsEnabled" Value="True" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SecondaryActionLabel}" Value="">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsBlocked}" Value="True">
-                                            <Setter Property="IsEnabled" Value="False" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
-        </DataTemplate>
-
         <DataTemplate x:Key="RecentItemTemplate" DataType="{x:Type models:WorkspaceRecentItem}">
             <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}">
                 <StackPanel>
@@ -472,32 +398,42 @@
                             <TextBlock Text="Operations"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,0,0,8" />
-                            <ItemsControl x:Name="OperationsQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <views:WorkspaceDecisionQueueControl x:Name="OperationsQueueList"
+                                                                 Columns="1"
+                                                                 QueueAutomationId="AccountingOperationsDecisionQueue"
+                                                                 DecisionInvoked="OnGovernanceDecisionInvoked" />
 
                             <TextBlock Text="Accounting"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="AccountingQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <views:WorkspaceDecisionQueueControl x:Name="AccountingQueueList"
+                                                                 Columns="1"
+                                                                 QueueAutomationId="AccountingAccountingDecisionQueue"
+                                                                 DecisionInvoked="OnGovernanceDecisionInvoked" />
 
                             <TextBlock Text="Reconciliation"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="ReconciliationQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <views:WorkspaceDecisionQueueControl x:Name="ReconciliationQueueList"
+                                                                 Columns="1"
+                                                                 QueueAutomationId="AccountingReconciliationDecisionQueue"
+                                                                 DecisionInvoked="OnGovernanceDecisionInvoked" />
 
                             <TextBlock Text="Reporting"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="ReportingQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <views:WorkspaceDecisionQueueControl x:Name="ReportingQueueList"
+                                                                 Columns="1"
+                                                                 QueueAutomationId="AccountingReportingDecisionQueue"
+                                                                 DecisionInvoked="OnGovernanceDecisionInvoked" />
 
                             <TextBlock Text="Audit"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="AuditQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <views:WorkspaceDecisionQueueControl x:Name="AuditQueueList"
+                                                                 Columns="1"
+                                                                 QueueAutomationId="AccountingAuditDecisionQueue"
+                                                                 DecisionInvoked="OnGovernanceDecisionInvoked" />
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>

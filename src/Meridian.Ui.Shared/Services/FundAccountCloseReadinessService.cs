@@ -519,6 +519,7 @@ public sealed class FundAccountCloseReadinessService
 
     private static bool IsCloseSupportingScheduleFeed(ProviderSecurityMasterScheduleFeedDto feed) =>
         string.Equals(feed.FeedKind, "SecurityMasterFactorHistory", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(feed.FeedKind, "SecurityMasterAmortizationSchedule", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(feed.FeedKind, "SecurityMasterLoanSchedule", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(feed.FeedKind, "SecurityMasterPrincipalSchedule", StringComparison.OrdinalIgnoreCase);
 

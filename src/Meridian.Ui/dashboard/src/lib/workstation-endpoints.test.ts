@@ -70,6 +70,11 @@ import {
   reconciliationStatementRunEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
+  securityMasterAssetProfileApproveEndpoint,
+  securityMasterAssetProfileDraftsEndpoint,
+  securityMasterAssetProfileLineageEndpoint,
+  securityMasterAssetProfileRollbackEndpoint,
+  securityMasterAssetProfilesEndpoint,
   securityMasterAliasUpsertEndpoint,
   securityMasterAmendEndpoint,
   securityMasterConflictsEndpoint,
@@ -359,6 +364,13 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(securityMasterEntryEndpoint()).toBe("/api/security-master");
     expect(securityMasterAmendEndpoint()).toBe("/api/security-master/amend");
+    expect(securityMasterAssetProfilesEndpoint()).toBe("/api/security-master/asset-profiles");
+    expect(securityMasterAssetProfileLineageEndpoint("profile / 1")).toBe(
+      "/api/security-master/asset-profiles/profile%20%2F%201/lineage"
+    );
+    expect(securityMasterAssetProfileDraftsEndpoint()).toBe("/api/security-master/asset-profiles/drafts");
+    expect(securityMasterAssetProfileApproveEndpoint()).toBe("/api/security-master/asset-profiles/approve");
+    expect(securityMasterAssetProfileRollbackEndpoint()).toBe("/api/security-master/asset-profiles/rollback");
     expect(securityMasterAliasUpsertEndpoint()).toBe("/api/security-master/aliases/upsert");
     expect(securityMasterCorporateActionsEndpoint("security / 1")).toBe(
       "/api/security-master/security%20%2F%201/corporate-actions"

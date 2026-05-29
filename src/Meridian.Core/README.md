@@ -6,7 +6,7 @@ module_id: SRC-CORE
 path: src/Meridian.Core
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-29
 ---
 
 # src/Meridian.Core
@@ -32,6 +32,9 @@ Use this module when a cross-project primitive or runtime helper is required by 
 Runtime feature-capability options live in `Config/FeatureCapabilityOptions.cs` so desktop and host
 configuration loading can bind the same `FeatureCapabilities` section without introducing UI
 references into Core.
+`Serialization/SecurityMasterJsonContext.cs` includes source-generated metadata for Security Master
+validation, reference-data, custom asset profile, and custom profile governance DTOs so shared
+services can serialize those payloads without reflection-based fallback.
 
 ## Diagrams
 

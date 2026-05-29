@@ -186,12 +186,14 @@ public sealed class PromotionServiceLiveGovernanceTests
             CreatedBy: "ops",
             StrategyId: run.StrategyId,
             RunId: run.RunId));
+        var evidenceReferences = CreateLiveEvidenceReferences(manualOverride.OverrideId);
 
         var result = await service.ApproveAsync(new PromotionApprovalRequest(
             RunId: run.RunId,
             ApprovedBy: "ops",
             ApprovalReason: "Ready for live capital",
             ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: evidenceReferences,
             ManualOverrideId: manualOverride.OverrideId));
 
         result.Success.Should().BeTrue();
@@ -209,6 +211,7 @@ public sealed class PromotionServiceLiveGovernanceTests
         history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
         history[0].ApprovalReason.Should().Be("Ready for live capital");
         history[0].ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Live));
+        history[0].EvidenceReferences.Should().BeEquivalentTo(evidenceReferences);
 
         var recordedRuns = new List<StrategyRunEntry>();
         await foreach (var entry in store.GetAllRunsAsync())
@@ -232,7 +235,66 @@ public sealed class PromotionServiceLiveGovernanceTests
             entry.Metadata != null &&
             entry.Metadata["manualOverrideId"] == manualOverride.OverrideId &&
             entry.Metadata["requiredManualOverrideKind"] == ExecutionManualOverrideKinds.AllowLivePromotion &&
-            entry.Metadata["approvalChecklistCount"] == PromotionApprovalChecklist.CreateRequiredFor(RunType.Live).Length.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            entry.Metadata["approvalChecklistCount"] == PromotionApprovalChecklist.CreateRequiredFor(RunType.Live).Length.ToString(System.Globalization.CultureInfo.InvariantCulture) &&
+            entry.Metadata["evidenceReferenceCount"] == evidenceReferences.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) &&
+            entry.Metadata["evidenceReferences"].Contains(manualOverride.OverrideId, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ApproveAsync_WhenPaperRunMissingLiveEvidenceReferences_ReturnsFailureWithoutCreatingLiveRun()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+        var service = BuildService(
+            out var store,
+            controls,
+            auditTrail,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.AllowLivePromotion,
+            Reason: "Ready for live capital",
+            CreatedBy: "ops",
+            StrategyId: run.StrategyId,
+            RunId: run.RunId));
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            RunId: run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Ready for live capital",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            ManualOverrideId: manualOverride.OverrideId));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("promotion evidence").And.Contain(PromotionApprovalChecklist.LiveOverrideReviewed);
+
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
+
+        var recordedRuns = new List<StrategyRunEntry>();
+        await foreach (var entry in store.GetAllRunsAsync())
+        {
+            recordedRuns.Add(entry);
+        }
+
+        recordedRuns.Should().NotContain(entry => entry.RunType == RunType.Live);
     }
 
     [Fact]
@@ -267,7 +329,8 @@ public sealed class PromotionServiceLiveGovernanceTests
             run.RunId,
             ApprovedBy: "ops",
             ApprovalReason: "Ready for live capital.",
-            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)));
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: CreateLiveEvidenceReferences("override-under-review")));
 
         result.Success.Should().BeFalse();
         result.Reason.Should().NotBeNull();
@@ -327,6 +390,7 @@ public sealed class PromotionServiceLiveGovernanceTests
             CreatedBy: "ops",
             StrategyId: run.StrategyId,
             RunId: run.RunId));
+        var evidenceReferences = CreateLiveEvidenceReferences(manualOverride.OverrideId);
 
         await service.ApproveAsync(new PromotionApprovalRequest(
             RunId: run.RunId,
@@ -334,6 +398,7 @@ public sealed class PromotionServiceLiveGovernanceTests
             ApprovalReason: "Ready for live capital",
             ReviewNotes: "All controls green",
             ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: evidenceReferences,
             ManualOverrideId: manualOverride.OverrideId));
 
         var restarted = BuildService(
@@ -357,6 +422,7 @@ public sealed class PromotionServiceLiveGovernanceTests
         history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
         history[0].ApprovedBy.Should().Be("ops");
         history[0].ReviewNotes.Should().Be("All controls green");
+        history[0].EvidenceReferences.Should().BeEquivalentTo(evidenceReferences);
     }
 
     private static PromotionService BuildService(
@@ -388,6 +454,16 @@ public sealed class PromotionServiceLiveGovernanceTests
         yield return [true, true, true, true, false, false, true, "conflicting manual override"];
         yield return [true, true, true, false, true, false, true, "circuit breaker is open"];
     }
+
+    private static string[] CreateLiveEvidenceReferences(string manualOverrideId)
+        =>
+        [
+            $"{PromotionApprovalChecklist.Dk1TrustPacketReviewed}:evidence-vault/dk1-trust-packet",
+            $"{PromotionApprovalChecklist.RunLineageReviewed}:strategy-run/run-live-source",
+            $"{PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed}:ledger-continuity/live-book",
+            $"{PromotionApprovalChecklist.RiskControlsReviewed}:risk-controls/pre-live",
+            $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/{manualOverrideId}"
+        ];
 
     private static string CreateTempRoot()
     {

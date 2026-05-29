@@ -299,7 +299,7 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "sweepFrequency")),
                 ToOption(GetOptionalString(json, "targetAccountType")),
                 ToOption(GetOptionalDecimal(json, "yieldRate")))),
-            "OtherSecurity" => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
+            "OtherSecurity" or "CustomAsset" => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
                 GetRequiredString(json, "category"),
                 ToOption(GetOptionalString(json, "subType")),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
@@ -442,12 +442,30 @@ internal static class SecurityMasterMapping
     private static void EnsureSupportedAssetSchemaVersion(string assetClass, JsonElement json)
     {
         var schemaVersion = GetOptionalInt(json, "schemaVersion") ?? 1;
-        if (schemaVersion != 1)
+        if (schemaVersion == SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
+        {
+            return;
+        }
+
+        if (schemaVersion == SecurityMasterSchemaVersions.CustomAssetProfileTerms
+            && IsProfileBackedCustomAssetPayload(assetClass, json))
+        {
+            return;
+        }
+
+        if (schemaVersion != SecurityMasterSchemaVersions.LegacyAssetSpecificTerms)
         {
             throw new InvalidOperationException(
                 $"Unsupported schemaVersion '{schemaVersion}' for asset class '{assetClass}'.");
         }
     }
+
+    private static bool IsProfileBackedCustomAssetPayload(string assetClass, JsonElement json)
+        => (string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+           && json.TryGetProperty("customProfileId", out var customProfileId)
+           && customProfileId.ValueKind == JsonValueKind.String
+           && !string.IsNullOrWhiteSpace(customProfileId.GetString());
 
     private static JsonElement GetRequiredArray(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Array

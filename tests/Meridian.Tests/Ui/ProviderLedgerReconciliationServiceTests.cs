@@ -776,6 +776,64 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_RetainsProviderAmortizationScheduleEvents()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                internalSecuritiesMarketValue: 9_900m,
+                internalUnrealizedPnl: -100m,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
+                portfolioAdapter: new FixedIncomePortfolioAdapter(),
+                activityAdapter: new AmortizationScheduleActivityAdapter());
+
+            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Matched);
+            detail.CorporateActionReadiness.Should().NotBeNull();
+            detail.CorporateActionReadiness!.ProviderCorporateActionEventCount.Should().Be(1);
+            detail.CorporateActionReadiness.AmortizationScheduleEventCount.Should().Be(1);
+            detail.CorporateActionReadiness.FactorScheduleEventCount.Should().Be(0);
+            detail.CorporateActionReadiness.RequiredFeeds.Should().Contain("amortization-schedule");
+            detail.CorporateActionReadiness.RequiredFeeds.Should().Contain("factor-schedule");
+            detail.CorporateActionReadiness.EvidenceCandidates.Should().Contain(candidate =>
+                candidate.CandidateType == "AmortizationScheduleEvent" &&
+                candidate.ProviderEventId == "amortization-ust10y-20260501" &&
+                candidate.RequiredFeed == "amortization-schedule,factor-schedule" &&
+                candidate.EvidenceSource == "provider-corporate-action" &&
+                candidate.Amount == 125m &&
+                candidate.Quantity == 0.975m &&
+                candidate.Symbol == "UST10Y" &&
+                candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+            var amortizationEffect = detail.CorporateActionReadiness.LedgerEffects.Should().ContainSingle(effect =>
+                effect.CandidateType == "AmortizationScheduleEvent" &&
+                effect.ProviderEventId == "amortization-ust10y-20260501" &&
+                effect.LedgerEffectKind == "AmortizationScheduleValuationInput").Subject;
+            amortizationEffect.CashAmount.Should().Be(125m);
+            amortizationEffect.PrincipalAmount.Should().Be(125m);
+            amortizationEffect.Factor.Should().Be(0.975m);
+            amortizationEffect.Status.Should().Be(ProviderLedgerReconciliationCheckStatusDto.Matched);
+            amortizationEffect.JournalLines.Should().BeEmpty();
+            var amortizationFeed = detail.CorporateActionReadiness.SecurityMasterScheduleFeeds.Should()
+                .ContainSingle(feed => feed.ProviderEventId == "amortization-ust10y-20260501").Subject;
+            amortizationFeed.FeedKind.Should().Be("SecurityMasterAmortizationSchedule");
+            amortizationFeed.RequiredFeed.Should().Be("amortization-schedule,factor-schedule");
+            amortizationFeed.SecurityId.Should().NotBeNull();
+            amortizationFeed.PrincipalAmount.Should().Be(125m);
+            amortizationFeed.Factor.Should().Be(0.975m);
+            amortizationFeed.CanUpdateSecurityMaster.Should().BeTrue();
+            amortizationFeed.CanSupportLedgerValuation.Should().BeTrue();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_ProviderLedgerReconciliation_RetainsIncomeCashActivityCandidates()
     {
         var root = CreateTempRoot();
@@ -2507,6 +2565,40 @@ public sealed class ProviderLedgerReconciliationServiceTests
                         Quantity: 0.9825m,
                         Currency: "USD",
                         Description: "Monthly loan schedule update")
+                ]));
+        }
+    }
+
+    private sealed class AmortizationScheduleActivityAdapter : IBrokerageActivitySync
+    {
+        public string ProviderId => "alpaca";
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var retrievedAt = DateTimeOffset.UtcNow;
+            return Task.FromResult(new BrokerageActivitySnapshotDto(
+                "alpaca",
+                externalAccountId,
+                retrievedAt,
+                Orders: [],
+                Fills: [],
+                CashTransactions: [],
+                CorporateActions:
+                [
+                    new BrokerageCorporateActionSnapshotDto(
+                        "amortization-ust10y-20260501",
+                        "AmortizationScheduleUpdated",
+                        "UST10Y",
+                        new DateOnly(2026, 5, 1),
+                        null,
+                        Amount: 125m,
+                        Quantity: 0.975m,
+                        Currency: "USD",
+                        Description: "Monthly amortization schedule update")
                 ]));
         }
     }

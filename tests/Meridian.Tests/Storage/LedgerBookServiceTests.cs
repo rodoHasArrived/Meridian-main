@@ -427,6 +427,16 @@ public sealed class LedgerBookServiceTests
             AccountingPolicyId = "gaap-close-v1",
             AccountingPolicyVersion = "v1"
         });
+        await store.AppendAsync(BuildExpenseEntry(
+            current.PeriodId,
+            accountName: "Accrued performance fee expense",
+            amount: 50m,
+            timestamp: DateTimeOffset.Parse("2026-02-28T22:00:00Z")) with
+        {
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = "gaap-close-v1",
+            AccountingPolicyVersion = "v1"
+        });
         await PostJsonAsync<LedgerPeriodCloseResultDto>(
             client,
             UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", current.PeriodId.ToString()),
@@ -451,19 +461,26 @@ public sealed class LedgerBookServiceTests
             row.AccountingPolicyId == "gaap-close-v1");
         pnl.Should().NotBeNull();
         pnl!.TotalRevenue.Should().Be(1_200m);
-        pnl.TotalExpenses.Should().Be(300m);
-        pnl.NetIncome.Should().Be(900m);
-        pnl.PeriodOnPeriodVariance.Should().Be(400m);
+        pnl.TotalExpenses.Should().Be(350m);
+        pnl.NetIncome.Should().Be(850m);
+        pnl.PeriodOnPeriodVariance.Should().Be(350m);
+        pnl.RealizedRevenue.Should().Be(1_200m);
+        pnl.RealizedExpenses.Should().Be(300m);
+        pnl.RealizedNetIncome.Should().Be(900m);
+        pnl.AccrualAdjustmentRevenue.Should().Be(0m);
+        pnl.AccrualAdjustmentExpenses.Should().Be(50m);
+        pnl.AccrualBasisAdjustmentNetImpact.Should().Be(-50m);
         pnl.RevenueLines.Should().ContainSingle(row => row.AccountName == "Management fees");
-        pnl.ExpenseLines.Should().ContainSingle(row => row.AccountName == "Operating expense");
+        pnl.ExpenseLines.Should().Contain(row => row.AccountName == "Operating expense");
+        pnl.AccrualAdjustmentLines.Should().ContainSingle(row => row.AccountName == "Accrued performance fee expense");
         trialBalanceReport.Should().NotBeNull();
         trialBalanceReport!.PeriodId.Should().Be(current.PeriodId);
         trialBalanceReport.LedgerBookId.Should().Be(book.LedgerBookId);
         trialBalanceReport.IsPeriodLocked.Should().BeTrue();
-        trialBalanceReport.TotalDebits.Should().Be(1_500m);
-        trialBalanceReport.TotalCredits.Should().Be(1_500m);
-        trialBalanceReport.NetIncome.Should().Be(900m);
-        trialBalanceReport.PeriodOnPeriodVariance.Should().Be(400m);
+        trialBalanceReport.TotalDebits.Should().Be(1_550m);
+        trialBalanceReport.TotalCredits.Should().Be(1_550m);
+        trialBalanceReport.NetIncome.Should().Be(850m);
+        trialBalanceReport.PeriodOnPeriodVariance.Should().Be(350m);
         trialBalanceReport.AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
         trialBalanceReport.AccountingPolicyId.Should().Be("gaap-close-v1");
         trialBalanceReport.Lines.Should().Contain(row =>
@@ -839,6 +856,40 @@ public sealed class LedgerBookServiceTests
 
         return new LedgerJournalEntryWrite(
             new JournalEntry(journalEntryId, occurredAt, description, lines),
+            AggregateId: Guid.NewGuid(),
+            PeriodId: periodId);
+    }
+
+    private static LedgerJournalEntryWrite BuildExpenseEntry(
+        Guid periodId,
+        string accountName,
+        decimal amount,
+        DateTimeOffset timestamp)
+    {
+        var journalEntryId = Guid.NewGuid();
+        var description = $"{accountName} accrual adjustment";
+        var lines = new[]
+        {
+            new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                timestamp,
+                new LedgerAccount(accountName, LedgerAccountType.Expense),
+                debit: amount,
+                credit: 0m,
+                description),
+            new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                timestamp,
+                new LedgerAccount("Accrued liabilities", LedgerAccountType.Liability),
+                debit: 0m,
+                credit: amount,
+                description)
+        };
+
+        return new LedgerJournalEntryWrite(
+            new JournalEntry(journalEntryId, timestamp, description, lines),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
     }

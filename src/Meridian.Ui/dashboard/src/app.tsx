@@ -97,6 +97,7 @@ function AppShell() {
     providerRoutingTrustSnapshots,
     providerRoutingRefreshing,
     rolePermissionCatalog,
+    securityAssetProfiles,
     ledgerMappingWorkbench,
     operationsApprovalPolicyMatrix,
     operationsCloseCalendar,
@@ -395,6 +396,7 @@ function AppShell() {
                       providerRoutingRefreshing={providerRoutingRefreshing}
                       featureCapabilities={featureCapabilities}
                       rolePermissionCatalog={rolePermissionCatalog}
+                      securityAssetProfiles={securityAssetProfiles}
                       ledgerMappingWorkbench={ledgerMappingWorkbench}
                       operationsApprovalPolicyMatrix={operationsApprovalPolicyMatrix}
                       operationsCloseCalendar={operationsCloseCalendar}

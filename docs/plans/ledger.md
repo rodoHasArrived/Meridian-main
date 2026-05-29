@@ -19,8 +19,10 @@ first fixed-income coupon/accretion/amortization journal projection are complete
 ledger domain now also has book-scoped locked-period guards for post-close/NAV protection and
 shadow-NAV validation reports with governed override drafts, plus deterministic partnership
 investor fee/high-water/allocation projections, tiered preferred-return/carry waterfall
-allocations, signed financial-report artifact generation, and scheduled report-export occurrence
-projection. Multi-currency posting now has a local-to-base journal projector that preserves local
+allocations, signed financial-report artifact generation including a machine-readable
+financial-statements JSON artifact plus tax-lot realized-gains CSV export, and scheduled
+report-export occurrence projection.
+Multi-currency posting now has a local-to-base journal projector that preserves local
 amount/currency/rate evidence while producing balanced base-currency ledger lines.
 Generic automated journal drafts now also cover recurring management-fee, performance-fee,
 commission, and withholding-tax accrual obligations. Daily portfolio pricing now has a
@@ -39,11 +41,13 @@ loan/period/currency `AccrualSummary` totals for accrual schedules.
 period-blocked accruals to the Accounting operator inbox with `FundReconciliation` navigation.
 Closed-period trial balances now also expose a signed `LedgerTrialBalanceReportDto` with locked-period
 status, aggregate totals, per-account detail rows, accounting-policy lineage, and checksum evidence.
+Closed-period P&L summaries now split realized revenue/expense net income from accrual-basis
+adjustment impact while retaining prior-period variance and policy lineage.
 Direct-lending commands now project ledger-impacting events before persistence and pass the
 resulting `LedgerJournalEntryWrite` records into `IDirectLendingStateStore.SaveAsync`, where
 `PostgresDirectLendingStateStore` appends them through `ITransactionalLedgerJournalStore` inside
-the same serializable transaction as the loan event append. Tax-reporting exports and richer
-file-based ledger report exports remain open.
+the same serializable transaction as the loan event append. Full regulatory-format exports
+remain open beyond the first ledger-domain tax-lot realized-gains artifact.
 
 ## Overview
 
@@ -339,11 +343,12 @@ accrual schedule) that can be exported and attached to the operator report pack.
 
 - [x] `LedgerTrialBalanceReportDto` — signed, period-locked trial balance with aggregate-level totals and
   per-account detail rows
-- [ ] `PeriodPnlSummaryDto` — realized income/expense P&L with prior-period comparatives and
+- [x] `LedgerPeriodPnlSummaryDto` — realized income/expense P&L with prior-period comparatives and
   accrual-basis adjustments
 - [x] `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` endpoints
-- [x] Ledger-domain signed report-pack artifact builder for trial balance, P&L, balance sheet, and
-  manifest checksums from point-in-time statements
+- [x] Ledger-domain signed report-pack artifact builder for trial balance, P&L, balance sheet,
+  financial-statements JSON, tax-lot realized-gains CSV, and manifest checksums from
+  point-in-time statements and supplied realized-gain projections
 - [x] `FundOperationsWorkspaceReadService` includes `FundLedgerSummary`,
   `FundLedgerReconciliationSnapshot`, selected-ledger filtering, and trial-balance rows in the
   fund-operations workspace projection

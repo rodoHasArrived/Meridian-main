@@ -129,7 +129,6 @@ const detail: OperationsContinuityWorkflow = {
       gate: "LedgerPosting",
       label: "Ledger posting controller check",
       owner: "fund-controller",
-      requiredEvidence: "Validated journal draft, retained ledger hash, and controller approval evidence.",
       dueDate: "2026-05-09",
       requiredApprovalCount: 2,
       expiresOn: "2026-05-12",
@@ -142,7 +141,6 @@ const detail: OperationsContinuityWorkflow = {
       acknowledgedBy: null
     }
   ],
-  closePackage: null,
   closeReadiness: null,
   evidenceLinks: [],
   blockers: gates[1]!.blockers
@@ -165,8 +163,14 @@ describe("OperationsContinuityScreen", () => {
     expect(await screen.findByRole("heading", { name: "Gates" })).toBeInTheDocument();
     expect(screen.getByText("Ledger posting requires a balanced and validated journal draft.")).toBeInTheDocument();
     const checklist = screen.getByRole("table", { name: "Operations continuity close checklist" });
+    const checklistSummary = screen.getByRole("list", { name: "Close checklist control summary" });
+    expect(await screen.findByText("1 close task")).toBeInTheDocument();
+    expect(within(checklistSummary).getByText("0 ready")).toBeInTheDocument();
+    expect(within(checklistSummary).getByText("1 blocked")).toBeInTheDocument();
+    expect(within(checklistSummary).getByText("2 control approvals required")).toBeInTheDocument();
+    expect(within(checklistSummary).getByText("1/1 evidence pointer")).toBeInTheDocument();
     expect(within(checklist).getByText("Ledger posting controller check")).toBeInTheDocument();
-    expect(within(checklist).getByText("Validated journal draft, retained ledger hash, and controller approval evidence.")).toBeInTheDocument();
+    expect(within(checklist).getAllByText("ledger-evidence-1")).toHaveLength(2);
     expect(within(checklist).getByText("2 control approvals required")).toBeInTheDocument();
     expect(within(checklist).getByRole("link", { name: "Open remediation for Ledger posting controller check" }))
       .toHaveAttribute("href", "/accounting/ledger");

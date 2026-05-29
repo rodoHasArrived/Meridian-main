@@ -770,6 +770,7 @@ public sealed class LedgerIntegrationTests
         var investorCapital = chart.Register("Equity:Partners:Capital", LedgerAccountType.Equity);
         var feeRevenue = chart.Register("Revenue:Management Fees", LedgerAccountType.Revenue);
         var commissionExpense = chart.Register("Expenses:Commissions", LedgerAccountType.Expense);
+        var aaplSecurity = chart.Register("Assets:Investments:AAPL", LedgerAccountType.Asset, "AAPL", "broker-1");
         var ledger = new Meridian.Ledger.Ledger();
         var ts = new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero);
 
@@ -891,8 +892,22 @@ public sealed class LedgerIntegrationTests
             sourceSessionId: "session-close-2026-05",
             reconciliationEvidenceLinks: ["reconciliation:run-2026-05"],
             approvalEvidenceLinks: ["approval:close-2026-05"]);
+        var taxLotProjection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
+            aaplSecurity,
+            new DateOnly(2026, 5, 15),
+            quantitySold: 5m,
+            salePrice: 120m,
+            LedgerTaxLotReliefMethod.Hifo,
+            [
+                new LedgerTaxLot("lot-low", new DateOnly(2026, 1, 10), 4m, 90m),
+                new LedgerTaxLot("lot-high", new DateOnly(2026, 2, 10), 5m, 100m),
+            ]));
 
-        var pack = LedgerReportPackBuilder.Build(ledger, request, chart);
+        var pack = LedgerReportPackBuilder.Build(
+            ledger,
+            request,
+            chart,
+            taxLotReliefProjections: [taxLotProjection]);
 
         pack.IsBalanced.Should().BeTrue();
         pack.Status.Should().Be(LedgerReportPackLifecycleStatus.Draft);
@@ -901,6 +916,8 @@ public sealed class LedgerIntegrationTests
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "trial-balance.csv");
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "income-statement.csv");
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "balance-sheet.csv");
+        pack.Artifacts.Should().Contain(artifact => artifact.Name == "financial-statements.json");
+        pack.Artifacts.Should().Contain(artifact => artifact.Name == "tax-lot-realized-gains.csv");
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "line-provenance.csv");
         pack.Artifacts.Should().Contain(artifact => artifact.Name == "manifest.csv");
         pack.Artifacts.Should().OnlyContain(artifact => artifact.ChecksumSha256.Length == 64);
@@ -921,10 +938,22 @@ public sealed class LedgerIntegrationTests
         manifest.Content.Should().Contain("net-income,100");
         manifest.Content.Should().Contain("accounting-equation-variance,0");
         manifest.Content.Should().Contain("trial-balance.csv,text/csv,");
+        manifest.Content.Should().Contain("financial-statements.json,application/json,");
+        manifest.Content.Should().Contain("tax-lot-realized-gains.csv,text/csv,");
         manifest.Content.Should().Contain("line-provenance.csv,text/csv,");
+        var statementsArtifact = pack.Artifacts.Single(artifact => artifact.Name == "financial-statements.json");
+        statementsArtifact.Content.Should().Contain("\"schema\": \"ledger-financial-statements-v1\"");
+        statementsArtifact.Content.Should().Contain("\"trialBalanceRows\": [");
+        statementsArtifact.Content.Should().Contain("\"incomeStatementRows\": [");
+        statementsArtifact.Content.Should().Contain("\"balanceSheetRows\": [");
+        statementsArtifact.Content.Should().Contain("\"netIncome\": 100");
+        statementsArtifact.Content.Should().Contain("\"accountingEquationVariance\": 0");
         var provenanceArtifact = pack.Artifacts.Single(artifact => artifact.Name == "line-provenance.csv");
         provenanceArtifact.Content.Should().Contain("LedgerJournalEntryIds");
         provenanceArtifact.Content.Should().Contain("reconciliation:run-2026-05");
+        var taxArtifact = pack.Artifacts.Single(artifact => artifact.Name == "tax-lot-realized-gains.csv");
+        taxArtifact.Content.Should().Contain("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId");
+        taxArtifact.Content.Should().Contain("2026-05-15,Assets:Investments:AAPL,AAPL,broker-1,Hifo,lot-high,2026-02-10,5,100,600,500,100");
         pack.Signature.Algorithm.Should().Be("SHA256");
         pack.Signature.PayloadChecksumSha256.Should().HaveLength(64);
         pack.Signature.SignedBy.Should().Be("controller");

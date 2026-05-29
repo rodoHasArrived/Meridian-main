@@ -89,3 +89,58 @@ public sealed record SecurityAssetProfileApprovalMetadataDto(
     string ApprovedBy,
     DateTimeOffset ApprovedAtUtc,
     string ApprovalReference);
+
+public sealed record SecurityAssetProfileDraftRequestDto(
+    string ProfileId,
+    string Name,
+    string Category,
+    string? SubType,
+    IReadOnlyList<SecurityAssetProfileFieldDefinitionDto> Fields,
+    IReadOnlyList<SecurityAssetProfileIdentifierPreferenceDto> IdentifierPreferences,
+    IReadOnlyList<string> LifecycleStates,
+    IReadOnlyList<SecurityAssetProfileAccountingImpactHintDto> AccountingImpactHints,
+    IReadOnlyList<SecurityAssetProfileDateOrderRuleDto> DateOrderRules,
+    string? RequestedBy,
+    string Rationale,
+    string? CorrelationId = null);
+
+public sealed record SecurityAssetProfileApprovalRequestDto(
+    string ProfileId,
+    int Version,
+    DateOnly EffectiveFrom,
+    string ApprovalReference,
+    string? RequestedBy,
+    string Rationale,
+    string? CorrelationId = null);
+
+public sealed record SecurityAssetProfileRollbackRequestDto(
+    string ProfileId,
+    int TargetVersion,
+    DateOnly EffectiveFrom,
+    string ApprovalReference,
+    string? RequestedBy,
+    string Rationale,
+    string? CorrelationId = null);
+
+public sealed record SecurityAssetProfileGovernanceAuditEventDto(
+    string AuditId,
+    string EventType,
+    DateTimeOffset OccurredAtUtc,
+    string Actor,
+    string Rationale,
+    string CorrelationId,
+    string ProfileId,
+    int Version,
+    SecurityAssetProfileStatusDto Status,
+    int? PreviousVersion,
+    string? ApprovalReference);
+
+public sealed record SecurityAssetProfileLineageDto(
+    string ProfileId,
+    IReadOnlyList<SecurityAssetProfileDefinitionDto> Versions,
+    IReadOnlyList<SecurityAssetProfileGovernanceAuditEventDto> AuditEvents);
+
+public sealed record SecurityAssetProfileGovernanceResultDto(
+    SecurityAssetProfileDefinitionDto Profile,
+    SecurityAssetProfileLineageDto Lineage,
+    SecurityAssetProfileGovernanceAuditEventDto AuditEvent);

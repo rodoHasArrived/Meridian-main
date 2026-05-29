@@ -92,6 +92,17 @@ export interface OperationsContinuityChecklistRow {
   ariaLabel: string;
 }
 
+export interface OperationsContinuityChecklistSummary {
+  taskCountLabel: string;
+  readyCountLabel: string;
+  blockedCountLabel: string;
+  acknowledgementCountLabel: string;
+  approvalCountLabel: string;
+  evidenceCountLabel: string;
+  dueSoonLabel: string;
+  statusTone: OperationsContinuityTone;
+}
+
 export interface OperationsContinuityNextActionViewModel {
   title: string;
   detail: string;
@@ -142,6 +153,7 @@ export interface OperationsContinuityScreenViewModel {
   blockersEmptyText: string;
   blockers: OperationsContinuityBlockerRow[];
   checklistLabel: string;
+  checklistSummary: OperationsContinuityChecklistSummary;
   checklistEmptyText: string;
   checklist: OperationsContinuityChecklistRow[];
   timelineLabel: string;
@@ -337,7 +349,8 @@ export function buildOperationsContinuityScreenViewModel({
     detailError
   });
   const blockers = buildBlockerRows(effectiveDetail?.blockers ?? collectGateBlockers(gateSource));
-  const checklist = buildChecklistRows(effectiveDetail?.closeChecklist ?? []);
+  const checklistSource = effectiveDetail?.closeChecklist ?? [];
+  const checklist = buildChecklistRows(checklistSource);
   const timeline = buildTimelineRows(effectiveDetail?.timeline ?? []);
   const gates = gateSource.map(mapGateRow);
   const rows = workflows.map((workflow) => mapWorkflowRow(workflow, selectedSummary?.workflowId ?? null));
@@ -377,6 +390,7 @@ export function buildOperationsContinuityScreenViewModel({
     blockersEmptyText: detailLoading ? "Loading selected workflow blockers..." : "No blockers are surfaced for the selected workflow.",
     blockers,
     checklistLabel: "Close checklist",
+    checklistSummary: buildChecklistSummary(checklistSource),
     checklistEmptyText: detailLoading ? "Loading selected workflow checklist..." : "No close checklist tasks are available for the selected workflow.",
     checklist,
     timelineLabel: "Timeline",
@@ -630,7 +644,7 @@ function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsCo
       statusTone: checklistStatusTone(task.status),
       dueLabel: task.dueDate ? formatDate(task.dueDate) : "No due date",
       expiresLabel: task.expiresOn ? formatDate(task.expiresOn) : "No expiration",
-      requiredEvidence: task.requiredEvidence?.trim() || "Required evidence pending",
+      requiredEvidence: task.evidencePointer?.trim() || "Evidence pointer pending",
       approvalLabel: task.requiredApprovalCount === 0
         ? "No control approvals required"
         : `${task.requiredApprovalCount} control approval${task.requiredApprovalCount === 1 ? "" : "s"} required`,
@@ -641,6 +655,53 @@ function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsCo
       ariaLabel: `${task.label || gateLabel(task.gate)} checklist task, ${splitEnumLabel(task.status || "Unknown")}, ${task.owner?.trim() || "owner pending"}`
     };
   });
+}
+
+function buildChecklistSummary(tasks: OperationsCloseChecklistTask[]): OperationsContinuityChecklistSummary {
+  const readyCount = tasks.filter(isChecklistTaskReady).length;
+  const blockedCount = tasks.filter(isChecklistTaskBlocked).length;
+  const acknowledgementCount = tasks.filter((task) => Boolean(task.acknowledgedAtUtc)).length;
+  const approvalCount = tasks.reduce((total, task) => total + Math.max(0, task.requiredApprovalCount ?? 0), 0);
+  const evidenceCount = tasks.filter((task) => Boolean(task.evidencePointer?.trim())).length;
+  const dueSoon = tasks
+    .filter((task) => task.dueDate && !isChecklistTaskReady(task))
+    .sort((left, right) => String(left.dueDate).localeCompare(String(right.dueDate)))[0] ?? null;
+  const tone: OperationsContinuityTone = blockedCount > 0
+    ? "blocked"
+    : tasks.length > 0 && readyCount === tasks.length
+      ? "ready"
+      : tasks.length > 0
+        ? "review"
+        : "neutral";
+
+  return {
+    taskCountLabel: `${tasks.length} close task${tasks.length === 1 ? "" : "s"}`,
+    readyCountLabel: `${readyCount} ready`,
+    blockedCountLabel: `${blockedCount} blocked`,
+    acknowledgementCountLabel: `${acknowledgementCount} acknowledged`,
+    approvalCountLabel: approvalCount === 0
+      ? "No control approvals required"
+      : `${approvalCount} control approval${approvalCount === 1 ? "" : "s"} required`,
+    evidenceCountLabel: `${evidenceCount}/${tasks.length} evidence pointer${tasks.length === 1 ? "" : "s"}`,
+    dueSoonLabel: dueSoon?.dueDate ? `Next due ${formatDate(dueSoon.dueDate)}: ${dueSoon.label || gateLabel(dueSoon.gate)}` : "No open due dates",
+    statusTone: tone
+  };
+}
+
+function isChecklistTaskReady(task: OperationsCloseChecklistTask): boolean {
+  const normalized = task.status?.trim().toLowerCase() ?? "";
+  return normalized === "done" ||
+    normalized === "complete" ||
+    normalized === "completed" ||
+    normalized === "acknowledged" ||
+    Boolean(task.acknowledgedAtUtc);
+}
+
+function isChecklistTaskBlocked(task: OperationsCloseChecklistTask): boolean {
+  const normalized = task.status?.trim().toLowerCase() ?? "";
+  return normalized === "blocked" ||
+    normalized === "expired" ||
+    Boolean(task.blockingReason?.trim());
 }
 
 function collectGateBlockers(gates: OperationsGate[]): OperationsWorkflowBlocker[] {

@@ -65,11 +65,12 @@ accounting review.
 catch-up, carry, or residual tiers, preserving tier-level investor evidence and producing balanced
 investor-capital journal lines.
 `LedgerReportPackBuilder` turns point-in-time financial statements into signed trial-balance,
-income-statement, balance-sheet, line-provenance, and manifest artifacts for locked-period
-financial reporting handoff to persistence, approval, publication, restatement, archive, or export
-workflows. Report packs retain lifecycle events, restatement approvals, changed-line keys, and
-evidence links so published values can be traced back to ledger entries, source runs/sessions, and
-reconciliation or approval evidence.
+income-statement, balance-sheet, financial-statements JSON, tax-lot realized-gains CSV,
+line-provenance, and manifest artifacts for locked-period financial reporting handoff to
+persistence, approval, publication, restatement, archive, or export workflows. Report packs retain
+lifecycle events, restatement approvals, changed-line keys, and evidence links so published values
+can be traced back to ledger entries, source runs/sessions, reconciliation or approval evidence,
+and supplied realized-gain tax-lot projections.
 `LedgerReportSchedulePlanner` projects monthly, quarterly, or annual report schedules into
 period-bounded export occurrences and report-pack requests for regulatory, investor, or internal
 stakeholder delivery workflows.

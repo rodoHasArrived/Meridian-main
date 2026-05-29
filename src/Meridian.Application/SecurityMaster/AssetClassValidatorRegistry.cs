@@ -347,7 +347,7 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
         }
 
         issues.AddRange(ValidateProfileDefinition(profile));
-        if (profile.Status != SecurityAssetProfileStatusDto.Approved)
+        if (profile.Status is not SecurityAssetProfileStatusDto.Approved and not SecurityAssetProfileStatusDto.Superseded)
         {
             issues.Add(SecurityValidationIssueFactory.Create(
                 SecurityValidationSeverityDto.Error,
