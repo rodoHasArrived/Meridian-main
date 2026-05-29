@@ -64,7 +64,7 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
     }
 
     [Fact]
-    public async Task ApplyResolvedConflictAsync_TransitionsDurableCaseThroughReviewAndResolution()
+    public async Task ApplyResolvedConflictAsync_TransitionsDurableCaseThroughReviewAndResolutionWithoutSignOff()
     {
         var root = CreateTempRoot();
         try
@@ -81,13 +81,15 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
 
             var item = await repository.GetByIdAsync($"security-master:conflict:{conflict.ConflictId:N}");
             item.Should().NotBeNull();
-            item!.Status.Should().Be(ReconciliationBreakQueueStatus.SignedOff);
-            item.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
+            item!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+            item.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
             item.ResolvedBy.Should().Be("approver");
-            item.SignoffStatus.Should().Be("signed-off");
+            item.SignedOffBy.Should().BeNull();
+            item.SignoffStatus.Should().Be("ready-for-signoff");
             item.SignoffHistory.Should().ContainSingle(record =>
                 record.Actor == "approver" &&
-                record.Role == "Security Master steward");
+                record.Role == "Security Master steward" &&
+                record.Status == ReconciliationBreakQueueStatus.Resolved.ToString());
 
             var auditTypes = (await repository.GetAuditHistoryAsync(item.BreakId))
                 .Select(entry => entry.EventType)
@@ -95,7 +97,7 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             auditTypes.Should().Contain("CaseCreated");
             auditTypes.Should().Contain("ReviewStarted");
             auditTypes.Should().Contain("Resolved");
-            auditTypes.Should().Contain("SignedOff");
+            auditTypes.Should().NotContain("SignedOff");
         }
         finally
         {
@@ -155,7 +157,7 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
     }
 
     [Fact]
-    public async Task SeedOperatorOverrideCaseAsync_ApprovedOverrideSignsOffExistingCasework()
+    public async Task SeedOperatorOverrideCaseAsync_ApprovedOverrideResolvesExistingCaseworkWithoutSignOff()
     {
         var root = CreateTempRoot();
         try
@@ -188,21 +190,78 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
 
             var item = await repository.GetByIdAsync($"security-master:override:{securityId:N}");
             item.Should().NotBeNull();
-            item!.Status.Should().Be(ReconciliationBreakQueueStatus.SignedOff);
-            item.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
+            item!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+            item.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
             item.ResolvedBy.Should().Be("security-steward");
-            item.SignedOffBy.Should().Be("security-steward");
-            item.SignoffStatus.Should().Be("signed-off");
+            item.SignedOffBy.Should().BeNull();
+            item.SignoffStatus.Should().Be("ready-for-signoff");
             item.SignoffHistory.Should().Contain(record =>
                 record.Actor == "security-steward" &&
-                record.Role == "Security Master steward");
+                record.Role == "Security Master steward" &&
+                record.Status == ReconciliationBreakQueueStatus.Resolved.ToString());
 
             var auditTypes = (await repository.GetAuditHistoryAsync(item.BreakId))
                 .Select(static entry => entry.EventType)
                 .ToArray();
             auditTypes.Should().Contain("ReviewStarted");
             auditTypes.Should().Contain("Resolved");
-            auditTypes.Should().Contain("SignedOff");
+            auditTypes.Should().NotContain("SignedOff");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task SeedOperatorOverrideCaseAsync_ApprovedOverrideWithoutReviewerFallsBackToRequesterAndWaitsForSignOff()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var repository = BuildRepository(root);
+            var service = BuildService(repository);
+            var securityId = Guid.NewGuid();
+            var createdAt = DateTimeOffset.UtcNow.AddMinutes(-10);
+            var pending = new OperatorOverridesDto(
+                securityId,
+                new Dictionary<string, string> { ["sector"] = "Technology" },
+                "analyst",
+                createdAt)
+            {
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,
+                ReasonCode = "CLASSIFICATION_CORRECTION"
+            };
+            await service.SeedOperatorOverrideCaseAsync(pending, "analyst");
+
+            var approved = pending with
+            {
+                UpdatedAt = DateTimeOffset.UtcNow.AddMinutes(-1),
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Approved,
+                ReviewedBy = null,
+                ReviewedAt = null
+            };
+
+            await service.SeedOperatorOverrideCaseAsync(approved, "analyst");
+
+            var item = await repository.GetByIdAsync($"security-master:override:{securityId:N}");
+            item.Should().NotBeNull();
+            item!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+            item.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Resolved);
+            item.ResolvedBy.Should().Be("analyst");
+            item.SignedOffBy.Should().BeNull();
+            item.SignoffStatus.Should().Be("ready-for-signoff");
+            item.SignoffHistory.Should().Contain(record =>
+                record.Actor == "analyst" &&
+                record.Status == ReconciliationBreakQueueStatus.Resolved.ToString());
+            item.SignoffHistory.Should().NotContain(record =>
+                string.Equals(record.Actor, "security-master-casework", StringComparison.OrdinalIgnoreCase));
+
+            var auditTypes = (await repository.GetAuditHistoryAsync(item.BreakId))
+                .Select(static entry => entry.EventType)
+                .ToArray();
+            auditTypes.Should().Contain("Resolved");
+            auditTypes.Should().NotContain("SignedOff");
         }
         finally
         {

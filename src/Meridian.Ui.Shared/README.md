@@ -325,9 +325,9 @@ corporate-action, factor-schedule, or asset-class capability checks require cont
 Held-security Security Master exception cases also feed the close-readiness Security Master
 component, so unresolved conflicts, stale mappings, or pending override approvals cannot hide
 behind a green provider-ledger comparison.
-Approved Security Master operator overrides now move their durable exception case through review,
-resolution, and steward sign-off so close readiness and report-line provenance can distinguish
-pending override casework from approved definition evidence.
+Approved Security Master operator overrides now move their durable exception case through review and
+resolution, then remain ready for an independent steward sign-off so close readiness and report-line
+provenance can distinguish pending sign-off casework from approved definition evidence.
 Ledger amount provenance drilldowns now preserve related reconciliation case materiality and aging
 metadata, including severity, variance, tolerance band, sign-off actors, latest sign-off
 actor/time/note, SLA state, age band, and business-age hours, so report-line click-throughs can show
