@@ -32,16 +32,11 @@ public sealed class ReportPackWorkflowService
     private static readonly IReadOnlyDictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]> AllowedTransitions =
         new Dictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]>
         {
-<<<<<<< ours
             [ReportPackWorkflowStateDto.Draft] = [ReportPackWorkflowStateDto.InReview, ReportPackWorkflowStateDto.Validated],
-            [ReportPackWorkflowStateDto.Validated] = [ReportPackWorkflowStateDto.InReview, ReportPackWorkflowStateDto.Draft],
-            [ReportPackWorkflowStateDto.InReview] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Draft],
-=======
-            [ReportPackWorkflowStateDto.Draft] = [ReportPackWorkflowStateDto.Validated],
-            [ReportPackWorkflowStateDto.Validated] = [ReportPackWorkflowStateDto.PendingApproval, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.Validated] = [ReportPackWorkflowStateDto.InReview, ReportPackWorkflowStateDto.PendingApproval, ReportPackWorkflowStateDto.Draft],
+            [ReportPackWorkflowStateDto.InReview] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.PendingApproval, ReportPackWorkflowStateDto.Draft],
             [ReportPackWorkflowStateDto.PendingApproval] = [ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Rejected, ReportPackWorkflowStateDto.Draft],
             [ReportPackWorkflowStateDto.Rejected] = [ReportPackWorkflowStateDto.Draft],
->>>>>>> theirs
             [ReportPackWorkflowStateDto.Approved] = [ReportPackWorkflowStateDto.Published],
             [ReportPackWorkflowStateDto.Published] = [ReportPackWorkflowStateDto.Restated, ReportPackWorkflowStateDto.Archived],
             [ReportPackWorkflowStateDto.Restated] = [ReportPackWorkflowStateDto.Archived],
@@ -202,11 +197,8 @@ public sealed class ReportPackWorkflowService
         {
             ReportPackWorkflowStateDto.InReview => normalized is "operator" or "reviewer" or "validator",
             ReportPackWorkflowStateDto.Validated => normalized is "operator" or "reviewer" or "validator",
-<<<<<<< ours
-=======
             ReportPackWorkflowStateDto.PendingApproval => normalized is "operator" or "reviewer" or "validator",
             ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
->>>>>>> theirs
             ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
             ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
             ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",

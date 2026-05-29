@@ -9,8 +9,8 @@ terminal products.
 
 Meridian ships two distinct UI surfaces, both represented here:
 
-1. **Browser Workstation** (`src/Meridian.Ui/dashboard/`) —  browser-based operator UI lane. It owns new workstation delivery across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
-2. **WPF Desktop App** (`src/Meridian.Wpf/`) — .NET 10 desktop operator shell shares brand assets and icon vocabulary.
+1. **Browser Workstation** (`src/Meridian.Ui/dashboard/`) — the active browser-based operator UI lane. It owns new workstation delivery across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+2. **Retained WPF Desktop App** (`src/Meridian.Wpf/`) — .NET 10 desktop operator shell retained for shared contracts, regression fixes, and desktop support. It still shares brand assets and icon vocabulary.
 
 ## Sources
 
