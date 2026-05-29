@@ -9,6 +9,7 @@ using Meridian.Wpf.Tests.Support;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
 

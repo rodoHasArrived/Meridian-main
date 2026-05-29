@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, application, and workstation contributors
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 **Status:** target-state implementation requirement
 
 ## Summary
@@ -10,6 +10,8 @@
 UFL must support user-configurable custom assets without forcing every new instrument shape to become a compiled `SecurityKind` case on day one. The target design is a composable custom-asset lane: users define governed asset profiles from approved UFL capabilities, Meridian stores those profiles as versioned configuration, and operational workflows can review, validate, project, and eventually promote heavily used profiles into first-class asset packages.
 
 This lane complements, rather than replaces, the existing `OtherSecurity` package. `OtherSecurity` remains the controlled generic-security fallback, while custom asset profiles provide a more structured way for users to model repeatable non-standard instruments with explicit fields, validation rules, projections, and review evidence.
+
+Custom asset profiles are profiles over the shared UFL capability model, not a separate modeling system. They must satisfy the same identity, validation, provider-isolation, projection metadata, workstation-control, and accounting-impact guardrails as compiled asset packages before any maturity claim is made.
 
 ## Evidence Boundary
 

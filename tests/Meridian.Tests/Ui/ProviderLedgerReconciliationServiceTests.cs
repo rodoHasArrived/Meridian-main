@@ -1506,6 +1506,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Score.Should().Be(100);
             readiness.Components.Should().HaveCount(6);
             readiness.Components.Should().OnlyContain(component => component.Status == FundAccountCloseReadinessStatusDto.Ready);
+            readiness.Components.Should().OnlyContain(component =>
+                component.EvidenceLink == $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconciliation/latest");
             readiness.Components.Should().Contain(component =>
                 component.Key == "corporate-action-factor-readiness" &&
                 component.Score == 10 &&
@@ -1573,7 +1575,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
             readiness.Blockers.Should().Contain(blocker =>
                 blocker.Code == "close.security_master.casework_blocked" &&
                 blocker.Category == "SecurityMaster" &&
-                blocker.Severity == "Critical");
+                blocker.Severity == "Critical" &&
+                blocker.EvidenceLink == $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconciliation/latest");
             readiness.Components.Should().Contain(component =>
                 component.Key == "approvals-casework" &&
                 component.Status == FundAccountCloseReadinessStatusDto.Blocked &&

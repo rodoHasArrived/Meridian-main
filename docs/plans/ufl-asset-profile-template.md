@@ -7,9 +7,9 @@
 
 ## Summary
 
-Use this template when creating or converting UFL asset packages. Existing `*-target-state-v2.md` filenames may remain for compatibility, but each asset should read like a capability profile over the shared UFL model.
+Use this template when creating or converting UFL asset profiles. Existing `*-target-state-v2.md` filenames may remain for compatibility, but each asset should read like a capability profile over the shared UFL model.
 
-Asset packages may retain detailed target-state sections as implementation notes, but the top-level profile is authoritative for maturity, evidence, provider boundary, and next milestone claims.
+Asset profiles may retain detailed target-state sections as implementation notes, but the top-level profile is authoritative for maturity, evidence, provider boundary, and next milestone claims.
 
 ## Evidence Boundary
 
@@ -30,7 +30,7 @@ Asset packages may retain detailed target-state sections as implementation notes
 ### Explicitly Out of Scope
 
 - Name behavior this package should not own.
-- Include pricing, risk, margin methodology, or mobile workflows unless the asset package explicitly owns them.
+- Include pricing, risk, margin methodology, or mobile workflows unless the asset profile explicitly owns them.
 
 ## UFL Capability Profile
 

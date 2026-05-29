@@ -1,8 +1,8 @@
-# UFL Crypto Target-State Package V2
+# UFL Crypto Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl crypto target state v2** and document explicit in-scope vs out-of-scope items.
@@ -34,6 +34,76 @@ It assumes:
 The CSV import pipeline has accepted `"Crypto"` as an alias mapping to `"CryptoCurrency"` since the
 initial import tooling was built. This package gives that `"CryptoCurrency"` asset class a full
 domain-model and implementation plan to match.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.CryptoCurrency` and `CryptoTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"CryptoCurrency"` asset class into the F# domain.
+- `SecurityMasterCsvParser` accepts `"Crypto"` and `"CryptoCurrency"` as CSV asset-class values.
+- Security Master validation enforces nonblank base and quote currencies and prevents identical currency values.
+- `src/Meridian.Application/CryptoCurrency/ICryptoReferenceService.cs` and `CryptoProjectionService` define crypto reference reads.
+- `src/Meridian.Ui.Shared/Endpoints/CryptoReferenceEndpoints.cs` exposes crypto reference-data endpoints.
+- `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs` verifies basic create support for crypto instruments.
+
+### Partially Implemented
+
+- Canonical crypto terms and reference surfaces exist, but network/venue alias projections, custody metadata, 24/7 market-state behavior, and rebuild evidence remain partial.
+
+### Target-State Only
+
+- Network-level metadata such as chain ID and block confirmation policy.
+- Custodian and wallet-address tracking per holding.
+- 24/7 market-state model.
+- Provider-independent network and venue alias projections.
+
+### Explicitly Out of Scope
+
+- Wallet private-key custody.
+- Blockchain indexing.
+- On-chain accounting automation.
+- Exchange-specific execution workflows beyond canonical reference data.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.CryptoCurrency`, terms, mapping, CSV aliases, validation, and basic create test exist. | canonical crypto pair profile metadata | F# validation and C# mapping tests |
+| ProviderAlias | L1/L2 partial | reference services support crypto reads. | network, venue, and provider alias isolation | alias projection tests |
+| Lifecycle | L0 | target-state only. | active, delisted, restricted, network-suspended, and review states | lifecycle projection tests |
+| TermsVersioning | L1 partial | base, quote, and network terms exist. | network metadata and custody versioning | terms versioning tests |
+| ProjectionRebuild | L1/L2 partial | crypto projection service and endpoint shape exist. | network, venue, alias, custody, and lifecycle projections with rebuild metadata | rebuild/checkpoint tests |
+| WorkstationControl | L0 | target-state only. | Data and Accounting review of custody and network metadata | workstation endpoint tests |
+
+## Current Maturity
+
+`L1/L2 partial`: canonical crypto terms, validation, basic create support, and reference surfaces exist. L3 maturity requires network, venue, alias, custody, lifecycle, and rebuild metadata tests.
+
+## Next Milestone Contract
+
+**Goal:** advance crypto to L3 by adding provider-independent network, venue, alias, custody, lifecycle, and rebuild metadata projections.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/CryptoCurrency/`
+- `src/Meridian.Contracts/CryptoCurrency/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for crypto terms and aliases.
+- endpoint contract tests for crypto reference, network, and base-currency reads.
+- projection/rebuild tests for network, venue, alias, custody, lifecycle, and source-event metadata.
+- provider-payload isolation tests for canonical crypto projections.
+
+**Exit criteria:** crypto consumers can query canonical pair, network, and venue views with deterministic rebuild metadata and no dependency on raw exchange payload shape.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as source evidence, but crypto workflows must consume canonical pair terms, network metadata, provider aliases, custody references, and rebuild metadata.
 
 ## Repo Fit
 

@@ -1,8 +1,8 @@
-# UFL Commodity Target-State Package V2
+# UFL Commodity Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl commodity target state v2** and document explicit in-scope vs out-of-scope items.
@@ -33,6 +33,75 @@ It assumes:
 
 This package turns the `CommodityTerms` support added to `SecurityKind` into a concrete
 implementation plan for commodity identity, classification, and operational workflows.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.Commodity` and `CommodityTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"Commodity"` asset class into the F# domain.
+- `SecurityMasterCsvParser` accepts `"Commodity"` as a CSV asset-class value.
+- `src/Meridian.Application/Commodities/ICommodityReferenceService.cs` and `CommodityProjectionService` define commodity reference reads.
+- `src/Meridian.Ui.Shared/Endpoints/CommodityReferenceEndpoints.cs` exposes commodity reference-data endpoints.
+- `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs` verifies basic create support for commodity instruments.
+
+### Partially Implemented
+
+- Canonical commodity terms and reference surfaces exist, but venue, delivery-point, contract/series, lifecycle, and rebuild-specific projection evidence remains partial.
+
+### Target-State Only
+
+- Commodity series and pricing-reference projections.
+- Venue and delivery-point tracking for physical commodities.
+- Commodity subtype normalization.
+- Operator review of venue, denomination, and contract-size evidence.
+
+### Explicitly Out of Scope
+
+- Full commodity pricing engines.
+- Exchange margin schedules.
+- Physical delivery operations.
+- Strategy-specific continuous-contract synthesis.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.Commodity`, terms, mapping, CSV alias, validation, and basic create test exist. | canonical commodity profile metadata and subtype normalization | F# validation and C# mapping tests |
+| ProviderAlias | L1/L2 partial | reference services support commodity reads. | exchange and venue alias isolation | alias projection tests |
+| Lifecycle | L0 | target-state only. | listed, active, expired, restricted, and review states where applicable | lifecycle projection tests |
+| TermsVersioning | L1 partial | commodity type, denomination, and contract-size terms exist. | venue, delivery-point, and subtype versioning | terms versioning tests |
+| ProjectionRebuild | L1/L2 partial | commodity projection service and endpoint shape exist. | commodity, venue, subtype, and lifecycle projections with rebuild metadata | rebuild/checkpoint tests |
+| WorkstationControl | L0 | target-state only. | Data review of commodity classification and venue evidence | workstation endpoint tests |
+
+## Current Maturity
+
+`L1/L2 partial`: canonical commodity terms, validation, basic create support, and reference surfaces exist. L3 maturity requires venue, subtype, lifecycle, alias, and rebuild metadata tests.
+
+## Next Milestone Contract
+
+**Goal:** advance commodities toward L3 by adding rebuild-safe commodity subtype, venue, delivery-point, alias, and lifecycle projections.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/Commodities/`
+- `src/Meridian.Contracts/Commodities/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for commodity terms.
+- endpoint contract tests for commodity reference, commodity type, and exchange reads.
+- projection/rebuild tests for venue, subtype, alias, lifecycle, and source-event metadata.
+- provider-payload isolation tests for canonical commodity projections.
+
+**Exit criteria:** commodity consumers can query canonical commodity and venue views with deterministic replay metadata.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as source evidence, but commodity workflows must consume canonical commodity terms, aliases, venue projections, and rebuild metadata.
 
 ## Repo Fit
 

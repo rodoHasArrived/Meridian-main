@@ -44,13 +44,13 @@ public sealed class LoanAccountingProjector
         }
 
         var accountingDate = effectiveDate ?? contract.EffectiveDate;
-        var period = await ResolvePostingPeriodAsync(accountingDate, ct).ConfigureAwait(false);
+        var period = await ResolvePostingPeriodAsync(accountingDate, postingKind, ct).ConfigureAwait(false);
         if (period is null)
         {
             throw new DirectLendingCommandException(
                 new DirectLendingCommandError(
                     DirectLendingErrorCode.Validation,
-                    $"No open accounting period contains posting date '{accountingDate:yyyy-MM-dd}'."));
+                    $"No ledger accounting period accepts {postingKind} posting date '{accountingDate:yyyy-MM-dd}'."));
         }
 
         var policy = await _accountingPolicyService
@@ -198,13 +198,16 @@ public sealed class LoanAccountingProjector
         ];
     }
 
-    private async Task<LedgerAccountingPeriod?> ResolvePostingPeriodAsync(DateOnly accountingDate, CancellationToken ct)
+    private async Task<LedgerAccountingPeriod?> ResolvePostingPeriodAsync(
+        DateOnly accountingDate,
+        LedgerPostingKindDto postingKind,
+        CancellationToken ct)
     {
         var periods = (await _journalStore!.ListPeriodsAsync(ct: ct).ConfigureAwait(false))
             .Where(period =>
                 period.StartDate <= accountingDate &&
                 period.EndDate >= accountingDate &&
-                string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
+                IsPostableForKind(period.Status, postingKind))
             .OrderBy(period => period.StartDate)
             .Take(2)
             .ToArray();
@@ -218,6 +221,17 @@ public sealed class LoanAccountingProjector
         }
 
         return periods.SingleOrDefault();
+    }
+
+    private static bool IsPostableForKind(string status, LedgerPostingKindDto postingKind)
+    {
+        if (string.Equals(status, "Open", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return postingKind == LedgerPostingKindDto.Adjustment &&
+               string.Equals(status, "SoftClosed", StringComparison.OrdinalIgnoreCase);
     }
 
     private static decimal GetDecimal(JsonElement root, params string[] propertyNames)

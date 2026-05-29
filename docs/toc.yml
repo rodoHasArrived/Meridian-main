@@ -157,7 +157,7 @@
   items:
     - name: Overview
       href: status/README.md
-    - name: UFL Asset Packages
+    - name: UFL Asset Profiles
       href: plans/ufl-supported-assets-index.md
     - name: UFL Capability Model
       href: plans/ufl-capability-model.md
@@ -169,47 +169,47 @@
       href: plans/ufl-accounting-impact-model.md
     - name: UFL Asset Profile Template
       href: plans/ufl-asset-profile-template.md
-    - name: UFL Direct Lending V2
+    - name: UFL Direct Lending Profile
       href: plans/ufl-direct-lending-target-state-v2.md
     - name: UFL Direct Lending Roadmap
       href: plans/ufl-direct-lending-implementation-roadmap.md
-    - name: UFL Equity V2
+    - name: UFL Equity Profile
       href: plans/ufl-equity-target-state-v2.md
-    - name: UFL Option V2
+    - name: UFL Option Profile
       href: plans/ufl-option-target-state-v2.md
-    - name: UFL Future V2
+    - name: UFL Future Profile
       href: plans/ufl-future-target-state-v2.md
-    - name: UFL Bond V2
+    - name: UFL Bond Profile
       href: plans/ufl-bond-target-state-v2.md
-    - name: UFL FX Spot V2
+    - name: UFL FX Spot Profile
       href: plans/ufl-fx-spot-target-state-v2.md
-    - name: UFL Deposit V2
+    - name: UFL Deposit Profile
       href: plans/ufl-deposit-target-state-v2.md
-    - name: UFL Money Market Fund V2
+    - name: UFL Money Market Fund Profile
       href: plans/ufl-money-market-fund-target-state-v2.md
-    - name: UFL Certificate of Deposit V2
+    - name: UFL Certificate of Deposit Profile
       href: plans/ufl-certificate-of-deposit-target-state-v2.md
-    - name: UFL Commercial Paper V2
+    - name: UFL Commercial Paper Profile
       href: plans/ufl-commercial-paper-target-state-v2.md
-    - name: UFL Treasury Bill V2
+    - name: UFL Treasury Bill Profile
       href: plans/ufl-treasury-bill-target-state-v2.md
-    - name: UFL Repo V2
+    - name: UFL Repo Profile
       href: plans/ufl-repo-target-state-v2.md
-    - name: UFL Cash Sweep V2
+    - name: UFL Cash Sweep Profile
       href: plans/ufl-cash-sweep-target-state-v2.md
-    - name: UFL Other Security V2
+    - name: UFL Other Security Profile
       href: plans/ufl-other-security-target-state-v2.md
     - name: UFL Custom Asset Composability
       href: plans/ufl-custom-asset-composability.md
-    - name: UFL Swap V2
+    - name: UFL Swap Profile
       href: plans/ufl-swap-target-state-v2.md
-    - name: UFL Commodity V2
+    - name: UFL Commodity Profile
       href: plans/ufl-commodity-target-state-v2.md
-    - name: UFL Crypto V2
+    - name: UFL Crypto Profile
       href: plans/ufl-crypto-target-state-v2.md
-    - name: UFL CFD V2
+    - name: UFL CFD Profile
       href: plans/ufl-cfd-target-state-v2.md
-    - name: UFL Warrant V2
+    - name: UFL Warrant Profile
       href: plans/ufl-warrant-target-state-v2.md
     - name: Roadmap
       href: status/ROADMAP.md

@@ -576,7 +576,8 @@ public sealed class FundAccountCloseReadinessService
             category,
             severity,
             reason,
-            routeHint));
+            routeHint,
+            EvidenceLink: routeHint));
     }
 
     private static void AddComponentOnly(
@@ -604,7 +605,8 @@ public sealed class FundAccountCloseReadinessService
             weight,
             severity,
             reason,
-            routeHint));
+            routeHint,
+            EvidenceLink: routeHint));
     }
 
     private static string BuildRoute(string routeTemplate, Guid accountId) =>

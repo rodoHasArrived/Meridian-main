@@ -1,8 +1,8 @@
-# UFL Future Target-State Package V2
+# UFL Future Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl future target state v2** and document explicit in-scope vs out-of-scope items.
@@ -33,6 +33,74 @@ It assumes:
 - deterministic replay of listing, expiry, and roll metadata
 
 This package turns the existing `FutureTerms` support into a concrete implementation plan for contract identity, series grouping, lifecycle state, and operational roll workflows.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.Future` and `FutureTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"Future"` asset class into the F# domain.
+- `src/Meridian.Application/Futures/IFutureReferenceService.cs` and `FutureProjectionService` define futures reference reads.
+- `src/Meridian.Ui.Shared/Endpoints/FutureReferenceEndpoints.cs` exposes futures reference-data endpoints.
+- Security Master reference lookup tests cover `Future` subtype derivation.
+
+### Partially Implemented
+
+- Canonical future terms and reference surfaces exist, but contract-month lifecycle, alias, roll-window, front-month, and rebuild-specific projection evidence remains partial.
+
+### Target-State Only
+
+- Futures-series and lifecycle projections.
+- Roll-window and front-contract services beyond the current reference surface.
+- Alias-resolution storage for exchange and vendor contract codes.
+- Operator review of roll and expiry evidence.
+
+### Explicitly Out of Scope
+
+- Futures options.
+- Delivery-notice processing.
+- Exchange margin schedules.
+- Strategy-specific continuous-contract synthesis.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.Future`, terms, mapping, and reference services exist. | canonical contract-month profile metadata and validation evidence | F# validation and C# mapping tests |
+| ProviderAlias | L1/L2 partial | reference services support canonical contract reads. | exchange/vendor alias normalization and resolution projections | alias projection tests |
+| Lifecycle | L0 | target-state only. | listed, active, first-notice-risk, last-trade-risk, and expired states | lifecycle projection tests |
+| TermsVersioning | L1 partial | contract-month terms exist. | versioned roll and contract metadata with provenance | terms versioning tests |
+| ProjectionRebuild | L1/L2 partial | futures projection service and endpoint shape exist. | contract, series, roll, alias, and lifecycle projections with rebuild metadata | rebuild/checkpoint tests |
+| WorkstationControl | L0 | target-state only. | roll-window and expiry review controls for Trading and Data workspaces | workstation endpoint tests |
+
+## Current Maturity
+
+`L1/L2 partial`: canonical futures terms and reference surfaces exist, but L3 maturity requires contract, series, roll, alias, lifecycle, and rebuild metadata tests.
+
+## Next Milestone Contract
+
+**Goal:** advance futures to L3 by adding rebuild-safe contract, series, alias, roll-window, and lifecycle projections.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/Futures/`
+- `src/Meridian.Contracts/Futures/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for futures terms.
+- endpoint contract tests for contract, series, expiry ladder, and front-month reads.
+- projection/rebuild tests for alias, lifecycle, roll-window, and rebuild metadata.
+- provider-payload isolation tests for canonical futures projections.
+
+**Exit criteria:** futures consumers can query canonical contract and series views with deterministic roll, expiry, alias, and source-event evidence.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as import evidence, but futures workflows must consume canonical contract IDs, canonical aliases, series projections, roll metadata, and rebuild evidence.
 
 ## Repo Fit
 
@@ -353,6 +421,6 @@ Meridian treats a future as a canonical contract identity with stable alias reso
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

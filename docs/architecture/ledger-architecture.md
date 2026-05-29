@@ -198,6 +198,12 @@ convert to a `JournalEntry` with stable journal/line identifiers plus audit tags
 approval ID, approval status, and approver. The aggregate posts to the in-memory `Ledger`; durable
 storage and operator workflow queues remain application/storage responsibilities.
 
+Direct-lending accrual reversals use the same adjustment discipline. `LoanAccountingProjector`
+keeps originating accrual projections limited to open accounting periods, but resolves reversal
+projections with `LedgerPostingKindDto.Adjustment` so approved reversals can target soft-closed
+periods and then pass through the central ledger posting guard for final approval and period-state
+validation.
+
 ### `LockedAccountingPeriodBook`
 
 `LockedAccountingPeriodBook` is the in-memory, book-key-scoped period-lock companion for

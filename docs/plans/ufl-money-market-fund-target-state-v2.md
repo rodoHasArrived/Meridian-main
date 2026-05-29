@@ -1,8 +1,8 @@
-# UFL Money Market Fund Target-State Package V2
+# UFL Money Market Fund Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl money market fund target state v2** and document explicit in-scope vs out-of-scope items.
@@ -31,6 +31,76 @@ It assumes:
 - downstream treasury and governance services querying canonical projections
 
 This package turns the existing `MoneyMarketFundTerms` support into an implementation-ready plan for liquidity reference data, sweep integration, operational state, and APIs.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.MoneyMarketFund` and `MoneyMarketFundTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"MoneyMarketFund"` asset class.
+- Security Master validation enforces nonnegative weighted-average maturity when present.
+- `src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs` exposes reference-data reads.
+- `src/Meridian.Application/Treasury/IMoneyMarketFundService.cs`, `InMemoryMoneyMarketFundService`, and `PostgresMoneyMarketFundService` provide MMF reference, liquidity, sweep, family, and rebuild behavior.
+- `tests/Meridian.Tests/Treasury/MmfRebuildTests.cs`, `MmfLiquidityServiceTests.cs`, and `MmfFamilyNormalizationTests.cs` cover focused MMF behavior.
+
+### Partially Implemented
+
+- MMF reference, liquidity, sweep, family, and rebuild behavior exists, but operator review, approval/correction, and audit evidence for liquidity gates and fee state remain target-state.
+
+### Target-State Only
+
+- Liquidity-gate operator review workflow.
+- Fee-eligibility approval and correction controls.
+- Audit-ready evidence packets for MMF operational state.
+- Deeper cash-sweep integration beyond current reference/service behavior.
+
+### Explicitly Out of Scope
+
+- Transfer-agent integrations.
+- Intraday NAV engines.
+- Full fund-accounting workflows.
+- Generalized cash-allocation optimization.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.MoneyMarketFund`, terms, mapping, validation, and basic create test exist. | keep canonical MMF identity aligned with profile metadata | F# validation and C# mapping tests |
+| IssuerOrCounterparty | L2 partial | fund-family reference behavior exists. | stronger fund-family lineage and sponsor evidence | service/endpoint tests |
+| Lifecycle | L3 partial | liquidity, sweep, family, and rebuild services exist. | explicit operational lifecycle state for liquidity gates and fee changes | lifecycle/workflow tests |
+| CashFlowSchedule | L2 partial | sweep eligibility and WAM data are available through MMF services. | richer sweep/cash workflow projections | projection tests |
+| ProjectionRebuild | L3 partial | MMF rebuild tests and service behavior exist. | common UFL projection metadata and checkpoint alignment | rebuild/checkpoint tests |
+| WorkstationControl | L0 | target-state only. | operator review, approval, correction, and evidence workflow | workstation endpoint tests |
+| AccountingImpact | L0 | target-state only. | controlled accounting/reconciliation handoff only when MMF cash events require it | accounting/reconciliation tests |
+
+## Current Maturity
+
+`L3 partial`: MMF has reference, liquidity, sweep, family, and rebuild behavior, but L4 maturity requires governed workstation review, approval/correction, and audit evidence for liquidity gates and fee state.
+
+## Next Milestone Contract
+
+**Goal:** advance MMFs to L4 by adding operator review and evidence controls for liquidity gates, fee eligibility, sweep eligibility, and rebuild status.
+
+**Files likely touched:**
+
+- `src/Meridian.Application/Treasury/`
+- `src/Meridian.Contracts/MoneyMarketFunds/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `src/Meridian.Ui/dashboard/`
+- `tests/Meridian.Tests/Treasury/`
+
+**Acceptance evidence:**
+
+- workflow tests for liquidity-gate and fee-eligibility review state.
+- endpoint tests for operator evidence and correction commands.
+- rebuild/checkpoint tests proving MMF projection evidence survives replay.
+- workstation tests proving visible operator controls route through shared endpoints.
+
+**Exit criteria:** operators can review, correct, and cite MMF liquidity/sweep evidence without bypassing canonical terms or rebuild metadata.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as source evidence, but MMF workflows must consume canonical Security Master terms, MMF service projections, liquidity evidence, sweep metadata, and rebuild metadata.
 
 ## Repo Fit
 
@@ -342,6 +412,6 @@ Meridian treats a money market fund as a canonical liquidity instrument with exp
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

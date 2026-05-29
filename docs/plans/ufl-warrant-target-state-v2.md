@@ -1,8 +1,8 @@
-# UFL Warrant Target-State Package V2
+# UFL Warrant Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl warrant target state v2** and document explicit in-scope vs out-of-scope items.
@@ -36,6 +36,76 @@ A warrant is a derivative instrument issued by a company or financial institutio
 the right (but not the obligation) to buy or sell the underlying security at a specified price before
 or on an expiry date. Unlike exchange-traded options, warrants are typically issued by the company itself
 and have longer expiry periods.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.Warrant` and `WarrantTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `WarrantTerms.UnderlyingId` references a `SecurityId`.
+- `SecurityMasterMapping` maps the `"Warrant"` asset class into the F# domain.
+- `SecurityMasterCsvParser` accepts `"Warrant"` as a CSV asset-class value.
+- `SecurityKind.underlyingSecurityId` extracts the underlying `SecurityId` from warrant terms.
+- Security Master validation enforces warrant type, positive strike when present, and positive multiplier when present.
+- `tests/Meridian.Tests/SecurityMaster/SecurityMasterAssetClassSupportTests.cs` verifies basic create support for warrant instruments.
+
+### Partially Implemented
+
+- Canonical warrant terms, underlying linkage, and create-path projection exist, but warrant reference endpoints, expiry lifecycle projections, conversion/exercise projections, and rebuild evidence are not delivered in this package.
+
+### Target-State Only
+
+- Warrant lifecycle projections.
+- Exercise-right modeling.
+- Corporate-action linkage for warrant terms adjustment.
+- Reference endpoints for warrant lookup and underlying resolution.
+
+### Explicitly Out of Scope
+
+- Full pricing or volatility models.
+- Exchange-specific exercise processing.
+- Corporate-action event automation outside the shared CorporateAction capability.
+- Strategy-specific warrant exercise recommendations.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.Warrant`, terms, mapping, CSV alias, validation, and basic create test exist. | canonical warrant profile metadata | F# validation and C# mapping tests |
+| UnderlyingLink | L1 partial | `WarrantTerms.UnderlyingId` and `SecurityKind.underlyingSecurityId` exist. | underlying resolution endpoint and projection evidence | underlying-link tests |
+| Lifecycle | L0 | target-state only. | issued, active, exercised, expired, adjusted, and closed states | lifecycle projection tests |
+| CorporateAction | L0 | target-state only. | adjustment linkage for strike, expiry, and multiplier changes | corporate-action tests |
+| ProjectionRebuild | L1 partial | shared Security Master projection path exists. | warrant-scoped underlying, expiry, exercise, and adjustment projections | rebuild/checkpoint tests |
+| WorkstationControl | L0 | target-state only. | Data and Accounting review of expiry and adjustment evidence | workstation endpoint tests |
+
+## Current Maturity
+
+`L1 partial`: canonical warrant terms, mapping, validation, underlying ID extraction, CSV aliasing, and basic create support exist. L2/L3 maturity requires reference, underlying-resolution, lifecycle, and adjustment projections with rebuild evidence.
+
+## Next Milestone Contract
+
+**Goal:** advance warrants toward L2/L3 by adding canonical warrant reference reads, underlying-resolution views, expiry lifecycle projections, and rebuild metadata.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/SecurityMaster/`
+- `src/Meridian.Contracts/SecurityMaster/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- validation and mapping tests for warrant terms.
+- endpoint contract tests for warrant reference and underlying-resolution reads.
+- projection/rebuild tests for expiry, exercise, underlying, adjustment, and source-event metadata.
+- provider-payload isolation tests for canonical warrant projections.
+
+**Exit criteria:** warrant consumers can query canonical warrant and underlying views with deterministic lifecycle and adjustment evidence.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as source evidence, but warrant workflows must consume canonical warrant terms, underlying links, expiry/lifecycle projections, adjustment metadata, and rebuild evidence.
 
 ## Repo Fit
 

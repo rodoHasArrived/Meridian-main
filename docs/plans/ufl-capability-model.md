@@ -7,7 +7,7 @@
 
 ## Summary
 
-UFL is a capability and conformance framework first, and a set of asset-package documents second. Asset packages should be thin profiles over a common UFL model: they state which capabilities apply, what maturity level is currently evidenced, what target additions remain, and what tests prove the next milestone.
+UFL is a capability and conformance framework first, and a set of asset-profile documents second. Asset profiles should be thin deltas over a common UFL model: they state which capabilities apply, what maturity level is currently evidenced, what target additions remain, and what tests prove the next milestone.
 
 Provider payloads may be retained as evidence, but downstream UFL workflows must consume canonical Security Master identities, canonical terms, and canonical projections.
 
@@ -21,7 +21,7 @@ Every UFL asset follows the same common architecture before it adds asset-specif
 4. **Evidence and accounting:** assets that need fund-operations depth add accounting-impact previews, journal drafts, reconciliation links, report evidence, and period-control behavior through the shared AccountingImpact capability.
 5. **Workstation controls:** operator review, approval, correction, rollback, promotion, and evidence handling stay in governed workstation surfaces, not provider-specific adapters.
 
-The asset package is the profile over this framework. It must say which capabilities are active, which are target-state only, and which tests or evidence would move the asset to the next maturity level.
+The asset document is the profile over this framework. It must say which capabilities are active, which are target-state only, and which tests or evidence would move the asset to the next maturity level.
 
 ## Capability Set
 
@@ -106,7 +106,7 @@ UFL Asset Profile
 
 ## Required Asset Sections
 
-Each converted asset package must include:
+Each converted asset profile must include:
 
 - `Evidence Boundary`
 - `UFL Capability Profile`
@@ -118,7 +118,7 @@ The details of each section are defined in [UFL Asset Profile Template](ufl-asse
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
 - [UFL Conformance Matrix](ufl-conformance-matrix.md)
 - [UFL Projection and Evidence Kernel](ufl-projection-and-evidence-kernel.md)
 - [UFL Accounting Impact Model](ufl-accounting-impact-model.md)

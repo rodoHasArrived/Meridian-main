@@ -2,12 +2,12 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, application, and workstation contributors
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 **Status:** active planning matrix
 
 ## Summary
 
-This matrix is the single planning view for current UFL maturity and next conformance targets. It is intentionally conservative: current levels must be backed by code and test evidence named in the asset package, while target additions remain target-state only until evidence is recorded.
+This matrix is the single planning view for current UFL maturity and next conformance targets. It is intentionally conservative: current levels must be backed by code and test evidence named in the asset profile, while target additions remain target-state only until evidence is recorded.
 
 Maturity levels are defined in [UFL Capability Model](ufl-capability-model.md).
 
@@ -20,7 +20,7 @@ Maturity levels are defined in [UFL Capability Model](ufl-capability-model.md).
 | Option | L1/L2 partial | L3 | series, lifecycle, alias, and adjusted-contract projections | chain normalization tests, underlying-link tests, projection rebuild tests |
 | Bond | L1/L2 partial | L3 | lifecycle, accrual, issuer, and maturity-ladder projections | fixed-income projection tests, rebuild/checkpoint tests, endpoint contract tests |
 | Treasury Bill | L1 | L2/L3 | ladder, auction, lifecycle, and treasury reference endpoints | mapping tests, projection tests, endpoint contract tests |
-| Future | L1 partial | L2 | contract-month reference reads and lifecycle projection | mapping tests, futures reference endpoint tests |
+| Future | L1/L2 partial | L3 | contract-month, series, alias, roll-window, and lifecycle projections | mapping tests, futures reference endpoint tests, projection rebuild tests |
 | FX Spot | L1/L2 partial | L3 | canonical alias projection and provider-independent pair reads | mapping tests, reference endpoint tests, rebuild metadata tests |
 | Deposit | L1/L2 partial | L3 | institution, maturity, lifecycle, and accrual projections | deposit reference endpoint tests, projection tests |
 | Money Market Fund | L3 partial | L4 | operator review of liquidity gates and rebuild evidence | rebuild checkpoint tests, workstation/control tests |
@@ -28,8 +28,8 @@ Maturity levels are defined in [UFL Capability Model](ufl-capability-model.md).
 | Commercial Paper | L1 | L2/L3 | issuer, maturity, discount, and lifecycle projections | mapping tests, fixed-income projection tests |
 | Repo | L1 partial | L2 | agreement/reference/exposure reads and counterparty linkage | storage tests, endpoint tests, collateral/exposure tests |
 | Cash Sweep | L1 partial | L2/L3 | sweep program reference reads and cash workflow projections | mapping tests, projection tests |
-| Swap | L1 partial | L2/L3 | leg reference reads, counterparty linkage, collateral metadata | swap leg mapping tests, endpoint tests, projection tests |
-| Commodity | L1 partial | L2 | commodity reference reads and provider alias isolation | mapping tests, endpoint tests |
+| Swap | L1/L2 partial | L3 | leg, counterparty, lifecycle, valuation, and exposure projections | swap leg mapping tests, endpoint tests, projection rebuild tests |
+| Commodity | L1/L2 partial | L3 | venue, subtype, alias, lifecycle, and rebuild metadata projections | mapping tests, endpoint tests, projection rebuild tests |
 | Crypto | L1/L2 partial | L3 | network/venue aliases, custody metadata, provider-independent projections | endpoint tests, alias projection tests |
 | CFD | L1 partial | L2 | underlying/exposure reference reads and margin metadata | mapping tests, endpoint tests |
 | Warrant | L1 partial | L2/L3 | underlying link, expiry, lifecycle, and conversion projections | mapping tests, underlying-link tests, projection tests |
@@ -47,7 +47,7 @@ Maturity levels are defined in [UFL Capability Model](ufl-capability-model.md).
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
 - [UFL Capability Model](ufl-capability-model.md)
 - [UFL Projection and Evidence Kernel](ufl-projection-and-evidence-kernel.md)
 - [UFL Custom Asset Composability](ufl-custom-asset-composability.md)

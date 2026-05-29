@@ -163,7 +163,7 @@ These documents define current direction and should be read in this order:
 These plans remain useful, but they are not current readiness drivers unless the roadmap explicitly pulls them forward:
 
 - Backtest Studio and research acceleration plans are Wave 5 material.
-- UFL target-state packages are active reference designs for asset coverage and Security Master depth, not readiness-closure documents.
+- UFL asset profiles are active reference designs for asset coverage and Security Master depth, not readiness-closure documents.
 - Options, portfolio-level backtesting, database, runbook registry, kernel parity, L3 inference, QuantScript multi-instance, and assembly-performance plans are technical or later-wave references.
 - Commercial package names such as Meridian Evidence OS, Report Factory, Controls, PaperOps, and FundOps are positioning language until their shared contracts, browser workflows, evidence retention, and governed outputs are accepted.
 

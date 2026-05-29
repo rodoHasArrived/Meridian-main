@@ -31,8 +31,10 @@ in-memory governed approval-to-posting handoff that requires approval evidence a
 tags into the posted ledger journal. Ledger-specific period and cross-period reporting endpoints
 now expose trial-balance and P&L summaries from closed accounting periods. The PostgreSQL ledger
 store now persists account-level tax-lot policies and open tax lots for ledger-book/account relief
-inputs. Durable accrual persistence, operator approval queues, tax-reporting exports, and richer
-file-based ledger report exports remain open.
+inputs. Direct-lending accrual reversals now project adjustment journal writes into soft-closed
+periods when approval metadata is supplied, while originating accruals still require open periods.
+Durable accrual worker/operator completion, tax-reporting exports, and richer file-based ledger
+report exports remain open.
 
 ## Overview
 
@@ -313,7 +315,10 @@ so the Phase 4 ledger-posting work remains open.
   discount/premium amortization, restructuring, and write-off events post balanced journal entries
   in the same database transaction as the loan event append
 - [ ] `IAccrualLedgerService` interface — `AccrueAsync` and `ReverseAccrualAsync` supporting
-  correcting entries within the same open period
+  correcting entries within open periods and approved adjustment reversals in soft-closed periods
+- [x] `LoanAccountingProjector` resolves direct-lending accrual reversals as adjustment postings,
+  allowing approved reversal writes to target a soft-closed accounting period while keeping
+  originating accrual writes limited to open periods
 - [ ] `DailyAccrualWorker` extended to check `PeriodManagement.CheckPostingDate` before posting
   and route failures to the operator inbox as period-blocked items
 

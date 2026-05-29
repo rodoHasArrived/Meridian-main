@@ -212,9 +212,12 @@ resolver fields, sign-off count, SLA policy/due-state, age band, and business-ag
 Statement reconciliation payloads live under `Workstation/StatementReconciliationDtos.cs` and keep
 source-file evidence, mapping/tolerance profile versions, normalized positions, cash, transactions,
 match summaries, breaks, operator cases, run create/reconcile commands, run validation envelopes,
-and run-scoped break rows in the shared contract lane. Keep these DTOs additive and
-transport-safe so browser, WPF, retained evidence, and automation consumers can reconcile custodian
-statements without referencing application, UI, or infrastructure types.
+and run-scoped break rows in the shared contract lane. Statement case payloads expose durable
+casework metadata for owner/SLA disposition, aging, threaded comments, statement-row attachments,
+Explain-the-Break summaries, and audit events so browser and WPF clients can inspect broker and
+custodian statement exceptions without rebuilding domain aggregates locally. Keep these DTOs
+additive and transport-safe so browser, WPF, retained evidence, and automation consumers can
+reconcile custodian statements without referencing application, UI, or infrastructure types.
 
 Direct lending command result codes distinguish validation failures, missing aggregates,
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return

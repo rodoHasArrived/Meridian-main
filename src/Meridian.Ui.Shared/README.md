@@ -264,8 +264,10 @@ for provider-ledger workflows. It aggregates account readiness, provider freshne
 coverage from the latest provider-ledger reconciliation, internal ledger balance evidence,
 corporate-action/factor-schedule readiness, internal ledger balance evidence, account-scoped break
 queue casework, and pending sign-off state into weighted components, blockers, and next actions for
-controller-facing close review. Fixed-income and structured provider positions now require direct
-retained provider factor-schedule, loan-schedule, or matched principal/paydown ledger-effect evidence before the
+controller-facing close review. Components and blockers carry evidence links back to the retained
+provider-ledger reconciliation or casework route so the score is directly auditable. Fixed-income
+and structured provider positions now require direct retained provider factor-schedule,
+loan-schedule, or matched principal/paydown ledger-effect evidence before the
 corporate-action/factor component can be marked ready for close. Retained shadow-book comparison
 breaks also keep the reconciliation
 component in review-required state so provider/custodian statement variances cannot close merely

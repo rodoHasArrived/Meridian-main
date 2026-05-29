@@ -8,7 +8,7 @@ namespace Meridian.Wpf.Services;
 public sealed class WorkspaceStateTokenStore
 {
     private const string FileName = "workspace-state.json";
-    private static string? _filePathOverride;
+    private static readonly AsyncLocal<string?> FilePathOverride = new();
 
     public static string GetDefaultFilePath()
     {
@@ -21,7 +21,7 @@ public sealed class WorkspaceStateTokenStore
 
     internal static void SetFilePathOverrideForTests(string? filePath)
     {
-        _filePathOverride = filePath;
+        FilePathOverride.Value = filePath;
     }
 
     public async Task SaveAsync(IWorkspaceStateToken token, CancellationToken ct = default)
@@ -233,15 +233,16 @@ public sealed class WorkspaceStateTokenStore
 
     private static string GetFilePath()
     {
-        if (!string.IsNullOrWhiteSpace(_filePathOverride))
+        var filePathOverride = FilePathOverride.Value;
+        if (!string.IsNullOrWhiteSpace(filePathOverride))
         {
-            var directory = Path.GetDirectoryName(_filePathOverride);
+            var directory = Path.GetDirectoryName(filePathOverride);
             if (!string.IsNullOrWhiteSpace(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            return _filePathOverride;
+            return filePathOverride;
         }
 
         return GetDefaultFilePath();

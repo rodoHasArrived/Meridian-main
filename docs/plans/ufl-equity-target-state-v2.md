@@ -34,7 +34,7 @@ Warrants are modeled as their own `SecurityKind.Warrant` package, not as an equi
 
 ### Explicitly Out of Scope
 
-- Warrant lifecycle, which belongs in [UFL Warrant Target-State Package V2](ufl-warrant-target-state-v2.md).
+- Warrant lifecycle, which belongs in [UFL Warrant Capability Profile](ufl-warrant-target-state-v2.md).
 - Market-making, locate, borrow, margin, or short-sale workflows.
 - Native mobile or mobile-first workflows.
 
@@ -91,7 +91,7 @@ Provider corporate-action feeds, listing symbols, and reference payloads may be 
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
 - [UFL Capability Model](ufl-capability-model.md)
 - [UFL Conformance Matrix](ufl-conformance-matrix.md)
 - [UFL Accounting Impact Model](ufl-accounting-impact-model.md)

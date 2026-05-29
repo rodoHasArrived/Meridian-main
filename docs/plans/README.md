@@ -12,7 +12,7 @@
 - [ ] Prove the operations-continuity close lane through browser/operator acceptance with external statement or custodian inputs before describing close readiness as delivered.
 - [ ] Run stale-doc/hash validation after roadmap, source registry, or generated documentation changes and record failures as TODOs instead of prose caveats.
 
-This directory contains current Meridian execution plans, blueprints, and target-state packages. Start with [current-direction-and-status.md](current-direction-and-status.md) for the consolidated planning interpretation. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the remaining files here are subordinate implementation plans, optional-track designs, or asset-package specifications.
+This directory contains current Meridian execution plans, blueprints, and target-state reference designs. Start with [current-direction-and-status.md](current-direction-and-status.md) for the consolidated planning interpretation. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); the remaining files here are subordinate implementation plans, optional-track designs, or asset-profile specifications.
 
 Active planning direction:
 
@@ -29,7 +29,7 @@ Active planning direction:
 All active plan and roadmap files in this directory were reviewed for their current role. The
 consolidated current-direction document is now the first planning stop; the classification below
 remains the source of truth for detailed follow-up: core Wave 2-4 operator-readiness plans come
-first, later-wave productization follows, UFL target-state packages remain reference designs, and
+first, later-wave productization follows, UFL asset profiles remain reference designs, and
 technical/optional tracks must not compete with the core operator-ready path unless a current
 roadmap decision pulls them forward.
 
@@ -95,9 +95,9 @@ These plans remain useful, but they normally follow the Wave 2-4 operator-readin
 | [runbook-template-registry-modernization-plan.md](runbook-template-registry-modernization-plan.md) | Runbook/template registry modernization plan |
 | [adapters-completion-plan.md](adapters-completion-plan.md) | Provider adapter completion roadmap tied to the capability matrix and readiness follow-up |
 
-## UFL And Asset Packages
+## UFL And Asset Profiles
 
-Start with [ufl-supported-assets-index.md](ufl-supported-assets-index.md). UFL is now organized around shared capability profiles, maturity levels, conformance evidence, and thin asset deltas over the common model. The individual target-state packages remain active reference designs for Security Master, ledger, Accounting, Reporting, Data, and controlled workstation work. Keep delivered baseline evidence separate from target-state additions; these packages are not readiness-closure documents.
+Start with [ufl-supported-assets-index.md](ufl-supported-assets-index.md). UFL is now organized around shared capability profiles, maturity levels, conformance evidence, and thin asset deltas over the common model. The individual asset profile documents remain active reference designs for Security Master, ledger, Accounting, Reporting, Data, and controlled workstation work. Keep delivered baseline evidence separate from target-state additions; these profiles are not readiness-closure documents.
 
 | Area | Documents |
 | --- | --- |

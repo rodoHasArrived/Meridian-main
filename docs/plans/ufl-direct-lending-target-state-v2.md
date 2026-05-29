@@ -1,8 +1,8 @@
-# UFL Direct Lending Target-State Package V2
+# UFL Direct Lending Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl direct lending target state v2** and document explicit in-scope vs out-of-scope items.
@@ -35,7 +35,7 @@ It assumes:
 - a transactional outbox for reliable downstream processing
 - a formal servicer-ingestion and revision-control layer that supports both position-level and transaction-detail servicer reporting
 
-This is a specialized, implementation-ready vertical slice beneath the broader governance and fund-ops planning set documented elsewhere in Meridian. The broad roadmap stays authoritative for overall sequencing; this blueprint makes the direct-lending target state concrete.
+This is a specialized, implementation-ready vertical slice beneath the broader governance and fund-ops planning set documented elsewhere in Meridian. The broad roadmap stays authoritative for overall sequencing; this profile makes the direct-lending target state concrete while mapping its deeper behavior back to the shared UFL capability model.
 
 ## Repo Fit
 

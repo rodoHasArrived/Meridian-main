@@ -1,8 +1,8 @@
-# UFL Other Security Target-State Package V2
+# UFL Other Security Capability Profile
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-05-29
 
 ## TODO Checklist (Concrete Implementation Items)
 - [ ] Define scope boundaries for **ufl other security target state v2** and document explicit in-scope vs out-of-scope items.
@@ -414,7 +414,7 @@ Meridian treats `OtherSecurity` as a disciplined, reviewable onboarding path wit
 
 ## Related Documents
 
-- [UFL Supported Asset Packages](ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md)
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
 - [UFL Custom Asset Composability](ufl-custom-asset-composability.md)
 - [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)
