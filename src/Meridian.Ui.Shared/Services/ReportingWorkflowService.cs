@@ -170,8 +170,14 @@ public sealed class ReportPackWorkflowService
             throw new KeyNotFoundException("report pack not found");
         }
 
+        var normalizedEvidenceLinks = NormalizeEvidenceLinks(evidenceLinks);
+        if (normalizedEvidenceLinks.Count == 0)
+        {
+            throw new ArgumentException("Publication requires retained evidence links.", nameof(evidenceLinks));
+        }
+
         EnsureLineProvenanceTraceable(record.LineProvenance ?? []);
-        EnsureNoOrphanEvidence(record.LineProvenance ?? [], evidenceLinks);
+        EnsureNoOrphanEvidence(record.LineProvenance ?? [], normalizedEvidenceLinks);
         var transitioned = TransitionCore(reportId, ReportPackWorkflowStateDto.Published, actor, role, note);
         var next = transitioned with
         {
@@ -181,7 +187,7 @@ public sealed class ReportPackWorkflowService
                 evidenceHash.Trim(),
                 signedOffBy.Trim(),
                 DateTimeOffset.UtcNow,
-                NormalizeEvidenceLinks(evidenceLinks))
+                normalizedEvidenceLinks)
         };
         _records[reportId] = next;
         return next;
@@ -211,19 +217,37 @@ public sealed class ReportPackWorkflowService
         if (!allowed) throw new UnauthorizedAccessException($"Role '{role}' cannot transition to {target}.");
     }
 
-    private static IReadOnlyList<ReportPackLineProvenanceDto> NormalizeLineProvenance(IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance) =>
-        lineProvenance?
-            .Where(static item =>
-                !string.IsNullOrWhiteSpace(item.LineKey) &&
-                !string.IsNullOrWhiteSpace(item.SourceKind) &&
-                !string.IsNullOrWhiteSpace(item.SourceId) &&
-                !string.IsNullOrWhiteSpace(item.EvidenceId))
+    private static IReadOnlyList<ReportPackLineProvenanceDto> NormalizeLineProvenance(IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance)
+    {
+        if (lineProvenance is null || lineProvenance.Count == 0)
+        {
+            return [];
+        }
+
+        var invalidLines = lineProvenance
+            .Select(static (item, index) => new
+            {
+                DisplayKey = string.IsNullOrWhiteSpace(item.LineKey) ? $"entry #{index + 1}" : item.LineKey.Trim(),
+                MissingFields = MissingRequiredLineProvenanceFields(item).ToArray()
+            })
+            .Where(static item => item.MissingFields.Length > 0)
+            .Select(static item => $"{item.DisplayKey} ({string.Join(", ", item.MissingFields)})")
+            .ToArray();
+        if (invalidLines.Length > 0)
+        {
+            throw new ArgumentException(
+                $"Report pack line provenance requires report line, source kind, source ID, evidence ID, and calculation note: {string.Join("; ", invalidLines)}.",
+                nameof(lineProvenance));
+        }
+
+        return lineProvenance
             .Select(static item => item with
             {
                 LineKey = item.LineKey.Trim(),
                 SourceKind = item.SourceKind.Trim(),
                 SourceId = item.SourceId.Trim(),
                 EvidenceId = item.EvidenceId.Trim(),
+                CalculationNote = item.CalculationNote!.Trim(),
                 RunId = string.IsNullOrWhiteSpace(item.RunId) ? null : item.RunId.Trim(),
                 LedgerEntryId = string.IsNullOrWhiteSpace(item.LedgerEntryId) ? null : item.LedgerEntryId.Trim(),
                 ReconciliationCaseId = string.IsNullOrWhiteSpace(item.ReconciliationCaseId) ? null : item.ReconciliationCaseId.Trim(),
@@ -236,7 +260,36 @@ public sealed class ReportPackWorkflowService
                 ReconciliationOutcome = string.IsNullOrWhiteSpace(item.ReconciliationOutcome) ? null : item.ReconciliationOutcome.Trim(),
                 ApprovalId = string.IsNullOrWhiteSpace(item.ApprovalId) ? null : item.ApprovalId.Trim()
             })
-            .ToArray() ?? [];
+            .ToArray();
+    }
+
+    private static IEnumerable<string> MissingRequiredLineProvenanceFields(ReportPackLineProvenanceDto item)
+    {
+        if (string.IsNullOrWhiteSpace(item.LineKey))
+        {
+            yield return "report line";
+        }
+
+        if (string.IsNullOrWhiteSpace(item.SourceKind))
+        {
+            yield return "source kind";
+        }
+
+        if (string.IsNullOrWhiteSpace(item.SourceId))
+        {
+            yield return "source ID";
+        }
+
+        if (string.IsNullOrWhiteSpace(item.EvidenceId))
+        {
+            yield return "evidence ID";
+        }
+
+        if (string.IsNullOrWhiteSpace(item.CalculationNote))
+        {
+            yield return "calculation note";
+        }
+    }
 
     private static IReadOnlyList<ReportPackEvidenceLinkDto> NormalizeEvidenceLinks(IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks) =>
         evidenceLinks
@@ -266,6 +319,17 @@ public sealed class ReportPackWorkflowService
         {
             throw new InvalidOperationException(
                 $"Report pack line provenance requires report values for: {string.Join(", ", missingValues.Order(StringComparer.OrdinalIgnoreCase))}.");
+        }
+
+        var missingCalculationNotes = lineProvenance
+            .Where(static line => string.IsNullOrWhiteSpace(line.CalculationNote))
+            .Select(static line => line.LineKey)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (missingCalculationNotes.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"Report pack line provenance requires calculation notes for: {string.Join(", ", missingCalculationNotes.Order(StringComparer.OrdinalIgnoreCase))}.");
         }
 
         var missingSourcePointers = lineProvenance

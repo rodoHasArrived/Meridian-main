@@ -64,8 +64,8 @@ requests, explicit rejection requests with reason, actor/role, and optional evid
 and restatement requests with approver, prior-version, changed-line, and evidence-link metadata.
 Pilot readiness contracts also carry W4 acceptance evidence categories and roles so acceptance proof
 can be distinguished from evidence-vault manifest/export support in serialized artifacts.
-Report-line provenance carries the reported value plus run, source-session, ledger-entry,
-provider-event, Security Master definition, reconciliation-case, reconciliation-run,
+Report-line provenance carries the reported value plus calculation note, run, source-session,
+ledger-entry, provider-event, Security Master definition, reconciliation-case, reconciliation-run,
 reconciliation-outcome, and approval pointers so each retained line can be traced back to the source
 workflow evidence before publication. Generated report-pack lineage pointers also carry optional display labels, source-system
 tags, related ledger or journal evidence IDs, line amounts, latest evidence timestamps, and API

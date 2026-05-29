@@ -447,6 +447,7 @@ public sealed record ReportPackLineProvenanceDto(
     string SourceKind,
     string SourceId,
     string EvidenceId,
+    string? CalculationNote = null,
     string? RunId = null,
     string? LedgerEntryId = null,
     string? ReconciliationCaseId = null,

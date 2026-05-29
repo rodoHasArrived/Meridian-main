@@ -687,6 +687,7 @@ public sealed class PilotAcceptanceHarnessTests
                 "ledger",
                 ledgerEvidenceId,
                 ledgerEvidenceId,
+                CalculationNote: "Cash trial-balance line uses retained ledger evidence matched to reconciliation casework before pilot publication.",
                 RunId: seed.PaperRunId,
                 LedgerEntryId: ledgerEvidenceId,
                 ReconciliationCaseId: $"casework/{reconciliationRunId}",

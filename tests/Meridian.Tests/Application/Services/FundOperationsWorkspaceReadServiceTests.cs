@@ -179,9 +179,18 @@ public sealed class FundOperationsWorkspaceReadServiceTests
                     "ledger",
                     "ledger-entry-1",
                     "evidence-ledger-1",
+                    CalculationNote: "NAV total ties to the retained ledger entry and matched reconciliation evidence.",
                     RunId: "run-restatement-1",
                     LedgerEntryId: "ledger-entry-1",
-                    ReportValue: "1250000")
+                    ReconciliationCaseId: "case-restatement-1",
+                    ReportValue: "1250000",
+                    SourceSessionId: "session-restatement-1",
+                    ReconciliationRunId: "recon-run-restatement-1",
+                    ProviderEventId: "provider-event-restatement-1",
+                    SecurityMasterId: "security-master-nav",
+                    SecurityDefinitionId: "security-definition-nav",
+                    ReconciliationOutcome: "matched",
+                    ApprovalId: "approval-restatement-1")
             ]);
         workflowService.Transition(report.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
         workflowService.Transition(report.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");

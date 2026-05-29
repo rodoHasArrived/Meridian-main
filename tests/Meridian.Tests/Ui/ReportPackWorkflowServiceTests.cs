@@ -89,6 +89,53 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void Create_RejectsIncompleteLineProvenanceInsteadOfDroppingEntries()
+    {
+        var svc = new ReportPackWorkflowService();
+
+        Action missingLine = () => svc.Create(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "author",
+            [CompleteLineProvenance(" ", "ledger-evidence-1")]);
+
+        Action missingSourceId = () => svc.Create(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "author",
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1") with { SourceId = " " }]);
+
+        Action missingEvidenceId = () => svc.Create(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "author",
+            [CompleteLineProvenance("trial-balance.cash", " ")]);
+
+        Action missingCalculationNote = () => svc.Create(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "author",
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1") with { CalculationNote = " " }]);
+
+        missingLine.Should().Throw<ArgumentException>()
+            .WithMessage("Report pack line provenance requires report line, source kind, source ID, evidence ID, and calculation note: entry #1 (report line).*");
+        missingSourceId.Should().Throw<ArgumentException>()
+            .WithMessage("Report pack line provenance requires report line, source kind, source ID, evidence ID, and calculation note: trial-balance.cash (source ID).*");
+        missingEvidenceId.Should().Throw<ArgumentException>()
+            .WithMessage("Report pack line provenance requires report line, source kind, source ID, evidence ID, and calculation note: trial-balance.cash (evidence ID).*");
+        missingCalculationNote.Should().Throw<ArgumentException>()
+            .WithMessage("Report pack line provenance requires report line, source kind, source ID, evidence ID, and calculation note: trial-balance.cash (calculation note).*");
+    }
+
+    [Fact]
     public void Publish_RequiresReportValueAndSourcePointerForLineProvenance()
     {
         var svc = new ReportPackWorkflowService();
@@ -98,7 +145,7 @@ public sealed class ReportPackWorkflowServiceTests
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
             "author",
-            [new ReportPackLineProvenanceDto("trial-balance.cash", "ledger", "ledger-entry-1", "ledger-evidence-1", LedgerEntryId: "ledger-entry-1")]);
+            [new ReportPackLineProvenanceDto("trial-balance.cash", "ledger", "ledger-entry-1", "ledger-evidence-1", CalculationNote: "Ledger cash subtotal ties to journal entry ledger-entry-1.", LedgerEntryId: "ledger-entry-1")]);
         svc.Transition(missingValue.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(missingValue.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
 
@@ -121,7 +168,7 @@ public sealed class ReportPackWorkflowServiceTests
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
             "author",
-            [new ReportPackLineProvenanceDto("trial-balance.nav", "report", "nav-line-1", "nav-evidence-1", ReportValue: "125.00")]);
+            [new ReportPackLineProvenanceDto("trial-balance.nav", "report", "nav-line-1", "nav-evidence-1", CalculationNote: "NAV line copied from approved report worksheet.", ReportValue: "125.00")]);
         svc.Transition(missingPointer.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         svc.Transition(missingPointer.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
 
@@ -208,13 +255,19 @@ public sealed class ReportPackWorkflowServiceTests
             [new ReportPackEvidenceLinkDto("ledger-evidence-1", "Line evidence", "/evidence/ledger-evidence-1", "reporting")]);
 
         var line = published.LineProvenance.Should().ContainSingle().Subject;
+        line.RunId.Should().Be("run-1");
         line.LedgerEntryId.Should().Be("ledger-entry-1");
+        line.ReconciliationCaseId.Should().Be("case-1");
+        line.EvidenceId.Should().Be("ledger-evidence-1");
+        line.CalculationNote.Should().Be("trial-balance.cash uses retained ledger and reconciliation support from ledger-evidence-1.");
         line.ProviderEventId.Should().Be("provider-event-1");
         line.SecurityMasterId.Should().Be("security-1");
         line.SecurityDefinitionId.Should().Be("definition-1");
         line.ReconciliationRunId.Should().Be("recon-run-1");
         line.ReconciliationOutcome.Should().Be("matched");
         line.ApprovalId.Should().Be("approval-1");
+        published.Publication.Should().NotBeNull();
+        published.Publication!.EvidenceLinks.Should().ContainSingle(link => link.EvidenceId == line.EvidenceId);
         published.State.Should().Be(ReportPackWorkflowStateDto.Published);
     }
 
@@ -235,6 +288,7 @@ public sealed class ReportPackWorkflowServiceTests
                     " paper-session ",
                     " session-1 ",
                     " session-evidence-1 ",
+                    CalculationNote: " Trial balance NAV equals assets less liabilities after reconciliation. ",
                     RunId: " run-1 ",
                     ReportValue: " 125.00 ",
                     SourceSessionId: " paper-session-1 ",
@@ -252,6 +306,7 @@ public sealed class ReportPackWorkflowServiceTests
                 "paper-session",
                 "session-1",
                 "session-evidence-1",
+                CalculationNote: "Trial balance NAV equals assets less liabilities after reconciliation.",
                 RunId: "run-1",
                 ReportValue: "125.00",
                 SourceSessionId: "paper-session-1",
@@ -521,6 +576,7 @@ public sealed class ReportPackWorkflowServiceTests
             "ledger",
             "ledger-entry-1",
             evidenceId,
+            CalculationNote: $"{lineKey} uses retained ledger and reconciliation support from {evidenceId}.",
             RunId: "run-1",
             LedgerEntryId: "ledger-entry-1",
             ReconciliationCaseId: "case-1",
