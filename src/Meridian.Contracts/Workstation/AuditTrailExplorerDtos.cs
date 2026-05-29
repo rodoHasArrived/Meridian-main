@@ -14,6 +14,9 @@ public sealed record AuditTrailExplorerQueryDto(
     string? Actor = null,
     string? Symbol = null,
     string? CorrelationId = null,
+    string? ObjectKind = null,
+    string? ObjectId = null,
+    string? RelatedObjectId = null,
     DateTimeOffset? FromUtc = null,
     DateTimeOffset? ToUtc = null,
     int Limit = 100);

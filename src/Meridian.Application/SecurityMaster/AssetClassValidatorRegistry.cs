@@ -246,6 +246,332 @@ internal sealed class JsonAssetClassValidator : ISecurityAssetClassValidator
     }
 }
 
+internal sealed class CompositeAssetClassValidator : ISecurityAssetClassValidator
+{
+    private readonly IReadOnlyList<ISecurityAssetClassValidator> _validators;
+
+    public CompositeAssetClassValidator(string assetClass, IReadOnlyList<ISecurityAssetClassValidator> validators)
+    {
+        AssetClass = assetClass;
+        _validators = validators;
+    }
+
+    public string AssetClass { get; }
+
+    public IReadOnlyList<SecurityValidationIssueDto> Validate(SecurityValidationContext context)
+    {
+        var issues = new List<SecurityValidationIssueDto>();
+        foreach (var validator in _validators)
+        {
+            issues.AddRange(validator.Validate(context));
+        }
+
+        return issues;
+    }
+}
+
+internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetClassValidator
+{
+    private static readonly HashSet<string> ReservedFieldKeys = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "assetClass",
+        "customProfileId",
+        "profileVersion",
+        "profileFields",
+        "profileApproval",
+        "schemaVersion",
+        "securityId",
+        "status",
+        "version",
+        "provenance"
+    };
+
+    private readonly ISecurityAssetProfileCatalog _assetProfileCatalog;
+    private readonly bool _requireProfileReference;
+
+    public SecurityAssetProfileAssetClassValidator(
+        string assetClass,
+        ISecurityAssetProfileCatalog assetProfileCatalog,
+        bool requireProfileReference)
+    {
+        AssetClass = assetClass;
+        _assetProfileCatalog = assetProfileCatalog;
+        _requireProfileReference = requireProfileReference;
+    }
+
+    public string AssetClass { get; }
+
+    public IReadOnlyList<SecurityValidationIssueDto> Validate(SecurityValidationContext context)
+    {
+        var issues = new List<SecurityValidationIssueDto>();
+        var assetSpecificTerms = context.Record.AssetSpecificTerms;
+        var hasProfileId = JsonValidationReader.TryGetString(assetSpecificTerms, "customProfileId", out var profileId);
+        if (!hasProfileId)
+        {
+            if (_requireProfileReference)
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_CUSTOM_PROFILE_ID_REQUIRED",
+                    "Custom asset profile is missing",
+                    "CustomAsset records must reference the approved custom asset profile used to interpret their typed fields.",
+                    ["assetSpecificTerms.customProfileId"],
+                    "Select an approved asset profile before creating or amending the custom asset."));
+            }
+
+            return issues;
+        }
+
+        if (!JsonValidationReader.TryGetInt(assetSpecificTerms, "profileVersion", out var profileVersion) || profileVersion <= 0)
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_VERSION_REQUIRED",
+                "Custom asset profile version is missing",
+                "Profile-backed securities must pin the approved profile version used at creation so historical records remain interpretable after profile changes.",
+                ["assetSpecificTerms.profileVersion"],
+                "Persist the approved profile version with the Security Master terms."));
+            return issues;
+        }
+
+        if (!_assetProfileCatalog.TryGetProfile(profileId, profileVersion, out var profile))
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_VERSION_UNKNOWN",
+                "Custom asset profile version is unknown",
+                $"Profile '{profileId}' version '{profileVersion}' is not registered in the approved asset profile catalog.",
+                ["assetSpecificTerms.customProfileId", "assetSpecificTerms.profileVersion"],
+                "Choose an approved profile version or migrate the record through a governed profile rollback/amendment."));
+            return issues;
+        }
+
+        issues.AddRange(ValidateProfileDefinition(profile));
+        if (profile.Status != SecurityAssetProfileStatusDto.Approved)
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_NOT_APPROVED",
+                "Custom asset profile is not approved",
+                $"Profile '{profile.Name}' version '{profile.Version}' is '{profile.Status}' and cannot back governed Security Master records.",
+                ["assetSpecificTerms.customProfileId", "assetSpecificTerms.profileVersion"],
+                "Route the profile version through approval before using it for Security Master create or amend workflows."));
+        }
+
+        if (!JsonValidationReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields)
+            || profileFields.ValueKind != JsonValueKind.Object)
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_FIELDS_REQUIRED",
+                "Custom asset profile fields are missing",
+                "Profile-backed securities must store typed field values under assetSpecificTerms.profileFields.",
+                ["assetSpecificTerms.profileFields"],
+                "Populate profileFields using the selected approved profile definition."));
+            return issues;
+        }
+
+        foreach (var field in profile.Fields.OrderBy(static field => field.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            issues.AddRange(ValidateField(field, profileFields));
+        }
+
+        foreach (var rule in profile.DateOrderRules)
+        {
+            issues.AddRange(ValidateDateOrderRule(rule, profileFields));
+        }
+
+        issues.AddRange(ValidateIdentifierCoverage(profile, context.Record, context.EvaluatedAtUtc));
+        issues.AddRange(ValidateProfileApprovalMetadata(assetSpecificTerms));
+
+        return issues;
+    }
+
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateProfileDefinition(SecurityAssetProfileDefinitionDto profile)
+    {
+        var issues = new List<SecurityValidationIssueDto>();
+        var duplicateKey = profile.Fields
+            .GroupBy(static field => field.Key, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault(static group => group.Count() > 1);
+        if (duplicateKey is not null)
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_FIELD_KEY_DUPLICATE",
+                "Custom asset profile has duplicate field keys",
+                $"Profile '{profile.Name}' repeats field key '{duplicateKey.Key}'.",
+                ["assetProfile.fields"],
+                "Publish a corrected profile version with unique field keys."));
+        }
+
+        var reservedKey = profile.Fields.FirstOrDefault(field => ReservedFieldKeys.Contains(field.Key));
+        if (reservedKey is not null)
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_FIELD_KEY_RESERVED",
+                "Custom asset profile uses a reserved field key",
+                $"Profile '{profile.Name}' uses reserved field key '{reservedKey.Key}'.",
+                ["assetProfile.fields"],
+                "Rename the field in a new profile version before using the profile for Security Master records."));
+        }
+
+        return issues;
+    }
+
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateField(
+        SecurityAssetProfileFieldDefinitionDto field,
+        JsonElement profileFields)
+    {
+        var fieldPath = $"assetSpecificTerms.profileFields.{field.Key}";
+        if (!JsonValidationReader.TryGetProperty(profileFields, field.Key, out var value))
+        {
+            return field.IsRequired
+                ?
+                [
+                    SecurityValidationIssueFactory.Create(
+                        SecurityValidationSeverityDto.Error,
+                        "SM_CUSTOM_PROFILE_FIELD_REQUIRED",
+                        "Custom asset profile field is missing",
+                        $"Required profile field '{field.Label}' is missing.",
+                        [fieldPath],
+                        "Populate the required profile field before the security is used for close, reconciliation, or report-pack evidence.")
+                ]
+                : [];
+        }
+
+        var issues = new List<SecurityValidationIssueDto>();
+        var isValidType = field.FieldType switch
+        {
+            SecurityAssetProfileFieldTypeDto.Text => value.ValueKind == JsonValueKind.String && (!field.IsRequired || !string.IsNullOrWhiteSpace(value.GetString())),
+            SecurityAssetProfileFieldTypeDto.Decimal => value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out _),
+            SecurityAssetProfileFieldTypeDto.Integer => value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out _),
+            SecurityAssetProfileFieldTypeDto.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+            SecurityAssetProfileFieldTypeDto.Date => value.ValueKind == JsonValueKind.String && DateOnly.TryParse(value.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out _),
+            SecurityAssetProfileFieldTypeDto.Enum => JsonValidationReader.HasAllowedString(value, field.AllowedValues),
+            SecurityAssetProfileFieldTypeDto.CurrencyCode => IsCurrencyCode(value),
+            SecurityAssetProfileFieldTypeDto.SecurityLink => value.ValueKind == JsonValueKind.String && Guid.TryParse(value.GetString(), out var guid) && guid != Guid.Empty,
+            _ => true
+        };
+
+        if (!isValidType)
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_FIELD_TYPE_INVALID",
+                "Custom asset profile field type is invalid",
+                $"Profile field '{field.Label}' must be a valid {field.FieldType} value.",
+                [fieldPath],
+                "Correct the typed profile field value before the security is used downstream."));
+            return issues;
+        }
+
+        if (field.FieldType is SecurityAssetProfileFieldTypeDto.Decimal or SecurityAssetProfileFieldTypeDto.Integer
+            && value.TryGetDecimal(out var numericValue)
+            && ((field.MinValue.HasValue && numericValue < field.MinValue.Value)
+                || (field.MaxValue.HasValue && numericValue > field.MaxValue.Value)))
+        {
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_FIELD_RANGE_INVALID",
+                "Custom asset profile field is outside the allowed range",
+                $"Profile field '{field.Label}' must be between {field.MinValue?.ToString(CultureInfo.InvariantCulture) ?? "unbounded"} and {field.MaxValue?.ToString(CultureInfo.InvariantCulture) ?? "unbounded"}.",
+                [fieldPath],
+                "Correct the profile field value or approve a new profile version with the intended range."));
+        }
+
+        return issues;
+    }
+
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateDateOrderRule(
+        SecurityAssetProfileDateOrderRuleDto rule,
+        JsonElement profileFields)
+    {
+        if (!JsonValidationReader.TryGetDate(profileFields, rule.StartFieldKey, out var start)
+            || !JsonValidationReader.TryGetDate(profileFields, rule.EndFieldKey, out var end)
+            || start <= end)
+        {
+            return [];
+        }
+
+        return
+        [
+            SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                rule.Code,
+                "Custom asset profile date order is invalid",
+                rule.Message,
+                [$"assetSpecificTerms.profileFields.{rule.StartFieldKey}", $"assetSpecificTerms.profileFields.{rule.EndFieldKey}"],
+                "Correct the date ordering or approve a new profile version with the intended lifecycle rule.")
+        ];
+    }
+
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateIdentifierCoverage(
+        SecurityAssetProfileDefinitionDto profile,
+        SecurityProjectionRecord record,
+        DateTimeOffset evaluatedAtUtc)
+    {
+        var activeKinds = record.Identifiers
+            .Where(identifier => identifier.ValidFrom <= evaluatedAtUtc && (!identifier.ValidTo.HasValue || identifier.ValidTo.Value > evaluatedAtUtc))
+            .Select(static identifier => identifier.Kind)
+            .ToHashSet();
+
+        var issues = new List<SecurityValidationIssueDto>();
+        foreach (var preference in profile.IdentifierPreferences.Where(static preference => preference.IsRequiredForClose))
+        {
+            if (activeKinds.Contains(preference.Kind))
+            {
+                continue;
+            }
+
+            issues.Add(SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_IDENTIFIER_COVERAGE_MISSING",
+                "Custom asset identifier coverage is incomplete",
+                $"Profile '{profile.Name}' requires active {preference.Kind} coverage. {preference.Reason}",
+                [$"identifiers.{preference.Kind}"],
+                "Attach the required identifier before close, reconciliation, or report-pack readiness consumes this security."));
+        }
+
+        return issues;
+    }
+
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateProfileApprovalMetadata(JsonElement assetSpecificTerms)
+    {
+        if (JsonValidationReader.TryGetProperty(assetSpecificTerms, "profileApproval", out var approval)
+            && approval.ValueKind == JsonValueKind.Object
+            && JsonValidationReader.TryGetString(approval, "approvedBy", out _)
+            && JsonValidationReader.TryGetDateTimeOffset(approval, "approvedAtUtc", out _)
+            && JsonValidationReader.TryGetString(approval, "approvalReference", out _))
+        {
+            return [];
+        }
+
+        return
+        [
+            SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Error,
+                "SM_CUSTOM_PROFILE_APPROVAL_METADATA_REQUIRED",
+                "Custom asset profile approval metadata is missing",
+                "Profile-backed securities must retain immutable profile approval metadata with the pinned profile version.",
+                ["assetSpecificTerms.profileApproval"],
+                "Persist profileApproval.approvedBy, approvedAtUtc, and approvalReference from the governed profile approval event.")
+        ];
+    }
+
+    private static bool IsCurrencyCode(JsonElement value)
+    {
+        if (value.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        var currency = value.GetString();
+        return currency is { Length: 3 }
+               && currency.All(static character => character is >= 'A' and <= 'Z');
+    }
+}
+
 internal interface ISecurityValidationRule
 {
     SecurityValidationIssueDto? Validate(SecurityValidationContext context);
@@ -472,6 +798,17 @@ internal static class JsonValidationReader
         return property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out value);
     }
 
+    public static bool TryGetInt(JsonElement root, string path, out int value)
+    {
+        value = default;
+        if (!TryGetProperty(root, path, out var property))
+        {
+            return false;
+        }
+
+        return property.ValueKind == JsonValueKind.Number && property.TryGetInt32(out value);
+    }
+
     public static bool TryGetDate(JsonElement root, string path, out DateOnly value)
     {
         value = default;
@@ -481,5 +818,16 @@ internal static class JsonValidationReader
         }
 
         return DateOnly.TryParse(property.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
+    }
+
+    public static bool TryGetDateTimeOffset(JsonElement root, string path, out DateTimeOffset value)
+    {
+        value = default;
+        if (!TryGetProperty(root, path, out var property) || property.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        return DateTimeOffset.TryParse(property.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out value);
     }
 }

@@ -283,7 +283,10 @@ public sealed record LedgerAmountReconciliationCaseDto(
     bool SlaBreached = false,
     ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack,
     string? AgeBand = null,
-    double BusinessAgeHours = 0);
+    double BusinessAgeHours = 0,
+    string? SignedOffBy = null,
+    DateTimeOffset? SignedOffAt = null,
+    string? SignOffNote = null);
 
 public sealed record LedgerAmountReconciliationStateDto(
     int ReconciliationRunCount,

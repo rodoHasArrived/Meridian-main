@@ -194,7 +194,10 @@ public sealed class LedgerAmountProvenanceService
             item.SlaBreached,
             item.SlaState,
             item.AgeBand,
-            item.BusinessAgeHours);
+            item.BusinessAgeHours,
+            item.SignedOffBy,
+            item.SignedOffAt,
+            item.SignOffNote);
 
     private static LedgerAmountProvenanceEvidenceDto ToEvidence(FundReportPackLineagePointerDto pointer)
         => new(
