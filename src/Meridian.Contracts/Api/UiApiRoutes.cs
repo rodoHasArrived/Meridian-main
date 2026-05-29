@@ -646,6 +646,8 @@ public static class UiApiRoutes
     public const string ReportingPackWorkflowPublish = "/api/fund-structure/reporting/packs/{reportId}/publish";
     public const string ReportingPackWorkflowRestate = "/api/fund-structure/reporting/packs/{reportId}/restatements";
     public const string ReportingPackWorkflowArchive = "/api/fund-structure/reporting/packs/{reportId}/archive";
+    public const string FundStructureSetupDraftValidate = "/api/fund-structure/setup-drafts/validate";
+    public const string FundStructureSetupDraftCreate = "/api/fund-structure/setup-drafts/create";
     public const string FundStructureLedgerMappingAssignments = "/api/fund-structure/ledger-mapping-assignments";
 
     // Fund account brokerage read-side sync endpoints
