@@ -19,72 +19,70 @@
                                         BodyAutomationId="SaveWatchlistDialogBody"
                                         TitleText="Save Watchlist"
                                         SubtitleText="Create a new watchlist or update an existing one.">
-        <views:WorkspaceDialogChromeControl.Body>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-                <CheckBox x:Name="SaveAsNewCheck"
-                          Grid.Row="0"
-                          Content="Create new watchlist"
-                          IsChecked="True"
-                          Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                          Margin="0,0,0,12"
-                          Checked="SaveAsNewCheck_Changed"
-                          Unchecked="SaveAsNewCheck_Changed"
-                          AutomationProperties.AutomationId="SaveWatchlistCreateNewCheck"
-                          AutomationProperties.Name="Create new watchlist" />
+            <CheckBox x:Name="SaveAsNewCheck"
+                      Grid.Row="0"
+                      Content="Create new watchlist"
+                      IsChecked="True"
+                      Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                      Margin="0,0,0,12"
+                      Checked="SaveAsNewCheck_Changed"
+                      Unchecked="SaveAsNewCheck_Changed"
+                      AutomationProperties.AutomationId="SaveWatchlistCreateNewCheck"
+                      AutomationProperties.Name="Create new watchlist" />
 
-                <TextBlock Grid.Row="1"
-                           Text="Watchlist Name"
-                           Style="{StaticResource ShellSectionLabelStyle}"
-                           Margin="0,0,0,4" />
+            <TextBlock Grid.Row="1"
+                       Text="Watchlist Name"
+                       Style="{StaticResource ShellSectionLabelStyle}"
+                       Margin="0,0,0,4" />
 
-                <TextBox x:Name="NameBox"
-                         Grid.Row="2"
-                         Style="{StaticResource FormTextBoxStyle}"
-                         Margin="0,0,0,12"
-                         AutomationProperties.AutomationId="SaveWatchlistNameInput"
-                         AutomationProperties.Name="Watchlist name" />
+            <TextBox x:Name="NameBox"
+                     Grid.Row="2"
+                     Style="{StaticResource FormTextBoxStyle}"
+                     Margin="0,0,0,12"
+                     AutomationProperties.AutomationId="SaveWatchlistNameInput"
+                     AutomationProperties.Name="Watchlist name" />
 
-                <TextBlock Grid.Row="3"
-                           Text="Or update existing"
-                           Style="{StaticResource ShellSectionLabelStyle}"
-                           Margin="0,0,0,4" />
+            <TextBlock Grid.Row="3"
+                       Text="Or update existing"
+                       Style="{StaticResource ShellSectionLabelStyle}"
+                       Margin="0,0,0,4" />
 
-                <ComboBox x:Name="ExistingCombo"
-                          Grid.Row="4"
-                          Style="{StaticResource FormComboBoxStyle}"
-                          IsEnabled="False"
-                          Margin="0,0,0,16"
-                          AutomationProperties.AutomationId="SaveWatchlistExistingCombo"
-                          AutomationProperties.Name="Existing watchlist" />
+            <ComboBox x:Name="ExistingCombo"
+                      Grid.Row="4"
+                      Style="{StaticResource FormComboBoxStyle}"
+                      IsEnabled="False"
+                      Margin="0,0,0,16"
+                      AutomationProperties.AutomationId="SaveWatchlistExistingCombo"
+                      AutomationProperties.Name="Existing watchlist" />
 
-                <StackPanel Grid.Row="5"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right">
-                    <Button Content="Cancel"
-                            MinWidth="90"
-                            Margin="0,0,8,0"
-                            Style="{StaticResource GhostButtonStyle}"
-                            Click="Cancel_Click"
-                            AutomationProperties.AutomationId="SaveWatchlistCancelButton"
-                            AutomationProperties.Name="Cancel save watchlist" />
-                    <Button Content="Save"
-                            MinWidth="90"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Click="Save_Click"
-                            IsDefault="True"
-                            AutomationProperties.AutomationId="SaveWatchlistSaveButton"
-                            AutomationProperties.Name="Save watchlist" />
-                </StackPanel>
-            </Grid>
-        </views:WorkspaceDialogChromeControl.Body>
+            <StackPanel Grid.Row="5"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <Button Content="Cancel"
+                        MinWidth="90"
+                        Margin="0,0,8,0"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Click="Cancel_Click"
+                        AutomationProperties.AutomationId="SaveWatchlistCancelButton"
+                        AutomationProperties.Name="Cancel save watchlist" />
+                <Button Content="Save"
+                        MinWidth="90"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Click="Save_Click"
+                        IsDefault="True"
+                        AutomationProperties.AutomationId="SaveWatchlistSaveButton"
+                        AutomationProperties.Name="Save watchlist" />
+            </StackPanel>
+        </Grid>
     </views:WorkspaceDialogChromeControl>
 </Window>

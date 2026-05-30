@@ -3,7 +3,7 @@ using System.Windows.Controls;
 
 namespace Meridian.Wpf.Views;
 
-public partial class WorkspaceDialogChromeControl : UserControl
+public class WorkspaceDialogChromeControl : ContentControl
 {
     public static readonly DependencyProperty DialogAutomationIdProperty =
         DependencyProperty.Register(nameof(DialogAutomationId), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata("WorkspaceDialogChrome"));
@@ -23,12 +23,8 @@ public partial class WorkspaceDialogChromeControl : UserControl
     public static readonly DependencyProperty SubtitleTextProperty =
         DependencyProperty.Register(nameof(SubtitleText), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(string.Empty));
 
-    public static readonly DependencyProperty BodyProperty =
-        DependencyProperty.Register(nameof(Body), typeof(object), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(null));
-
     public WorkspaceDialogChromeControl()
     {
-        InitializeComponent();
     }
 
     public string DialogAutomationId
@@ -65,11 +61,5 @@ public partial class WorkspaceDialogChromeControl : UserControl
     {
         get => (string)GetValue(SubtitleTextProperty);
         set => SetValue(SubtitleTextProperty, value);
-    }
-
-    public object? Body
-    {
-        get => GetValue(BodyProperty);
-        set => SetValue(BodyProperty, value);
     }
 }

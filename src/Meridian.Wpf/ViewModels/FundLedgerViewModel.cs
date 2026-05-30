@@ -720,24 +720,52 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var governanceWorkspace = await governanceWorkspaceTask;
         _governanceLifecycle = governanceWorkspace.Governance;
 
-        Title = $"Fund Operations · {activeFund.DisplayName}";
-        StatusText = accounts.Count == 0 && ledger?.JournalEntryCount is not > 0
-            ? "Fund operations are ready, but no linked account or ledger activity has been recorded yet."
-            : "Governance fund operations are loaded for the active fund profile.";
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is not null)
+        {
+            await dispatcher.InvokeAsync(async () =>
+            {
+                Title = $"Fund Operations · {activeFund.DisplayName}";
+                StatusText = accounts.Count == 0 && ledger?.JournalEntryCount is not > 0
+                    ? "Fund operations are ready, but no linked account or ledger activity has been recorded yet."
+                    : "Governance fund operations are loaded for the active fund profile.";
 
-        ApplyLedger(ledger);
-        ApplyAccounts(accounts, context);
-        BuildLedgerDimensions(activeFund, ledger);
-        ApplyBankSnapshots(bankSnapshots);
-        ApplyCashSummary(cashSummary);
-        ApplyPortfolio(portfolioPositions);
-        await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
-        await LoadStatementReconciliationAsync(ct);
-        BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
-        BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
-        await RefreshReportPackPreviewAsync(ct);
-        UpdateReconciliationWorkbenchPresentation();
-        UpdateReportPackWorkbenchPresentation();
+                ApplyLedger(ledger);
+                ApplyAccounts(accounts, context);
+                BuildLedgerDimensions(activeFund, ledger);
+                ApplyBankSnapshots(bankSnapshots);
+                ApplyCashSummary(cashSummary);
+                ApplyPortfolio(portfolioPositions);
+                await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
+                await LoadStatementReconciliationAsync(ct);
+                BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
+                BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
+                await RefreshReportPackPreviewAsync(ct);
+                UpdateReconciliationWorkbenchPresentation();
+                UpdateReportPackWorkbenchPresentation();
+            });
+        }
+        else
+        {
+            Title = $"Fund Operations · {activeFund.DisplayName}";
+            StatusText = accounts.Count == 0 && ledger?.JournalEntryCount is not > 0
+                ? "Fund operations are ready, but no linked account or ledger activity has been recorded yet."
+                : "Governance fund operations are loaded for the active fund profile.";
+
+            ApplyLedger(ledger);
+            ApplyAccounts(accounts, context);
+            BuildLedgerDimensions(activeFund, ledger);
+            ApplyBankSnapshots(bankSnapshots);
+            ApplyCashSummary(cashSummary);
+            ApplyPortfolio(portfolioPositions);
+            await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
+            await LoadStatementReconciliationAsync(ct);
+            BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
+            BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
+            await RefreshReportPackPreviewAsync(ct);
+            UpdateReconciliationWorkbenchPresentation();
+            UpdateReportPackWorkbenchPresentation();
+        }
     }
 
     public void Dispose()
