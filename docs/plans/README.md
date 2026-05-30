@@ -50,7 +50,10 @@ Use current guidance first:
 | Document | Archive copy | Reason |
 | --- | --- | --- |
 | [Performance TODO 2026-05-21](performance-todo-2026-05-21.md) | [archive/docs/plans/performance-todo-2026-05-21.md](../../archive/docs/plans/performance-todo-2026-05-21.md) | Environment-specific benchmark blocker/TODO snapshot; current performance work requires engineering guidance plus fresh benchmark evidence. |
+| [Paper Trading Cockpit Reliability Sprint](paper-trading-cockpit-reliability-sprint.md) | [archive/docs/plans/paper-trading-cockpit-reliability-sprint.md](../../archive/docs/plans/paper-trading-cockpit-reliability-sprint.md) | Completed Wave 2 detail contract; current status belongs in product docs, roadmap registry, and retained evidence packets. |
 | [Runbook Template Registry Modernization](runbook-template-registry-modernization-plan.md) | [archive/docs/plans/runbook-template-registry-modernization-plan.md](../../archive/docs/plans/runbook-template-registry-modernization-plan.md) | Draft/speculative platform plan; current runbook scope must come from operator guidance, engineering contracts, and roadmap registry evidence. |
+| [Portfolio-Level Backtesting Composer Blueprint](portfolio-level-backtesting-composer-blueprint.md) | [archive/docs/plans/portfolio-level-backtesting-composer-blueprint.md](../../archive/docs/plans/portfolio-level-backtesting-composer-blueprint.md) | Proposed future composer scope; current Backtest Studio work should stay aligned to Wave 5 unification unless registry evidence pulls this forward. |
+| [Assembly-Level Performance Roadmap](assembly-performance-roadmap.md) | [archive/docs/plans/assembly-performance-roadmap.md](../../archive/docs/plans/assembly-performance-roadmap.md) | Optional advanced-performance track; current performance work requires current source and benchmark evidence. |
 
 ## Migration Rules
 

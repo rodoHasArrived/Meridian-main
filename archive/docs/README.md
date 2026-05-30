@@ -25,7 +25,10 @@ Chief of Staff runtime archive:
 
 Plans archive:
 
+- [Assembly-level performance roadmap](plans/assembly-performance-roadmap.md)
+- [Paper trading cockpit reliability sprint](plans/paper-trading-cockpit-reliability-sprint.md)
 - [Performance TODO snapshot - 2026-05-21](plans/performance-todo-2026-05-21.md)
+- [Portfolio-level backtesting composer blueprint](plans/portfolio-level-backtesting-composer-blueprint.md)
 - [Runbook template registry modernization draft](plans/runbook-template-registry-modernization-plan.md)
 
 Assessment archive:
