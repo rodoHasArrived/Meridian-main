@@ -83,7 +83,7 @@ public sealed class BacktestRequestBuilder
         return this;
     }
 
-    /// <summary>Sets the engine mode (Managed or CppTrader-backed).</summary>
+    /// <summary>Sets the engine mode.</summary>
     public BacktestRequestBuilder WithEngineMode(BacktestEngineMode mode)
     {
         _engineMode = mode;

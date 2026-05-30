@@ -60,7 +60,7 @@ The solution currently includes these major areas:
 - `src/Meridian.Backtesting` and `src/Meridian.Backtesting.Sdk` for replay and backtesting
 - `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger`, and `src/Meridian.FSharp.DirectLending.Aggregates` for accounting and direct-lending/domain-specialized work
 - `src/Meridian.QuantScript` for scripting and charting-oriented tooling
-- `src/Meridian.Mcp` for Model Context Protocol integration surfaces
+- `src/Meridian.Mcp` and `src/Meridian.McpServer` for Model Context Protocol integration surfaces
 - `src/Meridian.Ui/dashboard`, `src/Meridian.Ui/wwwroot/workstation`, `src/Meridian.Ui.Services`, and `src/Meridian.Ui.Shared` for the active web workstation and shared UI/API layers
 - `src/Meridian.Wpf` for the active Windows desktop workstation shell
 - `tests/` and `benchmarks/` for automated validation and performance work
@@ -210,6 +210,15 @@ A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server.
 dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj
 ```
 
+### MCP server (market data) — `src/Meridian.McpServer`
+
+A full-featured MCP server that exposes market data capabilities (provider queries, backfill, storage catalog, symbol management) as MCP tools, resources, and prompts. Lets LLMs interact with live provider data over the stdio transport.
+
+```bash
+dotnet run --project src/Meridian.McpServer/Meridian.McpServer.csproj -- --config config/appsettings.json
+```
+
+Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
 
 ### Windows WPF desktop app — `src/Meridian.Wpf`
 

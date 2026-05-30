@@ -5,6 +5,5 @@ namespace Meridian.Backtesting.Sdk;
 /// </summary>
 public enum BacktestEngineMode
 {
-    Managed = 0,
-    CppTrader = 1
+    Managed = 0
 }

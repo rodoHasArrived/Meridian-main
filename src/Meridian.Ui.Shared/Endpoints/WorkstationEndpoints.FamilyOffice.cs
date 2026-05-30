@@ -1,6 +1,7 @@
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Serialization;
 using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,10 +12,7 @@ public static partial class WorkstationEndpoints
 {
     private static void MapFamilyOfficeEndpoints(RouteGroupBuilder group)
     {
-        var familyOffice = group.MapGroup("/family-office")
-            .WithTags("Workstation Family Office");
-
-        familyOffice.MapGet("/overview", async (HttpContext context) =>
+        group.MapGet("/family-office/overview", async Task<IResult> (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -26,10 +24,11 @@ public static partial class WorkstationEndpoints
             return Results.Json(overview, FamilyOfficeJsonContext.Default.FamilyOfficeOverviewDto);
         })
         .WithName("GetWorkstationFamilyOfficeOverview")
+        .WithTags("Workstation Family Office")
         .Produces<FamilyOfficeOverviewDto>(200)
         .Produces(501);
 
-        familyOffice.MapGet("/balance-sheet", async (HttpContext context) =>
+        group.MapGet("/family-office/balance-sheet", async Task<IResult> (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -41,10 +40,11 @@ public static partial class WorkstationEndpoints
             return Results.Json(balanceSheet, FamilyOfficeJsonContext.Default.FamilyOfficeBalanceSheetResponseDto);
         })
         .WithName("GetWorkstationFamilyOfficeBalanceSheet")
+        .WithTags("Workstation Family Office")
         .Produces<FamilyOfficeBalanceSheetResponseDto>(200)
         .Produces(501);
 
-        familyOffice.MapGet("/entities", async (HttpContext context) =>
+        group.MapGet("/family-office/entities", async Task<IResult> (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -56,10 +56,11 @@ public static partial class WorkstationEndpoints
             return Results.Json(entities, FamilyOfficeJsonContext.Default.FamilyOfficeEntitiesResponseDto);
         })
         .WithName("GetWorkstationFamilyOfficeEntities")
+        .WithTags("Workstation Family Office")
         .Produces<FamilyOfficeEntitiesResponseDto>(200)
         .Produces(501);
 
-        familyOffice.MapGet("/ownership-graph", async (HttpContext context) =>
+        group.MapGet("/family-office/ownership-graph", async Task<IResult> (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<FamilyOfficeReadService>();
             if (service is null)
@@ -71,6 +72,7 @@ public static partial class WorkstationEndpoints
             return Results.Json(ownershipGraph, FamilyOfficeJsonContext.Default.FamilyOfficeOwnershipGraphResponseDto);
         })
         .WithName("GetWorkstationFamilyOfficeOwnershipGraph")
+        .WithTags("Workstation Family Office")
         .Produces<FamilyOfficeOwnershipGraphResponseDto>(200)
         .Produces(501);
     }

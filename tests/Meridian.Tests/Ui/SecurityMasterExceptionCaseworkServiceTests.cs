@@ -89,7 +89,7 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             item.SignoffHistory.Should().ContainSingle(record =>
                 record.Actor == "approver" &&
                 record.Role == "Security Master steward" &&
-                record.Status == ReconciliationBreakQueueStatus.Resolved.ToString());
+                record.Decision == ReconciliationBreakQueueStatus.Resolved.ToString());
 
             var auditTypes = (await repository.GetAuditHistoryAsync(item.BreakId))
                 .Select(entry => entry.EventType)
@@ -198,7 +198,7 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             item.SignoffHistory.Should().Contain(record =>
                 record.Actor == "security-steward" &&
                 record.Role == "Security Master steward" &&
-                record.Status == ReconciliationBreakQueueStatus.Resolved.ToString());
+                record.Decision == ReconciliationBreakQueueStatus.Resolved.ToString());
 
             var auditTypes = (await repository.GetAuditHistoryAsync(item.BreakId))
                 .Select(static entry => entry.EventType)
@@ -253,7 +253,7 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             item.SignoffStatus.Should().Be("ready-for-signoff");
             item.SignoffHistory.Should().Contain(record =>
                 record.Actor == "analyst" &&
-                record.Status == ReconciliationBreakQueueStatus.Resolved.ToString());
+                record.Decision == ReconciliationBreakQueueStatus.Resolved.ToString());
             item.SignoffHistory.Should().NotContain(record =>
                 string.Equals(record.Actor, "security-master-casework", StringComparison.OrdinalIgnoreCase));
 

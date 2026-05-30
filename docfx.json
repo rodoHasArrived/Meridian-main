@@ -20,7 +20,6 @@
             "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
             "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
             "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
-            "src/Meridian.Infrastructure.CppTrader/Meridian.Infrastructure.CppTrader.csproj",
             "src/Meridian.Mcp/Meridian.Mcp.csproj",
             "src/Meridian.McpServer/Meridian.McpServer.csproj",
             "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
