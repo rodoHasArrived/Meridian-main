@@ -39,11 +39,6 @@ modules:
     readme: src/Meridian.Infrastructure/README.md
     status: covered
     last_reviewed: 2026-05-20
-  - module_id: SRC-INFRASTRUCTURE-CPPTRADER
-    path: src/Meridian.Infrastructure.CppTrader
-    readme: src/Meridian.Infrastructure.CppTrader/README.md
-    status: covered
-    last_reviewed: 2026-05-20
   - module_id: SRC-STORAGE
     path: src/Meridian.Storage
     readme: src/Meridian.Storage/README.md

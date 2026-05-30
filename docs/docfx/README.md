@@ -65,7 +65,6 @@ an older checkout, delete the generated metadata and regenerate it from
 | `Meridian.Domain` | Domain model (collectors, market events, publishers) |
 | `Meridian.ProviderSdk` | Provider SDK interfaces |
 | `Meridian.Infrastructure` | Concrete provider adapters |
-| `Meridian.Infrastructure.CppTrader` | CppTrader integration |
 | `Meridian.Storage` | Storage sinks, WAL, archival, and export |
 | `Meridian.Execution` | OMS, paper trading, and brokerage adapters |
 | `Meridian.Execution.Sdk` | Brokerage gateway SDK |

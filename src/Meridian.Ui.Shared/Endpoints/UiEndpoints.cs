@@ -97,16 +97,14 @@ public static class UiEndpoints
             jsonOptions,
             jsonOptionsIndented,
             statusHandlers: null,
-            mapCanonicalizationEndpoints: false,
-            mapCppTraderEndpoints: true);
+            mapCanonicalizationEndpoints: false);
 
     private static WebApplication MapUiEndpointGroups(
         this WebApplication app,
         JsonSerializerOptions jsonOptions,
         JsonSerializerOptions? jsonOptionsIndented,
         ApplicationStatusEndpointHandlers? statusHandlers,
-        bool mapCanonicalizationEndpoints,
-        bool mapCppTraderEndpoints)
+        bool mapCanonicalizationEndpoints)
     {
         jsonOptionsIndented ??= new JsonSerializerOptions
         {
@@ -157,11 +155,6 @@ public static class UiEndpoints
         app.MapMessagingEndpoints(jsonOptions);
         app.MapOmsIntegrationEndpoints(jsonOptions);
         app.MapProviderExtendedEndpoints(jsonOptions);
-        if (mapCppTraderEndpoints)
-        {
-            app.MapCppTraderEndpoints();
-        }
-
         app.MapIndexEndpoints(jsonOptions);
 
         if (mapCanonicalizationEndpoints)
@@ -279,8 +272,7 @@ public static class UiEndpoints
             jsonOptions,
             jsonOptionsIndented,
             statusHandlers,
-            mapCanonicalizationEndpoints: true,
-            mapCppTraderEndpoints: false);
+            mapCanonicalizationEndpoints: true);
     }
 
     /// <summary>

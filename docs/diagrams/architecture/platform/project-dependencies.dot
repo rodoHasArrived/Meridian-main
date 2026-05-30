@@ -7,7 +7,7 @@ digraph ProjectDependencies {
     rankdir=TB;
     fontname="Segoe UI, Helvetica, Arial, sans-serif";
     fontsize=14;
-    label="Meridian - Project Dependencies\n(26 source projects | 8 test projects | 1 benchmark project)";
+    label="Meridian - Project Dependencies\n(25 source projects | 8 test projects | 1 benchmark project)";
     labelloc=t;
     labeljust=c;
     compound=true;
@@ -56,7 +56,6 @@ digraph ProjectDependencies {
         color="#aaaaaa";
         fontsize=11;
         Infrastructure [label="Infrastructure\n(streaming/historical providers\nresilience, HTTP integration)", fillcolor="#FFF3E0", style="rounded,filled"];
-        CppTrader [label="Infrastructure.CppTrader\n(native matching bridge\nITCH ingestion, replay)", fillcolor="#FFF3E0", style="rounded,filled,dashed"];
         Storage [label="Storage\n(WAL, JSONL/Parquet sinks\nsecurity master, packaging)", fillcolor="#FFF3E0", style="rounded,filled"];
     }
 
@@ -155,13 +154,6 @@ digraph ProjectDependencies {
     FSharp -> BacktestSdk;
     FSharp -> Contracts;
     FSharp -> ExecutionSdk;
-    CppTrader -> Contracts;
-    CppTrader -> Core;
-    CppTrader -> Domain;
-    CppTrader -> Execution;
-    CppTrader -> ExecutionSdk;
-    CppTrader -> Infrastructure;
-    CppTrader -> ProviderSdk;
     Infrastructure -> Contracts;
     Infrastructure -> Core;
     Infrastructure -> Domain;
@@ -208,7 +200,6 @@ digraph ProjectDependencies {
     UiShared -> Execution;
     UiShared -> FSharp;
     UiShared -> FSharpLedger;
-    UiShared -> CppTrader;
     UiShared -> QuantScript;
     UiShared -> Storage;
     UiShared -> Strategies;
@@ -223,7 +214,6 @@ digraph ProjectDependencies {
     MainApp -> Core;
     MainApp -> Domain;
     MainApp -> Infrastructure;
-    MainApp -> CppTrader;
     MainApp -> ProviderSdk;
     MainApp -> QuantScript;
     MainApp -> Storage;
@@ -255,7 +245,6 @@ digraph ProjectDependencies {
     Tests -> Execution [style=dotted, color="#999999"];
     Tests -> ExecutionSdk [style=dotted, color="#999999"];
     Tests -> Infrastructure [style=dotted, color="#999999"];
-    Tests -> CppTrader [style=dotted, color="#999999"];
     Tests -> Ledger [style=dotted, color="#999999"];
     Tests -> Risk [style=dotted, color="#999999"];
     Tests -> Storage [style=dotted, color="#999999"];

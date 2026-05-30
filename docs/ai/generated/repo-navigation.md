@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-05-27T03:07:32Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-05-30T04:10:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -41,7 +41,7 @@ Provider contracts, adapter implementations, storage catalog, WAL, and archival 
 WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 
 - Projects: `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`, `Meridian.Ui.Dashboard`
-- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
+- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/app.tsx`
 - Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/dashboard/package.json`, `src/Meridian.Ui/dashboard/src/main.tsx`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/plans/trading-workstation-migration-blueprint.md`
@@ -105,6 +105,26 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 
 | From | To | Why it matters |
 |---|---|---|
+| `Meridian` | `Meridian.Application` | Meridian references Meridian.Application directly via project reference. |
+| `Meridian` | `Meridian.Contracts` | Meridian references Meridian.Contracts directly via project reference. |
+| `Meridian` | `Meridian.Core` | Meridian references Meridian.Core directly via project reference. |
+| `Meridian` | `Meridian.Domain` | Meridian references Meridian.Domain directly via project reference. |
+| `Meridian` | `Meridian.Infrastructure` | Meridian references Meridian.Infrastructure directly via project reference. |
+| `Meridian` | `Meridian.ProviderSdk` | Meridian references Meridian.ProviderSdk directly via project reference. |
+| `Meridian` | `Meridian.QuantScript` | Meridian references Meridian.QuantScript directly via project reference. |
+| `Meridian` | `Meridian.Storage` | Meridian references Meridian.Storage directly via project reference. |
+| `Meridian` | `Meridian.Ui.Services` | Meridian references Meridian.Ui.Services directly via project reference. |
+| `Meridian` | `Meridian.Ui.Shared` | Meridian references Meridian.Ui.Shared directly via project reference. |
+| `Meridian.Application` | `Meridian.Contracts` | Meridian.Application references Meridian.Contracts directly via project reference. |
+| `Meridian.Application` | `Meridian.Core` | Meridian.Application references Meridian.Core directly via project reference. |
+| `Meridian.Application` | `Meridian.Domain` | Meridian.Application references Meridian.Domain directly via project reference. |
+| `Meridian.Application` | `Meridian.FSharp` | Meridian.Application references Meridian.FSharp directly via project reference. |
+| `Meridian.Application` | `Meridian.FSharp.DirectLending.Aggregates` | Meridian.Application references Meridian.FSharp.DirectLending.Aggregates directly via project reference. |
+| `Meridian.Application` | `Meridian.FSharp.Ledger` | Meridian.Application references Meridian.FSharp.Ledger directly via project reference. |
+| `Meridian.Application` | `Meridian.Infrastructure` | Meridian.Application references Meridian.Infrastructure directly via project reference. |
+| `Meridian.Application` | `Meridian.Ledger` | Meridian.Application references Meridian.Ledger directly via project reference. |
+| `Meridian.Application` | `Meridian.ProviderSdk` | Meridian.Application references Meridian.ProviderSdk directly via project reference. |
+| `Meridian.Application` | `Meridian.Storage` | Meridian.Application references Meridian.Storage directly via project reference. |
 
 ## What Changed Recently
 
@@ -112,19 +132,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Application/Accounts/IAccountManagementService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Accounts/IAccountQueryService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/AutoGapRemediationService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/BackfillCoordinatorExecutionGateway.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/BackfillCostEstimator.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/BackfillRequest.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/BackfillResult.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/BackfillStatusStore.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/BackfillStatusStoreJsonContext.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/GapBackfillService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/HistoricalBackfillService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backfill/SymbolValidationSignal.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backtesting/BacktestPreflightService.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
-| `src/Meridian.Application/Backtesting/BacktestStudioContracts.cs` | Host and Composition | `b8dd6a0` (2026-05-26T19:44:22-07:00) | 1 |
+| `src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs` | Desktop and UI Workflows | `165a39cf4` (2026-05-29T21:06:05-07:00) | 11 |
+| `src/Meridian.Application/Composition/ServiceCompositionRoot.cs` | Host and Composition | `165a39cf4` (2026-05-29T21:06:05-07:00) | 5 |
+| `src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj` | Desktop and UI Workflows | `165a39cf4` (2026-05-29T21:06:05-07:00) | 4 |
+| `src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 3 |
+| `src/Meridian/Meridian.csproj` | Host and Composition | `165a39cf4` (2026-05-29T21:06:05-07:00) | 3 |
+| `src/Meridian.Backtesting.Sdk/BacktestRequest.cs` | Backtesting and Research | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
+| `src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
+| `src/Meridian.Infrastructure.CppTrader/Host/ProcessBackedCppTraderSessionClient.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
+| `src/Meridian.Infrastructure.CppTrader/README.md` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
+| `src/Meridian.Ui.Shared/Endpoints/CppTraderEndpoints.cs` | Desktop and UI Workflows | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FamilyOffice.cs` | Desktop and UI Workflows | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
+| `src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs` | Backtesting and Research | `165a39cf4` (2026-05-29T21:06:05-07:00) | 1 |
+| `src/Meridian.Infrastructure.CppTrader/CppTraderServiceCollectionExtensions.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 1 |
 

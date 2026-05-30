@@ -1,49 +1,49 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-05-27T03:07:32Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-05-30T04:10:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
-| `src/Meridian.Application/Accounts/IAccountManagementService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Accounts/IAccountQueryService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/AutoGapRemediationService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/BackfillCoordinatorExecutionGateway.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/BackfillCostEstimator.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/BackfillRequest.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/BackfillResult.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/BackfillStatusStore.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/BackfillStatusStoreJsonContext.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/GapBackfillService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/HistoricalBackfillService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backfill/SymbolValidationSignal.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backtesting/BacktestPreflightService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Backtesting/BacktestStudioContracts.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Banking/BankingException.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Banking/IBankingService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Banking/InMemoryBankingService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Banking/PostgresBankingService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Canonicalization/EventCanonicalizer.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Canonicalization/VenueMicMapper.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/CertificatesOfDeposit/CertificateOfDepositProjectionService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/CertificatesOfDeposit/ICertificateOfDepositReferenceService.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/CatalogCommand.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/CliArguments.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/CommandDispatcher.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/ConfigCommands.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/ConfigPresetCommand.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/DiagnosticsCommands.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/DryRunCommand.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/EtlCommands.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/GenerateLoaderCommand.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/HelpCommand.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/ICliCommand.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/LedgerCliCommand.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
-| `src/Meridian.Application/Commands/PackageCommands.cs` | Host and Composition | 2026-05-26T19:44:22-07:00 | `b8dd6a0` | Merge pull request #1568 from rodoHasArrived/copilot/update-mainpageviewmodel-active-scope | 1 |
+| `src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs` | Desktop and UI Workflows | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 11 |
+| `src/Meridian.Application/Composition/ServiceCompositionRoot.cs` | Host and Composition | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 5 |
+| `src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj` | Desktop and UI Workflows | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 4 |
+| `src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 3 |
+| `src/Meridian/Meridian.csproj` | Host and Composition | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 3 |
+| `src/Meridian.Backtesting.Sdk/BacktestRequest.cs` | Backtesting and Research | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 2 |
+| `src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 2 |
+| `src/Meridian.Infrastructure.CppTrader/Host/ProcessBackedCppTraderSessionClient.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 2 |
+| `src/Meridian.Infrastructure.CppTrader/README.md` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 2 |
+| `src/Meridian.Ui.Shared/Endpoints/CppTraderEndpoints.cs` | Desktop and UI Workflows | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 2 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FamilyOffice.cs` | Desktop and UI Workflows | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 2 |
+| `src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs` | Backtesting and Research | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/CppTraderServiceCollectionExtensions.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderSessionDiagnosticsService.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderStatusService.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/GlobalUsings.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Host/ICppTraderHostManager.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Meridian.Infrastructure.CppTrader.csproj` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Protocol/LengthPrefixedProtocolStream.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Providers/CppTraderItchIngestionService.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Providers/ICppTraderItchIngestionService.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Replay/ICppTraderReplayService.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Translation/CppTraderExecutionTranslator.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Translation/CppTraderSnapshotTranslator.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderSnapshotTranslator.cs` | Unmapped | 2026-05-29T21:06:05-07:00 | `165a39cf4` | Archive CppTrader, refactor endpoints, add checks | 1 |
+| `src/Meridian.Application/Reconciliation/StatementReconciliationService.cs` | Host and Composition | 2026-05-29T12:45:06-07:00 | `3af40c29a` | Reject duplicate statement CSV headers | 11 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-05-29T12:44:26-07:00 | `49378a306` | Secure ledger mapping assignment endpoint | 45 |
+| `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | 2026-05-29T12:44:26-07:00 | `49378a306` | Secure ledger mapping assignment endpoint | 18 |
 

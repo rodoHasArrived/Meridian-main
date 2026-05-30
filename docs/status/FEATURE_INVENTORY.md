@@ -652,8 +652,8 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 | Brokerage DI registration | ✅ | `BrokerageServiceRegistration`; `BrokerageConfiguration` options |
 | Execution SDK | ✅ | `Meridian.Execution.Sdk`; `IExecutionGateway`, `IOrderManager`, `IPositionTracker` |
 | Paper trading portfolio | ✅ | `PaperTradingPortfolio`; simulated position and cash tracking |
-| CppTrader order gateway | ✅ | `CppTraderOrderGateway`; native C++ matching engine integration |
-| CppTrader live feed adapter | ✅ | `CppTraderLiveFeedAdapter`; real-time data from CppTrader host |
+| CppTrader order gateway | Archived | Optional native C++ matching-engine integration moved to `archive/code/src/Meridian.Infrastructure.CppTrader` |
+| CppTrader live feed adapter | Archived | Optional CppTrader live-feed cache moved to `archive/code/src/Meridian.Infrastructure.CppTrader` |
 
 ### Remaining execution work
 

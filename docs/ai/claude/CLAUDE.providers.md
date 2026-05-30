@@ -56,7 +56,6 @@ The repository currently includes **32 concrete provider implementations** plus 
 | Polygon | `PolygonMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs` |
 | StockSharp | `StockSharpMarketDataClient` | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs` |
 | Synthetic | `SyntheticMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
-| CppTrader | `CppTraderMarketDataClient` | `src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs` |
 | Streaming failover | `FailoverAwareMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs` |
 
 ### Historical Providers

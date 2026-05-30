@@ -214,7 +214,7 @@ Shows all 28 source projects as a layered dependency graph, derived directly fro
 - **Layer 0 (Foundation)**: Contracts · F# Domain family (FSharp, FSharp.Ledger, FSharp.Trading, FSharp.DirectLending.Aggregates)
 - **Layer 1 (SDK & Core Interfaces)**: ProviderSdk · Execution.Sdk · IbApi.SmokeStub
 - **Layer 2 (Core Domain)**: Domain · Core · Ledger (double-entry journal)
-- **Layer 3 (Infrastructure & Storage)**: Infrastructure · Storage · Infrastructure.CppTrader
+- **Layer 3 (Infrastructure & Storage)**: Infrastructure · Storage
 - **Layer 4 (Application & Backtesting SDK)**: Application · Backtesting.Sdk
 - **Layer 5 (Execution, Backtesting, Risk, Strategies)**: Execution · Backtesting · Risk · Strategies · QuantScript
 - **Layer 6 (UI & Presentation)**: Ui.Shared · Ui.Services · Wpf (desktop) · Mcp

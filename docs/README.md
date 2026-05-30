@@ -12,7 +12,7 @@ Current local project path: `C:\Dev\Meridian-main`.
 Meridian's current solution includes:
 
 - a console and host application in `src/Meridian/`
-- application, contracts, core, domain, infrastructure, and storage layers in `src/Meridian.Application/`, `src/Meridian.Contracts/`, `src/Meridian.Core/`, `src/Meridian.Domain/`, `src/Meridian.Infrastructure/`, `src/Meridian.Infrastructure.CppTrader/`, and `src/Meridian.Storage/`
+- application, contracts, core, domain, infrastructure, and storage layers in `src/Meridian.Application/`, `src/Meridian.Contracts/`, `src/Meridian.Core/`, `src/Meridian.Domain/`, `src/Meridian.Infrastructure/`, and `src/Meridian.Storage/`
 - execution, provider, risk, strategy, and backtesting seams in `src/Meridian.Execution*/`, `src/Meridian.ProviderSdk/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, and `src/Meridian.Backtesting*/`
 - ledger, direct-lending, and F# support projects in `src/Meridian.Ledger/`, `src/Meridian.FSharp*/`, and `src/Meridian.IbApi.SmokeStub/`
 - operator UI surfaces in `src/Meridian.Ui/dashboard/`, `src/Meridian.Ui/wwwroot/workstation/`, `src/Meridian.Ui.Shared/`, and `src/Meridian.Ui.Services/` with retained desktop compatibility in `src/Meridian.Wpf/`
