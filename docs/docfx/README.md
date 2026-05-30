@@ -52,7 +52,7 @@ Metadata scratch files such as `docfx-log.json`, `temp-metadata-only.json`,
 `docs/docfx/api/.manifest`, and `docs/docfx/api/*.yml` are local generated
 output and should not be committed. If API metadata contains absolute paths from
 an older checkout, delete the generated metadata and regenerate it from
-`C:\Dev\Meridian-main` before publishing documentation.
+`D:\Meridian-main` before publishing documentation.
 
 ### Projects included in API reference
 

@@ -120,7 +120,16 @@ public sealed record DirectLendingTermsDto(
     decimal? EffectiveRateFloor = null,
     decimal? EffectiveRateCap = null,
     decimal? PrepaymentPenaltyRate = null,
-    decimal? PurchasePrice = null);
+    decimal? PurchasePrice = null,
+    DirectLendingSecurityMasterReferenceDto? SecurityMasterReference = null);
+
+public sealed record DirectLendingSecurityMasterReferenceDto(
+    Guid SecurityId,
+    string Symbol,
+    string Provenance,
+    string ApprovalReference,
+    string LedgerMappingReference,
+    string Status = "Active");
 
 public sealed record LoanTermsVersionDto(
     int VersionNumber,

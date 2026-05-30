@@ -1,60 +1,55 @@
-# Audits Directory
+# Audit Source-Material Index
 
-**Owner:** Core Team
-**Scope:** Governance — Code Quality
-**Review Cadence:** As hygiene audits are completed
-**Last Reviewed:** 2026-04-05
+**Status:** migration-source
+**Owner:** core-team
+**Reviewed:** 2026-05-30
 
-This directory contains active audit reports and machine-readable outputs for Meridian code-quality, simplification, and architecture-hygiene review work.
+This folder is retained as source material for historical code-quality, simplification, and architecture-hygiene reviews. It is no longer the canonical governance front door in the documentation rebuild.
 
-## Governance Position
+Use current guidance first:
 
-Audits belong to the governance zone alongside `evaluations/`.
+- [Documentation Front Door](../README.md)
+- [Engineering Documentation](../engineering/README.md)
+- [Documentation Ownership Contract](../documentation-ownership.md)
+- [Documentation Inventory](../documentation-inventory.md)
+- [Assessment Archive](../../archive/docs/assessments/README.md)
 
-- `audits/` focuses on targeted code-quality audits, cleanup analyses, and hygiene assessments.
-- `evaluations/` focuses on technology tradeoffs, architecture evaluations, and proposal-style reviews.
+## Current Role In The Rebuild
 
-For a consolidated cross-folder summary, see [../status/EVALUATIONS_AND_AUDITS.md](../status/EVALUATIONS_AND_AUDITS.md).
+- Keep active only when a file is explicitly linked as current evidence by the rebuilt docs model.
+- Treat older point-in-time reviews as historical source material.
+- Move or redirect superseded audit snapshots into `archive/docs/assessments/` in small batches.
+- Do not use this folder as a new destination for documentation governance work; route new docs through `docs/engineering/`, `docs/product/`, `docs/operators/`, `docs/reference/`, or `docs/ai/`.
 
-## Current Audit Surfaces
+## Active Or Source-Material Files
 
-| Document | Purpose |
-|----------|---------|
-| [AUDIT_REPORT.md](AUDIT_REPORT.md) | Consolidated human-readable audit report |
-| [BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md](BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md) | Backtest-engine-focused review findings |
-| [FURTHER_SIMPLIFICATION_OPPORTUNITIES.md](FURTHER_SIMPLIFICATION_OPPORTUNITIES.md) | Simplification backlog and code-reduction opportunities |
-| [audit-results-full.json](audit-results-full.json) | Full machine-readable audit output |
-| [audit-code-results.json](audit-code-results.json) | Code-focused machine-readable audit output |
-| [audit-architecture-results.txt](audit-architecture-results.txt) | Architecture audit text output |
-| [prompt-generation-results.json](prompt-generation-results.json) | Prompt-generation artifact retained for traceability |
+| Document | Migration status | Notes |
+| --- | --- | --- |
+| [AUDIT_REPORT.md](AUDIT_REPORT.md) | redirect | Redirects to the retained archived copy. |
+| [BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md](BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md) | redirect | Redirects to the retained archived copy; durable backtesting rules are summarized in engineering docs. |
+| [FURTHER_SIMPLIFICATION_OPPORTUNITIES.md](FURTHER_SIMPLIFICATION_OPPORTUNITIES.md) | redirect | Redirects to the retained archived copy; current cleanup handling is summarized in engineering docs. |
+| [workspace-visual-audit-checklist-2026-04-22.md](workspace-visual-audit-checklist-2026-04-22.md) | redirect | Redirects to the retained archived copy; current visual consistency rules are summarized in engineering docs. |
+| [CODE_REVIEW_2026-03-16.md](CODE_REVIEW_2026-03-16.md) | redirect | Redirects to the retained archived copy. |
+
+## Machine-Readable Outputs
+
+Historical machine-readable audit outputs have moved to [archive/docs/assessments/](../../archive/docs/assessments/README.md):
+
+- `archive/docs/assessments/audit-architecture-results.txt`
+- `archive/docs/assessments/audit-code-results.json`
+- `archive/docs/assessments/audit-results-full.json`
+- `archive/docs/assessments/prompt-generation-results.json`
+
+Do not treat these point-in-time outputs as current findings without rerunning the owning audit command against the current checkout.
 
 ## Archived Audit Snapshots
 
-Historical point-in-time audit documents live in `archive/docs/assessments/`.
+Historical point-in-time audit documents live in [archive/docs/assessments/](../../archive/docs/assessments/README.md).
 
-| Document | Reason Archived |
-|----------|-----------------|
-| [AUDIT_REPORT_2026_03_20.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/AUDIT_REPORT_2026_03_20.md) | Dated snapshot retained after `AUDIT_REPORT.md` became the active audit surface |
-| [CODE_REVIEW_2026-03-16.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/CODE_REVIEW_2026-03-16.md) | Repo-wide March 2026 code review superseded by focused audit follow-ups and newer governance summaries |
-| [CLEANUP_SUMMARY.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/CLEANUP_SUMMARY.md) | Hygiene phases complete |
-| [H3_DEBUG_CODE_ANALYSIS.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md) | Historical debug analysis retained for reference |
-| [CLEANUP_OPPORTUNITIES.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/CLEANUP_OPPORTUNITIES.md) | Superseded by later cleanup and simplification planning |
-| [UWP_COMPREHENSIVE_AUDIT.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md) | Historical UWP audit preserved after the platform removal |
+## Migration Rules
 
-## Audit Standards
-
-When creating or updating audits:
-
-1. Put the executive summary first.
-2. Ground each finding in specific files, commands, or test evidence.
-3. Separate intentional code from problematic code.
-4. Include validation steps so another maintainer can reproduce the result.
-
-## Related Documentation
-
-- [../status/EVALUATIONS_AND_AUDITS.md](../status/EVALUATIONS_AND_AUDITS.md)
-- [../evaluations/README.md](../evaluations/README.md)
-- [../status/IMPROVEMENTS.md](../status/IMPROVEMENTS.md)
-- [../status/ROADMAP.md](../status/ROADMAP.md)
-- [../development/README.md](../development/README.md)
-- [../architecture/README.md](../architecture/README.md)
+1. Confirm whether a file is still referenced by rebuilt canonical docs.
+2. Extract current findings into [Engineering](../engineering/README.md), [Product](../product/README.md), [Operators](../operators/README.md), or [Reference](../reference/README.md).
+3. Replace high-traffic active paths with redirect stubs when the historical copy moves to archive.
+4. Update [Documentation Inventory](../documentation-inventory.md) and archive indexes in the same batch.
+5. Run targeted docs validation after each batch.

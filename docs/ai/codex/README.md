@@ -4,6 +4,13 @@ This page is the Codex-specific AI workflow index for Meridian. Shared, provider
 still lives in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md); this page
 tracks repo-local Codex skill behavior, validation, and documentation ownership.
 
+For documentation work, start from the rebuilt canonical docs model:
+[`../../README.md`](../../README.md), [`../../start/README.md`](../../start/README.md),
+[`../../product/README.md`](../../product/README.md),
+[`../../engineering/README.md`](../../engineering/README.md),
+[`../../operators/README.md`](../../operators/README.md), and
+[`../../documentation-ownership.md`](../../documentation-ownership.md).
+
 ## Active Codex Surfaces
 
 | Surface | Purpose |
@@ -137,6 +144,9 @@ Local helper surfaces:
 ## Maintenance Rules
 
 - Keep Codex-only guidance in `.codex/skills/` and this `docs/ai/codex/` index.
+- Route documentation rebuild and migration work through `docs/README.md`,
+  `docs/documentation-ownership.md`, and `docs/documentation-inventory.md` before editing older
+  folders such as `docs/plans/`, `docs/status/`, `docs/development/`, or `docs/operations/`.
 - Keep root `AGENTS.md` compact. It should route to canonical docs, not duplicate command catalogs,
   repo maps, or long validation tables.
 - Before editing `src/**`, read the nearest registered source README and identify the module in

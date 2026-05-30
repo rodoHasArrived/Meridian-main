@@ -115,7 +115,8 @@ When editing `src/**`, assistants must:
 
 | Topic | Source of truth | Mirrors or consumers |
 | --- | --- | --- |
-| Project framing, commands, and architecture | `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
+| Documentation front door and ownership | `docs/README.md`, `docs/documentation-ownership.md`, `docs/documentation-inventory.md` | Root `README.md`, `AGENTS.md`, `CLAUDE.md`, assistant indexes |
+| Project framing, commands, and architecture | `docs/start/README.md`, `docs/product/README.md`, `docs/engineering/README.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
 | Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/generated/recent-changes.md`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
 | Codex task startup and proof routing | `docs/ai/codex/quickstart.md`, `docs/ai/codex/route-cards.md` | Root `AGENTS.md`, `.codex/skills/README.md`, Codex specialist skills |
 | Roadmap and source documentation truth | `docs/roadmap/data/*.yml`, `docs/source/data/*.yml`, registered `src/**/README.md` | Generated roadmap/source docs, source README blocks, AI source sync rules |
@@ -157,6 +158,9 @@ Use this checklist when changing any AI-related asset:
       proposed by one assistant while another follows the browser-workstation plan.
 - [ ] Keep host-specific guides compact; route broad repository layout questions to generated
       navigation or structure artifacts instead of copying tree snapshots into assistant docs.
+- [ ] Keep documentation routing aligned with the rebuilt audience paths: `docs/start/`,
+      `docs/product/`, `docs/engineering/`, `docs/operators/`, `docs/ai/`, `docs/roadmap/`,
+      `docs/source/`, `docs/reference/`, and `docs/generated/`.
 - [ ] Keep root `AGENTS.md` as a compact compatibility shim. Put command catalogs, route cards, and
       proof matrices in maintained docs such as `docs/HELP.md`, `docs/developer/build-test-run.md`,
       and `docs/ai/codex/quickstart.md`.

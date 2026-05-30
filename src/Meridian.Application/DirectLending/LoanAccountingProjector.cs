@@ -62,6 +62,8 @@ public sealed class LoanAccountingProjector
         var currency = contract.CurrentTerms.BaseCurrency.ToString();
         var lines = new List<LedgerEntry>();
         var description = eventType;
+        var securityReference = contract.CurrentTerms.SecurityMasterReference;
+        var instrumentSymbol = NormalizeSymbol(securityReference?.Symbol);
 
         void Add(string account, LedgerAccountType accountType, decimal debit, decimal credit)
         {
@@ -74,7 +76,11 @@ public sealed class LoanAccountingProjector
                 Guid.NewGuid(),
                 journalEntryId,
                 timestamp,
-                new LedgerAccount(account, accountType, Symbol: null, FinancialAccountId: loanId.ToString("D")),
+                new LedgerAccount(
+                    account,
+                    accountType,
+                    Symbol: IsDirectLendingInstrumentAccount(account) ? instrumentSymbol : null,
+                    FinancialAccountId: loanId.ToString("D")),
                 debit,
                 credit,
                 description));
@@ -162,6 +168,8 @@ public sealed class LoanAccountingProjector
             return [];
         }
 
+        var securityLineage = BuildSecurityMasterPostingLineage(securityReference, eventType);
+
         var entry = new JournalEntry(
             journalEntryId,
             timestamp,
@@ -169,6 +177,8 @@ public sealed class LoanAccountingProjector
             lines,
             new JournalEntryMetadata(
                 ActivityType: eventType,
+                Symbol: instrumentSymbol,
+                SecurityId: securityReference!.SecurityId,
                 FinancialAccountId: loanId.ToString("D"),
                 Institution: "DirectLending",
                 Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -176,7 +186,9 @@ public sealed class LoanAccountingProjector
                     ["loanId"] = loanId.ToString("D"),
                     ["currency"] = currency,
                     ["sourceEventId"] = sourceEventId.ToString("D"),
-                    ["sourceEventType"] = eventType
+                    ["sourceEventType"] = eventType,
+                    ["securityMasterProvenance"] = securityLineage.Provenance,
+                    ["securityMasterLineage"] = securityLineage.Lineage
                 }));
 
         return
@@ -233,6 +245,72 @@ public sealed class LoanAccountingProjector
         return postingKind == LedgerPostingKindDto.Adjustment &&
                string.Equals(status, "SoftClosed", StringComparison.OrdinalIgnoreCase);
     }
+
+    private static (string Provenance, string Lineage) BuildSecurityMasterPostingLineage(
+        DirectLendingSecurityMasterReferenceDto? reference,
+        string eventType)
+    {
+        if (reference is null)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Direct-lending ledger event '{eventType}' requires a Security Master reference before posting."));
+        }
+
+        if (reference.SecurityId == Guid.Empty)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Direct-lending ledger event '{eventType}' requires a resolved Security Master security id before posting."));
+        }
+
+        var symbol = NormalizeSymbol(reference.Symbol);
+        if (symbol is null)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Direct-lending ledger event '{eventType}' requires a Security Master symbol before posting."));
+        }
+
+        if (!string.Equals(reference.Status, "Active", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Direct-lending ledger event '{eventType}' requires an active Security Master reference before posting."));
+        }
+
+        if (string.IsNullOrWhiteSpace(reference.Provenance) ||
+            string.IsNullOrWhiteSpace(reference.ApprovalReference) ||
+            string.IsNullOrWhiteSpace(reference.LedgerMappingReference))
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Direct-lending ledger event '{eventType}' requires Security Master provenance, approval, and ledger mapping evidence before posting."));
+        }
+
+        var securityId = reference.SecurityId.ToString("N");
+        var provenance = $"security-master:{securityId};{reference.Provenance.Trim()};approved:true";
+        var lineage = string.Join(
+            ':',
+            symbol,
+            securityId,
+            reference.LedgerMappingReference.Trim(),
+            reference.ApprovalReference.Trim(),
+            "security-status:active",
+            provenance);
+        return (provenance, lineage);
+    }
+
+    private static bool IsDirectLendingInstrumentAccount(string account) =>
+        !string.Equals(account, "Cash", StringComparison.OrdinalIgnoreCase);
+
+    private static string? NormalizeSymbol(string? symbol) =>
+        string.IsNullOrWhiteSpace(symbol) ? null : symbol.Trim().ToUpperInvariant();
 
     private static decimal GetDecimal(JsonElement root, params string[] propertyNames)
     {

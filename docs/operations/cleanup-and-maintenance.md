@@ -38,7 +38,7 @@ These are local/generated outputs and can be regenerated:
 - `docs/docfx/temp-metadata-only.json`
 
 Before deleting recursively on Windows, resolve the absolute path and confirm it
-is inside `C:\Dev\Meridian-main`.
+is inside `D:\Meridian-main`.
 
 ## Needs Review Before Delete
 
@@ -55,7 +55,7 @@ is inside `C:\Dev\Meridian-main`.
 
 ## Path Hygiene
 
-Active project guidance should point to `C:\Dev\Meridian-main`. Do not update
+Active project guidance should point to `D:\Meridian-main`. Do not update
 historical notes just because they mention old paths, but fix active setup,
 build, publish, and run guidance when it still references OneDrive, Desktop,
 Documents, Downloads, or user-specific temporary publish locations.
@@ -65,10 +65,10 @@ from the current checkout before publishing documentation.
 
 ## Avoiding New Duplicates
 
-- Add short command paths to `docs/developer/`; keep long explanations in
-  `docs/development/`.
-- Add active architecture maps to `docs/architecture/`; archive superseded
-  design notes under `archive/docs/`.
+- Add short first-run command paths to `docs/start/` and developer/agent
+  workflow guidance to `docs/engineering/`.
+- Keep active architecture maps discoverable from `docs/engineering/`; archive
+  superseded design notes under `archive/docs/`.
 - Add prompt inventories to `docs/prompts/`; do not create a new prompt folder
   until the existing `.github/prompts/`, `.agents/`, `.codex/`, and `docs/ai/`
   surfaces have been checked.

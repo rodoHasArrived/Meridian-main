@@ -5,6 +5,9 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 
 ## Read First
 
+- `docs/README.md` for the canonical documentation front door.
+- `docs/start/README.md`, `docs/product/README.md`, `docs/engineering/README.md`, and `docs/operators/README.md` for rebuilt audience paths.
+- `docs/documentation-ownership.md` for documentation ownership, generated-doc, and archive rules.
 - `CLAUDE.md` for the full repository guide.
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
 - `docs/ai/codex/quickstart.md` for the fastest Codex task startup path.
@@ -33,6 +36,7 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 4. Prefer shared service/read-model seams before UI-specific forks.
 5. Use the narrowest validation command that covers the files changed.
 6. Update docs and AI indexes in the same change when behavior, workflow, prompt, skill, or agent guidance changes.
+7. For documentation rebuild work, update the new canonical audience path first, then archive or redirect older hand-authored material in reviewable batches.
 
 ## Command Discovery
 

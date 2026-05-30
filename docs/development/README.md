@@ -41,7 +41,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 | Document | Use it when you need to... |
 | --- | --- |
-| [Developer Setup](../developer/setup.md) | bootstrap the local checkout at `C:\Dev\Meridian-main` |
+| [Developer Setup](../developer/setup.md) | bootstrap the local checkout at `D:\Meridian-main` |
 | [Build, Test, Run](../developer/build-test-run.md) | choose a narrow build, test, or local run command |
 | [Tooling Architecture](tooling-architecture.md) | understand tooling layers, ownership, and local-to-CI command mapping |
 | [Publish Standalone EXE](../developer/publish-standalone-exe.md) | produce local standalone publish output |

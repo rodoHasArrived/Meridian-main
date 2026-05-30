@@ -21,6 +21,10 @@ The value proposition is simple: fewer disconnected tools, fewer manual handoffs
 ## Start Here
 
 - [Documentation Index](docs/README.md)
+- [Start Here](docs/start/README.md)
+- [Product Direction](docs/product/README.md)
+- [Engineering Guide](docs/engineering/README.md)
+- [Operator Guide](docs/operators/README.md)
 - [Project Structure](docs/architecture/project-structure.md)
 - [Module Map](docs/architecture/module-map.md)
 - [Developer Setup](docs/developer/setup.md)
@@ -36,6 +40,7 @@ The value proposition is simple: fewer disconnected tools, fewer manual handoffs
 - [Web UI Development Pivot](docs/plans/web-ui-development-pivot.md)
 - [Roadmap Registry](docs/roadmap/README.md)
 - [Source Documentation Mesh](docs/source/README.md)
+- [Documentation Ownership Contract](docs/documentation-ownership.md)
 
 ## Current Product Direction
 

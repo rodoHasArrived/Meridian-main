@@ -31,7 +31,10 @@ and UI presentation concerns in their owning layers.
   Accounting operator inbox with `FundReconciliation` navigation instead of becoming log-only
   failures. Ledger-impacting commands project balanced `LedgerJournalEntryWrite` records before
   persistence and pass them to the direct-lending state store with the same generated loan event id
-  as ledger source lineage.
+  as ledger source lineage. Loan terms that produce ledger postings must carry a
+  `DirectLendingSecurityMasterReferenceDto`; the projector stamps the resolved Security Master id,
+  symbol, approval, provenance, active status, and ledger-mapping reference on central ledger writes
+  before the posting guard accepts direct-lending instrument lines.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
   and approval close lanes. Approval and close commands enforce shared close-checklist control

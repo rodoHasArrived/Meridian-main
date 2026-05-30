@@ -37,6 +37,12 @@ repeating the same facts in every `SKILL.md`.
 Use these together before changing AI guidance, routing, or workflow-oriented skills:
 
 - `README.md`
+- `docs/README.md`
+- `docs/start/README.md`
+- `docs/product/README.md`
+- `docs/engineering/README.md`
+- `docs/operators/README.md`
+- `docs/documentation-ownership.md`
 - `docs/architecture/project-structure.md`
 - `docs/architecture/module-map.md`
 - `docs/architecture/mvvm-guidelines.md`
@@ -54,6 +60,12 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 
 ## Source Documentation Mesh
 
+- Active documentation is being rebuilt around `docs/start/`, `docs/product/`,
+  `docs/engineering/`, `docs/operators/`, `docs/ai/`, `docs/roadmap/`, `docs/source/`,
+  `docs/reference/`, and `docs/generated/`. Treat older hand-authored folders such as
+  `docs/plans/`, `docs/status/`, `docs/developer/`, `docs/development/`,
+  `docs/operations/`, `docs/evaluations/`, and `docs/audits/` as canonical only when linked from
+  the rebuilt indexes or registry-owned workflows.
 - Roadmap truth lives in `docs/roadmap/data/*.yml`; generated roadmap views live in
   `docs/roadmap/generated/`.
 - Source/module truth lives in `docs/source/data/*.yml`; registered modules have local

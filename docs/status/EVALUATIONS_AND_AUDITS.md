@@ -1,7 +1,7 @@
 # Meridian - Consolidated Evaluations & Audits
 
-**Version:** 1.7.2
-**Last Updated:** 2026-05-01
+**Version:** 1.8.0
+**Last Updated:** 2026-05-29
 **Status:** Consolidated reference document (supporting reference, not the live execution backlog)
 
 This document consolidates all architecture evaluations, code audits, desktop assessments, improvement brainstorms, and architecture proposals into a single navigable reference. It replaces the need to read 20+ individual files across `docs/evaluations/`, `docs/audits/`, and `docs/development/` for a complete project health picture.
@@ -9,6 +9,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 **Canonical tracking documents (not merged here):**
 
 - [`ROADMAP.md`](ROADMAP.md) — wave-structured delivery roadmap and core operator-readiness gates
+- [`PROGRAM_STATE.md`](PROGRAM_STATE.md) — canonical wave ownership and status table for all status claims
 - [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md) — normalized active implementation backlog aligned to the roadmap
 - [`IMPROVEMENTS.md`](IMPROVEMENTS.md) — item-level improvement tracking with legacy milestone tags retained for traceability
 - [`production-status.md`](production-status.md) — current development / pilot-ready posture and readiness caveats
@@ -76,6 +77,12 @@ Use this document as supporting context. For active prioritization, default to t
 
 ## Refresh Highlights
 
+**This 2026-05-29 refresh updates the architecture posture against the current wave-closed baseline.**
+
+- Architecture is stable where core boundaries are already enforced: host/application/domain/storage/providers/execution and shared UI service/read-model seams are the operating backbone, while browser and WPF remain contract-first UI surfaces.
+- Boundary discipline and acceptance gating are now the primary architectural focus: keep `W2`/`W3`/`W4` operational continuity intact through shared contracts, shared endpoints, and accepted acceptance lanes.
+- Shared governance and workflow evidence are now the gating layer for W4 maintenance; future proof work should deepen exception handling, calibration, and live-readiness rather than re-architect foundational layers.
+
 **This 2026-05-01 refresh aligns the consolidated document with Wave 1 closure, the shared-contract-first operator UI pivot, and the April 2026 workspace visual audit:**
 
 - Wave 1 trust gate is **closed** as of 2026-04-17 with a signed DK1 parity packet and valid operator sign-off. The Project Health Summary and production-status posture are updated accordingly.
@@ -91,6 +98,22 @@ Use this document as supporting context. For active prioritization, default to t
 - Interactive Brokers and StockSharp references now distinguish between real runtime enablement, compile-only smoke verification, and connector/package-driven setup paths instead of treating them as simple build-flag toggles.
 - Cross-cutting findings now distinguish between **completed foundations** and **still-open follow-through work**, instead of pointing at superseded statuses.
 - Repository cleanup notes now call out that generated documentation has been refreshed since the original cleanup audit, leaving HtmlTemplateGenerator asset extraction as the main residual cleanup idea.
+
+### Architecture Evaluation (2026-05-29)
+
+**Verdict:** The architecture is stable and coherent for operator-readiness execution; risk is now concentrated in workflow completeness rather than structural decomposition.
+
+**What is strong**
+
+- End-to-end boundary structure is aligned in docs and implementation: `Meridian` host + service/application composition, domain/core/storage/provider/execution layers, and shared UI-service/read-model seams for both UI surfaces.
+- Shared contract strategy is actively working (`IMarketDataClient`, shared workstation endpoints, shared DTO/read-model paths), reducing the risk of parallel implementations between browser and WPF.
+- Observability and governance seams are no longer experimental: SLOs, alert/runbook linkage, audit timeline support, reconciliation/break queues, and governed close/report workflows have executable evidence.
+
+**Where to focus architectural work next**
+
+- Keep the current boundary model, and harden high-traffic exception/recovery lanes (reconciliation close work-items, evidence provenance edge cases, and governance calibration flows).
+- Continue WPF modernization as a workflow-execution problem (thin views + view-model/service extraction where missing), not a foundational architecture rewrite.
+- Treat live-readiness (`W6`) and strategy/backtest unification (`W5`) as next architecture-coupled growth layers only after W2–W4 acceptance evidence remains green.
 
 ---
 
@@ -881,4 +904,4 @@ All source documents that feed into this consolidation:
 
 ---
 
-_Last Updated: 2026-05-01_
+_Last Updated: 2026-05-29_

@@ -1,7 +1,7 @@
 # Disk Space Hygiene
 
 Use this guide when local builds, restores, or UI workflows fail because the
-machine is low on space. Work from `C:\Dev\Meridian-main`.
+machine is low on space. Work from `D:\Meridian-main`.
 
 ## First Check
 
@@ -16,7 +16,7 @@ work. In a dirty worktree, identify generated output before removing anything.
 ## Safe Generated Output
 
 These directories are generated and can usually be removed after confirming
-they are inside `C:\Dev\Meridian-main`:
+they are inside `D:\Meridian-main`:
 
 - `bin/`
 - `obj/`
@@ -45,5 +45,5 @@ inside the repo.
 ## Higher-Risk Cleanup
 
 Stop running `dotnet`, `node`, and Meridian processes before removing build or
-publish output they may lock. Treat anything outside `C:\Dev\Meridian-main` as
+publish output they may lock. Treat anything outside `D:\Meridian-main` as
 machine cleanup, not repo cleanup, and document the tradeoff before touching it.

@@ -303,6 +303,13 @@ public static class ConfigEndpoints
 
 ### Documentation Structure
 
+The current documentation target model is owned by
+[Documentation Ownership Contract](../documentation-ownership.md). Use
+`docs/start/`, `docs/product/`, `docs/engineering/`, `docs/operators/`,
+`docs/reference/`, `docs/ai/`, `docs/roadmap/`, `docs/source/`, and
+`docs/generated/` for new active docs. The older folder map below is retained
+as source material for migrating existing docs, not as the target taxonomy.
+
 ```
 docs/
 ├── adr/                    # Architecture Decision Records
@@ -379,12 +386,12 @@ docs/
 | Scenario | Action | Location |
 |----------|--------|----------|
 | **Architecture decision** | Create ADR | `docs/adr/NNN-title.md` |
-| **New provider** | Document setup | `docs/providers/{provider}-setup.md` |
-| **New feature** | Update roadmap, add user guide | `docs/status/ROADMAP.md`, `docs/getting-started/` |
-| **API changes** | Update reference | `docs/reference/api-reference.md` |
+| **New provider** | Document setup and capability lookup | `docs/operators/` and `docs/reference/` |
+| **New feature** | Update registry/status and canonical lane | `docs/roadmap/data/*.yml`, generated roadmap views, and `docs/product/` or `docs/engineering/` as needed |
+| **API changes** | Update reference | `docs/reference/` |
 | **Bug fix** | Update changelog | `docs/status/CHANGELOG.md` |
-| **Development pattern** | Add to dev guide | `docs/development/{topic}.md` |
-| **Operational procedure** | Add to operations | `docs/operations/{procedure}.md` |
+| **Development pattern** | Add to engineering lane | `docs/engineering/` |
+| **Operational procedure** | Add to operator lane | `docs/operators/` |
 
 ---
 

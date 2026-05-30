@@ -26,8 +26,9 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 
 ## Current Product Direction
 
-- Start planning work from `docs/plans/current-direction-and-status.md`, then use
-  `docs/plans/README.md` for detailed plan-file roles.
+- Start documentation and planning orientation from `docs/README.md`, `docs/product/README.md`,
+  and `docs/engineering/README.md`. Use `docs/plans/current-direction-and-status.md` only when
+  current plan-file interpretation is specifically needed.
 - Active operator UI work spans `src/Meridian.Ui/dashboard/` and `src/Meridian.Wpf/`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and
@@ -145,6 +146,10 @@ make ai-maintenance-full
 
 Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained sources instead:
 
+- `docs/README.md` for the canonical documentation front door.
+- `docs/start/README.md`, `docs/product/README.md`, `docs/engineering/README.md`, and
+  `docs/operators/README.md` for the rebuilt audience paths.
+- `docs/documentation-ownership.md` for docs ownership, generated-doc, and archive rules.
 - `docs/architecture/project-structure.md` for the maintained repository map.
 - `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
 - `docs/developer/build-test-run.md` for current local build, test, and run commands.

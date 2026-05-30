@@ -34,7 +34,7 @@ This index links the orphaned Markdown files reported in `/docs/status/doc-healt
 - [docs/ai/claude/CLAUDE.structure.md](../ai/claude/CLAUDE.structure.md)
 - [docs/ai/copilot/ai-sync-workflow.md](../ai/copilot/ai-sync-workflow.md)
 - [docs/architecture/workstation-continuity-payload-profile.md](../architecture/workstation-continuity-payload-profile.md)
-- [docs/audits/CODE_REVIEW_2026-03-16.md](../audits/CODE_REVIEW_2026-03-16.md)
+- [archive/docs/assessments/CODE_REVIEW_2026-03-16.md](../../archive/docs/assessments/CODE_REVIEW_2026-03-16.md)
 - [docs/audits/workspace-visual-audit-checklist-2026-04-22.md](../audits/workspace-visual-audit-checklist-2026-04-22.md)
 - [docs/development/fund-account-traversal.md](../development/fund-account-traversal.md)
 - [docs/development/policies/promotion-policy-matrix.md](../development/policies/promotion-policy-matrix.md)

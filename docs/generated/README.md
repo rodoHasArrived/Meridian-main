@@ -1,38 +1,35 @@
 # Generated Documentation
 
-This folder contains documentation that is **auto-generated** from code annotations, build scripts, and repository structure. Do not edit these files manually; they will be overwritten on the next generation run.
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-05-30
 
-## Files
+This folder contains documentation generated from code, registries, repository structure, or documentation automation. Do not edit generated outputs by hand unless the file explicitly marks an editable block.
 
-| File | Source | Description |
-|------|--------|-------------|
-| `project-context.md` | Code annotations | Key interfaces, services, and project structure |
-| `repository-structure.md` | Directory scan | Full repository file tree |
-| `provider-registry.md` | Provider attributes | Registered data providers and capabilities |
-| `adr-index.md` | `docs/adr/` folder | Architecture Decision Record index |
-| `workflows-overview.md` | `.github/workflows/` | CI/CD workflow summary |
-| `source/` | `docs/source/data/*.yml` via `tools/source_docs/render_source_docs.py` | Deterministic source-doc JSON/YAML/diagram outputs plus hash manifest |
+## Generated Families
 
-## How generation works
+| Family | Source of truth | Output examples | Maintenance rule |
+| --- | --- | --- | --- |
+| Repository structure | Repository files and `build/scripts/docs/generate-structure-docs.py` | `repository-structure.md` | Regenerate from script. |
+| AI navigation | Repo map inputs and `build/scripts/docs/generate-ai-navigation.py` | `docs/ai/generated/repo-navigation.md`, `docs/ai/generated/repo-navigation.json`, `docs/ai/generated/recent-changes.md` | Regenerate when routing truth changes. |
+| Roadmap views | `docs/roadmap/data/*.yml` and roadmap renderers | `docs/roadmap/generated/*` | Edit YAML registry or renderer, then validate/render. |
+| Source docs | `docs/source/data/*.yml`, source READMEs, source-doc renderers | `docs/source/generated/*` and generated README blocks | Edit registry/source README, then validate/render. |
+| Health and evidence dashboards | Build/test/artifact inputs and dashboard generators | status and generated dashboard markdown/json | Update generator or evidence input. |
+| AI inventory and skill reports | `.codex/`, `.claude/`, `.agents/`, `.github/`, scripts, and validators | generated AI reports and inventory outputs | Update watched surface and run inventory checks. |
 
-Generation is triggered by:
-- The `documentation.yml` GitHub Actions workflow (on push/PR to docs paths)
-- The `make docs` Makefile target
-- Manual execution of scripts in `build/scripts/docs/`
+## Key Scripts
 
-Key scripts:
-- `build/scripts/docs/update-claude-md.py` - Regenerates `CLAUDE.md` and context files
-- `build/scripts/docs/generate-structure-docs.py` - Generates repository structure
-- `build/scripts/docs/scan-todos.py` - Scans codebase for TODO comments
-- `build/dotnet/DocGenerator/` - .NET-based documentation generator
+```bash
+python build/scripts/docs/generate-structure-docs.py
+python build/scripts/docs/generate-ai-navigation.py --summary
+python build/scripts/docs/validate-roadmap-registry.py --summary
+python build/scripts/docs/render-roadmap-docs.py --summary
+python build/scripts/docs/validate-source-readmes.py --summary
+python build/scripts/docs/render-source-docs.py --summary
+python build/scripts/docs/check-ai-inventory.py --summary
+python build/scripts/docs/run-docs-automation.py --profile quick --dry-run
+```
 
-## Adding new generated files
+## Rebuild Rule
 
-1. Create the generation logic in `build/scripts/docs/` or `build/dotnet/DocGenerator/`
-2. Add the output file to this folder
-3. Update the table above
-4. Add the generation step to the `documentation.yml` workflow
-
----
-
-*This README is hand-maintained. The files it describes are auto-generated.*
+The documentation rebuild keeps generated contracts stable. If a generated page is stale, fix the generator, source registry, or source data. Do not hand-edit emitted files just to make the rebuild look clean.

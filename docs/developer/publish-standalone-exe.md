@@ -5,7 +5,7 @@
 **Reviewed:** 2026-05-19
 
 Use the repository publish script for local standalone executable output. Run it
-from `C:\Dev\Meridian-main`.
+from `D:\Meridian-main`.
 
 ```powershell
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project collector -OutputDir artifacts/publish/local-standalone
