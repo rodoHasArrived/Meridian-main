@@ -113,7 +113,9 @@ Master id metadata to the drilldown. Provider-ledger
 corporate-action/factor casework now also retains ledger-effect metadata, so the drilldown surfaces
 the valuation or journal-support kind, principal/income amount, and journal
 preview line count so report-line users can see how provider factor, amortization schedule, or cash
-activity supports the ledger amount. Warnings remain only when neither retained lineage nor durable
+activity supports the ledger amount. Comma-separated required provider feeds, such as amortization
+and factor schedules on the same provider event, are preserved as one structured evidence value
+instead of being truncated at the first feed. Warnings remain only when neither retained lineage nor durable
 casework can identify provider evidence for the amount. Ledger amount provenance also projects retained strategy/run
 lineage into structured run links, including run id, display label, route, source system, capture
 time, and whether the run pointer was captured at the selected line scope. Browser and WPF

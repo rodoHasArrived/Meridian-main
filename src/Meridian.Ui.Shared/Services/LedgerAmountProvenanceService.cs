@@ -397,14 +397,22 @@ public sealed class LedgerAmountProvenanceService
         }
 
         var prefix = $"{key}=";
-        foreach (var part in summary.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        var parts = summary.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        for (var index = 0; index < parts.Length; index++)
         {
+            var part = parts[index];
             if (!part.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
-            var value = part[prefix.Length..].Trim();
+            var values = new List<string> { part[prefix.Length..].Trim() };
+            for (var next = index + 1; next < parts.Length && !LooksLikeExplainabilityKey(parts[next]); next++)
+            {
+                values.Add(parts[next].Trim());
+            }
+
+            var value = string.Join(",", values).Trim();
             return string.IsNullOrWhiteSpace(value) ||
                 string.Equals(value, "unknown", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(value, "unresolved", StringComparison.OrdinalIgnoreCase)
@@ -413,6 +421,18 @@ public sealed class LedgerAmountProvenanceService
         }
 
         return null;
+    }
+
+    private static bool LooksLikeExplainabilityKey(string value)
+    {
+        var equalsIndex = value.IndexOf('=');
+        if (equalsIndex <= 0)
+        {
+            return false;
+        }
+
+        return value[..equalsIndex].All(static character =>
+            char.IsLetterOrDigit(character) || character is '_' or '-');
     }
 
     private static decimal? ExtractExplainabilityDecimal(string? summary, string key)

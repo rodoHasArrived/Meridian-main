@@ -5,7 +5,7 @@ This document captures the Meridian storage architecture as it exists today, plu
 
 > **Document status:** Living architecture reference — reflects the implemented storage layer.
 >
-> **Last updated:** 2026-05-20
+> **Last updated:** 2026-05-29
 >
 > **Audience:** Platform engineers, storage/infrastructure owners, and data operations.
 
@@ -101,8 +101,8 @@ The storage layer currently delivers:
 | Rich metadata & lineage | ✅ Implemented | `MetadataTagService`, `DataLineageService` |
 | Maintenance scheduling | ✅ Implemented | `ScheduledArchiveMaintenanceService` |
 | Cross-source reconciliation | 🔄 Partial | `DataQualityService`, cross-provider comparisons |
-| Natural language query parser | ⏳ Planned | — |
-| Capacity forecasting | ⏳ Planned | — |
+| Natural language query parser | ✅ Implemented | `StorageSearchService` |
+| Capacity forecasting | ✅ Implemented | `StorageEndpoints` |
 | Adaptive partitioning | ⏳ Planned | — |
 
 `SourceRegistry`, `MetadataTagService`, and `DataLineageService` now treat persistence as part of the mutation boundary rather than a deferred background task. Their writes complete through `AtomicFileWriter` before the mutating call returns, save failures surface to the caller, and the metadata/lineage JSON stores use ADR-014 source-generated serializer contexts instead of ad-hoc `JsonSerializerOptions`.
@@ -3002,7 +3002,7 @@ The roadmap is intentionally sequenced to preserve ingestion reliability while l
 
 - [x] Implement archive tier with WORM support
 - [x] Add data catalog service
-- [ ] Create compliance reporting
+- [x] Create compliance reporting (`RetentionComplianceReporter`)
 - [x] Implement immutability guarantees
 - [x] Build data lineage tracking
 
@@ -3015,7 +3015,7 @@ The roadmap is intentionally sequenced to preserve ingestion reliability while l
 
 - [x] Implement quality scoring engine
 - [x] Add quality dimension evaluators (completeness, accuracy, etc.)
-- [ ] Build best-of-breed data selector
+- [x] Build best-of-breed data selector
 - [ ] Create quality trend monitoring
 - [ ] Implement auto-backfill for gaps
 
@@ -3028,8 +3028,8 @@ The roadmap is intentionally sequenced to preserve ingestion reliability while l
 
 - [x] Build multi-level index architecture
 - [x] Implement file and event search APIs
-- [ ] Add faceted search support
-- [ ] Create natural language query parser
+- [x] Add faceted search support
+- [x] Create natural language query parser
 - [x] Build real-time index maintenance
 
 **Exit criteria:**
@@ -3069,7 +3069,7 @@ The roadmap is intentionally sequenced to preserve ingestion reliability while l
 - [x] Implement self-healing repair capabilities
 - [x] Add orphan detection and cleanup
 - [ ] Build cross-source reconciliation
-- [ ] Create capacity forecasting
+- [x] Create capacity forecasting
 - [ ] Add adaptive partitioning
 - [ ] Implement emergency override system
 
@@ -3227,7 +3227,7 @@ The modular design allows incremental adoption—start with basic naming convent
 
 ---
 
-**Version:** 2.1.0
-**Last Updated:** 2026-03-14
+**Version:** 2.1.1
+**Last Updated:** 2026-05-29
 **Focus:** Data Collection, Archival & External Analysis Export
 **See Also:** [Meridian README](https://github.com/rodoHasArrived/Meridian/blob/main/README.md) | [Architecture Overview](overview.md) | [Configuration Guide](../HELP.md#configuration) | [ADR-002: Tiered Storage](../adr/002-tiered-storage-architecture.md)

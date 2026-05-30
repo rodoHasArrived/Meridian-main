@@ -1,7 +1,7 @@
 # ADR-002: Tiered Storage Architecture
 
 **Status:** Accepted
-**Date:** 2024-07-20
+**Date:** 2026-05-30
 **Deciders:** Core Team
 
 ## Context
@@ -17,16 +17,29 @@ A single storage approach cannot optimize for all access patterns while balancin
 - Read latency (dashboard queries)
 - Storage costs (long-term retention)
 - Data durability (no data loss)
+- Governance controls (retention, deletion, archive hold)
 
 ## Decision
 
-Implement a three-tier storage architecture with automatic data lifecycle management:
+Implement a policy-driven tiered storage architecture with governed lifecycle management:
 
-1. **Hot Tier**: Write-Ahead Log (WAL) + JSONL with LZ4 compression
-2. **Warm Tier**: Compressed JSONL with Gzip
-3. **Cold Tier**: Parquet with ZSTD compression
+1. **Write path is durable first**
+   - Market events are written through `EventPipeline` into `StorageSink` implementations.
+   - WAL is used for crash recovery (`WriteAheadLog`) and remains the canonical durability layer (ADR-007).
+2. **Tiering is configured, not hard-coded**
+   - `StorageOptions.Tiering` defines named tiers (`hot`, `warm`, `cold`, `archive`) and their target paths.
+   - Tiering is optional; if disabled, files remain in the default configured sink layout.
+3. **Tiering is policy-driven**
+   - `StoragePolicyConfig` (`HotTierDays`, `WarmTierDays`, `ColdTierDays`, optional `ArchiveTier`) drives target tier decisions.
+   - `LifecyclePolicyEngine` continuously evaluates files by age, classification, and policy, then emits tier migration, compression, archive, and delete actions.
+4. **Lifecycle execution is scheduled and idempotent**
+   - Migration actions are executed by `TierMigrationService` with configurable parallelism and checksum verification.
+   - `MaintenanceScheduler` and `ScheduledArchiveMaintenanceService` handle periodic scheduling.
+5. **Formats are per-tier configurable**
+   - `StorageTierConfig.Format` chooses sink format (`jsonl`, `jsonl.gz`, `parquet`).
+   - Sink conversion is performed when migrating between tiers as needed.
 
-Data flows through tiers automatically based on age and access patterns.
+Data flows through tiers by policy evaluation and scheduled maintenance, not by direct ingestion path alone.
 
 ## Implementation Links
 
@@ -34,15 +47,19 @@ Data flows through tiers automatically based on age and access patterns.
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Storage Configuration | `src/Meridian.Storage/StorageOptions.cs` | Tier configuration |
-| Event Pipeline | `src/Meridian.Application/Pipeline/EventPipeline.cs` | Bounded channel routing |
-| JSONL Sink | `src/Meridian.Storage/Sinks/JsonlStorageSink.cs` | Hot/warm tier writer |
-| Parquet Sink | `src/Meridian.Storage/Sinks/ParquetStorageSink.cs` | Cold tier Parquet writer |
-| WAL Implementation | `src/Meridian.Storage/Archival/WriteAheadLog.cs` | Durability layer |
-| Compression Profiles | `src/Meridian.Storage/Archival/CompressionProfileManager.cs` | Compression strategies |
-| Tier Migration | `src/Meridian.Storage/Services/TierMigrationService.cs` | Data lifecycle management |
-| Archival Service | `src/Meridian.Storage/Archival/ArchivalStorageService.cs` | Archive management |
-| Storage Tests | `tests/Meridian.Tests/Storage/` | Tier verification |
+| Storage Configuration | `src/Meridian.Storage/StorageOptions.cs` | Tiering and policy contracts |
+| Tier presets | `src/Meridian.Storage/StorageProfiles.cs` | `Research`/`Archival` profiles and default tier paths |
+| Event Pipeline | `src/Meridian.Application/Pipeline/EventPipeline.cs` | Ingestion + WAL integration |
+| JSONL Sink | `src/Meridian.Storage/Sinks/JsonlStorageSink.cs` | Primary hot-tier writer |
+| Parquet Sink | `src/Meridian.Storage/Sinks/ParquetStorageSink.cs` | Columnar archive-oriented writer |
+| Composite Sink | `src/Meridian.Storage/Sinks/CompositeSink.cs` | Multi-sink fan-out |
+| Lifecycle Engine | `src/Meridian.Storage/Services/LifecyclePolicyEngine.cs` | Policy-based tier decisions |
+| Tier Migration | `src/Meridian.Storage/Services/TierMigrationService.cs` | Movement between tiers |
+| Compression Profiles | `src/Meridian.Storage/Archival/CompressionProfileManager.cs` | Tier-aware profile/catalog policy |
+| Lifecycle Scheduler | `src/Meridian.Storage/Services/MaintenanceScheduler.cs` | Execution of recurring tiering tasks |
+| WAL Implementation | `src/Meridian.Storage/Archival/WriteAheadLog.cs` | Crash-safe durability |
+| Storage Tests | `tests/Meridian.Tests/Storage/` | Storage and lifecycle coverage |
+| Tiering API | `src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs` | Tier stats, planning, and manual migration actions |
 
 ## Rationale
 
@@ -50,15 +67,24 @@ Data flows through tiers automatically based on age and access patterns.
 All events first hit the WAL before processing, ensuring zero data loss even during crashes. The WAL uses sequential writes for maximum throughput.
 
 ### Compression Selection
-| Algorithm | Speed | Ratio | Use Case |
+| Codec | Speed | Ratio | Use Case |
 |-----------|-------|-------|----------|
-| LZ4 | Very Fast | Lower | Real-time ingestion |
-| Gzip | Medium | Medium | Compatibility, warm data |
-| ZSTD-19 | Slow | Best | Archives (10:1+ ratio) |
+| LZ4 | Very Fast | Low | Real-time ingestion |
+| Zstd | Medium/Fast | Very Good | Cold/Archive compression |
+| Gzip | Medium | Medium | Compatibility and portable exchange |
+| Brotli | Medium/Slow | Good | Non-time-critical payloads |
+| None | Very Fast | None | Debug/diagnostic workloads |
 
 ### Format Selection
 - **JSONL**: Human-readable, streamable, schema-flexible
 - **Parquet**: Columnar, excellent compression, fast analytical queries
+
+The tier profile is configurable; the built-in `Archival` profile currently maps:
+
+- hot → `jsonl`, no compression
+- warm → `jsonl.gz`
+- cold → `parquet` (`zstd` target)
+- archive → `parquet` (`zstd` target)
 
 ## Alternatives Considered
 
@@ -94,21 +120,23 @@ All events first hit the WAL before processing, ensuring zero data loss even dur
 
 ### Positive
 
-- Optimized for each access pattern
-- Cost-effective long-term storage
+- Enforces retention, compression, and migration policies across storage tiers
+- Keeps hot-path ingestion stable while enabling long-term analytics
+- Supports archival and compliance retention paths (`archive` tier + perpetual policy)
 - Zero data loss with WAL
-- Flexible schema evolution with JSONL
+- Flexible governance via `StoragePolicyConfig` and `StorageProfiles`
 - Fast analytical queries with Parquet
 
 ### Negative
 
-- Multiple storage formats to maintain
-- Background jobs for tier migration
-- Query interface varies by tier
+- Additional asynchronous background jobs to keep lifecycle up-to-date
+- Query strategy differs across tiers and formats unless downstream read layer normalizes it
+- Admin-facing configuration complexity increases with more active tiers
 
 ### Neutral
 
 - Requires monitoring of tier sizes
+- Requires explicit governance rules to avoid unintended deletion of `Critical` data
 - Backup strategy per tier
 
 ## Compliance
@@ -119,35 +147,43 @@ All events first hit the WAL before processing, ensuring zero data loss even dur
 // Storage sink contract
 public interface IStorageSink : IAsyncDisposable
 {
-    Task WriteAsync<T>(T data, CancellationToken ct = default);
+    ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);
     Task FlushAsync(CancellationToken ct = default);
 }
 
 // Compression profile contract
 public sealed record CompressionProfile(
+    string Id,
     string Name,
-    CompressionAlgorithm Algorithm,
-    int Level);
+    string Description,
+    CompressionCodec Codec,
+    int Level,
+    CompressionPriority Priority);
 ```
 
 ### File Organization Rules
 
 ```
 {DataRoot}/
-├── live/                    # Hot tier (LZ4)
-│   └── {provider}/{date}/{symbol}_trades.jsonl.lz4
-├── historical/              # Warm tier (Gzip)
-│   └── {provider}/{date}/{symbol}_bars.jsonl.gz
-└── _archive/                # Cold tier (ZSTD/Parquet)
-    └── parquet/{symbol}_{year}.parquet
+├── hot/                         # Hot tier (ingest path)
+│   └── {optional provider}/{optional date}/{symbol}_{event}.jsonl[.gz]
+├── warm/                        # Warm tier (compressed JSONL)
+│   └── {optional provider}/{optional date}/{symbol}_{event}.jsonl.gz
+├── cold/                        # Cold tier (often Parquet)
+│   └── {optional provider}/{optional date}/{symbol}_{event}.parquet
+└── archive/                     # Archive tier (cold+perpetual)
+    └── {optional provider}/{optional date}/{symbol}_{event}.parquet
 ```
+
+Tier paths are configurable in `StorageOptions.Tiering.Tiers`; only the `hot/warm/cold/archive` conventions are required for built-in policy routing, with additional tiers possible via configuration.
 
 ### Runtime Verification
 
 - `[ImplementsAdr("ADR-002")]` on storage components
+- `[ImplementsAdr("ADR-002")]` on `LifecyclePolicyEngine`
 - File naming conventions enforced by storage services
 - Compression validation on read
-- Tier migration scheduled via `TierMigrationService`
+- Tier evaluation and migration jobs surfaced via `LifecyclePolicyEngine`, `MaintenanceScheduler`, and `/api/storage/tiers/*`
 
 ## References
 
@@ -159,4 +195,4 @@ public sealed record CompressionProfile(
 
 ---
 
-*Last Updated: 2026-02-20*
+*Last Updated: 2026-05-30*
