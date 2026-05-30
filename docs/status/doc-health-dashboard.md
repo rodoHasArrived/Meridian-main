@@ -1,17 +1,17 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-05-21T03:18:07.772234+00:00_
+_Generated: 2026-05-30T04:12:47.373864+00:00_
 Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-05-21T03:18:07.753616+00:00
+> Last updated: 2026-05-30T04:12:47.345754+00:00
 
 ## Overall Health Score
 
 ```text
-  [###########################---] 89/100
+  [##########################----] 88/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 409 |
-| Total lines | 100,073 |
-| Average file size (lines) | 244.7 |
-| Orphaned files | 86 |
-| Files without headings | 0 |
-| Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 285 |
-| **Health score** | **89/100** |
+| Total documentation files | 574 |
+| Total lines | 133,939 |
+| Average file size (lines) | 233.3 |
+| Orphaned files | 101 |
+| Files without headings | 20 |
+| Stale files (>90 days) | 59 |
+| TODO/FIXME markers | 301 |
+| **Health score** | **88/100** |
 
 ### Score Breakdown
 
@@ -40,31 +40,78 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 ## Top Priorities for Improvement
 
+### Files Without Headings
+
+These files lack a Markdown heading, making them harder to navigate:
+
+- `.nuget/packages/newtonsoft.json/13.0.4/LICENSE.md`
+- `benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md`
+- `benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md`
+- `benchmarks/results/20260521_111257/composite/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md`
+- `benchmarks/results/20260521_111257/wal/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md`
+- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md`
+- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherThroughputBenchmarks-report-github.md`
+- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md`
+- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.DepthCollectorBenchmarks-report-github.md`
+- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.EndToEndPipelineBenchmarks-report-github.md`
+- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.TradeCollectorBenchmarks-report-github.md`
+- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md`
+- `benchmarks/results/20260521_181635/results/Meridian.Benchmarks.EventPipelineBenchmarks-report-github.md`
+- `benchmarks/results/20260521_181812/results/Meridian.Benchmarks.EventBufferBenchmarks-report-github.md`
+- `benchmarks/results/20260521_182021/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md`
+- ... and 5 more
+
 ### Orphaned Documentation
 
 These files are not linked from any other Markdown file in the repository:
 
-- `AGENTS.md`
-- `Meridian Design System/BRAND_GUIDELINES.md`
-- `Meridian Design System/CONTENT_FUNDAMENTALS.md`
-- `Meridian Design System/ICONOGRAPHY.md`
-- `Meridian Design System/INSPIRATION_BRIEF.md`
-- `Meridian Design System/SKILL.md`
-- `Meridian Design System/VISUAL_FOUNDATIONS.md`
-- `benchmarks/BOTTLENECK_REPORT.md`
-- `docs/ai/claude/CLAUDE.api.md`
-- `docs/ai/claude/CLAUDE.roadmap-learning-log.md`
-- `docs/ai/claude/CLAUDE.structure.md`
-- `docs/ai/copilot/ai-sync-workflow.md`
-- `docs/architecture/workstation-continuity-payload-profile.md`
-- `docs/audits/CODE_REVIEW_2026-03-16.md`
-- `docs/audits/workspace-visual-audit-checklist-2026-04-22.md`
-- `docs/development/fund-account-traversal.md`
-- `docs/development/policies/promotion-policy-matrix.md`
-- `docs/development/score-reason-taxonomy.md`
-- `docs/development/synthetic-provider-test-harness.md`
-- `docs/docfx/api/index.md`
-- ... and 66 more
+- `.nuget/packages/communitytoolkit.highperformance/8.4.0/License.md`
+- `.nuget/packages/farmer/1.9.26/readme.md`
+- `.nuget/packages/microsoft.aspnetcore.openapi/9.0.15/PACKAGE.md`
+- `.nuget/packages/microsoft.bcl.asyncinterfaces/10.0.3/PACKAGE.md`
+- `.nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/PACKAGE.md`
+- `.nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md`
+- `.nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.caching.abstractions/10.0.5/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.caching.memory/10.0.1/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.caching.memory/10.0.5/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.configuration.abstractions/10.0.0/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.configuration.abstractions/10.0.7/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.configuration.binder/10.0.7/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.configuration.commandline/10.0.7/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.configuration.environmentvariables/10.0.7/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.configuration.fileextensions/10.0.7/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.configuration.json/10.0.7/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.configuration.usersecrets/10.0.7/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.configuration/10.0.7/PACKAGE.md`
+- `.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/10.0.7/PACKAGE.md`
+- ... and 81 more
+
+### Stale Documentation
+
+These files have not been updated in over 90 days:
+
+- `.nuget/packages/azure.core.amqp/1.3.1/CHANGELOG.md`
+- `.nuget/packages/azure.core.amqp/1.3.1/README.md`
+- `.nuget/packages/azure.core/1.38.0/CHANGELOG.md`
+- `.nuget/packages/azure.core/1.38.0/README.md`
+- `.nuget/packages/azure.core/1.46.2/CHANGELOG.md`
+- `.nuget/packages/azure.core/1.46.2/README.md`
+- `.nuget/packages/azure.identity/1.11.4/CHANGELOG.md`
+- `.nuget/packages/azure.identity/1.11.4/README.md`
+- `.nuget/packages/azure.messaging.servicebus/7.20.1/CHANGELOG.md`
+- `.nuget/packages/azure.messaging.servicebus/7.20.1/README.md`
+- `.nuget/packages/communitytoolkit.highperformance/8.4.0/License.md`
+- `.nuget/packages/farmer/1.9.26/readme.md`
+- `.nuget/packages/fluentvalidation/12.1.1/README.md`
+- `.nuget/packages/fsharpplus/1.9.1/README.md`
+- `.nuget/packages/fstoolkit.errorhandling/5.2.0/README.md`
+- `.nuget/packages/microsoft.bcl.asyncinterfaces/10.0.3/PACKAGE.md`
+- `.nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/PACKAGE.md`
+- `.nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/Microsoft.CodeAnalysis.Analyzers.md`
+- `.nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md`
+- `.nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md`
+- ... and 39 more
 
 ## Trend
 
@@ -72,7 +119,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-05-21 | 89 | 409 | 86 | 0 |
+| 2026-05-30 | 88 | 574 | 101 | 59 |
 
 ---
 

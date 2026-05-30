@@ -942,6 +942,9 @@ def collect_recent_source_changes(
         if current_header is None or not line.startswith("src/"):
             continue
 
+        if not (root / line).exists():
+            continue
+
         record = file_index.get(line)
         if record is None:
             record = {

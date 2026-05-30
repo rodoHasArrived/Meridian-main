@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-05-30T04:10:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-05-30T04:12:36Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -132,19 +132,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
+| `src/Meridian.Contracts/Api/UiApiRoutes.cs` | Host and Composition | `0ba1b0de9` (2026-05-29T21:10:23-07:00) | 28 |
+| `src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs` | Desktop and UI Workflows | `0ba1b0de9` (2026-05-29T21:10:23-07:00) | 7 |
 | `src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs` | Desktop and UI Workflows | `165a39cf4` (2026-05-29T21:06:05-07:00) | 11 |
 | `src/Meridian.Application/Composition/ServiceCompositionRoot.cs` | Host and Composition | `165a39cf4` (2026-05-29T21:06:05-07:00) | 5 |
 | `src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj` | Desktop and UI Workflows | `165a39cf4` (2026-05-29T21:06:05-07:00) | 4 |
-| `src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 3 |
 | `src/Meridian/Meridian.csproj` | Host and Composition | `165a39cf4` (2026-05-29T21:06:05-07:00) | 3 |
 | `src/Meridian.Backtesting.Sdk/BacktestRequest.cs` | Backtesting and Research | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
-| `src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
-| `src/Meridian.Infrastructure.CppTrader/Host/ProcessBackedCppTraderSessionClient.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
-| `src/Meridian.Infrastructure.CppTrader/README.md` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
-| `src/Meridian.Ui.Shared/Endpoints/CppTraderEndpoints.cs` | Desktop and UI Workflows | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FamilyOffice.cs` | Desktop and UI Workflows | `165a39cf4` (2026-05-29T21:06:05-07:00) | 2 |
 | `src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs` | Backtesting and Research | `165a39cf4` (2026-05-29T21:06:05-07:00) | 1 |
-| `src/Meridian.Infrastructure.CppTrader/CppTraderServiceCollectionExtensions.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 1 |
-| `src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 1 |
-| `src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnosticsService.cs` | Unmapped | `165a39cf4` (2026-05-29T21:06:05-07:00) | 1 |
+| `src/Meridian.Application/Reconciliation/StatementReconciliationService.cs` | Host and Composition | `3af40c29a` (2026-05-29T12:45:06-07:00) | 11 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `49378a306` (2026-05-29T12:44:26-07:00) | 45 |
+| `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | `49378a306` (2026-05-29T12:44:26-07:00) | 18 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `9c004b2f5` (2026-05-29T12:44:17-07:00) | 41 |
+| `src/Meridian.Application/README.md` | Host and Composition | `9c004b2f5` (2026-05-29T12:44:17-07:00) | 33 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `9c004b2f5` (2026-05-29T12:44:17-07:00) | 30 |
 
