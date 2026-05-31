@@ -43,7 +43,7 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     private bool _disposed;
 
     // Tracks submitted orders so cancel/modify reports carry the correct symbol and side.
-    // TODO: In a full implementation, prefer querying the broker's API for live order state.
+    // TODO(W1-DATA-001): In a full implementation, prefer querying the broker's API for live order state.
     private readonly ConcurrentDictionary<string, (string Symbol, OrderSide Side, string? ClientOrderId)> _submittedOrders = new();
 
     public TemplateBrokerageGateway(

@@ -17,7 +17,7 @@
         "docs/status/ai-handoff-checklist-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 0.893,
+      "duration_seconds": 0.508,
       "status": "success",
       "output_file": "docs/status/ai-handoff-checklist-report.md",
       "error": null

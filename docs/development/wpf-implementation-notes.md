@@ -6,7 +6,7 @@
 
 Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active native Windows desktop operator surface for the platform alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
-For Wave 2-4 workflow work, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) before accepting a WPF slice as progress. Desktop changes must map to a real operator scenario in Lane A trading cockpit reliability, Lane B run -> portfolio -> ledger continuity, or Lane C reconciliation/governance close flow, and must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation.
+For the Wave two-to-four acceptance lanes, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) before accepting a WPF slice as progress. Desktop changes must map to a real operator scenario in Lane A trading cockpit reliability, Lane B run -> portfolio -> ledger continuity, or Lane C reconciliation/governance close flow, and must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation.
 
 ## Architecture
 
@@ -567,7 +567,7 @@ make desktop-test
 
 - [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md) — Layer boundaries
 - [`docs/development/desktop-testing-guide.md`](./desktop-testing-guide.md) — Testing procedures
-- [`docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-4 desktop acceptance lanes, shared-contract checks, and evidence rules
+- [`docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-to-4 desktop acceptance lanes, shared-contract checks, and evidence rules
 - [`docs/evaluations/desktop-platform-improvements-implementation-guide.md`](../evaluations/desktop-platform-improvements-implementation-guide.md) — Platform improvement roadmap and implementation reference
 - [`docs/development/ui-fixture-mode-guide.md`](./ui-fixture-mode-guide.md) — Offline / fixture mode development
 - [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — Desktop items in the project roadmap

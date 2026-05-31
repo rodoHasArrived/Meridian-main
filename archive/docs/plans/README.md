@@ -24,6 +24,8 @@ This bucket stores completed, superseded, abandoned, or historical plans. Active
 | [l3-inference-implementation-plan.md](l3-inference-implementation-plan.md) | `docs/plans/l3-inference-implementation-plan.md` | Historical L3 implementation planning retained for rationale; active L3 priorities now tracked in status/risk/regression evidence. |
 | [meridian-pilot-workflow.md](meridian-pilot-workflow.md) | `docs/plans/meridian-pilot-workflow.md` | Pilot workflow planning retained as historical source material; active pilot-path evidence is now maintained in canonical product and roadmap status surfaces. |
 | [sfo-mvp-implementation-design.md](sfo-mvp-implementation-design.md) | `docs/plans/sfo-mvp-implementation-design.md` | Historical SFO implementation design retained as context; active SFO scope guidance comes from product/engineering status and operator documentation. |
+| [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md) | `docs/plans/backtest-studio-unification-blueprint.md` | Historical backtest-studio planning blueprint retained for rationale. |
+| [backtest-studio-unification-pr-sequenced-roadmap.md](backtest-studio-unification-pr-sequenced-roadmap.md) | `docs/plans/backtest-studio-unification-pr-sequenced-roadmap.md` | Historical sequencing draft retained for rationale while active W5 posture remains governed by registry and status evidence. |
 
 ## Use Current Guidance Instead
 

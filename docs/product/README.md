@@ -18,13 +18,18 @@ That framing is intentionally narrower than a generic trading dashboard or broad
 
 ## Product Design Foundation
 
-The detailed design charter now lives in this canonical document:
+The detailed design charter now lives in this canonical document and is the stakeholder-facing design source for this rebuild wave:
 
 - Target users: financial operations professionals, fund admins, RIAs, family offices, and related governance roles.
 - Core loop: `Import -> Validate -> Reconcile -> Investigate -> Approve -> Report`.
 - Primary operating model: configurable financial operations platform with one tenant-aware system, not separate products per customer type.
 - Core domains: data integration, treasury/payments, portfolio/investment operations, financial operations, reference data, instrument obligations, entity/relationships, alternative assets, financing, and planning/forecasting.
 - Delivery posture: preserve the closed W1-W4 evidence baselines, then advance W5 Backtest Studio and W6 live-readiness prerequisites through shared contracts, strong auditability, configurable workflows, and approval controls.
+
+## Canonical Product Design Artifact
+
+- [Meridian Design Document (Draft v1.0)](meridian-design-document.md) is the single canonical hand-authored product vision and capability source.
+- Current wave interpretation must not override this charter; deviations must be justified in roadmap or status evidence.
 
 ## Operator Lifecycle
 

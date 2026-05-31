@@ -1836,3 +1836,4 @@ Fragmented data
 ```
 
 This foundation supports fund administrators, RIAs, and family offices without overbuilding too early.
+
