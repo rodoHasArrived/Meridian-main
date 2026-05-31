@@ -1,11 +1,7 @@
-# covered-call-writing-slice-1-blueprint
+# Covered Call Writing Slice 1 Blueprint (Archived)
 
 **Status:** archived
-**Owner:** core-team
-**Reviewed:** 2026-05-31
 
-This document is archived. Replacement: [archive/docs/plans/covered-call-writing-slice-1-blueprint.md](../../archive/docs/plans/covered-call-writing-slice-1-blueprint.md).
+This document was archived to ../../archive/docs/plans/covered-call-writing-slice-1-blueprint.md.
 
-This stub is kept for migration compatibility and reference from historical paths.
-
-
+Use this replacement instead: [covered-call-writing-slice-1-blueprint.md](../../archive/docs/plans/covered-call-writing-slice-1-blueprint.md).
