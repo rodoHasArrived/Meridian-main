@@ -12,9 +12,9 @@ Use this page first when the question is "how do I run, operate, repair, package
 
 | Need | Start here | Notes |
 | --- | --- | --- |
-| First local setup | [Getting Started](../getting-started/README.md), [Pilot Operator Quickstart](../getting-started/pilot-operator-quickstart.md) | New setup content should migrate to `docs/start/` or this operator lane. |
+| First local setup | [Start](../start/README.md), [Pilot Operator Quickstart](../getting-started/pilot-operator-quickstart.md) | New setup and quickstart content should stay canonical in `docs/start/` and here. |
 | Local command help | [HELP](../HELP.md) | Operator-facing command discovery and FAQ. |
-| Daily operations | [Operator Runbook](../operations/operator-runbook.md) | Day-to-day operational procedures. |
+| Daily operations | [Operator Runbook](../operations/operator-runbook.md) | Canonical day-to-day operational procedures in this lane during migration. |
 | Deployment | [Deployment](../operations/deployment.md), [Environment and Deployment Standard](../operations/environment-and-deployment-standard.md) | Deployment and environment rules. |
 | Production posture | [Production Status](../status/production-status.md), [Service Level Objectives](../operations/service-level-objectives.md) | Status input plus SLO procedures. |
 
@@ -32,13 +32,13 @@ Use this page first when the question is "how do I run, operate, repair, package
 
 | Workflow | Source material | Notes |
 | --- | --- | --- |
-| Provider setup overview | [Provider Documentation](../providers/README.md) | Legacy provider index retained as source material during migration. |
+| Provider setup overview | [Provider Documentation](../providers/README.md) | Canonical provider onboarding and capability surface during migration. |
 | Alpaca setup | [Alpaca Setup](../providers/alpaca-setup.md) | Credentialed provider setup. |
 | Interactive Brokers setup | [Interactive Brokers Setup](../providers/interactive-brokers-setup.md), [IBKR Promotion Checklist](../operations/ibkr-promotion-checklist.md) | Broker-aligned setup and promotion checklist. |
 | Credential storage and repair | [Provider Credential Management](../operations/provider-credential-management.md) | Encrypted local credential storage and repair routes. |
 | Provider degradation | [Provider Degradation Calibration](../operations/provider-degradation-calibration.md), [Provider Degradation Policy](../operations/provider-degradation-policy.md) | Calibration, promotion, and governance gates. |
 | Backfill operations | [Backfill Guide](../providers/backfill-guide.md) | Historical data backfill procedures. |
-| Provider lookup | [Reference provider lookup](../reference/README.md#canonical-lookup-areas) | Capability and validation matrices are lookup material. |
+| Provider lookup | [Reference provider lookup](../reference/README.md#canonical-lookup-areas) | Capability and validation matrices remain lookup-only; operation procedures remain here. |
 
 ## Governance, Reconciliation, And Reporting Operations
 
@@ -92,6 +92,6 @@ Operator runbooks for streaming or storage incidents should name the affected pr
 - Do not write provider secrets to user-level environment variables from new flows; use the shared credential store and documented config/data roots.
 - Keep provider fallback order visible, explainable, and testable; desktop/provider settings must not fork provider logic away from shared backfill orchestration.
 - Do not upgrade readiness language unless current evidence artifacts or validation output prove the claim.
-- Keep setup/procedure docs in `docs/operators/`, `docs/start/`, or legacy source-material files linked from this page until migration is complete.
+- Keep setup/procedure docs in `docs/operators/` or `docs/start/`; move retired legacy links with explicit archive rationale before final removal.
 - Keep lookup tables in [Reference](../reference/README.md), not in procedural runbooks.
 - Archive superseded runbooks and dated operational snapshots under `archive/docs/` after replacement links exist.

@@ -1,8 +1,10 @@
 # Meridian Design Document — Draft v1.0
 
-**Status:** active
-**Owner:** core-team
+**Status:** active  
+**Owner:** core-team  
 **Reviewed:** 2026-05-31
+
+This document is the canonical stakeholder design charter for Meridian and is the preferred product framing source used by `docs/product/README.md`.
 
 ## 1. Product Vision
 
@@ -1836,4 +1838,3 @@ Fragmented data
 ```
 
 This foundation supports fund administrators, RIAs, and family offices without overbuilding too early.
-

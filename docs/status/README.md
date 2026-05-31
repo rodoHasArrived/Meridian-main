@@ -54,3 +54,15 @@ Machine-readable sidecars such as `docs-automation-summary.json`, `program-state
 4. Archive dated snapshots under `archive/docs/summaries/` after replacement links exist.
 5. Leave generated reports in place unless the owning generator or workflow is changed.
 6. Preserve unrelated dirty changes in this folder as user-owned unless explicitly included.
+
+## High-Traffic Status Redirects
+
+- [broker-phase-promotion-checklist-template.md](broker-phase-promotion-checklist-template.md) → [archive/docs/summaries/broker-phase-promotion-checklist-template.md](../../archive/docs/summaries/broker-phase-promotion-checklist-template.md)
+- [dead-code-inventory.md](dead-code-inventory.md) → [archive/docs/summaries/dead-code-inventory.md](../../archive/docs/summaries/dead-code-inventory.md)
+- [ibkr-provider-inventory.md](ibkr-provider-inventory.md) → [archive/docs/summaries/ibkr-provider-inventory.md](../../archive/docs/summaries/ibkr-provider-inventory.md)
+- [provider-adapters-closure-summary.md](provider-adapters-closure-summary.md) → [archive/docs/summaries/provider-adapters-closure-summary.md](../../archive/docs/summaries/provider-adapters-closure-summary.md)
+- [provider-capability-inventory.md](provider-capability-inventory.md) → [archive/docs/summaries/provider-capability-inventory.md](../../archive/docs/summaries/provider-capability-inventory.md)
+- [provider-core-hardening-notes.md](provider-core-hardening-notes.md) → [archive/docs/summaries/provider-core-hardening-notes.md](../../archive/docs/summaries/provider-core-hardening-notes.md)
+- [provider-failover-hardening.md](provider-failover-hardening.md) → [archive/docs/summaries/provider-failover-hardening.md](../../archive/docs/summaries/provider-failover-hardening.md)
+- [provider-test-gap-baseline.md](provider-test-gap-baseline.md) → [archive/docs/summaries/provider-test-gap-baseline.md](../../archive/docs/summaries/provider-test-gap-baseline.md)
+- [provider-test-minimums.md](provider-test-minimums.md) → [archive/docs/summaries/provider-test-minimums.md](../../archive/docs/summaries/provider-test-minimums.md)

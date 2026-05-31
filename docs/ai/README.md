@@ -8,6 +8,7 @@ This document is the master index for AI guidance in the Meridian repository. It
 
 | Task | Start Here | Deep Dive |
 | --- | --- | --- |
+| Engineering/agent work | [`engineering/README.md`](../engineering/README.md) | [`docs`](.) lane map, module map, and source/roadmap registry |
 | Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Root commands, conventions, and architecture |
 | Any AI system or automation | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic workflow, safety rules, and alignment checklist |
 | Multi-agent or multi-phase work | [`agent-handoff-checklist.md`](agent-handoff-checklist.md) | Required handoff packet format and token-efficient context boundaries |

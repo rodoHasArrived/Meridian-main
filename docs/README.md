@@ -25,7 +25,7 @@ Current local project path: `D:\Meridian-main`.
 | Repository entrypoint | [../README.md](../README.md) |
 | Documentation ownership and migration rules | [Documentation Ownership Contract](documentation-ownership.md) |
 | Full documentation rebuild inventory | [Documentation Inventory](documentation-inventory.md) |
-| Current product direction | [Product](product/README.md) and [Current Direction and Status](plans/current-direction-and-status.md) |
+| Current product direction | [Product](product/README.md) and [Roadmap Registry](roadmap/README.md) |
 | Stakeholder design charter | [Meridian Design Document (Draft v1.0)](product/meridian-design-document.md) |
 | Roadmap registry | [Roadmap Registry](roadmap/README.md) and `docs/roadmap/data/*.yml` |
 | Source module registry | [Source Documentation Mesh](source/README.md) and `docs/source/data/*.yml` |

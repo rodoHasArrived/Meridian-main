@@ -1,8 +1,8 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-05-23
-> Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`, and
-> `docs/architecture/project-structure.md`
+> Last verified: 2026-05-31
+> Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`,
+> `docs/product/meridian-design-document.md`, and `docs/architecture/project-structure.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, current product
 direction, commands, and architecture when a Codex skill needs repository grounding without
@@ -40,6 +40,7 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 - `docs/README.md`
 - `docs/start/README.md`
 - `docs/product/README.md`
+- `docs/product/meridian-design-document.md`
 - `docs/engineering/README.md`
 - `docs/operators/README.md`
 - `docs/documentation-ownership.md`

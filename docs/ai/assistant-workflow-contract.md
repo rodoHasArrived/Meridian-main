@@ -33,6 +33,37 @@ Cline, Roo, or Gemini instruction surface was found during the 2026-05-25 scan. 
 there is an actual tooling need, then list the exact entrypoint in this contract and
 `docs/ai/README.md`.
 
+## Engineering- and Documentation-Awareness Rules for Agents
+
+### Repo Navigation
+
+Before behavior changes, run this sequence:
+
+1. Read `docs/ai/navigation/README.md`.
+2. Read the canonical generated navigation in `docs/ai/generated/repo-navigation.md`.
+3. Read the owning lane entrypoint (`start`, `engineering`, `product`, `operators`, or `reference`).
+4. Verify module/registry impact from `docs/source/data/source-modules.yml` and `docs/roadmap/data/*.yml`.
+
+### Generated-File Handling
+
+- Do not hand-edit generated docs under `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/`, `docs/generated/`.
+- Update generator inputs and rerun generation commands.
+- Keep registry files (`docs/source/data/*.yml`, `docs/roadmap/data/*.yml`) as source-of-truth for generated views.
+
+### Agent Orchestration
+
+- Use `docs/ai/parallel-task-manifest-template.md` for parallel lanes.
+- Use `agent-handoff-checklist.md` for explicit handoffs between specialist lanes.
+- Use `docs/ai/codex/route-cards.md` to anchor multi-system routing.
+
+### Token and Context Management
+
+- Start with lane entrypoints and expand only after ownership boundaries are confirmed.
+- Keep each agent pass scoped to one active concern and one proof lane.
+- In mixed tasks, switch modes with `work-modes.md` before widening context.
+
+### Validation Procedure
+
 ---
 
 ## Universal Execution Flow
@@ -122,7 +153,7 @@ When editing `src/**`, assistants must:
 | Topic | Source of truth | Mirrors or consumers |
 | --- | --- | --- |
 | Documentation front door and ownership | `docs/README.md`, `docs/documentation-ownership.md`, `docs/documentation-inventory.md` | Root `README.md`, `AGENTS.md`, `CLAUDE.md`, assistant indexes |
-| Project framing, commands, and architecture | `docs/start/README.md`, `docs/product/README.md`, `docs/engineering/README.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
+| Project framing, commands, and architecture | `docs/start/README.md`, `docs/product/README.md`, `docs/product/meridian-design-document.md`, `docs/engineering/README.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
 | Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/generated/recent-changes.md`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
 | Codex task startup and proof routing | `docs/ai/codex/quickstart.md`, `docs/ai/codex/route-cards.md` | Root `AGENTS.md`, `.codex/skills/README.md`, Codex specialist skills |
 | Roadmap and source documentation truth | `docs/roadmap/data/*.yml`, `docs/source/data/*.yml`, registered `src/**/README.md` | Generated roadmap/source docs, source README blocks, AI source sync rules |
@@ -234,7 +265,7 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-05-28_
+_Last Updated: 2026-05-31_
 
 ## Machine-checkable synchronization contract
 

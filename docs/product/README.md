@@ -1,138 +1,127 @@
 # Product Documentation
 
-**Status:** active
-**Owner:** core-team
-**Reviewed:** 2026-05-30
+**Status:** active  
+**Owner:** core-team  
+**Reviewed:** 2026-05-31
 
-This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability status, and roadmap interpretation. It replaces the old pattern of treating multiple roadmap, status, plan, audit, and evaluation files as competing front doors.
+This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
+It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
 
-## Product Promise
+## What a Stakeholder Should Read Here
 
-Meridian is a self-hosted evidence-backed investment operations platform.
+- If you need the current product framing, start with:
+  - [Meridian Design Document](meridian-design-document.md)
+  - [Roadmap Registry](../roadmap/README.md)
+  - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
+- If you need evidence-backed examples of current operations, check:
+  - [generated roadmap outputs](../roadmap/generated/)
+  - Current project source-of-truth references listed below.
 
-The central product question is:
+## Product Positioning
+
+Meridian is a self-hosted, evidence-backed investment operations platform for:
+
+- financial operations professionals,
+- registered investment advisors,
+- family offices,
+- and similar operational teams requiring auditable, governed workflows.
+
+The operating question remains:
 
 > Can Meridian prove, book, reconcile, approve, and report an investment decision?
 
-That framing is intentionally narrower than a generic trading dashboard or broad front-to-back suite. Meridian should connect trusted data, research, paper validation, books, reconciliation, approvals, and governed reporting into one explainable chain.
+## Canonical Product Truth Order
 
-## Product Design Foundation
+1. `docs/roadmap/data/*.yml`  
+   (durable roadmap state, gates, and sequencing)
+2. `docs/roadmap/generated/*.md`  
+   (rendered roadmap evidence)
+3. `docs/product/meridian-design-document.md`  
+   (canonical design charter and domain framing)
+4. `docs/product/README.md`  
+   (stakeholder summary and interpretation)
+5. Legacy status/plan files only as historical context, never as replacement source.
 
-The detailed design charter now lives in this canonical document and is the stakeholder-facing design source for this rebuild wave:
+## Stakeholder Narrative
 
-- Target users: financial operations professionals, fund admins, RIAs, family offices, and related governance roles.
-- Core loop: `Import -> Validate -> Reconcile -> Investigate -> Approve -> Report`.
-- Primary operating model: configurable financial operations platform with one tenant-aware system, not separate products per customer type.
-- Core domains: data integration, treasury/payments, portfolio/investment operations, financial operations, reference data, instrument obligations, entity/relationships, alternative assets, financing, and planning/forecasting.
-- Delivery posture: preserve the closed W1-W4 evidence baselines, then advance W5 Backtest Studio and W6 live-readiness prerequisites through shared contracts, strong auditability, configurable workflows, and approval controls.
+- Evidence-backed stance: Meridian is an operations-first platform centered on:
+  - trusted data intake and provider validation,
+  - reconciliation and exception workflows,
+  - approval and promotion controls,
+  - governed reporting and evidence retention.
+- Operating model: configurable tenant-aware system, not separate apps per organization type.
+- Shared operator root model remains: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, `Settings`.
 
-## Canonical Product Design Artifact
+## Current Wave Posture
 
-- [Meridian Design Document (Draft v1.0)](meridian-design-document.md) is the single canonical hand-authored product vision and capability source.
-- Current wave interpretation must not override this charter; deviations must be justified in roadmap or status evidence.
+- W1–W4 are closed baselines in the registry and treated as preservation targets unless a later registry change says otherwise.
+- W5 is active planning for Backtest Studio expansion.
+- W6 remains the controlled live-readiness path.
+- `Paper-first`, `read-only where uncertain`, and `governance-first` defaults remain active by policy.
 
-## Operator Lifecycle
+For exact wave rows and acceptance language, use the roadmap registry, then follow links into generated outputs.
 
-The release-level story is the Meridian Assurance Loop:
+## Capability Model
 
-```text
-Data Trust Passport
--> Run Evidence Graph
--> Promotion Passport
--> Accounting-Grade Paper Trading
--> Governed Report Pack
-```
+- Domain coverage (design-led):
+  - Data integration and ingestion
+  - Treasury and payments
+  - Portfolio and investment operations
+  - Financial operations and reconciliation
+  - Reference data and instrument obligations
+  - Entities and relationships
+  - Alternative and structured assets
+  - Financing, capital structure, and planning
 
-The practical operator workflow is:
+- Workstream map:
+  - `Data → Reconcile → Investigate → Approve → Report`
 
-1. `Data` establishes provider trust, symbol/reference readiness, and evidence-backed data quality.
-2. `Strategy` turns trusted data into reviewed runs, comparisons, and promotion evidence.
-3. `Trading` validates approved decisions in paper-first workflows before live risk.
-4. `Portfolio` reviews positions, account posture, brokerage sync evidence, and run impact.
-5. `Accounting` reviews ledger, cash-flow, reconciliation, casework, close, and sign-off evidence.
-6. `Reporting` packages governed outputs with retained provenance.
-7. `Settings` keeps credentials, capabilities, storage, and environment posture reproducible.
+## Evidence and Source-Material Boundaries
 
-Visible root operator navigation remains limited to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`. Legacy `Research`, `Data Operations`, and `Governance` names may appear as compatibility groupings, not as new root navigation.
+Use this matrix to avoid source-of-truth drift:
 
-## Current Roadmap Posture
-
-Durable roadmap truth belongs in `docs/roadmap/data/*.yml` and generated views under `docs/roadmap/generated/`. This page summarizes the stakeholder interpretation but does not replace the registry.
-
-| Wave | Current posture | Stakeholder meaning |
+| Topic | Canonical home | Why |
 | --- | --- | --- |
-| W1 Provider confidence and checkpoint evidence | Done | Provider trust and DK1-style evidence are closed baselines that must stay synchronized when provider evidence changes. |
-| W2 Paper-trading cockpit | Done | Paper cockpit acceptance is a closed baseline; future work should preserve evidence rather than reopen the wave. |
-| W3 Shared run / portfolio / ledger continuity | Done | Shared run, portfolio, ledger, brokerage/account, reconciliation, and evidence continuity are closed baselines. |
-| W4 Governance and fund operations | Done | Close/case/report/evidence acceptance is a closed baseline as of the current W4 packet; future work is maintenance unless explicitly scoped otherwise. |
-| W5 Backtest Studio unification | Planned | Next planned product wave; do not pull live-readiness scope forward under W5 without a roadmap change. |
-| W6 Live integration readiness | Planned | Later controlled-live-readiness wave; read-only and paper-first defaults remain. |
-| Optional advanced tracks | Optional | L3, scale, advanced research, and performance tracks should not displace the core operator path. |
+| Product design and assumptions | [Meridian Design Document (Draft v1.0)](meridian-design-document.md) | Core design source for stakeholder framing |
+| Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
+| Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
+| Detailed planning / historical analysis | `docs/plans/`, `docs/evaluations/`, `docs/status/` | Source material only; extract only active facts |
 
-## Capability Map
+## Stakeholder Claim Rules
 
-| Area | Current posture | Canonical detail |
-| --- | --- | --- |
-| Product design foundation | Active design source | [Meridian Design Document (Draft v1.0)](meridian-design-document.md) |
-| Provider confidence and Data Trust Passport | Active W1 baseline plus ongoing provider validation, degradation, and capability governance. | [Reference](../reference/README.md), [Providers](../providers/README.md), [Provider Validation Matrix](../status/provider-validation-matrix.md) |
-| Research, strategy, and run evidence | Active support through shared strategy/run contracts; Backtest Studio remains W5. | [Current Direction and Status](../plans/current-direction-and-status.md), [Feature Inventory](../status/FEATURE_INVENTORY.md) |
-| Trading and paper validation | W2 baseline is closed; live readiness remains W6 and must stay read-only/paper-first until accepted. | [Project Roadmap](../status/ROADMAP.md), [Engineering](../engineering/README.md) |
-| Portfolio, brokerage, ledger continuity | W3 baseline is closed; future changes must preserve shared read-model and acceptance evidence. | [Target End Product](../status/TARGET_END_PRODUCT.md), [Feature Inventory](../status/FEATURE_INVENTORY.md) |
-| Accounting, reconciliation, and close | W4 baseline is closed; new close/report work should be maintenance, hardening, or explicitly new-wave scope. | [Governance Fund Ops Blueprint](../plans/governance-fund-ops-blueprint.md) |
-| Reporting, evidence, and governed outputs | Report-pack and evidence-workbench support are active; broad Evidence OS language remains positioning unless backed by current evidence. | [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md) |
-| Operator UI | Browser workstation and WPF desktop are both active; shared contracts/read models should carry behavior before either surface composes it. | [Engineering](../engineering/README.md), [Operators](../operators/README.md) |
+- `Closed`/`Done` only when the registry source and supporting evidence agree.
+- `Planned` only when registry state is explicit and unambiguous.
+- Do not describe technical or UI details as complete strategy if registry acceptance has not been updated.
+- Any old comparison or analysis document is context, not product contract.
 
-## Product Status Language
-
-Use conservative language:
-
-- `Done` means the relevant registry/status source and acceptance evidence agree.
-- `Closed baseline` means future changes must preserve the accepted evidence, not reopen the wave casually.
-- `Support evidence` means a route, DTO, fixture, API, page, or test exists, but the product capability may still require broader acceptance.
-- `Planned` means do not describe the capability as delivered.
-- `Positioning` means commercial grouping language only until shared contracts, workflows, evidence retention, and governed outputs are accepted.
-
-Do not treat a support slice, route, DTO, WPF page, browser panel, or generated fixture as a wave exit unless the matching acceptance evidence is named.
-
-## Market Positioning Rule
-
-Historical competitive analyses are source material, not current positioning. Before using competitor comparisons, business-model claims, or gap rankings in active product docs, revalidate them against current Meridian evidence and the roadmap registry. The stable product framing is Meridian as a self-hosted evidence-backed investment operations platform; market comparisons should clarify that framing, not replace it.
-
-## Data Quality Claim Rule
-
-Data-quality claims must point to current provider validation evidence, quality reports, or generated status artifacts. Historical data-quality evaluations can explain the dimensions to inspect, such as completeness, gaps, sequence integrity, anomaly detection, latency, freshness, and cross-provider comparison, but they are not proof that the current checkout or deployment satisfies those dimensions.
-
-## Roadmap And Status Sources
-
-Use these sources in order:
-
-1. [Roadmap Registry](../roadmap/README.md)
-2. [Generated Roadmap Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
-3. [Current Direction and Status](../plans/current-direction-and-status.md)
-4. [Project Roadmap](../status/ROADMAP.md)
-5. [Program State](../status/PROGRAM_STATE.md)
-6. [Feature Inventory](../status/FEATURE_INVENTORY.md)
-7. [Target End Product](../status/TARGET_END_PRODUCT.md)
-
-Hand-authored status summaries should not invent a separate source of truth. When registry output and old prose disagree, fix the registry/generator path or explicitly demote the old prose as source material.
-
-## Out Of Scope
-
-Meridian has no active mobile development lane. Do not create native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or mobile-first workflows. Responsive browser validation is allowed only for the browser workstation.
-
-Live-trading claims remain out of scope until W6 acceptance exists. Read-only, paper-first, and fail-closed controls should remain the default posture.
-
-## Canonical Design Artifact
+## High-Value Input Files for Stakeholder Questions
 
 - [Meridian Design Document (Draft v1.0)](meridian-design-document.md)
+- [Roadmap README](../roadmap/README.md)
+- [Roadmap item list](../roadmap/README.md#lane-documents)
+- [Generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md)
+- `docs/roadmap/data/` (YAML truth tables)
 
-## Legacy Source Material
-
-The pages below remain source material during migration. New stakeholder-facing links should prefer this page unless the detailed source is required.
+Legacy links that remain for context but not primary truth:
 
 - [Current Direction and Status](../plans/current-direction-and-status.md)
 - [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md)
-- [Target End Product](../status/TARGET_END_PRODUCT.md)
 - [Feature Inventory](../status/FEATURE_INVENTORY.md)
 - [Project Roadmap](../status/ROADMAP.md)
-- [Meridian Design Document (Draft v1.0)](meridian-design-document.md)
+- [Target End Product](../status/TARGET_END_PRODUCT.md)
+
+## Legacy Source-Material Index
+
+- If you need historical decision rationale, see:
+  - [plans](../plans/README.md)
+  - [status migration index](../status/README.md)
+  - [archive `archive/docs/`](../../archive/docs/README.md)
+
+## Product-Owner Validation
+
+```powershell
+python build/scripts/docs/validate-docs-structure.py --summary
+python build/scripts/docs/validate-roadmap-registry.py --summary
+python build/scripts/docs/render-roadmap-docs.py --summary
+python build/scripts/docs/check-ai-inventory.py --summary
+```

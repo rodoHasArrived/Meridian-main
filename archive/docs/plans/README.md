@@ -26,6 +26,8 @@ This bucket stores completed, superseded, abandoned, or historical plans. Active
 | [sfo-mvp-implementation-design.md](sfo-mvp-implementation-design.md) | `docs/plans/sfo-mvp-implementation-design.md` | Historical SFO implementation design retained as context; active SFO scope guidance comes from product/engineering status and operator documentation. |
 | [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md) | `docs/plans/backtest-studio-unification-blueprint.md` | Historical backtest-studio planning blueprint retained for rationale. |
 | [backtest-studio-unification-pr-sequenced-roadmap.md](backtest-studio-unification-pr-sequenced-roadmap.md) | `docs/plans/backtest-studio-unification-pr-sequenced-roadmap.md` | Historical sequencing draft retained for rationale while active W5 posture remains governed by registry and status evidence. |
+| [approach-b-plus-v2-implementation-plan.md](approach-b-plus-v2-implementation-plan.md) | `docs/plans/approach-b-plus-v2-implementation-plan.md` | V2 implementation planning retained as historical context; active roadmap and delivery governance continue to be managed via registry-backed product documentation. |
+| [covered-call-writing-slice-1-blueprint.md](covered-call-writing-slice-1-blueprint.md) | `docs/plans/covered-call-writing-slice-1-blueprint.md` | Legacy option-writing blueprint retained for historical reference while active product work uses canonical product/engineering guidance. |
 
 ## Use Current Guidance Instead
 
