@@ -98,7 +98,7 @@ Use this matrix to avoid source-of-truth drift:
 
 - [Meridian Design Document (Draft v1.0)](meridian-design-document.md)
 - [Roadmap README](../roadmap/README.md)
-- [Roadmap item list](../roadmap/README.md#lane-documents)
+- [Roadmap item list](../roadmap/README.md)
 - [Generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md)
 - `docs/roadmap/data/` (YAML truth tables)
 

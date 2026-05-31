@@ -38,7 +38,7 @@ Use this page first when the question is "how do I run, operate, repair, package
 | Credential storage and repair | [Provider Credential Management](../operations/provider-credential-management.md) | Encrypted local credential storage and repair routes. |
 | Provider degradation | [Provider Degradation Calibration](../operations/provider-degradation-calibration.md), [Provider Degradation Policy](../operations/provider-degradation-policy.md) | Calibration, promotion, and governance gates. |
 | Backfill operations | [Backfill Guide](../providers/backfill-guide.md) | Historical data backfill procedures. |
-| Provider lookup | [Reference provider lookup](../reference/README.md#canonical-lookup-areas) | Capability and validation matrices remain lookup-only; operation procedures remain here. |
+| Provider lookup | [Reference provider lookup](../reference/README.md#canonical-lookup-areas), [Provider Integration Status](../reference/provider-integration-status.md) | Capability and validation matrices remain lookup-only; operation procedures remain here. |
 
 ## Governance, Reconciliation, And Reporting Operations
 

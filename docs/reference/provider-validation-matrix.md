@@ -10,7 +10,7 @@
 This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence, with bounded runtime evidence regenerated and attached from the validation run when a provider scenario cannot be closed from checked-in tests. The current signed DK1 evidence is the 2026-04-27 packet set under `artifacts/provider-validation/_automation/2026-04-27/`; future date-stamped packets are current only for the run that produced them and need matching packet-bound sign-off before they can replace that evidence. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
 
 
-For the unified per-broker phase/blocker/evidence view, see [`provider-integration-status.md`](./provider-integration-status.md).
+For the unified per-broker phase/blocker/evidence view, see [`provider-integration-status.md`](provider-integration-status.md).
 
 ## Legend
 
@@ -94,7 +94,7 @@ Each generated summary now restates the active provider rows, the DK1 pilot repl
 the cross-cutting checkpoint and Parquet closures, and the deferred-provider inventory so the
 automation output matches the authoritative Wave 1 posture described in this matrix.
 
-The DK1 sample-set contract is maintained in [`dk1-pilot-parity-runbook.md`](./evidence/dk1-pilot-parity-runbook.md)
+The DK1 sample-set contract is maintained in [`dk1-pilot-parity-runbook.md`](../status/evidence/dk1-pilot-parity-runbook.md)
 and emitted as `pilotReplaySampleSet` in the generated JSON summary. The DK1 packet generator
 validates those required samples, links the trust-rationale mapping and baseline-threshold review
 documents, checks those documents for the required DK1 reason codes, payload fields, threshold

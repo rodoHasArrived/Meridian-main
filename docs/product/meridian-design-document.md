@@ -5,7 +5,6 @@
 **Reviewed:** 2026-05-31
 
 This document is the canonical stakeholder design charter for Meridian and is the preferred product framing source used by `docs/product/README.md`.
-
 ## 1. Product Vision
 
 Meridian is a modular, configurable financial operations platform for fund administrators, registered investment advisors, family offices, and other investment organizations. The platform helps financial operations professionals acquire, validate, reconcile, govern, analyze, forecast, and report on financial data through a single auditable workflow.

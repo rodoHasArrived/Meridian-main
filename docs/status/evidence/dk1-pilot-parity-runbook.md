@@ -14,7 +14,7 @@ Provide a single reproducible runbook that proves DK1 pilot parity against the a
 
 ### Governing matrix and execution command
 
-- Provider validation matrix (authoritative provider evidence table): [`provider-validation-matrix.md`](../provider-validation-matrix.md)
+- Provider validation matrix (authoritative provider evidence table): [`provider-validation-matrix.md`](../../reference/provider-validation-matrix.md)
 - Wave 1 validation command script (must be executed for every parity run): [`scripts/dev/run-wave1-provider-validation.ps1`](../../../scripts/dev/run-wave1-provider-validation.ps1)
 - Operator sign-off preflight helper: [`scripts/dev/prepare-dk1-operator-signoff.ps1`](../../../scripts/dev/prepare-dk1-operator-signoff.ps1)
 - Generated automation outputs (must be attached for the run date; these files are generated run evidence and are no longer retained in git):
@@ -26,9 +26,9 @@ Provide a single reproducible runbook that proves DK1 pilot parity against the a
 
 ### Provider-specific evidence links
 
-- **Alpaca row evidence:** [`provider-validation-matrix.md#wave-1-matrix`](../provider-validation-matrix.md#wave-1-matrix) (Alpaca core provider confidence tests)
-- **Robinhood row evidence:** [`provider-validation-matrix.md#wave-1-matrix`](../provider-validation-matrix.md#wave-1-matrix) + regenerated or attached runtime packet evidence for the review date
-- **Yahoo row evidence:** [`provider-validation-matrix.md#wave-1-matrix`](../provider-validation-matrix.md#wave-1-matrix) (historical/fallback test suites)
+- **Alpaca row evidence:** [`provider-validation-matrix.md`](../../reference/provider-validation-matrix.md) (Alpaca core provider confidence tests)
+- **Robinhood row evidence:** [`provider-validation-matrix.md`](../../reference/provider-validation-matrix.md) + regenerated or attached runtime packet evidence for the review date
+- **Yahoo row evidence:** [`provider-validation-matrix.md`](../../reference/provider-validation-matrix.md) (historical/fallback test suites)
 
 ---
 
@@ -62,7 +62,7 @@ when all test steps pass.
 ## Run procedure
 
 1. **Sync evidence baseline**
-   - Verify `docs/status/provider-validation-matrix.md` is current for the pilot window.
+- Verify `docs/reference/provider-validation-matrix.md` is current for the pilot window.
 2. **Execute Wave 1 command matrix**
    - Run `./scripts/dev/run-wave1-provider-validation.ps1` from repo root.
 3. **Capture output artifacts**
