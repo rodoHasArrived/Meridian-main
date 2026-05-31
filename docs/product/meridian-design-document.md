@@ -1,10 +1,5 @@
 # Meridian Design Document — Draft v1.0
 
-**Status:** active
-**Owner:** core-team
-**Reviewed:** 2026-05-31
-
-
 ## 1. Product Vision
 
 Meridian is a modular, configurable financial operations platform for fund administrators, registered investment advisors, family offices, and other investment organizations. The platform helps financial operations professionals acquire, validate, reconcile, govern, analyze, forecast, and report on financial data through a single auditable workflow.
@@ -1837,3 +1832,4 @@ Fragmented data
 ```
 
 This foundation supports fund administrators, RIAs, and family offices without overbuilding too early.
+
