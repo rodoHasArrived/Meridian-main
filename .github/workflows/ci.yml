@@ -132,7 +132,7 @@ jobs:
 
       - name: Validate AI handoff checklist schema
         run: |
-          python3 build/scripts/docs/check-ai-handoff.py --strict --output docs/status/ai-handoff-checklist-report.md --json-output docs/status/ai-handoff-checklist-report.json
+          python3 build/scripts/docs/run-docs-automation.py --scripts check-ai-handoff-strict --json-output docs/status/docs-automation-summary.json --summary-output docs/status/docs-automation-summary.md
 
       - name: Upload .NET test results
         if: failure()

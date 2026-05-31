@@ -1,8 +1,8 @@
 {
   "status": "pass",
-  "generatedAtUtc": "2026-05-31T09:58:43.811138+00:00",
-  "checksTotal": 9,
-  "checksPassed": 9,
+  "generatedAtUtc": "2026-05-31T10:08:32.911032+00:00",
+  "checksTotal": 10,
+  "checksPassed": 10,
   "checksFailed": 0,
   "failures": [
     "No failures detected."
@@ -12,6 +12,11 @@
       "target": "`docs/ai/agent-handoff-checklist.md`",
       "status": "ok",
       "message": "Checklist and required section present."
+    },
+    {
+      "target": "`docs/ai/agent-handoff-checklist.md`",
+      "status": "ok",
+      "message": "All required handoff fields are present."
     },
     {
       "target": "`CLAUDE.md`",

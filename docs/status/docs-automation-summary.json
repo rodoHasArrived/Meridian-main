@@ -1,195 +1,25 @@
 {
   "dry_run": false,
-  "profile": "full",
+  "profile": "core",
   "selected_scripts": [
-    "scan-todos",
-    "generate-structure-docs",
-    "generate-health-dashboard",
-    "repair-links",
-    "validate-examples",
-    "generate-coverage",
-    "generate-changelog",
-    "rules-engine",
-    "validate-api-docs",
-    "generate-dependency-graph",
-    "sync-readme-badges",
-    "generate-metrics-dashboard"
+    "check-ai-handoff-strict"
   ],
   "results": [
     {
-      "name": "scan-todos",
+      "name": "check-ai-handoff-strict",
       "command": [
         "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\scan-todos.py",
+        "D:\\Meridian-main\\build\\scripts\\docs\\check-ai-handoff.py",
+        "--strict",
         "--output",
-        "docs/status/TODO.md",
+        "docs/status/ai-handoff-checklist-report.md",
         "--json-output",
-        "docs/status/todo-scan-results.json"
+        "docs/status/ai-handoff-checklist-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 89.454,
+      "duration_seconds": 0.424,
       "status": "success",
-      "output_file": "docs/status/TODO.md",
-      "error": null
-    },
-    {
-      "name": "generate-structure-docs",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\generate-structure-docs.py",
-        "--output",
-        "docs/generated/repository-structure.md"
-      ],
-      "return_code": 0,
-      "duration_seconds": 0.732,
-      "status": "success",
-      "output_file": "docs/generated/repository-structure.md",
-      "error": null
-    },
-    {
-      "name": "generate-health-dashboard",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\generate-health-dashboard.py",
-        "--output",
-        "docs/status/health-dashboard.md"
-      ],
-      "return_code": 0,
-      "duration_seconds": 118.919,
-      "status": "success",
-      "output_file": "docs/status/health-dashboard.md",
-      "error": null
-    },
-    {
-      "name": "repair-links",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\repair-links.py",
-        "--output",
-        "docs/status/link-repair-report.md"
-      ],
-      "return_code": 0,
-      "duration_seconds": 1.282,
-      "status": "success",
-      "output_file": "docs/status/link-repair-report.md",
-      "error": null
-    },
-    {
-      "name": "validate-examples",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\validate-examples.py",
-        "--output",
-        "docs/status/example-validation.md"
-      ],
-      "return_code": 0,
-      "duration_seconds": 1.111,
-      "status": "success",
-      "output_file": "docs/status/example-validation.md",
-      "error": null
-    },
-    {
-      "name": "generate-coverage",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\generate-coverage.py",
-        "--output",
-        "docs/status/coverage-report.md"
-      ],
-      "return_code": 0,
-      "duration_seconds": 88.306,
-      "status": "success",
-      "output_file": "docs/status/coverage-report.md",
-      "error": null
-    },
-    {
-      "name": "generate-changelog",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\generate-changelog.py",
-        "--output",
-        "docs/status/CHANGELOG.md",
-        "--recent",
-        "50"
-      ],
-      "return_code": 0,
-      "duration_seconds": 0.919,
-      "status": "success",
-      "output_file": "docs/status/CHANGELOG.md",
-      "error": null
-    },
-    {
-      "name": "rules-engine",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\rules-engine.py",
-        "--rules",
-        "build/rules/doc-rules.yaml",
-        "--output",
-        "docs/status/rules-report.md"
-      ],
-      "return_code": 0,
-      "duration_seconds": 4.104,
-      "status": "success",
-      "output_file": "docs/status/rules-report.md",
-      "error": null
-    },
-    {
-      "name": "validate-api-docs",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\validate-api-docs.py",
-        "--output",
-        "docs/status/api-docs-report.md"
-      ],
-      "return_code": 0,
-      "duration_seconds": 5.987,
-      "status": "success",
-      "output_file": "docs/status/api-docs-report.md",
-      "error": null
-    },
-    {
-      "name": "generate-dependency-graph",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\generate-dependency-graph.py",
-        "--output",
-        "docs/generated/project-dependencies.md",
-        "--format",
-        "markdown"
-      ],
-      "return_code": 0,
-      "duration_seconds": 2.654,
-      "status": "success",
-      "output_file": "docs/generated/project-dependencies.md",
-      "error": null
-    },
-    {
-      "name": "sync-readme-badges",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\sync-readme-badges.py",
-        "--output",
-        "docs/status/badge-sync-report.md"
-      ],
-      "return_code": 0,
-      "duration_seconds": 0.916,
-      "status": "success",
-      "output_file": "docs/status/badge-sync-report.md",
-      "error": null
-    },
-    {
-      "name": "generate-metrics-dashboard",
-      "command": [
-        "python3",
-        "C:\\Dev\\Meridian-main\\build\\scripts\\docs\\generate-metrics-dashboard.py",
-        "--output",
-        "docs/status/metrics-dashboard.md"
-      ],
-      "return_code": 0,
-      "duration_seconds": 0.488,
-      "status": "success",
-      "output_file": "docs/status/metrics-dashboard.md",
+      "output_file": "docs/status/ai-handoff-checklist-report.md",
       "error": null
     }
   ]

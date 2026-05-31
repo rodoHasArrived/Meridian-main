@@ -38,8 +38,16 @@ def setup_host_root(root: Path, checklist: str) -> None:
         "docs/ai/codex/README.md",
         "docs/ai/copilot/instructions.md",
         "docs/ai/skills/README.md",
+        "docs/ai/agent-handoff-host-target.md",
     ):
-        write_text(root, rel_path, f"Reference: docs/ai/agent-handoff-checklist.md\n")
+        write_text(root, rel_path, "Reference: docs/ai/agent-handoff-checklist.md\n")
+
+
+def write_host_config(root: Path, targets: list[object]) -> Path:
+    path = root / "build" / "scripts" / "docs" / "ai-handoff-host-targets.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"targets": targets}, indent=2) + "\n", encoding="utf-8")
+    return path
 
 
 class CheckAiHandoffTests(unittest.TestCase):
@@ -49,6 +57,45 @@ class CheckAiHandoffTests(unittest.TestCase):
             setup_host_root(root, "## 3) Required Handoff Packet\n\nThis is required.")
             result = check_ai_handoff.run(root)
             self.assertEqual(0, result)
+
+    def test_run_falls_back_to_default_required_targets_when_config_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setup_host_root(root, "## 3) Required Handoff Packet\n\nThis is required.")
+            result = check_ai_handoff.run(root, host_targets=Path("build/scripts/docs/ai-handoff-host-targets.json"))
+            self.assertEqual(0, result)
+
+    def test_run_uses_custom_host_targets_config(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setup_host_root(root, "## 3) Required Handoff Packet\n\nThis is required.")
+            write_host_config(
+                root,
+                [
+                    "CLAUDE.md",
+                    "docs/ai/agent-handoff-host-target.md",
+                    "docs/ai/assistant-workflow-contract.md",
+                ],
+            )
+            result = check_ai_handoff.run(
+                root,
+                host_targets=Path("build/scripts/docs/ai-handoff-host-targets.json"),
+            )
+            self.assertEqual(0, result)
+
+    def test_run_reports_invalid_host_targets_config(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setup_host_root(root, "## 3) Required Handoff Packet\n\nThis is required.")
+            config_path = root / "build" / "scripts" / "docs" / "ai-handoff-host-targets.json"
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            config_path.write_text("{ invalid json }", encoding="utf-8")
+
+            result = check_ai_handoff.run(
+                root,
+                host_targets=Path("build/scripts/docs/ai-handoff-host-targets.json"),
+            )
+            self.assertEqual(1, result)
 
     def test_run_reports_missing_checklist_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

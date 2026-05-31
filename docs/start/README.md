@@ -81,7 +81,8 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integ
 npm --prefix src/Meridian.Ui/dashboard run test
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/check-ai-handoff.py --output docs/status/ai-handoff-checklist-report.md
-```
+python build/scripts/docs/run-docs-automation.py --scripts check-ai-handoff-strict
+``` 
 
 Broaden to full solution, WPF, UI-service, MCP, integration, or performance lanes only when the changed layer requires it.
 

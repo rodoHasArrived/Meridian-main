@@ -374,6 +374,12 @@ For a second-tier schema gate, pass `--strict` to require all required packet fi
 
 ```bash
 python3 check-ai-handoff.py --strict
+
+Or run the strict automation alias through the docs runner:
+
+```bash
+python3 run-docs-automation.py --scripts check-ai-handoff-strict
+```
 ```
 
 ### generate-coverage.py
