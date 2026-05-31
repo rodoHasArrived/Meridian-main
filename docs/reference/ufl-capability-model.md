@@ -114,12 +114,13 @@ Each converted asset profile must include:
 - `Next Milestone Contract`
 - `Provider Payload Boundary`
 
-The details of each section are defined in [UFL Asset Profile Template](../plans/ufl-asset-profile-template.md).
+The details of each section are defined in [UFL Asset Profile Template](../../archive/docs/plans/ufl-asset-profile-template.md).
 
 ## Related Documents
 
 - [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
 - [UFL Conformance Matrix](ufl-conformance-matrix.md)
-- [UFL Projection and Evidence Kernel](../plans/ufl-projection-and-evidence-kernel.md)
-- [UFL Accounting Impact Model](../plans/ufl-accounting-impact-model.md)
-- [UFL Asset Profile Template](../plans/ufl-asset-profile-template.md)
+- [UFL Projection and Evidence Kernel](../../archive/docs/plans/ufl-projection-and-evidence-kernel.md)
+- [UFL Accounting Impact Model](../../archive/docs/plans/ufl-accounting-impact-model.md)
+- [UFL Asset Profile Template](../../archive/docs/plans/ufl-asset-profile-template.md)
+

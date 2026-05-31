@@ -5,7 +5,7 @@
 **Reviewed:** 2026-05-20
 
 **Run Date:** 2026-05-20  
-**Source snapshots:** `docs/status/provider-validation-matrix.md` plus current broker inventory/runbook docs, `docs/status/kernel-readiness-dashboard.md` (Last Updated 2026-04-27)
+**Source snapshots:** `docs/reference/provider-validation-matrix.md` plus current broker inventory/runbook docs, `archive/docs/reference/kernel-readiness-dashboard.md` (snapshot moved to archive for traceability; Last Updated 2026-04-27)
 **Purpose:** single status document that shows each broker/provider phase, blockers, latest evidence timestamp, and refresh ownership/cadence for active integrations.
 
 ## How to read this board
@@ -52,7 +52,7 @@
 
 1. Run provider evidence generation for the current run date (`yyyy-mm-dd`) and collect artifacts under `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
 2. Update `provider-validation-matrix.md` with new evidence references and bounded/manual notes.
-3. Update `kernel-readiness-dashboard.md` if any gate/readiness/commitment state changes.
+3. Update `archive/docs/reference/kernel-readiness-dashboard.md` if any gate/readiness/commitment state changes.
 4. Update this status board last so phase + blockers + timestamps reflect those two source snapshots.
 5. Validate consistency with `python3 scripts/check_program_state_consistency.py` before publishing status updates.
 

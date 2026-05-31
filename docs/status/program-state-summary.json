@@ -21,7 +21,7 @@
       "Dependency Owners": "Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger",
       "Status": "Done",
       "Target Date": "2026-05-27",
-      "Evidence Link": "[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md)"
+      "Evidence Link": "../roadmap/generated/ROADMAP_SUMMARY.md"
     },
     {
       "Wave": "W3",
@@ -32,7 +32,7 @@
       "Dependency Owners": "Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation",
       "Status": "Done",
       "Target Date": "2026-05-27",
-      "Evidence Link": "[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md)"
+      "Evidence Link": "../roadmap/generated/ROADMAP_SUMMARY.md"
     },
     {
       "Wave": "W4",
@@ -43,7 +43,7 @@
       "Dependency Owners": "Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop",
       "Status": "Done",
       "Target Date": "2026-05-29",
-      "Evidence Link": "[`../plans/current-direction-and-status.md`](../plans/current-direction-and-status.md)"
+      "Evidence Link": "../roadmap/generated/ROADMAP_SUMMARY.md"
     },
     {
       "Wave": "W5",

@@ -1,6 +1,16 @@
-# Redirect: Portfolio-Level Backtesting Composer Blueprint
+# Archived Legacy Plan: portfolio-level-backtesting-composer-blueprint
 
-**Status:** archived
-**Replacement:** [Plans archive copy](../../archive/docs/plans/portfolio-level-backtesting-composer-blueprint.md)
+This plan has been migrated to [portfolio-level-backtesting-composer-blueprint.md](../../archive/docs/plans/portfolio-level-backtesting-composer-blueprint.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This proposed portfolio-composer blueprint is retained as historical source material only. Use [Product Documentation](../product/README.md), [Engineering Documentation](../engineering/README.md), and the [Roadmap Registry](../roadmap/README.md) before pulling portfolio-level backtesting scope forward.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

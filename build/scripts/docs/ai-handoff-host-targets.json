@@ -1,4 +1,9 @@
 {
+  "requiredReferences": [
+    "agent-handoff-checklist.md",
+    "parallel-task-manifest-template.md",
+    "work-modes.md"
+  ],
   "targets": [
     "CLAUDE.md",
     ".codex/AGENTS.md",

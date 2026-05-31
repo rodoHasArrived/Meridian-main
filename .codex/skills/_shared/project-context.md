@@ -47,17 +47,9 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 - `docs/architecture/project-structure.md`
 - `docs/architecture/module-map.md`
 - `docs/architecture/mvvm-guidelines.md`
-- `docs/developer/build-test-run.md`
 - `docs/prompts/repo-maintenance-prompts.md`
-- `docs/status/ROADMAP.md`
-- `docs/status/FEATURE_INVENTORY.md`
-- `docs/status/IMPROVEMENTS.md`
-- `docs/status/production-status.md`
-- `docs/plans/web-ui-development-pivot.md`
-- `docs/plans/evidence-backed-investment-operations-plan.md`
-- `docs/plans/trading-workstation-migration-blueprint.md`
-- `docs/plans/governance-fund-ops-blueprint.md`
-- `docs/plans/meridian-6-week-roadmap.md`
+- `docs/roadmap/README.md`
+- `docs/roadmap/data/roadmap-items.yml`
 
 ## Source Documentation Mesh
 

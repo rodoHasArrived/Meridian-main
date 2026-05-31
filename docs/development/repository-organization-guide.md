@@ -738,7 +738,7 @@ This guide should evolve as the repository grows. To suggest improvements:
 - **Planning and Cleanup:**
   - [Repository Cleanup Action Plan](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/plans/repository-cleanup-action-plan.md) - Technical debt reduction plan (completed)
   - [Refactor Map](./refactor-map.md) - Safe refactoring procedures
-  - [Project Roadmap](../status/ROADMAP.md) - Project timeline and phases
+  - [Project Roadmap](../roadmap/README.md) - Project timeline and phases
 
 - **Implementation Guides:**
   - [Provider Implementation Guide](./provider-implementation.md) - Adding data providers
@@ -753,3 +753,4 @@ This guide should evolve as the repository grows. To suggest improvements:
 - **Contributing:**
   - [Documentation Contribution Guide](./documentation-contribution-guide.md) - Contributing to docs
   - [Central Package Management](./central-package-management.md) - NuGet conventions
+

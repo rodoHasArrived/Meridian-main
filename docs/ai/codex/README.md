@@ -7,6 +7,7 @@ tracks repo-local Codex skill behavior, validation, and documentation ownership.
 For documentation work, start from the rebuilt canonical docs model:
 [`../../README.md`](../../README.md), [`../../start/README.md`](../../start/README.md),
 [`../../product/README.md`](../../product/README.md),
+[`../../product/meridian-design-document.md`](../../product/meridian-design-document.md),
 [`../../engineering/README.md`](../../engineering/README.md),
 [`../../operators/README.md`](../../operators/README.md), and
 [`../../documentation-ownership.md`](../../documentation-ownership.md).
@@ -19,6 +20,8 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
 | [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, and validation lanes |
 | [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md) | Shared handoff format for multi-agent/lane transitions and context minimization |
+| [`../work-modes.md`](../work-modes.md) | Mode selection contract for context budget and escalation control |
+| [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) | Shared parallel-lane ownership manifest to prevent overlap and duplicate discovery |
 | [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring documentation, cleanup, roadmap, navigation, and user-panel work |
 | [`.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex skill catalog and maintenance rules |
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
@@ -89,8 +92,10 @@ route by task phase:
 
 For speed, start with [`quickstart.md`](quickstart.md) when the task shape is unclear, then use
 [`route-cards.md`](route-cards.md) after generated navigation identifies the subsystem. Keep broad
-command discovery in `docs/developer/build-test-run.md`, `docs/HELP.md`, and route-specific docs
-instead of copying long command catalogs into assistant shims.
+command discovery in [`../../start/README.md`](../../start/README.md),
+[`../../engineering/README.md`](../../engineering/README.md),
+[`../../HELP.md`](../../HELP.md), and route-specific docs instead of copying long command
+catalogs into assistant shims.
 
 ## Required Gates For Codex AI/Tooling Changes
 

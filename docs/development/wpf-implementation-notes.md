@@ -570,5 +570,6 @@ make desktop-test
 - [`docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-to-4 desktop acceptance lanes, shared-contract checks, and evidence rules
 - [`docs/evaluations/desktop-platform-improvements-implementation-guide.md`](../evaluations/desktop-platform-improvements-implementation-guide.md) — Platform improvement roadmap and implementation reference
 - [`docs/development/ui-fixture-mode-guide.md`](./ui-fixture-mode-guide.md) — Offline / fixture mode development
-- [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — Desktop items in the project roadmap
+- [`docs/roadmap/README.md`](../roadmap/README.md) — Desktop items in the project roadmap
 - [`docs/development/policies/desktop-support-policy.md`](./policies/desktop-support-policy.md) — Contribution requirements
+

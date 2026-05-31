@@ -1,6 +1,16 @@
-# Meridian Database Blueprint (Archived)
+# Archived Legacy Plan: meridian-database-blueprint
 
-This planning document was archived to reduce active plan clutter.
+This plan has been migrated to [meridian-database-blueprint.md](../../archive/docs/plans/meridian-database-blueprint.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-- **Archive copy**: [meridian-database-blueprint.md](../../archive/docs/plans/meridian-database-blueprint.md)
-- **Reason**: Historical blueprint retained for rationale; active database architecture status is now tracked in canonical engineering guidance and generated/source-backed status/risk artifacts.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

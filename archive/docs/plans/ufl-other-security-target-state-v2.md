@@ -1,0 +1,420 @@
+# UFL Other Security Capability Profile
+
+**Owner:** Core Team
+**Audience:** Product, architecture, domain, storage, and application contributors
+**Last Updated:** 2026-05-29
+
+## TODO Checklist (Concrete Implementation Items)
+- [ ] Define scope boundaries for **ufl other security target state v2** and document explicit in-scope vs out-of-scope items.
+- [ ] Break delivery into PR-sized milestones with owner, dependency, and evidence artifact for each milestone.
+- [ ] Implement the first milestone in code/config/scripts and link the exact validating test or command output.
+- [ ] Add/update operator runbook steps and rollback procedure for the ufl other security target state v2 workflow.
+- [ ] Record completion evidence in `docs/status/` (or linked packet) and mark corresponding checklist items done.
+
+**Status:** active
+**Reviewed:** 2026-03-26
+
+> **Naming standard:** All new F# types and DTOs in this package must follow the
+> [Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
+> Other securities: definition record → `OtherSecDef`; type descriptor field → `TypeDescriptor: string`.
+
+## Summary
+
+This document captures the target-state V2 package for `UFL` other-security assets inside Meridian's broader security-master and governance expansion.
+
+It assumes:
+
+- a modular monolith
+- canonical `OtherSecurity` identities stored in security master
+- governed review, classification, and promotion views modeled as projections
+- replay-safe rebuilds across category, subtype, maturity, issuer, and settlement metadata
+- `OtherSecurity` used as a controlled onboarding path rather than an unbounded catch-all
+- custom asset profiles used when users need repeatable, governed configuration rather than one-off generic classification
+
+This package turns the existing `OtherSecurityTerms` support into an implementation-ready plan for governed onboarding, review workflows, migration paths, and APIs. It works with the [UFL Custom Asset Composability](ufl-custom-asset-composability.md) lane: `OtherSecurity` handles generic fallback cases, while custom profiles handle repeatable user-configured asset shapes.
+
+## Evidence Boundary
+
+### Implemented
+
+- `SecurityKind.OtherSecurity` and `OtherSecurityTerms` exist in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` maps the `"OtherSecurity"` asset class.
+- Security Master validation enforces a nonblank category.
+- Legacy upgrade and interop layers carry generic classification concepts.
+
+### Partially Implemented
+
+- Other-security canonical terms and mapping exist, but review, taxonomy, custom-profile handoff, promotion, and rebuild projections are not evidenced as delivered in this package.
+
+### Target-State Only
+
+- Review-status and promotion-candidate projections.
+- Category/subtype taxonomy views.
+- Migration records to graduate repeated categories or custom profiles into dedicated asset packages.
+- Other-security governance endpoints.
+
+### Explicitly Out of Scope
+
+- Provider-specific payload dumping.
+- Bypassing dedicated UFL packages for stable high-volume asset types.
+- Permanent reliance on `OtherSecurity` when governed custom profiles or dedicated packages are appropriate.
+
+## UFL Capability Profile
+
+| Capability | Level | Current evidence | Target addition | Tests |
+| --- | ---: | --- | --- | --- |
+| InstrumentIdentity | L1 | `SecurityKind.OtherSecurity`, terms, mapping, and category validation exist. | canonical generic-security profile with review metadata | F# validation and C# mapping tests |
+| IssuerOrCounterparty | L1 partial | issuer and settlement hints exist as optional terms. | issuer/counterparty review projection | projection tests |
+| Lifecycle | L0 | none named as delivered. | review state and promotion lifecycle projection | governance projection tests |
+| WorkstationControl | L0 | target-state only. | operator review, correction, and promotion workflow | workstation endpoint tests |
+| ProjectionRebuild | L1 partial | shared Security Master rebuild exists. | other-security scoped replay and checkpoint metadata | rebuild/checkpoint tests |
+
+## Current Maturity
+
+`L1`: canonical generic-security terms, mapping, and category validation exist. L2/L3 maturity requires review, taxonomy, promotion, and custom-profile handoff projections with endpoint evidence.
+
+## Next Milestone Contract
+
+**Goal:** advance `OtherSecurity` toward L2/L3 by adding review, taxonomy, custom-profile handoff, and promotion-candidate read surfaces.
+
+**Files likely touched:**
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.Application/SecurityMaster/`
+- `src/Meridian.Contracts/SecurityMaster/`
+- `src/Meridian.Ui.Shared/Endpoints/`
+- `tests/Meridian.Tests/`
+
+**Acceptance evidence:**
+
+- category/subtype validation tests.
+- C# mapping tests for generic-security terms.
+- governance endpoint tests for review and promotion state.
+- projection/rebuild tests for taxonomy and promotion views.
+
+**Exit criteria:** repeatable user-configured shapes are routed to governed custom profiles before `OtherSecurity` is treated as a permanent home.
+
+## Provider Payload Boundary
+
+Provider payloads may be retained as evidence, but `OtherSecurity` records must carry explicit canonical category, subtype, issuer/counterparty, review, and promotion metadata. Repeatable configured shapes should use approved custom profiles rather than provider-only or ad hoc JSON fields.
+
+## Repo Fit
+
+### Verified Meridian constraints
+
+- Meridian already models `SecurityKind.OtherSecurity` and `OtherSecurityTerms` in `src/Meridian.FSharp/Domain/SecurityMaster.fs`.
+- `SecurityMasterMapping` already maps the `"OtherSecurity"` asset class.
+- security-master validation currently enforces a nonblank category.
+- legacy upgrade and interop layers already carry generic classification concepts that make governed fallback modeling useful.
+
+### Proposed UFL-specific additions
+
+- review-status and promotion-candidate projections
+- category/subtype taxonomy views
+- migration planning records to graduate repeated categories or custom profiles into dedicated asset packages
+- `OtherSecurity`-specific query and governance endpoints
+
+### Suggested Meridian mapping if implemented in-place
+
+- F# domain support in `src/Meridian.FSharp/Domain/`
+- application services in `src/Meridian.Application/SecurityMaster/` and `src/Meridian.Application/Governance/`
+- contracts in `src/Meridian.Contracts/SecurityMaster/`
+- storage in `src/Meridian.Storage/SecurityMaster/`
+- endpoints in `src/Meridian.Ui.Shared/Endpoints/`
+
+## Scope
+
+**In Scope:** canonical generic-security identity, governed category/subtype metadata, issuer and settlement hints, review state, custom-profile handoff signals, promotion candidate tracking, replay-safe rebuilds, and controlled review and reference APIs.
+
+**Out of Scope:** bypasses around modeling discipline, provider-specific payload dumping, and permanent reliance on `OtherSecurity` for asset types that should have dedicated packages.
+
+## Knowledge Graph
+
+```mermaid
+flowchart TD
+    Other["Other Security Aggregate"] --> OtherEvents["Security Master Events"]
+    OtherEvents --> Outbox["Transactional Outbox"]
+    OtherEvents --> Snapshot["Other Security Snapshot Projection"]
+
+    Snapshot --> Review["Review State Projection"]
+    Snapshot --> Taxonomy["Category / SubType Projection"]
+    Snapshot --> Promotion["Promotion Candidate Projection"]
+    Snapshot --> Exposure["Generic Exposure Projection"]
+
+    Review --> Governance["Accounting / Reporting workstation"]
+    Taxonomy --> Reporting["Taxonomy Reporting"]
+    Promotion --> Roadmap["Modeling Roadmap"]
+    Exposure --> Controls["Control / Cleanup Views"]
+```
+
+## 1. Architecture Blueprint
+
+### 1.1 System shape
+
+**Write side**
+
+- canonical `OtherSecurity` aggregate via security master
+- taxonomy and review enrichment boundary
+- promotion-candidate projection boundary
+
+**Read side**
+
+- current other-security snapshot
+- review-state snapshot
+- category/subtype taxonomy snapshot
+- promotion-candidate snapshot
+- generic exposure snapshot
+
+**Processing**
+
+- security create/amend/deactivate handlers
+- review-state worker
+- taxonomy normalization worker
+- promotion-candidate worker
+- rebuild orchestration
+
+### 1.2 Design principles
+
+1. `OtherSecurity` is a governed fallback, not a permanent modeling shortcut.
+2. Category and subtype metadata must be explicit, searchable, and reviewable.
+3. Promotion to a dedicated asset package should preserve identity and lineage where possible.
+4. Fund-ops workstation views should make repeated `OtherSecurity` usage visible and actionable.
+5. Repeatable user-configured asset shapes should move to approved custom profiles before they become permanent generic records.
+6. Replay must deterministically rebuild review and promotion states from event history.
+
+## 2. F# Aggregate and Domain Shapes
+
+### 2.1 Shared kernel
+
+```fsharp
+type OtherSecurityId = SecurityId
+
+type ReviewState =
+    | Unreviewed
+    | InReview
+    | ApprovedAsGeneric
+    | PromotionCandidate
+    | Promoted
+```
+
+### 2.2 Other-security aggregate
+
+The canonical generic instrument definition remains:
+
+```fsharp
+type OtherSecurityTerms = {
+    Category: string
+    SubType: string option
+    Maturity: DateOnly option
+    IssuerName: string option
+    SettlementType: string option
+}
+```
+
+Proposed additive projection shapes:
+
+```fsharp
+type OtherSecurityReviewProjection = {
+    SecurityId: SecurityId
+    State: ReviewState
+    Category: string
+    SubType: string option
+}
+
+type OtherSecurityPromotionProjection = {
+    SecurityId: SecurityId
+    Category: string
+    RecommendedTargetAssetClass: string option
+    IsPromotionCandidate: bool
+}
+```
+
+### 2.3 Projection lineage model
+
+- security-master events rebuild canonical generic-security terms
+- review actions rebuild review-state projections
+- taxonomy normalization rebuilds category/subtype reporting
+- promotion planning rebuilds migration-candidate views
+
+## 3. Event Catalog
+
+### 3.1 Domain events
+
+- `SecurityCreated`
+- `TermsAmended`
+- `SecurityDeactivated`
+- `OtherSecurityReviewStateChanged`
+- `OtherSecurityTaxonomyNormalized`
+- `OtherSecurityPromotionCandidateFlagged`
+
+### 3.2 Process events
+
+- `OtherSecurityReviewSweepCompleted`
+- `OtherSecurityProjectionRebuildCompleted`
+- `OtherSecurityPromotionPlanningCompleted`
+
+### 3.3 Event naming and versioning policy
+
+- align base instrument-definition events with security master
+- version taxonomy and review payloads independently from definition payloads
+- include reviewer identity, reason, and effective timestamp in governance projections
+
+## 4. SQL DDL Design
+
+### 4.1 Core table groups
+
+- `security_master_projection`
+- `other_security_projection`
+- `other_security_review_projection`
+- `other_security_taxonomy_projection`
+- `other_security_promotion_projection`
+- `other_security_projection_checkpoint`
+
+### 4.2 Implementation notes
+
+- taxonomy projections should index category and subtype
+- promotion projections should index candidate status and recommended target asset class
+- review projections should retain reviewer, reason, and updated-at metadata
+
+## 5. Service Boundaries
+
+### 5.1 Other Security Reference module
+
+- owns canonical generic-security queries
+
+### 5.2 Review module
+
+- owns review-state transitions and governance controls
+
+### 5.3 Promotion Planning module
+
+- owns promotion-candidate detection and migration planning views
+
+### 5.4 Platform module
+
+- owns rebuild orchestration and outbox dispatch
+
+## 6. Core Workflows
+
+### 6.1 Create governed generic security
+
+1. create canonical `OtherSecurity` in security master
+2. persist `SecurityCreated`
+3. rebuild snapshot and taxonomy projections
+4. initialize review-state projection
+
+### 6.2 Amend classification metadata
+
+1. amend category, subtype, or supporting terms
+2. persist `TermsAmended`
+3. rebuild taxonomy and review views
+
+### 6.3 Review generic security
+
+1. assign reviewer or automated review job
+2. update review-state projection
+3. publish governance event if status changes
+
+### 6.4 Flag promotion candidate
+
+1. evaluate repeated categories or business-critical volume
+2. mark promotion-candidate projection
+3. attach recommended target asset class and rationale
+
+### 6.5 Read-model rebuild
+
+1. replay canonical security events
+2. replay review and promotion events
+3. checkpoint rebuilt projections
+
+## 7. Phase Sequence
+
+### 7.1 Phase 1 goal
+
+Deliver governed `OtherSecurity` identity, taxonomy and review projections, and controlled review and reference APIs.
+
+### 7.2 Phase 1 implementation order
+
+1. add `OtherSecurity` DTOs and query contracts
+2. add review, taxonomy, and promotion projection tables
+3. implement generic-security reference service
+4. implement review and promotion services
+5. expose governance-oriented endpoints
+6. add review and taxonomy rebuild tests
+
+### 7.3 Phase 1 exit criteria
+
+- `OtherSecurity` instruments query through canonical APIs
+- review and taxonomy views rebuild deterministically
+- governance consumers can identify promotion candidates clearly
+
+### 7.4 Phase 2 goals
+
+- explicit migration workflows into custom profiles or dedicated asset packages
+- stronger operational controls on unreviewed generic securities
+- cross-package promotion dashboards
+
+## 8. Target API Surface
+
+### 8.1 Reference
+
+- `GET /api/security-master/other-securities/{securityId}`
+- `GET /api/security-master/other-securities/search`
+
+### 8.2 Review
+
+- `GET /api/security-master/other-securities/{securityId}/review`
+- `POST /api/security-master/other-securities/{securityId}/review`
+
+### 8.3 Promotion
+
+- `GET /api/security-master/other-securities/promotion-candidates`
+
+## 9. Proposed Repo Structure
+
+```text
+src/
+  Meridian.Application/
+    Governance/
+      IOtherSecurityReviewService.cs
+      OtherSecurityReviewService.cs
+      IOtherSecurityPromotionService.cs
+      OtherSecurityPromotionService.cs
+  Meridian.Contracts/
+    SecurityMaster/
+      OtherSecurityDtos.cs
+  Meridian.Storage/
+    SecurityMaster/
+      OtherSecurityProjectionStore.cs
+  Meridian.Ui.Shared/
+    Endpoints/
+      OtherSecurityEndpoints.cs
+tests/
+  Meridian.Tests/
+    Governance/
+    SecurityMaster/
+```
+
+## 10. Recommended First Ten Implementation Tickets
+
+1. Add `OtherSecurity` DTOs and query contracts.
+2. Add review and taxonomy projection records.
+3. Add promotion-candidate projection records.
+4. Implement generic-security reference service.
+5. Implement review-state service.
+6. Expose controlled review endpoints.
+7. Add taxonomy normalization tests.
+8. Add promotion-candidate detection coverage.
+9. Add rebuild orchestration coverage.
+10. Add fund-ops workstation dashboards for `OtherSecurity` usage, custom-profile handoff, and promotion tracking.
+
+## 11. Final Target State
+
+Meridian treats `OtherSecurity` as a disciplined, reviewable onboarding path with explicit taxonomy, review state, custom-profile handoff, and promotion planning. The platform gains flexibility without allowing generic instruments to become a silent long-term dumping ground.
+
+## Related Documents
+
+- [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
+- [UFL Direct Lending Capability Profile](ufl-direct-lending-target-state-v2.md)
+- [UFL Custom Asset Composability](ufl-custom-asset-composability.md)
+- [Governance and Fund Operations Blueprint](governance-fund-ops-blueprint.md)

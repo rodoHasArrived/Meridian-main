@@ -1,6 +1,16 @@
-# Redirect: Runbook Template Registry Modernization Plan
+# Archived Legacy Plan: runbook-template-registry-modernization-plan
 
-**Status:** archived
-**Replacement:** [Plans archive copy](../../archive/docs/plans/runbook-template-registry-modernization-plan.md)
+This plan has been migrated to [runbook-template-registry-modernization-plan.md](../../archive/docs/plans/runbook-template-registry-modernization-plan.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This draft runbook/template registry plan is retained as historical source material only. Use [Operator Documentation](../operators/README.md), [Engineering Documentation](../engineering/README.md), and current roadmap registry evidence before adding runbook platform scope.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

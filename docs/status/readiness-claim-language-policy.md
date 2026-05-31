@@ -1,36 +1,14 @@
-# Readiness Claim Language Policy
+# Archived Legacy Status Item: Readiness Claim Language Policy
 
-Use this policy for delivery-status docs that summarize operator readiness posture.
+This status file has been migrated to [readiness-claim-language-policy.md](../../archive/docs/status/readiness-claim-language-policy.md). Active status and planning context should be read from canonical owners:
 
-## Required Evidence Anchor
+- [docs/product/README.md](../product/README.md)
+- [docs/roadmap/README.md](../roadmap/README.md)
+- [docs/engineering/README.md](../engineering/README.md)
+- [docs/reference/README.md](../reference/README.md)
 
-Status updates **must** include a reference to the latest pass packet path or artifact id so reviewers can verify current evidence.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
 
-Accepted examples:
-
-- `artifacts/provider-validation/_automation/2026-05-17/dk1-pilot-parity-packet.json`
-- `artifacts/provider-validation/_automation/2026-05-17/`
-- `Artifact ID: DK1-PARITY-2026-05-17`
-
-## Prohibited Phrasing
-
-Do not use unqualified claims that imply live readiness is complete. Denylist examples:
-
-- `production ready for live trading`
-- `live-readiness complete`
-- `fully ready for live trading`
-- `ready for live trading`
-
-## Approved Scoped Phrasing
-
-Use language that explicitly scopes confidence to local/paper evidence and remaining gaps.
-
-Accepted examples:
-
-- `paper-trading evidence`
-- `paper workflow remains in progress`
-- `local/paper evidence`
-- `not readiness exits`
-- `live-readiness remains open`
-
-Automated enforcement: `scripts/check_status_delivery_claims.py`.
+Use the archive copy for history only; do not treat it as current truth.

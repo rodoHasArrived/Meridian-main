@@ -29,7 +29,8 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 ## Current Product Direction
 
 - Start documentation and planning orientation from `docs/README.md`, `docs/product/README.md`,
-  and `docs/engineering/README.md`. Use the roadmap registry (`docs/roadmap/README.md` and
+  `docs/engineering/README.md`, and the [canonical design charter](docs/product/meridian-design-document.md).
+  Use the roadmap registry (`docs/roadmap/README.md` and
   `docs/roadmap/data/*.yml`) for authoritative planning interpretation.
 - Active operator UI work spans `src/Meridian.Ui/dashboard/` and `src/Meridian.Wpf/`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
@@ -154,7 +155,7 @@ Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained 
 - `docs/documentation-ownership.md` for docs ownership, generated-doc, and archive rules.
 - `docs/architecture/project-structure.md` for the maintained repository map.
 - `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
-- `docs/developer/build-test-run.md` for current local build, test, and run commands.
+- `docs/start/README.md` and `docs/engineering/README.md` for current local build, test, and run commands.
 - `docs/prompts/repo-maintenance-prompts.md` for prompt, agent, and skill maintenance rules.
 - `docs/ai/navigation/README.md` for the generated repo-navigation workflow.
 - `docs/ai/generated/repo-navigation.md` for subsystem routing and entrypoints.

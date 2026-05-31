@@ -1,9 +1,15 @@
----
-redirect: ../reference/provider-validation-evidence-schema.md
----
+# Archived Legacy Status Item: provider-validation-evidence-schema
 
-# Provider Validation Evidence Artifact Schema
+This status file has been migrated to [provider-validation-evidence-schema.md](../../archive/docs/status/provider-validation-evidence-schema.md). Active status and planning context should be read from canonical owners:
 
-This path is migrated to [docs/reference/provider-validation-evidence-schema.md](../reference/provider-validation-evidence-schema.md).
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/reference/README.md`](../reference/README.md)
 
-Use the reference location for current artifact schema and required packet fields.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Use the archive copy for history only; do not treat it as current truth.
+

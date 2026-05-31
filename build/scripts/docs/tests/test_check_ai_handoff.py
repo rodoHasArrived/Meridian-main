@@ -27,6 +27,16 @@ def write_text(root: Path, rel_path: str, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+REQUIRED_GUIDANCE_TEXT = "\n".join(
+    [
+        "Reference: docs/ai/agent-handoff-checklist.md",
+        "Reference: docs/ai/parallel-task-manifest-template.md",
+        "Reference: docs/ai/work-modes.md",
+        "",
+    ]
+)
+
+
 def setup_host_root(root: Path, checklist: str) -> None:
     write_text(root, "docs/ai/agent-handoff-checklist.md", checklist)
     for rel_path in (
@@ -40,7 +50,7 @@ def setup_host_root(root: Path, checklist: str) -> None:
         "docs/ai/skills/README.md",
         "docs/ai/agent-handoff-host-target.md",
     ):
-        write_text(root, rel_path, "Reference: docs/ai/agent-handoff-checklist.md\n")
+        write_text(root, rel_path, REQUIRED_GUIDANCE_TEXT)
 
 
 def write_host_config(root: Path, targets: list[object]) -> Path:
@@ -110,7 +120,7 @@ class CheckAiHandoffTests(unittest.TestCase):
                 "docs/ai/copilot/instructions.md",
                 "docs/ai/skills/README.md",
             ):
-                write_text(root, rel_path, "Reference: docs/ai/agent-handoff-checklist.md\n")
+                write_text(root, rel_path, REQUIRED_GUIDANCE_TEXT)
             result = check_ai_handoff.run(root)
             self.assertEqual(1, result)
 
@@ -134,6 +144,83 @@ class CheckAiHandoffTests(unittest.TestCase):
             setup_host_root(root, "## 3) Required Handoff Packet\n\nThis is required.")
             write_text(root, "docs/ai/README.md", "No reference here.\n")
             result = check_ai_handoff.run(root)
+            self.assertEqual(1, result)
+
+    def test_run_supports_root_required_references_override(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setup_host_root(root, "## 3) Required Handoff Packet\n\nThis is required.")
+            write_text(root, "docs/ai/agent-handoff-host-target.md", "Reference: docs/ai/agent-handoff-checklist.md\n")
+            config_path = root / "build" / "scripts" / "docs" / "ai-handoff-host-targets.json"
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "requiredReferences": ["agent-handoff-checklist.md"],
+                        "targets": ["docs/ai/agent-handoff-host-target.md"],
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = check_ai_handoff.run(
+                root,
+                host_targets=Path("build/scripts/docs/ai-handoff-host-targets.json"),
+            )
+            self.assertEqual(0, result)
+
+    def test_run_supports_per_target_required_references_override(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setup_host_root(root, "## 3) Required Handoff Packet\n\nThis is required.")
+            write_text(root, "docs/ai/agent-handoff-host-target.md", "Reference: docs/ai/agent-handoff-checklist.md\n")
+            config_path = root / "build" / "scripts" / "docs" / "ai-handoff-host-targets.json"
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "targets": [
+                            {
+                                "path": "docs/ai/agent-handoff-host-target.md",
+                                "requiredReferences": ["agent-handoff-checklist.md"],
+                            }
+                        ]
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = check_ai_handoff.run(
+                root,
+                host_targets=Path("build/scripts/docs/ai-handoff-host-targets.json"),
+            )
+            self.assertEqual(0, result)
+
+    def test_run_reports_invalid_root_required_references(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setup_host_root(root, "## 3) Required Handoff Packet\n\nThis is required.")
+            config_path = root / "build" / "scripts" / "docs" / "ai-handoff-host-targets.json"
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "requiredReferences": "agent-handoff-checklist.md",
+                        "targets": ["CLAUDE.md"],
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            result = check_ai_handoff.run(
+                root,
+                host_targets=Path("build/scripts/docs/ai-handoff-host-targets.json"),
+            )
             self.assertEqual(1, result)
 
     def test_run_strict_mode_accepts_complete_fields(self) -> None:

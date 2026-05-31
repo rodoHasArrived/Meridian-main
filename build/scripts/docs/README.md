@@ -360,8 +360,9 @@ python3 check-ai-inventory.py \
 
 ### check-ai-handoff.py
 
-Checks that required host-level AI guidance references the shared handoff checklist (`docs/ai/agent-handoff-checklist.md`)
-so multi-agent workflows have a consistent handoff format.
+Checks that required host-level AI guidance references shared orchestration guidance:
+`docs/ai/agent-handoff-checklist.md`, `docs/ai/parallel-task-manifest-template.md`,
+and `docs/ai/work-modes.md`.
 
 ```bash
 python3 check-ai-handoff.py \
@@ -374,12 +375,24 @@ For a second-tier schema gate, pass `--strict` to require all required packet fi
 
 ```bash
 python3 check-ai-handoff.py --strict
+```
 
 Or run the strict automation alias through the docs runner:
 
 ```bash
 python3 run-docs-automation.py --scripts check-ai-handoff-strict
 ```
+
+### check-ai-contract-drift.py
+
+Validates that provider mirror policy files stay byte-aligned to the canonical
+`docs/ai/contract-policy.json`.
+
+```bash
+python3 check-ai-contract-drift.py \
+  --canonical docs/ai/contract-policy.json \
+  --mirror docs/ai/copilot/contract-policy.mirror.json \
+  --mirror docs/ai/claude/contract-policy.mirror.json
 ```
 
 ### generate-coverage.py
@@ -448,7 +461,8 @@ These scripts are integrated into the `.github/workflows/documentation.yml` work
 5. **coverage-report** job - Runs generate-coverage.py
 6. **validate-examples** job - Runs validate-examples.py
 7. **generate-changelog** job - Runs generate-changelog.py
-8. **AI inventory check** - Runs check-ai-inventory.py through the local runner profiles
+8. **AI policy checks** - Runs `check-ai-inventory.py`, `check-ai-handoff.py`, and
+   `check-ai-contract-drift.py` through the local runner profiles
 9. **Readiness dashboards** - `run-docs-automation.py --profile core` and `--profile full`
    include the pilot readiness, paper replay reliability, evidence continuity, governance
    readiness, and API contract coverage dashboards.

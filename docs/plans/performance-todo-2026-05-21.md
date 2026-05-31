@@ -1,6 +1,16 @@
-# Redirect: Performance Improvement TODO Plan 2026-05-21
+# Archived Legacy Plan: performance-todo-2026-05-21
 
-**Status:** archived
-**Replacement:** [Plans archive copy](../../archive/docs/plans/performance-todo-2026-05-21.md)
+This plan has been migrated to [performance-todo-2026-05-21.md](../../archive/docs/plans/performance-todo-2026-05-21.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This May 2026 benchmark TODO snapshot is retained as historical source material only. Use [Engineering Documentation](../engineering/README.md), current benchmarks, and current source evidence before creating performance work.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

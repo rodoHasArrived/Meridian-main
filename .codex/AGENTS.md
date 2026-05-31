@@ -4,6 +4,8 @@ Use this file for Codex-specific desktop implementation behavior. Keep repositor
 the root `AGENTS.md`, `CLAUDE.md`, and `.codex/skills/_shared/project-context.md`.
 For multi-lane AI work, route coordination and handoff format through
 `docs/ai/agent-handoff-checklist.md` and keep host-specific Codex docs aligned to it.
+Select a mode from `docs/ai/work-modes.md` before implementation and initialize
+`docs/ai/parallel-task-manifest-template.md` before concurrent lane execution.
 
 ## Default Implementation Rules
 

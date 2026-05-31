@@ -588,7 +588,7 @@ When adding or changing public APIs:
 
 ---
 
-**See also:** [Architecture Overview](../architecture/overview.md) · [Domain Model](../architecture/domains.md) · [Provider Comparison](../providers/provider-comparison.md)
+**See also:** [Architecture Overview](../architecture/overview.md) · [Domain Model](../architecture/domains.md) · [Provider Capability Matrix](provider-capability-matrix.md)
 
 ---
 

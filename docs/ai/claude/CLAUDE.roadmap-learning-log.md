@@ -2,7 +2,7 @@
 
 Running log of roadmap items studied on the `claude/continue-roadmap-learning-*` branches. Each entry captures what was read, what the current code evidence actually says, and what the next learning session should pick up.
 
-Source of truth for wave status is [`docs/plans/current-direction-and-status.md`](../../plans/current-direction-and-status.md) plus the generated roadmap register; this file only records what was learned at the time, not what is planned.
+Source-of-truth for active wave status is [`docs/roadmap/README.md`](../../roadmap/README.md) plus the generated roadmap register in [`docs/roadmap/generated/`](../../roadmap/generated/); this file only records what was learned at the time, not current planning commitments.
 
 ---
 
@@ -14,8 +14,9 @@ Source of truth for wave status is [`docs/plans/current-direction-and-status.md`
 
 ### Primary sources read
 
-- [`docs/status/ROADMAP.md`](../../status/ROADMAP.md) §"Wave 2: Web paper-trading cockpit completion" and §"Release Gates"
-- [`docs/plans/paper-trading-cockpit-reliability-sprint.md`](../../plans/paper-trading-cockpit-reliability-sprint.md) (the full sprint blueprint)
+- [`docs/roadmap/data/*.yml`](../../roadmap/data/) for wave and gate records for the corresponding scope
+- [`docs/roadmap/generated/ROADMAP_SUMMARY.md`](../../roadmap/generated/ROADMAP_SUMMARY.md) for the generated historical summary
+- Legacy context: [`archive/docs/plans/paper-trading-cockpit-reliability-sprint.md`](../../../archive/docs/plans/paper-trading-cockpit-reliability-sprint.md)
 
 ### Acceptance gate map (sprint → code)
 

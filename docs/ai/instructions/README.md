@@ -125,6 +125,17 @@ explicitly**.
 | [`docs/ai/agents/README.md`](../agents/README.md) | Agent definitions (Copilot + Claude) |
 | [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/docs/ai/README.md) | Master AI resource index |
 
+## AI Contract Coverage
+
+- Repo navigation: [`../navigation/README.md`](../navigation/README.md), [`../generated/repo-navigation.md`](../generated/repo-navigation.md)
+- Agent edit rules: path instructions apply locally; policy and cross-provider rules stay in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md)
+- Generated-file handling: do not hand-edit generated instruction artifacts in this index; update generator inputs/definitions and regenerate when source-of-truth changes
+- Agent orchestration: for multi-agent tasks, pair with `../agent-handoff-checklist.md` and `../parallel-task-manifest-template.md`
+- Parallel development workflows: use disjoint `applyTo` scopes in manifested work; avoid overlapping instruction rewrites without explicit handoff
+- Token/context management: keep scope to `.github/instructions` plus shared AI indexes when updating path instructions; widen only when rule conflicts require
+- Validation procedures: `python build/scripts/docs/check-ai-inventory.py --summary`, `git diff --check`, and relevant AI lane checks for host-specific surfaces
+- Documentation ownership: [`../../documentation-ownership.md`](../../documentation-ownership.md), [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md)
+
 ---
 
 *Last Updated: 2026-04-28*

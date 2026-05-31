@@ -7,3 +7,4 @@
 | Script | Status | Duration (s) | Output |
 |--------|--------|--------------|--------|
 | `check-ai-handoff-strict` | `success` | `0.508` | `docs/status/ai-handoff-checklist-report.md` |
+

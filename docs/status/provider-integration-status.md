@@ -1,9 +1,15 @@
----
-redirect: ../reference/provider-integration-status.md
----
+# Archived Legacy Status Item: provider-integration-status
 
-# Provider Integration Status Board
+This status file has been migrated to [provider-integration-status.md](../../archive/docs/status/provider-integration-status.md). Active status and planning context should be read from canonical owners:
 
-This path is migrated to [docs/reference/provider-integration-status.md](../reference/provider-integration-status.md).
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/reference/README.md`](../reference/README.md)
 
-Use the reference location for canonical provider phase, DI/factory mismatch, and blocker posture.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Use the archive copy for history only; do not treat it as current truth.
+

@@ -1,29 +1,13 @@
-# Environment, Secret, and Deployment Standard
+# Meridian Operations Archive Stub
 
-## Environment model
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+**Retirement path:** `docs/operations/environment-and-deployment-standard.md`
+**Replacement:** `archive/docs/operations/environment-and-deployment-standard.md`
 
-Use three deployment tiers with consistent variable names:
+This legacy operator document is archived source-material.
 
-- `MERIDIAN_ENVIRONMENT=dev|staging|prod`
-- `MERIDIAN_REGION`
-- `MERIDIAN_INSTANCE_ROLE=api|worker|desktop-gateway`
-
-## Configuration contract
-
-- Non-secret config from environment-specific overlays (`config/appsettings.<env>.json`).
-- Secret values from secret manager references only (no inline plaintext in manifests).
-- All config keys mapped through options binding and validated on startup.
-
-## Secret management rules
-
-- Store provider/API credentials in external secret stores.
-- Inject into runtime via mounted files or environment references.
-- Rotate secrets without image rebuild; support dual-key overlap during rotation.
-- Never emit secret values in logs, metrics labels, or error payloads.
-
-## Promotion standard
-
-1. Build immutable artifact once.
-2. Promote same artifact across environments with env/secret overlays only.
-3. Run readiness gate + synthetic surge validation before production promotion.
-4. Attach evidence packet to release record.
+- Canonical operator guidance: [operators/README.md](../operators/README.md)
+- Archived copy: [archive/docs/operations/environment-and-deployment-standard.md](../../archive/docs/operations/environment-and-deployment-standard.md)
+- Archive migration index: [archive/docs/operations/README.md](../../archive/docs/operations/README.md)

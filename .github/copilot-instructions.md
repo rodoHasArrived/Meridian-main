@@ -15,7 +15,9 @@ For each task, follow this sequence:
 3. Make the smallest possible set of edits.
 4. Run targeted validation commands.
 5. For multi-agent or multi-lane tasks, use `docs/ai/agent-handoff-checklist.md` when handing off between phases.
-6. Summarize what changed, why, and how it was validated.
+6. Select a mode from `docs/ai/work-modes.md` before implementation; escalate only when risk or scope increases.
+7. For concurrent lanes, initialize `docs/ai/parallel-task-manifest-template.md` before edits to keep ownership boundaries explicit.
+8. Summarize what changed, why, and how it was validated.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or

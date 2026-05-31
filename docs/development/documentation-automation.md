@@ -476,7 +476,7 @@ All generated files include an "auto-generated" notice and should not be edited 
 
 Use the workflow-manifest artifacts below as the only authoritative workflow inventory.
 Do not hard-code explicit numeric workflow totals in docs under
-`README.md`, `docs/developer/`, or `docs/development/`.
+`README.md`, `archive/docs/developer/`, or `docs/development/`.
 
 1. `docs/status/workflow-manifest.json` — canonical declared workflow inventory.
 2. `docs/generated/workflow-command-reference.md` — generated human-readable workflow command reference.

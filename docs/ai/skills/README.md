@@ -63,6 +63,22 @@ Shared grounding files:
 - [`.claude/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills/_shared/project-context.md)
 - [docs/ai/agent-handoff-checklist.md](../agent-handoff-checklist.md)
 
+## AI Contract Coverage
+
+- Repo navigation: begin with `../navigation/README.md`, then `../generated/repo-navigation.md`
+  before selecting skills for a specific subsystem.
+- Agent edit rules: prefer repository policy in `../assistant-workflow-contract.md`; keep this index
+  as discoverability, not duplicated policy text.
+- Generated-file handling: when updating generation scripts or indexes that produce generated AI docs,
+  change the generator/input and run regeneration commands in `../assistant-workflow-contract.md`.
+- Agent orchestration: use `../parallel-task-manifest-template.md` and `../agent-handoff-checklist.md`
+  for coordinated skill usage across >1 lane.
+- Parallel workflow: disambiguate ownership by lane and keep touched skill surfaces non-overlapping.
+- Token/context management: use `../work-modes.md` and keep validation evidence paths in each manifest packet.
+- Validation: `check-ai-inventory`, `check-codex-skills`, `validate-skill-packages`, and `git diff --check`
+  for skills/docs-only batches.
+- Documentation ownership: [`../../documentation-ownership.md`](../../documentation-ownership.md)
+
 ---
 
 ## Available Portable Skills

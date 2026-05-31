@@ -1,9 +1,15 @@
----
-redirect: ../reference/provider-validation-matrix.md
----
+# Archived Legacy Status Item: provider-validation-matrix
 
-# Provider Validation Matrix
+This status file has been migrated to [provider-validation-matrix.md](../../archive/docs/status/provider-validation-matrix.md). Active status and planning context should be read from canonical owners:
 
-This path is migrated to [docs/reference/provider-validation-matrix.md](../reference/provider-validation-matrix.md).
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/reference/README.md`](../reference/README.md)
 
-Use the reference location for current matrix, evidence mapping, and promotion posture.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Use the archive copy for history only; do not treat it as current truth.
+

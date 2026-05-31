@@ -1,6 +1,16 @@
-# Redirect: Backtest Studio Unification Blueprint
+# Archived Legacy Plan: backtest-studio-unification-blueprint
 
-**Status:** archived
-**Replacement:** [Plans archive copy](../../archive/docs/plans/backtest-studio-unification-blueprint.md)
+This plan has been migrated to [backtest-studio-unification-blueprint.md](../../archive/docs/plans/backtest-studio-unification-blueprint.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This historical planning document is retained as source material only. Use active Wave 5 planning/status artifacts, `docs/product/README.md`, `docs/engineering/README.md`, and the roadmap registry for current guidance.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

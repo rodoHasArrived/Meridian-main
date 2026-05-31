@@ -19,6 +19,8 @@ The active user-facing surfaces are:
 - Built browser assets served by the host: `src/Meridian.Ui/wwwroot/workstation/`
 - Shared workstation API/read-model support: `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`
 
+For the current product framing and capability thesis, use the [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md) before planning changes.
+
 ## Prerequisites
 
 - .NET SDK pinned by [global.json](../../global.json)
@@ -80,7 +82,8 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 npm --prefix src/Meridian.Ui/dashboard run test
 python build/scripts/docs/check-ai-inventory.py --summary
-python build/scripts/docs/check-ai-handoff.py --output docs/status/ai-handoff-checklist-report.md
+python build/scripts/docs/check-ai-handoff.py --output docs/ai/generated/ai-handoff-checklist-report.md
+python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
 python build/scripts/docs/run-docs-automation.py --scripts check-ai-handoff-strict
 ``` 
 
@@ -100,8 +103,8 @@ Broaden to full solution, WPF, UI-service, MCP, integration, or performance lane
 
 The older pages below remain source material during migration. Prefer this page and the canonical lanes above for new links.
 
-- [Getting Started](../getting-started/README.md)
-- [Developer Setup](../developer/setup.md)
-- [Build, Test, Run](../developer/build-test-run.md)
-- [Pilot Operator Quickstart](../getting-started/pilot-operator-quickstart.md)
+- [Getting Started](../../archive/docs/getting-started/README.md)
+- [Developer Setup](../../archive/docs/developer/setup.md)
+- [Build, Test, Run](../../archive/docs/developer/build-test-run.md)
+- [Pilot Operator Quickstart](../../archive/docs/getting-started/pilot-operator-quickstart.md)
 - [HELP](../HELP.md)

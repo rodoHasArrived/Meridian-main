@@ -1,6 +1,16 @@
-# Redirect: Assembly-Level Performance Roadmap
+# Archived Legacy Plan: assembly-performance-roadmap
 
-**Status:** archived
-**Replacement:** [Plans archive copy](../../archive/docs/plans/assembly-performance-roadmap.md)
+This plan has been migrated to [assembly-performance-roadmap.md](../../archive/docs/plans/assembly-performance-roadmap.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This optional advanced-performance roadmap is retained as historical source material only. Use [Engineering Documentation](../engineering/README.md), current benchmarks, and current source evidence before creating performance work.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

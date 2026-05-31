@@ -1,6 +1,16 @@
-# Redirect: Paper Trading Cockpit Reliability Sprint
+# Archived Legacy Plan: paper-trading-cockpit-reliability-sprint
 
-**Status:** archived
-**Replacement:** [Plans archive copy](../../archive/docs/plans/paper-trading-cockpit-reliability-sprint.md)
+This plan has been migrated to [paper-trading-cockpit-reliability-sprint.md](../../archive/docs/plans/paper-trading-cockpit-reliability-sprint.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This completed Wave 2 reliability sprint is retained as historical source material only. Use [Product Documentation](../product/README.md), [Roadmap Registry](../roadmap/README.md), and the current Wave 2 evidence packet for active paper-trading cockpit status.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

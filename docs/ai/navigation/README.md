@@ -21,7 +21,7 @@ Meridian is large enough that broad recursive searching creates avoidable cost, 
 | [`../generated/repo-navigation.json`](../generated/repo-navigation.json) | Canonical machine-readable repo map |
 | [`../generated/repo-navigation.md`](../generated/repo-navigation.md) | Human-readable routing digest |
 | [`../generated/recent-changes.md`](../generated/recent-changes.md) | Rolling source-file change digest for fast regression/debug context |
-| [`build/scripts/docs/generate-ai-navigation.py`](https://github.com/rodoHasArrived/Meridian-main/blob/main/build/scripts/docs/generate-ai-navigation.py) | Generator that refreshes the navigation and recent-change artifacts |
+| [`../../../build/scripts/docs/generate-ai-navigation.py`](../../../build/scripts/docs/generate-ai-navigation.py) | Generator that refreshes the navigation and recent-change artifacts |
 
 The generator is the source of truth. Do not manually edit the generated files.
 
@@ -59,9 +59,9 @@ If MCP is available, prefer these navigation resources/tools:
 
 | Surface | Navigation layer |
 |---------|------------------|
-| Codex | [`.codex/skills/meridian-repo-navigation/SKILL.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/meridian-repo-navigation/SKILL.md) |
-| Copilot | [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/repo-navigation-agent.md) |
-| Claude | [`.claude/agents/meridian-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-navigation.md) |
+| Codex | [`.codex/skills/meridian-repo-navigation/SKILL.md`](../../../.codex/skills/meridian-repo-navigation/SKILL.md) |
+| Copilot | [`.github/agents/repo-navigation-agent.md`](../../../.github/agents/repo-navigation-agent.md) |
+| Claude | [`.claude/agents/meridian-navigation.md`](../../../.claude/agents/meridian-navigation.md) |
 | MCP clients | `RepoNavigationResources` and `RepoNavigationTools` in `src/Meridian.Mcp/` |
 
 ---
@@ -93,4 +93,6 @@ If the user’s question is mainly about finding the right owner, files, docs, o
 
 ---
 
-*Last Updated: 2026-03-31*
+The generated artifacts in `../generated/` are governed by the same generated-doc policy as other registry outputs. Do not hand-edit them.
+
+_Last Updated: 2026-05-31_

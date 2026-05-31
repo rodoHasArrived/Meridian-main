@@ -60,9 +60,9 @@ Provider payloads may be retained as evidence, import source, and troubleshootin
 | --- | --- |
 | [UFL Capability Model](ufl-capability-model.md) | Capability set, maturity levels, lanes, and required asset-profile sections. |
 | [UFL Conformance Matrix](ufl-conformance-matrix.md) | Single planning view of current maturity, next level, gaps, and evidence needed. |
-| [UFL Projection and Evidence Kernel](../plans/ufl-projection-and-evidence-kernel.md) | Shared projection metadata, rebuild, checkpoint, lineage, and provider-isolation target. |
-| [UFL Accounting Impact Model](../plans/ufl-accounting-impact-model.md) | Shared accounting/reconciliation capability boundary and L5 milestone pattern. |
-| [UFL Asset Profile Template](../plans/ufl-asset-profile-template.md) | Required structure for converted asset profile documents. |
+| [UFL Projection and Evidence Kernel](../../archive/docs/plans/ufl-projection-and-evidence-kernel.md) | Shared projection metadata, rebuild, checkpoint, lineage, and provider-isolation target. |
+| [UFL Accounting Impact Model](../../archive/docs/plans/ufl-accounting-impact-model.md) | Shared accounting/reconciliation capability boundary and L5 milestone pattern. |
+| [UFL Asset Profile Template](../../archive/docs/plans/ufl-asset-profile-template.md) | Required structure for converted asset profile documents. |
 
 ## Naming Standard
 
@@ -83,7 +83,7 @@ All new F# types and C# DTOs proposed in these profiles must follow the
 
 ## Custom Asset Composability
 
-UFL should include a user-configurable custom-asset lane for repeatable instruments that do not yet justify a compiled asset package. The custom lane must be composable, governed, versioned, and promotion-ready: users configure approved capability profiles and typed fields, while Meridian preserves canonical Security Master identity, lineage, validation, projection rebuild safety, and review controls. See [UFL Custom Asset Composability](../plans/ufl-custom-asset-composability.md).
+UFL should include a user-configurable custom-asset lane for repeatable instruments that do not yet justify a compiled asset package. The custom lane must be composable, governed, versioned, and promotion-ready: users configure approved capability profiles and typed fields, while Meridian preserves canonical Security Master identity, lineage, validation, projection rebuild safety, and review controls. See [UFL Custom Asset Composability](../../archive/docs/plans/ufl-custom-asset-composability.md).
 
 Custom assets are not a bypass around modeling discipline. One-off generic instruments can still use `OtherSecurity`, but repeated profile-backed instruments should be reviewed for promotion into dedicated packages when their usage becomes operationally important.
 
@@ -91,12 +91,12 @@ Custom assets are not a bypass around modeling discipline. One-off generic instr
 
 | Group | Profiles |
 | --- | --- |
-| Foundation | [Capability Model](ufl-capability-model.md), [Conformance Matrix](ufl-conformance-matrix.md), [Projection and Evidence Kernel](../plans/ufl-projection-and-evidence-kernel.md), [Accounting Impact Model](../plans/ufl-accounting-impact-model.md), [Asset Profile Template](../plans/ufl-asset-profile-template.md) |
-| Deep vertical slice | [Direct Lending Capability Profile](../plans/ufl-direct-lending-target-state-v2.md), [Direct Lending Implementation Roadmap](../plans/ufl-direct-lending-implementation-roadmap.md) |
-| Listed and derivative instruments | [Equity Capability Profile](../plans/ufl-equity-target-state-v2.md), [Option Capability Profile](../plans/ufl-option-target-state-v2.md), [Future Capability Profile](../plans/ufl-future-target-state-v2.md), [Warrant Capability Profile](../plans/ufl-warrant-target-state-v2.md), [CFD Capability Profile](../plans/ufl-cfd-target-state-v2.md), [Swap Capability Profile](../plans/ufl-swap-target-state-v2.md) |
-| Rates, cash, and credit | [Bond Capability Profile](../plans/ufl-bond-target-state-v2.md), [Treasury Bill Capability Profile](../plans/ufl-treasury-bill-target-state-v2.md), [Commercial Paper Capability Profile](../plans/ufl-commercial-paper-target-state-v2.md), [Certificate of Deposit Capability Profile](../plans/ufl-certificate-of-deposit-target-state-v2.md), [Deposit Capability Profile](../plans/ufl-deposit-target-state-v2.md), [Cash Sweep Capability Profile](../plans/ufl-cash-sweep-target-state-v2.md), [Money Market Fund Capability Profile](../plans/ufl-money-market-fund-target-state-v2.md), [Repo Capability Profile](../plans/ufl-repo-target-state-v2.md) |
-| Other asset coverage | [FX Spot Capability Profile](../plans/ufl-fx-spot-target-state-v2.md), [Commodity Capability Profile](../plans/ufl-commodity-target-state-v2.md), [Crypto Capability Profile](../plans/ufl-crypto-target-state-v2.md) |
-| Custom and generic coverage | [Other Security Capability Profile](../plans/ufl-other-security-target-state-v2.md), [UFL Custom Asset Composability](../plans/ufl-custom-asset-composability.md) |
+| Foundation | [Capability Model](ufl-capability-model.md), [Conformance Matrix](ufl-conformance-matrix.md), [Projection and Evidence Kernel](../../archive/docs/plans/ufl-projection-and-evidence-kernel.md), [Accounting Impact Model](../../archive/docs/plans/ufl-accounting-impact-model.md), [Asset Profile Template](../../archive/docs/plans/ufl-asset-profile-template.md) |
+| Deep vertical slice | [Direct Lending Capability Profile](../../archive/docs/plans/ufl-direct-lending-target-state-v2.md), [Direct Lending Implementation Roadmap](../../archive/docs/plans/ufl-direct-lending-implementation-roadmap.md) |
+| Listed and derivative instruments | [Equity Capability Profile](../../archive/docs/plans/ufl-equity-target-state-v2.md), [Option Capability Profile](../../archive/docs/plans/ufl-option-target-state-v2.md), [Future Capability Profile](../../archive/docs/plans/ufl-future-target-state-v2.md), [Warrant Capability Profile](../../archive/docs/plans/ufl-warrant-target-state-v2.md), [CFD Capability Profile](../../archive/docs/plans/ufl-cfd-target-state-v2.md), [Swap Capability Profile](../../archive/docs/plans/ufl-swap-target-state-v2.md) |
+| Rates, cash, and credit | [Bond Capability Profile](../../archive/docs/plans/ufl-bond-target-state-v2.md), [Treasury Bill Capability Profile](../../archive/docs/plans/ufl-treasury-bill-target-state-v2.md), [Commercial Paper Capability Profile](../../archive/docs/plans/ufl-commercial-paper-target-state-v2.md), [Certificate of Deposit Capability Profile](../../archive/docs/plans/ufl-certificate-of-deposit-target-state-v2.md), [Deposit Capability Profile](../../archive/docs/plans/ufl-deposit-target-state-v2.md), [Cash Sweep Capability Profile](../../archive/docs/plans/ufl-cash-sweep-target-state-v2.md), [Money Market Fund Capability Profile](../../archive/docs/plans/ufl-money-market-fund-target-state-v2.md), [Repo Capability Profile](../../archive/docs/plans/ufl-repo-target-state-v2.md) |
+| Other asset coverage | [FX Spot Capability Profile](../../archive/docs/plans/ufl-fx-spot-target-state-v2.md), [Commodity Capability Profile](../../archive/docs/plans/ufl-commodity-target-state-v2.md), [Crypto Capability Profile](../../archive/docs/plans/ufl-crypto-target-state-v2.md) |
+| Custom and generic coverage | [Other Security Capability Profile](../../archive/docs/plans/ufl-other-security-target-state-v2.md), [UFL Custom Asset Composability](../../archive/docs/plans/ufl-custom-asset-composability.md) |
 
 ## Notes
 
@@ -104,3 +104,4 @@ Custom assets are not a bypass around modeling discipline. One-off generic instr
 - Where a package proposes new projections, services, or endpoints, those are target-state additions unless current code evidence is named in the package.
 - The direct-lending document stays authoritative for the deepest fund-ops specialization; the others are thinner implementation-ready companion blueprints.
 - Keep UI references aligned with the current browser workstation workspaces: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+

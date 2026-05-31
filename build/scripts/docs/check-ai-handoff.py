@@ -34,6 +34,11 @@ DEFAULT_LINK_TARGETS: Tuple[Path, ...] = (
     Path("docs/ai/copilot/instructions.md"),
     Path("docs/ai/skills/README.md"),
 )
+DEFAULT_REQUIRED_REFERENCES: Tuple[str, ...] = (
+    "agent-handoff-checklist.md",
+    "parallel-task-manifest-template.md",
+    "work-modes.md",
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -81,19 +86,67 @@ def normalize_host_path(value: str, index: int, errors: list[str]) -> Path | Non
     return Path(value)
 
 
-def parse_host_targets(raw_targets: Sequence[object]) -> tuple[List[Path], list[str]]:
-    paths: List[Path] = []
+def normalize_reference_token(value: str, index: int, errors: list[str]) -> str | None:
+    token = value.strip().lower()
+    if not token:
+        errors.append(f"Host target entry #{index} has an empty required reference token.")
+        return None
+    return token
+
+
+def parse_reference_tokens(raw_refs: object, index: int, warnings: list[str]) -> tuple[str, ...] | None:
+    if not isinstance(raw_refs, list):
+        warnings.append(
+            f"Host target entry #{index} has invalid `requiredReferences`; expected an array of strings."
+        )
+        return None
+    parsed: list[str] = []
+    for raw_ref in raw_refs:
+        if not isinstance(raw_ref, str):
+            warnings.append(
+                f"Host target entry #{index} has non-string required reference token `{type(raw_ref).__name__}`."
+            )
+            continue
+        token = normalize_reference_token(raw_ref, index, warnings)
+        if token is not None and token not in parsed:
+            parsed.append(token)
+    if not parsed:
+        warnings.append(f"Host target entry #{index} did not define any valid required reference tokens.")
+        return None
+    return tuple(parsed)
+
+
+def parse_root_reference_tokens(raw_refs: object) -> tuple[tuple[str, ...], list[str]]:
+    warnings: list[str] = []
+    if raw_refs is None:
+        return DEFAULT_REQUIRED_REFERENCES, warnings
+    parsed = parse_reference_tokens(raw_refs, 0, warnings)
+    if parsed is None:
+        return DEFAULT_REQUIRED_REFERENCES, warnings
+    return parsed, warnings
+
+
+def parse_host_targets(
+    raw_targets: Sequence[object],
+    default_refs: tuple[str, ...],
+) -> tuple[List[tuple[Path, tuple[str, ...]]], list[str]]:
+    rules: List[tuple[Path, tuple[str, ...]]] = []
     warnings: list[str] = []
 
     for index, raw_target in enumerate(raw_targets, start=1):
         required = True
         path_value: str | None
+        refs: tuple[str, ...] = default_refs
 
         if isinstance(raw_target, str):
             path_value = raw_target
         elif isinstance(raw_target, dict):
             path_value = raw_target.get("path") if isinstance(raw_target.get("path"), str) else None
             required = bool(raw_target.get("required", True))
+            if "requiredReferences" in raw_target:
+                parsed_refs = parse_reference_tokens(raw_target.get("requiredReferences"), index, warnings)
+                if parsed_refs is not None:
+                    refs = parsed_refs
             if not required:
                 continue
         else:
@@ -103,34 +156,38 @@ def parse_host_targets(raw_targets: Sequence[object]) -> tuple[List[Path], list[
         if required:
             path = normalize_host_path(path_value or "", index, warnings)
             if path is not None:
-                paths.append(path)
+                rules.append((path, refs))
 
-    return paths, warnings
+    return rules, warnings
 
 
-def load_host_targets(path: Path) -> tuple[List[Path], list[str], bool]:
+def load_host_targets(path: Path) -> tuple[List[tuple[Path, tuple[str, ...]]], list[str], bool]:
     if not path.exists():
-        return list(DEFAULT_LINK_TARGETS), [], False
+        return [(target, DEFAULT_REQUIRED_REFERENCES) for target in DEFAULT_LINK_TARGETS], [], False
 
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as exc:
         return [], [f"Failed to load host-target config from `{path}`: {exc}"], True
 
+    root_refs = DEFAULT_REQUIRED_REFERENCES
+    root_warnings: list[str] = []
     if isinstance(payload, list):
         raw_targets: Sequence[object] = payload
     elif isinstance(payload, dict):
         raw = payload.get("targets")
         if not isinstance(raw, list):
             return [], ["Host target config is missing a `targets` array."], True
+        root_refs, root_warnings = parse_root_reference_tokens(payload.get("requiredReferences"))
         raw_targets = raw
     else:
         return [], ["Host target config must be a JSON list or an object with `targets`."], True
 
-    targets, warnings = parse_host_targets(raw_targets)
-    if not targets:
+    rules, warnings = parse_host_targets(raw_targets, root_refs)
+    warnings = [*root_warnings, *warnings]
+    if not rules:
         warnings.append("Host target config did not produce any required host targets.")
-    return targets, warnings, bool(warnings)
+    return rules, warnings, bool(warnings)
 
 
 def run(
@@ -151,7 +208,7 @@ def run(
     elif not host_targets.is_absolute():
         host_targets = root / host_targets
 
-    required_links, config_warnings, config_failed = load_host_targets(host_targets)
+    required_link_rules, config_warnings, config_failed = load_host_targets(host_targets)
     for warning in config_warnings:
         details.append({
             "target": str(host_targets.as_posix()),
@@ -198,24 +255,26 @@ def run(
                     "message": "All required handoff fields are present.",
                 })
 
-    for path in required_links:
+    for path, required_refs in required_link_rules:
         full_path = root / path
         if not full_path.exists():
             msg = f"{markdown_link_for(path)} does not exist."
-            failures.append(f"{markdown_link_for(path)} does not reference the shared handoff checklist.")
+            failures.append(f"{markdown_link_for(path)} is missing required orchestration references.")
             details.append({"target": markdown_link_for(path), "status": "missing-file", "message": msg})
             continue
 
         text = read_text(full_path).lower()
-        if "agent-handoff-checklist.md" not in text:
-            msg = f"{markdown_link_for(path)} does not reference the shared handoff checklist."
+        missing_refs = [ref for ref in required_refs if ref not in text]
+        if missing_refs:
+            missing_text = ", ".join(f"`{ref}`" for ref in missing_refs)
+            msg = f"{markdown_link_for(path)} is missing required orchestration references: {missing_text}."
             failures.append(msg)
             details.append({"target": markdown_link_for(path), "status": "missing-reference", "message": msg})
         else:
             details.append({
                 "target": markdown_link_for(path),
                 "status": "ok",
-                "message": "Checklist reference present.",
+                "message": "Required orchestration references present.",
             })
 
     status = "pass" if not failures else "fail"
@@ -240,7 +299,7 @@ def run(
     else:
         output.append("## Result")
         output.append("")
-        output.append("- All required host guidance files reference the shared handoff checklist.")
+        output.append("- All required host guidance files reference shared orchestration guidance.")
 
     report = "\n".join(output) + "\n"
     if json_path is not None:

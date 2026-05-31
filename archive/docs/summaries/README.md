@@ -1,8 +1,8 @@
-# Summaries Archive
+'# Summaries Archive
 
 **Status:** archived
 **Owner:** core-team
-**Reviewed:** 2026-05-30
+**Reviewed:** 2026-05-31
 
 This bucket stores historical summaries, snapshots, one-off reports, and retrospectives that are retained for traceability but no longer define active implementation guidance.
 
@@ -14,18 +14,63 @@ This bucket stores historical summaries, snapshots, one-off reports, and retrosp
 - [Roadmap Registry](../../../docs/roadmap/README.md)
 
 ## Retired Summary Paths Preserved as Migration Stubs
-
-- [docs/status/broker-phase-promotion-checklist-template.md](../../../docs/status/broker-phase-promotion-checklist-template.md) now redirects to [archive path](../summaries/broker-phase-promotion-checklist-template.md).
-- [docs/status/dead-code-inventory.md](../../../docs/status/dead-code-inventory.md) now redirects to [archive path](../summaries/dead-code-inventory.md).
-- [docs/status/ibkr-provider-inventory.md](../../../docs/status/ibkr-provider-inventory.md) now redirects to [archive path](../summaries/ibkr-provider-inventory.md).
-- [docs/status/provider-adapters-closure-summary.md](../../../docs/status/provider-adapters-closure-summary.md) now redirects to [archive path](../summaries/provider-adapters-closure-summary.md).
-- [docs/status/provider-capability-inventory.md](../../../docs/status/provider-capability-inventory.md) now redirects to [archive path](../summaries/provider-capability-inventory.md).
-- [docs/status/provider-core-hardening-notes.md](../../../docs/status/provider-core-hardening-notes.md) now redirects to [archive path](../summaries/provider-core-hardening-notes.md).
-- [docs/status/provider-failover-hardening.md](../../../docs/status/provider-failover-hardening.md) now redirects to [archive path](../summaries/provider-failover-hardening.md).
-- [docs/status/provider-test-gap-baseline.md](../../../docs/status/provider-test-gap-baseline.md) now redirects to [archive path](../summaries/provider-test-gap-baseline.md).
-- [docs/status/provider-test-minimums.md](../../../docs/status/provider-test-minimums.md) now redirects to [archive path](../summaries/provider-test-minimums.md).
-- [docs/status/provider-capability-matrix.md](../../../docs/status/provider-capability-matrix.md) now redirects to [archive path](../summaries/provider-capability-matrix.md).
-- [docs/status/contract-compatibility-matrix.md](../../../docs/status/contract-compatibility-matrix.md) now redirects to [archive path](../summaries/contract-compatibility-matrix.md).
-- [docs/status/provider-validation-evidence-schema.md](../../../docs/status/provider-validation-evidence-schema.md) now redirects to [archive path](../summaries/provider-validation-evidence-schema.md).
-- [docs/status/provider-validation-matrix.md](../../../docs/status/provider-validation-matrix.md) now redirects to [archive path](../summaries/provider-validation-matrix.md).
-- [docs/status/provider-integration-status.md](../../../docs/status/provider-integration-status.md) now redirects to [archive path](../summaries/provider-integration-status.md).
+'
+- [2026-02_PR_SUMMARY.md](2026-02_PR_SUMMARY.md)
+- [2026-02_UI_IMPROVEMENTS_SUMMARY.md](2026-02_UI_IMPROVEMENTS_SUMMARY.md)
+- [2026-02_VISUAL_CODE_EXAMPLES.md](2026-02_VISUAL_CODE_EXAMPLES.md)
+- [broker-phase-promotion-checklist-template.md](broker-phase-promotion-checklist-template.md)
+- [build-test-run.md](build-test-run.md)
+- [CHANGES_SUMMARY.md](CHANGES_SUMMARY.md)
+- [contract-compatibility-matrix.md](contract-compatibility-matrix.md)
+- [CS0101_FIX_SUMMARY.md](CS0101_FIX_SUMMARY.md)
+- [dead-code-inventory.md](dead-code-inventory.md)
+- [desktop-improvements-executive-summary.md](desktop-improvements-executive-summary.md)
+- [desktop-testing-guide.md](desktop-testing-guide.md)
+- [DOCUMENTATION_TRIAGE_2026_03_21.md](DOCUMENTATION_TRIAGE_2026_03_21.md)
+- [documentation-consolidation-inventory-2026-05-17.md](documentation-consolidation-inventory-2026-05-17.md)
+- [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
+- [FULL_IMPLEMENTATION_TODO.md](FULL_IMPLEMENTATION_TODO.md)
+- [health-dashboard-2026-05-04.md](health-dashboard-2026-05-04.md)
+- [ibkr-provider-inventory.md](ibkr-provider-inventory.md)
+- [IMPROVEMENTS_2026-02.md](IMPROVEMENTS_2026-02.md)
+- [IMPROVEMENTS.md](IMPROVEMENTS.md)
+- [KERNEL_PARITY_STATUS-placeholder-2026-04-20.md](KERNEL_PARITY_STATUS-placeholder-2026-04-20.md)
+- [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md)
+- [performance-todo-2026-05-21.md](performance-todo-2026-05-21.md)
+- [provider-adapters-closure-summary.md](provider-adapters-closure-summary.md)
+- [provider-capability-inventory.md](provider-capability-inventory.md)
+- [provider-capability-matrix.md](provider-capability-matrix.md)
+- [provider-comparison.md](provider-comparison.md)
+- [provider-core-hardening-notes.md](provider-core-hardening-notes.md)
+- [provider-failover-hardening.md](provider-failover-hardening.md)
+- [provider-integration-status.md](provider-integration-status.md)
+- [provider-test-gap-baseline.md](provider-test-gap-baseline.md)
+- [provider-test-minimums.md](provider-test-minimums.md)
+- [provider-validation-evidence-schema.md](provider-validation-evidence-schema.md)
+- [provider-validation-matrix.md](provider-validation-matrix.md)
+- [PROGRAM_STATE.md](PROGRAM_STATE.md)
+- [production-status.md](production-status.md)
+- [TODO.md](TODO.md)
+- [REDESIGN_IMPROVEMENTS.md](REDESIGN_IMPROVEMENTS.md)
+- [ROADMAP_NOW_NEXT_LATER_2026_03_25.md](ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
+- [ROADMAP_UPDATE_SUMMARY.md](ROADMAP_UPDATE_SUMMARY.md)
+- [ROADMAP_SUMMARY.md](ROADMAP_SUMMARY.md)
+- [ROADMAP.md](ROADMAP.md)
+- [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md)
+- [setup.md](setup.md)
+- [STRUCTURAL_IMPROVEMENTS_2026-02.md](STRUCTURAL_IMPROVEMENTS_2026-02.md)
+- [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md)
+- [TEST_MATRIX_FIX_SUMMARY.md](TEST_MATRIX_FIX_SUMMARY.md)
+- [WAVE2_IMPLEMENTATION_SUMMARY.md](WAVE2_IMPLEMENTATION_SUMMARY.md)
+- [workstation-cockpit-acceptance-matrix.json](workstation-cockpit-acceptance-matrix.json)
+- [workstation-cockpit-acceptance-matrix.md](workstation-cockpit-acceptance-matrix.md)
+- [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md)
+- [ai-handoff-checklist-report.md](ai-handoff-checklist-report.md)
+- [ai-inventory-report.md](ai-inventory-report.md)
+- [desktop-application-screens.md](desktop-application-screens.md)
+- [example-validation.md](example-validation.md)
+- [fund-ops-persistence-cutover-status.md](fund-ops-persistence-cutover-status.md)
+- [governance-handoff-evidence-bundle.md](governance-handoff-evidence-bundle.md)
+- [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md)
+- [readiness-claim-language-policy.md](readiness-claim-language-policy.md)
+- [workflow-drift-report.md](workflow-drift-report.md)

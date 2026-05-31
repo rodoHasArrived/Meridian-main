@@ -209,7 +209,7 @@ Wave2OperatorInboxAcceptanceTests: 13 tests
 
 ## Integration with Wave 2 Exit Criteria
 
-These tests directly validate the Wave 2 exit signal from [`docs/status/ROADMAP.md`](../status/ROADMAP.md):
+These tests directly validate the Wave 2 exit signal from [Roadmap Registry Summary](../roadmap/generated/ROADMAP_SUMMARY.md):
 
 > "A strategy researched in backtest can be promoted to paper trading through one connected workstation workflow, with positions and fills visible through shared contracts."
 
@@ -269,6 +269,6 @@ dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs \
 
 ## Related Documentation
 
-- [`docs/status/ROADMAP.md`](../status/ROADMAP.md) - Wave 2 exit criteria and sequencing
+- [Roadmap Registry Summary](../roadmap/generated/ROADMAP_SUMMARY.md) - Wave 2 exit criteria and sequencing
 - [`docs/plans/paper-trading-cockpit-reliability-sprint.md`](../plans/paper-trading-cockpit-reliability-sprint.md) - Detailed acceptance gate definitions
 - [`docs/plans/waves-2-4-operator-readiness-addendum.md`](../plans/waves-2-4-operator-readiness-addendum.md) - Workstream ownership and dependencies

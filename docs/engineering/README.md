@@ -10,7 +10,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 ## Audience Paths
 
 - **Start first:** [Start](../start/README.md)
-- **Product context:** [Product](../product/README.md)
+- **Product context:** [Product](../product/README.md), including the [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md)
 - **AI policy:** [AI assistant contract](../ai/assistant-workflow-contract.md)
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
@@ -18,11 +18,12 @@ It replaces hand-built planning and historical engineering prose with active ope
 
 ## Architecture and Module Boundaries
 
-Use the module ownership map and source README workflow before changing code:
+Use the source-module registry and source README workflow before changing code:
 
-- [Module map](../architecture/module-map.md)
-- [Project structure](../architecture/project-structure.md)
-- [Source module registry](../source/data/source-modules.yml)
+- [Source module registry](../source/data/source-modules.yml) *(canonical for engineering ownership)*
+- [Source ownership and validation](../source/README.md) *(canonical ownership workflow)*
+- [Module map](../architecture/module-map.md) *(legacy source material; verify against `source/data/source-modules.yml`)*
+- [Project structure](../architecture/project-structure.md) *(legacy source material)*
 
 Canonical ownership rule:
 
@@ -92,6 +93,27 @@ contracts/read models/endpoints, then surfaced by each UI.
 - Roadmap truth: `docs/roadmap/data/*.yml` and generated roadmap views.
 - Generated docs are not hand-edited; update inputs/generators and regenerate.
 - Legacy hand-authored engineering guides remain source material only unless explicitly linked from canonical lanes.
+- Canonical ownership rules are in `../documentation-ownership.md`; this page is only the active
+  engineering start lane.
+
+### Required Engineered Canonicality
+
+- This page is the canonical engineering start for WPF/browser/operator-facing implementation work.
+- Architecture and build/test claims must be validated through:
+  - owning module README
+  - `docs/source/data/source-modules.yml`
+  - owning roadmap row in `docs/roadmap/data/*.yml`
+- If ownership, validation scope, or boundaries change in `src/**`, update:
+  - `docs/source/data/source-modules.yml`
+  - `docs/source/data/source-todos.yml` (when TODOs change)
+  - The nearest source `README.md`
+  - `docs/source/data/diagram-index.yml` (when diagrams change)
+- If registry ownership or module boundaries change, regenerate affected source docs after stale-doc sync:
+
+```powershell
+python build/scripts/docs/mark-stale-docs.py --write --summary
+python build/scripts/docs/validate-source-readmes.py --summary
+```
 
 Canonical commands:
 
@@ -101,6 +123,8 @@ python build/scripts/docs/validate-source-readmes.py --summary
 python build/scripts/docs/validate-roadmap-registry.py --summary
 python build/scripts/docs/validate-doc-hashes.py --summary
 python build/scripts/docs/check-ai-inventory.py --summary
+python build/scripts/docs/check-ai-handoff.py --strict
+python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
 python build/scripts/docs/check-codex-skills.py --summary
 ```
 
@@ -119,8 +143,15 @@ python3 build/scripts/docs/mark-stale-docs.py --write --summary
 
 ## Legacy Source-Material Index
 
-- [Developer Quick Guides](../developer/README.md)
-- [Development Guides](../development/README.md)
-- [Desktop Testing Guide](../development/desktop-testing-guide.md)
-- [Architecture Documentation](../architecture/README.md)
-- [Old WPF workflow notes](../development/wpf-implementation-notes.md)
+- [Developer Quick Guides](../../archive/docs/developer/README.md) *(source material for migration only)*
+- [Development Guides](../development/README.md) *(source material for migration only)*
+- [Desktop Testing Guide](../development/desktop-testing-guide.md) *(source material for migration only)*
+- [Architecture Documentation](../architecture/README.md) *(source material; canonicalized through source registry)*
+- [Old WPF workflow notes](../development/wpf-implementation-notes.md) *(source material)*
+
+## Canonical Ownership Summary
+
+- Canonical engineering start: this file + nearest module `README.md`.
+- Canonical ownership and module map: `docs/source/data/source-modules.yml`, `docs/source/README.md`.
+- Canonical roadmap and acceptance: `docs/roadmap/data/*.yml` + generated roadmap outputs.
+- Canonical generated engineering docs: outputs under `docs/source/generated/` (do not hand-edit).

@@ -1,6 +1,16 @@
-# Options Functionality Roadmap (Archived)
+# Archived Legacy Plan: options-roadmap
 
-This planning document was archived to reduce active plan clutter.
+This plan has been migrated to [options-roadmap.md](../../archive/docs/plans/options-roadmap.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-- **Archive copy**: [options-roadmap.md](../../archive/docs/plans/options-roadmap.md)
-- **Reason**: Implementation roadmap currently superseded by newer status-tracked execution planning; retained for historical context only.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

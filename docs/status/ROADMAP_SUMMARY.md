@@ -1,32 +1,10 @@
-<!--
-generated: true
-generator: build/scripts/docs/render-roadmap-docs.py
-generator_version: 1.0.0
-render_contract: meridian.generated-docs.v1
-schema_versions:
-  - meridian.program-state@1.0.0
-  - meridian.roadmap-items@1.0.0
-inputs:
-  - docs/roadmap/data/decision-log.yml
-  - docs/roadmap/data/document-index.yml
-  - docs/roadmap/data/program-state.yml
-  - docs/roadmap/data/risk-register.yml
-  - docs/roadmap/data/roadmap-items.yml
-  - docs/roadmap/data/stage-gates.yml
-do_not_edit: true
--->
+# Roadmap Summary (Migration Stub)
 
-# Roadmap Summary
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
 
-Snapshot date: 2026-05-20
+This file remains for migration compatibility only.
 
-| ID | Title | Status | Health | Priority | Owner lane |
-| --- | --- | --- | --- | --- | --- |
-| W1-DATA-001 | Provider trust gate and data confidence baseline | done | green | critical | Data Confidence and Validation |
-| W2-PROMO-001 | Paper promotion evidence and operator acceptance | done | green | high | Execution and Fund Accounts |
-| W2-TRD-001 | Paper trading cockpit reliability | done | green | critical | Execution and Fund Accounts |
-| W3-CONT-001 | Research to paper continuity | done | green | high | Strategy and Research |
-| W4-RECON-001 | Portfolio ledger reconciliation readiness | done | green | high | Governance and Ledger |
-| W4-RPT-001 | Governed report pack readiness | done | green | high | Governance and Ledger |
-| W5-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy and Research |
-| W6-LIVE-001 | Live-readiness governance | planned | green | medium | Governance and Ledger |
+- Canonical roadmap summary: [`docs/roadmap/generated/ROADMAP_SUMMARY.md`](../roadmap/generated/ROADMAP_SUMMARY.md)
+- Archive index: [`archive/docs/summaries/ROADMAP_SUMMARY.md`](../../archive/docs/status/ROADMAP_SUMMARY.md)

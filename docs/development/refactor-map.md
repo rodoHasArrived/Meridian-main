@@ -282,5 +282,6 @@ Use these placement rules when adding or moving tests so cross-platform coverage
   - [WPF Implementation Notes](./wpf-implementation-notes.md) - WPF architecture
 
 - **Status and Tracking:**
-  - [Project Roadmap](../status/ROADMAP.md) - Overall project timeline
+  - [Project Roadmap](../roadmap/README.md) - Overall project timeline
   - [CHANGELOG](../status/CHANGELOG.md) - Version history
+

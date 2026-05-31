@@ -1,7 +1,16 @@
-# Fund Management Module Implementation Backlog (Archived)
+# Archived Legacy Plan: fund-management-module-implementation-backlog
 
-**Status:** archived
+This plan has been migrated to [fund-management-module-implementation-backlog.md](../../archive/docs/plans/fund-management-module-implementation-backlog.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This document was archived to ../../archive/docs/plans/fund-management-module-implementation-backlog.md.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
 
-Use this replacement instead: [fund-management-module-implementation-backlog.md](../../archive/docs/plans/fund-management-module-implementation-backlog.md).
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

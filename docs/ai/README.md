@@ -4,13 +4,34 @@ This document is the master index for AI guidance in the Meridian repository. It
 
 ---
 
+## Rebuild Contract Envelope
+
+For every AI/systems task in this repository, use this canonical order:
+
+1. `docs/ai/navigation/README.md`
+2. `docs/ai/generated/repo-navigation.md`
+3. `docs/ai/assistant-workflow-contract.md`
+4. `docs/engineering/README.md` or `docs/product/README.md` / `docs/operators/README.md` as applicable
+5. `docs/documentation-ownership.md` for archive/generation ownership
+6. `docs/documentation-inventory.md` to update migration state and phase notes
+7. Targeted validation command set (`check-*` and structure checks)
+
+Classify AI/doc changes in this rebuild model:
+
+- `canonical`: canonical lanes in `docs/ai/` and host shims (CLAUDE/Codex/agent docs)
+- `source-material`: historical notes or experiments used for extraction only
+- `generated`: `docs/ai/generated/*` (regenerate, do not hand-edit)
+- `archive`: retired guidance with replacement index entries under `archive/docs/`
+
 ## Quick Start
 
 | Task | Start Here | Deep Dive |
 | --- | --- | --- |
 | Engineering/agent work | [`engineering/README.md`](../engineering/README.md) | [`docs`](.) lane map, module map, and source/roadmap registry |
-| Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Root commands, conventions, and architecture |
+| Stakeholder/product planning | [`product/README.md`](../product/README.md) | [`meridian-design-document.md`](../product/meridian-design-document.md) and roadmap-facing status alignment |
+| Any task | [`CLAUDE.md`](../../CLAUDE.md) | Root commands, conventions, and architecture |
 | Any AI system or automation | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic workflow, safety rules, and alignment checklist |
+| Rebuild-era AI requirements | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Contracted requirements for repo navigation, generated-doc handling, orchestration, token/context discipline, and validation |
 | Multi-agent or multi-phase work | [`agent-handoff-checklist.md`](agent-handoff-checklist.md) | Required handoff packet format and token-efficient context boundaries |
 | Parallel multi-lane execution | [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md) | Shared lane-ownership manifest to prevent duplicate discovery and overlapping edits |
 | Context budget sizing | [`work-modes.md`](work-modes.md) | Lightweight/Standard/Deep-review mode selection and escalation rules |
@@ -51,6 +72,17 @@ The generated navigation artifacts are the canonical orientation surface:
 For source edits, assistants must also read the nearest registered source README and use
 `docs/source/data/source-modules.yml` to identify module ownership, roadmap traceability, diagrams,
 TODOs, and validation commands.
+
+## AI Edit Contract (Required)
+
+Before changing any AI/helping-agent guidance:
+
+- Read and update `assistant-workflow-contract.md` first when shared behavior changes.
+- Keep host-specific edits (`claude/`, `codex/`, `copilot/`, `agents/`, `skills/`) strictly aligned to the shared contract.
+- Do not hand-edit generated AI outputs under `docs/ai/generated/*`; re-run generation command lanes.
+- Update this index when adding/removing AI surfaces, entrypoints, checks, or ownership.
+- For parallel work, initialize a manifest (`parallel-task-manifest-template.md`) and record lane transitions in `agent-handoff-checklist.md`.
+- End every AI surface edit with matching validation outputs and a short residual-risk note.
 
 ---
 
@@ -153,6 +185,16 @@ Located mainly in `docs/ai/claude/`.
 
 Model-routing behavior is docs-only controlled by `model-routing-policy.json`; use `routingRules`, `modelClasses`, and `telemetrySignals` as the canonical policy sections. No alternate mirror files, templates, or env-based fallback file paths are used at runtime.
 
+## AI Contract Coverage Checklist
+
+- Repo navigation: [`navigation/README.md`](navigation/README.md), [`generated/repo-navigation.md`](generated/repo-navigation.md)
+- Agent edit rules: [`assistant-workflow-contract.md`](assistant-workflow-contract.md), `.codex/skills/_shared/project-context.md`
+- Generated-file handling: this contract plus `validate-docs-structure`, `generate-ai-navigation`, and `check-ai-contract-drift` command lanes
+- Agent orchestration: [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md), [`agent-handoff-checklist.md`](agent-handoff-checklist.md), [check-ai-contract-drift command](assistant-workflow-contract.md)
+- Token/context management: [`work-modes.md`](work-modes.md) and one-lane handoff packets in handoff manifest
+- Validation procedures: `check-ai-inventory`, `check-codex-skills`, `check-ai-contract-drift`
+- Ownership rules: [`../documentation-ownership.md`](../documentation-ownership.md) and this lane’s `assistant-workflow-contract.md`
+
 ### Adding a New AI Resource
 
 1. Put the file in the correct tool-owned directory when required.
@@ -172,9 +214,19 @@ those files is added, document the exact entrypoint in this index and
 [`assistant-workflow-contract.md`](assistant-workflow-contract.md) instead of relying on a
 tool-specific rule file to carry shared Meridian policy.
 
+## Legacy Path Migration (High-Traffic)
+
+The following high-traffic files are source material or historical entrypoints only and now point to canonical lanes:
+
+- `docs/AGENTS.md` shim → `docs/README.md`
+- `archive/docs/developer/setup.md` and `archive/docs/developer/build-test-run.md` → [start/](../start/README.md) and [engineering/](../engineering/README.md)
+- `archive/docs/developer/` and `docs/development/` guidance files → [engineering/README.md](../engineering/README.md)
+- `docs/ops`-style quickstart notes and one-off operator snapshots → [operators/README.md](../operators/README.md)
+- `docs/providers/*` setup, matrix, and provider-reference pages → [operators/provider-*.md](../operators/README.md) and [reference/provider-*.md](../reference/README.md)
+
 ---
 
-_Last Updated: 2026-05-28_
+_Last Updated: 2026-05-31_
 
 ## Drift failure remediation
 

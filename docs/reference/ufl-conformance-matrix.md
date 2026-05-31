@@ -49,5 +49,6 @@ Maturity levels are defined in [UFL Capability Model](ufl-capability-model.md).
 
 - [UFL Supported Asset Profiles](ufl-supported-assets-index.md)
 - [UFL Capability Model](ufl-capability-model.md)
-- [UFL Projection and Evidence Kernel](../plans/ufl-projection-and-evidence-kernel.md)
-- [UFL Custom Asset Composability](../plans/ufl-custom-asset-composability.md)
+- [UFL Projection and Evidence Kernel](../../archive/docs/plans/ufl-projection-and-evidence-kernel.md)
+- [UFL Custom Asset Composability](../../archive/docs/plans/ufl-custom-asset-composability.md)
+

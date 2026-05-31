@@ -10,12 +10,22 @@ still lives in `../assistant-workflow-contract.md`.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
 3. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
-4. Read the narrowest relevant Codex skill in `.codex/skills/`.
-5. For source edits under `src/**`, read the nearest `README.md` and identify the module in
+4. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
+5. Read the narrowest relevant Codex skill in `.codex/skills/`.
+6. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
-6. Choose the smallest validation lane from the task-to-proof matrix before editing.
-7. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
+7. Choose the smallest validation lane from the task-to-proof matrix before editing.
+8. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
+
+9. If more than one subsystem or AI surface is in scope, initialize
+   [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) first and keep
+   each lane scoped to a unique file set.
+10. For AI/documentation updates:
+    1) update `assistant-workflow-contract.md` when shared rules change,
+    2) run `check-ai-inventory.py` / `check-codex-skills.py`,
+    3) avoid direct edits to `docs/ai/generated/*` unless refreshing generation.
+11. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
 
 ## Read Budget
 
@@ -38,6 +48,24 @@ Load only enough context to route and validate the task.
   unrelated hunks.
 - Use focused `git diff -- <path>` checks before finalizing so the final summary only claims files
   changed for this task.
+
+## Parallel Context Hygiene
+
+- Prefer short batches and handoffs over all-at-once rewrites.
+- One lane should not exceed the target doc surface + one generated artifact.
+- If a task enters context-heavy or uncertain mode, use `../work-modes.md` and record escalation
+  reason in your final handoff.
+
+## AI Contract Coverage
+
+- Repo navigation: `../navigation/README.md`, `../generated/repo-navigation.md`
+- Agent edit rules: `../assistant-workflow-contract.md`, `.codex/skills/_shared/project-context.md`, `.codex/skills/_shared/codex-execution-contract.md`
+- Generated-file handling: run generator commands for `docs/ai/generated` and `docs/generated` updates; do not hand-edit generated outputs.
+- Agent orchestration: start lane planning with `../parallel-task-manifest-template.md` when multiple skills/surfaces are in scope.
+- Parallel development workflows: keep each lane scoped to unique path sets and document handoff boundaries.
+- Token/context management: load only startup checks then escalate context only by phase; use one lane at a time.
+- Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `git diff --check`
+- Documentation ownership: `../../documentation-ownership.md`, `../assistant-workflow-contract.md`
 
 ## Task-To-Proof Matrix
 

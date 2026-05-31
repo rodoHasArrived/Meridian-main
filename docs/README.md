@@ -26,11 +26,11 @@ Current local project path: `D:\Meridian-main`.
 | Documentation ownership and migration rules | [Documentation Ownership Contract](documentation-ownership.md) |
 | Full documentation rebuild inventory | [Documentation Inventory](documentation-inventory.md) |
 | Current product direction | [Product](product/README.md) and [Roadmap Registry](roadmap/README.md) |
-| Stakeholder design charter | [Meridian Design Document (Draft v1.0)](product/meridian-design-document.md) |
+| Stakeholder design charter (active) | [Meridian Design Document (Draft v1.0)](product/meridian-design-document.md) |
 | Roadmap registry | [Roadmap Registry](roadmap/README.md) and `docs/roadmap/data/*.yml` |
 | Source module registry | [Source Documentation Mesh](source/README.md) and `docs/source/data/*.yml` |
 | Architecture and module boundaries | [Engineering](engineering/README.md), [Project Structure](architecture/project-structure.md), and [Module Map](architecture/module-map.md) |
-| Build, test, and run commands | [Engineering](engineering/README.md), [Build, Test, Run](developer/build-test-run.md), and [HELP](HELP.md) |
+| Build, test, and run commands | [Engineering](engineering/README.md), [Start](start/README.md), and [HELP](HELP.md) |
 | Generated documentation policy | [Generated Documentation](generated/README.md) |
 | AI workflow policy | [Provider-Agnostic AI Development Contract](ai/assistant-workflow-contract.md) |
 

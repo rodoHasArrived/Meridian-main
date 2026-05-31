@@ -36,9 +36,9 @@ Provider validation packets and DK1 operator sign-off are the baseline evidence 
 
 ### Exit Criteria
 
-- Provider parity packet exists and is linked from status documentation.
+- Provider parity packet exists and is linked from reference documentation.
 - Operator sign-off evidence is available for DK1 readiness.
-- Provider validation matrix remains the readable front door.
+- Provider validation matrix remains in `docs/reference/provider-validation-matrix.md`.
 
 ### Source Modules
 

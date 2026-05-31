@@ -67,7 +67,7 @@ Focused validation on 2026-05-19 added executable coverage for Tradier-style acc
 Artifacts and evidence anchors for this run date:
 
 - `tests/Meridian.Tests/Execution/TradierExecutionReconciliationTests.cs`
-- `docs/status/provider-validation-matrix.md` (this update)
+- `docs/reference/provider-validation-matrix.md` (this update)
 
 ## Primary Validation Command
 

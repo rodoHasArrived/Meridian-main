@@ -1,6 +1,16 @@
-# Redirect: Meridian Pilot Workflow
+# Archived Legacy Plan: meridian-pilot-workflow
 
-**Status:** archived
-**Replacement:** [Plans archive copy](../../archive/docs/plans/meridian-pilot-workflow.md)
+This plan has been migrated to [meridian-pilot-workflow.md](../../archive/docs/plans/meridian-pilot-workflow.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This milestone workflow is historical implementation planning context. Use `current-direction-and-status.md`, `docs/roadmap/README.md`, and active product/engineering sources as the canonical guidance for current pilot-path evidence.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

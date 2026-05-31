@@ -11,11 +11,19 @@ This directory is the working index for Meridian developer guidance. Use it when
 
 If you are new to the repository, read these in order:
 
-1. [Developer Setup](../developer/setup.md) for local prerequisites and restore commands.
-2. [Build, Test, Run](../developer/build-test-run.md) for the shortest current command path.
+1. [Developer Setup](../../archive/docs/developer/setup.md) for local prerequisites and restore commands.
+2. [Build, Test, Run](../../archive/docs/developer/build-test-run.md) for the shortest current command path.
 3. [Repository Organization Guide](repository-organization-guide.md) for folder placement, naming, and doc location rules.
 4. [Repository Rule Set](repository-rule-set.md) for repository-wide contribution and quality expectations.
 5. [Documentation Contribution Guide](documentation-contribution-guide.md) if your change adds, moves, or retires docs.
+
+### Migration Note
+
+Legacy high-traffic engineering command and setup guides are now retained as archive snapshots:
+
+- [archive/docs/developer/setup.md](../../archive/docs/developer/setup.md)
+- [archive/docs/developer/build-test-run.md](../../archive/docs/developer/build-test-run.md)
+- [docs/development/desktop-testing-guide.md](desktop-testing-guide.md)
 
 For a broader docs map, return to the main [docs index](../README.md).
 
@@ -41,10 +49,10 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 | Document | Use it when you need to... |
 | --- | --- |
-| [Developer Setup](../developer/setup.md) | bootstrap the local checkout at `D:\Meridian-main` |
-| [Build, Test, Run](../developer/build-test-run.md) | choose a narrow build, test, or local run command |
+| [Developer Setup](../../archive/docs/developer/setup.md) | bootstrap the local checkout at `D:\Meridian-main` |
+| [Build, Test, Run](../../archive/docs/developer/build-test-run.md) | choose a narrow build, test, or local run command |
 | [Tooling Architecture](tooling-architecture.md) | understand tooling layers, ownership, and local-to-CI command mapping |
-| [Publish Standalone EXE](../developer/publish-standalone-exe.md) | produce local standalone publish output |
+| [Publish Standalone EXE](../../archive/docs/developer/publish-standalone-exe.md) | produce local standalone publish output |
 | [Repository Organization Guide](repository-organization-guide.md) | place code, docs, assets, or new project files in the right location |
 | [Repository Rule Set](repository-rule-set.md) | understand non-negotiable contribution, quality, and repo hygiene rules |
 | [Documentation Contribution Guide](documentation-contribution-guide.md) | add, review, archive, or reorganize documentation correctly |

@@ -10,12 +10,23 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 ## What a Stakeholder Should Read Here
 
 - If you need the current product framing, start with:
-  - [Meridian Design Document](meridian-design-document.md)
+  - [Meridian Design Document (Draft v1.0)](meridian-design-document.md) — imported design baseline for the rebuild
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.
+
+## Canonical Product Design Charter
+
+The stakeholder-facing baseline for product scope and posture is `docs/product/meridian-design-document.md`.
+This file is the current authoritative source for:
+
+- target customer model,
+- primary operator lifecycle framing,
+- and initial capability posture.
+
+Use this file as the first check before updating any product narrative, claims, or roadmap interpretation.
 
 ## Product Positioning
 
@@ -42,6 +53,13 @@ The operating question remains:
    (stakeholder summary and interpretation)
 5. Legacy status/plan files only as historical context, never as replacement source.
 
+## Design Charter Integration
+
+- The [Meridian Design Document (Draft v1.0)](meridian-design-document.md) is the active stakeholder-facing product framing source.
+- It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
+- Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
+- Imported Design Baseline: `Meridian Design Document (Draft v1.0)` is the canonical product thesis for this rebuild phase (verbatim import from the latest design draft).
+
 ## Stakeholder Narrative
 
 - Evidence-backed stance: Meridian is an operations-first platform centered on:
@@ -51,6 +69,30 @@ The operating question remains:
   - governed reporting and evidence retention.
 - Operating model: configurable tenant-aware system, not separate apps per organization type.
 - Shared operator root model remains: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, `Settings`.
+
+## Evidence-Backed Investment-Operations Lifecycle
+
+Use this lifecycle when validating any new or changed stakeholder claim:
+
+1. **Import**: data is acquired and preserved from the source.
+2. **Validate**: quality and mapping rules are applied with replayable provenance.
+3. **Reconcile**: breaks are surfaced, assigned, and resolved.
+4. **Approve**: workflow and policy gates are satisfied with auditable records.
+5. **Report**: evidence-bound outputs are published and retained.
+
+A claim is only “complete” when it is backed by:
+
+- one or more roadmap rows in `docs/roadmap/data/*.yml` (status and acceptance),
+- the matching generated roadmap artifact in `docs/roadmap/generated/`,
+- and at least one supporting operational proof surface in `docs/operators` or `docs/reference`.
+
+Use this compact claim status model for stakeholder-facing updates:
+
+- **Complete**: roadmap row + generated proof + operational evidence reference.
+- **Supported/Experimental**: explicit mention in design charter and a supporting design/prototype artifact, but no active acceptance gate yet.
+- **Blocked**: acceptance gating exists but upstream dependency, data quality, or policy constraint is not yet cleared.
+
+## Current Supportability Claims
 
 ## Current Wave Posture
 
@@ -87,6 +129,16 @@ Use this matrix to avoid source-of-truth drift:
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
 | Detailed planning / historical analysis | `docs/plans/`, `docs/evaluations/`, `docs/status/` | Source material only; extract only active facts |
 
+## Product-Critical Migration Index
+
+Stakeholder-facing high-traffic legacy pages map here:
+
+- `docs/plans/current-direction-and-status.md` → [archive copy](../../archive/docs/plans/current-direction-and-status.md)
+- `docs/plans/evidence-backed-investment-operations-plan.md` → [archive copy](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- `docs/status/ROADMAP.md`, `docs/status/FEATURE_INVENTORY.md`, `docs/status/TARGET_END_PRODUCT.md` → `roadmap/data/*.yml` + generated roadmap outputs
+
+If a legacy page is still actively needed for non-stakeholder operations, keep a short replacement pointer in the same page and move it to `archive/docs/plans/` or `archive/docs/status/` once the replacement is stable.
+
 ## Stakeholder Claim Rules
 
 - `Closed`/`Done` only when the registry source and supporting evidence agree.
@@ -104,16 +156,16 @@ Use this matrix to avoid source-of-truth drift:
 
 Legacy links that remain for context but not primary truth:
 
-- [Current Direction and Status](../plans/current-direction-and-status.md)
-- [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md)
-- [Feature Inventory](../status/FEATURE_INVENTORY.md)
-- [Project Roadmap](../status/ROADMAP.md)
-- [Target End Product](../status/TARGET_END_PRODUCT.md)
+- [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md)
+- [Evidence-Backed Investment Operations Plan (Archived)](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
+- [Feature Inventory (Archived)](../../archive/docs/summaries/FEATURE_INVENTORY.md)
+- [Project Roadmap (Registry Snapshot)](../roadmap/generated/ROADMAP_SUMMARY.md)
+- [Target End Product (Archived)](../../archive/docs/summaries/TARGET_END_PRODUCT.md)
 
 ## Legacy Source-Material Index
 
 - If you need historical decision rationale, see:
-  - [plans](../plans/README.md)
+  - [plans (archive index)](../../archive/docs/plans/README.md)
   - [status migration index](../status/README.md)
   - [archive `archive/docs/`](../../archive/docs/README.md)
 

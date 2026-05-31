@@ -1,6 +1,16 @@
-# L3 Inference & Queue-Aware Execution Backtesting: Implementation Plan (Archived)
+# Archived Legacy Plan: l3-inference-implementation-plan
 
-This planning document was archived to reduce active plan clutter.
+This plan has been migrated to [l3-inference-implementation-plan.md](../../archive/docs/plans/l3-inference-implementation-plan.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-- **Archive copy**: [l3-inference-implementation-plan.md](../../archive/docs/plans/l3-inference-implementation-plan.md)
-- **Reason**: Historical implementation plan retained for evidence and context; active L3/options priority and execution status remain in current status/risk artifacts and product/engineering guidance.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

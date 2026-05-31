@@ -1,6 +1,16 @@
-# Redirect: SFO MVP Implementation Design
+# Archived Legacy Plan: sfo-mvp-implementation-design
 
-**Status:** archived
-**Replacement:** [Plans archive copy](../../archive/docs/plans/sfo-mvp-implementation-design.md)
+This plan has been migrated to [sfo-mvp-implementation-design.md](../../archive/docs/plans/sfo-mvp-implementation-design.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This design note is historical architecture/planning context for single-family-office scope. Use `docs/product/README.md`, `docs/engineering/README.md`, and the canonical roadmap/status sources for active guidance.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

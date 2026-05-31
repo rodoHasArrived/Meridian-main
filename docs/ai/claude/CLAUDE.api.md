@@ -226,7 +226,7 @@ Located in `src/Meridian.Application/Monitoring/DataQuality/`.
 | `update-diagrams.yml` | Architecture diagram and UML generation |
 | `validate-workflows.yml` | Workflow validation |
 
-Full workflow details: `docs/development/github-actions-summary.md`
+Full workflow details: `.github/workflows/README.md`
 
 ---
 

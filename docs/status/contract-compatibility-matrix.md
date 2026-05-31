@@ -1,9 +1,15 @@
----
-redirect: ../reference/contract-compatibility-matrix.md
----
+# Archived Legacy Status Item: contract-compatibility-matrix
 
-# Contract Compatibility Matrix
+This status file has been migrated to [contract-compatibility-matrix.md](../../archive/docs/status/contract-compatibility-matrix.md). Active status and planning context should be read from canonical owners:
 
-This path is migrated to [docs/reference/contract-compatibility-matrix.md](../reference/contract-compatibility-matrix.md).
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/reference/README.md`](../reference/README.md)
 
-Use the reference location for current compatibility, deprecation, and promotion gate references.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Use the archive copy for history only; do not treat it as current truth.
+

@@ -1,7 +1,16 @@
-# Web Ui Development Pivot (Archived)
+# Archived Legacy Plan: web-ui-development-pivot
 
-**Status:** archived
+This plan has been migrated to [web-ui-development-pivot.md](../../archive/docs/plans/web-ui-development-pivot.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This document was archived to ../../archive/docs/plans/web-ui-development-pivot.md.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
 
-Use this replacement instead: [web-ui-development-pivot.md](../../archive/docs/plans/web-ui-development-pivot.md).
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

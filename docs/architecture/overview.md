@@ -104,10 +104,11 @@ These capabilities are intended to live inside the existing Governance workspace
 
 ## Related Documents
 
-- [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
-- [Current Direction and Status](../plans/current-direction-and-status.md)
-- [Evidence-Backed Investment Operations Plan](../plans/evidence-backed-investment-operations-plan.md)
-- [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
-- [Project Roadmap](../status/ROADMAP.md)
+- [Trading Workstation Migration Blueprint (Archived)](../../archive/docs/plans/trading-workstation-migration-blueprint.md)
+- [Stakeholder Product Charter](../product/meridian-design-document.md)
+- [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md)
+- [Governance and Fund Operations Blueprint (Archived)](../../archive/docs/plans/governance-fund-ops-blueprint.md)
+- [Project Roadmap](../roadmap/README.md)
 - [Layer Boundaries](layer-boundaries.md)
 - [Desktop Layers](desktop-layers.md)
+

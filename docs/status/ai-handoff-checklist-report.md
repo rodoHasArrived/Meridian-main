@@ -2,4 +2,4 @@
 
 ## Result
 
-- All required host guidance files reference the shared handoff checklist.
+- All required host guidance files reference shared orchestration guidance.

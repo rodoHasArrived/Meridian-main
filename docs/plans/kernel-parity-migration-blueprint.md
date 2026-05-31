@@ -1,6 +1,16 @@
-# Kernel Migration Parity Blueprint (Archived)
+# Archived Legacy Plan: kernel-parity-migration-blueprint
 
-This planning document was archived to reduce active plan clutter.
+This plan has been migrated to [kernel-parity-migration-blueprint.md](../../archive/docs/plans/kernel-parity-migration-blueprint.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-- **Archive copy**: [kernel-parity-migration-blueprint.md](../../archive/docs/plans/kernel-parity-migration-blueprint.md)
-- **Reason**: Optional parity program blueprint retained for historical context; current parity and migration status is tracked through active registry evidence and status reports.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

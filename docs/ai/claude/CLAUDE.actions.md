@@ -1,7 +1,7 @@
 # CLAUDE.actions.md - GitHub Actions & CI/CD Guide
 
 This guide covers the current Meridian GitHub Actions surface. Keep it aligned with
-`.github/workflows/README.md` and `docs/development/github-actions-summary.md`.
+`.github/workflows/README.md` and `docs/engineering/README.md`.
 
 ## Workflow Inventory
 
@@ -62,9 +62,8 @@ python build/scripts/ci/check-workflow-hygiene.py
 ## Related Documentation
 
 - [Workflow README](../../../.github/workflows/README.md)
-- [GitHub Actions Summary](../../development/github-actions-summary.md)
-- [GitHub Actions Testing Checklist](../../development/github-actions-testing.md)
-- [Build, Test, Run](../../developer/build-test-run.md)
-- [Publish Standalone EXE](../../developer/publish-standalone-exe.md)
+- [Engineering entrypoint](../../engineering/README.md)
+- [Build, Test, Run](../../engineering/README.md)
+- [Start guide](../../start/README.md)
 
 *Last Updated: 2026-05-18*

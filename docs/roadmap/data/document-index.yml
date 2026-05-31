@@ -5,7 +5,7 @@ schema:
 
 documents:
   - id: DOC-ROADMAP-FRONT-DOOR
-    path: docs/status/ROADMAP.md
+    path: docs/roadmap/README.md
     title: Current roadmap front door
     role: readable_status
     owner_lane: Core Team
@@ -15,7 +15,7 @@ documents:
       - W3-CONT-001
       - W4-RPT-001
   - id: DOC-CURRENT-DIRECTION
-    path: docs/plans/current-direction-and-status.md
+    path: docs/product/README.md
     title: Current direction and status
     role: planning_interpretation
     owner_lane: Core Team

@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "generatedAtUtc": "2026-05-31T10:55:35.681505+00:00",
+  "generatedAtUtc": "2026-05-31T16:06:46.192329+00:00",
   "checksTotal": 10,
   "checksPassed": 10,
   "checksFailed": 0,
@@ -21,42 +21,42 @@
     {
       "target": "`CLAUDE.md`",
       "status": "ok",
-      "message": "Checklist reference present."
+      "message": "Required orchestration references present."
     },
     {
       "target": "`.codex/AGENTS.md`",
       "status": "ok",
-      "message": "Checklist reference present."
+      "message": "Required orchestration references present."
     },
     {
       "target": "`.github/copilot-instructions.md`",
       "status": "ok",
-      "message": "Checklist reference present."
+      "message": "Required orchestration references present."
     },
     {
       "target": "`docs/ai/README.md`",
       "status": "ok",
-      "message": "Checklist reference present."
+      "message": "Required orchestration references present."
     },
     {
       "target": "`docs/ai/assistant-workflow-contract.md`",
       "status": "ok",
-      "message": "Checklist reference present."
+      "message": "Required orchestration references present."
     },
     {
       "target": "`docs/ai/codex/README.md`",
       "status": "ok",
-      "message": "Checklist reference present."
+      "message": "Required orchestration references present."
     },
     {
       "target": "`docs/ai/copilot/instructions.md`",
       "status": "ok",
-      "message": "Checklist reference present."
+      "message": "Required orchestration references present."
     },
     {
       "target": "`docs/ai/skills/README.md`",
       "status": "ok",
-      "message": "Checklist reference present."
+      "message": "Required orchestration references present."
     }
   ]
 }

@@ -1,6 +1,16 @@
-# Desktop Shell Modularity & Extensibility Roadmap (Archived)
+# Archived Legacy Plan: desktop-shell-modularity-roadmap
 
-This planning document was archived to reduce active plan clutter.
+This plan has been migrated to [desktop-shell-modularity-roadmap.md](../../archive/docs/plans/desktop-shell-modularity-roadmap.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-- **Archive copy**: [desktop-shell-modularity-roadmap.md](../../archive/docs/plans/desktop-shell-modularity-roadmap.md)
-- **Reason**: Historical implementation roadmap kept for rationale; current active WPF architecture guidance is now in canonical docs and source-owned implementation status.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

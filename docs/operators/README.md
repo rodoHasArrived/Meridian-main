@@ -2,96 +2,171 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-30
+**Reviewed:** 2026-05-31
 
-This is the canonical operator procedure lane for Meridian setup, provider workflows, workstation usage, runbooks, deployment, troubleshooting, and support evidence.
+This is the canonical operator procedure lane for Meridian setup, provider workflows, launch/deployment, runbooks, troubleshooting, and support evidence.
 
-Use this page first when the question is "how do I run, operate, repair, package, or support Meridian?" Lookup-only tables belong in [Reference](../reference/README.md); implementation guidance belongs in [Engineering](../engineering/README.md).
+## What Is Canonical Here
+
+- **Canonical**: this page + active operator procedure files below.
+- **Source-Material**: legacy `docs/operations/*`, `docs/providers/*`, and one-off operator snapshots until they are archived.
+- **Generated**: route to `docs/generated/` and generated registry outputs.
+- **Archive**: superseded high-traffic paths moved with replacement links under `archive/docs/`.
+
+Use this page when the question is: *how do I run, operate, repair, deploy, or support Meridian?*
+
+Lookup tables and contract shape belong in [Reference](../reference/README.md). Implementation behavior belongs in [Engineering](../engineering/README.md).
+
+## Canonical Operator Scope
+
+- local launch and workstation operation
+- provider credential and incident handling
+- deployment and packaging
+- reconciliation, failover, and recovery
+- preflight and support evidence readiness
+- provider operations and capability evidence routing
 
 ## Operator Start Paths
 
 | Need | Start here | Notes |
 | --- | --- | --- |
-| First local setup | [Start](../start/README.md), [Pilot Operator Quickstart](../getting-started/pilot-operator-quickstart.md) | New setup and quickstart content should stay canonical in `docs/start/` and here. |
-| Local command help | [HELP](../HELP.md) | Operator-facing command discovery and FAQ. |
-| Daily operations | [Operator Runbook](../operations/operator-runbook.md) | Canonical day-to-day operational procedures in this lane during migration. |
-| Deployment | [Deployment](../operations/deployment.md), [Environment and Deployment Standard](../operations/environment-and-deployment-standard.md) | Deployment and environment rules. |
-| Production posture | [Production Status](../status/production-status.md), [Service Level Objectives](../operations/service-level-objectives.md) | Status input plus SLO procedures. |
+| First local setup | [Start](../start/README.md) | fastest contributor/operator orientation |
+| Product operating scope | [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md) | stakeholder design context for operator posture |
+| Daily operator controls | [Operators](./README.md) | this page |
+| Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
+| Troubleshooting and support evidence | [Operator Preflight Checklist](./preflight-checklist.md) | readiness gate and rollback posture |
 
-## Workstation Launch And Packaging
+## Active Operator Procedure Files
 
-| Workflow | Source material | Notes |
-| --- | --- | --- |
-| Local API host | `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080` | Launches the desktop-local API host on port 8080 by default. |
-| Browser workstation | `npm --prefix src/Meridian.Ui/dashboard run dev` | Development workstation; production assets are served from `src/Meridian.Ui/wwwroot/workstation/`. |
-| WPF desktop fixture | `pwsh ./scripts/dev/run-desktop.ps1 -Fixture` | Fixture-mode desktop launch for operator validation. |
-| Web workstation installer | [Web Workstation Installer](../operations/web-workstation-installer.md) | Local browser-workstation app installation. |
-| MSIX packaging | [MSIX Packaging](../operations/msix-packaging.md) | Desktop application packaging. |
+- [Browser Workstation Installer](./browser-workstation-installer.md)
+- [Deployment and Packaging](./deployment-packaging.md)
+- [Failover and Recovery](./failover-and-recovery.md)
+- [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)
+- [Operator Preflight Checklist](./preflight-checklist.md)
+- [Provider Backfill Operations](./provider-backfill-operations.md)
+- [Provider Credentials and Access](./provider-credentials.md)
+- [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
+- [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
+- [Reconciliation Operations](./reconciliation-operations.md)
 
-## Provider And Credential Operations
+## High-Traffic Legacy Path Migration Status
 
-| Workflow | Source material | Notes |
-| --- | --- | --- |
-| Provider setup overview | [Provider Documentation](../providers/README.md) | Canonical provider onboarding and capability surface during migration. |
-| Alpaca setup | [Alpaca Setup](../providers/alpaca-setup.md) | Credentialed provider setup. |
-| Interactive Brokers setup | [Interactive Brokers Setup](../providers/interactive-brokers-setup.md), [IBKR Promotion Checklist](../operations/ibkr-promotion-checklist.md) | Broker-aligned setup and promotion checklist. |
-| Credential storage and repair | [Provider Credential Management](../operations/provider-credential-management.md) | Encrypted local credential storage and repair routes. |
-| Provider degradation | [Provider Degradation Calibration](../operations/provider-degradation-calibration.md), [Provider Degradation Policy](../operations/provider-degradation-policy.md) | Calibration, promotion, and governance gates. |
-| Backfill operations | [Backfill Guide](../providers/backfill-guide.md) | Historical data backfill procedures. |
-| Provider lookup | [Reference provider lookup](../reference/README.md#canonical-lookup-areas), [Provider Integration Status](../reference/provider-integration-status.md) | Capability and validation matrices remain lookup-only; operation procedures remain here. |
+The table below tracks active legacy/high-traffic routes and their replacements in this canonical lane.
 
-## Governance, Reconciliation, And Reporting Operations
+| Legacy path | Canonical replacement | Status | Notes |
+| --- | --- | --- | --- |
+| `docs/operations/README.md` | [README.md](./README.md) | Canonical | legacy routing hub points to operator canonical entry |
+| `docs/operations/broker-order-routing-phased-runbook.md` | [README.md](./README.md) | Canonical | migration retained as historical archive + routing index |
+| `docs/operations/canonical-buyer-workflow.md` | [README.md](./README.md) | Canonical | migration retained as historical archive + routing index |
+| `docs/operations/operator-runbook.md` | [docs/operators/README.md](./README.md) | Canonical | route consolidated |
+| `docs/operations/provider-credential-management.md` | [provider-credentials.md](./provider-credentials.md) | Canonical | archived copy maintained |
+| `docs/operations/preflight-checklist.md` | [preflight-checklist.md](./preflight-checklist.md) | Canonical | legacy as source-material during migration |
+| `docs/operations/reconciliation-operations.md` | [reconciliation-operations.md](./reconciliation-operations.md) | Canonical | archived source retained |
+| `docs/operations/reconciliation-runbook.md` | [reconciliation-operations.md](./reconciliation-operations.md) | Canonical | legacy reconciliation runbook merged into canonical lane |
+| `docs/operations/reconciliation-policy-operations.md` | [reconciliation-operations.md](./reconciliation-operations.md) | Canonical | legacy policy content merged |
+| `docs/operations/reconciliation-resilience-runbook.md` | [reconciliation-operations.md](./reconciliation-operations.md) | Canonical | resilience posture indexed from canonical lane |
+| `docs/operations/msix-packaging.md` | [deployment-packaging.md](./deployment-packaging.md) | Canonical | migration mapping retained |
+| `docs/operations/deployment.md` | [deployment-packaging.md](./deployment-packaging.md) | Canonical | maintenance/deployment legacy migration |
+| `docs/operations/environment-and-deployment-standard.md` | [deployment-packaging.md](./deployment-packaging.md) | Canonical | deployment standards moved to canonical lane |
+| `docs/operations/web-workstation-installer.md` | [browser-workstation-installer.md](./browser-workstation-installer.md) | Canonical | migration mapping retained |
+| `docs/operations/failover-and-recovery-runbook.md` | [failover-and-recovery.md](./failover-and-recovery.md) | Canonical | active recovery policy |
+| `docs/operations/high-availability.md` | [failover-and-recovery.md](./failover-and-recovery.md) | Canonical | high-availability posture remains in failover lane |
+| `docs/operations/service-level-objectives.md` | [failover-and-recovery.md](./failover-and-recovery.md) | Canonical | SLO posture indexed from failover lane |
+| `docs/operations/slo-review-template.md` | [README.md](./README.md) | Canonical | template retained as source-material pattern |
+| `docs/operations/cleanup-and-maintenance.md` | [README.md](./README.md) | Canonical | legacy cleanup posture migration |
+| `docs/operations/disk-space-hygiene.md` | [README.md](./README.md) | Canonical | cleanup/ops hygiene migration |
+| `docs/operations/error-budget-policy-runbook.md` | [README.md](./README.md) | Canonical | ops reliability posture migration |
+| `docs/operations/ibkr-promotion-checklist.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | provider promotion migration |
+| `docs/operations/provider-degradation-calibration.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | provider reliability calibration indexed to onboarding policy |
+| `docs/operations/provider-degradation-policy.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | provider reliability policy indexed to onboarding posture |
+| `docs/operations/fund-ops-persistence-cutover-runbook.md` | [fund-ops-persistence-cutover.md](./fund-ops-persistence-cutover.md) | Canonical | high-risk persistence control migration completed |
+| `docs/operations/live-execution-controls.md` | [../reference/provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | live execution controls stay in capability/operations policy surface |
+| `docs/operations/governance-operator-workflow.md` | [README.md](./README.md) | Canonical | governance/operator workflow mapped to canonical index |
+| `docs/operations/portable-data-packager.md` | [README.md](./README.md) | Canonical | portability and packaging evidence remains source-only |
+| `docs/operations/performance-tuning.md` | [README.md](./README.md) | Canonical | operations performance tuning preserved as historical context |
+| `docs/operations/tradier-provider-endpoint-catalog.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | catalog content mapped as source for provider onboarding references |
+| `docs/operations/workstation-governance-approval-runbook.md` | [fund-ops-persistence-cutover.md](./fund-ops-persistence-cutover.md) | Canonical | governance approval gates mapped to operator cutover lane |
+| `docs/operations/orphaned-doc-triage-index.md` | [README.md](./README.md) | Canonical | migration inventory remains here |
+| `docs/providers/alpaca-setup.md` | [provider-onboarding-alpaca.md](./provider-onboarding-alpaca.md) | Canonical | provider onboarding canonicalized |
+| `docs/providers/interactive-brokers-setup.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | provider onboarding canonicalized |
+| `docs/providers/backfill-guide.md` | [provider-backfill-operations.md](./provider-backfill-operations.md) | Canonical | backfill operations canonicalized |
+| `docs/providers/README.md` | [provider-credentials.md](./provider-credentials.md) | Canonical | provider onboarding/program overview canonicalized |
+| `docs/providers/provider-comparison.md` | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | provider comparison merged into capability matrix |
+| `docs/providers/provider-confidence-baseline.md` | [provider-validation-matrix.md](../reference/provider-validation-matrix.md) | Canonical | provider confidence thresholds moved to validation matrix |
+| `docs/providers/security-master-guide.md` | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | security/provider controls routing moved to capability matrix |
+| `docs/providers/stocksharp-connectors.md` | [provider-integration-status.md](../reference/provider-integration-status.md) | Canonical | connector inventory moved to provider integration status |
+| `docs/providers/data-sources.md` | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | data source mapping merged into capability matrix |
+| `docs/providers/tradestation-endpoint-inventory.md` | [provider-capability-matrix.md](../reference/provider-capability-matrix.md) | Canonical | tradestation endpoint data migrated to capability matrix |
+| `docs/providers/broker-adapter-template-guide.md` | [provider-integration-status.md](../reference/provider-integration-status.md) | Canonical | broker adapter template guidance moved to provider integration status |
+| `docs/providers/interactive-brokers-free-equity-reference.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | IBKR free-equity notes merged into IBKR onboarding page |
 
-| Workflow | Source material | Notes |
-| --- | --- | --- |
-| Governance operator workflow | [Governance Operator Workflow](../operations/governance-operator-workflow.md) | Security Master, reconciliation queue, and governance export operations. |
-| Governance approval | [Workstation Governance Approval Runbook](../operations/workstation-governance-approval-runbook.md) | Approval workflow procedures. |
-| Fund-ops persistence cutover | [Fund Ops Persistence Cutover Runbook](../operations/fund-ops-persistence-cutover-runbook.md) | Persistence cutover procedures. |
-| Reconciliation operations | [Reconciliation Operations](../operations/reconciliation-operations.md), [Reconciliation Runbook](../operations/reconciliation-runbook.md), [Reconciliation Resilience Runbook](../operations/reconciliation-resilience-runbook.md) | Break review, recovery, and resilience workflows. |
-| Reconciliation policy | [Reconciliation Policy Operations](../operations/reconciliation-policy-operations.md) | Policy and controlled operations. |
-| Portable data packages | [Portable Data Packager](../operations/portable-data-packager.md) | Creating and importing data packages. |
+For quick operator evidence lookups, map claims to:
 
-## Reliability, Recovery, And Release Controls
+- [provider-integration-status.md](../reference/provider-integration-status.md) (operational posture and phase)
+- [provider-validation-matrix.md](../reference/provider-validation-matrix.md) (gates and evidence criteria)
+- [provider-validation-evidence-schema.md](../reference/provider-validation-evidence-schema.md) (artifact shape)
 
-| Workflow | Source material | Notes |
-| --- | --- | --- |
-| Preflight checklist | [Preflight Checklist](../operations/preflight-checklist.md) | Pilot/release readiness checks. |
-| Failover and recovery | [Failover and Recovery Runbook](../operations/failover-and-recovery-runbook.md) | Recovery procedures. |
-| High availability | [High Availability](../operations/high-availability.md) | HA configuration. |
-| Error budget policy | [Error Budget Policy Runbook](../operations/error-budget-policy-runbook.md) | Freeze and reliability-sprint triggers. |
-| Live execution controls | [Live Execution Controls](../operations/live-execution-controls.md) | Broker/order safety controls. |
-| Broker order routing | [Broker Order Routing Phased Runbook](../operations/broker-order-routing-phased-runbook.md) | Broker routing procedures. |
-| Performance tuning | [Performance Tuning](../operations/performance-tuning.md) | Operational performance guidance. |
+## Operator Claim Status Model
 
-## Operational Readiness Rule
+Use this simple status model for operator-facing claims:
 
-Operational-readiness claims require current SLOs, linked runbooks, and release evidence. High-severity alerts should name the symptom, likely cause, runbook section, immediate mitigation, and rollback criteria. Release gates should identify the exact tests, data-quality smoke checks, deployment verification, and rollback posture used for the change.
+- **Complete**: proof artifact linked + route validated + runbook path exists.
+- **In Progress**: proof path exists, evidence capture underway.
+- **Blocked**: policy or operational dependency is unmet and linked to mitigation path.
 
-Historical readiness evaluations can explain why these controls exist, but they are not current proof of production readiness.
+## Canonical Operator Procedures
 
-## Ingestion Operations Rule
+### Workstation launch and packaging
 
-Operator-facing ingestion controls should expose job state, checkpoint/resume posture, provider/fallback selection, backpressure or drop signals, and failure evidence. Backfill or realtime recovery procedures should name the current runbook, expected evidence artifact, and validation lane rather than relying on dated orchestration evaluations.
+- [Browser Workstation Installer](./browser-workstation-installer.md)
+- [Deployment and Packaging](./deployment-packaging.md)
 
-## Streaming And Storage Operations Rule
+### Provider operations
 
-Operator runbooks for streaming or storage incidents should name the affected provider/source, pipeline or storage component, alert/runbook mapping, evidence artifact, recovery action, and verification command. Dated architecture evaluations are useful background only; current recovery claims need live runbook and validation evidence.
+- [Provider Credential Operations](./provider-credentials.md)
+- [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
+- [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
+- [Provider Backfill Operations](./provider-backfill-operations.md)
 
-## Maintenance And Support Evidence
+### Reconciliation and reliability
 
-| Workflow | Source material | Notes |
-| --- | --- | --- |
-| Cleanup and maintenance | [Cleanup and Maintenance](../operations/cleanup-and-maintenance.md) | Safe generated-output cleanup, path hygiene, and repo maintenance rules. |
-| Disk space hygiene | [Disk Space Hygiene](../operations/disk-space-hygiene.md) | Local disk-space triage and generated artifact retention. |
-| Orphaned doc triage | [Orphaned Doc Triage Index](../operations/orphaned-doc-triage-index.md) | Link-recovery intake tied to docs health reports. |
-| SLO review | [SLO Review Template](../operations/slo-review-template.md) | Monthly SLO compliance and action review. |
-| Support evidence rule | [Generated Documentation](../generated/README.md), [Status Reporting](../status/README.md) | Operator-facing readiness claims must point to current artifacts, dashboards, or validation output. |
+- [Reconciliation Operations](./reconciliation-operations.md)
+- [Operator Preflight Checklist](./preflight-checklist.md)
+- [Failover and Recovery](./failover-and-recovery.md)
+- [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)
 
-## Operator Guardrails
+### Command entry points
 
-- Do not write provider secrets to user-level environment variables from new flows; use the shared credential store and documented config/data roots.
-- Keep provider fallback order visible, explainable, and testable; desktop/provider settings must not fork provider logic away from shared backfill orchestration.
-- Do not upgrade readiness language unless current evidence artifacts or validation output prove the claim.
-- Keep setup/procedure docs in `docs/operators/` or `docs/start/`; move retired legacy links with explicit archive rationale before final removal.
-- Keep lookup tables in [Reference](../reference/README.md), not in procedural runbooks.
-- Archive superseded runbooks and dated operational snapshots under `archive/docs/` after replacement links exist.
+- `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080`
+- `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080`
+- `pwsh ./scripts/dev/run-desktop.ps1 -Fixture`
+- `npm --prefix src/Meridian.Ui/dashboard run dev`
+
+## Operator Rules
+
+- Use provider lookup/capability claims only via [Reference](../reference/README.md#canonical-lookup-areas).
+- Keep setup/procedure docs in this folder and `docs/start/`; archive superseded one-off paths after replacement links exist.
+- Do not claim operational readiness until evidence artifacts from support packets, status proofs, and runbook-linked checks are attached.
+- Preserve evidence-first rollback and handoff language for all incident and deployment updates.
+- Do not hand-edit generated operator-facing docs. If generation is required, update source inputs and regenerate outputs.
+
+## Evidence Attachments and Proof Surfaces
+
+- [provider-integration-status.md](../reference/provider-integration-status.md)
+- [provider-validation-evidence-schema.md](../reference/provider-validation-evidence-schema.md)
+- [provider-validation-matrix.md](../reference/provider-validation-matrix.md)
+- [ROADMAP data and generated views](../roadmap/README.md)
+- [Generated documentation policy](../generated/README.md)
+- [Documentation ownership contract](../documentation-ownership.md)
+
+## Ownership Alignment
+
+- Operator behavior and runbook claims stay here.
+- Provider lookup tables and validation contracts stay in `docs/reference/`.
+- Source-of-truth for implementation remains in the owning `src/**` module READMEs and `docs/source/data/source-modules.yml`.
+- Runbook posture that changes delivery state must align to roadmap rows in `docs/roadmap/data/*.yml` and generated roadmap outputs.
+
+## Legacy-to-Archive Rules
+
+- After a legacy path is replaced and linked here, keep full historical content in `archive/docs/operations/` with explicit replacement reason and date.
+- Keep legacy stubs only where a high-traffic inbound path would otherwise break; remove stubs once canonical replacement has external links.

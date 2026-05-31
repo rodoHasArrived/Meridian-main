@@ -1,7 +1,16 @@
-# Codebase Audit Cleanup Roadmap (Archived)
+# Archived Legacy Plan: codebase-audit-cleanup-roadmap
 
-**Status:** archived
+This plan has been migrated to [codebase-audit-cleanup-roadmap.md](../../archive/docs/plans/codebase-audit-cleanup-roadmap.md).
+ It is now a source-material archive with replacement pointers in the canonical documentation lanes.
 
-This document was archived to ../../archive/docs/plans/codebase-audit-cleanup-roadmap.md.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
 
-Use this replacement instead: [codebase-audit-cleanup-roadmap.md](../../archive/docs/plans/codebase-audit-cleanup-roadmap.md).
+Active planning posture now lives in:
+- [`docs/product/README.md`](../product/README.md)
+- [`docs/engineering/README.md`](../engineering/README.md)
+- [`docs/roadmap/README.md`](../roadmap/README.md)
+
+Legacy archive is preserved for historical reference; use it only for context, not active execution. 
+

@@ -6,11 +6,13 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 ## Read First
 
 - `docs/README.md` for the canonical documentation front door.
+- `docs/product/meridian-design-document.md` for the current design charter.
 - `docs/start/README.md`, `docs/product/README.md`, `docs/engineering/README.md`, and `docs/operators/README.md` for rebuilt audience paths.
 - `docs/documentation-ownership.md` for documentation ownership, generated-doc, and archive rules.
 - `CLAUDE.md` for the full repository guide.
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
 - `docs/ai/codex/quickstart.md` for the fastest Codex task startup path.
+- `docs/product/meridian-design-document.md` for the canonical stakeholder design framing.
 - `docs/ai/navigation/README.md` and `docs/ai/generated/repo-navigation.md` for repo routing.
 - `docs/architecture/project-structure.md` and `docs/architecture/module-map.md` for structure and boundaries.
 - `docs/start/README.md` and `docs/engineering/README.md` for commands and validation.
@@ -22,6 +24,7 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 - Meridian is a .NET 10 fund-management and trading-platform codebase.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - Position new roadmap and docs work around evidence-backed investment operations: trusted data, research, paper validation, books, reconciliation, approvals, and governed reports.
+- Use the current [Meridian Design Document (Draft v1.0)](docs/product/meridian-design-document.md) as the canonical product scope reference.
 - `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/` are both active operator UI surfaces.
 - `src/Meridian.Ui/wwwroot/workstation/` remains the built browser workstation asset lane served by the local host.
 - Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for both the desktop shell and browser workstation.

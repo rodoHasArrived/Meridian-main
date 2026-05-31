@@ -1,14 +1,14 @@
-# Fund Operations Persistence Cutover Status
-**Last Updated:** 2026-05-22
+# Archived Legacy Status Item: Fund Operations Persistence Cutover Status
 
-## Domains
-- Fund Structure: Shadow-write scaffolded, reconciliation job registered, read cutover gated by config toggle.
-- Fund Accounts: Shadow-write scaffolded, reconciliation job registered, read cutover gated by config toggle.
-- Direct Lending: Shadow-write scaffolded, reconciliation job registered, read cutover gated by config toggle.
-- Banking: Shadow-write scaffolded, reconciliation job registered, read cutover gated by config toggle.
-- Money Market: Shadow-write scaffolded, reconciliation job registered, read cutover gated by config toggle.
+This status file has been migrated to [fund-ops-persistence-cutover-status.md](../../archive/docs/status/fund-ops-persistence-cutover-status.md). Active status and planning context should be read from canonical owners:
 
-## Current state
-- Default read mode remains `LegacyInMemory` for safety.
-- Reconciliation hosted service runs domain jobs and emits discrepancy warnings.
-- Canonical projection schema records are defined for all five domains.
+- [docs/product/README.md](../product/README.md)
+- [docs/roadmap/README.md](../roadmap/README.md)
+- [docs/engineering/README.md](../engineering/README.md)
+- [docs/reference/README.md](../reference/README.md)
+
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
+Use the archive copy for history only; do not treat it as current truth.
