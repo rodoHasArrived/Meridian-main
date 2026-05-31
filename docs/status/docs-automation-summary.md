@@ -6,8 +6,4 @@
 
 | Script | Status | Duration (s) | Output |
 |--------|--------|--------------|--------|
-| `check-ai-handoff-strict` | `failed` | `0.740` | `docs/status/ai-handoff-checklist-report.md` |
-
-## Failures
-
-- `check-ai-handoff-strict`: Script exited with non-zero status
+| `check-ai-handoff-strict` | `success` | `0.893` | `docs/status/ai-handoff-checklist-report.md` |

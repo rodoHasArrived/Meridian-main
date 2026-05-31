@@ -1,18 +1,13 @@
 {
-  "status": "fail",
-  "generatedAtUtc": "2026-05-31T10:42:40.126264+00:00",
-  "checksTotal": 3,
-  "checksPassed": 2,
-  "checksFailed": 1,
+  "status": "pass",
+  "generatedAtUtc": "2026-05-31T10:46:43.510011+00:00",
+  "checksTotal": 10,
+  "checksPassed": 10,
+  "checksFailed": 0,
   "failures": [
-    "Failed to load host-target config from `D:\\Meridian-main\\build\\scripts\\docs\\ai-handoff-host-targets.json`: Extra data: line 12 column 2 (char 274)"
+    "No failures detected."
   ],
   "checks": [
-    {
-      "target": "D:/Meridian-main/build/scripts/docs/ai-handoff-host-targets.json",
-      "status": "config-warning",
-      "message": "Failed to load host-target config from `D:\\Meridian-main\\build\\scripts\\docs\\ai-handoff-host-targets.json`: Extra data: line 12 column 2 (char 274)"
-    },
     {
       "target": "`docs/ai/agent-handoff-checklist.md`",
       "status": "ok",
@@ -22,6 +17,46 @@
       "target": "`docs/ai/agent-handoff-checklist.md`",
       "status": "ok",
       "message": "All required handoff fields are present."
+    },
+    {
+      "target": "`CLAUDE.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`.codex/AGENTS.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`.github/copilot-instructions.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/README.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/assistant-workflow-contract.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/codex/README.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/copilot/instructions.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/skills/README.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
     }
   ]
 }
