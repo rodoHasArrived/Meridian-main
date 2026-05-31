@@ -50,7 +50,7 @@ from dashboard_rendering import (
 # ---------------------------------------------------------------------------
 
 EXCLUDE_DIRS: frozenset[str] = frozenset(
-    {".git", ".github", ".agents", ".claude", ".codex", "archive", "artifacts", "node_modules", "bin", "obj", "__pycache__", ".vs"}
+    {".git", ".github", ".claude", ".codex", "archive", "artifacts", "node_modules", "bin", "obj", "__pycache__", ".vs"}
 )
 
 STALE_THRESHOLD_DAYS: int = 90

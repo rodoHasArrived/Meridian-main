@@ -24,6 +24,7 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 5. Use structured, explicit summaries of what changed and how it was validated.
 6. Treat unrelated dirty-worktree changes as user-owned.
 7. For workflows with multiple agents/lanes, use `docs/ai/agent-handoff-checklist.md` as the required handoff format.
+8. Select `docs/ai/work-modes.md` mode before implementation; if running parallel lanes, initialize `docs/ai/parallel-task-manifest-template.md`.
 
 ## Current Product Direction
 

@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "defaultRouteId": "primary-local-route",
+  "requiredSignals": [
+    "route_id",
+    "selected_model",
+    "input_tokens",
+    "output_tokens",
+    "estimated_cost_usd",
+    "latency_ms",
+    "error_class",
+    "handoff_path"
+  ],
+  "routes": [
+    {
+      "route_id": "primary-local-route",
+      "name": "Primary local route",
+      "description": "Default route for local Ollama-based model calls.",
+      "allowed_models": [
+        "llama3",
+        "llama3.1",
+        "mistral",
+        "qwen2.5",
+        "phi3"
+      ],
+      "fallback_models": [
+        "gemma2"
+      ],
+      "max_input_tokens": 8192,
+      "max_output_tokens": 2048,
+      "max_estimated_cost_usd": 0.05,
+      "handoff_paths": [
+        "local-ollama",
+        "local-fallback"
+      ],
+      "escalation_required": false
+    },
+    {
+      "route_id": "high-cost-model-route",
+      "name": "Escalation route",
+      "description": "Optional escape hatch for advanced prompts. Keep costs bounded with policy control.",
+      "allowed_models": [
+        "llama3.2",
+        "qwen2.5:latest"
+      ],
+      "fallback_models": [
+        "llama3"
+      ],
+      "max_input_tokens": 8192,
+      "max_output_tokens": 3072,
+      "max_estimated_cost_usd": 0.12,
+      "handoff_paths": [
+        "local-fallback",
+        "escalation-log"
+      ],
+      "escalation_required": true
+    }
+  ]
+}

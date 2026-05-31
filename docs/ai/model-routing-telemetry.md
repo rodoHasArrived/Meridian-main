@@ -1,6 +1,12 @@
 # AI Model Routing and Cost Telemetry Basis
 
 This document is the evidence surface for `docs/ai/model-routing-policy.json`.
+
+## Source of Truth (docs-only)
+
+`docs/ai/model-routing-policy.json` is the only runtime policy source for model routing behavior.
+Application runtime and operational checks must use this file directly; no alternate mirrors,
+generated artifacts, environment-sourced paths, or fallback policy files are permitted.
 It is intentionally compact and source-of-truth for two things:
 
 - what telemetry signals the route validation should collect per task,

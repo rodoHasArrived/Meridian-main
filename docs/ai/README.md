@@ -11,6 +11,8 @@ This document is the master index for AI guidance in the Meridian repository. It
 | Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Root commands, conventions, and architecture |
 | Any AI system or automation | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic workflow, safety rules, and alignment checklist |
 | Multi-agent or multi-phase work | [`agent-handoff-checklist.md`](agent-handoff-checklist.md) | Required handoff packet format and token-efficient context boundaries |
+| Parallel multi-lane execution | [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md) | Shared lane-ownership manifest to prevent duplicate discovery and overlapping edits |
+| Context budget sizing | [`work-modes.md`](work-modes.md) | Lightweight/Standard/Deep-review mode selection and escalation rules |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Source/roadmap documentation sync | [`../source/README.md`](../source/README.md), [`../roadmap/README.md`](../roadmap/README.md) | `build/scripts/docs/validate-source-readmes.py`, `build/scripts/docs/validate-roadmap-registry.py` |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
@@ -31,7 +33,10 @@ For large-repo tasks, assistants should orient in this order:
 3. If MCP is available, use the repo-navigation resources and tools instead of broad recursive searching.
 4. If the task spans multiple agents or validation phases, use [`agent-handoff-checklist.md`](agent-handoff-checklist.md)
    before switching context or specialist lanes.
-5. Only then move into specialist guides such as provider, storage, testing, WPF, or documentation instructions.
+5. If two or more lanes run in parallel, initialize [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md)
+   and record inspected files per lane.
+6. Select [`work-modes.md`](work-modes.md) level before implementation and escalate when risk grows.
+7. Only then move into specialist guides such as provider, storage, testing, WPF, or documentation instructions.
 
 The generated navigation artifacts are the canonical orientation surface:
 
@@ -140,9 +145,12 @@ Located mainly in `docs/ai/claude/`.
 | Error prevention | [`ai-known-errors.md`](ai-known-errors.md) |
 | AI inventory drift checks | [`assistant-workflow-contract.md`](assistant-workflow-contract.md), `build/scripts/docs/check-ai-inventory.py` |
 | Codex agent profiles | [`codex/README.md`](codex/README.md), [`agents/README.md`](agents/README.md), [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents) |
+| Model routing policy | [`model-routing-policy.json`](model-routing-policy.json) |
 | Roadmap/source registry sync | [`../roadmap/README.md`](../roadmap/README.md), [`../source/README.md`](../source/README.md) |
 | Prompt and automation guidance | [`prompts/README.md`](prompts/README.md), [`../prompts/README.md`](../prompts/README.md) |
 | Local AI maintenance tooling | `scripts/ai/`, `tools/codex/`, `make/ai.mk` |
+
+Model-routing behavior is docs-only controlled by `model-routing-policy.json`; no alternate mirror files, templates, or env-based fallback file paths are used at runtime.
 
 ### Adding a New AI Resource
 
