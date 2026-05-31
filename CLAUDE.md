@@ -29,8 +29,8 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 ## Current Product Direction
 
 - Start documentation and planning orientation from `docs/README.md`, `docs/product/README.md`,
-  and `docs/engineering/README.md`. Use `docs/plans/current-direction-and-status.md` only when
-  current plan-file interpretation is specifically needed.
+  and `docs/engineering/README.md`. Use the roadmap registry (`docs/roadmap/README.md` and
+  `docs/roadmap/data/*.yml`) for authoritative planning interpretation.
 - Active operator UI work spans `src/Meridian.Ui/dashboard/` and `src/Meridian.Wpf/`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and
