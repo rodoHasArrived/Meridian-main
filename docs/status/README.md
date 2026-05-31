@@ -66,3 +66,8 @@ Machine-readable sidecars such as `docs-automation-summary.json`, `program-state
 - [provider-failover-hardening.md](provider-failover-hardening.md) → [archive/docs/summaries/provider-failover-hardening.md](../../archive/docs/summaries/provider-failover-hardening.md)
 - [provider-test-gap-baseline.md](provider-test-gap-baseline.md) → [archive/docs/summaries/provider-test-gap-baseline.md](../../archive/docs/summaries/provider-test-gap-baseline.md)
 - [provider-test-minimums.md](provider-test-minimums.md) → [archive/docs/summaries/provider-test-minimums.md](../../archive/docs/summaries/provider-test-minimums.md)
+- [provider-capability-matrix.md](provider-capability-matrix.md) → [archive/docs/summaries/provider-capability-matrix.md](../../archive/docs/summaries/provider-capability-matrix.md)
+- [contract-compatibility-matrix.md](contract-compatibility-matrix.md) → [archive/docs/summaries/contract-compatibility-matrix.md](../../archive/docs/summaries/contract-compatibility-matrix.md)
+- [provider-validation-evidence-schema.md](provider-validation-evidence-schema.md) → [archive/docs/summaries/provider-validation-evidence-schema.md](../../archive/docs/summaries/provider-validation-evidence-schema.md)
+- [provider-validation-matrix.md](provider-validation-matrix.md) → [archive/docs/summaries/provider-validation-matrix.md](../../archive/docs/summaries/provider-validation-matrix.md)
+- [provider-integration-status.md](provider-integration-status.md) → [archive/docs/summaries/provider-integration-status.md](../../archive/docs/summaries/provider-integration-status.md)

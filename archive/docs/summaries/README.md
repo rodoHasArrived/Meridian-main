@@ -24,3 +24,8 @@ This bucket stores historical summaries, snapshots, one-off reports, and retrosp
 - [docs/status/provider-failover-hardening.md](../../../docs/status/provider-failover-hardening.md) now redirects to [archive path](../summaries/provider-failover-hardening.md).
 - [docs/status/provider-test-gap-baseline.md](../../../docs/status/provider-test-gap-baseline.md) now redirects to [archive path](../summaries/provider-test-gap-baseline.md).
 - [docs/status/provider-test-minimums.md](../../../docs/status/provider-test-minimums.md) now redirects to [archive path](../summaries/provider-test-minimums.md).
+- [docs/status/provider-capability-matrix.md](../../../docs/status/provider-capability-matrix.md) now redirects to [archive path](../summaries/provider-capability-matrix.md).
+- [docs/status/contract-compatibility-matrix.md](../../../docs/status/contract-compatibility-matrix.md) now redirects to [archive path](../summaries/contract-compatibility-matrix.md).
+- [docs/status/provider-validation-evidence-schema.md](../../../docs/status/provider-validation-evidence-schema.md) now redirects to [archive path](../summaries/provider-validation-evidence-schema.md).
+- [docs/status/provider-validation-matrix.md](../../../docs/status/provider-validation-matrix.md) now redirects to [archive path](../summaries/provider-validation-matrix.md).
+- [docs/status/provider-integration-status.md](../../../docs/status/provider-integration-status.md) now redirects to [archive path](../summaries/provider-integration-status.md).
