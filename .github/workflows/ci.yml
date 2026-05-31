@@ -130,6 +130,10 @@ jobs:
         run: |
           python3 build/scripts/docs/check-known-lanes.py
 
+      - name: Validate AI handoff checklist schema
+        run: |
+          python3 build/scripts/docs/check-ai-handoff.py --strict --output docs/status/ai-handoff-checklist-report.md --json-output docs/status/ai-handoff-checklist-report.json
+
       - name: Upload .NET test results
         if: failure()
         uses: actions/upload-artifact@v7.0.1

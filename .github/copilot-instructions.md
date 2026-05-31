@@ -14,7 +14,8 @@ For each task, follow this sequence:
 2. Identify acceptance criteria before coding.
 3. Make the smallest possible set of edits.
 4. Run targeted validation commands.
-5. Summarize what changed, why, and how it was validated.
+5. For multi-agent or multi-lane tasks, use `docs/ai/agent-handoff-checklist.md` when handing off between phases.
+6. Summarize what changed, why, and how it was validated.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or

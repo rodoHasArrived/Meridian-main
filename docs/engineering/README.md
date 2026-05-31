@@ -147,6 +147,7 @@ Historical desktop improvement guides are source material only. Use current desk
 ```powershell
 python build/scripts/docs/validate-docs-structure.py --summary
 python build/scripts/docs/check-ai-inventory.py --summary
+python build/scripts/docs/check-ai-handoff.py --output docs/status/ai-handoff-checklist-report.md
 python build/scripts/docs/check-codex-skills.py --summary
 python build/scripts/docs/validate-roadmap-registry.py --summary
 python build/scripts/docs/render-roadmap-docs.py --summary

@@ -1,0 +1,2445 @@
+{
+  "generatedAtUtc": "2026-05-31T09:58:43.477561+00:00",
+  "repositoryRoot": ".",
+  "repositoryName": "Meridian-main",
+  "status": "pass",
+  "summary": {
+    "inventoryCount": 231,
+    "findingCount": 0,
+    "bySurface": {
+      "agent-skills-compatible-hosts": 16,
+      "claude": 39,
+      "codex": 82,
+      "docs-ai": 26,
+      "github-copilot": 44,
+      "local-ai-maintenance-tools": 8,
+      "mcp": 11,
+      "reusable-prompts": 3,
+      "root-assistant-compatibility": 2
+    },
+    "byKind": {
+      "agent": 22,
+      "agent-profile": 8,
+      "ai-doc": 26,
+      "codex-tool": 10,
+      "config": 3,
+      "entrypoint": 2,
+      "environment-config": 1,
+      "instruction-entrypoint": 2,
+      "maintenance-script": 8,
+      "mcp-prompt": 3,
+      "mcp-resource": 3,
+      "mcp-tool": 5,
+      "openai-metadata": 30,
+      "path-instruction": 5,
+      "plugin-agent": 3,
+      "plugin-manifest": 2,
+      "plugin-skill": 10,
+      "prompt": 24,
+      "prompt-documentation": 3,
+      "prompt-template": 10,
+      "shared-context": 1,
+      "skill": 45,
+      "validation-checklist": 5
+    },
+    "bySeverity": {}
+  },
+  "inventory": [
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "openai-metadata",
+      "name": "meridian-archive-organizer",
+      "path": ".agents/skills/meridian-archive-organizer/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "openai-metadata",
+      "name": "meridian-browser-workstation",
+      "path": ".agents/skills/meridian-browser-workstation/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "openai-metadata",
+      "name": "meridian-repo-navigation",
+      "path": ".agents/skills/meridian-repo-navigation/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "openai-metadata",
+      "name": "meridian-roadmap-strategist",
+      "path": ".agents/skills/meridian-roadmap-strategist/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "shared-context",
+      "name": "project-context.md",
+      "path": ".agents/skills/_shared/project-context.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-archive-organizer",
+      "path": ".agents/skills/meridian-archive-organizer/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-blueprint",
+      "path": ".agents/skills/meridian-blueprint/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-brainstorm",
+      "path": ".agents/skills/meridian-brainstorm/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-browser-workstation",
+      "path": ".agents/skills/meridian-browser-workstation/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-code-review",
+      "path": ".agents/skills/meridian-code-review/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-implementation-assurance",
+      "path": ".agents/skills/meridian-implementation-assurance/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-provider-builder",
+      "path": ".agents/skills/meridian-provider-builder/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-repo-navigation",
+      "path": ".agents/skills/meridian-repo-navigation/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-roadmap-strategist",
+      "path": ".agents/skills/meridian-roadmap-strategist/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-simulated-user-panel",
+      "path": ".agents/skills/meridian-simulated-user-panel/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-test-writer",
+      "path": ".agents/skills/meridian-test-writer/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-archive-organizer.md",
+      "path": ".claude/agents/meridian-archive-organizer.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-blueprint.md",
+      "path": ".claude/agents/meridian-blueprint.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-cleanup.md",
+      "path": ".claude/agents/meridian-cleanup.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-docs.md",
+      "path": ".claude/agents/meridian-docs.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-navigation.md",
+      "path": ".claude/agents/meridian-navigation.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-repo-navigation.md",
+      "path": ".claude/agents/meridian-repo-navigation.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-roadmap-strategist.md",
+      "path": ".claude/agents/meridian-roadmap-strategist.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-user-panel.md",
+      "path": ".claude/agents/meridian-user-panel.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "config",
+      "name": "settings.json",
+      "path": ".claude/settings.json",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "config",
+      "name": "settings.local.json",
+      "path": ".claude/settings.local.json",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "openai-metadata",
+      "name": "meridian-archive-organizer",
+      "path": ".claude/skills/meridian-archive-organizer/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "openai-metadata",
+      "name": "meridian-repo-navigation",
+      "path": ".claude/skills/meridian-repo-navigation/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "openai-metadata",
+      "name": "meridian-roadmap-strategist",
+      "path": ".claude/skills/meridian-roadmap-strategist/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-agent",
+      "name": "csharp-dotnet-development/expert-dotnet-software-engineer.md",
+      "path": ".claude/plugins/csharp-dotnet-development/agents/expert-dotnet-software-engineer.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-agent",
+      "name": "frontend-web-dev/electron-angular-native.md",
+      "path": ".claude/plugins/frontend-web-dev/agents/electron-angular-native.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/frontend-web-dev/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-agent",
+      "name": "frontend-web-dev/expert-react-frontend-engineer.md",
+      "path": ".claude/plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/frontend-web-dev/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-manifest",
+      "name": "csharp-dotnet-development",
+      "path": ".claude/plugins/csharp-dotnet-development/.github/plugin/plugin.json",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-manifest",
+      "name": "frontend-web-dev",
+      "path": ".claude/plugins/frontend-web-dev/.github/plugin/plugin.json",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/frontend-web-dev/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "csharp-dotnet-development/aspnet-minimal-api-openapi",
+      "path": ".claude/plugins/csharp-dotnet-development/skills/aspnet-minimal-api-openapi/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "csharp-dotnet-development/csharp-async",
+      "path": ".claude/plugins/csharp-dotnet-development/skills/csharp-async/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "csharp-dotnet-development/csharp-mstest",
+      "path": ".claude/plugins/csharp-dotnet-development/skills/csharp-mstest/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "csharp-dotnet-development/csharp-nunit",
+      "path": ".claude/plugins/csharp-dotnet-development/skills/csharp-nunit/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "csharp-dotnet-development/csharp-tunit",
+      "path": ".claude/plugins/csharp-dotnet-development/skills/csharp-tunit/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "csharp-dotnet-development/csharp-xunit",
+      "path": ".claude/plugins/csharp-dotnet-development/skills/csharp-xunit/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "csharp-dotnet-development/dotnet-best-practices",
+      "path": ".claude/plugins/csharp-dotnet-development/skills/dotnet-best-practices/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "csharp-dotnet-development/dotnet-upgrade",
+      "path": ".claude/plugins/csharp-dotnet-development/skills/dotnet-upgrade/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/csharp-dotnet-development/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "frontend-web-dev/playwright-explore-website",
+      "path": ".claude/plugins/frontend-web-dev/skills/playwright-explore-website/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/frontend-web-dev/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "plugin-skill",
+      "name": "frontend-web-dev/playwright-generate-test",
+      "path": ".claude/plugins/frontend-web-dev/skills/playwright-generate-test/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": [
+        ".claude/plugins/frontend-web-dev/"
+      ]
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-archive-organizer",
+      "path": ".claude/skills/meridian-archive-organizer/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-blueprint",
+      "path": ".claude/skills/meridian-blueprint/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-brainstorm",
+      "path": ".claude/skills/meridian-brainstorm/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-browser-workstation",
+      "path": ".claude/skills/meridian-browser-workstation/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-code-review",
+      "path": ".claude/skills/meridian-code-review/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-implementation-assurance",
+      "path": ".claude/skills/meridian-implementation-assurance/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-provider-builder",
+      "path": ".claude/skills/meridian-provider-builder/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-repo-navigation",
+      "path": ".claude/skills/meridian-repo-navigation/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-roadmap-strategist",
+      "path": ".claude/skills/meridian-roadmap-strategist/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-simulated-user-panel",
+      "path": ".claude/skills/meridian-simulated-user-panel/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-test-writer",
+      "path": ".claude/skills/meridian-test-writer/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-archive-organizer.toml",
+      "path": ".codex/agents/meridian-archive-organizer.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-blueprint.toml",
+      "path": ".codex/agents/meridian-blueprint.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-cleanup.toml",
+      "path": ".codex/agents/meridian-cleanup.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-docs.toml",
+      "path": ".codex/agents/meridian-docs.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-navigation.toml",
+      "path": ".codex/agents/meridian-navigation.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-repo-navigation.toml",
+      "path": ".codex/agents/meridian-repo-navigation.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-roadmap-strategist.toml",
+      "path": ".codex/agents/meridian-roadmap-strategist.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-panel.toml",
+      "path": ".codex/agents/meridian-user-panel.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "_codex-scan-lib.ps1",
+      "path": "tools/codex/_codex-scan-lib.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "architecture-scan.ps1",
+      "path": "tools/codex/architecture-scan.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "component-inventory.ps1",
+      "path": "tools/codex/component-inventory.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "desktop-workspace-generator.ps1",
+      "path": "tools/codex/desktop-workspace-generator.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "mvvm-compliance-check.ps1",
+      "path": "tools/codex/mvvm-compliance-check.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "refactor-plan-generator.ps1",
+      "path": "tools/codex/refactor-plan-generator.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "resource-review.ps1",
+      "path": "tools/codex/resource-review.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "run-codex-quality-suite.ps1",
+      "path": "tools/codex/run-codex-quality-suite.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "shared-pattern-suggest.ps1",
+      "path": "tools/codex/shared-pattern-suggest.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "codex-tool",
+      "name": "test-gap-scan.ps1",
+      "path": "tools/codex/test-gap-scan.ps1",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        "tools/codex/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "config",
+      "name": "config.toml",
+      "path": ".codex/config.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "environment-config",
+      "name": "environment.toml",
+      "path": ".codex/environments/environment.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        ".codex/environments/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "instruction-entrypoint",
+      "name": "AGENTS.md",
+      "path": ".codex/AGENTS.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "dense-data-grid-inspector-panel",
+      "path": ".codex/skills/dense-data-grid-inspector-panel/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "desktop-test-generation",
+      "path": ".codex/skills/desktop-test-generation/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "diagnostics-audit-timeline",
+      "path": ".codex/skills/diagnostics-audit-timeline/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-archive-organizer",
+      "path": ".codex/skills/meridian-archive-organizer/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-blueprint",
+      "path": ".codex/skills/meridian-blueprint/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-brainstorm",
+      "path": ".codex/skills/meridian-brainstorm/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-browser-workstation",
+      "path": ".codex/skills/meridian-browser-workstation/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-cleanup",
+      "path": ".codex/skills/meridian-cleanup/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-code-review",
+      "path": ".codex/skills/meridian-code-review/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-docs",
+      "path": ".codex/skills/meridian-docs/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-implementation-assurance",
+      "path": ".codex/skills/meridian-implementation-assurance/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-provider-builder",
+      "path": ".codex/skills/meridian-provider-builder/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-repo-navigation",
+      "path": ".codex/skills/meridian-repo-navigation/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-roadmap-strategist",
+      "path": ".codex/skills/meridian-roadmap-strategist/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-simulated-user-panel",
+      "path": ".codex/skills/meridian-simulated-user-panel/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-test-writer",
+      "path": ".codex/skills/meridian-test-writer/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "modular-desktop-mvvm",
+      "path": ".codex/skills/modular-desktop-mvvm/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "performance-resource-review",
+      "path": ".codex/skills/performance-resource-review/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "provider-management-workflow",
+      "path": ".codex/skills/provider-management-workflow/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "research-data-acquisition",
+      "path": ".codex/skills/research-data-acquisition/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "safe-refactoring",
+      "path": ".codex/skills/safe-refactoring/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "shared-component-extraction",
+      "path": ".codex/skills/shared-component-extraction/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "workstation-screen-composition",
+      "path": ".codex/skills/workstation-screen-composition/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "add-shared-workstation-control.md",
+      "path": ".codex/prompts/add-shared-workstation-control.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "audit-timeline.md",
+      "path": ".codex/prompts/audit-timeline.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "diagnostics-panel.md",
+      "path": ".codex/prompts/diagnostics-panel.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "generate-viewmodel-tests.md",
+      "path": ".codex/prompts/generate-viewmodel-tests.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "implement-desktop-workspace.md",
+      "path": ".codex/prompts/implement-desktop-workspace.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "mvvm-compliance-review.md",
+      "path": ".codex/prompts/mvvm-compliance-review.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "optimize-resource-usage.md",
+      "path": ".codex/prompts/optimize-resource-usage.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "provider-workflow-feature.md",
+      "path": ".codex/prompts/provider-workflow-feature.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "refactor-screen-shared-components.md",
+      "path": ".codex/prompts/refactor-screen-shared-components.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "prompt-template",
+      "name": "research-data-acquisition-feature.md",
+      "path": ".codex/prompts/research-data-acquisition-feature.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/prompts/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "dense-data-grid-inspector-panel",
+      "path": ".codex/skills/dense-data-grid-inspector-panel/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "desktop-test-generation",
+      "path": ".codex/skills/desktop-test-generation/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "diagnostics-audit-timeline",
+      "path": ".codex/skills/diagnostics-audit-timeline/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-archive-organizer",
+      "path": ".codex/skills/meridian-archive-organizer/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-blueprint",
+      "path": ".codex/skills/meridian-blueprint/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-brainstorm",
+      "path": ".codex/skills/meridian-brainstorm/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-browser-workstation",
+      "path": ".codex/skills/meridian-browser-workstation/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-cleanup",
+      "path": ".codex/skills/meridian-cleanup/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-code-review",
+      "path": ".codex/skills/meridian-code-review/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-docs",
+      "path": ".codex/skills/meridian-docs/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-implementation-assurance",
+      "path": ".codex/skills/meridian-implementation-assurance/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-provider-builder",
+      "path": ".codex/skills/meridian-provider-builder/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-repo-navigation",
+      "path": ".codex/skills/meridian-repo-navigation/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-roadmap-strategist",
+      "path": ".codex/skills/meridian-roadmap-strategist/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-simulated-user-panel",
+      "path": ".codex/skills/meridian-simulated-user-panel/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-test-writer",
+      "path": ".codex/skills/meridian-test-writer/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "modular-desktop-mvvm",
+      "path": ".codex/skills/modular-desktop-mvvm/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "performance-resource-review",
+      "path": ".codex/skills/performance-resource-review/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "provider-management-workflow",
+      "path": ".codex/skills/provider-management-workflow/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "research-data-acquisition",
+      "path": ".codex/skills/research-data-acquisition/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "safe-refactoring",
+      "path": ".codex/skills/safe-refactoring/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "shared-component-extraction",
+      "path": ".codex/skills/shared-component-extraction/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "workstation-screen-composition",
+      "path": ".codex/skills/workstation-screen-composition/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "validation-checklist",
+      "name": "desktop-workspace-definition-of-done.md",
+      "path": ".codex/checklists/desktop-workspace-definition-of-done.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/checklists/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "validation-checklist",
+      "name": "modularity-checklist.md",
+      "path": ".codex/checklists/modularity-checklist.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/checklists/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "validation-checklist",
+      "name": "mvvm-checklist.md",
+      "path": ".codex/checklists/mvvm-checklist.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/checklists/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "validation-checklist",
+      "name": "resource-management-checklist.md",
+      "path": ".codex/checklists/resource-management-checklist.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/checklists/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "validation-checklist",
+      "name": "safe-refactor-checklist.md",
+      "path": ".codex/checklists/safe-refactor-checklist.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/checklists/"
+      ]
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "agent-handoff-checklist.md",
+      "path": "docs/ai/agent-handoff-checklist.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/agents/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "ai-known-errors.md",
+      "path": "docs/ai/ai-known-errors.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "assistant-workflow-contract.md",
+      "path": "docs/ai/assistant-workflow-contract.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.actions.md",
+      "path": "docs/ai/claude/CLAUDE.actions.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.api.md",
+      "path": "docs/ai/claude/CLAUDE.api.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.domain-naming.md",
+      "path": "docs/ai/claude/CLAUDE.domain-naming.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.fsharp.md",
+      "path": "docs/ai/claude/CLAUDE.fsharp.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.providers.md",
+      "path": "docs/ai/claude/CLAUDE.providers.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.repo-updater.md",
+      "path": "docs/ai/claude/CLAUDE.repo-updater.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.roadmap-learning-log.md",
+      "path": "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.storage.md",
+      "path": "docs/ai/claude/CLAUDE.storage.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.structure.md",
+      "path": "docs/ai/claude/CLAUDE.structure.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "CLAUDE.testing.md",
+      "path": "docs/ai/claude/CLAUDE.testing.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/codex/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "quickstart.md",
+      "path": "docs/ai/codex/quickstart.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "route-cards.md",
+      "path": "docs/ai/codex/route-cards.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "ai-sync-workflow.md",
+      "path": "docs/ai/copilot/ai-sync-workflow.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "instructions.md",
+      "path": "docs/ai/copilot/instructions.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "recent-changes.md",
+      "path": "docs/ai/generated/recent-changes.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "repo-navigation.md",
+      "path": "docs/ai/generated/repo-navigation.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/instructions/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/navigation/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/prompts/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/skills/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "adr-generator.agent.md",
+      "path": ".github/agents/adr-generator.agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "blueprint-agent.md",
+      "path": ".github/agents/blueprint-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "brainstorm-agent.md",
+      "path": ".github/agents/brainstorm-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "bug-fix-agent.md",
+      "path": ".github/agents/bug-fix-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "cleanup-agent.md",
+      "path": ".github/agents/cleanup-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "code-review-agent.md",
+      "path": ".github/agents/code-review-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "documentation-agent.md",
+      "path": ".github/agents/documentation-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "implementation-assurance-agent.md",
+      "path": ".github/agents/implementation-assurance-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "performance-agent.md",
+      "path": ".github/agents/performance-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "provider-builder-agent.md",
+      "path": ".github/agents/provider-builder-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "repo-navigation-agent.md",
+      "path": ".github/agents/repo-navigation-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "simulated-user-panel-agent.md",
+      "path": ".github/agents/simulated-user-panel-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "software-engineer-agent-v1.agent.md",
+      "path": ".github/agents/software-engineer-agent-v1.agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "agent",
+      "name": "test-writer-agent.md",
+      "path": ".github/agents/test-writer-agent.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "instruction-entrypoint",
+      "name": "copilot-instructions.md",
+      "path": ".github/copilot-instructions.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "path-instruction",
+      "name": "csharp.instructions.md",
+      "path": ".github/instructions/csharp.instructions.md",
+      "expected_docs": [
+        "docs/ai/instructions/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "path-instruction",
+      "name": "docs.instructions.md",
+      "path": ".github/instructions/docs.instructions.md",
+      "expected_docs": [
+        "docs/ai/instructions/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "path-instruction",
+      "name": "dotnet-tests.instructions.md",
+      "path": ".github/instructions/dotnet-tests.instructions.md",
+      "expected_docs": [
+        "docs/ai/instructions/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "path-instruction",
+      "name": "source-documentation.instructions.md",
+      "path": ".github/instructions/source-documentation.instructions.md",
+      "expected_docs": [
+        "docs/ai/instructions/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "path-instruction",
+      "name": "wpf.instructions.md",
+      "path": ".github/instructions/wpf.instructions.md",
+      "expected_docs": [
+        "docs/ai/instructions/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "add-data-provider.prompt.yml",
+      "path": ".github/prompts/add-data-provider.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "add-export-format.prompt.yml",
+      "path": ".github/prompts/add-export-format.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "code-review.prompt.yml",
+      "path": ".github/prompts/code-review.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "configure-deployment.prompt.yml",
+      "path": ".github/prompts/configure-deployment.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "explain-architecture.prompt.yml",
+      "path": ".github/prompts/explain-architecture.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "fix-build-errors.prompt.yml",
+      "path": ".github/prompts/fix-build-errors.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "fix-code-quality.prompt.yml",
+      "path": ".github/prompts/fix-code-quality.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "fix-test-failures.prompt.yml",
+      "path": ".github/prompts/fix-test-failures.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "operations-continuity-core.prompt.yml",
+      "path": ".github/prompts/operations-continuity-core.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "optimize-performance.prompt.yml",
+      "path": ".github/prompts/optimize-performance.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "project-context.prompt.yml",
+      "path": ".github/prompts/project-context.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "provider-implementation-guide.prompt.yml",
+      "path": ".github/prompts/provider-implementation-guide.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "runtime-observability-diagnostics.prompt.yml",
+      "path": ".github/prompts/runtime-observability-diagnostics.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "simulate-user-panel-choose-mode.prompt.yml",
+      "path": ".github/prompts/simulate-user-panel-choose-mode.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "simulate-user-panel-design-partner.prompt.yml",
+      "path": ".github/prompts/simulate-user-panel-design-partner.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "simulate-user-panel-release-gate.prompt.yml",
+      "path": ".github/prompts/simulate-user-panel-release-gate.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "simulate-user-panel-usability-lab.prompt.yml",
+      "path": ".github/prompts/simulate-user-panel-usability-lab.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "simulate-user-panel.prompt.yml",
+      "path": ".github/prompts/simulate-user-panel.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "troubleshoot-issue.prompt.yml",
+      "path": ".github/prompts/troubleshoot-issue.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "workflow-results-code-quality.prompt.yml",
+      "path": ".github/prompts/workflow-results-code-quality.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "workflow-results-test-matrix.prompt.yml",
+      "path": ".github/prompts/workflow-results-test-matrix.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "wpf-debug-improve.prompt.yml",
+      "path": ".github/prompts/wpf-debug-improve.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "wpf-design-system-screen-impact.prompt.yml",
+      "path": ".github/prompts/wpf-design-system-screen-impact.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-copilot",
+      "kind": "prompt",
+      "name": "write-unit-tests.prompt.yml",
+      "path": ".github/prompts/write-unit-tests.prompt.yml",
+      "expected_docs": [
+        "docs/ai/prompts/README.md",
+        ".github/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "local-ai-maintenance-tools",
+      "kind": "maintenance-script",
+      "name": "cleanup.sh",
+      "path": "scripts/ai/cleanup.sh",
+      "expected_docs": [
+        "docs/ai/README.md",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        "scripts/ai/"
+      ]
+    },
+    {
+      "surface": "local-ai-maintenance-tools",
+      "kind": "maintenance-script",
+      "name": "common.sh",
+      "path": "scripts/ai/common.sh",
+      "expected_docs": [
+        "docs/ai/README.md",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        "scripts/ai/"
+      ]
+    },
+    {
+      "surface": "local-ai-maintenance-tools",
+      "kind": "maintenance-script",
+      "name": "maintenance-full.sh",
+      "path": "scripts/ai/maintenance-full.sh",
+      "expected_docs": [
+        "docs/ai/README.md",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        "scripts/ai/"
+      ]
+    },
+    {
+      "surface": "local-ai-maintenance-tools",
+      "kind": "maintenance-script",
+      "name": "maintenance-light.sh",
+      "path": "scripts/ai/maintenance-light.sh",
+      "expected_docs": [
+        "docs/ai/README.md",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        "scripts/ai/"
+      ]
+    },
+    {
+      "surface": "local-ai-maintenance-tools",
+      "kind": "maintenance-script",
+      "name": "maintenance.sh",
+      "path": "scripts/ai/maintenance.sh",
+      "expected_docs": [
+        "docs/ai/README.md",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        "scripts/ai/"
+      ]
+    },
+    {
+      "surface": "local-ai-maintenance-tools",
+      "kind": "maintenance-script",
+      "name": "route-maintenance.sh",
+      "path": "scripts/ai/route-maintenance.sh",
+      "expected_docs": [
+        "docs/ai/README.md",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        "scripts/ai/"
+      ]
+    },
+    {
+      "surface": "local-ai-maintenance-tools",
+      "kind": "maintenance-script",
+      "name": "setup-ai-agent.sh",
+      "path": "scripts/ai/setup-ai-agent.sh",
+      "expected_docs": [
+        "docs/ai/README.md",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        "scripts/ai/"
+      ]
+    },
+    {
+      "surface": "local-ai-maintenance-tools",
+      "kind": "maintenance-script",
+      "name": "setup.sh",
+      "path": "scripts/ai/setup.sh",
+      "expected_docs": [
+        "docs/ai/README.md",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        "scripts/ai/"
+      ]
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-prompt",
+      "name": "CodeReviewPrompts.cs",
+      "path": "src/Meridian.Mcp/Prompts/CodeReviewPrompts.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-prompt",
+      "name": "ProviderPrompts.cs",
+      "path": "src/Meridian.Mcp/Prompts/ProviderPrompts.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-prompt",
+      "name": "TestWriterPrompts.cs",
+      "path": "src/Meridian.Mcp/Prompts/TestWriterPrompts.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-resource",
+      "name": "AdrResources.cs",
+      "path": "src/Meridian.Mcp/Resources/AdrResources.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-resource",
+      "name": "ConventionResources.cs",
+      "path": "src/Meridian.Mcp/Resources/ConventionResources.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-resource",
+      "name": "TemplateResources.cs",
+      "path": "src/Meridian.Mcp/Resources/TemplateResources.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-tool",
+      "name": "AdrTools.cs",
+      "path": "src/Meridian.Mcp/Tools/AdrTools.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-tool",
+      "name": "AuditTools.cs",
+      "path": "src/Meridian.Mcp/Tools/AuditTools.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-tool",
+      "name": "ConventionTools.cs",
+      "path": "src/Meridian.Mcp/Tools/ConventionTools.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-tool",
+      "name": "KnownErrorTools.cs",
+      "path": "src/Meridian.Mcp/Tools/KnownErrorTools.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-tool",
+      "name": "ProviderTools.cs",
+      "path": "src/Meridian.Mcp/Tools/ProviderTools.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "reusable-prompts",
+      "kind": "prompt-documentation",
+      "name": "automation-prompts.md",
+      "path": "docs/prompts/automation-prompts.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/prompts/README.md",
+        "docs/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "reusable-prompts",
+      "kind": "prompt-documentation",
+      "name": "repo-maintenance-prompts.md",
+      "path": "docs/prompts/repo-maintenance-prompts.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/prompts/README.md",
+        "docs/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "reusable-prompts",
+      "kind": "prompt-documentation",
+      "name": "roadmap-source-docs-implementation-prompt.md",
+      "path": "docs/prompts/roadmap-source-docs-implementation-prompt.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/prompts/README.md",
+        "docs/prompts/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "root-assistant-compatibility",
+      "kind": "entrypoint",
+      "name": "AGENTS.md",
+      "path": "AGENTS.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "root-assistant-compatibility",
+      "kind": "entrypoint",
+      "name": "CLAUDE.md",
+      "path": "CLAUDE.md",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": []
+    }
+  ],
+  "findings": []
+}

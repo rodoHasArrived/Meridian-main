@@ -358,6 +358,24 @@ python3 check-ai-inventory.py \
   --json-output docs/status/ai-inventory-report.json
 ```
 
+### check-ai-handoff.py
+
+Checks that required host-level AI guidance references the shared handoff checklist (`docs/ai/agent-handoff-checklist.md`)
+so multi-agent workflows have a consistent handoff format.
+
+```bash
+python3 check-ai-handoff.py \
+  --output docs/status/ai-handoff-checklist-report.md \
+  --json-output docs/status/ai-handoff-checklist-report.json
+```
+
+For a second-tier schema gate, pass `--strict` to require all required packet fields in
+`## 3) Required Handoff Packet`:
+
+```bash
+python3 check-ai-handoff.py --strict
+```
+
 ### generate-coverage.py
 
 Measures documentation coverage of code constructs.

@@ -61,6 +61,7 @@ Shared grounding files:
 - [`.codex/skills/_shared/codex-execution-contract.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/_shared/codex-execution-contract.md)
 - [`.agents/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills/_shared/project-context.md)
 - [`.claude/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills/_shared/project-context.md)
+- [docs/ai/agent-handoff-checklist.md](../agent-handoff-checklist.md)
 
 ---
 

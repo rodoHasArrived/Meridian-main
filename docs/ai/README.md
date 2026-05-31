@@ -10,6 +10,7 @@ This document is the master index for AI guidance in the Meridian repository. It
 | --- | --- | --- |
 | Any task | [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) | Root commands, conventions, and architecture |
 | Any AI system or automation | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic workflow, safety rules, and alignment checklist |
+| Multi-agent or multi-phase work | [`agent-handoff-checklist.md`](agent-handoff-checklist.md) | Required handoff packet format and token-efficient context boundaries |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Source/roadmap documentation sync | [`../source/README.md`](../source/README.md), [`../roadmap/README.md`](../roadmap/README.md) | `build/scripts/docs/validate-source-readmes.py`, `build/scripts/docs/validate-roadmap-registry.py` |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
@@ -28,7 +29,9 @@ For large-repo tasks, assistants should orient in this order:
 1. Read [`navigation/README.md`](navigation/README.md) for the routing workflow.
 2. Read the generated repo map in [`generated/repo-navigation.md`](generated/repo-navigation.md).
 3. If MCP is available, use the repo-navigation resources and tools instead of broad recursive searching.
-4. Only then move into specialist guides such as provider, storage, testing, WPF, or documentation instructions.
+4. If the task spans multiple agents or validation phases, use [`agent-handoff-checklist.md`](agent-handoff-checklist.md)
+   before switching context or specialist lanes.
+5. Only then move into specialist guides such as provider, storage, testing, WPF, or documentation instructions.
 
 The generated navigation artifacts are the canonical orientation surface:
 

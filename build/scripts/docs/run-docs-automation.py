@@ -76,6 +76,16 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
         ],
         "output": "docs/status/ai-inventory-report.md",
     },
+    "check-ai-handoff": {
+        "script": "check-ai-handoff.py",
+        "args": [
+            "--output",
+            "docs/status/ai-handoff-checklist-report.md",
+            "--json-output",
+            "docs/status/ai-handoff-checklist-report.json",
+        ],
+        "output": "docs/status/ai-handoff-checklist-report.md",
+    },
     "generate-coverage": {
         "script": "generate-coverage.py",
         "args": ["--output", "docs/status/coverage-report.md"],
@@ -149,13 +159,21 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
 }
 
 PROFILE_CONFIG: Dict[str, List[str]] = {
-    "quick": ["scan-todos", "validate-examples", "repair-links", "check-ai-inventory", "generate-workflow-manifest"],
+    "quick": [
+        "scan-todos",
+        "validate-examples",
+        "repair-links",
+        "check-ai-inventory",
+        "check-ai-handoff",
+        "generate-workflow-manifest",
+    ],
     "core": [
         "scan-todos",
         "generate-structure-docs",
         "generate-health-dashboard",
         "validate-examples",
         "check-ai-inventory",
+        "check-ai-handoff",
         "generate-coverage",
         "generate-pilot-readiness-dashboard",
         "generate-paper-replay-reliability-dashboard",
@@ -179,6 +197,7 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "sync-readme-badges",
         "generate-metrics-dashboard",
         "generate-pilot-readiness-dashboard",
+        "check-ai-handoff",
         "generate-paper-replay-reliability-dashboard",
         "generate-evidence-continuity-dashboard",
         "generate-governance-readiness-dashboard",

@@ -19,6 +19,7 @@ Use this order for Copilot Chat, Copilot coding agent, and Copilot-authored PRs:
 4. [`../ai-known-errors.md`](../ai-known-errors.md) before changing code or generated artifacts.
 5. [`../navigation/README.md`](../navigation/README.md) and
    [`../generated/repo-navigation.md`](../generated/repo-navigation.md) for large-repo routing.
+6. `../agent-handoff-checklist.md` for coordinator-to-specialist-to-assurance handoffs.
 
 Do not copy the full repository tree or long convention lists into Copilot prompts. Link to the
 current source instead.
@@ -61,6 +62,9 @@ Visible operator navigation should stay aligned to `Trading`, `Portfolio`, `Acco
 | WPF/MVVM | [`../../../.github/instructions/wpf.instructions.md`](../../../.github/instructions/wpf.instructions.md) |
 | Provider work | [`../../../.github/agents/provider-builder-agent.md`](../../../.github/agents/provider-builder-agent.md) |
 | Prompt templates | [`../../../.github/prompts/README.md`](../../../.github/prompts/README.md) |
+
+For multi-agent tasks, return a compact handoff packet using `../agent-handoff-checklist.md` before the
+phase transition.
 
 ## Validation Defaults
 

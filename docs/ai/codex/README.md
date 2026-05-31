@@ -18,6 +18,7 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox and approval defaults |
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
 | [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, and validation lanes |
+| [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md) | Shared handoff format for multi-agent/lane transitions and context minimization |
 | [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring documentation, cleanup, roadmap, navigation, and user-panel work |
 | [`.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex skill catalog and maintenance rules |
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |

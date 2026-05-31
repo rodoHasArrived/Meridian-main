@@ -1,0 +1,57 @@
+{
+  "status": "pass",
+  "generatedAtUtc": "2026-05-31T09:58:43.811138+00:00",
+  "checksTotal": 9,
+  "checksPassed": 9,
+  "checksFailed": 0,
+  "failures": [
+    "No failures detected."
+  ],
+  "checks": [
+    {
+      "target": "`docs/ai/agent-handoff-checklist.md`",
+      "status": "ok",
+      "message": "Checklist and required section present."
+    },
+    {
+      "target": "`CLAUDE.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`.codex/AGENTS.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`.github/copilot-instructions.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/README.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/assistant-workflow-contract.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/codex/README.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/copilot/instructions.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    },
+    {
+      "target": "`docs/ai/skills/README.md`",
+      "status": "ok",
+      "message": "Checklist reference present."
+    }
+  ]
+}

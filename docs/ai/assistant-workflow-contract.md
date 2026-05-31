@@ -48,7 +48,10 @@ Every assistant and automation should use the same high-level flow:
    If the task crosses multiple subsystems, requires an approval gate or operator sign-off, or
    needs a structured briefing with trace/evidence retention, use the repository docs, skills,
    prompts, and scripts that currently own that workflow instead of inventing a new surface.
-4. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
+4. **Use a shared handoff format.** For multi-agent or multi-phase work, use
+   [`agent-handoff-checklist.md`](agent-handoff-checklist.md) as the required compact handoff packet
+   between specialist lanes.
+5. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
    WPF names as legacy workspace aliases rather than new root workspaces.
@@ -56,11 +59,11 @@ Every assistant and automation should use the same high-level flow:
    surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
    mobile-first workflows. Existing responsive browser checks may continue only as validation for
    the browser workstation.
-5. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
+6. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
    broad cleanup, and unrelated formatting churn.
-6. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
+7. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
    that covers the touched surface; expand only when the change risk justifies it.
-7. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
+8. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
    update the nearest `docs/ai/*/README.md` index and any mirrored host surfaces that teach the
    same workflow.
 8. **Report evidence.** Summaries must include what changed, why, affected files, validation
@@ -150,6 +153,9 @@ Use this checklist when changing any AI-related asset:
 - [ ] Keep shared project context mirrored across `.codex/skills/_shared/project-context.md`,
       `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`
       when current project framing changes.
+- [ ] Use the shared handoff format in
+      [`agent-handoff-checklist.md`](agent-handoff-checklist.md) whenever a task transitions across
+      specialist agents, host surfaces, or validation gates.
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and
       WPF desktop both consume shared contracts, and visible root workspaces remain limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
