@@ -1,59 +1,87 @@
 {
-  "version": "1.0.0",
-  "defaultRouteId": "primary-local-route",
-  "requiredSignals": [
-    "route_id",
-    "selected_model",
-    "input_tokens",
-    "output_tokens",
-    "estimated_cost_usd",
-    "latency_ms",
-    "error_class",
-    "handoff_path"
-  ],
-  "routes": [
+  "version": "1.1.0",
+  "policyScope": "Model routing classes, selection signals, token/cost ceilings, and required telemetry for AI handoff packets.",
+  "defaultRouteId": "analysis-economy",
+  "modelClasses": [
     {
-      "route_id": "primary-local-route",
-      "name": "Primary local route",
-      "description": "Default route for local Ollama-based model calls.",
-      "allowed_models": [
-        "llama3",
-        "llama3.1",
-        "mistral",
-        "qwen2.5",
-        "phi3"
-      ],
-      "fallback_models": [
-        "gemma2"
-      ],
-      "max_input_tokens": 8192,
-      "max_output_tokens": 2048,
-      "max_estimated_cost_usd": 0.05,
-      "handoff_paths": [
-        "local-ollama",
-        "local-fallback"
-      ],
-      "escalation_required": false
+      "id": "economy",
+      "displayName": "Economy",
+      "description": "Low-cost routing for analysis, documentation updates, and non-critical drafting.",
+      "supportsTools": false,
+      "recommendedInputUsdPer1k": 0.00015,
+      "recommendedOutputUsdPer1k": 0.0006,
+      "maxContextTokens": 120000
     },
     {
-      "route_id": "high-cost-model-route",
-      "name": "Escalation route",
-      "description": "Optional escape hatch for advanced prompts. Keep costs bounded with policy control.",
-      "allowed_models": [
-        "llama3.2",
-        "qwen2.5:latest"
-      ],
-      "fallback_models": [
-        "llama3"
-      ],
-      "max_input_tokens": 8192,
-      "max_output_tokens": 3072,
-      "max_estimated_cost_usd": 0.12,
-      "handoff_paths": [
-        "local-fallback",
-        "escalation-log"
-      ],
-      "escalation_required": true
+      "id": "balanced",
+      "displayName": "Balanced",
+      "description": "Mid-cost routing for implementation tasks that need stronger consistency and reasoning.",
+      "supportsTools": true,
+      "recommendedInputUsdPer1k": 0.003,
+      "recommendedOutputUsdPer1k": 0.006,
+      "maxContextTokens": 200000
+    },
+    {
+      "id": "research",
+      "displayName": "Research",
+      "description": "High-context routing for architecture decisions, policy review, and high-risk governance tasks.",
+      "supportsTools": true,
+      "recommendedInputUsdPer1k": 0.005,
+      "recommendedOutputUsdPer1k": 0.015,
+      "maxContextTokens": 300000
+    }
+  ],
+  "telemetrySignals": [
+    { "signal": "route_id", "description": "Routing rule chosen for the task", "source": "checklist or orchestrator context" },
+    { "signal": "selected_model", "description": "Model chosen for execution", "source": "agent runtime call metadata" },
+    { "signal": "input_tokens", "description": "Input token count used for the call", "source": "model provider usage payload" },
+    { "signal": "output_tokens", "description": "Output token count used for the call", "source": "model provider usage payload" },
+    { "signal": "estimated_cost_usd", "description": "Estimated cost for the request in USD", "source": "local model routing policy calculation" },
+    { "signal": "latency_ms", "description": "Request-to-first-byte plus completion latency in milliseconds", "source": "orchestrator timing trace" },
+    { "signal": "error_class", "description": "Structured failure class if routing or execution degraded", "source": "assistant runtime logs" },
+    { "signal": "handoff_path", "description": "Agent packet path used for lane handoff", "source": "handoff workflow template" }
+  ],
+  "evidenceArtifact": "docs/ai/model-routing-telemetry.md",
+  "handoffChecklist": "docs/ai/agent-handoff-checklist.md",
+  "routingRules": [
+    {
+      "id": "analysis-economy",
+      "taskType": "analysis",
+      "description": "Research, docs review, and lightweight investigation where context depth is small.",
+      "modelClass": "economy",
+      "primaryModel": "gpt-4.1-mini",
+      "fallbackModels": ["gpt-4.1", "gemini-2.5-flash"],
+      "selectionSignals": { "complexity": "low", "urgency": "normal", "safetyCritical": false },
+      "tokenBudget": { "maxInputTokens": 7000, "maxOutputTokens": 2500, "maxCostUsdPerTask": 0.08 },
+      "telemetrySignals": ["route_id", "selected_model", "input_tokens", "output_tokens", "estimated_cost_usd", "latency_ms", "handoff_path"],
+      "requiredHandoffFields": ["Model routing decision", "Model class selected", "Cost estimate", "Escalation trigger"],
+      "escalationTriggers": ["complexity exceeds low", "safetyCritical true", "cost estimate would exceed maxCostUsdPerTask"]
+    },
+    {
+      "id": "implementation-balanced",
+      "taskType": "implementation",
+      "description": "Coding, refactors, and review tasks that need reliable structure and edits.",
+      "modelClass": "balanced",
+      "primaryModel": "gpt-4.1",
+      "fallbackModels": ["claude-3.5-sonnet", "gemini-1.5-pro"],
+      "selectionSignals": { "complexity": "medium", "urgency": "high", "safetyCritical": false },
+      "tokenBudget": { "maxInputTokens": 25000, "maxOutputTokens": 9000, "maxCostUsdPerTask": 0.85 },
+      "telemetrySignals": ["route_id", "selected_model", "input_tokens", "output_tokens", "estimated_cost_usd", "latency_ms", "error_class", "handoff_path"],
+      "requiredHandoffFields": ["Model routing decision", "Model class selected", "Cost estimate", "Escalation trigger", "Telemetry signal capture"],
+      "escalationTriggers": ["complexity exceeds medium", "safetyCritical true", "error_class present"]
+    },
+    {
+      "id": "governance-research",
+      "taskType": "governance",
+      "description": "Provider, evidence, and policy decisions where correctness and auditability are critical.",
+      "modelClass": "research",
+      "primaryModel": "claude-3.7-sonnet",
+      "fallbackModels": ["gpt-4.1", "deep-research-1"],
+      "selectionSignals": { "complexity": "high", "urgency": "normal", "safetyCritical": true },
+      "tokenBudget": { "maxInputTokens": 45000, "maxOutputTokens": 12000, "maxCostUsdPerTask": 2.2 },
+      "telemetrySignals": ["route_id", "selected_model", "input_tokens", "output_tokens", "estimated_cost_usd", "latency_ms", "error_class", "handoff_path"],
+      "requiredHandoffFields": ["Model routing decision", "Model class selected", "Cost estimate", "Escalation trigger", "Telemetry signal capture", "Fallback path selected"],
+      "escalationTriggers": ["latency exceeds policy SLO", "safetyCritical true", "policy exception requires wider context"]
     }
   ]
 }

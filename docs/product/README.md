@@ -16,6 +16,16 @@ The central product question is:
 
 That framing is intentionally narrower than a generic trading dashboard or broad front-to-back suite. Meridian should connect trusted data, research, paper validation, books, reconciliation, approvals, and governed reporting into one explainable chain.
 
+## Product Design Foundation
+
+The detailed design charter now lives in this canonical document:
+
+- Target users: financial operations professionals, fund admins, RIAs, family offices, and related governance roles.
+- Core loop: `Import -> Validate -> Reconcile -> Investigate -> Approve -> Report`.
+- Primary operating model: configurable financial operations platform with one tenant-aware system, not separate products per customer type.
+- Core domains: data integration, treasury/payments, portfolio/investment operations, financial operations, reference data, instrument obligations, entity/relationships, alternative assets, financing, and planning/forecasting.
+- Delivery posture: preserve the closed W1-W4 evidence baselines, then advance W5 Backtest Studio and W6 live-readiness prerequisites through shared contracts, strong auditability, configurable workflows, and approval controls.
+
 ## Operator Lifecycle
 
 The release-level story is the Meridian Assurance Loop:
@@ -58,6 +68,7 @@ Durable roadmap truth belongs in `docs/roadmap/data/*.yml` and generated views u
 
 | Area | Current posture | Canonical detail |
 | --- | --- | --- |
+| Product design foundation | Active design source | [Meridian Design Document (Draft v1.0)](meridian-design-document.md) |
 | Provider confidence and Data Trust Passport | Active W1 baseline plus ongoing provider validation, degradation, and capability governance. | [Reference](../reference/README.md), [Providers](../providers/README.md), [Provider Validation Matrix](../status/provider-validation-matrix.md) |
 | Research, strategy, and run evidence | Active support through shared strategy/run contracts; Backtest Studio remains W5. | [Current Direction and Status](../plans/current-direction-and-status.md), [Feature Inventory](../status/FEATURE_INVENTORY.md) |
 | Trading and paper validation | W2 baseline is closed; live readiness remains W6 and must stay read-only/paper-first until accepted. | [Project Roadmap](../status/ROADMAP.md), [Engineering](../engineering/README.md) |
@@ -106,6 +117,10 @@ Meridian has no active mobile development lane. Do not create native iOS/Android
 
 Live-trading claims remain out of scope until W6 acceptance exists. Read-only, paper-first, and fail-closed controls should remain the default posture.
 
+## Canonical Design Artifact
+
+- [Meridian Design Document (Draft v1.0)](meridian-design-document.md)
+
 ## Legacy Source Material
 
 The pages below remain source material during migration. New stakeholder-facing links should prefer this page unless the detailed source is required.
@@ -115,3 +130,4 @@ The pages below remain source material during migration. New stakeholder-facing 
 - [Target End Product](../status/TARGET_END_PRODUCT.md)
 - [Feature Inventory](../status/FEATURE_INVENTORY.md)
 - [Project Roadmap](../status/ROADMAP.md)
+- [Meridian Design Document (Draft v1.0)](meridian-design-document.md)

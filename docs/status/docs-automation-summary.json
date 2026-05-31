@@ -16,11 +16,11 @@
         "--json-output",
         "docs/status/ai-handoff-checklist-report.json"
       ],
-      "return_code": 0,
-      "duration_seconds": 0.424,
-      "status": "success",
+      "return_code": 1,
+      "duration_seconds": 0.74,
+      "status": "failed",
       "output_file": "docs/status/ai-handoff-checklist-report.md",
-      "error": null
+      "error": "Script exited with non-zero status"
     }
   ]
 }

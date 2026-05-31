@@ -1,5 +1,5 @@
-# AI Handoff Checklist Compliance: pass
+# AI Handoff Checklist Compliance: fail
 
-## Result
+## Failures
 
-- All required host guidance files reference the shared handoff checklist.
+- Failed to load host-target config from `D:\Meridian-main\build\scripts\docs\ai-handoff-host-targets.json`: Extra data: line 12 column 2 (char 274)

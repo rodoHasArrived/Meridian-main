@@ -1,6 +1,7 @@
 # AI Work Modes
 
 Use these modes to right-size context and validation effort without skipping safety or correctness.
+Pair mode selection with the active entry in `docs/ai/model-routing-policy.json` when a task requires explicit model-class routing.
 
 ## Mode Selection
 

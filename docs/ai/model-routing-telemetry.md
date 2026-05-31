@@ -1,6 +1,6 @@
 # AI Model Routing and Cost Telemetry Basis
 
-This document is the evidence surface for `docs/ai/model-routing-policy.json`.
+This document is the evidence surface for `docs/ai/model-routing-policy.json` and its `routingRules`, `modelClasses`, and `telemetrySignals` sections.
 
 ## Source of Truth (docs-only)
 

@@ -150,7 +150,7 @@ Located mainly in `docs/ai/claude/`.
 | Prompt and automation guidance | [`prompts/README.md`](prompts/README.md), [`../prompts/README.md`](../prompts/README.md) |
 | Local AI maintenance tooling | `scripts/ai/`, `tools/codex/`, `make/ai.mk` |
 
-Model-routing behavior is docs-only controlled by `model-routing-policy.json`; no alternate mirror files, templates, or env-based fallback file paths are used at runtime.
+Model-routing behavior is docs-only controlled by `model-routing-policy.json`; use `routingRules`, `modelClasses`, and `telemetrySignals` as the canonical policy sections. No alternate mirror files, templates, or env-based fallback file paths are used at runtime.
 
 ### Adding a New AI Resource
 
