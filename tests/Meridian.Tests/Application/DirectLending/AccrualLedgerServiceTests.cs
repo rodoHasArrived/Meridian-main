@@ -1,12 +1,15 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
 using Meridian.Application.Ledger;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
+using NSubstitute;
 
 namespace Meridian.Tests.Application.DirectLending;
 
@@ -115,9 +118,40 @@ public sealed class AccrualLedgerServiceTests
     {
         var projector = new LoanAccountingProjector(
             new PeriodOnlyLedgerJournalStore(period),
-            new AccountingPolicyService());
+            new AccountingPolicyService(),
+            BuildSecurityMasterQueryService());
         return new AccrualLedgerService(projector);
     }
+
+    private static Meridian.Application.SecurityMaster.ISecurityMasterQueryService BuildSecurityMasterQueryService()
+    {
+        var service = Substitute.For<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>();
+        service.GetByIdAsync(Guid.Parse("99999999-9999-9999-9999-999999999999"), Arg.Any<CancellationToken>())
+            .Returns(BuildSecurityMasterDetail());
+        return service;
+    }
+
+    private static SecurityDetailDto BuildSecurityMasterDetail() =>
+        new(
+            SecurityId: Guid.Parse("99999999-9999-9999-9999-999999999999"),
+            AssetClass: "CustomAsset",
+            Status: SecurityStatusDto.Active,
+            DisplayName: "Northwind Senior Term Loan",
+            Currency: "USD",
+            CommonTerms: JsonSerializer.SerializeToElement(new { displayName = "Northwind Senior Term Loan", currency = "USD" }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { facility = "Northwind" }),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.InternalCode,
+                    "NWTERM26",
+                    IsPrimary: true,
+                    ValidFrom: DateTimeOffset.Parse("2026-03-22T00:00:00Z"))
+            ],
+            Aliases: [],
+            Version: 4,
+            EffectiveFrom: DateTimeOffset.Parse("2026-03-22T00:00:00Z"),
+            EffectiveTo: null);
 
     private static LedgerAccountingPeriod BuildOpenPeriod() =>
         new(
@@ -180,7 +214,14 @@ public sealed class AccrualLedgerServiceTests
             CommitmentFeeRate: 0.0025m,
             DefaultRateSpreadBps: null,
             PrepaymentAllowed: true,
-            CovenantsJson: null);
+            CovenantsJson: null,
+            SecurityMasterReference: new DirectLendingSecurityMasterReferenceDto(
+                SecurityId: Guid.Parse("99999999-9999-9999-9999-999999999999"),
+                Symbol: "NWTERM26",
+                Provenance: "source:security-master;definition:loan-facility",
+                ApprovalReference: "sm-approval:nwterm26-controller",
+                LedgerMappingReference: "ledger-map:nwterm26-direct-lending",
+                Status: "Active"));
 
         return new LoanContractDetailDto(
             LoanId: loanId,

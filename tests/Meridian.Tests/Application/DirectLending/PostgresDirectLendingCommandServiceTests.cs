@@ -5,6 +5,7 @@ using Meridian.Application.Ledger;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 using NSubstitute;
@@ -55,7 +56,7 @@ public sealed class PostgresDirectLendingCommandServiceTests
             stateStore,
             Substitute.For<IDirectLendingOperationsStore>(),
             queryService,
-            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService()),
+            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
             new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
 
         var result = await service.PostDailyAccrualAsync(
@@ -83,9 +84,9 @@ public sealed class PostgresDirectLendingCommandServiceTests
         write.Entry.Metadata.Tags.Should().ContainKey("sourceEventId")
             .WhoseValue.Should().Be(capturedEventId.ToString("D"));
         write.Entry.Metadata.Tags.Should().ContainKey("securityMasterProvenance")
-            .WhoseValue.Should().Contain("approved:true");
+            .WhoseValue.Should().Contain("server-resolved:true");
         write.Entry.Metadata.Tags.Should().ContainKey("securityMasterLineage")
-            .WhoseValue.Should().Contain("ledger-map:nwterm26-direct-lending");
+            .WhoseValue.Should().Contain("ledger-map:direct-lending:NWTERM26");
         write.Entry.Lines
             .Where(static line => !string.Equals(line.Account.Name, "Cash", StringComparison.OrdinalIgnoreCase))
             .Should()
@@ -108,7 +109,7 @@ public sealed class PostgresDirectLendingCommandServiceTests
             stateStore,
             Substitute.For<IDirectLendingOperationsStore>(),
             queryService,
-            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService()),
+            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
             new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
 
         var act = () => service.PostDailyAccrualAsync(
@@ -117,6 +118,61 @@ public sealed class PostgresDirectLendingCommandServiceTests
 
         await act.Should().ThrowAsync<DirectLendingCommandException>()
             .WithMessage("*requires a Security Master reference before posting*");
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default,
+            default,
+            default,
+            default!,
+            default!,
+            default!,
+            default,
+            default,
+            default!,
+            default!,
+            default,
+            default,
+            default);
+    }
+
+
+    [Fact]
+    public async Task PostDailyAccrualAsync_RejectsForgedSecurityMasterReferenceMissingFromAuthoritativeStore()
+    {
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var baselineContract = BuildContract(loanId);
+        var contract = baselineContract with
+        {
+            CurrentTerms = baselineContract.CurrentTerms with
+            {
+                SecurityMasterReference = new DirectLendingSecurityMasterReferenceDto(
+                    SecurityId: Guid.Parse("11111111-2222-3333-4444-555555555555"),
+                    Symbol: "FORGEDTERM26",
+                    Provenance: "source:attacker;approved:true",
+                    ApprovalReference: "sm-approval:attacker-controlled-ticket",
+                    LedgerMappingReference: "ledger-map:forgedterm26-direct-lending",
+                    Status: "Active")
+            }
+        };
+        var servicing = BuildServicing(loanId);
+
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, contract, servicing));
+
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            queryService,
+            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var act = () => service.PostDailyAccrualAsync(
+            loanId,
+            new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .WithMessage("*no authoritative record exists*");
         await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
             default,
             default,
@@ -160,6 +216,36 @@ public sealed class PostgresDirectLendingCommandServiceTests
 
         return store;
     }
+
+    private static Meridian.Application.SecurityMaster.ISecurityMasterQueryService BuildSecurityMasterQueryService()
+    {
+        var service = Substitute.For<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>();
+        service.GetByIdAsync(Guid.Parse("99999999-9999-9999-9999-999999999999"), Arg.Any<CancellationToken>())
+            .Returns(BuildSecurityMasterDetail());
+        return service;
+    }
+
+    private static SecurityDetailDto BuildSecurityMasterDetail() =>
+        new(
+            SecurityId: Guid.Parse("99999999-9999-9999-9999-999999999999"),
+            AssetClass: "CustomAsset",
+            Status: SecurityStatusDto.Active,
+            DisplayName: "Northwind Senior Term Loan",
+            Currency: "USD",
+            CommonTerms: JsonSerializer.SerializeToElement(new { displayName = "Northwind Senior Term Loan", currency = "USD" }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { facility = "Northwind" }),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.InternalCode,
+                    "NWTERM26",
+                    IsPrimary: true,
+                    ValidFrom: DateTimeOffset.Parse("2026-03-22T00:00:00Z"))
+            ],
+            Aliases: [],
+            Version: 4,
+            EffectiveFrom: DateTimeOffset.Parse("2026-03-22T00:00:00Z"),
+            EffectiveTo: null);
 
     private static LoanContractDetailDto BuildContract(Guid loanId, bool includeSecurityMasterReference = true)
     {

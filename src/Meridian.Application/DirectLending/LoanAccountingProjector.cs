@@ -2,11 +2,13 @@ using System.Text.Json;
 using Meridian.Application.Ledger;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 using LedgerAccount = Meridian.Ledger.LedgerAccount;
 using LedgerAccountType = Meridian.Ledger.LedgerAccountType;
+using SecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Application.DirectLending;
 
@@ -14,13 +16,16 @@ public sealed class LoanAccountingProjector
 {
     private readonly ILedgerJournalStore? _journalStore;
     private readonly IAccountingPolicyService _accountingPolicyService;
+    private readonly SecurityMasterQueryService? _securityMasterQueryService;
 
     public LoanAccountingProjector(
         ILedgerJournalStore? journalStore,
-        IAccountingPolicyService accountingPolicyService)
+        IAccountingPolicyService accountingPolicyService,
+        SecurityMasterQueryService? securityMasterQueryService = null)
     {
         _journalStore = journalStore;
         _accountingPolicyService = accountingPolicyService;
+        _securityMasterQueryService = securityMasterQueryService;
     }
 
     public async Task<IReadOnlyList<LedgerJournalEntryWrite>> ProjectAsync(
@@ -168,7 +173,9 @@ public sealed class LoanAccountingProjector
             return [];
         }
 
-        var securityLineage = BuildSecurityMasterPostingLineage(securityReference, eventType);
+        var securityLineage = await ResolveSecurityMasterPostingLineageAsync(securityReference, eventType, ct).ConfigureAwait(false);
+        instrumentSymbol = securityLineage.Symbol;
+        lines = ApplyAuthoritativeInstrumentSymbol(lines, instrumentSymbol);
 
         var entry = new JournalEntry(
             journalEntryId,
@@ -178,7 +185,7 @@ public sealed class LoanAccountingProjector
             new JournalEntryMetadata(
                 ActivityType: eventType,
                 Symbol: instrumentSymbol,
-                SecurityId: securityReference!.SecurityId,
+                SecurityId: securityLineage.SecurityId,
                 FinancialAccountId: loanId.ToString("D"),
                 Institution: "DirectLending",
                 Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -246,9 +253,29 @@ public sealed class LoanAccountingProjector
                string.Equals(status, "SoftClosed", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static (string Provenance, string Lineage) BuildSecurityMasterPostingLineage(
+    private static List<LedgerEntry> ApplyAuthoritativeInstrumentSymbol(
+        IReadOnlyList<LedgerEntry> lines,
+        string instrumentSymbol) =>
+        lines
+            .Select(line => new LedgerEntry(
+                line.EntryId,
+                line.JournalEntryId,
+                line.Timestamp,
+                line.Account with
+                {
+                    Symbol = IsDirectLendingInstrumentAccount(line.Account.Name)
+                        ? instrumentSymbol
+                        : null
+                },
+                line.Debit,
+                line.Credit,
+                line.Description))
+            .ToList();
+
+    private async Task<(Guid SecurityId, string Symbol, string Provenance, string Lineage)> ResolveSecurityMasterPostingLineageAsync(
         DirectLendingSecurityMasterReferenceDto? reference,
-        string eventType)
+        string eventType,
+        CancellationToken ct)
     {
         if (reference is null)
         {
@@ -266,8 +293,8 @@ public sealed class LoanAccountingProjector
                     $"Direct-lending ledger event '{eventType}' requires a resolved Security Master security id before posting."));
         }
 
-        var symbol = NormalizeSymbol(reference.Symbol);
-        if (symbol is null)
+        var requestedSymbol = NormalizeSymbol(reference.Symbol);
+        if (requestedSymbol is null)
         {
             throw new DirectLendingCommandException(
                 new DirectLendingCommandError(
@@ -275,36 +302,80 @@ public sealed class LoanAccountingProjector
                     $"Direct-lending ledger event '{eventType}' requires a Security Master symbol before posting."));
         }
 
-        if (!string.Equals(reference.Status, "Active", StringComparison.OrdinalIgnoreCase))
+        if (_securityMasterQueryService is null)
         {
             throw new DirectLendingCommandException(
                 new DirectLendingCommandError(
                     DirectLendingErrorCode.Validation,
-                    $"Direct-lending ledger event '{eventType}' requires an active Security Master reference before posting."));
+                    $"Direct-lending ledger event '{eventType}' requires an authoritative Security Master lookup before posting."));
         }
 
-        if (string.IsNullOrWhiteSpace(reference.Provenance) ||
-            string.IsNullOrWhiteSpace(reference.ApprovalReference) ||
-            string.IsNullOrWhiteSpace(reference.LedgerMappingReference))
+        var security = await _securityMasterQueryService.GetByIdAsync(reference.SecurityId, ct).ConfigureAwait(false);
+        if (security is null)
         {
             throw new DirectLendingCommandException(
                 new DirectLendingCommandError(
                     DirectLendingErrorCode.Validation,
-                    $"Direct-lending ledger event '{eventType}' requires Security Master provenance, approval, and ledger mapping evidence before posting."));
+                    $"Direct-lending ledger event '{eventType}' references Security Master security '{reference.SecurityId}' but no authoritative record exists."));
         }
 
-        var securityId = reference.SecurityId.ToString("N");
-        var provenance = $"security-master:{securityId};{reference.Provenance.Trim()};approved:true";
+        if (security.Status != SecurityStatusDto.Active)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Direct-lending ledger event '{eventType}' requires an active authoritative Security Master record before posting."));
+        }
+
+        if (!SecurityMasterRecordContainsSymbol(security, requestedSymbol))
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Direct-lending ledger event '{eventType}' Security Master symbol '{requestedSymbol}' does not match the authoritative Security Master record for '{reference.SecurityId}'."));
+        }
+
+        var securityId = security.SecurityId.ToString("N");
+        var provenance = $"security-master:{securityId};server-resolved:true;status:{security.Status};version:{security.Version}";
         var lineage = string.Join(
             ':',
-            symbol,
+            requestedSymbol,
             securityId,
-            reference.LedgerMappingReference.Trim(),
-            reference.ApprovalReference.Trim(),
-            "security-status:active",
+            $"ledger-map:direct-lending:{requestedSymbol}:{securityId}",
+            $"sm-approval:security-master-active:{securityId}",
+            $"security-status:{security.Status}",
             provenance);
-        return (provenance, lineage);
+        return (security.SecurityId, requestedSymbol, provenance, lineage);
     }
+
+    private static bool SecurityMasterRecordContainsSymbol(SecurityDetailDto security, string symbol)
+    {
+        if (TokenMatches(security.DisplayName, symbol))
+        {
+            return true;
+        }
+
+        foreach (var identifier in security.Identifiers)
+        {
+            if (TokenMatches(identifier.Value, symbol) || TokenMatches(identifier.NormalizedValue, symbol))
+            {
+                return true;
+            }
+        }
+
+        foreach (var alias in security.Aliases)
+        {
+            if (alias.IsEnabled && TokenMatches(alias.AliasValue, symbol))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TokenMatches(string? value, string symbol) =>
+        string.Equals(NormalizeSymbol(value), symbol, StringComparison.OrdinalIgnoreCase);
 
     private static bool IsDirectLendingInstrumentAccount(string account) =>
         !string.Equals(account, "Cash", StringComparison.OrdinalIgnoreCase);
