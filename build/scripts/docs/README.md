@@ -203,7 +203,8 @@ python3 check-ai-navigation-freshness.py --max-age-days 14
 ### prompt-route-linter.py
 
 Validates deterministic prompt-routing rules and optionally classifies a prompt into lane, skill,
-mode, and validation-floor recommendations.
+mode, model route, validation-floor, telemetry, and escalation recommendations. By default it writes
+the canonical route artifact to `docs/status/prompt-route-lint-report.json`.
 
 ```bash
 python3 prompt-route-linter.py --summary
@@ -213,8 +214,10 @@ python3 prompt-route-linter.py --prompt-file prompt.txt --json-output docs/statu
 
 ### handoff-packet-generator.py
 
-Generates a structured handoff packet from prompt-route-linter output, changed files, and validation
-entries so lane transitions stay deterministic and compact.
+Generates a structured handoff packet from prompt-route-linter output, changed files, validation
+entries, route outcome, model route, and telemetry so lane transitions stay deterministic and
+compact. By default it writes `docs/status/ai-handoff-packet.md` and
+`docs/status/ai-handoff-packet.json`.
 
 ```bash
 python3 handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json
@@ -228,8 +231,8 @@ python3 handoff-packet-generator.py \
 
 ### check-handoff-packet-schema.py
 
-Validates generated handoff packet schema and enforces telemetry completeness for high-risk routes
-(`Deep Review`, `provider`, `governance`).
+Validates generated handoff packet schema and enforces route-declared telemetry completeness for
+high-risk routes (`Deep Review`, `provider`, `governance`).
 
 ```bash
 python3 check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary
@@ -237,9 +240,9 @@ python3 check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-pack
 
 ### check-validation-floor.py
 
-CI guard that enforces validation-floor script evidence for AI/docs-related changes. It reads
-`run-docs-automation.py` JSON summary output and fails when required scripts are missing or not
-successful.
+CI guard that enforces route-declared validation-floor script evidence for AI/docs-related changes.
+It reads `run-docs-automation.py` JSON summary output and fails when required scripts are missing
+or not successful.
 
 ```bash
 python3 check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --summary
@@ -248,8 +251,8 @@ python3 check-validation-floor.py --summary-json docs/status/docs-automation-sum
 
 ### check-mode-escalation.py
 
-Enforces escalation from `Lightweight` mode when cross-lane, policy-touching, or failed-validation
-conditions indicate under-scoped execution.
+Enforces route-declared escalation triggers when cross-lane, policy-touching, failed-validation, or
+high-risk model-route conditions indicate under-scoped execution.
 
 ```bash
 python3 check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary

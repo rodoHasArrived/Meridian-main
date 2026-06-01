@@ -19,6 +19,7 @@ using Meridian.Application.FxSpot;
 using Meridian.Application.MoneyMarketFunds;
 using Meridian.Application.Options;
 using Meridian.Application.OperationsContinuity;
+using Meridian.Application.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.Treasury;
@@ -73,6 +74,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
+        services.TryAddSingleton<StatementReconciliationService>();
+        services.TryAddSingleton<StatementReconciliationContextAdapter>();
+        services.TryAddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
+        services.TryAddSingleton<IDataIntegrationIngestionService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
+        services.TryAddSingleton<IReconciliationCaseIntakeService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
+        services.TryAddSingleton<IStatementRunWorkflowService, StatementRunWorkflowService>();
+        services.TryAddSingleton<IStatementReconciliationCheckpointStore, InMemoryStatementReconciliationCheckpointStore>();
+        services.TryAddSingleton<StatementReconciliationOrchestrator>();
 
         // StorageOptions - configured from AppConfig or defaults
         services.AddSingleton<StorageOptions>(sp =>

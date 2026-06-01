@@ -122,6 +122,8 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
         "script": "prompt-route-linter.py",
         "args": [
             "--summary",
+            "--prompt",
+            "documentation readme guide index",
             "--json-output",
             "docs/status/prompt-route-lint-report.json",
         ],

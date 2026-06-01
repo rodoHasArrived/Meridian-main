@@ -3,7 +3,11 @@ using Meridian.Application.ResultTypes;
 
 namespace Meridian.Application.Commands;
 
-internal sealed class StatementCommands : ICliCommand
+internal sealed class StatementCommands(
+    IStatementReconciliationValidationService validationService,
+    IDataIntegrationIngestionService ingestionService,
+    IReconciliationCaseIntakeService intakeService,
+    IStatementReconciliationCheckpointStore checkpointStore) : ICliCommand
 {
     public bool CanHandle(string[] args)
         => CliArguments.HasFlag(args, "--statement-import")
@@ -18,22 +22,25 @@ internal sealed class StatementCommands : ICliCommand
         if (sourceKind is null || sourcePath is null)
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
 
-        var svc = new StatementReconciliationService();
         var accountIdRaw = CliArguments.GetValue(args, "--statement-account-id");
         var resume = CliArguments.HasFlag(args, "--statement-resume");
         try
         {
             if (CliArguments.HasFlag(args, "--statement-validate"))
             {
-                var result = await svc.ValidateAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
+                var result = await validationService.ValidateAsync(
+                    new StatementReconciliationValidationRequest(sourceKind, sourcePath, MappingProfileId: null),
+                    ct).ConfigureAwait(false);
                 Console.WriteLine(result);
                 return CliResult.Ok();
             }
 
             if (CliArguments.HasFlag(args, "--statement-import"))
             {
-                var result = await svc.ImportAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
-                Console.WriteLine($"Imported statement batch {result.ImportId} with {result.RowCount} row(s): positions={result.Positions.Count}, cash={result.CashBalances.Count}, transactions={result.Transactions.Count}.");
+                var result = await ingestionService.IngestAsync(
+                    new DataIntegrationIngestionRequest(sourceKind, sourcePath, MappingProfileId: null),
+                    ct).ConfigureAwait(false);
+                Console.WriteLine($"Imported statement batch {result.ImportId} with {result.ImportedRowCount} row(s).");
                 return CliResult.Ok();
             }
 
@@ -46,15 +53,19 @@ internal sealed class StatementCommands : ICliCommand
                 }
 
                 var orchestrator = new StatementReconciliationOrchestrator(
-                    svc,
-                    new InMemoryStatementReconciliationCheckpointStore());
+                    validationService,
+                    ingestionService,
+                    intakeService,
+                    checkpointStore);
                 var result = await orchestrator.RunAsync(accountId, sourceKind, sourcePath, resume, ct).ConfigureAwait(false);
                 Console.WriteLine($"Orchestration status for {result.AccountId}: {result.Status}; stage={result.CurrentStage}; unresolved={result.UnresolvedCount}.");
                 return CliResult.Ok();
             }
 
-            var reconcileResult = await svc.ReconcileAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
-            Console.WriteLine($"Reconciled batch {reconcileResult.ImportId}: matches={reconcileResult.MatchCount}, unresolved={reconcileResult.UnresolvedCount}.");
+            var reconcileResult = await intakeService.IntakeAsync(
+                new ReconciliationCaseIntakeRequest(sourceKind, sourcePath, MappingProfileId: null),
+                ct).ConfigureAwait(false);
+            Console.WriteLine($"Reconciled batch {reconcileResult.ImportId}: matches={reconcileResult.MatchCount}, unresolved={reconcileResult.Cases.Count}.");
             return CliResult.Ok();
         }
         catch (FileNotFoundException ex)

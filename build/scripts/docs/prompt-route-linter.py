@@ -19,6 +19,7 @@ from typing import Any
 
 
 DEFAULT_RULES_PATH = Path("docs/ai/codex/prompt-route-rules.json")
+DEFAULT_JSON_OUTPUT = Path("docs/status/prompt-route-lint-report.json")
 ALLOWED_MODES = {"Lightweight", "Standard", "Deep Review"}
 
 
@@ -27,9 +28,12 @@ class MatchResult:
     lane: str
     skill: str
     mode: str
+    model_route_id: str
     rationale: str
     validation_floor: list[str]
     validation_scripts: list[str]
+    required_telemetry: list[str]
+    escalation_triggers: list[str]
     matched_rule: str | None
     score: float
     confidence: float
@@ -46,7 +50,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--prompt", help="Prompt text to classify against route rules.")
     parser.add_argument("--prompt-file", help="Path to a file containing prompt text to classify.")
     parser.add_argument("--summary", action="store_true", help="Print a compact validation summary.")
-    parser.add_argument("--json-output", help="Optional output path for lint + match JSON report.")
+    parser.add_argument(
+        "--json-output",
+        default=str(DEFAULT_JSON_OUTPUT),
+        help=f"Output path for lint + match JSON report (default: {DEFAULT_JSON_OUTPUT}).",
+    )
     return parser.parse_args()
 
 
@@ -94,8 +102,21 @@ def validate_ruleset(data: dict[str, Any]) -> None:
     _require_field(data, "rules", list, "ruleset")
 
     default_route = data["defaultRoute"]
-    for field in ("lane", "skill", "mode", "rationale", "validationFloor", "validationScripts"):
-        if field in {"validationFloor", "validationScripts"}:
+    route_fields = (
+        "lane",
+        "skill",
+        "mode",
+        "modelRouteId",
+        "rationale",
+        "validationFloor",
+        "validationScripts",
+        "requiredTelemetry",
+        "escalationTriggers",
+    )
+    list_fields = {"validationFloor", "validationScripts", "requiredTelemetry", "escalationTriggers"}
+
+    for field in route_fields:
+        if field in list_fields:
             _require_field(default_route, field, list, "defaultRoute")
         else:
             _require_field(default_route, field, str, "defaultRoute")
@@ -114,8 +135,8 @@ def validate_ruleset(data: dict[str, Any]) -> None:
             expected = dict if field == "route" else str
             _require_field(rule, field, expected, context)
         route = rule["route"]
-        for field in ("lane", "skill", "mode", "rationale", "validationFloor", "validationScripts"):
-            if field in {"validationFloor", "validationScripts"}:
+        for field in route_fields:
+            if field in list_fields:
                 _require_field(route, field, list, f"{context}.route")
             else:
                 _require_field(route, field, str, f"{context}.route")
@@ -176,9 +197,12 @@ def match_route(prompt: str, data: dict[str, Any]) -> MatchResult:
             lane=default_route["lane"],
             skill=default_route["skill"],
             mode=default_route["mode"],
+            model_route_id=default_route["modelRouteId"],
             rationale=default_route["rationale"],
             validation_floor=default_route["validationFloor"],
             validation_scripts=default_route["validationScripts"],
+            required_telemetry=default_route["requiredTelemetry"],
+            escalation_triggers=default_route["escalationTriggers"],
             matched_rule=None,
             score=0.0,
             confidence=0.0,
@@ -194,12 +218,15 @@ def match_route(prompt: str, data: dict[str, Any]) -> MatchResult:
             lane=default_route["lane"],
             skill=fallback_skill,
             mode=default_route["mode"],
+            model_route_id=default_route["modelRouteId"],
             rationale=(
                 f"{default_route['rationale']} "
                 f"Low-confidence specialist match ({confidence:.2f} < {threshold:.2f}) fell back from rule '{best_rule['id']}'."
             ),
             validation_floor=default_route["validationFloor"],
             validation_scripts=default_route["validationScripts"],
+            required_telemetry=default_route["requiredTelemetry"],
+            escalation_triggers=default_route["escalationTriggers"],
             matched_rule=best_rule["id"],
             score=best_score,
             confidence=confidence,
@@ -210,9 +237,12 @@ def match_route(prompt: str, data: dict[str, Any]) -> MatchResult:
         lane=route["lane"],
         skill=route["skill"],
         mode=route["mode"],
+        model_route_id=route["modelRouteId"],
         rationale=route["rationale"],
         validation_floor=route["validationFloor"],
         validation_scripts=route["validationScripts"],
+        required_telemetry=route["requiredTelemetry"],
+        escalation_triggers=route["escalationTriggers"],
         matched_rule=best_rule["id"],
         score=best_score,
         confidence=confidence,
@@ -231,9 +261,12 @@ def write_json_report(path: Path, valid: bool, rules_path: str, result: MatchRes
             "lane": result.lane,
             "skill": result.skill,
             "mode": result.mode,
+            "modelRouteId": result.model_route_id,
             "rationale": result.rationale,
             "validationFloor": result.validation_floor,
             "validationScripts": result.validation_scripts,
+            "requiredTelemetry": result.required_telemetry,
+            "escalationTriggers": result.escalation_triggers,
             "matchedRule": result.matched_rule,
             "score": round(result.score, 3),
             "confidence": round(result.confidence, 3),
@@ -263,6 +296,7 @@ def main() -> int:
         print(f"lane={result.lane}")
         print(f"skill={result.skill}")
         print(f"mode={result.mode}")
+        print(f"model_route_id={result.model_route_id}")
         print(f"matched_rule={result.matched_rule or 'default'}")
         print(f"confidence={result.confidence:.3f}")
         print(f"fallback_applied={str(result.fallback_applied).lower()}")
@@ -273,15 +307,21 @@ def main() -> int:
         print("validation_scripts:")
         for script_name in result.validation_scripts:
             print(f"  - {script_name}")
+        print("required_telemetry:")
+        for signal in result.required_telemetry:
+            print(f"  - {signal}")
+        print("escalation_triggers:")
+        for trigger in result.escalation_triggers:
+            print(f"  - {trigger}")
     elif args.summary:
+        result = match_route("", data)
         print("[prompt-route-linter] OK")
         print(f"rules={rules_path}")
         print(f"rules_count={len(data['rules'])}")
         print(f"default_skill={data['defaultRoute']['skill']}")
         print(f"confidence_threshold={float(data.get('confidenceThreshold', 0.55)):.2f}")
 
-    if args.json_output:
-        write_json_report(Path(args.json_output), True, str(rules_path), result)
+    write_json_report(Path(args.json_output), True, str(rules_path), result)
     return 0
 
 

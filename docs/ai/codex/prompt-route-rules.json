@@ -6,12 +6,21 @@
     "skill": "meridian-repo-navigation",
     "fallbackSkill": "meridian-repo-navigation",
     "mode": "Lightweight",
+    "modelRouteId": "analysis-economy",
     "rationale": "Default to orientation when the prompt does not strongly match a specialist lane.",
     "validationFloor": [
       "python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14"
     ],
     "validationScripts": [
       "prompt-route-linter"
+    ],
+    "requiredTelemetry": [
+      "route_id",
+      "handoff_path"
+    ],
+    "escalationTriggers": [
+      "matched route confidence below confidenceThreshold",
+      "task expands beyond orientation"
     ]
   },
   "rules": [
@@ -29,12 +38,22 @@
         "lane": "review",
         "skill": "meridian-code-review",
         "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
         "rationale": "Review requests should prioritize bug/risk findings and architecture drift.",
         "validationFloor": [
           "git diff --check"
         ],
         "validationScripts": [
           "prompt-route-linter"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "review spans multiple lanes",
+          "validation failure changes risk assessment"
         ]
       }
     },
@@ -52,6 +71,7 @@
         "lane": "docs",
         "skill": "meridian-docs",
         "mode": "Lightweight",
+        "modelRouteId": "analysis-economy",
         "rationale": "Docs updates should stay in canonical audience paths with minimal proof.",
         "validationFloor": [
           "git diff --check",
@@ -62,6 +82,15 @@
           "check-ai-handoff-strict",
           "prompt-route-linter",
           "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "docs change touches shared AI policy",
+          "docs change spans Codex and shared host guidance",
+          "required validation script fails"
         ]
       }
     },
@@ -79,6 +108,7 @@
         "lane": "browser",
         "skill": "meridian-browser-workstation",
         "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
         "rationale": "Browser workstation requests should use dashboard-specific skill and tests.",
         "validationFloor": [
           "npm --prefix src/Meridian.Ui/dashboard run test",
@@ -87,6 +117,15 @@
         "validationScripts": [
           "prompt-route-linter",
           "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "browser change touches shared API contracts",
+          "dashboard test or build fails"
         ]
       }
     },
@@ -104,6 +143,7 @@
         "lane": "desktop",
         "skill": "modular-desktop-mvvm",
         "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
         "rationale": "Desktop tasks should respect MVVM boundaries and focused WPF proof.",
         "validationFloor": [
           "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~<TouchedViewModelOrRoute>\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true"
@@ -111,6 +151,15 @@
         "validationScripts": [
           "prompt-route-linter",
           "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "desktop change touches shared service contracts",
+          "focused WPF validation fails"
         ]
       }
     },
@@ -128,6 +177,7 @@
         "lane": "provider",
         "skill": "meridian-provider-builder",
         "mode": "Deep Review",
+        "modelRouteId": "governance-research",
         "rationale": "Provider changes need adapter-specific validation, telemetry capture, and readiness evidence.",
         "validationFloor": [
           "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter \"FullyQualifiedName~Provider\""
@@ -136,6 +186,20 @@
           "prompt-route-linter",
           "handoff-packet-generator",
           "check-handoff-packet-schema"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "input_tokens",
+          "output_tokens",
+          "estimated_cost_usd",
+          "latency_ms",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "provider credentials or failover behavior changes",
+          "provider validation fails",
+          "policy exception requires wider context"
         ]
       }
     },
@@ -153,6 +217,7 @@
         "lane": "test",
         "skill": "meridian-test-writer",
         "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
         "rationale": "Test-specific requests should use scenario-first test authoring lane.",
         "validationFloor": [
           "dotnet test <touched test project>"
@@ -160,6 +225,15 @@
         "validationScripts": [
           "prompt-route-linter",
           "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "test coverage crosses multiple source modules",
+          "focused test validation fails"
         ]
       }
     }

@@ -63,6 +63,14 @@ def has_failed_scripts(summary: dict[str, Any]) -> bool:
     return False
 
 
+def has_trigger(route: dict[str, Any], *needles: str) -> bool:
+    triggers = route.get("escalationTriggers", [])
+    if not isinstance(triggers, list):
+        return False
+    lowered = [str(trigger).lower() for trigger in triggers]
+    return any(any(needle in trigger for needle in needles) for trigger in lowered)
+
+
 def main() -> int:
     args = parse_args()
     route = load_json(Path(args.route_json)).get("match", {})
@@ -70,12 +78,13 @@ def main() -> int:
     files = changed_files(args)
 
     current_mode = str(route.get("mode", "Lightweight"))
+    model_route_id = str(route.get("modelRouteId", ""))
     lanes = infer_lanes(files)
 
     reasons: list[str] = []
 
     # Cross-lane edits should not stay in Lightweight.
-    if len(lanes) > 1 and current_mode == "Lightweight":
+    if len(lanes) > 1 and current_mode == "Lightweight" and has_trigger(route, "cross-lane", "spans"):
         reasons.append("cross-lane edits detected while route mode is Lightweight")
 
     # Policy and contract files require deeper review.
@@ -83,16 +92,20 @@ def main() -> int:
         "docs/ai/assistant-workflow-contract.md",
         "docs/ai/model-routing-policy.json",
         "docs/ai/contract-policy.json",
-    } for path in files) and current_mode != "Deep Review":
+    } for path in files) and current_mode != "Deep Review" and has_trigger(route, "policy", "shared ai"):
         reasons.append("policy/contract file touched without Deep Review mode")
 
     # If failures are already present, lightweight mode is under-scoped.
-    if has_failed_scripts(summary) and current_mode == "Lightweight":
+    if has_failed_scripts(summary) and current_mode == "Lightweight" and has_trigger(route, "validation", "fails"):
         reasons.append("validation failures observed under Lightweight mode")
+
+    if model_route_id == "governance-research" and current_mode != "Deep Review":
+        reasons.append("governance-research model route requires Deep Review mode")
 
     if args.summary:
         print("[check-mode-escalation] CHECK")
         print(f"mode={current_mode}")
+        print(f"model_route_id={model_route_id or 'unknown'}")
         print(f"lane_count={len(lanes)}")
 
     if reasons:

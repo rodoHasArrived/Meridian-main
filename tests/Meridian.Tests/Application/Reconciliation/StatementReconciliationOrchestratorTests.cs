@@ -9,7 +9,8 @@ public sealed class StatementReconciliationOrchestratorTests
     {
         var store = new InMemoryStatementReconciliationCheckpointStore();
         var service = new StatementReconciliationService();
-        var orchestrator = new StatementReconciliationOrchestrator(service, store);
+        var adapter = new StatementReconciliationContextAdapter(service);
+        var orchestrator = new StatementReconciliationOrchestrator(adapter, adapter, adapter, store);
 
         var path = Path.GetTempFileName();
         await File.WriteAllLinesAsync(path, ["a,b", "1,2"]);
@@ -35,7 +36,9 @@ public sealed class StatementReconciliationOrchestratorTests
     public async Task RunAsync_Records_Failure_For_Missing_File()
     {
         var store = new InMemoryStatementReconciliationCheckpointStore();
-        var orchestrator = new StatementReconciliationOrchestrator(new StatementReconciliationService(), store);
+        var service = new StatementReconciliationService();
+        var adapter = new StatementReconciliationContextAdapter(service);
+        var orchestrator = new StatementReconciliationOrchestrator(adapter, adapter, adapter, store);
 
         var result = await orchestrator.RunAsync(Guid.NewGuid(), "local", "./missing.csv", resume: false, CancellationToken.None);
 
@@ -49,7 +52,8 @@ public sealed class StatementReconciliationOrchestratorTests
     {
         var store = new InMemoryStatementReconciliationCheckpointStore();
         var service = new StatementReconciliationService();
-        var orchestrator = new StatementReconciliationOrchestrator(service, store);
+        var adapter = new StatementReconciliationContextAdapter(service);
+        var orchestrator = new StatementReconciliationOrchestrator(adapter, adapter, adapter, store);
 
         var path = Path.GetTempFileName();
         await File.WriteAllLinesAsync(path,
@@ -102,7 +106,8 @@ public sealed class StatementReconciliationOrchestratorTests
     {
         var store = new InMemoryStatementReconciliationCheckpointStore();
         var service = new StatementReconciliationService();
-        var orchestrator = new StatementReconciliationOrchestrator(service, store);
+        var adapter = new StatementReconciliationContextAdapter(service);
+        var orchestrator = new StatementReconciliationOrchestrator(adapter, adapter, adapter, store);
 
         var path = Path.GetTempFileName();
         await File.WriteAllLinesAsync(path,
@@ -147,7 +152,8 @@ public sealed class StatementReconciliationOrchestratorTests
         var accountId = Guid.NewGuid();
         var store = new InMemoryStatementReconciliationCheckpointStore();
         var service = new StatementReconciliationService();
-        var orchestrator = new StatementReconciliationOrchestrator(service, store);
+        var adapter = new StatementReconciliationContextAdapter(service);
+        var orchestrator = new StatementReconciliationOrchestrator(adapter, adapter, adapter, store);
 
         var path = Path.GetTempFileName();
         await File.WriteAllLinesAsync(path, ["foo,bar", "1,2"]);

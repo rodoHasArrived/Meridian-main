@@ -55,7 +55,18 @@ def validate(packet: dict[str, Any]) -> None:
         raise ValueError("scope.requested must be non-empty.")
 
     route = packet["route"]
-    for key in ("lane", "skill", "mode", "matchedRule", "rationale"):
+    for key in (
+        "lane",
+        "skill",
+        "mode",
+        "modelRouteId",
+        "matchedRule",
+        "rationale",
+        "validationFloor",
+        "validationScripts",
+        "requiredTelemetry",
+        "escalationTriggers",
+    ):
         require_key(route, key, "route")
 
     outcome = packet["routeOutcome"]
@@ -63,18 +74,11 @@ def validate(packet: dict[str, Any]) -> None:
     require_key(outcome, "routeAssessment", "routeOutcome")
 
     telemetry = packet["telemetry"]
-    required_telemetry = (
-        "route_id",
-        "selected_model",
-        "input_tokens",
-        "output_tokens",
-        "estimated_cost_usd",
-        "latency_ms",
-        "handoff_path",
-    )
-
     high_risk = route.get("mode") == "Deep Review" or route.get("lane") in {"provider", "governance"}
     if high_risk:
+        required_telemetry = route.get("requiredTelemetry")
+        if not isinstance(required_telemetry, list) or not required_telemetry:
+            raise ValueError("route.requiredTelemetry must be a non-empty list for high-risk routes.")
         for key in required_telemetry:
             value = telemetry.get(key)
             if value in (None, "", "unknown"):

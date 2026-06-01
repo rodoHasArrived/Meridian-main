@@ -27,6 +27,9 @@ def main() -> int:
                 "prompt-route-rules.json",
                 "prompt-route-linter.py",
                 "handoff-packet-generator.py",
+                "prompt-route-lint-report.json",
+                "ai-handoff-packet.json",
+                "modelRouteId",
             ],
         ),
         (

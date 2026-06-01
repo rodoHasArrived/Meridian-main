@@ -74,6 +74,11 @@ Before behavior changes, run this sequence:
 - Use `docs/ai/parallel-task-manifest-template.md` for parallel lanes.
 - Use `agent-handoff-checklist.md` for explicit handoffs between specialist lanes.
 - Use `docs/ai/codex/route-cards.md` to anchor multi-system routing.
+- For Codex-owned orchestration, use `docs/ai/codex/prompt-route-rules.json` as the route source,
+  `docs/status/prompt-route-lint-report.json` as the route artifact, and
+  `docs/status/ai-handoff-packet.json` as the handoff artifact.
+- Route schema v2 requires `modelRouteId`, validation floor, validation scripts, required telemetry,
+  and escalation triggers so routing, handoff, and CI evidence remain connected.
 
 ### Token and Context Management
 
@@ -110,6 +115,12 @@ Use this lane-specific order for AI-lane or cross-lane work:
    - Update generator inputs first.
    - Re-run generation lane only for changed generator-owned outputs.
    - Record generated outputs as generated-only in the handoff packet.
+6. For Codex route/handoff changes:
+   - `python build/scripts/docs/prompt-route-linter.py --summary`
+   - `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`
+   - `python build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary`
+   - `python build/scripts/docs/check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary`
+   - `python build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary`
 
 ### Parallel Development Defaults
 
@@ -184,6 +195,8 @@ This contract is the canonical source for AI work during the documentation rebui
 | Edit rules | Keep source-of-truth updates in the shared contract and lane READMEs; treat old hand-authored docs as migration material unless explicitly canonical. |
 | Generated-file handling | Do not edit generated docs in place. Update generator inputs or source data and rerun the owning generator. |
 | Agent orchestration | Use `parallel-task-manifest-template.md` for multi-lane work and `agent-handoff-checklist.md` for ownership transitions. |
+| Codex route evidence | Use `prompt-route-linter.py` to emit `docs/status/prompt-route-lint-report.json` with lane, skill, mode, `modelRouteId`, validation requirements, telemetry requirements, and escalation triggers. |
+| Handoff packet evidence | Use `handoff-packet-generator.py` to emit `docs/status/ai-handoff-packet.json` with scope, changed files, validation evidence, route outcome, telemetry, next lane, and context lists. |
 | Parallel workflow | One manifest per parallel batch. One-file-per-lane ownership and explicit merge order in the manifest. |
 | Token/context discipline | Keep scope bounded to one lane and one evidence surface per batch; handoff ownership and scope on lane transitions. |
 | Validation | Run the narrowest relevant docs/AI checks for touched surfaces and record command outcomes in final notes. |
@@ -198,6 +211,7 @@ Use this matrix to satisfy rebuild acceptance criteria for AI-lane updates:
 | Repo navigation truth | Re-run `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary` when routing rules/doc surfaces change. |
 | AI inventory consistency | Run `python build/scripts/docs/check-ai-inventory.py --summary` and `python build/scripts/docs/check-codex-skills.py --summary` whenever any AI entrypoint, host shim, agent index, or tool mapping changes. |
 | Contract drift control | Run `python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json` when shared policy or host mirrors are edited. |
+| Codex route and handoff guardrails | Run `prompt-route-linter.py`, `handoff-packet-generator.py`, `check-handoff-packet-schema.py`, `check-validation-floor.py`, `check-mode-escalation.py`, and `check-ai-routing-parity.py` when Codex routing, handoff, or validation-floor behavior changes. |
 | Link and structure hygiene | Run `python build/scripts/docs/repair-links.py --summary` and `python build/scripts/docs/validate-docs-structure.py --summary` for any docs surface edit. |
 | Archive migration audit | Update migration mapping entries in relevant canonical `docs/*/README.md` files and archive indexes when retiring high-traffic legacy paths. |
 
@@ -386,6 +400,8 @@ When changing AI guidance, agent files, or provider surfaces:
 python3 build/scripts/docs/check-ai-inventory.py --summary
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+python3 build/scripts/docs/prompt-route-linter.py --summary
+python3 build/scripts/docs/check-ai-routing-parity.py --summary
 ```
 
 If any command fails due to missing optional surfaces, treat that as work-tree evidence and

@@ -1,7 +1,10 @@
 using FluentAssertions;
+using Meridian.Application.Reconciliation;
 using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Reconciliation;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Services.Services.Reconciliation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Ui;
 
@@ -21,10 +24,21 @@ public sealed class ReconciliationApiServiceTests
             "FUND-1,MSFT,1,15.75,0,fee,2026-05-28"
         ]);
 
-        var service = new ReconciliationApiService(
-            new JsonCanonicalStatementStore(root),
-            new JsonReconciliationCaseStore(root),
-            new JsonReconciliationBreakStore(root));
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<StatementReconciliationService>();
+        services.AddSingleton<StatementReconciliationContextAdapter>();
+        services.AddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
+        services.AddSingleton<IDataIntegrationIngestionService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
+        services.AddSingleton<IReconciliationCaseIntakeService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
+        services.AddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(root));
+        services.AddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(root));
+        services.AddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(root));
+        services.AddSingleton<IStatementRunWorkflowService, StatementRunWorkflowService>();
+        services.AddSingleton<IReconciliationApiService, ReconciliationApiService>();
+
+        using var provider = services.BuildServiceProvider();
+        var service = provider.GetRequiredService<IReconciliationApiService>();
 
         var created = await service.CreateStatementRunAsync(
             new StatementRunCreateDto(

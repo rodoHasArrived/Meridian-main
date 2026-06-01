@@ -23,6 +23,34 @@ def check_routing_semantics(route_rules: Path, host_docs: list[Path]) -> list[st
     if not isinstance(rules, list) or not rules:
         return [f"routing rules missing non-empty rules array: {route_rules}"]
 
+    required_route_fields = {
+        "lane",
+        "skill",
+        "mode",
+        "modelRouteId",
+        "rationale",
+        "validationFloor",
+        "validationScripts",
+        "requiredTelemetry",
+        "escalationTriggers",
+    }
+    default_route = payload.get("defaultRoute", {})
+    missing_default = sorted(required_route_fields - set(default_route))
+    if missing_default:
+        failures.append(f"defaultRoute missing routing fields: {', '.join(missing_default)}")
+
+    for rule in rules:
+        if not isinstance(rule, dict):
+            failures.append("routing rule entry is not an object")
+            continue
+        route = rule.get("route", {})
+        if not isinstance(route, dict):
+            failures.append(f"routing rule {rule.get('id', '<unknown>')} missing route object")
+            continue
+        missing = sorted(required_route_fields - set(route))
+        if missing:
+            failures.append(f"routing rule {rule.get('id', '<unknown>')} missing fields: {', '.join(missing)}")
+
     for doc in host_docs:
         if not doc.exists():
             failures.append(f"missing host routing doc: {doc}")

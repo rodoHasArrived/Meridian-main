@@ -34,6 +34,10 @@ still lives in `../assistant-workflow-contract.md`.
     `python3 build/scripts/docs/prompt-route-linter.py --prompt "<user prompt>"`.
 13. For deterministic lane handoff packets (pilot), run:
     `python3 build/scripts/docs/handoff-packet-generator.py --route-json docs/status/prompt-route-lint-report.json --scope "<scope>" --next-lane "<lane>"`.
+14. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
+    `docs/status/ai-handoff-packet.json` as the canonical local evidence artifacts. The route
+    artifact must include `modelRouteId`, validation requirements, required telemetry, and
+    escalation triggers.
 
 ## Read Budget
 
@@ -79,8 +83,8 @@ Load only enough context to route and validate the task.
 
 | Change type | Default docs | Narrow validation |
 | --- | --- | --- |
-| Prompt-routing rules or execution trace | `docs/ai/codex/prompt-execution-trace.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/prompt-route-linter.py --summary`; `git diff --check -- <paths>` |
-| Prompt-routed handoff packet generation | `docs/ai/agent-handoff-checklist.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`; `git diff --check -- <paths>` |
+| Prompt-routing rules or execution trace | `docs/ai/codex/prompt-execution-trace.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/prompt-route-linter.py --summary`; `python build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary`; `git diff --check -- <paths>` |
+| Prompt-routed handoff packet generation | `docs/ai/agent-handoff-checklist.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`; `python build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary`; `git diff --check -- <paths>` |
 | Codex skill, prompt, checklist, or AI index | `docs/ai/codex/README.md`, `.codex/skills/README.md`, nearest skill or prompt index | `python build/scripts/docs/check-codex-skills.py --summary`; `python build/scripts/docs/check-ai-inventory.py --summary`; `git diff --check -- <paths>` |
 | Shared AI policy | `docs/ai/assistant-workflow-contract.md`, `docs/ai/README.md`, affected host index | `python build/scripts/docs/check-ai-inventory.py --summary`; contract-drift check when policy JSON changes |
 | Repo navigation or MCP routing | `docs/ai/navigation/README.md`, generated navigation inputs | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary`; `python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14` |

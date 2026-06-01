@@ -1,5 +1,6 @@
 using Meridian.Application.Commands;
 using Meridian.Application.Config;
+using Meridian.Application.Reconciliation;
 using Meridian.Application.Services;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
@@ -28,6 +29,9 @@ internal static class CommandDispatchPlanner
 
         var runbookStore = new Meridian.Application.Runbooks.JsonRunbookStore(dataRoot);
         var runbookExecutor = new Meridian.Application.Runbooks.RunbookExecutor();
+        var statementService = new StatementReconciliationService();
+        var statementAdapter = new StatementReconciliationContextAdapter(statementService);
+        var statementCheckpointStore = new InMemoryStatementReconciliationCheckpointStore();
 
         return new CommandDispatchPlan(new CommandDispatcher(
             new HelpCommand(),
@@ -43,7 +47,11 @@ internal static class CommandDispatchPlanner
             new PackageCommands(cfg, log),
             new EtlCommands(cfgPath, log),
             new StatementImportCommands(dataRoot, log),
-            new StatementCommands(),
+            new StatementCommands(
+                statementAdapter,
+                statementAdapter,
+                statementAdapter,
+                statementCheckpointStore),
             new ConfigPresetCommand(new AutoConfigurationService(), log),
             new QueryCommand(new HistoricalDataQueryService(dataRoot), log),
             new CatalogCommand(storageSearchService, log),

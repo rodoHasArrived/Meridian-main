@@ -19,7 +19,7 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox and approval defaults |
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
 | [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
-| [`prompt-route-rules.json`](prompt-route-rules.json) | Initial deterministic prompt routing rules for lane, skill, mode, and validation floor |
+| [`prompt-route-rules.json`](prompt-route-rules.json) | Schema v2 deterministic routing rules for lane, skill, mode, model route, validation floor, telemetry, and escalation triggers |
 | [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, and validation lanes |
 | [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md) | Shared handoff format for multi-agent/lane transitions and context minimization |
 | [`../work-modes.md`](../work-modes.md) | Mode selection contract for context budget and escalation control |
@@ -125,6 +125,17 @@ make ai-arch-check
 
 If `make` is unavailable in the local Windows shell, run the target's underlying command directly
 and report that the wrapper could not be invoked.
+
+Canonical Codex orchestration artifacts:
+
+- Route artifact: `docs/status/prompt-route-lint-report.json`
+- Handoff artifact: `docs/status/ai-handoff-packet.json`
+- Route rules source: `docs/ai/codex/prompt-route-rules.json`
+
+Route schema v2 requires each route to declare `modelRouteId`, `validationFloor`,
+`validationScripts`, `requiredTelemetry`, and `escalationTriggers`. High-risk routes such as
+provider/governance lanes must carry complete telemetry through the handoff packet before schema
+validation passes.
 
 ## Tooling Split
 

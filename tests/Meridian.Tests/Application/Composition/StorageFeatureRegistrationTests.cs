@@ -4,6 +4,7 @@ using Meridian.Application.Composition.Features;
 using Meridian.Application.DirectLending;
 using Meridian.Application.FundOperationsPersistence;
 using Meridian.Application.OperationsContinuity;
+using Meridian.Application.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
@@ -93,6 +94,47 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
 
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(StorageCatalogService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IStorageCatalogService));
+    }
+
+    [Fact]
+    public void Register_AddsStatementReconciliationContextServices()
+    {
+        var originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
+        var originalDotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Development");
+
+        try
+        {
+            var services = new ServiceCollection();
+
+            new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+            using var provider = services.BuildServiceProvider();
+            provider.GetRequiredService<StatementReconciliationContextAdapter>().Should().NotBeNull();
+            provider.GetRequiredService<IStatementReconciliationValidationService>()
+                .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
+            provider.GetRequiredService<IDataIntegrationIngestionService>()
+                .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
+            provider.GetRequiredService<IReconciliationCaseIntakeService>()
+                .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
+            provider.GetRequiredService<IStatementRunWorkflowService>()
+                .Should().BeOfType<StatementRunWorkflowService>();
+            provider.GetRequiredService<IStatementReconciliationCheckpointStore>()
+                .Should().BeOfType<InMemoryStatementReconciliationCheckpointStore>();
+            provider.GetRequiredService<StatementReconciliationOrchestrator>().Should().NotBeNull();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", originalUseInMemoryGovernance);
+            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", originalDotnetEnvironment);
+        }
     }
 
     [Fact]

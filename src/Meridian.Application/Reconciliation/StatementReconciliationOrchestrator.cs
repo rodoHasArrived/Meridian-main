@@ -48,7 +48,9 @@ public sealed class InMemoryStatementReconciliationCheckpointStore : IStatementR
 }
 
 public sealed class StatementReconciliationOrchestrator(
-    StatementReconciliationService service,
+    IStatementReconciliationValidationService validationService,
+    IDataIntegrationIngestionService ingestionService,
+    IReconciliationCaseIntakeService intakeService,
     IStatementReconciliationCheckpointStore checkpointStore)
 {
     public async Task<StatementReconciliationCheckpoint> RunAsync(
@@ -79,20 +81,24 @@ public sealed class StatementReconciliationOrchestrator(
         {
             if (lastCompleted < StatementReconciliationStage.Validate)
             {
-                await service.ValidateAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
+                await validationService.ValidateAsync(
+                    new StatementReconciliationValidationRequest(sourceKind, sourcePath, MappingProfileId: null),
+                    ct).ConfigureAwait(false);
                 state = state with { LastCompletedStage = StatementReconciliationStage.Validate, CurrentStage = StatementReconciliationStage.Import, UpdatedAtUtc = DateTimeOffset.UtcNow };
                 await checkpointStore.UpsertAsync(state, ct).ConfigureAwait(false);
             }
 
             if (state.LastCompletedStage < StatementReconciliationStage.Import)
             {
-                var import = await service.ImportAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
+                var import = await ingestionService.IngestAsync(
+                    new DataIntegrationIngestionRequest(sourceKind, sourcePath, MappingProfileId: null),
+                    ct).ConfigureAwait(false);
                 state = state with
                 {
                     LastCompletedStage = StatementReconciliationStage.Import,
                     CurrentStage = StatementReconciliationStage.Reconcile,
                     ImportId = import.ImportId,
-                    ImportedRowCount = import.RowCount,
+                    ImportedRowCount = import.ImportedRowCount,
                     UpdatedAtUtc = DateTimeOffset.UtcNow
                 };
                 await checkpointStore.UpsertAsync(state, ct).ConfigureAwait(false);
@@ -100,7 +106,9 @@ public sealed class StatementReconciliationOrchestrator(
 
             if (state.LastCompletedStage < StatementReconciliationStage.Reconcile)
             {
-                var reconciliation = await service.CreateExternalStatementCasesAsync(sourceKind, sourcePath, ct).ConfigureAwait(false);
+                var reconciliation = await intakeService.IntakeAsync(
+                    new ReconciliationCaseIntakeRequest(sourceKind, sourcePath, MappingProfileId: null),
+                    ct).ConfigureAwait(false);
                 var completedAtUtc = DateTimeOffset.UtcNow;
                 var sourceFileHash = await ComputeSourceFileHashAsync(sourcePath, ct).ConfigureAwait(false);
                 var statementMetadata = ReadStatementMetadata(sourcePath, accountId, completedAtUtc);

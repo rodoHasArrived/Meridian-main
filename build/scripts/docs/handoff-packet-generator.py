@@ -166,10 +166,13 @@ def build_packet(args: argparse.Namespace, route: dict[str, Any], changed_files:
     route_lane = route_match.get("lane", "unknown")
     route_skill = route_match.get("skill", "unknown")
     route_mode = route_match.get("mode", "unknown")
+    route_model_route_id = route_match.get("modelRouteId", "unknown")
     route_rule = route_match.get("matchedRule") or "default-or-unmatched"
     route_rationale = route_match.get("rationale", "No rationale found in route output.")
     route_validation_floor = route_match.get("validationFloor", [])
     route_validation_scripts = route_match.get("validationScripts", [])
+    route_required_telemetry = route_match.get("requiredTelemetry", [])
+    route_escalation_triggers = route_match.get("escalationTriggers", [])
     route_confidence = route_match.get("confidence")
 
     validations = parse_validation_entries(args.validation)
@@ -192,6 +195,17 @@ def build_packet(args: argparse.Namespace, route: dict[str, Any], changed_files:
         changes = [{"path": "(none)", "reason": "No staged/unstaged file change detected."}]
 
     handoff_path = str(Path(args.output).as_posix())
+    telemetry = {
+        "route_id": route_rule,
+        "model_route_id": route_model_route_id,
+        "selected_model": args.model or "unknown",
+        "input_tokens": args.input_tokens,
+        "output_tokens": args.output_tokens,
+        "estimated_cost_usd": args.estimated_cost_usd,
+        "latency_ms": args.latency_ms,
+        "error_class": args.error_class,
+        "handoff_path": handoff_path,
+    }
     packet = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "scope": {
@@ -202,26 +216,20 @@ def build_packet(args: argparse.Namespace, route: dict[str, Any], changed_files:
             "lane": route_lane,
             "skill": route_skill,
             "mode": route_mode,
+            "modelRouteId": route_model_route_id,
             "matchedRule": route_rule,
             "rationale": route_rationale,
             "confidence": route_confidence,
             "validationFloor": route_validation_floor,
             "validationScripts": route_validation_scripts,
+            "requiredTelemetry": route_required_telemetry,
+            "escalationTriggers": route_escalation_triggers,
         },
         "routeOutcome": {
             "finalValidationStatus": args.final_status,
             "routeAssessment": assess_route_alignment(route_lane, changed_files),
         },
-        "telemetry": {
-            "route_id": route_rule,
-            "selected_model": args.model or "unknown",
-            "input_tokens": args.input_tokens,
-            "output_tokens": args.output_tokens,
-            "estimated_cost_usd": args.estimated_cost_usd,
-            "latency_ms": args.latency_ms,
-            "error_class": args.error_class,
-            "handoff_path": handoff_path,
-        },
+        "telemetry": telemetry,
         "inputsLoaded": [
             {"path": "docs/status/prompt-route-lint-report.json", "reason": "Prompt route classification source."},
             {"path": "git diff", "reason": "Changed-file evidence for handoff packet."},
@@ -233,8 +241,29 @@ def build_packet(args: argparse.Namespace, route: dict[str, Any], changed_files:
         "requiredContext": required_context,
         "optionalContext": optional_context,
     }
+    enforce_required_telemetry(packet, args.allow_incomplete)
     enforce_packet_quality(packet, args.allow_incomplete)
     return packet
+
+
+def enforce_required_telemetry(packet: dict[str, Any], allow_incomplete: bool) -> None:
+    if allow_incomplete:
+        return
+
+    route = packet.get("route", {})
+    high_risk = route.get("mode") == "Deep Review" or route.get("lane") in {"provider", "governance"}
+    if not high_risk:
+        return
+
+    telemetry = packet.get("telemetry", {})
+    required = route.get("requiredTelemetry", [])
+    if not isinstance(required, list):
+        raise ValueError("route.requiredTelemetry must be a list.")
+
+    for signal in required:
+        value = telemetry.get(str(signal))
+        if value in (None, "", "unknown"):
+            raise ValueError(f"telemetry.{signal} required for high-risk route.")
 
 
 def render_markdown(packet: dict[str, Any]) -> str:
@@ -251,6 +280,7 @@ def render_markdown(packet: dict[str, Any]) -> str:
     lines.append(f"- Lane: {route['lane']}")
     lines.append(f"- Skill: {route['skill']}")
     lines.append(f"- Mode: {route['mode']}")
+    lines.append(f"- Model route: {route['modelRouteId']}")
     lines.append(f"- Matched rule: {route['matchedRule']}")
     lines.append(f"- Confidence: {route.get('confidence')}")
     lines.append(f"- Rationale: {route['rationale']}")
@@ -264,6 +294,7 @@ def render_markdown(packet: dict[str, Any]) -> str:
     lines.append("## Telemetry")
     telemetry = packet["telemetry"]
     lines.append(f"- route_id: {telemetry['route_id']}")
+    lines.append(f"- model_route_id: {telemetry['model_route_id']}")
     lines.append(f"- selected_model: {telemetry['selected_model']}")
     lines.append(f"- input_tokens: {telemetry['input_tokens']}")
     lines.append(f"- output_tokens: {telemetry['output_tokens']}")

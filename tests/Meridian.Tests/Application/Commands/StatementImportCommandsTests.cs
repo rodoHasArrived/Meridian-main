@@ -60,10 +60,16 @@ public sealed class StatementImportCommandsTests
         await File.WriteAllTextAsync(
             statementPath,
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate\nA1,SPY,10,500,5000,BUY,2026-01-02\n");
+        var statementService = new Meridian.Application.Reconciliation.StatementReconciliationService();
+        var statementAdapter = new Meridian.Application.Reconciliation.StatementReconciliationContextAdapter(statementService);
 
         var dispatcher = new CommandDispatcher(
             new StatementImportCommands(root, Logger.None),
-            new StatementCommands());
+            new StatementCommands(
+                statementAdapter,
+                statementAdapter,
+                statementAdapter,
+                new Meridian.Application.Reconciliation.InMemoryStatementReconciliationCheckpointStore()));
 
         var originalOut = Console.Out;
         try

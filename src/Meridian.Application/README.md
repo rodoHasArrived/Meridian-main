@@ -70,8 +70,9 @@ and UI presentation concerns in their owning layers.
 - `Reconciliation/` - statement reconciliation orchestration and broker/custodian intake that
   validates canonical external statement files, creates durable reconciliation cases for unresolved
   cash/activity rows, requires row currency equality before broker/custodian auto-match, appends
-  reconciliation decision journals through crash-safe copy-on-write JSONL writes, and attaches
-  break explanations plus retained statement-row evidence.
+  reconciliation decision journals through crash-safe copy-on-write JSONL writes, attaches
+  break explanations plus retained statement-row evidence, and owns the statement-run workflow that
+  persists canonical imports, open breaks, and case materialization for shared UI consumers.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot
