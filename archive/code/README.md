@@ -45,6 +45,9 @@ reintroduced without moving them back into the correct active project and valida
 
 - `tests/Meridian.Tests/Ui/ChiefOfStaffEndpointsTests.cs` - endpoint integration tests for the
   Chief of Staff workstation API (archived 2026-05-23).
+- `tests/Meridian.Wpf.Tests/ViewModels/AgentViewModelTests.cs` - WPF local-agent view-model tests
+  archived after app-runtime AI surfaces were removed from the active desktop product lane; active
+  AI/MCP code remains limited to the MCP projects.
 
 ## Guardrails
 

@@ -51,72 +51,72 @@ internal static class CommandServiceRegistration
         services.TryAddSingleton<Meridian.Application.Runbooks.RunbookExecutor>();
         services.AddStatementReconciliationServices(dataRoot);
 
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand, HelpCommand>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new ConfigCommands(
+        services.AddSingleton<ICliCommand, HelpCommand>();
+        services.AddSingleton<ICliCommand>(sp => new ConfigCommands(
             sp.GetRequiredService<ConfigurationService>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new DiagnosticsCommands(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new DiagnosticsCommands(
             sp.GetRequiredService<AppConfig>(),
             sp.GetRequiredService<CommandServicePaths>().ConfigPath,
             sp.GetRequiredService<ConfigurationService>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new SchemaCheckCommand(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new SchemaCheckCommand(
             sp.GetRequiredService<AppConfig>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new SimulationCommands(
-            new ExecutionSimulationOrchestrator(sp.GetRequiredService<HistoricalDataQueryService>()))));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new SymbolCommands(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new SimulationCommands(
+            new ExecutionSimulationOrchestrator(sp.GetRequiredService<HistoricalDataQueryService>())));
+        services.AddSingleton<ICliCommand>(sp => new SymbolCommands(
             sp.GetRequiredService<SymbolManagementService>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new ValidateConfigCommand(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new ValidateConfigCommand(
             sp.GetRequiredService<ConfigurationService>(),
             sp.GetRequiredService<CommandServicePaths>().ConfigPath,
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new DryRunCommand(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new DryRunCommand(
             sp.GetRequiredService<AppConfig>(),
             sp.GetRequiredService<ConfigurationService>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new SelfTestCommand(sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand, LedgerCliCommand>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new PackageCommands(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new SelfTestCommand(sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand, LedgerCliCommand>();
+        services.AddSingleton<ICliCommand>(sp => new PackageCommands(
             sp.GetRequiredService<AppConfig>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new EtlCommands(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new EtlCommands(
             sp.GetRequiredService<CommandServicePaths>().ConfigPath,
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new StatementImportCommands(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new StatementImportCommands(
             sp.GetRequiredService<IBrokerStatementService>(),
             sp.GetRequiredService<IStatementRunWorkflowService>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new StatementCommands(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new StatementCommands(
             sp.GetRequiredService<IStatementReconciliationValidationService>(),
             sp.GetRequiredService<IDataIntegrationIngestionService>(),
             sp.GetRequiredService<IReconciliationCaseIntakeService>(),
-            sp.GetRequiredService<IStatementReconciliationCheckpointStore>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new ConfigPresetCommand(
+            sp.GetRequiredService<IStatementReconciliationCheckpointStore>()));
+        services.AddSingleton<ICliCommand>(sp => new ConfigPresetCommand(
             sp.GetRequiredService<AutoConfigurationService>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new QueryCommand(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new QueryCommand(
             sp.GetRequiredService<HistoricalDataQueryService>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new CatalogCommand(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new CatalogCommand(
             sp.GetRequiredService<StorageSearchService>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new GenerateLoaderCommand(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new GenerateLoaderCommand(
             sp.GetRequiredService<CommandServicePaths>().DataRoot,
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new RunbookCommands(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new RunbookCommands(
             sp.GetRequiredService<Meridian.Application.Runbooks.JsonRunbookStore>(),
-            sp.GetRequiredService<Meridian.Application.Runbooks.RunbookExecutor>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new WalRepairCommand(
+            sp.GetRequiredService<Meridian.Application.Runbooks.RunbookExecutor>()));
+        services.AddSingleton<ICliCommand>(sp => new WalRepairCommand(
             sp.GetRequiredService<AppConfig>(),
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new ProviderCalibrationCommand(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new ProviderCalibrationCommand(
             sp.GetRequiredService<CommandServicePaths>().DataRoot,
-            sp.GetRequiredService<ILogger>())));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<ICliCommand>(sp => new SecurityMasterCommands(
+            sp.GetRequiredService<ILogger>()));
+        services.AddSingleton<ICliCommand>(sp => new SecurityMasterCommands(
             importService: null,
-            sp.GetRequiredService<ILogger>())));
+            sp.GetRequiredService<ILogger>()));
         services.TryAddSingleton(sp => new CommandDispatcher(sp.GetServices<ICliCommand>().ToArray()));
         return services;
     }

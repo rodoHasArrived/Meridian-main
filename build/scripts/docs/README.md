@@ -174,7 +174,9 @@ python3 scan-todos.py --include-notes false
 
 ### generate-structure-docs.py
 
-Generates repository structure documentation.
+Generates repository structure documentation. The tree skips local build/runtime artifacts, caches,
+backups, logs, and symlinked entries so generated output stays tied to repository structure rather
+than machine-specific working files.
 
 ```bash
 python3 generate-structure-docs.py --output docs/generated/repository-structure.md

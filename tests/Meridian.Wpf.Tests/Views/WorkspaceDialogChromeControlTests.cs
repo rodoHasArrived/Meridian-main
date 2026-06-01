@@ -26,7 +26,7 @@ public sealed class WorkspaceDialogChromeControlTests
                 BodyAutomationId = "ProviderDialogBody",
                 TitleText = "Configure Provider",
                 SubtitleText = "Credential setup",
-                Body = body
+                Content = body
             };
 
             control.Measure(new Size(480, 260));
@@ -119,5 +119,5 @@ public sealed class WorkspaceDialogChromeControlTests
 
     private static T Get<T>(Control control, string name)
         where T : FrameworkElement
-        => control.FindName(name).Should().BeOfType<T>($"{name} should be part of the dialog chrome contract").Subject;
+        => control.Template.FindName(name, control).Should().BeOfType<T>($"{name} should be part of the dialog chrome contract").Subject;
 }

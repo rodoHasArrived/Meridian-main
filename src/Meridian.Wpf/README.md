@@ -79,7 +79,9 @@ properties from the active workspace layout descriptor so shell chrome can be re
 depending on ambient `MainPage` bindings.
 Modal surfaces should migrate through `WorkspaceDialogChromeControl`; provider API-key setup,
 watchlist saving, and scheduled-job editing now use that shared dialog chrome with stable title,
-subtitle, body, input, and action automation IDs.
+subtitle, body, input, and action automation IDs. The control projects its chrome automation ID and
+title onto the reusable control itself so UI automation can address both the control and template
+parts consistently.
 Standalone command-palette chrome should use the same shell tokens and stable automation IDs instead
 of page-local colors or shadow effects.
 High-value workbench pages should migrate through the shared workstation controls before broad
