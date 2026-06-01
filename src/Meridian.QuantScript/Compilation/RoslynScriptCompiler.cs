@@ -192,7 +192,7 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
             string? baseFilePath,
             MetadataReferenceProperties properties)
         {
-            throw new InvalidOperationException("Script-level assembly loading is disabled in safe mode.");
+            return ImmutableArray<PortableExecutableReference>.Empty;
         }
     }
 
