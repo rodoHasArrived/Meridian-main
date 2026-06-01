@@ -41,7 +41,7 @@ public sealed class CommandModeRunnerTests
 
         try
         {
-            var args =
+            string[] args =
             [
                 "--statement-import",
                 "--statement-broker", "custodian",

@@ -47,6 +47,9 @@ The shared workflow library owns close-lane command routing as well: `Accounting
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
 target tags instead of inventing client-local close-workflow routes.
+Portfolio is also a first-class shared workflow library lane. The built-in `portfolio-position-review`
+workflow owns Portfolio workspace entry, aggregate exposure review, run-portfolio inspection,
+brokerage-sync review, and snapshot import targets so Portfolio is not hidden inside Reporting.
 Run comparison endpoints consume contract-owned compare and diff payloads from
 `Meridian.Contracts.Workstation`; keep request/result schema additions in contracts and let this
 layer focus on endpoint validation, dependency resolution, and service orchestration.
