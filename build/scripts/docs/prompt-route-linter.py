@@ -170,7 +170,8 @@ def _score_rule(prompt_lower: str, rule: dict[str, Any]) -> float:
 def _confidence_from_score(score: float, max_score: float) -> float:
     if max_score <= 0:
         return 0.0
-    return min(1.0, score / max_score)
+    # Confidence should represent enough evidence for a lane, not every possible keyword firing.
+    return min(1.0, score / min(max_score, 4.0))
 
 
 def match_route(prompt: str, data: dict[str, Any]) -> MatchResult:
