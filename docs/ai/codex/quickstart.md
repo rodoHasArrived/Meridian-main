@@ -1,5 +1,9 @@
 # Codex Quickstart
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
 Use this page for the first 10 minutes of a Codex task in Meridian. It compresses the shared
 workflow into a task routing checklist, proof matrix, and dirty-worktree protocol. Shared policy
 still lives in `../assistant-workflow-contract.md`.
@@ -26,6 +30,10 @@ still lives in `../assistant-workflow-contract.md`.
     2) run `check-ai-inventory.py` / `check-codex-skills.py`,
     3) avoid direct edits to `docs/ai/generated/*` unless refreshing generation.
 11. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
+12. For deterministic lane preflight (pilot), run:
+    `python3 build/scripts/docs/prompt-route-linter.py --prompt "<user prompt>"`.
+13. For deterministic lane handoff packets (pilot), run:
+    `python3 build/scripts/docs/handoff-packet-generator.py --route-json docs/status/prompt-route-lint-report.json --scope "<scope>" --next-lane "<lane>"`.
 
 ## Read Budget
 
@@ -71,6 +79,8 @@ Load only enough context to route and validate the task.
 
 | Change type | Default docs | Narrow validation |
 | --- | --- | --- |
+| Prompt-routing rules or execution trace | `docs/ai/codex/prompt-execution-trace.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/prompt-route-linter.py --summary`; `git diff --check -- <paths>` |
+| Prompt-routed handoff packet generation | `docs/ai/agent-handoff-checklist.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`; `git diff --check -- <paths>` |
 | Codex skill, prompt, checklist, or AI index | `docs/ai/codex/README.md`, `.codex/skills/README.md`, nearest skill or prompt index | `python build/scripts/docs/check-codex-skills.py --summary`; `python build/scripts/docs/check-ai-inventory.py --summary`; `git diff --check -- <paths>` |
 | Shared AI policy | `docs/ai/assistant-workflow-contract.md`, `docs/ai/README.md`, affected host index | `python build/scripts/docs/check-ai-inventory.py --summary`; contract-drift check when policy JSON changes |
 | Repo navigation or MCP routing | `docs/ai/navigation/README.md`, generated navigation inputs | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary`; `python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14` |

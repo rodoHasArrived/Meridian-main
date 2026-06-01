@@ -76,4 +76,4 @@ In TWS/Gateway:
 ## Source and archive
 
 - Legacy source: [docs/providers/interactive-brokers-setup.md](../providers/interactive-brokers-setup.md)
-- Archive copy: [archive/docs/summaries/setup.md](../../archive/docs/summaries/setup.md)
+- Archive copy: [archive/docs/providers/interactive-brokers-setup.md](../../archive/docs/providers/interactive-brokers-setup.md)

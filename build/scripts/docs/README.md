@@ -200,6 +200,70 @@ Fails when `docs/ai/generated/repo-navigation.json` gets older than the allowed 
 python3 check-ai-navigation-freshness.py --max-age-days 14
 ```
 
+### prompt-route-linter.py
+
+Validates deterministic prompt-routing rules and optionally classifies a prompt into lane, skill,
+mode, and validation-floor recommendations.
+
+```bash
+python3 prompt-route-linter.py --summary
+python3 prompt-route-linter.py --prompt "review this PR for regressions"
+python3 prompt-route-linter.py --prompt-file prompt.txt --json-output docs/status/prompt-route-lint-report.json
+```
+
+### handoff-packet-generator.py
+
+Generates a structured handoff packet from prompt-route-linter output, changed files, and validation
+entries so lane transitions stay deterministic and compact.
+
+```bash
+python3 handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json
+python3 handoff-packet-generator.py \
+  --route-json docs/status/prompt-route-lint-report.json \
+  --scope "Implement pilot step 2 handoff packet generation" \
+  --next-lane "implementation-assurance" \
+  --model "gpt-4.1" --input-tokens 1200 --output-tokens 400 --estimated-cost-usd 0.03 --latency-ms 850 \
+  --validation "python build/scripts/docs/prompt-route-linter.py --summary::pass"
+```
+
+### check-handoff-packet-schema.py
+
+Validates generated handoff packet schema and enforces telemetry completeness for high-risk routes
+(`Deep Review`, `provider`, `governance`).
+
+```bash
+python3 check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary
+```
+
+### check-validation-floor.py
+
+CI guard that enforces validation-floor script evidence for AI/docs-related changes. It reads
+`run-docs-automation.py` JSON summary output and fails when required scripts are missing or not
+successful.
+
+```bash
+python3 check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --summary
+python3 check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary
+```
+
+### check-mode-escalation.py
+
+Enforces escalation from `Lightweight` mode when cross-lane, policy-touching, or failed-validation
+conditions indicate under-scoped execution.
+
+```bash
+python3 check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary
+```
+
+### check-ai-routing-parity.py
+
+Checks host documentation references so routing semantics remain consistent across Codex/shared AI
+surfaces.
+
+```bash
+python3 check-ai-routing-parity.py --summary
+```
+
 ### update-claude-md.py
 
 Syncs Repository Structure section across AI instruction files.

@@ -1,5 +1,9 @@
 # AI Assistant Resources
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
 This document is the master index for AI guidance in the Meridian repository. It now treats repository orientation as a first-class step before specialist task guidance.
 
 ---

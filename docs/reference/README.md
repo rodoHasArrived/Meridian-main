@@ -85,7 +85,7 @@ Stable lookup details for storage and streaming should live in reference, genera
 Use this index for stable lookup claims that still appear in legacy locations:
 
 - `docs/roadmap/data/*.yml` → [Data Dictionary](data-dictionary.md), [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) for canonical lookup fields.
-- `archive/docs/summaries/IMPROVEMENTS.md` → historical context only; prefer [Provider Capability Matrix](provider-capability-matrix.md) and [Provider Validation Matrix](provider-validation-matrix.md) for stable lookup claims.
+- `archive/docs/status/IMPROVEMENTS.md` → historical context only; prefer [Provider Capability Matrix](provider-capability-matrix.md) and [Provider Validation Matrix](provider-validation-matrix.md) for stable lookup claims.
 - `docs/status/provider-validation-matrix.md` → [Provider Validation Matrix](provider-validation-matrix.md) as canonical evidence lookup.
 - `docs/providers/provider-comparison.md` → [Provider Capability Matrix](provider-capability-matrix.md), then [archive copy](../../archive/docs/providers/provider-comparison.md) for historical context.
 - `docs/providers/provider-confidence-baseline.md` → [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), then [archive copy](../../archive/docs/providers/provider-confidence-baseline.md) for historical context.

@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 2,
+  "confidenceThreshold": 0.55,
+  "defaultRoute": {
+    "lane": "orient",
+    "skill": "meridian-repo-navigation",
+    "fallbackSkill": "meridian-repo-navigation",
+    "mode": "Lightweight",
+    "rationale": "Default to orientation when the prompt does not strongly match a specialist lane.",
+    "validationFloor": [
+      "python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14"
+    ],
+    "validationScripts": [
+      "prompt-route-linter"
+    ]
+  },
+  "rules": [
+    {
+      "id": "review-findings-first",
+      "description": "Route review and audit requests to findings-first review lane.",
+      "matchWeighted": {
+        "review": 2.5,
+        "audit": 2.0,
+        "regression": 2.0,
+        "risk scan": 1.5,
+        "code review": 2.5
+      },
+      "route": {
+        "lane": "review",
+        "skill": "meridian-code-review",
+        "mode": "Standard",
+        "rationale": "Review requests should prioritize bug/risk findings and architecture drift.",
+        "validationFloor": [
+          "git diff --check"
+        ],
+        "validationScripts": [
+          "prompt-route-linter"
+        ]
+      }
+    },
+    {
+      "id": "docs-maintenance",
+      "description": "Route docs/index updates to the docs lane.",
+      "matchWeighted": {
+        "docs": 1.2,
+        "documentation": 2.0,
+        "readme": 2.0,
+        "guide": 1.5,
+        "index": 1.1
+      },
+      "route": {
+        "lane": "docs",
+        "skill": "meridian-docs",
+        "mode": "Lightweight",
+        "rationale": "Docs updates should stay in canonical audience paths with minimal proof.",
+        "validationFloor": [
+          "git diff --check",
+          "python build/scripts/docs/check-ai-inventory.py --summary",
+          "python build/scripts/docs/check-ai-handoff.py --strict"
+        ],
+        "validationScripts": [
+          "check-ai-handoff-strict",
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ]
+      }
+    },
+    {
+      "id": "browser-workstation",
+      "description": "Route TypeScript/React workstation work to browser lane.",
+      "matchWeighted": {
+        "dashboard": 2.0,
+        "react": 2.0,
+        "typescript": 2.0,
+        "browser workstation": 2.5,
+        "workstation ui": 1.5
+      },
+      "route": {
+        "lane": "browser",
+        "skill": "meridian-browser-workstation",
+        "mode": "Standard",
+        "rationale": "Browser workstation requests should use dashboard-specific skill and tests.",
+        "validationFloor": [
+          "npm --prefix src/Meridian.Ui/dashboard run test",
+          "npm --prefix src/Meridian.Ui/dashboard run build"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ]
+      }
+    },
+    {
+      "id": "desktop-wpf",
+      "description": "Route WPF MVVM and desktop shell requests to desktop lane.",
+      "matchWeighted": {
+        "wpf": 2.5,
+        "desktop": 1.5,
+        "xaml": 2.0,
+        "viewmodel": 1.5,
+        "shell route": 1.5
+      },
+      "route": {
+        "lane": "desktop",
+        "skill": "modular-desktop-mvvm",
+        "mode": "Standard",
+        "rationale": "Desktop tasks should respect MVVM boundaries and focused WPF proof.",
+        "validationFloor": [
+          "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~<TouchedViewModelOrRoute>\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ]
+      }
+    },
+    {
+      "id": "provider-integration",
+      "description": "Route provider adapter/integration requests to provider lane.",
+      "matchWeighted": {
+        "provider": 2.0,
+        "adapter": 1.5,
+        "alpaca": 2.0,
+        "interactive brokers": 2.0,
+        "market data client": 2.0
+      },
+      "route": {
+        "lane": "provider",
+        "skill": "meridian-provider-builder",
+        "mode": "Deep Review",
+        "rationale": "Provider changes need adapter-specific validation, telemetry capture, and readiness evidence.",
+        "validationFloor": [
+          "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter \"FullyQualifiedName~Provider\""
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator",
+          "check-handoff-packet-schema"
+        ]
+      }
+    },
+    {
+      "id": "tests-and-coverage",
+      "description": "Route requests focused on new tests or coverage to test lane.",
+      "matchWeighted": {
+        "write tests": 2.5,
+        "unit test": 2.0,
+        "coverage": 1.5,
+        "regression test": 2.0,
+        "test gap": 1.5
+      },
+      "route": {
+        "lane": "test",
+        "skill": "meridian-test-writer",
+        "mode": "Standard",
+        "rationale": "Test-specific requests should use scenario-first test authoring lane.",
+        "validationFloor": [
+          "dotnet test <touched test project>"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ]
+      }
+    }
+  ]
+}

@@ -65,7 +65,7 @@ Archive rather than delete when a document has historical value, stale evidence,
 
 - `docs/audits/` and `docs/evaluations/` are now source-material indexes. Use them for historical context and extraction work, not as canonical destinations for new guidance.
 - `docs/plans/` and `docs/status/` are now controlled migration indexes. Use `docs/product/` for stakeholder interpretation, `docs/roadmap/data/*.yml` for durable roadmap truth, and generated views for rendered registry output.
-- `archive/docs/assessments/`, `archive/docs/plans/`, `archive/docs/summaries/`, `archive/docs/migrations/`, and `archive/docs/workflows/` have bucket indexes for staged archive batches.
+- `archive/docs/assessments/`, `archive/docs/plans/`, `archive/docs/status/`, `archive/docs/summaries/`, `archive/docs/migrations/`, and `archive/docs/workflows/` have bucket indexes for staged archive batches.
 - High-traffic archived material should keep a short redirect stub at the old path until all active links move to the replacement.
 
 ## Rebuild Acceptance Criteria

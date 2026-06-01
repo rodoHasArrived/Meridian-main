@@ -158,9 +158,9 @@ Legacy links that remain for context but not primary truth:
 
 - [Current Direction and Status (Archived)](../../archive/docs/plans/current-direction-and-status.md)
 - [Evidence-Backed Investment Operations Plan (Archived)](../../archive/docs/plans/evidence-backed-investment-operations-plan.md)
-- [Feature Inventory (Archived)](../../archive/docs/summaries/FEATURE_INVENTORY.md)
+- [Feature Inventory (Archived)](../../archive/docs/status/FEATURE_INVENTORY.md)
 - [Project Roadmap (Registry Snapshot)](../roadmap/generated/ROADMAP_SUMMARY.md)
-- [Target End Product (Archived)](../../archive/docs/summaries/TARGET_END_PRODUCT.md)
+- [Target End Product (Archived)](../../archive/docs/status/TARGET_END_PRODUCT.md)
 
 ## Legacy Source-Material Index
 

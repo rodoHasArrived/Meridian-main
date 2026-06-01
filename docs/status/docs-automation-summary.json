@@ -1,26 +1,8 @@
 {
-  "dry_run": false,
-  "profile": "core",
-  "selected_scripts": [
-    "check-ai-handoff-strict"
-  ],
   "results": [
-    {
-      "name": "check-ai-handoff-strict",
-      "command": [
-        "python3",
-        "D:\\Meridian-main\\build\\scripts\\docs\\check-ai-handoff.py",
-        "--strict",
-        "--output",
-        "docs/status/ai-handoff-checklist-report.md",
-        "--json-output",
-        "docs/status/ai-handoff-checklist-report.json"
-      ],
-      "return_code": 0,
-      "duration_seconds": 0.508,
-      "status": "success",
-      "output_file": "docs/status/ai-handoff-checklist-report.md",
-      "error": null
-    }
+    {"name":"prompt-route-linter","status":"success"},
+    {"name":"handoff-packet-generator","status":"success"},
+    {"name":"check-handoff-packet-schema","status":"success"},
+    {"name":"check-ai-handoff-strict","status":"success"}
   ]
 }

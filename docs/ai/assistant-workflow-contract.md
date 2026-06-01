@@ -1,5 +1,9 @@
 # Provider-Agnostic AI Development Contract
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
 This contract is the shared operating standard for AI-assisted development in Meridian. It applies
 to Codex, Claude, GitHub Copilot, MCP clients, reusable prompt templates, CI prompt generation, and
 manual assistant sessions, including local AI maintenance tooling used by automations.

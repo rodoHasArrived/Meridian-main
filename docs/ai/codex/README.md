@@ -18,6 +18,8 @@ For documentation work, start from the rebuilt canonical docs model:
 | --- | --- |
 | [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox and approval defaults |
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
+| [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
+| [`prompt-route-rules.json`](prompt-route-rules.json) | Initial deterministic prompt routing rules for lane, skill, mode, and validation floor |
 | [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, and validation lanes |
 | [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md) | Shared handoff format for multi-agent/lane transitions and context minimization |
 | [`../work-modes.md`](../work-modes.md) | Mode selection contract for context budget and escalation control |
@@ -106,6 +108,14 @@ behavior changes:
 make ai-codex-skills-check
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
+python3 build/scripts/docs/prompt-route-linter.py --summary
+python3 build/scripts/docs/prompt-route-linter.py --prompt "review this change for regressions"
+python3 build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json
+python3 build/scripts/docs/handoff-packet-generator.py --route-json docs/status/prompt-route-lint-report.json --scope "Task scope" --next-lane "implementation-assurance" --model "gpt-4.1" --input-tokens 1000 --output-tokens 300 --estimated-cost-usd 0.02 --latency-ms 700 --validation "python build/scripts/docs/prompt-route-linter.py --summary::pass"
+python3 build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary
+python3 build/scripts/docs/check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary
+python3 build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary
+python3 build/scripts/docs/check-ai-routing-parity.py --summary
 python3 build/scripts/docs/validate-skill-packages.py
 python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --json
 git diff --check

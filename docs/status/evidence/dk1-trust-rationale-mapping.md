@@ -31,7 +31,7 @@ Define the required explainability contract for DK1 trust alerts so every alert 
 
 ## Evidence and reference links
 
-- Kernel readiness dashboard DK1 explainability gate: [archived dashboard entry](../../../archive/docs/summaries/kernel-readiness-dashboard.md)
+- Kernel readiness dashboard DK1 explainability gate: [archived dashboard entry](../../../archive/docs/status/kernel-readiness-dashboard.md)
 - Provider validation evidence source: [`provider-validation-matrix.md`](../provider-validation-matrix.md)
 - Calibration workflow reference: [`../../operations/provider-degradation-calibration.md`](../../operations/provider-degradation-calibration.md)
 
