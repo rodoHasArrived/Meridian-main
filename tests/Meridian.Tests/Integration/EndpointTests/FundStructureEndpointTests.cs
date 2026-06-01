@@ -7,12 +7,17 @@ using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -68,7 +73,9 @@ public sealed class FundStructureEndpointTests
     [Fact]
     public async Task OwnershipLifecycleEndpoints_UpdateExpireAndValidateGraph()
     {
-        var structureService = _fixture.Services.GetRequiredService<IFundStructureService>();
+        await using var app = await CreateFundStructureAuthorizationAppAsync(UserPermission.ManageFundStructure);
+        var client = app.GetTestClient();
+        var structureService = app.Services.GetRequiredService<IFundStructureService>();
         var organizationId = Guid.NewGuid();
         var businessId = Guid.NewGuid();
         var fundId = Guid.NewGuid();
@@ -117,7 +124,7 @@ public sealed class FundStructureEndpointTests
             now,
             "endpoint-test"));
 
-        var updateResponse = await _client.PutAsJsonAsync(
+        var updateResponse = await client.PutAsJsonAsync(
             $"/api/fund-structure/links/{linkId}",
             new UpdateOwnershipLinkRequest(
                 Guid.Empty,
@@ -127,10 +134,10 @@ public sealed class FundStructureEndpointTests
                 OwnershipPercent: 60m,
                 IsPrimary: true,
                 Notes: "endpoint update"));
-        var validateResponse = await _client.PostAsJsonAsync(
+        var validateResponse = await client.PostAsJsonAsync(
             "/api/fund-structure/links/validate",
             new ValidateOwnershipGraphRequest(AsOf: now.AddHours(1)));
-        var expireResponse = await _client.PostAsJsonAsync(
+        var expireResponse = await client.PostAsJsonAsync(
             $"/api/fund-structure/links/{linkId}/expire",
             new ExpireOwnershipLinkRequest(
                 Guid.Empty,
@@ -154,6 +161,61 @@ public sealed class FundStructureEndpointTests
         expired.Should().NotBeNull();
         expired!.EffectiveTo.Should().Be(now.AddDays(1));
         expired.Notes.Should().Be("endpoint expiration");
+    }
+
+
+    [Fact]
+    public async Task OwnershipLifecycleEndpoints_ReadOnlyAuthenticatedOperator_ReturnsForbiddenAndDoesNotMutate()
+    {
+        // Scenario: fund-governance tampering attempt during an accounting close.
+        await using var app = await CreateFundStructureAuthorizationAppAsync(UserPermission.ViewAnalytics);
+        var client = app.GetTestClient();
+        var structureService = app.Services.GetRequiredService<IFundStructureService>();
+        var seed = await SeedOwnershipLinkAsync(structureService);
+
+        var updateResponse = await client.PutAsJsonAsync(
+            $"/api/fund-structure/links/{seed.LinkId}",
+            new UpdateOwnershipLinkRequest(
+                Guid.Empty,
+                OwnershipRelationshipTypeDto.Owns,
+                seed.EffectiveFrom,
+                "readonly-operator",
+                OwnershipPercent: 60m,
+                IsPrimary: true,
+                Notes: "unauthorized update"));
+        var expireResponse = await client.PostAsJsonAsync(
+            $"/api/fund-structure/links/{seed.LinkId}/expire",
+            new ExpireOwnershipLinkRequest(
+                Guid.Empty,
+                seed.EffectiveFrom.AddDays(1),
+                "readonly-operator",
+                "unauthorized expiration"));
+        var replaceResponse = await client.PostAsJsonAsync(
+            $"/api/fund-structure/links/{seed.LinkId}/replace",
+            new ReplaceOwnershipLinkRequest(
+                Guid.Empty,
+                Guid.NewGuid(),
+                seed.FundId,
+                seed.PortfolioId,
+                OwnershipRelationshipTypeDto.Owns,
+                seed.EffectiveFrom.AddDays(2),
+                "readonly-operator",
+                OwnershipPercent: 100m,
+                IsPrimary: true,
+                Notes: "unauthorized replacement"));
+
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        expireResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        replaceResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        var graph = await structureService.GetOwnershipGraphAsync(seed.EffectiveFrom.AddDays(3));
+        graph.Links.Should().HaveCount(1);
+        var unchanged = graph.Links.Single(link => link.OwnershipLinkId == seed.LinkId);
+        unchanged.RelationshipType.Should().Be(OwnershipRelationshipTypeDto.AllocatesTo);
+        unchanged.OwnershipPercent.Should().BeNull();
+        unchanged.IsPrimary.Should().BeFalse();
+        unchanged.EffectiveTo.Should().BeNull();
+        unchanged.Notes.Should().Be("endpoint-test");
     }
 
     [Fact]
@@ -950,6 +1012,82 @@ public sealed class FundStructureEndpointTests
         ledger.Post(new JournalEntry(journalId, timestamp, description, ledgerLines));
     }
 
+
+    private static async Task<WebApplication> CreateFundStructureAuthorizationAppAsync(UserPermission currentUserPermissions)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
+        builder.Services.AddSingleton<IFundStructureService>(sp =>
+            new InMemoryFundStructureService(
+                sp.GetRequiredService<IFundAccountService>(),
+                persistencePath: null));
+
+        var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "readonly-fund-operator";
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
+            await next(context);
+        });
+        app.MapFundStructureEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await app.StartAsync();
+        return app;
+    }
+
+    private static async Task<SeededOwnershipLink> SeedOwnershipLinkAsync(IFundStructureService structureService)
+    {
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        var portfolioId = Guid.NewGuid();
+        var linkId = Guid.NewGuid();
+        var now = new DateTimeOffset(2026, 04, 12, 0, 0, 0, TimeSpan.Zero);
+
+        await structureService.CreateOrganizationAsync(new CreateOrganizationRequest(
+            organizationId,
+            $"ORG-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Organization",
+            "USD",
+            now,
+            "endpoint-test"));
+        await structureService.CreateBusinessAsync(new CreateBusinessRequest(
+            businessId,
+            organizationId,
+            BusinessKindDto.FundManager,
+            $"BUS-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Business",
+            "USD",
+            now,
+            "endpoint-test"));
+        await structureService.CreateFundAsync(new CreateFundRequest(
+            fundId,
+            $"FND-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Fund",
+            "USD",
+            now,
+            "endpoint-test",
+            BusinessId: businessId));
+        await structureService.CreateInvestmentPortfolioAsync(new CreateInvestmentPortfolioRequest(
+            portfolioId,
+            businessId,
+            $"PRT-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            "Ownership Endpoint Portfolio",
+            "USD",
+            now,
+            "endpoint-test",
+            FundId: fundId));
+        await structureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            linkId,
+            fundId,
+            portfolioId,
+            OwnershipRelationshipTypeDto.AllocatesTo,
+            now,
+            "endpoint-test"));
+
+        return new SeededOwnershipLink(fundId, portfolioId, linkId, now);
+    }
+
     private async Task<string> LoginAndGetSessionCookieAsync(string username, string password)
     {
         var loginResponse = await _client.PostAsJsonAsync(
@@ -973,4 +1111,10 @@ public sealed class FundStructureEndpointTests
         string FundProfileId,
         string DisplayName,
         Guid BankAccountId);
+
+    private sealed record SeededOwnershipLink(
+        Guid FundId,
+        Guid PortfolioId,
+        Guid LinkId,
+        DateTimeOffset EffectiveFrom);
 }
