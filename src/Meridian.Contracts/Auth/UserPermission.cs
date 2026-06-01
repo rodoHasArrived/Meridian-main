@@ -84,4 +84,8 @@ public enum UserPermission : long
 
     /// <summary>Create and service direct-lending contracts.</summary>
     ManageDirectLending = 1L << 21,
+
+    // ── Fund structure / governance ────────────────────────────────────────────
+    /// <summary>Create or modify fund-structure ownership and governance records.</summary>
+    ManageFundStructure = 1L << 22,
 }

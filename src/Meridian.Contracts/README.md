@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-05-29
+last_reviewed: 2026-05-30
 ---
 
 # src/Meridian.Contracts
@@ -89,8 +89,10 @@ server-owned broker-staging readiness, required approvals, blockers, evidence id
 broker action before any paper/live movement is routed.
 
 Auth contracts include the role and permission catalog plus custom role-profile upsert payloads.
-Keep role-profile requests, result envelopes, and audit-event metadata in contracts so browser,
-desktop, and endpoint tests share the same authority-configuration vocabulary.
+`ManageFundStructure` covers governance-impacting ownership lifecycle mutations so ReadOnly and
+analytics-only sessions cannot alter fund-structure relationship records. Keep role-profile
+requests, result envelopes, and audit-event metadata in contracts so browser, desktop, and endpoint
+tests share the same authority-configuration vocabulary.
 
 Operations approval policy contracts include a shared approval policy matrix for close governance,
 governed approval-policy rule upsert requests, result envelopes, and audit-event metadata.

@@ -29,7 +29,8 @@ public static class RolePermissions
         UserPermission.ViewSecurityMaster |
         UserPermission.ModifySecurityMaster |
         UserPermission.ViewDirectLending |
-        UserPermission.ManageDirectLending;
+        UserPermission.ManageDirectLending |
+        UserPermission.ManageFundStructure;
 
     private const UserPermission DeveloperPermissions =
         AdminPermissions & ~UserPermission.ManageUsers;
@@ -61,7 +62,8 @@ public static class RolePermissions
         UserPermission.ExportData |
         UserPermission.ViewStrategies |
         UserPermission.ViewDirectLending |
-        UserPermission.ManageDirectLending;
+        UserPermission.ManageDirectLending |
+        UserPermission.ManageFundStructure;
 
     private const UserPermission ExecutivePermissions =
         UserPermission.ViewMarketData |
@@ -212,6 +214,7 @@ public static class RolePermissions
         UserPermission.ViewStrategies or UserPermission.ManageStrategies => "Strategy",
         UserPermission.ViewSecurityMaster or UserPermission.ModifySecurityMaster => "Security Master",
         UserPermission.ViewDirectLending or UserPermission.ManageDirectLending => "Direct lending",
+        UserPermission.ManageFundStructure => "Fund structure",
         _ => "Other"
     };
 
@@ -239,6 +242,7 @@ public static class RolePermissions
         UserPermission.ModifySecurityMaster => "Create or update Security Master entries.",
         UserPermission.ViewDirectLending => "View direct-lending contracts and positions.",
         UserPermission.ManageDirectLending => "Create and service direct-lending contracts.",
+        UserPermission.ManageFundStructure => "Create or modify fund-structure ownership and governance records.",
         _ => permission.ToString()
     };
 }
