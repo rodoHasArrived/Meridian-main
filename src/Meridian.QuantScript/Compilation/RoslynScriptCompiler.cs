@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,6 +18,7 @@ namespace Meridian.QuantScript.Compilation;
 /// </summary>
 public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 {
+    private static readonly MetadataReferenceResolver SafeMetadataReferenceResolver = new RestrictedMetadataReferenceResolver();
     private static readonly SourceReferenceResolver SafeSourceReferenceResolver = new RestrictedSourceReferenceResolver();
 
     // Parameter comment convention: // @param Name:Label:Default:Min:Max:Description
@@ -90,13 +92,8 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
             {
                 var sw = System.Diagnostics.Stopwatch.StartNew();
 
-                if (!_options.Value.EnableUnsafeScripts && TryGetUnsafeMarker(source, out var marker))
+                if (!_options.Value.EnableUnsafeScripts && TryCreateSafeModeDiagnostic(source) is { } diagnostic)
                 {
-                    var diagnostic = new ScriptDiagnostic(
-                        "Error",
-                        $"Safe mode blocks use of '{marker}' because it is disabled in safe mode. Set EnableUnsafeScripts=true to allow this script.",
-                        1,
-                        1);
                     return new ScriptCompilationResult(false, sw.Elapsed, [diagnostic]);
                 }
 
@@ -174,10 +171,31 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 
         if (!_options.Value.EnableUnsafeScripts)
         {
-            scriptOptions = scriptOptions.WithSourceResolver(SafeSourceReferenceResolver);
+            scriptOptions = scriptOptions
+                .WithMetadataResolver(SafeMetadataReferenceResolver)
+                .WithSourceResolver(SafeSourceReferenceResolver);
         }
 
         return scriptOptions;
+    }
+
+    private sealed class RestrictedMetadataReferenceResolver : MetadataReferenceResolver
+    {
+        public override bool Equals(object? other) => other is RestrictedMetadataReferenceResolver;
+
+        public override int GetHashCode() => typeof(RestrictedMetadataReferenceResolver).GetHashCode();
+
+        public override PortableExecutableReference? ResolveMissingAssembly(
+            MetadataReference definition,
+            AssemblyIdentity referenceIdentity) => null;
+
+        public override ImmutableArray<PortableExecutableReference> ResolveReference(
+            string reference,
+            string? baseFilePath,
+            MetadataReferenceProperties properties)
+        {
+            return ImmutableArray<PortableExecutableReference>.Empty;
+        }
     }
 
     private sealed class RestrictedSourceReferenceResolver : SourceReferenceResolver
@@ -196,6 +214,16 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         public override string? ResolveReference(string path, string? baseFilePath) => null;
     }
 
+    internal static ScriptDiagnostic? TryCreateSafeModeDiagnostic(string source)
+    {
+        return TryGetUnsafeMarker(source, out var marker)
+            ? new ScriptDiagnostic(
+                "Error",
+                $"Safe mode blocks use of '{marker}' because it is disabled in safe mode. Set EnableUnsafeScripts=true to allow this script.",
+                1,
+                1)
+            : null;
+    }
 
     private static bool TryGetUnsafeMarker(string source, out string marker)
     {
