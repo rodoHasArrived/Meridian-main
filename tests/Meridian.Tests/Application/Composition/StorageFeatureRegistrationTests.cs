@@ -5,12 +5,15 @@ using Meridian.Application.DirectLending;
 using Meridian.Application.FundOperationsPersistence;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Application.Reconciliation;
+using Meridian.Application.UI;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Store;
+using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Reconciliation;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
@@ -113,6 +116,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         try
         {
             var services = new ServiceCollection();
+            services.AddSingleton(new ConfigStore(Path.Combine(Path.GetTempPath(), $"meridian-storage-feature-{Guid.NewGuid():N}", "appsettings.json")));
 
             new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
 
@@ -126,6 +130,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
                 .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
             provider.GetRequiredService<IStatementRunWorkflowService>()
                 .Should().BeOfType<StatementRunWorkflowService>();
+            provider.GetRequiredService<IBrokerStatementService>()
+                .Should().BeOfType<CsvBrokerStatementService>();
             provider.GetRequiredService<IStatementReconciliationCheckpointStore>()
                 .Should().BeOfType<InMemoryStatementReconciliationCheckpointStore>();
             provider.GetRequiredService<StatementReconciliationOrchestrator>().Should().NotBeNull();

@@ -19,7 +19,6 @@ using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Infrastructure.Contracts;
-using Meridian.Infrastructure.Reconciliation;
 using Meridian.QuantScript;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
@@ -101,9 +100,6 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
         builder.Services.AddWorkstationSharedServices();
         builder.Services.AddOmsIntegrationApiHandlers();
-        builder.Services.AddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(resolvedDataRoot));
-        builder.Services.AddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(resolvedDataRoot));
-        builder.Services.AddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(resolvedDataRoot));
         builder.Services.AddSingleton<IReconciliationApiService, ReconciliationApiService>();
 
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>

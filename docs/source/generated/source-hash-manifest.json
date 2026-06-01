@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "298357ad7cfef9ffa2e083584cd012db63aea60a3d2ea06c39c60468097c817e",
-      "source_hash": "713b99a48d85a2ab7e5359c25b1b4cf1232343bb35b38e7b03d5cf31593fb586"
+      "readme_hash": "33e64c350120d89f279118ebcaf8de6d730d9cd2c447e81838774917313bba5a",
+      "source_hash": "bcb7be6cc15e08d08ff6df640fd3006af161a7ad5534b46c4d8e1b947cbc52a7"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -94,7 +94,7 @@
       "path": "src/Meridian",
       "readme": "src/Meridian/README.md",
       "readme_hash": "8e3060dfc36c91bf197bb99aa55f3689418bdee38bc015d553ea6e4d62091b8b",
-      "source_hash": "e65a98bff53261eee7c21a91d271e57ac3623da7793b874aa61491cbab284efc"
+      "source_hash": "0d53499936ef12e9def4bc9b64511323859f350d46ab406aa0875995d34ec14e"
     },
     {
       "id": "SRC-IBAPI-SMOKESTUB",
@@ -177,8 +177,8 @@
       "id": "SRC-UI-SERVICES",
       "path": "src/Meridian.Ui.Services",
       "readme": "src/Meridian.Ui.Services/README.md",
-      "readme_hash": "ba7a965f0b7be6b12ca900098f9771cc967af99da51fae49993b0f8c1b13d455",
-      "source_hash": "ba6b3653d142f88457fa2cbf361e6a7da31dd78d5204b452ad7bd3020650614a"
+      "readme_hash": "762a95778525b597a9df4a6acafa9e8278f765708490e16656b40652428f6b48",
+      "source_hash": "79e1dc82f540fd5fb7276bcc0b767c7b92ae2c10aecc6c27c2cdb7767323e204"
     },
     {
       "id": "SRC-UI-SHARED",

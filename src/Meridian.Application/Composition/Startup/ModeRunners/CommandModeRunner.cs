@@ -24,7 +24,7 @@ public sealed class CommandModeRunner
     /// </returns>
     public async Task<int?> TryRunAsync(StartupContext ctx, CancellationToken ct = default)
     {
-        var commandPlan = CommandDispatchPlanner.Create(ctx.Config, ctx.ConfigPath, _log, ctx.ConfigurationService);
+        using var commandPlan = CommandDispatchPlanner.Create(ctx.Config, ctx.ConfigPath, _log, ctx.ConfigurationService);
         var (handled, cliResult) = await commandPlan.Dispatcher.TryDispatchAsync(ctx.CliArgs.Raw, ct);
         if (handled)
             return cliResult.ExitCode;

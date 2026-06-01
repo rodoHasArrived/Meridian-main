@@ -31,9 +31,11 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Store;
 using Meridian.Contracts.Workstation;
+using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Reconciliation;
 using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
@@ -74,14 +76,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
-        services.TryAddSingleton<StatementReconciliationService>();
-        services.TryAddSingleton<StatementReconciliationContextAdapter>();
-        services.TryAddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
-        services.TryAddSingleton<IDataIntegrationIngestionService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
-        services.TryAddSingleton<IReconciliationCaseIntakeService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
-        services.TryAddSingleton<IStatementRunWorkflowService, StatementRunWorkflowService>();
-        services.TryAddSingleton<IStatementReconciliationCheckpointStore, InMemoryStatementReconciliationCheckpointStore>();
-        services.TryAddSingleton<StatementReconciliationOrchestrator>();
+        services.AddStatementReconciliationServices();
 
         // StorageOptions - configured from AppConfig or defaults
         services.AddSingleton<StorageOptions>(sp =>

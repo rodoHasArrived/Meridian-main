@@ -1,12 +1,14 @@
 using Meridian.Application.Reconciliation;
 using Meridian.Domain.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
 using Meridian.Application.ResultTypes;
 using Serilog;
 
 namespace Meridian.Application.Commands;
 
-public sealed class StatementImportCommands(string dataRoot, ILogger log) : ICliCommand
+public sealed class StatementImportCommands(
+    IBrokerStatementService brokerStatementService,
+    IStatementRunWorkflowService statementRunWorkflowService,
+    ILogger log) : ICliCommand
 {
     public bool CanHandle(string[] args)
         => (args.Contains("--statement-validate", StringComparer.OrdinalIgnoreCase)
@@ -30,12 +32,9 @@ public sealed class StatementImportCommands(string dataRoot, ILogger log) : ICli
             return CliResult.Fail(ErrorCode.ValidationFailed);
         }
 
-        var store = new JsonCanonicalStatementStore(dataRoot);
-        var service = new CsvBrokerStatementService(store);
-
         if (args.Contains("--statement-validate", StringComparer.OrdinalIgnoreCase))
         {
-            var result = await service.ValidateAsync(new BrokerStatementImportRequest(broker, path, statementDate), ct);
+            var result = await brokerStatementService.ValidateAsync(new BrokerStatementImportRequest(broker, path, statementDate), ct);
             Console.WriteLine($"valid={result.IsValid}; rows={result.RowCount}");
             foreach (var error in result.Errors) Console.WriteLine($"error={error}");
             return result.IsValid ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
@@ -53,8 +52,8 @@ public sealed class StatementImportCommands(string dataRoot, ILogger log) : ICli
             Get(args, "--statement-tolerance-profile-id") ?? "legacy-tolerance-profile",
             Get(args, "--statement-imported-by") ?? Environment.UserName,
             ct: ct);
-        var imported = await service.ImportAsync(runRequest.ToBrokerStatementImportRequest(), ct);
-        Console.WriteLine($"imported={imported.Import.ImportId}; rows={imported.Rows.Count}");
+        var imported = await statementRunWorkflowService.CreateAsync(runRequest.ToStatementRunRequest(), ct).ConfigureAwait(false);
+        Console.WriteLine($"imported={imported.Import.ImportId}; rows={imported.Import.NormalizedRowCount}");
         log.Information("Imported broker statement {ImportId} from {SourcePath}", imported.Import.ImportId, path);
         return CliResult.Ok();
     }

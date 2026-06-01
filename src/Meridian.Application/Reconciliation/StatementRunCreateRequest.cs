@@ -79,6 +79,21 @@ public sealed record StatementRunCreateRequest(
             ImportedBy,
             SourceFileHash);
 
+    public StatementRunRequest ToStatementRunRequest()
+        => new(
+            Broker,
+            SourceInstitution,
+            FundAccountId,
+            ExternalAccountId,
+            StatementPeriodStart,
+            StatementPeriodEnd,
+            SourcePath,
+            OriginalFileName,
+            MappingProfileId,
+            ToleranceProfileId,
+            ImportedBy,
+            SourceFileHash);
+
     private static void ValidateRequired(string parameterName, string value)
     {
         if (string.IsNullOrWhiteSpace(value))

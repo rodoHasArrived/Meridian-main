@@ -7,6 +7,7 @@ public sealed class StatementRunWorkflowService(
     ICanonicalStatementStore importStore,
     IReconciliationCaseStore caseStore,
     IReconciliationBreakStore breakStore,
+    IBrokerStatementService brokerStatementService,
     IStatementReconciliationValidationService validationService) : IStatementRunWorkflowService
 {
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken cancellationToken = default)
@@ -17,8 +18,7 @@ public sealed class StatementRunWorkflowService(
         ArgumentNullException.ThrowIfNull(request);
 
         var normalizedRequest = await NormalizeAndValidateAsync(request, cancellationToken).ConfigureAwait(false);
-        var statementService = new CsvBrokerStatementService(importStore);
-        var imported = await statementService.ImportAsync(ToImportRequest(normalizedRequest), cancellationToken).ConfigureAwait(false);
+        var imported = await brokerStatementService.ImportAsync(ToImportRequest(normalizedRequest), cancellationToken).ConfigureAwait(false);
         var matcher = new StatementMatchingService();
         var outcomes = matcher.MatchRows(imported.Rows);
         var breaks = matcher

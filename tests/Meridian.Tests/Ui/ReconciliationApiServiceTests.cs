@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Reconciliation;
 using Meridian.Contracts.Workstation;
+using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Services.Services.Reconciliation;
@@ -34,6 +35,7 @@ public sealed class ReconciliationApiServiceTests
         services.AddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(root));
         services.AddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(root));
         services.AddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(root));
+        services.AddSingleton<IBrokerStatementService>(sp => new CsvBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
         services.AddSingleton<IStatementRunWorkflowService, StatementRunWorkflowService>();
         services.AddSingleton<IReconciliationApiService, ReconciliationApiService>();
 
