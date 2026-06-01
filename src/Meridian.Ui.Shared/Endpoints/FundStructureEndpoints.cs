@@ -43,6 +43,18 @@ public static class FundStructureEndpoints
 
         group.MapPost("/setup-drafts/create", async (JsonElement body, HttpContext context) =>
         {
+            if (!HasFundStructureSetupCreatePermission(context))
+            {
+                return EndpointAuthorization.TryGetPermissions(context, out _)
+                    ? EndpointHelpers.Forbidden()
+                    : Results.Unauthorized();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var workflow = ResolveSetupWorkflow(context);
             if (workflow is null)
                 return ServiceUnavailable();
@@ -63,12 +75,14 @@ public static class FundStructureEndpoints
                 return Results.Json(validation, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var result = await workflow.CreateAsync(draft!, context.RequestAborted).ConfigureAwait(false);
+            var result = await workflow.CreateAsync(draft!, actor, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
         .WithName("CreateFundStructureSetupDraft")
         .Produces<FundStructureSetupResultDto>(StatusCodes.Status201Created)
-        .Produces<FundStructureSetupValidationSummaryDto>(StatusCodes.Status400BadRequest);
+        .Produces<FundStructureSetupValidationSummaryDto>(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapPost("/organizations", async (JsonElement body, HttpContext context) =>
         {
@@ -1144,6 +1158,9 @@ public static class FundStructureEndpoints
 
     private static FundOperationsWorkspaceReadService? ResolveWorkspaceService(HttpContext context) =>
         context.RequestServices.GetService<FundOperationsWorkspaceReadService>();
+
+    private static bool HasFundStructureSetupCreatePermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
 
     private static bool HasLedgerMappingAssignmentPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);

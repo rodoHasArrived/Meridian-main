@@ -23,6 +23,21 @@ public sealed class FundStructureSetupWorkflowServiceTests
         Assert.Contains(result.Graph.Nodes, node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio && node.Code == "PORT");
     }
 
+
+    [Fact]
+    public async Task CreateAsync_WithAuthenticatedActor_OverridesClientSuppliedRequestedBy()
+    {
+        var accountService = new InMemoryFundAccountService();
+        var recordingService = new RecordingFundStructureService(new InMemoryFundStructureService(accountService));
+        var service = new FundStructureSetupWorkflowService(recordingService);
+        var draft = CreateDraft() with { RequestedBy = "spoofed-operator" };
+
+        await service.CreateAsync(draft, "fund-ops", CancellationToken.None);
+
+        Assert.NotEmpty(recordingService.CreatedByValues);
+        Assert.All(recordingService.CreatedByValues, actor => Assert.Equal("fund-ops", actor));
+    }
+
     [Fact]
     public void Validate_MissingRequiredFields_DisablesCreateWithBlockingIssues()
     {
@@ -68,4 +83,102 @@ public sealed class FundStructureSetupWorkflowServiceTests
         var fundStructureService = new InMemoryFundStructureService(accountService);
         return new FundStructureSetupWorkflowService(fundStructureService);
     }
+
+    private sealed class RecordingFundStructureService(IFundStructureService inner) : IFundStructureService
+    {
+        private readonly List<string> _createdByValues = [];
+
+        public IReadOnlyList<string> CreatedByValues => _createdByValues;
+
+        public Task<OrganizationSummaryDto> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.CreateOrganizationAsync(request, ct);
+        }
+
+        public Task<BusinessSummaryDto> CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.CreateBusinessAsync(request, ct);
+        }
+
+        public Task<ClientSummaryDto> CreateClientAsync(CreateClientRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.CreateClientAsync(request, ct);
+        }
+
+        public Task<FundSummaryDto> CreateFundAsync(CreateFundRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.CreateFundAsync(request, ct);
+        }
+
+        public Task<SleeveSummaryDto> CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.CreateSleeveAsync(request, ct);
+        }
+
+        public Task<VehicleSummaryDto> CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.CreateVehicleAsync(request, ct);
+        }
+
+        public Task<LegalEntitySummaryDto> CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.CreateLegalEntityAsync(request, ct);
+        }
+
+        public Task<InvestmentPortfolioSummaryDto> CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.CreateInvestmentPortfolioAsync(request, ct);
+        }
+
+        public Task<OwnershipLinkDto> LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.LinkNodesAsync(request, ct);
+        }
+
+        public Task<OwnershipLinkDto> UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default)
+            => inner.UpdateOwnershipLinkAsync(request, ct);
+
+        public Task<OwnershipLinkDto> ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default)
+            => inner.ExpireOwnershipLinkAsync(request, ct);
+
+        public Task<OwnershipLinkDto> ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default)
+            => inner.ReplaceOwnershipLinkAsync(request, ct);
+
+        public Task<OwnershipGraphValidationResultDto> ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default)
+            => inner.ValidateOwnershipGraphAsync(request, ct);
+
+        public Task<FundStructureAssignmentDto> AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default)
+        {
+            _createdByValues.Add(request.CreatedBy);
+            return inner.AssignNodeAsync(request, ct);
+        }
+
+        public Task<OrganizationStructureGraphDto> GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default)
+            => inner.GetOrganizationStructureAsync(query, ct);
+
+        public Task<FundStructureGraphDto> GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default)
+            => inner.GetFundStructureGraphAsync(query, ct);
+
+        public Task<AdvisoryStructureViewDto?> GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default)
+            => inner.GetAdvisoryViewAsync(query, ct);
+
+        public Task<FundOperatingViewDto?> GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default)
+            => inner.GetFundOperatingViewAsync(query, ct);
+
+        public Task<AccountingStructureViewDto> GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default)
+            => inner.GetAccountingViewAsync(query, ct);
+
+        public Task<GovernanceCashFlowViewDto?> GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default)
+            => inner.GetCashFlowViewAsync(query, ct);
+    }
+
 }

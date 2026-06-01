@@ -96,7 +96,10 @@ public sealed class FundStructureSetupWorkflowService
         return new FundStructureSetupPreviewDto(nodes, BuildPreviewLinks(draft).ToArray(), validation);
     }
 
-    public async Task<FundStructureSetupResultDto> CreateAsync(FundStructureSetupDraftDto draft, CancellationToken ct = default)
+    public Task<FundStructureSetupResultDto> CreateAsync(FundStructureSetupDraftDto draft, CancellationToken ct = default)
+        => CreateAsync(draft, requestedBy: null, ct);
+
+    public async Task<FundStructureSetupResultDto> CreateAsync(FundStructureSetupDraftDto draft, string? requestedBy, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(draft);
         ct.ThrowIfCancellationRequested();
@@ -108,15 +111,17 @@ public sealed class FundStructureSetupWorkflowService
         }
 
         var effectiveFrom = ResolveEffectiveFrom(draft);
-        var requestedBy = string.IsNullOrWhiteSpace(draft.RequestedBy) ? "entity-setup" : draft.RequestedBy.Trim();
+        var auditActor = string.IsNullOrWhiteSpace(requestedBy)
+            ? (string.IsNullOrWhiteSpace(draft.RequestedBy) ? "entity-setup" : draft.RequestedBy.Trim())
+            : requestedBy.Trim();
         var ids = ResolveIds(draft);
 
         var organization = await _fundStructureService.CreateOrganizationAsync(
-            new CreateOrganizationRequest(ids.OrganizationId, Clean(draft.Organization.Code), Clean(draft.Organization.Name), CleanCurrency(draft.Organization.BaseCurrency), effectiveFrom, requestedBy, CleanOptional(draft.Organization.Description)),
+            new CreateOrganizationRequest(ids.OrganizationId, Clean(draft.Organization.Code), Clean(draft.Organization.Name), CleanCurrency(draft.Organization.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.Organization.Description)),
             ct).ConfigureAwait(false);
 
         var business = await _fundStructureService.CreateBusinessAsync(
-            new CreateBusinessRequest(ids.BusinessId, organization.OrganizationId, draft.BusinessLane.BusinessKind, Clean(draft.BusinessLane.Code), Clean(draft.BusinessLane.Name), CleanCurrency(draft.BusinessLane.BaseCurrency), effectiveFrom, requestedBy, CleanOptional(draft.BusinessLane.Description)),
+            new CreateBusinessRequest(ids.BusinessId, organization.OrganizationId, draft.BusinessLane.BusinessKind, Clean(draft.BusinessLane.Code), Clean(draft.BusinessLane.Name), CleanCurrency(draft.BusinessLane.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.BusinessLane.Description)),
             ct).ConfigureAwait(false);
 
         ClientSummaryDto? client = null;
@@ -124,42 +129,42 @@ public sealed class FundStructureSetupWorkflowService
         if (draft.ClientOrFund.CreateClient)
         {
             client = await _fundStructureService.CreateClientAsync(
-                new CreateClientRequest(ids.ClientOrFundId, business.BusinessId, Clean(draft.ClientOrFund.Code), Clean(draft.ClientOrFund.Name), CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, requestedBy, CleanOptional(draft.ClientOrFund.Description), draft.ClientOrFund.ClientSegmentKind),
+                new CreateClientRequest(ids.ClientOrFundId, business.BusinessId, Clean(draft.ClientOrFund.Code), Clean(draft.ClientOrFund.Name), CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.ClientOrFund.Description), draft.ClientOrFund.ClientSegmentKind),
                 ct).ConfigureAwait(false);
         }
         else
         {
             fund = await _fundStructureService.CreateFundAsync(
-                new CreateFundRequest(ids.ClientOrFundId, Clean(draft.ClientOrFund.Code), Clean(draft.ClientOrFund.Name), CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, requestedBy, CleanOptional(draft.ClientOrFund.Description), business.BusinessId),
+                new CreateFundRequest(ids.ClientOrFundId, Clean(draft.ClientOrFund.Code), Clean(draft.ClientOrFund.Name), CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.ClientOrFund.Description), business.BusinessId),
                 ct).ConfigureAwait(false);
         }
 
         var legalEntity = await _fundStructureService.CreateLegalEntityAsync(
-            new CreateLegalEntityRequest(ids.EntityId, draft.LegalEntity.EntityType, Clean(draft.LegalEntity.Code), Clean(draft.LegalEntity.Name), Clean(draft.LegalEntity.Jurisdiction), CleanCurrency(draft.LegalEntity.BaseCurrency), effectiveFrom, requestedBy, CleanOptional(draft.LegalEntity.Description)),
+            new CreateLegalEntityRequest(ids.EntityId, draft.LegalEntity.EntityType, Clean(draft.LegalEntity.Code), Clean(draft.LegalEntity.Name), Clean(draft.LegalEntity.Jurisdiction), CleanCurrency(draft.LegalEntity.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.LegalEntity.Description)),
             ct).ConfigureAwait(false);
 
         var vehicleFundId = fund?.FundId ?? ids.ClientOrFundId;
         if (fund is null)
         {
             fund = await _fundStructureService.CreateFundAsync(
-                new CreateFundRequest(Guid.NewGuid(), $"{Clean(draft.ClientOrFund.Code)}-OPS", $"{Clean(draft.ClientOrFund.Name)} operating fund", CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, requestedBy, "Auto-created operating fund for client setup handoff.", business.BusinessId),
+                new CreateFundRequest(Guid.NewGuid(), $"{Clean(draft.ClientOrFund.Code)}-OPS", $"{Clean(draft.ClientOrFund.Name)} operating fund", CleanCurrency(draft.ClientOrFund.BaseCurrency), effectiveFrom, auditActor, "Auto-created operating fund for client setup handoff.", business.BusinessId),
                 ct).ConfigureAwait(false);
             vehicleFundId = fund.FundId;
         }
 
         var vehicle = await _fundStructureService.CreateVehicleAsync(
-            new CreateVehicleRequest(ids.VehicleId, vehicleFundId, legalEntity.EntityId, Clean(draft.Vehicle.Code), Clean(draft.Vehicle.Name), CleanCurrency(draft.Vehicle.BaseCurrency), effectiveFrom, requestedBy, CleanOptional(draft.Vehicle.Description)),
+            new CreateVehicleRequest(ids.VehicleId, vehicleFundId, legalEntity.EntityId, Clean(draft.Vehicle.Code), Clean(draft.Vehicle.Name), CleanCurrency(draft.Vehicle.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.Vehicle.Description)),
             ct).ConfigureAwait(false);
 
         var portfolio = await _fundStructureService.CreateInvestmentPortfolioAsync(
-            new CreateInvestmentPortfolioRequest(ids.InvestmentPortfolioId, business.BusinessId, Clean(draft.InvestmentPortfolio.Code), Clean(draft.InvestmentPortfolio.Name), CleanCurrency(draft.InvestmentPortfolio.BaseCurrency), effectiveFrom, requestedBy, client?.ClientId, fund?.FundId, null, vehicle.VehicleId, legalEntity.EntityId, CleanOptional(draft.InvestmentPortfolio.Description)),
+            new CreateInvestmentPortfolioRequest(ids.InvestmentPortfolioId, business.BusinessId, Clean(draft.InvestmentPortfolio.Code), Clean(draft.InvestmentPortfolio.Name), CleanCurrency(draft.InvestmentPortfolio.BaseCurrency), effectiveFrom, auditActor, client?.ClientId, fund?.FundId, null, vehicle.VehicleId, legalEntity.EntityId, CleanOptional(draft.InvestmentPortfolio.Description)),
             ct).ConfigureAwait(false);
 
         var links = new List<OwnershipLinkDto>();
         foreach (var link in draft.InitialOwnershipLinks ?? Array.Empty<FundStructureSetupOwnershipLinkDraftDto>())
         {
             links.Add(await _fundStructureService.LinkNodesAsync(
-                new LinkFundStructureNodesRequest(link.OwnershipLinkId ?? Guid.NewGuid(), ResolveAlias(link.Parent, ids), ResolveAlias(link.Child, ids), link.RelationshipType, effectiveFrom, requestedBy, link.OwnershipPercent, link.IsPrimary, CleanOptional(link.Notes)),
+                new LinkFundStructureNodesRequest(link.OwnershipLinkId ?? Guid.NewGuid(), ResolveAlias(link.Parent, ids), ResolveAlias(link.Child, ids), link.RelationshipType, effectiveFrom, auditActor, link.OwnershipPercent, link.IsPrimary, CleanOptional(link.Notes)),
                 ct).ConfigureAwait(false));
         }
 
@@ -174,7 +179,7 @@ public sealed class FundStructureSetupWorkflowService
         });
 
         var assignment = await _fundStructureService.AssignNodeAsync(
-            new AssignFundStructureNodeRequest(Guid.NewGuid(), portfolio.InvestmentPortfolioId, AccountHandoffAssignmentType, handoffReference, effectiveFrom, requestedBy, IsPrimary: true),
+            new AssignFundStructureNodeRequest(Guid.NewGuid(), portfolio.InvestmentPortfolioId, AccountHandoffAssignmentType, handoffReference, effectiveFrom, auditActor, IsPrimary: true),
             ct).ConfigureAwait(false);
 
         var graph = await _fundStructureService.GetFundStructureGraphAsync(new FundStructureQuery(ActiveOnly: true, AsOf: effectiveFrom), ct).ConfigureAwait(false);
