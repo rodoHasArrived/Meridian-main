@@ -374,6 +374,28 @@ public sealed class ScriptRunnerTests
         third.ConsoleOutput.Should().Contain("42");
     }
 
+    [Theory]
+    [InlineData("#r \"System.Xml\"\nvar x = 1;", "#r")]
+    [InlineData("#load \"helpers/common.csx\"\nvar x = 1;", "#load")]
+    [InlineData("var text = System.IO.File.ReadAllText(\"/tmp/a.txt\");", "System.IO.")]
+    public async Task ContinueWithAsync_SafeModeBlocksUnsafeContinuationSource_AndPreservesCheckpoint(
+        string continuationSource,
+        string blockedMarker)
+    {
+        var runner = BuildRunner();
+
+        var first = await runner.RunAsync("var x = 41;", NoParams);
+
+        var second = await runner.ContinueWithAsync(continuationSource, first.Checkpoint!, NoParams);
+
+        second.Success.Should().BeFalse();
+        second.CompilationErrors.Should().ContainSingle(d =>
+            d.Message.Contains(blockedMarker, StringComparison.Ordinal) &&
+            d.Message.Contains("disabled in safe mode", StringComparison.OrdinalIgnoreCase));
+        second.RuntimeError.Should().BeNull();
+        second.Checkpoint.Should().BeSameAs(first.Checkpoint);
+    }
+
     [Fact]
     public async Task RunAsync_UsesFreshPerInvocationPlotQueue_NotInjectedQueueState()
     {

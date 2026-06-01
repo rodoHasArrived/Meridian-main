@@ -103,8 +103,29 @@ public sealed class ScriptRunner : IScriptRunner
         }
         else
         {
-            // Continuations rely on Roslyn continuation diagnostics from ContinueWithAsync.
             compileTime = TimeSpan.Zero;
+
+            if (!_options.EnableUnsafeScripts && RoslynScriptCompiler.TryCreateSafeModeDiagnostic(source) is { } diagnostic)
+            {
+                return new ScriptRunResult(
+                    Success: false,
+                    Elapsed: wallClock.Elapsed,
+                    CompileTime: compileTime,
+                    PeakMemoryBytes: 0,
+                    CompilationErrors: [diagnostic],
+                    RuntimeDiagnostics: Array.Empty<ScriptDiagnostic>(),
+                    RuntimeError: null,
+                    ConsoleOutput: string.Empty,
+                    Metrics: Array.Empty<KeyValuePair<string, string>>(),
+                    Plots: Array.Empty<PlotRequest>(),
+                    Trades: Array.Empty<ScriptTradeResult>(),
+                    CapturedBacktests: Array.Empty<BacktestResult>(),
+                    RuntimeParameters: Array.Empty<ParameterDescriptor>(),
+                    Checkpoint: checkpoint);
+            }
+
+            // Safe-mode source checks above mirror fresh compilation; remaining
+            // continuations rely on Roslyn diagnostics from ContinueWithAsync.
         }
 
         using var runCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
