@@ -143,7 +143,7 @@ public sealed class QuantScriptViewModelTests
         vm.SelectedHistoryEvidenceText.Should().Be("No execution evidence selected");
         vm.OpenRunBrowserCommand.CanExecute(null).Should().BeFalse();
         vm.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
-        vm.CompareInResearchCommand.CanExecute(null).Should().BeFalse();
+        vm.CompareInStrategyCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public sealed class QuantScriptViewModelTests
         vm.SelectedHistoryConsolePreview.Should().Be("Loaded 42 bars");
         vm.OpenRunBrowserCommand.CanExecute(null).Should().BeTrue();
         vm.OpenRunDetailCommand.CanExecute(null).Should().BeTrue();
-        vm.CompareInResearchCommand.CanExecute(null).Should().BeTrue();
+        vm.CompareInStrategyCommand.CanExecute(null).Should().BeTrue();
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public sealed class QuantScriptViewModelTests
         vm.SelectedHistoryRunLinkText.Should().Be("Local execution only; no Strategy Runs handoff was recorded.");
         vm.OpenRunBrowserCommand.CanExecute(null).Should().BeFalse();
         vm.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
-        vm.CompareInResearchCommand.CanExecute(null).Should().BeFalse();
+        vm.CompareInStrategyCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
@@ -444,7 +444,8 @@ public sealed class QuantScriptViewModelTests
         xaml.Should().Contain("{Binding SelectedExecutionRecord, Mode=TwoWay}");
         xaml.Should().Contain("{Binding OpenRunBrowserCommand}");
         xaml.Should().Contain("{Binding OpenRunDetailCommand}");
-        xaml.Should().Contain("{Binding CompareInResearchCommand}");
+        xaml.Should().Contain("{Binding CompareInStrategyCommand}");
+        xaml.Should().NotContain("{Binding CompareInResearchCommand}");
         xaml.Should().Contain("{Binding HasNoRunHistory");
         xaml.Should().Contain("{Binding SelectedHistoryConsolePreview}");
     }

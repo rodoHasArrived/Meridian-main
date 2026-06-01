@@ -8,19 +8,77 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import fnmatch
 from pathlib import Path
+
+
+EXCLUDED_DIR_NAMES = {
+    ".artifacts",
+    ".git",
+    ".idea",
+    ".mypy_cache",
+    ".nuget",
+    ".playwright-cli",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".vs",
+    "__pycache__",
+    "artifacts",
+    "bin",
+    "coverage",
+    "logs",
+    "node_modules",
+    "obj",
+    "obj-codex",
+    "archive",
+    "TestResults",
+}
+
+EXCLUDED_ROOT_DIR_NAMES = {
+    "data",
+}
+
+EXCLUDED_FILE_SUFFIXES = {
+    ".bak",
+    ".log",
+    ".pyc",
+    ".pyo",
+    ".tmp",
+}
+
+EXCLUDED_FILE_PATTERNS = (
+    "*.backup-*",
+)
 
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
 
-def is_excluded(path: Path) -> bool:
-    excluded_parts = {
-        ".git", ".vs", ".idea", "bin", "obj", "node_modules",
-        "archive", "obj-codex", "TestResults",
-    }
-    return any(part in excluded_parts for part in path.parts)
+def is_excluded(path: Path, root: Path | None = None) -> bool:
+    if path.is_symlink():
+        return True
+
+    parts = path.parts
+    if any(part in EXCLUDED_DIR_NAMES for part in parts):
+        return True
+
+    if root is not None:
+        try:
+            relative_parts = path.relative_to(root).parts
+        except ValueError:
+            relative_parts = parts
+        if relative_parts and relative_parts[0] in EXCLUDED_ROOT_DIR_NAMES:
+            return True
+
+    name = path.name
+    if path.is_file():
+        if path.suffix.lower() in EXCLUDED_FILE_SUFFIXES:
+            return True
+        if any(fnmatch.fnmatch(name, pattern) for pattern in EXCLUDED_FILE_PATTERNS):
+            return True
+
+    return False
 
 
 def render_tree(root: Path) -> str:
@@ -29,7 +87,7 @@ def render_tree(root: Path) -> str:
     def walk(current: Path, prefix: str = "") -> None:
         try:
             entries = sorted(
-                [p for p in current.iterdir() if not is_excluded(p)],
+                [p for p in current.iterdir() if not is_excluded(p, root)],
                 key=lambda p: (p.is_file(), p.name.lower()),
             )
         except PermissionError:
@@ -99,7 +157,7 @@ def generate_provider_registry(root: Path) -> str:
         [
             path.relative_to(root)
             for path in src.rglob("*.cs")
-            if "Provider" in path.stem and not is_excluded(path)
+            if "Provider" in path.stem and not is_excluded(path, root)
         ]
     )
 

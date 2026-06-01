@@ -345,5 +345,40 @@ public sealed class ReportPackWorkflowService
             throw new InvalidOperationException(
                 $"Report pack publication has orphan evidence: {string.Join(", ", missingEvidence.Order(StringComparer.OrdinalIgnoreCase))}.");
         }
+
+        var missingPointers = lineProvenance
+            .SelectMany(EnumerateRetainedProvenancePointers)
+            .Where(pointer => !retainedEvidenceIds.Contains(pointer))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (missingPointers.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"Report pack publication has orphan provenance pointers: {string.Join(", ", missingPointers.Order(StringComparer.OrdinalIgnoreCase))}.");
+        }
+    }
+
+    private static IEnumerable<string> EnumerateRetainedProvenancePointers(ReportPackLineProvenanceDto line)
+    {
+        yield return line.SourceId;
+
+        if (!string.IsNullOrWhiteSpace(line.RunId))
+            yield return line.RunId;
+        if (!string.IsNullOrWhiteSpace(line.SourceSessionId))
+            yield return line.SourceSessionId;
+        if (!string.IsNullOrWhiteSpace(line.LedgerEntryId))
+            yield return line.LedgerEntryId;
+        if (!string.IsNullOrWhiteSpace(line.ReconciliationCaseId))
+            yield return line.ReconciliationCaseId;
+        if (!string.IsNullOrWhiteSpace(line.ReconciliationRunId))
+            yield return line.ReconciliationRunId;
+        if (!string.IsNullOrWhiteSpace(line.ProviderEventId))
+            yield return line.ProviderEventId;
+        if (!string.IsNullOrWhiteSpace(line.SecurityMasterId))
+            yield return line.SecurityMasterId;
+        if (!string.IsNullOrWhiteSpace(line.SecurityDefinitionId))
+            yield return line.SecurityDefinitionId;
+        if (!string.IsNullOrWhiteSpace(line.ApprovalId))
+            yield return line.ApprovalId;
     }
 }

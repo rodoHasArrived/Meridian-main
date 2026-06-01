@@ -27,6 +27,7 @@ This folder owns browser workstation packaging and host-served assets. Active so
 ## Important workflows
 
 Use `dashboard/` for source changes and generated `wwwroot/workstation/` assets only when rebuilding the host-served workstation bundle is part of the task.
+Browser workflow target routing keeps retained desktop compatibility page tags aligned to the canonical operator lanes under `dashboard/`.
 
 ## Diagrams
 

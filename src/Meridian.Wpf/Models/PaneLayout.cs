@@ -19,7 +19,7 @@ public static class PaneLayouts
         new[] { new GridLength(1, GridUnitType.Star) });
 
     public static readonly PaneLayout ResearchData = new(
-        PaneLayoutKind.ResearchData, "Research + Data", "⬛⬜", 2,
+        PaneLayoutKind.ResearchData, "Strategy + Data", "⬛⬜", 2,
         new[] { new GridLength(1, GridUnitType.Star), new GridLength(1, GridUnitType.Star) });
 
     public static readonly PaneLayout TradingCockpit = new(

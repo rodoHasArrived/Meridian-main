@@ -82,7 +82,7 @@ public sealed class AnalysisExportWizardService
             {
                 Id = "runmat",
                 Name = "RunMat",
-                Description = "Numeric CSV plus a MATLAB-style loader script for RunMat research workflows",
+                Description = "Numeric CSV plus a MATLAB-style loader script for RunMat Strategy workflows",
                 Icon = "\uE943",
                 OutputFormat = "CSV",
                 Compression = "none",

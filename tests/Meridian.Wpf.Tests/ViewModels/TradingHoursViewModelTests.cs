@@ -57,6 +57,8 @@ public sealed class TradingHoursViewModelTests
             viewModel.NextSessionText.Should().Be("Next session: Mon, Apr 27 at 9:30 AM ET");
             viewModel.SessionBriefingToneLabel.Should().Be("Closed planning");
             viewModel.SessionBriefingDetail.Should().Contain("Next session: Mon, Apr 27 at 9:30 AM ET");
+            viewModel.SessionBriefingDetail.Should().Contain("overnight Strategy");
+            viewModel.SessionBriefingDetail.Should().NotContain("overnight research");
             viewModel.SessionBriefingDetail.Should().Contain("staged orders");
         });
     }

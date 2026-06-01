@@ -19,6 +19,8 @@ Use this order for Copilot Chat, Copilot coding agent, and Copilot-authored PRs:
 4. [`../ai-known-errors.md`](../ai-known-errors.md) before changing code or generated artifacts.
 5. [`../navigation/README.md`](../navigation/README.md) and
    [`../generated/repo-navigation.md`](../generated/repo-navigation.md) for large-repo routing.
+6. `../agent-handoff-checklist.md` for coordinator-to-specialist-to-assurance handoffs.
+7. `../work-modes.md` to select Lightweight, Standard, or Deep Review context budgets before implementation.
 
 Do not copy the full repository tree or long convention lists into Copilot prompts. Link to the
 current source instead.
@@ -62,6 +64,9 @@ Visible operator navigation should stay aligned to `Trading`, `Portfolio`, `Acco
 | Provider work | [`../../../.github/agents/provider-builder-agent.md`](../../../.github/agents/provider-builder-agent.md) |
 | Prompt templates | [`../../../.github/prompts/README.md`](../../../.github/prompts/README.md) |
 
+For multi-agent tasks, return a compact handoff packet using `../agent-handoff-checklist.md` before the
+phase transition.
+
 ## Validation Defaults
 
 Use the narrowest command that covers the touched files:
@@ -104,3 +109,15 @@ Do not embed a static repository tree here. Use the generated navigation sources
 - [`../../../docs/generated/repository-structure.md`](../../../docs/generated/repository-structure.md) only when a literal tree snapshot is required.
 
 When the repo layout changes, update the generated navigation or structure sources through the docs automation rather than copying a tree into this Copilot-specific guide.
+
+## AI Contract Coverage
+
+- Repo navigation: [`../navigation/README.md`](../navigation/README.md) and [`../generated/repo-navigation.md`](../generated/repo-navigation.md)
+- Agent edit rules: follow shared rules in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md)
+  and host mechanics in [`../../../.github/copilot-instructions.md`](../../../.github/copilot-instructions.md)
+- Generated-file handling: never hand-edit `docs/ai/generated/*` or `docs/generated/*`; rerun local navigation/regeneration lanes when routing truth changes
+- Agent orchestration: initialize handoff discipline with `../agent-handoff-checklist.md` and `../parallel-task-manifest-template.md` when multiple agents are involved
+- Parallel development workflows: keep surfaces disjoint and record lane scope in the manifest
+- Token/context management: choose `../work-modes.md` first, keep context scoped to the lane, and escalate only when cross-provider or approval-gated decisions arise
+- Validation procedures: `python build/scripts/docs/check-ai-inventory.py --summary`, `python -m unittest build/scripts/docs/tests/test_check_ai_inventory.py`, plus task-appropriate command set
+- Ownership rules: [`../../documentation-ownership.md`](../../documentation-ownership.md), [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md)

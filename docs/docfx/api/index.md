@@ -14,7 +14,6 @@ The Meridian platform is organized into focused assemblies. Browse the namespace
 | **Meridian.ProviderSdk** | Provider SDK — implement `IMarketDataClient`, `IHistoricalDataProvider`, or `ISymbolSearchProvider` |
 | **Meridian.Application** | Application services: pipeline, backfill orchestration, monitoring, and configuration |
 | **Meridian.Infrastructure** | Concrete provider adapters (Alpaca, Polygon, IB, NYSE, StockSharp, …) |
-| **Meridian.Infrastructure.CppTrader** | CppTrader native matching-engine host and replay |
 | **Meridian.Storage** | Storage sinks (JSONL, Parquet), WAL, archival, export, and packaging |
 | **Meridian.Execution** | Order management system, paper trading gateway, and brokerage adapter framework |
 | **Meridian.Execution.Sdk** | Brokerage gateway interfaces and SDK models |

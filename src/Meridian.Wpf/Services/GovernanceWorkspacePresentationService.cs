@@ -23,7 +23,7 @@ internal static class GovernanceWorkspacePresentationService
             [
                 new WorkspaceCommandItem { Id = "FundAccounts", Label = "Accounts", Description = "Open account surfaces", Glyph = "\uE8D4" },
                 new WorkspaceCommandItem { Id = "FundCashFinancing", Label = "Reporting", Description = "Open cash and reporting view", Glyph = "\uE8C7" },
-                new WorkspaceCommandItem { Id = "FundReportPack", Label = "Report Pack", Description = "Open governance report-pack preview", Glyph = "\uE8A5" },
+                new WorkspaceCommandItem { Id = "FundReportPack", Label = "Report Pack", Description = "Open governed report-pack preview", Glyph = "\uE8A5" },
                 new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit", Description = "Open audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "Diagnostics", Label = "Diagnostics", Description = "Open diagnostics", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Notifications", Description = "Open notifications", Glyph = "\uE7F4" },
@@ -61,8 +61,8 @@ internal static class GovernanceWorkspacePresentationService
 
         return
         [
-            new WorkspaceQueueItem { Title = "Fund operations posture", Detail = $"{summary.TotalAccounts} linked account(s), {ledger.EntityCount} entities, {ledger.SleeveCount} sleeves, and {ledger.VehicleCount} vehicles feed {ledger.JournalEntryCount} journals and {ledger.TrialBalance.Count} trial-balance lines through the shared governance workspace.", StatusLabel = ledger.JournalEntryCount > 0 ? "Live review" : "Needs setup", CountLabel = ledger.JournalEntryCount > 0 ? $"{ledger.JournalEntryCount} journals" : "No journals", Tone = ledger.JournalEntryCount > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning, PrimaryActionId = "FundLedger", PrimaryActionLabel = "Open Operations", SecondaryActionId = "FundAccounts", SecondaryActionLabel = "Accounts" },
-            new WorkspaceQueueItem { Title = "Accounts and banking coordination", Detail = $"{profile.DisplayName} now reuses the shared fund-operations projection for account, banking, and entity drill-ins from the governance shell.", StatusLabel = "Operator review", CountLabel = workspace.BankSnapshots.Count > 0 ? $"{workspace.BankSnapshots.Count} bank views" : profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundAccounts", PrimaryActionLabel = "Accounts", SecondaryActionId = "FundLedger", SecondaryActionLabel = "Operations" }
+            new WorkspaceQueueItem { Title = "Fund operations posture", Detail = $"{summary.TotalAccounts} linked account(s), {ledger.EntityCount} entities, {ledger.SleeveCount} sleeves, and {ledger.VehicleCount} vehicles feed {ledger.JournalEntryCount} journals and {ledger.TrialBalance.Count} trial-balance lines through the shared Accounting workspace.", StatusLabel = ledger.JournalEntryCount > 0 ? "Live review" : "Needs setup", CountLabel = ledger.JournalEntryCount > 0 ? $"{ledger.JournalEntryCount} journals" : "No journals", Tone = ledger.JournalEntryCount > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning, PrimaryActionId = "FundLedger", PrimaryActionLabel = "Open Operations", SecondaryActionId = "FundAccounts", SecondaryActionLabel = "Accounts" },
+            new WorkspaceQueueItem { Title = "Accounts and banking coordination", Detail = $"{profile.DisplayName} now reuses the shared fund-operations projection for account, banking, and entity drill-ins from the Accounting shell.", StatusLabel = "Operator review", CountLabel = workspace.BankSnapshots.Count > 0 ? $"{workspace.BankSnapshots.Count} bank views" : profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundAccounts", PrimaryActionLabel = "Accounts", SecondaryActionId = "FundLedger", SecondaryActionLabel = "Operations" }
         ];
     }
 
@@ -95,7 +95,7 @@ internal static class GovernanceWorkspacePresentationService
 
         return
         [
-            new WorkspaceQueueItem { Title = "Portfolio and cash reporting", Detail = $"Cash, financing, NAV, and portfolio-linked reporting can be reviewed without leaving governance. {reporting.ProfileCount} reporting/export profile(s) are already available through the shared workspace summary.", StatusLabel = "Ready", CountLabel = $"{cash.TotalCash:C0}", Tone = WorkspaceTone.Info, PrimaryActionId = "FundCashFinancing", PrimaryActionLabel = "Open Reporting", SecondaryActionId = "FundPortfolio", SecondaryActionLabel = "Portfolio" },
+            new WorkspaceQueueItem { Title = "Portfolio and cash reporting", Detail = $"Cash, financing, NAV, and portfolio-linked reporting can be reviewed without leaving Accounting. {reporting.ProfileCount} reporting/export profile(s) are already available through the shared workspace summary.", StatusLabel = "Ready", CountLabel = $"{cash.TotalCash:C0}", Tone = WorkspaceTone.Info, PrimaryActionId = "FundCashFinancing", PrimaryActionLabel = "Open Reporting", SecondaryActionId = "FundPortfolio", SecondaryActionLabel = "Portfolio" },
             new WorkspaceQueueItem { Title = "Board and operator handoff", Detail = $"Keep reporting, trial-balance, audit references, and {string.Join(", ", reporting.ReportPackTargets)} pack targets together before approvals or exports leave the workstation.", StatusLabel = "Review", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundReportPack", PrimaryActionLabel = "Open Report Pack", SecondaryActionId = "FundAuditTrail", SecondaryActionLabel = "Audit" }
         ];
     }
@@ -144,14 +144,14 @@ internal static class GovernanceWorkspacePresentationService
             : workflow?.PrimaryBlocker.Code == "as-of-drift" || workflow?.PrimaryBlocker.Code == "missing-ledger" || workflow?.PrimaryBlocker.Code == "missing-reconciliation"
                 ? workflow.PrimaryBlocker.Detail
                 : reconciliation.OpenBreakCount > 0
-                    ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block governance sign-off until the queue is reviewed."
+                    ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block close sign-off until the queue is reviewed."
                     : $"{reconciliation.RunCount} reconciliation run(s) are linked for the current context.";
         var reportingSummary = reporting.ProfileCount > 0
             ? $"{reporting.ProfileCount} report profile(s) ready"
             : "Reporting shell ready";
         var reportingDetail = !string.IsNullOrWhiteSpace(governance?.CloseReadiness)
             ? governance.CloseReadiness
-            : $"Cash {workspace.CashFinancing.TotalCash:C0}, financing {workspace.CashFinancing.FinancingCost:C0}, and report-pack exports stay in the same governance lane.";
+            : $"Cash {workspace.CashFinancing.TotalCash:C0}, financing {workspace.CashFinancing.FinancingCost:C0}, and report-pack exports stay in the Accounting lane.";
         var latestNotification = notifications.FirstOrDefault();
         var auditSummary = unreadAlerts > 0
             ? $"{unreadAlerts} unread alert(s)"
@@ -161,8 +161,8 @@ internal static class GovernanceWorkspacePresentationService
         var auditDetail = !string.IsNullOrWhiteSpace(governance?.AuditTraceability) && latestNotification is null
             ? governance.AuditTraceability
             : latestNotification is null
-            ? "Audit evidence and sign-off history remain available from the shared governance shell."
-            : $"Latest governance signal: {latestNotification.Title} at {latestNotification.Timestamp:t}.";
+            ? "Audit evidence and sign-off history remain available from the shared Accounting shell."
+            : $"Latest approval signal: {latestNotification.Title} at {latestNotification.Timestamp:t}.";
 
         return new GovernanceLaneSummaries(
             Accounting: new GovernanceLaneSummary(accountingSummary, accountingDetail),
@@ -189,7 +189,7 @@ internal static class GovernanceWorkspacePresentationService
                 Summary: $"{laneLabel} review is waiting for a fund-linked context.",
                 Detail: GetLockedLaneDetail(subarea, operatingContext),
                 HandoffTitle: workflow?.StatusLabel ?? "Context required",
-                HandoffDetail: workflow?.StatusDetail ?? "Switch context to unlock governance queues for the selected lane.",
+                HandoffDetail: workflow?.StatusDetail ?? "Switch context to unlock accounting queues for the selected lane.",
                 PrimaryActionId: "SwitchContext",
                 PrimaryActionLabel: "Switch Context",
                 SecondaryActionId: "Diagnostics",
@@ -216,7 +216,7 @@ internal static class GovernanceWorkspacePresentationService
                 Summary: ledger.JournalEntryCount > 0
                     ? $"{ledger.JournalEntryCount} journals ready for operations review"
                     : "Operations snapshot pending",
-                Detail: $"{workspace.Workspace.TotalAccounts} linked account(s), {ledger.EntityCount} entities, and {ledger.VehicleCount} vehicles stay aligned inside the governance shell.",
+                Detail: $"{workspace.Workspace.TotalAccounts} linked account(s), {ledger.EntityCount} entities, and {ledger.VehicleCount} vehicles stay aligned inside the Accounting shell.",
                 HandoffTitle: ledger.JournalEntryCount > 0 ? "Open operations lane" : "Restore operations baseline",
                 HandoffDetail: ledger.JournalEntryCount > 0
                     ? "Keep ledger, account, and bank posture docked before moving into accounting or reconciliation."
@@ -255,9 +255,9 @@ internal static class GovernanceWorkspacePresentationService
                 Detail: !string.IsNullOrWhiteSpace(governance?.SignoffPosture)
                     ? $"{governance.SignoffPosture} {governance.CloseReadiness}".Trim()
                     : workflowCarriesReconciliationBlocker
-                        ? workflow?.PrimaryBlocker.Detail ?? "Reconciliation review is waiting on the current governance blocker."
+                        ? workflow?.PrimaryBlocker.Detail ?? "Reconciliation review is waiting on the current approval blocker."
                         : reconciliation.OpenBreakCount > 0
-                            ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block governance sign-off until the queue is reviewed."
+                            ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block close sign-off until the queue is reviewed."
                             : $"{reconciliation.RunCount} reconciliation run(s) are linked for the current scope with {reconciliation.SecurityCoverageIssueCount} coverage issue(s).",
                 HandoffTitle: reconciliation.OpenBreakCount > 0
                     ? "Review breaks before approval release"
@@ -265,7 +265,7 @@ internal static class GovernanceWorkspacePresentationService
                         ? workflow?.PrimaryBlocker.Label ?? "Resolve reconciliation blocker"
                         : "Open reconciliation lane",
                 HandoffDetail: reconciliation.OpenBreakCount > 0
-                    ? "Inspect breaks, security coverage, and related audit evidence before releasing governance approvals."
+                    ? "Inspect breaks, security coverage, and related audit evidence before releasing approvals."
                     : workflowCarriesReconciliationBlocker
                         ? workflow?.StatusDetail ?? "Reconciliation review should stay paused until the blocker clears."
                         : "Matched runs, security coverage, and trial-balance continuity stay one action away from the same shell.",
@@ -282,7 +282,7 @@ internal static class GovernanceWorkspacePresentationService
                 Detail: $"Cash {cash.TotalCash:C0}, financing {cash.FinancingCost:C0}, and {BuildReportPackTargetLabel(reporting)} stay aligned for operator handoff.",
                 HandoffTitle: reporting.ProfileCount > 0 ? "Prepare report pack" : "Open reporting lane",
                 HandoffDetail: reporting.ProfileCount > 0
-                    ? "Review cash posture first, then package board and operator outputs without leaving governance."
+                    ? "Review cash posture first, then package board and operator outputs without leaving Accounting."
                     : "Cash and financing posture are available even before dedicated report profiles are configured.",
                 PrimaryActionId: "FundCashFinancing",
                 PrimaryActionLabel: "Open Reporting",
@@ -299,12 +299,12 @@ internal static class GovernanceWorkspacePresentationService
                 Detail: !string.IsNullOrWhiteSpace(governance?.AuditTraceability) && latestNotification is null
                     ? governance.AuditTraceability
                     : latestNotification is null
-                    ? "Audit evidence, alerts, and operator sign-off history remain attached to the current governance scope."
-                    : $"Latest governance signal: {latestNotification.Title} at {latestNotification.Timestamp:t}.",
+                    ? "Audit evidence, alerts, and operator sign-off history remain attached to the current Accounting scope."
+                    : $"Latest approval signal: {latestNotification.Title} at {latestNotification.Timestamp:t}.",
                 HandoffTitle: unreadAlerts > 0 ? "Review unread alerts" : "Open audit trail",
                 HandoffDetail: unreadAlerts > 0
                     ? "Keep alerts, diagnostics, and sign-off evidence together before releasing approvals."
-                    : "Use the audit trail to validate recent governance activity before the handoff leaves the shell.",
+                    : "Use the audit trail to validate recent accounting activity before the handoff leaves the shell.",
                 PrimaryActionId: "FundAuditTrail",
                 PrimaryActionLabel: "Open Audit",
                 SecondaryActionId: "NotificationCenter",
@@ -313,9 +313,9 @@ internal static class GovernanceWorkspacePresentationService
             _ => new GovernanceLaneHeroState(
                 LaneLabel: "Operations",
                 Summary: "Operations snapshot pending",
-                Detail: "Select a governance lane to continue.",
+                Detail: "Select an accounting lane to continue.",
                 HandoffTitle: "Open operations lane",
-                HandoffDetail: "The governance shell defaults to the operations lane.",
+                HandoffDetail: "The Accounting shell defaults to the operations lane.",
                 PrimaryActionId: "FundLedger",
                 PrimaryActionLabel: "Open Operations",
                 SecondaryActionId: "FundAccounts",
@@ -357,7 +357,7 @@ internal static class GovernanceWorkspacePresentationService
             GovernanceSubarea.Reconciliation => $"{scopePrefix} Break triage and security coverage review stay locked until then.",
             GovernanceSubarea.Reporting => $"{scopePrefix} Cash, financing, and report-pack handoff stay locked until then.",
             GovernanceSubarea.Audit => $"{scopePrefix} Audit evidence and approval history stay locked until then.",
-            _ => $"{scopePrefix} Governance queues stay locked until then."
+            _ => $"{scopePrefix} Accounting queues stay locked until then."
         };
     }
 

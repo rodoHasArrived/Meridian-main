@@ -52,7 +52,7 @@ Metadata scratch files such as `docfx-log.json`, `temp-metadata-only.json`,
 `docs/docfx/api/.manifest`, and `docs/docfx/api/*.yml` are local generated
 output and should not be committed. If API metadata contains absolute paths from
 an older checkout, delete the generated metadata and regenerate it from
-`C:\Dev\Meridian-main` before publishing documentation.
+`D:\Meridian-main` before publishing documentation.
 
 ### Projects included in API reference
 
@@ -65,7 +65,6 @@ an older checkout, delete the generated metadata and regenerate it from
 | `Meridian.Domain` | Domain model (collectors, market events, publishers) |
 | `Meridian.ProviderSdk` | Provider SDK interfaces |
 | `Meridian.Infrastructure` | Concrete provider adapters |
-| `Meridian.Infrastructure.CppTrader` | CppTrader integration |
 | `Meridian.Storage` | Storage sinks, WAL, archival, and export |
 | `Meridian.Execution` | OMS, paper trading, and brokerage adapters |
 | `Meridian.Execution.Sdk` | Brokerage gateway SDK |

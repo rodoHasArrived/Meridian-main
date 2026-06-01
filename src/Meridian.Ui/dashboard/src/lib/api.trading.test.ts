@@ -212,7 +212,10 @@ describe("trading endpoint wiring", () => {
     await expect(getStrategyWorkspace()).resolves.toMatchObject({ runs: expect.any(Array) });
     await expect(getTradingWorkspace()).resolves.toMatchObject({ openOrders: expect.any(Array) });
     await expect(getPortfolioWorkspace()).resolves.toMatchObject({ positions: expect.any(Array) });
-    await expect(getDataOperationsWorkspace()).resolves.toMatchObject({ backfills: expect.any(Array) });
+    await expect(getDataOperationsWorkspace()).resolves.toMatchObject({
+      backfills: expect.any(Array),
+      exports: [expect.objectContaining({ target: "strategy pack" })]
+    });
     await expect(getGovernanceWorkspace()).resolves.toMatchObject({ reconciliationQueue: expect.any(Array) });
     await expect(getReportingWorkspace()).resolves.toMatchObject({ reporting: expect.any(Object) });
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/strategy", expect.anything());

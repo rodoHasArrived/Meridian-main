@@ -3479,7 +3479,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         var severityRank = 1;
         var severityLabel = "Review";
         var severityTone = "Info";
-        var impactDetail = "Review this mismatch before publishing the selected security into downstream governance workflows.";
+        var impactDetail = "Review this mismatch before publishing the selected security into downstream Accounting and Reporting workflows.";
 
         if (touchesIdentifier || touchesLifecycle || touchesTradingParameters || fieldKey.Contains("currency"))
         {

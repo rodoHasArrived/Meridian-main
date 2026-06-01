@@ -78,8 +78,59 @@ public sealed class PostgresDirectLendingCommandServiceTests
         write.CorrelationId.Should().Be(correlationId);
         write.PostingKind.Should().Be(LedgerPostingKindDto.Originating);
         write.Entry.IsBalanced.Should().BeTrue();
+        write.Entry.Metadata.Symbol.Should().Be("NWTERM26");
+        write.Entry.Metadata.SecurityId.Should().Be(Guid.Parse("99999999-9999-9999-9999-999999999999"));
         write.Entry.Metadata.Tags.Should().ContainKey("sourceEventId")
             .WhoseValue.Should().Be(capturedEventId.ToString("D"));
+        write.Entry.Metadata.Tags.Should().ContainKey("securityMasterProvenance")
+            .WhoseValue.Should().Contain("approved:true");
+        write.Entry.Metadata.Tags.Should().ContainKey("securityMasterLineage")
+            .WhoseValue.Should().Contain("ledger-map:nwterm26-direct-lending");
+        write.Entry.Lines
+            .Where(static line => !string.Equals(line.Account.Name, "Cash", StringComparison.OrdinalIgnoreCase))
+            .Should()
+            .OnlyContain(static line => line.Account.Symbol == "NWTERM26");
+    }
+
+    [Fact]
+    public async Task PostDailyAccrualAsync_BlocksLedgerProjectionWithoutSecurityMasterReference()
+    {
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var contract = BuildContract(loanId, includeSecurityMasterReference: false);
+        var servicing = BuildServicing(loanId);
+
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, contract, servicing));
+
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            queryService,
+            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var act = () => service.PostDailyAccrualAsync(
+            loanId,
+            new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .WithMessage("*requires a Security Master reference before posting*");
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default,
+            default,
+            default,
+            default!,
+            default!,
+            default!,
+            default,
+            default,
+            default!,
+            default!,
+            default,
+            default,
+            default);
     }
 
     private static ILedgerJournalStore BuildLedgerJournalStore()
@@ -110,7 +161,7 @@ public sealed class PostgresDirectLendingCommandServiceTests
         return store;
     }
 
-    private static LoanContractDetailDto BuildContract(Guid loanId)
+    private static LoanContractDetailDto BuildContract(Guid loanId, bool includeSecurityMasterReference = true)
     {
         var terms = new DirectLendingTermsDto(
             OriginationDate: new DateOnly(2026, 3, 22),
@@ -129,7 +180,16 @@ public sealed class PostgresDirectLendingCommandServiceTests
             CommitmentFeeRate: 0.0025m,
             DefaultRateSpreadBps: null,
             PrepaymentAllowed: true,
-            CovenantsJson: null);
+            CovenantsJson: null,
+            SecurityMasterReference: includeSecurityMasterReference
+                ? new DirectLendingSecurityMasterReferenceDto(
+                    SecurityId: Guid.Parse("99999999-9999-9999-9999-999999999999"),
+                    Symbol: "NWTERM26",
+                    Provenance: "source:security-master;definition:loan-facility",
+                    ApprovalReference: "sm-approval:nwterm26-controller",
+                    LedgerMappingReference: "ledger-map:nwterm26-direct-lending",
+                    Status: "Active")
+                : null);
 
         return new LoanContractDetailDto(
             LoanId: loanId,

@@ -44,7 +44,6 @@
     <ProjectReference Include="..\..\src\Meridian.Execution\Meridian.Execution.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\Meridian.Infrastructure.CppTrader\Meridian.Infrastructure.CppTrader.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ledger\Meridian.Ledger.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Risk\Meridian.Risk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Storage\Meridian.Storage.csproj" />

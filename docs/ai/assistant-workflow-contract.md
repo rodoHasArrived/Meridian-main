@@ -1,8 +1,20 @@
 # Provider-Agnostic AI Development Contract
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
 This contract is the shared operating standard for AI-assisted development in Meridian. It applies
 to Codex, Claude, GitHub Copilot, MCP clients, reusable prompt templates, CI prompt generation, and
 manual assistant sessions, including local AI maintenance tooling used by automations.
+
+Canonical AI governance for this rebuild is:
+
+- `docs/ai/assistant-workflow-contract.md` (shared operating contract)
+- `docs/documentation-ownership.md` (lane authority and archive boundaries)
+- `docs/documentation-inventory.md` (migration classification)
+- `.codex/skills/_shared/project-context.md` (Codex shared project context)
+- `AGENTS.md`, `CLAUDE.md` (compatibility shims)
 
 Use this file when updating assistant-specific instructions so the project keeps one common rule
 set instead of drifting into conflicting provider-specific guidance.
@@ -21,7 +33,7 @@ The current repository evidence supports these AI surfaces:
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/`, `.claude/plugins/` | Claude agent definitions, portable skill packages, checked-in plugin packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
-| Workflow guidance | `.github/workflows/README.md`, `docs/development/github-actions-summary.md`, `docs/development/github-actions-testing.md` | Current build, test, publish, and maintenance workflow guidance |
+| Workflow guidance | `.github/workflows/README.md`, `docs/engineering/README.md`, `make/ai.mk` | Current build, test, publish, and maintenance workflow guidance |
 | Reusable prompt templates | `.github/prompts/`, `docs/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, automation runs, and manual assistant sessions |
 | Local AI maintenance tooling | `scripts/ai/`, `tools/codex/`, `make/ai.mk` | Provider-agnostic maintenance lanes, local AI setup/cleanup helpers, and Codex-specific quality scans |
 | Shared AI documentation | `docs/ai/`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | Human-readable indexes, routing rules, known-error prevention, and shared project grounding |
@@ -30,8 +42,109 @@ The AI inventory checker also watches optional IDE/provider assistant entrypoint
 `.cursor/`, `.windsurf/`, `.continue/`, `.cline/`, `.roo/`, `.cursorrules`, `.windsurfrules`,
 `.clinerules`, `.roomodes`, `GEMINI.md`, and `.gemini/`. No tracked Cursor, Windsurf, Continue,
 Cline, Roo, or Gemini instruction surface was found during the 2026-05-25 scan. Add one only when
-there is an actual tooling need, then list the exact entrypoint in this contract and
-`docs/ai/README.md`.
+there is an actual tooling need, then list the exact entrypoint in this contract, `docs/ai/README.md`, and the nearest host index.
+
+## AI-Lane Classification for Rebuild Batches
+
+- `canonical`: shared policies and lane indexes under `docs/ai/` that define current behavior.
+- `source-material`: historical notes and one-off experiments used only for extraction.
+- `generated`: `docs/ai/generated/*` (regenerate, do not hand-edit).
+- `archive`: retired AI guidance retained with replacement links from migration stubs.
+- `delete-candidate`: only untracked junk or explicitly approved removals after review.
+
+## Engineering- and Documentation-Awareness Rules for Agents
+
+### Repo Navigation
+
+Before behavior changes, run this sequence:
+
+1. Read `docs/ai/navigation/README.md`.
+2. Read the canonical generated navigation in `docs/ai/generated/repo-navigation.md`.
+3. Read the owning lane entrypoint (`start`, `engineering`, `product`, `operators`, or `reference`).
+4. Verify module/registry impact from `docs/source/data/source-modules.yml` and `docs/roadmap/data/*.yml`.
+
+### Generated-File Handling
+
+- Do not hand-edit generated docs under `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/`, `docs/generated/`.
+- Update generator inputs and rerun generation commands.
+- Keep registry files (`docs/source/data/*.yml`, `docs/roadmap/data/*.yml`) as source-of-truth for generated views.
+
+### Agent Orchestration
+
+- Use `docs/ai/parallel-task-manifest-template.md` for parallel lanes.
+- Use `agent-handoff-checklist.md` for explicit handoffs between specialist lanes.
+- Use `docs/ai/codex/route-cards.md` to anchor multi-system routing.
+- For Codex-owned orchestration, use `docs/ai/codex/prompt-route-rules.json` as the route source,
+  `docs/status/prompt-route-lint-report.json` as the route artifact, and
+  `docs/status/ai-handoff-packet.json` as the handoff artifact.
+- Route schema v2 requires `modelRouteId`, validation floor, validation scripts, required telemetry,
+  and escalation triggers so routing, handoff, and CI evidence remain connected.
+
+### Token and Context Management
+
+Start from lane entrypoints and expand only after ownership boundaries are confirmed.
+Keep each pass scoped to one active concern and one proof lane.
+For mixed, multi-system work, switch modes with `work-modes.md` before widening context.
+
+#### Token/Context Budget Contract
+
+- Budget by concern, not by file count.
+- Keep exploratory context to what directly proves the request; defer historical proof until registry-driven lanes require it.
+- Use `Standard` mode for routine refactors and AI-index edits; use `Deep-review` mode only when touching cross-lane workflows or generator contracts.
+- If a single pass is expected to require more than one generated surface or more than one registry/doc-source domain, start with a short handoff packet and explicit manifest.
+- On long sessions, every additional batch must include a handoff note with current objective, inspected scope, changed files, and the next narrow proof command.
+
+### Validation Procedure
+
+Use this lane-specific order for AI-lane or cross-lane work:
+
+1. If the task touches navigation or agent inventories:
+   - `python build/scripts/docs/check-ai-inventory.py --summary`
+   - `python build/scripts/docs/check-codex-skills.py --summary`
+   - `python build/scripts/docs/validate-docs-structure.py --summary` (to catch folder drift)
+2. If task changes any AI mirror policy or shared contract files:
+   - `python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json`
+3. If task changes source-aware engineering or roadmap references:
+   - `python build/scripts/docs/validate-roadmap-registry.py --summary`
+   - `python build/scripts/docs/validate-source-readmes.py --summary`
+   - `python build/scripts/docs/validate-doc-hashes.py --summary`
+4. After any doc edits:
+   - `python build/scripts/docs/repair-links.py --summary`
+   - `git diff --check`
+5. For generated-file handoffs:
+   - Update generator inputs first.
+   - Re-run generation lane only for changed generator-owned outputs.
+   - Record generated outputs as generated-only in the handoff packet.
+6. For Codex route/handoff changes:
+   - `python build/scripts/docs/prompt-route-linter.py --summary`
+   - `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`
+   - `python build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary`
+   - `python build/scripts/docs/check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary`
+   - `python build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary`
+
+### Parallel Development Defaults
+
+When launching parallel AI work:
+
+- Create or update a shared manifest first:
+  - `docs/ai/parallel-task-manifest-template.md`
+- Assign one coordinator artifact per lane (`assistant-workflow-contract`, `docs/ai/README`, one
+  or two canonical lane READMEs).
+- Keep each lane scoped to one canonical source surface unless the manifest explicitly approves cross-lane coupling.
+- Require a short handoff note at each lane transition using:
+  - scope
+  - edited files
+  - decisions made
+  - validation run + outcome
+  - residual risks
+
+### Token and Context Boundary Guardrails
+
+- No lane should expand context until it has satisfied the required preconditions in
+  **Repo Navigation** and the owning lane contract.
+- Stop once proof is in hand; do not defer validation to a later unrelated pass.
+- Prefer this contract plus one specialist surface over broad prose recycling.
+- Include `Readme`, `commands`, `validation`, and `risks` in final lane exit notes.
 
 ---
 
@@ -48,7 +161,13 @@ Every assistant and automation should use the same high-level flow:
    If the task crosses multiple subsystems, requires an approval gate or operator sign-off, or
    needs a structured briefing with trace/evidence retention, use the repository docs, skills,
    prompts, and scripts that currently own that workflow instead of inventing a new surface.
-4. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
+4. **Use a shared handoff format.** For multi-agent or multi-phase work, use
+   [`agent-handoff-checklist.md`](agent-handoff-checklist.md) as the required compact handoff packet
+   between specialist lanes.
+5. **Declare mode and parallel ownership up front.** Select a mode from [`work-modes.md`](work-modes.md)
+   and, for parallel lanes, initialize [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md)
+   before implementation so ownership and context boundaries stay explicit.
+6. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
    WPF names as legacy workspace aliases rather than new root workspaces.
@@ -56,15 +175,47 @@ Every assistant and automation should use the same high-level flow:
    surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
    mobile-first workflows. Existing responsive browser checks may continue only as validation for
    the browser workstation.
-5. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
+7. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
    broad cleanup, and unrelated formatting churn.
-6. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
+8. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
    that covers the touched surface; expand only when the change risk justifies it.
-7. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
+9. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
    update the nearest `docs/ai/*/README.md` index and any mirrored host surfaces that teach the
    same workflow.
-8. **Report evidence.** Summaries must include what changed, why, affected files, validation
+10. **Report evidence.** Summaries must include what changed, why, affected files, validation
    commands, and any residual risks.
+
+## Rebuild-Native AI Requirements
+
+This contract is the canonical source for AI work during the documentation rebuild.
+
+| Required area | Contracted behavior |
+| --- | --- |
+| Repo orientation | Use `docs/ai/navigation/README.md` and `docs/ai/generated/repo-navigation.md` before broad edits. |
+| Edit rules | Keep source-of-truth updates in the shared contract and lane READMEs; treat old hand-authored docs as migration material unless explicitly canonical. |
+| Generated-file handling | Do not edit generated docs in place. Update generator inputs or source data and rerun the owning generator. |
+| Agent orchestration | Use `parallel-task-manifest-template.md` for multi-lane work and `agent-handoff-checklist.md` for ownership transitions. |
+| Codex route evidence | Use `prompt-route-linter.py` to emit `docs/status/prompt-route-lint-report.json` with lane, skill, mode, `modelRouteId`, validation requirements, telemetry requirements, and escalation triggers. |
+| Handoff packet evidence | Use `handoff-packet-generator.py` to emit `docs/status/ai-handoff-packet.json` with scope, changed files, validation evidence, route outcome, telemetry, next lane, and context lists. |
+| Parallel workflow | One manifest per parallel batch. One-file-per-lane ownership and explicit merge order in the manifest. |
+| Token/context discipline | Keep scope bounded to one lane and one evidence surface per batch; handoff ownership and scope on lane transitions. |
+| Validation | Run the narrowest relevant docs/AI checks for touched surfaces and record command outcomes in final notes. |
+| Ownership rules | Use `docs/documentation-ownership.md` for canonical lane ownership and archive policy. |
+
+### Requirement-to-Command Mapping
+
+Use this matrix to satisfy rebuild acceptance criteria for AI-lane updates:
+
+| Requirement | Required action |
+| --- | --- |
+| Repo navigation truth | Re-run `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary` when routing rules/doc surfaces change. |
+| AI inventory consistency | Run `python build/scripts/docs/check-ai-inventory.py --summary` and `python build/scripts/docs/check-codex-skills.py --summary` whenever any AI entrypoint, host shim, agent index, or tool mapping changes. |
+| Contract drift control | Run `python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json` when shared policy or host mirrors are edited. |
+| Codex route and handoff guardrails | Run `prompt-route-linter.py`, `handoff-packet-generator.py`, `check-handoff-packet-schema.py`, `check-validation-floor.py`, `check-mode-escalation.py`, and `check-ai-routing-parity.py` when Codex routing, handoff, or validation-floor behavior changes. |
+| Link and structure hygiene | Run `python build/scripts/docs/repair-links.py --summary` and `python build/scripts/docs/validate-docs-structure.py --summary` for any docs surface edit. |
+| Archive migration audit | Update migration mapping entries in relevant canonical `docs/*/README.md` files and archive indexes when retiring high-traffic legacy paths. |
+
+Use this section for rebuild planning: every AI request that changes docs or agent behavior must explicitly classify scope as canonical, source-material, generated, or archive and align to this contract.
 
 ## Source Documentation And Roadmap Sync
 
@@ -115,7 +266,8 @@ When editing `src/**`, assistants must:
 
 | Topic | Source of truth | Mirrors or consumers |
 | --- | --- | --- |
-| Project framing, commands, and architecture | `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
+| Documentation front door and ownership | `docs/README.md`, `docs/documentation-ownership.md`, `docs/documentation-inventory.md` | Root `README.md`, `AGENTS.md`, `CLAUDE.md`, assistant indexes |
+| Project framing, commands, and architecture | `docs/start/README.md`, `docs/product/README.md`, `docs/product/meridian-design-document.md`, `docs/engineering/README.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
 | Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/generated/recent-changes.md`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
 | Codex task startup and proof routing | `docs/ai/codex/quickstart.md`, `docs/ai/codex/route-cards.md` | Root `AGENTS.md`, `.codex/skills/README.md`, Codex specialist skills |
 | Roadmap and source documentation truth | `docs/roadmap/data/*.yml`, `docs/source/data/*.yml`, registered `src/**/README.md` | Generated roadmap/source docs, source README blocks, AI source sync rules |
@@ -149,6 +301,12 @@ Use this checklist when changing any AI-related asset:
 - [ ] Keep shared project context mirrored across `.codex/skills/_shared/project-context.md`,
       `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`
       when current project framing changes.
+- [ ] Use the shared handoff format in
+      [`agent-handoff-checklist.md`](agent-handoff-checklist.md) whenever a task transitions across
+      specialist agents, host surfaces, or validation gates.
+- [ ] Choose a work mode from [`work-modes.md`](work-modes.md) before implementation and document any mode escalation.
+- [ ] For parallel lanes, initialize [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md)
+      and track lane ownership, inspected files, validation plans, and merge risks.
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and
       WPF desktop both consume shared contracts, and visible root workspaces remain limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
@@ -157,9 +315,12 @@ Use this checklist when changing any AI-related asset:
       proposed by one assistant while another follows the browser-workstation plan.
 - [ ] Keep host-specific guides compact; route broad repository layout questions to generated
       navigation or structure artifacts instead of copying tree snapshots into assistant docs.
+- [ ] Keep documentation routing aligned with the rebuilt audience paths: `docs/start/`,
+      `docs/product/`, `docs/engineering/`, `docs/operators/`, `docs/ai/`, `docs/roadmap/`,
+      `docs/source/`, `docs/reference/`, and `docs/generated/`.
 - [ ] Keep root `AGENTS.md` as a compact compatibility shim. Put command catalogs, route cards, and
-      proof matrices in maintained docs such as `docs/HELP.md`, `docs/developer/build-test-run.md`,
-      and `docs/ai/codex/quickstart.md`.
+      proof matrices in maintained docs such as `docs/HELP.md`, `docs/start/README.md`,
+      `docs/engineering/README.md`, and `docs/ai/codex/quickstart.md`.
 - [ ] Keep `.codex/agents/*.toml` documented in the Codex and agent indexes when Codex specialist
       profile routing changes.
 - [ ] Keep `agents/openai.yaml` aligned with the corresponding Codex or Claude skill when skill
@@ -202,6 +363,50 @@ dotnet build src/Meridian.Mcp/Meridian.Mcp.csproj -c Release
 For documentation-only updates, a link/readability check plus `git diff --check` is usually enough
 unless the change affects generated docs, skill packages, prompt generation, or MCP behavior.
 
+## Repository Navigation Contract
+
+For any non-trivial task, the mandatory orientation chain is:
+
+1. `docs/ai/navigation/README.md`
+2. `docs/ai/generated/repo-navigation.md`
+3. `docs/ai/README.md`
+4. relevant lane README (`start`, `engineering`, `product`, `operators`, or `reference`)
+
+Deviating from this chain is only allowed for very narrow one-file edits with no ownership or
+cross-lane impact.
+
+## Agent Orchestration and Parallel Work
+
+- Use `docs/ai/parallel-task-manifest-template.md` before parallel edits.
+- Assign one explicit owner per lane:
+  - code change
+  - docs update
+  - validation/runbook lane
+- Require a handoff artifact (`agent-handoff-checklist.md`) before ownership transfer across assistants,
+  providers, or skill families.
+- Do not let parallel lane work overlap in the same file class (source, generated output,
+  AI contracts, navigation docs) unless the manifest records merge order and conflict ownership.
+
+## AI Surface Update Checklist (Provider-Agnostic)
+
+When changing AI guidance, agent files, or provider surfaces:
+
+- Update shared policy first: this file.
+- Update affected host-specific docs and indexes in the same batch.
+- Keep host files as mechanical shims.
+- Run:
+
+```bash
+python3 build/scripts/docs/check-ai-inventory.py --summary
+python3 build/scripts/docs/check-codex-skills.py --summary
+python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+python3 build/scripts/docs/prompt-route-linter.py --summary
+python3 build/scripts/docs/check-ai-routing-parity.py --summary
+```
+
+If any command fails due to missing optional surfaces, treat that as work-tree evidence and
+either add the surface or document it as intentionally unavailable.
+
 ---
 
 ## Adding A New AI Surface
@@ -218,7 +423,7 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-05-28_
+_Last Updated: 2026-05-31_
 
 ## Machine-checkable synchronization contract
 
@@ -230,3 +435,4 @@ Path-specific mirrors that must stay byte-identical to the canonical policy:
 - `docs/ai/claude/contract-policy.mirror.json`
 
 CI runs `build/scripts/docs/check-ai-contract-drift.py` and fails if any mirror drifts from the canonical policy file.
+

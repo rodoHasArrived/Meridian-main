@@ -6,6 +6,6 @@ This folder contains release-gate and acceptance-test references.
 - [Wave 2 Acceptance Tests](WAVE2_ACCEPTANCE_TESTS.md)
 
 For current developer commands, use
-[docs/developer/build-test-run.md](../developer/build-test-run.md). Keep
+[archive/docs/developer/build-test-run.md](../../archive/docs/developer/build-test-run.md). Keep
 scenario-specific checklists here and avoid duplicating general build commands.
 

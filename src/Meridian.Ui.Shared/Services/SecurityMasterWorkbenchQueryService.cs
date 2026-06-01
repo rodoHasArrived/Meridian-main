@@ -1096,7 +1096,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             SecurityMasterTrustTone.Review =>
                 "Golden copy is stable, but upcoming corporate actions still require operator review.",
             SecurityMasterTrustTone.Trusted =>
-                "Golden copy is trusted for downstream governance workflows.",
+                "Golden copy is trusted for downstream Accounting and Reporting workflows.",
             _ =>
                 "Trust posture is unavailable."
         };
@@ -1953,7 +1953,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return severity switch
         {
             SecurityMasterImpactSeverity.High =>
-                $"{FormatFieldLabel(fieldPath)} is high impact because downstream governance workflows already reference this security.",
+                $"{FormatFieldLabel(fieldPath)} is high impact because downstream Accounting and Reporting workflows already reference this security.",
             SecurityMasterImpactSeverity.Medium =>
                 $"{FormatFieldLabel(fieldPath)} already feeds ledger-facing workflows.",
             SecurityMasterImpactSeverity.Low =>

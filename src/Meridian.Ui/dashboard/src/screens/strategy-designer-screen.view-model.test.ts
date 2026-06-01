@@ -111,6 +111,20 @@ describe("strategy designer view-model", () => {
     );
   });
 
+  it("uses control-cell wording for Strategy Builder promotion-review warnings", () => {
+    const document = loadStrategyBuilderTemplate("equity-momentum-breakout");
+    const withoutRiskGuard = {
+      ...document,
+      cells: document.cells.filter((cell) => cell.purpose !== "risk" && cell.kind !== "governance")
+    };
+
+    const messages = validateStrategyBuilderDocument(withoutRiskGuard);
+    const warning = messages.find((message) => message.code === "RiskGuardRecommended");
+
+    expect(warning?.message).toBe("Add a risk or control cell before promotion review.");
+    expect(warning?.message).not.toContain("governance cell");
+  });
+
   it("builds selected cell, trace, template, and backtest state in the workbench view-model", () => {
     const document = loadStrategyBuilderTemplate("investment-grade-income");
     const vm = buildStrategyBuilderWorkbenchViewModel({
@@ -120,6 +134,15 @@ describe("strategy designer view-model", () => {
     });
 
     expect(getStrategyBuilderTemplates().map((template) => template.templateId)).toContain("options-payoff");
+    expect(getStrategyBuilderTemplates()).toContainEqual(
+      expect.objectContaining({
+        templateId: "equity-momentum-breakout",
+        description: "Formula autocomplete, transition map, risk/control cell, and proof run.",
+        tags: expect.not.arrayContaining(["governance"])
+      })
+    );
+    expect(loadStrategyBuilderTemplate("equity-momentum-breakout").description).toContain("risk/control guard");
+    expect(loadStrategyBuilderTemplate("equity-momentum-breakout").description).not.toContain("governance guard");
     expect(vm.selectedCellDetail?.title).toBe("Carry rank");
     expect(vm.trace.find((step) => step.cellId === "carry-rank")?.isSelectedCell).toBe(true);
     expect(vm.filteredFields.map((field) => field.fieldId)).toContain("DURATION");

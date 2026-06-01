@@ -1,5 +1,9 @@
 # Codex Quickstart
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+
 Use this page for the first 10 minutes of a Codex task in Meridian. It compresses the shared
 workflow into a task routing checklist, proof matrix, and dirty-worktree protocol. Shared policy
 still lives in `../assistant-workflow-contract.md`.
@@ -10,12 +14,30 @@ still lives in `../assistant-workflow-contract.md`.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
 3. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
-4. Read the narrowest relevant Codex skill in `.codex/skills/`.
-5. For source edits under `src/**`, read the nearest `README.md` and identify the module in
+4. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
+5. Read the narrowest relevant Codex skill in `.codex/skills/`.
+6. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
-6. Choose the smallest validation lane from the task-to-proof matrix before editing.
-7. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
+7. Choose the smallest validation lane from the task-to-proof matrix before editing.
+8. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
+
+9. If more than one subsystem or AI surface is in scope, initialize
+   [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) first and keep
+   each lane scoped to a unique file set.
+10. For AI/documentation updates:
+    1) update `assistant-workflow-contract.md` when shared rules change,
+    2) run `check-ai-inventory.py` / `check-codex-skills.py`,
+    3) avoid direct edits to `docs/ai/generated/*` unless refreshing generation.
+11. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
+12. For deterministic lane preflight (pilot), run:
+    `python3 build/scripts/docs/prompt-route-linter.py --prompt "<user prompt>"`.
+13. For deterministic lane handoff packets (pilot), run:
+    `python3 build/scripts/docs/handoff-packet-generator.py --route-json docs/status/prompt-route-lint-report.json --scope "<scope>" --next-lane "<lane>"`.
+14. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
+    `docs/status/ai-handoff-packet.json` as the canonical local evidence artifacts. The route
+    artifact must include `modelRouteId`, validation requirements, required telemetry, and
+    escalation triggers.
 
 ## Read Budget
 
@@ -39,10 +61,30 @@ Load only enough context to route and validate the task.
 - Use focused `git diff -- <path>` checks before finalizing so the final summary only claims files
   changed for this task.
 
+## Parallel Context Hygiene
+
+- Prefer short batches and handoffs over all-at-once rewrites.
+- One lane should not exceed the target doc surface + one generated artifact.
+- If a task enters context-heavy or uncertain mode, use `../work-modes.md` and record escalation
+  reason in your final handoff.
+
+## AI Contract Coverage
+
+- Repo navigation: `../navigation/README.md`, `../generated/repo-navigation.md`
+- Agent edit rules: `../assistant-workflow-contract.md`, `.codex/skills/_shared/project-context.md`, `.codex/skills/_shared/codex-execution-contract.md`
+- Generated-file handling: run generator commands for `docs/ai/generated` and `docs/generated` updates; do not hand-edit generated outputs.
+- Agent orchestration: start lane planning with `../parallel-task-manifest-template.md` when multiple skills/surfaces are in scope.
+- Parallel development workflows: keep each lane scoped to unique path sets and document handoff boundaries.
+- Token/context management: load only startup checks then escalate context only by phase; use one lane at a time.
+- Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `git diff --check`
+- Documentation ownership: `../../documentation-ownership.md`, `../assistant-workflow-contract.md`
+
 ## Task-To-Proof Matrix
 
 | Change type | Default docs | Narrow validation |
 | --- | --- | --- |
+| Prompt-routing rules or execution trace | `docs/ai/codex/prompt-execution-trace.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/prompt-route-linter.py --summary`; `python build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary`; `git diff --check -- <paths>` |
+| Prompt-routed handoff packet generation | `docs/ai/agent-handoff-checklist.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`; `python build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary`; `git diff --check -- <paths>` |
 | Codex skill, prompt, checklist, or AI index | `docs/ai/codex/README.md`, `.codex/skills/README.md`, nearest skill or prompt index | `python build/scripts/docs/check-codex-skills.py --summary`; `python build/scripts/docs/check-ai-inventory.py --summary`; `git diff --check -- <paths>` |
 | Shared AI policy | `docs/ai/assistant-workflow-contract.md`, `docs/ai/README.md`, affected host index | `python build/scripts/docs/check-ai-inventory.py --summary`; contract-drift check when policy JSON changes |
 | Repo navigation or MCP routing | `docs/ai/navigation/README.md`, generated navigation inputs | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary`; `python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14` |

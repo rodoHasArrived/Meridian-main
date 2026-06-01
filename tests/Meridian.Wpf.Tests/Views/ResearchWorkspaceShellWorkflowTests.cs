@@ -45,7 +45,7 @@ public sealed class ResearchWorkspaceShellWorkflowTests
             FixtureModeDetector.Instance.UpdateBackendReachability(true);
 
             var runId = "briefing-run-001";
-            var expectedSummary = "Research desk synced with saved insights, watchlists, and promotion-aware run context.";
+            var expectedSummary = "Strategy desk synced with saved insights, watchlists, and promotion-aware run context.";
 
             var services = new ServiceCollection();
             var configureServices = typeof(Meridian.Wpf.App)
@@ -290,12 +290,12 @@ public sealed class ResearchWorkspaceShellWorkflowTests
             await Task.Delay(delayMs).ConfigureAwait(true);
         }
 
-        condition().Should().BeTrue("the Research workspace shell should finish refreshing inside the test window");
+        condition().Should().BeTrue("the Strategy workspace shell should finish refreshing inside the test window");
     }
 
     private static T GetRequired<T>(FrameworkElement element, string name) where T : FrameworkElement
     {
-        element.FindName(name).Should().BeOfType<T>($"{name} should be declared on the Research workspace shell");
+        element.FindName(name).Should().BeOfType<T>($"{name} should be declared on the Strategy workspace shell");
         return (T)element.FindName(name)!;
     }
 
@@ -404,9 +404,9 @@ public sealed class ResearchWorkspaceShellWorkflowTests
             => Task.FromResult<StatusResponse?>(new StatusResponse { IsConnected = true });
 
         public Task<ApiResponse<StatusResponse>> GetStatusWithResponseAsync(CancellationToken ct = default)
-            => throw new NotSupportedException("The Research shell workflow test only consumes GetStatusAsync.");
+            => throw new NotSupportedException("The Strategy shell workflow test only consumes GetStatusAsync.");
 
         public Task<ServiceHealthResult> CheckHealthAsync(CancellationToken ct = default)
-            => throw new NotSupportedException("The Research shell workflow test only consumes GetStatusAsync.");
+            => throw new NotSupportedException("The Strategy shell workflow test only consumes GetStatusAsync.");
     }
 }

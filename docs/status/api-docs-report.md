@@ -223,3 +223,4 @@ These endpoints are documented but no longer exist in the code:
 ---
 
 *This report is auto-generated. Run `python3 build/scripts/docs/validate-api-docs.py` to regenerate.*
+

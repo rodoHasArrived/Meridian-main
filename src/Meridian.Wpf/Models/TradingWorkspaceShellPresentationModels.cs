@@ -133,7 +133,7 @@ internal static class TradingWorkspaceShellPresentationDefaults
         new(
             FocusLabel: "Context handoff",
             Summary: "Choose the active desk scope before relying on trading posture.",
-            Detail: "Replay evidence, controls, blotter posture, and governance-linked handoffs stay anchored to the active operating context.",
+            Detail: "Replay evidence, controls, blotter posture, and Accounting-linked handoffs stay anchored to the active operating context.",
             BadgeText: "Info",
             BadgeTone: TradingWorkspaceStatusTone.Info,
             HandoffTitle: "Choose context",

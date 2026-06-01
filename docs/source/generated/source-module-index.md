@@ -33,7 +33,6 @@ do_not_edit: true
 | `SRC-HOST` | Meridian host | `src/Meridian` | Host | active | Runtime Host | `src/Meridian/README.md` |
 | `SRC-IBAPI-SMOKESTUB` | IB API smoke stub | `src/Meridian.IbApi.SmokeStub` | Provider Test Support | active | Data Confidence and Validation | `src/Meridian.IbApi.SmokeStub/README.md` |
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `src/Meridian.Infrastructure` | Infrastructure | active | Data Confidence and Validation | `src/Meridian.Infrastructure/README.md` |
-| `SRC-INFRASTRUCTURE-CPPTRADER` | CppTrader infrastructure adapter | `src/Meridian.Infrastructure.CppTrader` | Infrastructure | active | Data Confidence and Validation | `src/Meridian.Infrastructure.CppTrader/README.md` |
 | `SRC-LEDGER` | Meridian ledger | `src/Meridian.Ledger` | Ledger | active | Governance and Ledger | `src/Meridian.Ledger/README.md` |
 | `SRC-MCP` | Meridian MCP host | `src/Meridian.Mcp` | MCP | active | Docs and Automation | `src/Meridian.Mcp/README.md` |
 | `SRC-PROVIDER-SDK` | Provider SDK | `src/Meridian.ProviderSdk` | Provider SDK | active | Data Confidence and Validation | `src/Meridian.ProviderSdk/README.md` |

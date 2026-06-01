@@ -506,6 +506,7 @@ public sealed class EvidenceWorkflowFabricTests
         packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
         packet.Nodes.Should().Contain(node => node.Kind == "analysis-export");
         packet.Warnings.Should().Contain(warning => warning.Contains("report-pack repository is not registered", StringComparison.OrdinalIgnoreCase));
+        packet.Warnings.Should().NotContain(warning => warning.Contains("Governance report-pack repository", StringComparison.OrdinalIgnoreCase));
 
         var graphResponse = await client.GetAsync("/api/workstation/evidence/subjects/report-pack/current/graph");
         graphResponse.StatusCode.Should().Be(HttpStatusCode.OK);

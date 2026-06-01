@@ -35,6 +35,7 @@ import {
   validateProviderSetupForm,
   DATA_PROVIDER_DETAIL_PANEL_ID
 } from "@/screens/data-operations-screen.view-model";
+import { buildSecurityMasterWorkspaceState } from "@/screens/data-operations-screen.security-master";
 import type {
   BackfillProgressResponse,
   BackfillPreviewResult,
@@ -132,7 +133,7 @@ const exports: DataOperationsExportRecord[] = [
   {
     exportId: "EX-2201",
     profile: "python-pandas",
-    target: "research pack",
+    target: "strategy pack",
     status: "Ready",
     rows: "124k",
     updatedAt: "4m ago"
@@ -155,7 +156,7 @@ const polygonConnection: ProviderConnectionRow = {
   maskedKeyPreview: "pk_live_****7F3A",
   environment: "live",
   externalAccountId: "acct-provider-01",
-  affectedWorkflows: ["Research", "Backfill"],
+  affectedWorkflows: ["Strategy", "Backfill"],
   recommendedAction: "Verify credentials before routing dependent workflows.",
   actionHref: "/settings#provider-polygon"
 };
@@ -263,6 +264,24 @@ describe("data-operations-screen view model", () => {
       href: "/accounting/security-master",
       ariaLabel: "Open Security Master in Accounting"
     });
+  });
+
+  it("uses canonical Strategy packet labels for Security Master export evidence", () => {
+    const state = buildSecurityMasterWorkspaceState({
+      query: "GS",
+      selectedSecurityId: null,
+      activeTab: "print",
+      statusFilter: "active"
+    });
+
+    const exportEvidence = state.selectedSecurity?.exportEvidence ?? [];
+
+    expect(exportEvidence).toContainEqual(expect.objectContaining({
+      title: "Strategy pack",
+      destination: "report-pack / strategy"
+    }));
+    expect(exportEvidence.map((item) => item.title)).not.toContain("Research pack");
+    expect(exportEvidence.map((item) => item.destination)).not.toContain("report-pack / research");
   });
 
   it("normalizes request data and validates required symbols and date range", () => {
@@ -603,9 +622,9 @@ describe("data-operations-screen view model", () => {
 
     const exportSection = buildExportSection(exports);
     expect(exportSection.tableLabel).toBe("Recent exports");
-    expect(exportSection.description).toBe("Latest package and reporting outputs tied to data operations evidence");
+    expect(exportSection.description).toBe("Latest package and reporting outputs tied to Data workspace evidence");
     expect(exportSection.selectedRowId).toBe("export-row-ex-2201");
-    expect(exportSection.rows[0].summaryText).toBe("research pack · 124k · 4m ago");
+    expect(exportSection.rows[0].summaryText).toBe("strategy pack · 124k · 4m ago");
     expect(exportSection.rows[0].statusVariant).toBe("success");
     expect(exportSection.rows[0].rowClassName).toBe("bg-success/5");
     expect(exportSection.rows[0].selected).toBe(true);
@@ -651,7 +670,7 @@ describe("data-operations-screen view model", () => {
       status: "Warning",
       credentialText: "Verified",
       verificationText: "Verified",
-      affectedWorkflowsText: "Research, Backfill",
+      affectedWorkflowsText: "Strategy, Backfill",
       actionLabel: "View Details"
     });
     expect(providerSection.rows[0].trustFields).toContainEqual({
@@ -1205,6 +1224,16 @@ describe("data-operations-screen view model", () => {
     expect(detail?.statusVariant).toBe("warning");
     expect(detail?.rows).toContainEqual({ id: "updated", label: "Updated", value: "5m ago" });
     expect(buildSelectedBackfillDetail([], null)).toBeNull();
+  });
+
+  it("uses canonical Data workspace copy for queued backfill narratives", () => {
+    const queuedBackfill: DataOperationsBackfillRecord = {
+      ...backfills[0],
+      status: "Queued"
+    };
+
+    expect(buildBackfillNarrative(queuedBackfill)).toContain("queued behind active Data workspace work");
+    expect(buildBackfillNarrative(queuedBackfill)).not.toContain("data operations");
   });
 
 

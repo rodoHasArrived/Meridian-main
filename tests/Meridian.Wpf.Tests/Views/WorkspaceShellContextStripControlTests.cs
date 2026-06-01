@@ -106,7 +106,7 @@ public sealed class WorkspaceShellContextStripControlTests
                 Width = 960,
                 ShellContext = new WorkspaceShellContext
                 {
-                    WorkspaceTitle = "Data Operations",
+                    WorkspaceTitle = "Data",
                     WorkspaceSubtitle = "Shell",
                     Badges =
                     [
@@ -131,7 +131,7 @@ public sealed class WorkspaceShellContextStripControlTests
                 var detail = control.FindName("AttentionDetailText").Should().BeOfType<TextBlock>().Subject;
 
                 title.Text.Should().Be("Review recommended");
-                detail.Text.Should().Be("Critical: 1 unread alert(s); severity: warning; owner: Data Operations; source: workstation alerts; action: open Notification Center.");
+                detail.Text.Should().Be("Critical: 1 unread alert(s); severity: warning; owner: Data; source: workstation alerts; action: open Notification Center.");
             }
             finally
             {
@@ -152,7 +152,7 @@ public sealed class WorkspaceShellContextStripControlTests
                 Width = 960,
                 ShellContext = new WorkspaceShellContext
                 {
-                    WorkspaceTitle = "Research",
+                    WorkspaceTitle = "Strategy",
                     WorkspaceSubtitle = "Shell",
                     Badges =
                     [
@@ -201,7 +201,7 @@ public sealed class WorkspaceShellContextStripControlTests
                 Width = 960,
                 ShellContext = new WorkspaceShellContext
                 {
-                    WorkspaceTitle = "Data Operations",
+                    WorkspaceTitle = "Data",
                     WorkspaceSubtitle = "Shell",
                     Badges =
                     [
@@ -245,10 +245,10 @@ public sealed class WorkspaceShellContextStripControlTests
                 ShellContext = new WorkspaceShellContext
                 {
                     WorkspaceTitle = "Provider Health",
-                    WorkspaceSubtitle = "Data Operations provider workflow with shared environment, freshness, and alert context.",
+                    WorkspaceSubtitle = "Data provider workflow with shared environment, freshness, and alert context.",
                     Badges =
                     [
-                        new WorkspaceShellBadge { Label = "Workspace", Value = "Data Operations", Tone = WorkspaceTone.Info },
+                        new WorkspaceShellBadge { Label = "Workspace", Value = "Data", Tone = WorkspaceTone.Info },
                         new WorkspaceShellBadge { Label = "Scope", Value = "Fund", Tone = WorkspaceTone.Neutral },
                         new WorkspaceShellBadge { Label = "Environment", Value = "Demo data", Tone = WorkspaceTone.Info },
                         new WorkspaceShellBadge { Label = "As Of", Value = "Apr 27 2026 09:15", Tone = WorkspaceTone.Neutral },

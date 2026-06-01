@@ -22,6 +22,17 @@ git diff --check
 Use the narrowest subset that covers the touched files. For docs-only Copilot guidance changes,
 `check-ai-inventory.py --summary` plus `git diff --check` is usually enough.
 
+## AI Contract Coverage
+
+- Repo navigation: [`../navigation/README.md`](../navigation/README.md), [`../generated/repo-navigation.md`](../generated/repo-navigation.md)
+- Agent edit rules: keep rules in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md), avoid duplicating policy in retired workflow files
+- Generated-file handling: this file is historical only; it should not be used to drive generated artifact edits. For generated outputs, run `generate-ai-navigation.py` and related generators in-band.
+- Agent orchestration: when resurfacing this process, align with `../agent-handoff-checklist.md` and `../parallel-task-manifest-template.md` to prevent lane overlap
+- Parallel development workflows: this historical index was single-lane; use modern manifest-based routing for multi-lane AI updates
+- Token/context management: avoid loading full historical notes for current work; read one source of truth and the migration index only
+- Validation procedures: `python build/scripts/docs/check-ai-inventory.py --summary`, `python build/scripts/docs/generate-ai-navigation.py ...`, `python build/scripts/docs/check-ai-contract-drift.py ...`
+- Documentation ownership: [`../../documentation-ownership.md`](../../documentation-ownership.md)
+
 ## Historical Summary
 
 The retired sync workflow kept assistant files such as `CLAUDE.md`, `docs/ai/`, and

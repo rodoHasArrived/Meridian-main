@@ -110,6 +110,13 @@ describe("workspace nav view model", () => {
       ariaCurrent: "page",
       ariaLabel: "Covered call, current page"
     });
+    expect(strategy?.subItems.find((item) => item.route === "/strategy/research")).toMatchObject({
+      label: "Strategy Lab",
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Strategy Lab"
+    });
+    expect(strategy?.subItems.map((item) => item.label)).not.toContain("Research Lab");
   });
 
   it("surfaces the implemented price-alerts route under Data", () => {

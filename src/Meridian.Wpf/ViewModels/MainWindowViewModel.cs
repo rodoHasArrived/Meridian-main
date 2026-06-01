@@ -223,7 +223,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         switch (actionId)
         {
             case "NavigateDashboard":
-                Navigate("ResearchShell");
+                Navigate("StrategyShell");
                 break;
             case "NavigateSymbols":
                 Navigate("Symbols");

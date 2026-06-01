@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.Domain.Enums;
 
 /// <summary>
 /// Indicates whether an option contract is a call or a put.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OptionRight : byte
 {
     /// <summary>

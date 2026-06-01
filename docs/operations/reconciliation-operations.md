@@ -1,33 +1,13 @@
-# Reconciliation Operations
+# Meridian Operations Archive Stub
 
-## Supported schema
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+**Retirement path:** `docs/operations/reconciliation-operations.md`
+**Replacement:** `archive/docs/operations/reconciliation-operations.md`
 
-Current implementation supports one broker statement schema: `samplebroker` CSV with header:
+This legacy operator document is archived source-material.
 
-`account,symbol,quantity,price,cashAmount,activityType,tradeDate`
-
-## Operator workflow
-
-1. Validate statement shape and required fields.
-2. Import statement rows into canonical format with persisted source checksum.
-3. Run matching (position/cash/transaction linkage) and review confidence + rationale.
-4. Open reconciliation cases for unmatched rows and progress case lifecycle.
-
-## Commands
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-source-kind local --statement-source-path <path>
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-broker samplebroker --statement-source-path <path> --statement-date <yyyy-mm-dd>
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-broker samplebroker --statement-source-path <path> --statement-date <yyyy-mm-dd>
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-reconcile --statement-source-kind local --statement-source-path <path>
-```
-
-Use the `--statement-broker` / `--statement-date` form when importing the supported
-`samplebroker` canonical CSV schema. The generic `--statement-source-kind local` form is the
-local-file accessibility and reconciliation probe; non-local statement adapters are not registered
-in the current command surface.
-
-## Artifacts
-
-- `reconciliation/statement-imports/*.json`: import metadata, canonical rows, raw+normalized row counts, source checksum.
-- `reconciliation/cases/*.json`: reconciliation case aggregate with status history, rationale, and confidence.
+- Canonical operator guidance: [operators/README.md](../operators/README.md)
+- Archived copy: [archive/docs/operations/reconciliation-operations.md](../../archive/docs/operations/reconciliation-operations.md)
+- Archive migration index: [archive/docs/operations/README.md](../../archive/docs/operations/README.md)

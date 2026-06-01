@@ -1,24 +1,16 @@
-# ADR 016: Distinct custody-position and cash reconciliation breaks with shared workflow envelope
+# Meridian ADR: ADR 016: Distinct custody-position and cash reconciliation breaks with shared workflow envelope
 
-- Status: Accepted
-- Date: 2026-05-01
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+**Retirement path:** `docs/adr/016-custody-cash-reconciliation-break-typing.md`
+**Replacement:** `archive/docs/adr/016-custody-cash-reconciliation-break-typing.md`
 
-## Context
+This legacy ADR has been archived as source-material during documentation rebuild. Use active architectural ownership references from:
 
-Custody/position reconciliation and cash reconciliation represent distinct failure modes.
-Position breaks are symbol and quantity-centric, while cash breaks are currency and balance-centric.
-However, operators triage and resolve both using the same queue, assignment, and sign-off workflow.
+- [documentation-ownership](../documentation-ownership.md)
+- [Engineering architecture entrypoints](../engineering/README.md)
+- [Product design charter](../product/meridian-design-document.md)
 
-## Decision
-
-- Model two explicit break types:
-  - `PositionReconciliationBreak`
-  - `CashReconciliationBreak`
-- Provide a shared `AccountReconciliationBreak` envelope for aggregation across UI/API workflows.
-- Persist under a single storage table name (`account_reconciliation_breaks`) with a `break_type` discriminator.
-
-## Consequences
-
-- Reconciliation modeling is clearer and easier to evolve per break family.
-- API and UI keep one queue/workflow contract for assignment/review/resolve.
-- Storage naming is stabilized early to avoid avoidable migration churn.
+- Archived copy: [016-custody-cash-reconciliation-break-typing.md](../../archive/docs/adr/016-custody-cash-reconciliation-break-typing.md)
+- Archive migration index: [archive/docs/adr/README.md](../../archive/docs/adr/README.md)

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import xml.etree.ElementTree as ET
 from dataclasses import asdict, dataclass, field
@@ -36,7 +37,7 @@ from typing import Optional
 # ---------------------------------------------------------------------------
 
 EXCLUDE_DIRS: frozenset[str] = frozenset({
-    '.git', 'node_modules', 'bin', 'obj', '__pycache__', '.vs', 'packages', 'TestResults'
+    '.git', 'archive', 'node_modules', 'bin', 'obj', '__pycache__', '.vs', 'packages', 'TestResults'
 })
 
 
@@ -198,14 +199,20 @@ def build_dependency_graph(root: Path) -> DependencyGraph:
         generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     )
 
-    # Find all .csproj files
-    for csproj in root.rglob("*.csproj"):
-        if _should_skip(csproj):
+    # Find all .csproj files while pruning ignored directories before traversal.
+    for current_root, dirnames, filenames in os.walk(root):
+        dirnames[:] = [name for name in dirnames if name not in EXCLUDE_DIRS]
+        current_path = Path(current_root)
+        if _should_skip(current_path):
             continue
 
-        node = _parse_csproj(csproj, root)
-        if node:
-            graph.projects[node.name] = node
+        for filename in filenames:
+            if not filename.endswith(".csproj"):
+                continue
+
+            node = _parse_csproj(current_path / filename, root)
+            if node:
+                graph.projects[node.name] = node
 
     # Build reverse reference map
     for node in graph.projects.values():

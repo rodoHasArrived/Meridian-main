@@ -46,6 +46,17 @@ public sealed class WorkflowLibraryEndpointTests
             .TargetPageTag
             .Should()
             .Be("OperationsClose");
+        registry.GetWorkflowDefinitions()
+            .Select(static workflow => workflow.WorkspaceId)
+            .Should()
+            .Contain(["trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings"]);
+        registry.ResolveTargetPageTag(WorkflowActionIds.PortfolioReviewAggregate, "Fallback")
+            .Should()
+            .Be("AggregatePortfolio");
+        registry.ResolveRoute(UiApiRoutes.PortfolioExposure)!
+            .TargetPageTag
+            .Should()
+            .Be("AggregatePortfolio");
         registry.ResolveOperatorWorkItem(new OperatorWorkItemDto(
                 WorkItemId: "sync-1",
                 Kind: OperatorWorkItemKindDto.BrokerageSync,
@@ -79,9 +90,23 @@ public sealed class WorkflowLibraryEndpointTests
         var library = await response.Content.ReadFromJsonAsync<WorkflowLibraryDto>(ServerJsonOptions);
         library.Should().NotBeNull();
         library!.Workflows.Should().Contain(workflow => workflow.WorkflowId == "strategy-to-paper-review");
+        library.Workflows.Should().Contain(workflow =>
+            workflow.WorkflowId == "strategy-to-paper-review" &&
+            workflow.MarketPatternTags.Contains("strategy to backtest") &&
+            !workflow.MarketPatternTags.Contains("research to backtest"));
+        library.Workflows.Should().Contain(workflow =>
+            workflow.WorkflowId == "portfolio-position-review" &&
+            workflow.WorkspaceId == "portfolio" &&
+            workflow.EntryPageTag == "PortfolioShell");
         library.Actions.Should().Contain(action =>
             action.ActionId == WorkflowActionIds.DataOpenProviderHealth &&
             action.TargetPageTag == "ProviderHealth");
+        library.Actions.Should().Contain(action =>
+            action.ActionId == WorkflowActionIds.PortfolioReviewAggregate &&
+            action.TargetPageTag == "AggregatePortfolio");
+        library.Actions.Should().Contain(action =>
+            action.ActionId == WorkflowActionIds.PortfolioImportSnapshots &&
+            action.TargetPageTag == "PortfolioImport");
         library.Actions.Should().Contain(action =>
             action.ActionId == WorkflowActionIds.AccountingReviewLedgerContinuity &&
             action.TargetPageTag == "FundTrialBalance");

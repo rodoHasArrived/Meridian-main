@@ -6,15 +6,5 @@
 
 | Script | Status | Duration (s) | Output |
 |--------|--------|--------------|--------|
-| `scan-todos` | `success` | `89.454` | `docs/status/TODO.md` |
-| `generate-structure-docs` | `success` | `0.732` | `docs/generated/repository-structure.md` |
-| `generate-health-dashboard` | `success` | `118.919` | `docs/status/health-dashboard.md` |
-| `repair-links` | `success` | `1.282` | `docs/status/link-repair-report.md` |
-| `validate-examples` | `success` | `1.111` | `docs/status/example-validation.md` |
-| `generate-coverage` | `success` | `88.306` | `docs/status/coverage-report.md` |
-| `generate-changelog` | `success` | `0.919` | `docs/status/CHANGELOG.md` |
-| `rules-engine` | `success` | `4.104` | `docs/status/rules-report.md` |
-| `validate-api-docs` | `success` | `5.987` | `docs/status/api-docs-report.md` |
-| `generate-dependency-graph` | `success` | `2.654` | `docs/generated/project-dependencies.md` |
-| `sync-readme-badges` | `success` | `0.916` | `docs/status/badge-sync-report.md` |
-| `generate-metrics-dashboard` | `success` | `0.488` | `docs/status/metrics-dashboard.md` |
+| `check-ai-handoff-strict` | `success` | `0.508` | `docs/status/ai-handoff-checklist-report.md` |
+

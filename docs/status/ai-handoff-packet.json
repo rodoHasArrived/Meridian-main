@@ -1,0 +1,93 @@
+{
+  "generatedAt": "2026-06-01T06:11:44.566945+00:00",
+  "scope": {
+    "requested": "Provider integration execution",
+    "excluded": [
+      "No explicit exclusions recorded."
+    ]
+  },
+  "route": {
+    "lane": "provider",
+    "skill": "meridian-provider-builder",
+    "mode": "Deep Review",
+    "modelRouteId": "governance-research",
+    "matchedRule": "provider-integration",
+    "rationale": "Provider changes need adapter-specific validation, telemetry capture, and readiness evidence.",
+    "confidence": 1.0,
+    "validationFloor": [
+      "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter \"FullyQualifiedName~Provider\""
+    ],
+    "validationScripts": [
+      "prompt-route-linter",
+      "handoff-packet-generator",
+      "check-handoff-packet-schema"
+    ],
+    "requiredTelemetry": [
+      "route_id",
+      "selected_model",
+      "input_tokens",
+      "output_tokens",
+      "estimated_cost_usd",
+      "latency_ms",
+      "handoff_path"
+    ],
+    "escalationTriggers": [
+      "provider credentials or failover behavior changes",
+      "provider validation fails",
+      "policy exception requires wider context"
+    ]
+  },
+  "routeOutcome": {
+    "finalValidationStatus": "partial",
+    "routeAssessment": {
+      "status": "possible-misroute",
+      "inferredLanes": [
+        "docs"
+      ]
+    }
+  },
+  "telemetry": {
+    "route_id": "provider-integration",
+    "model_route_id": "governance-research",
+    "selected_model": "gpt-4.1",
+    "input_tokens": 1200,
+    "output_tokens": 450,
+    "estimated_cost_usd": 0.09,
+    "latency_ms": 920,
+    "error_class": null,
+    "handoff_path": "docs/status/ai-handoff-packet.md"
+  },
+  "inputsLoaded": [
+    {
+      "path": "docs/status/prompt-route-lint-report.json",
+      "reason": "Prompt route classification source."
+    },
+    {
+      "path": "git diff",
+      "reason": "Changed-file evidence for handoff packet."
+    }
+  ],
+  "changesMade": [
+    {
+      "path": "build/scripts/docs/prompt-route-linter.py",
+      "reason": "Touched in current git diff."
+    }
+  ],
+  "validation": [
+    {
+      "command": "python build/scripts/docs/prompt-route-linter.py --summary",
+      "outcome": "pass"
+    }
+  ],
+  "openRisks": [
+    "No explicit open risks recorded."
+  ],
+  "nextLane": "implementation-assurance",
+  "requiredContext": [
+    "docs/ai/agent-handoff-checklist.md",
+    "docs/ai/codex/quickstart.md"
+  ],
+  "optionalContext": [
+    "docs/ai/parallel-task-manifest-template.md"
+  ]
+}

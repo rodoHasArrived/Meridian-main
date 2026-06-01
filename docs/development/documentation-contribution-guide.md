@@ -4,7 +4,7 @@
 **Last Updated:** 2026-03-15
 **Status:** Active, Continuously Updated
 
-This guide provides standards and best practices for creating, organizing, and maintaining documentation in the Meridian project.
+This guide is legacy source material for documentation standards. The current placement contract is [Documentation Ownership Contract](../documentation-ownership.md), and the canonical documentation front door is [docs/README.md](../README.md).
 
 ---
 
@@ -60,9 +60,26 @@ Documentation debt is real. When making code changes:
 
 ## Documentation Structure
 
+The rebuilt canonical documentation model is:
+
+| Current owner | Use for |
+| --- | --- |
+| `docs/start/` | First-run setup, local launch, project introduction, and fastest contributor path. |
+| `docs/product/` | Stakeholder product narrative, capability posture, roadmap interpretation, and investment-operations model. |
+| `docs/engineering/` | Architecture routing, module boundaries, build/test/run, validation lanes, source ownership, WPF/browser rules. |
+| `docs/operators/` | Provider setup, workstation usage, runbooks, deployment, troubleshooting, and support evidence. |
+| `docs/reference/` | APIs, environment variables, CLI flags, schemas, provider matrices, glossary, and stable lookup tables. |
+| `docs/ai/` | Agent instructions, repo navigation, Codex/Claude/Copilot workflow contracts. |
+| `docs/roadmap/` | Structured roadmap registry and generated roadmap views. |
+| `docs/source/` | Source-module registry and generated source documentation. |
+| `docs/generated/` | Generated outputs and generator policy. |
+| `archive/docs/` | Superseded plans, stale audits, old snapshots, duplicate guides, historical experiments, and one-off brainstorms. |
+
+The older taxonomy below is retained only to help migrate existing source material. Do not use it as the target structure for new documentation.
+
 ### Directory Organization
 
-The `docs/` tree is organized into three zones by audience and purpose:
+Legacy docs were organized into three zones by audience and purpose:
 
 ```
 docs/
@@ -111,7 +128,7 @@ only with a focused link and index update.
 
 ## Where Should This Doc Go?
 
-Use this decision tree when you're unsure where a new document belongs.
+Use [Documentation Ownership Contract](../documentation-ownership.md) when deciding where a new document belongs. The decision tree below is historical migration source material only.
 
 ```
 Is it a step-by-step guide for end users or operators?
@@ -149,23 +166,23 @@ Is it a step-by-step guide for end users or operators?
 
 | If the doc is about… | Put it in… |
 |----------------------|------------|
-| Getting started for users | `getting-started/` |
-| Provider setup / credentials | `providers/` |
-| Deployment, operations, runbooks | `operations/` |
-| System design, why architecture decisions were made | `architecture/` |
+| Getting started for users | `docs/start/` |
+| Provider setup / credentials | `docs/operators/` with stable lookup tables in `docs/reference/` |
+| Deployment, operations, runbooks | `docs/operators/` |
+| System design, why architecture decisions were made | `docs/engineering/` routing to retained architecture source material |
 | A numbered architectural decision | `adr/` |
-| Developer how-to, build tooling, CI, testing | `development/` |
-| API endpoints, data fields, env variables | `reference/` |
-| Integration with Lean, F# domain models | `integrations/` |
-| Project roadmap, changelog, TODO, feature inventory | `status/` |
-| Technology evaluation, brainstorm, improvement proposal | `evaluations/` |
-| Code quality audit, cleanup analysis | `audits/` |
-| Security vulnerabilities, known issues | `security/` |
-| AI assistant guides and known errors | `ai/` |
-| Auto-generated output (do not edit) | `generated/` |
+| Developer how-to, build tooling, CI, testing | `docs/engineering/` |
+| API endpoints, data fields, env variables | `docs/reference/` |
+| Integration with Lean, F# domain models | `docs/engineering/` or `docs/reference/` depending on whether it is workflow or lookup material |
+| Project roadmap, changelog, TODO, feature inventory | `docs/roadmap/` registry or generated/status output; stakeholder interpretation in `docs/product/` |
+| Technology evaluation, brainstorm, improvement proposal | `archive/docs/assessments/` after extracting current facts |
+| Code quality audit, cleanup analysis | `archive/docs/assessments/` after extracting current facts |
+| Security vulnerabilities, known issues | `docs/operators/`, `docs/engineering/`, or `docs/reference/` based on audience |
+| AI assistant guides and known errors | `docs/ai/` |
+| Auto-generated output (do not edit) | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, or `docs/ai/generated/` |
 | Outdated / superseded content | `archive/docs/` |
-| Diagrams (DOT/Graphviz) | `diagrams/` |
-| UML diagrams (PlantUML) | `diagrams/uml/` |
+| Diagrams (DOT/Graphviz) | `docs/diagrams/` when still linked from a canonical lane |
+| UML diagrams (PlantUML) | `docs/diagrams/uml/` when still linked from a canonical lane |
 
 ---
 
@@ -400,7 +417,7 @@ Include descriptive text, not bare URLs:
 See `src/Meridian.Core/Config/AppConfig.cs` for implementation.
 
 # Reference other docs
-See [ROADMAP Phase 6](../status/ROADMAP.md#phase-6-duplicate--unused-code-cleanup).
+See [ROADMAP Phase 6](../roadmap/README.md).
 
 # Reference external resources
 Based on [ADR-001](../adr/001-provider-abstraction.md).
@@ -562,7 +579,7 @@ When documentation becomes outdated:
 
 1. **Add deprecation notice** at the top:
    ```markdown
-   > **⚠️ DEPRECATED:** This document has been superseded by [New Document](../status/ROADMAP.md).
+   > **DEPRECATED:** This document has been superseded by [New Document](../product/README.md).
    > Archived on 2026-02-12.
    ```
 
@@ -719,4 +736,5 @@ If you have questions about documentation standards or suggestions for improveme
 
 ---
 
-*This guide is maintained as part of [Phase 8A documentation organization](../status/ROADMAP.md#phase-8-repository-organization--optimization).*
+*This guide is maintained as part of [Phase 8A documentation organization](../roadmap/generated/ROADMAP_SUMMARY.md).*
+

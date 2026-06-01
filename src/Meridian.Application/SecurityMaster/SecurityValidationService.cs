@@ -615,7 +615,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
                 "Operator override audit trail is missing",
                 "The override row does not expose immutable audit events for its current values.",
                 ["operatorOverrides.auditTrail"],
-                "Backfill or migrate override audit events so governance review can reconstruct who changed and approved the values."));
+                "Backfill or migrate override audit events so operator review can reconstruct who changed and approved the values."));
         }
 
         return issues;

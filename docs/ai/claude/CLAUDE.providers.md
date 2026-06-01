@@ -56,7 +56,6 @@ The repository currently includes **32 concrete provider implementations** plus 
 | Polygon | `PolygonMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs` |
 | StockSharp | `StockSharpMarketDataClient` | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs` |
 | Synthetic | `SyntheticMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
-| CppTrader | `CppTraderMarketDataClient` | `src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs` |
 | Streaming failover | `FailoverAwareMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs` |
 
 ### Historical Providers
@@ -259,7 +258,7 @@ export MERIDIAN_SECURITY_MASTER_SCHEMA="security_master"
 | `FSharp/Domain/SecurityMaster.fs` | Domain types and asset class definitions |
 | `Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | REST API endpoints |
 
-**Related:** [Security Master Guide](../../providers/security-master-guide.md) — Complete setup and usage guide
+**Related (historic setup):** [Security Master Guide](../../../archive/docs/providers/security-master-guide.md) — archived setup reference
 
 ---
 
@@ -860,19 +859,18 @@ See the [provider field audit](../../architecture/deterministic-canonicalization
 
 ## Related Documentation
 
-- [docs/providers/provider-comparison.md](../../providers/provider-comparison.md) - Provider feature matrix
-- [docs/providers/backfill-guide.md](../../providers/backfill-guide.md) - Historical backfill guide
-- [docs/providers/interactive-brokers-setup.md](../../providers/interactive-brokers-setup.md) - IB setup
-- [docs/providers/alpaca-setup.md](../../providers/alpaca-setup.md) - Alpaca setup
-- [docs/architecture/provider-management.md](../../architecture/provider-management.md) - Provider architecture
-- [docs/architecture/deterministic-canonicalization.md](../../architecture/deterministic-canonicalization.md) - Canonicalization design
+- [`provider-capability-matrix`](../../reference/provider-capability-matrix.md) - Capability matrix source (provider lookup)
+- [`provider-integration-status`](../../reference/provider-integration-status.md) - Backfill and ingestion status context
+- [`operators/provider-credentials.md`](../../operators/provider-credentials.md) - Unified provider setup and credential workflow
+- [`docs/architecture/provider-management.md`](../../architecture/provider-management.md) - Provider architecture
+- [`docs/architecture/deterministic-canonicalization.md`](../../architecture/deterministic-canonicalization.md) - Canonicalization design
 
 ## Related Resources
 
 - **Master AI index:** [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/docs/ai/README.md)
 - **Root context:** [`CLAUDE.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/CLAUDE.md) § Data Providers
 - **Code review (Lens 5 - Provider Compliance):** [`.github/agents/code-review-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/code-review-agent.md)
-- **Development guide:** [`docs/development/provider-implementation.md`](../../development/provider-implementation.md)
+- **Provider implementation playbook:** `docs/reference/provider-capability-matrix.md` (capability surface) and [docs/operators/provider-credentials.md](../../operators/provider-credentials.md) (canonical setup workflow)
 
 ---
 

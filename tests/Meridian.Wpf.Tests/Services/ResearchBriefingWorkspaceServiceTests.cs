@@ -9,6 +9,17 @@ namespace Meridian.Wpf.Tests.Services;
 public sealed class ResearchBriefingWorkspaceServiceTests
 {
     [Fact]
+    public void WorkstationResearchBriefingApiClient_UsesCanonicalStrategyBriefingRoute()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Services\WorkstationResearchBriefingService.cs"));
+
+        source.Should().Contain("UiApiRoutes.WorkstationStrategyBriefing");
+        source.Should().NotContain("UiApiRoutes.WorkstationResearchBriefing, ct");
+        source.Should().NotContain("governance review");
+        source.Should().Contain("Run is flagged for Accounting review.");
+    }
+
+    [Fact]
     public async Task GetBriefingAsync_WhenEndpointReturnsPayload_ShouldPreferEndpointAndBackfillLocalWatchlists()
     {
         var store = new StrategyRunStore();
@@ -95,6 +106,8 @@ public sealed class ResearchBriefingWorkspaceServiceTests
         var briefing = await service.GetBriefingAsync();
 
         briefing.Workspace.TotalRuns.Should().Be(1);
+        briefing.Workspace.Summary.Should().Contain("strategy desk");
+        briefing.Workspace.Summary.Should().NotContain("research desk");
         briefing.Watchlists.Should().ContainSingle(watchlist => watchlist.Name == "Desk Watch");
         briefing.InsightFeed.Widgets.Should().ContainSingle();
         briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "briefing-run-1");

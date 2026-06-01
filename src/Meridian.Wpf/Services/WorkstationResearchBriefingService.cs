@@ -20,7 +20,7 @@ public sealed class WorkstationResearchBriefingApiClient : IWorkstationResearchB
     }
 
     public Task<ResearchBriefingDto?> GetBriefingAsync(CancellationToken ct = default)
-        => _apiClient.GetAsync<ResearchBriefingDto>(UiApiRoutes.WorkstationResearchBriefing, ct);
+        => _apiClient.GetAsync<ResearchBriefingDto>(UiApiRoutes.WorkstationStrategyBriefing, ct);
 }
 
 public interface IResearchBriefingWorkspaceService
@@ -90,7 +90,7 @@ public sealed class ResearchBriefingWorkspaceService : IResearchBriefingWorkspac
                 HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
                 Summary: latestRun is null
                     ? "Start a backtest or open a saved run to populate the Market Briefing."
-                    : $"{activeRuns} active session(s), {promotionCandidates} promotion candidate(s), and {alerts.Count} alert(s) on the research desk."),
+                    : $"{activeRuns} active session(s), {promotionCandidates} promotion candidate(s), and {alerts.Count} alert(s) on the strategy desk."),
             InsightFeed: BuildInsightFeed(runs, details, alerts.Count),
             Watchlists: localWatchlists,
             RecentRuns: runs
@@ -363,7 +363,7 @@ public sealed class ResearchBriefingWorkspaceService : IResearchBriefingWorkspac
                 StrategyRunPromotionState.CandidateForPaper => "Completed backtest awaiting paper review.",
                 StrategyRunPromotionState.CandidateForLive => "Paper run pending live promotion review.",
                 StrategyRunPromotionState.RequiresCompletion => "Run must complete before promotion review can proceed.",
-                _ => "Run is flagged for governance review."
+                _ => "Run is flagged for Accounting review."
             };
         }
 

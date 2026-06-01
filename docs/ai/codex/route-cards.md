@@ -29,7 +29,7 @@ instead of editing generated artifacts when routes, projects, or authoritative d
 | Field | Start here |
 | --- | --- |
 | Projects | `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Wpf`, `src/Meridian.Ui/dashboard` |
-| First docs | `.codex/AGENTS.md`, `docs/development/desktop-testing-guide.md`, `docs/plans/web-ui-development-pivot.md`, `docs/ai/navigation/README.md` |
+| First docs | `.codex/AGENTS.md`, `docs/engineering/README.md`, `docs/operators/README.md`, `docs/ai/navigation/README.md` |
 | Entrypoints | `src/Meridian.Ui.Shared/Endpoints`, `src/Meridian.Ui/dashboard/src`, `src/Meridian.Wpf/Shell`, `src/Meridian.Wpf/ViewModels` |
 | Validation | Browser: targeted Vitest or `npm --prefix src/Meridian.Ui/dashboard run test`; WPF: focused `tests/Meridian.Wpf.Tests` filter; shared DTOs: endpoint tests plus UI consumer tests |
 
@@ -74,6 +74,12 @@ instead of editing generated artifacts when routes, projects, or authoritative d
 | Field | Start here |
 | --- | --- |
 | Projects | `docs/ai`, `.codex`, `tools/codex`, `build/scripts/docs`, `scripts/ai` |
-| First docs | `../assistant-workflow-contract.md`, `README.md`, this quickstart set, `.codex/skills/README.md` |
-| Entrypoints | `build/scripts/docs/check-ai-inventory.py`, `build/scripts/docs/check-codex-skills.py`, `.codex/skills/*/SKILL.md`, `.codex/agents/*.toml` |
+| First docs | `../assistant-workflow-contract.md`, `../documentation-ownership.md`, `README.md`, this quickstart set, `.codex/skills/README.md` |
+| Entrypoints | `build/scripts/docs/check-ai-inventory.py`, `build/scripts/docs/check-codex-skills.py`, `build/scripts/docs/check-ai-contract-drift.py`, `.codex/skills/*/SKILL.md`, `.codex/agents/*.toml` |
 | Validation | `python build/scripts/docs/check-codex-skills.py --summary`; `python build/scripts/docs/check-ai-inventory.py --summary`; `python build/scripts/docs/validate-skill-packages.py`; `git diff --check -- <paths>` |
+
+Additional AI contract notes for this lane:
+
+- Generated artifacts: do not hand-edit `docs/ai/generated/*` and `docs/generated/*`; rerun generators when schema or routing truth changes.
+- Lane policy: use `../parallel-task-manifest-template.md` and `../agent-handoff-checklist.md` when Codex tasks overlap across AI/agent domains.
+- Context budget: set `../work-modes.md` before expanding beyond local registry/doc-file edits.

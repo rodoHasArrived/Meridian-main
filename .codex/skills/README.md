@@ -83,6 +83,8 @@ different work:
 - [`../AGENTS.md`](../AGENTS.md) — Codex-specific desktop workstation implementation rules
 - [`../prompts/`](../prompts) and [`../checklists/`](../checklists) — reusable desktop prompts and
   modularity, MVVM, resource, definition-of-done, and safe-refactor checklists
+- [`docs/ai/agent-handoff-checklist.md`](../../docs/ai/agent-handoff-checklist.md) — multi-agent
+  handoff format, context minimization, and validation handoff schema for cross-host workflows
 
 ## Maintenance Rules
 

@@ -15,7 +15,10 @@ public static class WorkflowActionIds
     public const string TradingReviewExecutionControls = "workflow.trading.review-execution-controls";
 
     public const string PortfolioOpen = "workflow.portfolio.open";
+    public const string PortfolioReviewAggregate = "workflow.portfolio.review-aggregate";
+    public const string PortfolioReviewRunPortfolio = "workflow.portfolio.review-run-portfolio";
     public const string PortfolioReviewBrokerageSync = "workflow.portfolio.review-brokerage-sync";
+    public const string PortfolioImportSnapshots = "workflow.portfolio.import-snapshots";
 
     public const string AccountingChooseContext = "workflow.accounting.choose-context";
     public const string AccountingReviewLiveHandoff = "workflow.accounting.review-live-handoff";

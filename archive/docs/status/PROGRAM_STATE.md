@@ -1,0 +1,24 @@
+# Meridian - Canonical Program State
+
+<!-- auto-sync:tests -->
+**Last Updated:** 2026-05-27
+**Status Source of Truth:** This table is the canonical cross-document wave status source for status docs in `docs/status/`.
+
+Use this table as the single source of truth for wave status labels and target dates. The following files reference this table and should not redefine wave status independently:
+
+- [`ROADMAP.md`](ROADMAP.md)
+- [`IMPROVEMENTS.md`](IMPROVEMENTS.md)
+- [`production-status.md`](production-status.md)
+- [`FULL_IMPLEMENTATION_TODO.md`](FULL_IMPLEMENTATION_TODO.md)
+- [`ROADMAP_COMBINED.md`](ROADMAP_COMBINED.md)
+
+<!-- program-state:begin -->
+| Wave | Owner | Primary Owner | Backup Owner | Escalation SLA | Dependency Owners | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Data Confidence and Validation | Trading Workstation | 4 hours / 1 business day | Trading Workstation; Shared Platform Interop; Governance and Ledger | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger | Done | 2026-05-27 | [`../roadmap/generated/ROADMAP_SUMMARY.md`](../roadmap/generated/ROADMAP_SUMMARY.md) |
+| W3 | Shared Platform Interop | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation | Done | 2026-05-27 | [`../roadmap/generated/ROADMAP_SUMMARY.md`](../roadmap/generated/ROADMAP_SUMMARY.md) |
+| W4 | Governance + Fund Ops | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop | Done | 2026-05-29 | [`../roadmap/generated/ROADMAP_SUMMARY.md`](../roadmap/generated/ROADMAP_SUMMARY.md) |
+| W5 | Research Platform | Strategy and Research | Shared Workflow and Contracts | 2 business days / 3 business days | Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Execution and Brokerage Integrations | Governance and Ledger | 4 hours / 1 business day | Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->

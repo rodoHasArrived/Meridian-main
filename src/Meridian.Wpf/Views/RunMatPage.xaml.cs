@@ -5,7 +5,7 @@ using Meridian.Wpf.ViewModels;
 namespace Meridian.Wpf.Views;
 
 /// <summary>
-/// Research workspace surface for editing and executing RunMat scripts.
+/// Strategy workspace surface for editing and executing RunMat scripts.
 /// </summary>
 public partial class RunMatPage : Page
 {

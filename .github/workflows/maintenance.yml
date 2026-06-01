@@ -77,7 +77,7 @@ jobs:
 
       - name: Validate AI contract drift
         run: |
-          python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json
+          python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json --routing-rules docs/ai/codex/prompt-route-rules.json --routing-host-doc docs/ai/codex/README.md --routing-host-doc docs/ai/assistant-workflow-contract.md
 
       - name: Validate AI navigation freshness
         run: |

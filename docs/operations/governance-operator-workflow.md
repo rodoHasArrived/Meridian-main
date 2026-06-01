@@ -1,79 +1,13 @@
-# Governance Operator Workflow
+# Meridian Operations Archive Stub
 
-This runbook documents the baseline accounting and reporting slice in the workstation UI.
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+**Retirement path:** `docs/operations/governance-operator-workflow.md`
+**Replacement:** `archive/docs/operations/governance-operator-workflow.md`
 
-## 1) Security Master operator panels
+This legacy operator document is archived source-material.
 
-1. Open **Accounting → Security Master**.
-2. Use **Security search** to query by ticker/ISIN/CUSIP/FIGI.
-3. Review identifiers + classification fields from each result row.
-4. Use **Refresh Workflow** or the live poller to confirm the ingest posture from `GET /api/security-master/ingest/status`.
-5. In **Conflict Queue**, resolve each open ingest-time identifier conflict with:
-   - **Accept A**
-   - **Accept B**
-   - **Dismiss**
-6. Use **Operator Next Steps** to continue directly into:
-   - **Fund Portfolio**
-   - **Fund Ledger**
-   - **Reconciliation Queue**
-   - **Cash & Financing**
-   - **Report Pack**
-
-## 2) Multi-ledger + trial-balance view
-
-1. Open **Accounting → Ledger**.
-2. Select a run from the reconciliation queue.
-3. Review **Multi-ledger trial balance** rows (account/type/balance/entry counts).
-4. Use the explicit **Report Pack** tab to preview governance handoff content inside the same fund context.
-5. From **Portfolio**, **Cash & Financing**, **Trial Balance**, and **Audit Trail**, keep Security Master and report-pack drill-ins in the same operator journey.
-
-## 3) Reconciliation break queue workflow
-
-1. Open **Accounting → Reconciliation**.
-2. In **Reconciliation break queue**, move breaks through:
-   - **Open** → **Assign** (moves to `InReview`, captures reviewer + assignee)
-   - **InReview** → **Resolve** (moves to `Resolved`, captures resolver + note)
-   - Any active break → **Dismiss** (moves to `Dismissed` with audit metadata)
-3. Confirm break status/assignment metadata updates inline after each action.
-
-## 4) Governance report/export handoff
-
-Use the explicit **Open Report Pack** action from either **Security Master** or **Accounting → Ledger** to stage the reporting handoff, then use the reporting export entry points:
-
-- `GET /api/export/preview`
-- `POST /api/export/analysis`
-- `/api/export/formats`
-
-The browser Reporting screen previews selected profiles through the read-only preview route and runs
-exports through the POST route. Reporting export commands pass request abort signals and suppress
-superseded same-profile or profile-switch results so late export responses do not update the wrong
-selected profile. `/api/workstation/accounting` and `/api/workstation/reporting` expose the current
-accounting/reporting bootstrap payloads; `/api/workstation/governance` remains a compatibility
-alias.
-
-## 5) Release evidence
-
-Before release, capture journey evidence that covers:
-
-1. Security Master ingest polling and conflict resolution.
-2. Security Master → fund portfolio / ledger / reconciliation / cash / report-pack drill-ins.
-3. Governance report-pack preview continuity inside the fund workspace.
-4. Reconciliation queue actions and downstream reporting handoff.
-
-## 6) Architecture guard: instrument metadata in governance/accounting/reporting DTOs
-
-Allowed pattern:
-
-- Governance/accounting/reporting DTOs may include instrument-facing fields **only when** they carry Security Master identity + provenance references (for example `SecurityId` plus `SecurityMasterSource`/`SecurityMasterProvenance`).
-- Read services and export seams must resolve labels/classification through Security Master lookup flow rather than local descriptor synthesis.
-
-Forbidden pattern:
-
-- Adding or deriving local instrument descriptors (ticker/name/classification) in governance DTOs without required Security Master references.
-- Emitting endpoint/export payloads where instrument rows cannot be traced back to Security Master identity.
-
-Remediation:
-
-1. Add required Security Master identity and provenance fields to the DTO.
-2. Replace local descriptor derivation with Security Master lookup + reference projection.
-3. Re-run contract compatibility checks and governance regression slices before merge.
+- Canonical operator guidance: [operators/README.md](../operators/README.md)
+- Archived copy: [archive/docs/operations/governance-operator-workflow.md](../../archive/docs/operations/governance-operator-workflow.md)
+- Archive migration index: [archive/docs/operations/README.md](../../archive/docs/operations/README.md)

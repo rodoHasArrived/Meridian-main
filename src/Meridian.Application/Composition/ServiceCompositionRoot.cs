@@ -1,4 +1,3 @@
-using System.Reflection;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
@@ -122,8 +121,6 @@ public static class ServiceCompositionRoot
         if (options.EnableHttpClientFactory)
             services.RegisterFeature<HttpClientFeatureRegistration>(options);
 
-        TryRegisterCppTraderIntegration(services, options.ConfigPath);
-
         ProductionServiceRegistrationPolicy.Validate(services);
 
         // Backtesting services are registered by the host project (Meridian.Backtesting references
@@ -163,28 +160,6 @@ public static class ServiceCompositionRoot
         return Activator.CreateInstance<T>().Register(services, options);
     }
 
-    private static void TryRegisterCppTraderIntegration(IServiceCollection services, string? configPath)
-    {
-        try
-        {
-            var extensionType = Type.GetType(
-                "Meridian.Infrastructure.CppTrader.CppTraderServiceCollectionExtensions, Meridian.Infrastructure.CppTrader",
-                throwOnError: false);
-            var method = extensionType?.GetMethod(
-                "AddCppTraderIntegration",
-                BindingFlags.Public | BindingFlags.Static,
-                binder: null,
-                types: [typeof(IServiceCollection), typeof(string)],
-                modifiers: null);
-
-            method?.Invoke(null, [services, configPath]);
-        }
-        catch
-        {
-            // Optional integration: ignore when the extension assembly is not present
-            // or when the CppTrader feature is not included in the current host.
-        }
-    }
 }
 
 /// <summary>

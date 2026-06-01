@@ -3,7 +3,7 @@ using System.Linq;
 namespace Meridian.Wpf.Models;
 
 /// <summary>
-/// Static registry of compatibility workspace definitions for saved desktop templates.
+/// Static registry of workspace definitions for saved desktop templates.
 /// Each workspace maps to a set of related pages from Pages.cs.
 /// Page names must match the tags registered in NavigationService.RegisterAllPages().
 ///
@@ -15,26 +15,10 @@ namespace Meridian.Wpf.Models;
 public static class WorkspaceRegistry
 {
     /// <summary>
-    /// All compatibility workspace definitions, in legacy persisted order.
+    /// All built-in workspace definitions, in canonical operator navigation order.
     /// </summary>
     public static readonly IReadOnlyList<WorkspaceDefinition> All = new[]
     {
-        // ── Strategy compatibility workspace ────────────────────────────────────
-        new WorkspaceDefinition(
-            Id: "research",
-            Label: "Strategy",
-            Icon: "\uEC35",   // TestBeaker  — SVG: Assets/Icons/research.svg
-            Pages: new WorkspacePageEntry[]
-            {
-                new("ResearchShell", "Strategy Workspace", "\uEC35"),
-                new("LiveData",     "Live Data",    "\uE9D2"),  // LineChart
-                new("OrderBook",    "Order Book",   "\uE8FD"),  // List
-                new("Charts",       "Charting",     "\uE9D9"),  // Chart
-                new("DataBrowser",  "Data Browser", "\uE721"),  // Search
-                new("DataSampling", "Data Sampling","\uF1AD"),  // DataUsage
-                new("SymbolStorage","Symbol Storage","\uEE94"), // Database
-            }),
-
         // ── Trading Workspace ───────────────────────────────────────────────────
         new WorkspaceDefinition(
             Id: "trading",
@@ -42,22 +26,84 @@ public static class WorkspaceRegistry
             Icon: "\uE945",   // Lightning   — SVG: Assets/Icons/trading.svg
             Pages: new WorkspacePageEntry[]
             {
-                new("Backtest",       "Backtest",        "\uEC35"), // TestBeaker
-                new("StrategyRuns",   "Strategy Runs",   "\uE768"), // Play
-                new("RunDetail",      "Run Detail",      "\uE8A5"), // Document
-                new("RunLedger",      "Run Ledger",      "\uE82D"), // Library
-                new("RunPortfolio",   "Run Portfolio",   "\uE821"), // Briefcase
-                new("RunMat",         "RunMat",          "\uE8CF"), // Target
-                new("TradingHours",   "Trading Hours",   "\uE823"), // Clock
+                new("TradingShell",  "Trading Desk",  "\uE945"),
+                new("LiveData",     "Live Data",    "\uE9D2"),  // LineChart
+                new("OrderBook",    "Order Book",   "\uE8FD"),  // List
+                new("PositionBlotter","Positions",   "\uE8A1"),  // List
+                new("RunRisk",      "Run Risk",     "\uE7BA"),  // Shield
+                new("TradingHours",  "Trading Hours","\uE823"),  // Clock
             }),
 
-        // ── Data compatibility workspace ────────────────────────────────────────
+        // ── Portfolio Workspace ─────────────────────────────────────────────────
         new WorkspaceDefinition(
-            Id: "data-operations",
+            Id: "portfolio",
+            Label: "Portfolio",
+            Icon: "\uE821",   // Briefcase   — SVG: Assets/Icons/portfolio.svg
+            Pages: new WorkspacePageEntry[]
+            {
+                new("PortfolioShell", "Portfolio Workspace", "\uE821"),
+                new("AccountPortfolio", "Account Portfolio", "\uE821"),
+                new("AggregatePortfolio", "Aggregate Portfolio", "\uE821"),
+                new("FundPortfolio", "Fund Portfolio", "\uE821"),
+                new("FundAccounts", "Fund Accounts", "\uE8C7"),
+                new("PortfolioImport", "Portfolio Import", "\uE8B5"),
+            }),
+
+        // ── Accounting Workspace ────────────────────────────────────────────────
+        new WorkspaceDefinition(
+            Id: "accounting",
+            Label: "Accounting",
+            Icon: "\uE8D7",   // Permissions — SVG: Assets/Icons/governance.svg
+            Pages: new WorkspacePageEntry[]
+            {
+                new("AccountingShell", "Accounting Workspace", "\uE8D7"),
+                new("FundLedger", "Fund Ledger", "\uE82D"),
+                new("FundReconciliation", "Fund Reconciliation", "\uE9D9"),
+                new("FundTrialBalance", "Trial Balance", "\uE9D9"),
+                new("FundAuditTrail", "Audit Trail", "\uE8A5"),
+                new("SecurityMaster", "Security Master", "\uE72E"),
+            }),
+
+        // ── Reporting Workspace ────────────────────────────────────────────────
+        new WorkspaceDefinition(
+            Id: "reporting",
+            Label: "Reporting",
+            Icon: "\uE9D9",   // BarChart
+            Pages: new WorkspacePageEntry[]
+            {
+                new("ReportingShell", "Reporting Workspace", "\uE9D9"),
+                new("FundReportPack", "Report Packs", "\uE8A5"),
+                new("ReportRunStatus", "Report Runs", "\uE768"),
+                new("Dashboard", "Dashboard", "\uE9D9"),
+                new("AnalysisExport", "Analysis Export", "\uEDE1"),
+                new("ExportPresets", "Export Presets", "\uE8FD"),
+            }),
+
+        // ── Strategy Workspace ──────────────────────────────────────────────────
+        new WorkspaceDefinition(
+            Id: "strategy",
+            Label: "Strategy",
+            Icon: "\uEC35",   // TestBeaker  — SVG: Assets/Icons/research.svg
+            Pages: new WorkspacePageEntry[]
+            {
+                new("StrategyShell", "Strategy Workspace", "\uEC35"),
+                new("Backtest", "Backtest", "\uEC35"),
+                new("StrategyRuns", "Strategy Runs", "\uE768"),
+                new("RunDetail", "Run Detail", "\uE8A5"),
+                new("RunMat", "RunMat", "\uE8CF"),
+                new("Charts", "Charting", "\uE9D9"),
+                new("QuantScript", "Quant Script", "\uE943"),
+            }),
+
+        // ── Data Workspace ──────────────────────────────────────────────────────
+        new WorkspaceDefinition(
+            Id: "data",
             Label: "Data",
             Icon: "\uEE94",   // Database    — SVG: Assets/Icons/data-operations.svg
             Pages: new WorkspacePageEntry[]
             {
+                new("DataShell",          "Data Workspace",       "\uEE94"),
+                new("Provider",           "Provider Setup",        "\uEC05"),
                 new("Symbols",            "Symbols",              "\uE8AB"), // Sort/Exchange
                 new("Backfill",           "Backfill",             "\uE892"), // Rewind
                 new("ProviderHealth",     "Provider Health",      "\uEB51"), // Heart
@@ -65,25 +111,20 @@ public static class WorkspaceRegistry
                 new("DataQuality",        "Data Quality",         "\uE73E"), // Checkmark
                 new("DataCalendar",       "Data Calendar",        "\uE787"), // Calendar
                 new("DataExport",         "Data Export",          "\uEDE1"), // Export
-                new("StorageOptimization","Storage Optimization", "\uE713"), // Settings
                 new("Storage",            "Storage",              "\uEE94"), // Database
-                new("ArchiveHealth",      "Archive Health",       "\uE8E3"), // Accept
                 new("EventReplay",        "Event Replay",         "\uE768"), // Play
-                new("IndexSubscription",  "Index Subscription",   "\uE8FD"), // List
-                new("PortfolioImport",    "Portfolio Import",     "\uE8B5"), // Import
-                new("Watchlist",          "Watchlist",            "\uE7B3"), // View
                 new("Schedules",          "Schedule Manager",     "\uE916"), // Timer
                 new("CollectionSessions", "Collection Sessions",  "\uE8EF"), // VideoCapture
             }),
 
-        // ── Accounting compatibility workspace ──────────────────────────────────
+        // ── Settings Workspace ──────────────────────────────────────────────────
         new WorkspaceDefinition(
-            Id: "governance",
-            Label: "Accounting",
-            Icon: "\uE8D7",   // Permissions — SVG: Assets/Icons/governance.svg
+            Id: "settings",
+            Label: "Settings",
+            Icon: "\uE713",   // Settings
             Pages: new WorkspacePageEntry[]
             {
-                new("SecurityMaster",    "Security Master",    "\uE72E"), // Lock
+                new("SettingsShell",     "Settings Workspace", "\uE713"),
                 new("Settings",          "Settings",           "\uE713"), // Settings
                 new("Diagnostics",       "Diagnostics",        "\uE90F"), // Repair
                 new("ServiceManager",    "Service Manager",    "\uECE7"), // Plug
@@ -101,14 +142,15 @@ public static class WorkspaceRegistry
     /// </summary>
     public static WorkspaceDefinition? GetWorkspaceById(string id)
     {
-        return All.FirstOrDefault(w => w.Id == id);
+        var canonicalId = WorkstationNavigationDefaults.NormalizeWorkspaceId(id);
+        return All.FirstOrDefault(w => string.Equals(w.Id, canonicalId, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
-    /// Gets the first compatibility workspace.
+    /// Gets the default workspace.
     /// </summary>
     public static WorkspaceDefinition GetDefaultWorkspace()
     {
-        return All.First();
+        return GetWorkspaceById(WorkstationNavigationDefaults.StrategyWorkspaceId) ?? All.First();
     }
 }

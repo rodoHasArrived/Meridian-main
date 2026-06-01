@@ -614,43 +614,6 @@ def _check_packages_props() -> tuple[bool, bool, str, str | None]:
     return True, False, f"all {total} package versions present", None
 
 
-def _check_native_tools() -> list[tuple[str, bool, bool, str, str | None]]:
-    """Check CMake and a C++ compiler (optional — needed for CppTrader)."""
-    results: list[tuple[str, bool, bool, str, str | None]] = []
-
-    if _have("cmake"):
-        ver_result = _run(["cmake", "--version"])
-        ver = (
-            ver_result.stdout.strip().splitlines()[0]
-            if ver_result.returncode == 0
-            else "unknown"
-        )
-        results.append(("CMake", True, False, ver, None))
-    else:
-        results.append((
-            "CMake",
-            False,
-            True,
-            "not found (optional — needed for CppTrader native engine)",
-            "Install CMake from https://cmake.org/download/",
-        ))
-
-    cpp = shutil.which("g++") or shutil.which("clang++") or shutil.which("cl")
-    if cpp:
-        compiler_name = Path(cpp).name
-        results.append(("C++ compiler", True, False, f"{compiler_name} found", None))
-    else:
-        results.append((
-            "C++ compiler",
-            False,
-            True,
-            "not found (optional — needed for CppTrader native engine)",
-            "Linux: apt install build-essential  |  macOS: xcode-select --install",
-        ))
-
-    return results
-
-
 def _print_check(label: str, ok: bool, is_warn: bool, detail: str, *, width: int = 38) -> None:
     if ok:
         status = PASS if sys.stdout.isatty() else "pass"
@@ -725,22 +688,6 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         _print_fix(fix)
     if not ok:
         (warnings if is_warn else failures).append(f"PostgreSQL: {detail}")
-
-    print()
-
-    # --- Native tools (optional) ---
-    print(
-        _color("Native tools (optional — CppTrader)", BLUE)
-        if sys.stdout.isatty()
-        else "Native tools (optional — CppTrader)"
-    )
-
-    for label, ok, is_warn, detail, fix in _check_native_tools():
-        _print_check(label, ok, is_warn, detail)
-        if fix:
-            _print_fix(fix)
-        if not ok:
-            (warnings if is_warn else failures).append(f"{label}: {detail}")
 
     print()
 

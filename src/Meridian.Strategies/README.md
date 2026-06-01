@@ -18,6 +18,8 @@ Strategies owns strategy lifecycle, run storage, promotion records, and strategy
 ## Layer responsibility
 
 This layer should preserve strategy lineage from research through paper validation and promotion review.
+Promotion evaluation and designer warnings use operator promotion-review wording while retained
+policy outcome names and legacy cell kinds remain compatibility inputs.
 
 ## Key folders and files
 

@@ -9,7 +9,7 @@ stage_gates:
     purpose: Provider and market-data evidence is trustworthy enough for downstream operations.
     owner_lane: Data Confidence and Validation
     exit_evidence:
-      - docs/status/provider-validation-matrix.md
+      - docs/reference/provider-validation-matrix.md
   - id: PaperSession
     title: Paper session readiness
     purpose: Paper trading sessions can be replayed, audited, and accepted by operators.
@@ -31,7 +31,7 @@ stage_gates:
     purpose: Ledger and reconciliation records can support books and operator sign-off.
     owner_lane: Governance and Ledger
     exit_evidence:
-      - docs/plans/current-direction-and-status.md
+      - docs/roadmap/generated/ROADMAP_SUMMARY.md
       - tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs
       - tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs
   - id: GovernedReportPack
@@ -39,7 +39,7 @@ stage_gates:
     purpose: Report packs carry approval and export evidence.
     owner_lane: Governance and Ledger
     exit_evidence:
-      - docs/plans/current-direction-and-status.md
+      - docs/roadmap/generated/ROADMAP_SUMMARY.md
       - tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs
       - tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs
   - id: BacktestingEvidence

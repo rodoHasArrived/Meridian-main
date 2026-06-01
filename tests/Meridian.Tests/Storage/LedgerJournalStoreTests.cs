@@ -325,14 +325,22 @@ public sealed class LedgerJournalStoreTests
         var firstLine = write.Entry.Lines[0];
         var mutatedLines = write.Entry.Lines
             .Select(line => line.EntryId == firstLine.EntryId
-                ? line with { Account = line.Account with { Symbol = "A" } }
+                ? new LedgerEntry(
+                    line.EntryId,
+                    line.JournalEntryId,
+                    line.Timestamp,
+                    line.Account with { Symbol = "A" },
+                    line.Debit,
+                    line.Credit,
+                    line.Description)
                 : line)
             .ToArray();
-        var mutatedEntry = write.Entry with
-        {
-            Lines = mutatedLines,
-            Metadata = write.Entry.Metadata with { Symbol = "A" }
-        };
+        var mutatedEntry = new JournalEntry(
+            write.Entry.JournalEntryId,
+            write.Entry.Timestamp,
+            write.Entry.Description,
+            mutatedLines,
+            write.Entry.Metadata with { Symbol = "A" });
 
         var act = () => LedgerPeriodPostingGuard.Validate(write with { Entry = mutatedEntry }, period);
 
@@ -550,7 +558,8 @@ public sealed class LedgerJournalStoreTests
         string? ledgerMappingReference = null,
         string? extraInstrumentLineSymbol = null,
         string? metadataSymbol = "AAPL",
-        bool includeInstrumentLine = true)
+        bool includeInstrumentLine = true,
+        bool includeProvenanceActiveSecurityStatus = false)
     {
         var journalEntryId = Guid.NewGuid();
         var occurredAt = DateTimeOffset.Parse("2026-01-31T21:00:00Z");

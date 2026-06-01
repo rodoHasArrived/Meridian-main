@@ -171,7 +171,8 @@ public sealed class WorkstationOperatingContextServiceTests
             context.EnvironmentLaneId == "advisory-lane" &&
             context.EnvironmentLaneName == "Advisory Practice" &&
             context.OperatingEnvironmentKind == OperatingEnvironmentKind.AdvisoryPractice &&
-            context.DefaultWorkspaceId == "governance");
+            context.DefaultWorkspaceId == "accounting" &&
+            context.DefaultLandingPageTag == "AccountingShell");
     }
 
     private static async Task<FundContextService> CreateFundContextAsync()

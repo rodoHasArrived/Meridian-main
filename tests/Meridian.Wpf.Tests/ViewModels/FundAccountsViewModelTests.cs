@@ -122,6 +122,8 @@ public sealed class FundAccountsViewModelTests
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\FundAccountsPage.xaml"));
 
         xaml.Should().Contain("FundAccountsBriefingTitle");
+        xaml.Should().Contain("Accounting Accounts");
+        xaml.Should().NotContain("Governance Accounts");
         xaml.Should().Contain("FundAccountsBriefingDetail");
         xaml.Should().Contain("FundAccountsBriefingAction");
         xaml.Should().Contain("{Binding AccountBriefingTitle}");
@@ -134,6 +136,20 @@ public sealed class FundAccountsViewModelTests
         xaml.Should().Contain("{Binding BalanceEvidenceStatusText}");
         xaml.Should().Contain("{Binding BalanceEvidenceDetailText}");
         xaml.Should().Contain("{Binding BalanceEvidenceActionText}");
+    }
+
+    [Fact]
+    public void AccountBriefingProjection_UsesAccountingLaneCopy()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.SelectedFundId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+
+        viewModel.AccountBriefingDetail.Should().Contain("accounting evidence");
+        viewModel.AccountBriefingDetail.Should().NotContain("governance evidence");
+        viewModel.AccountQueueStatusText.Should().Contain("accounting lanes");
+        viewModel.AccountQueueStatusText.Should().NotContain("governance lanes");
+        viewModel.SelectedAccountScopeText.Should().Be("No accounting scope selected.");
     }
 
     [Fact]

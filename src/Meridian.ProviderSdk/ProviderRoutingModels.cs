@@ -284,7 +284,7 @@ public sealed record ProviderRouteResult(
 }
 
 /// <summary>
-/// Provider trust score snapshot used by governance surfaces.
+/// Provider trust score snapshot used by Data and Accounting surfaces.
 /// </summary>
 public sealed record ProviderTrustSnapshot(
     string ConnectionId,

@@ -646,3 +646,4 @@
 | `docs\testing\WAVE2_ACCEPTANCE_TESTS.md` | No hardcoded localhost URLs in docs | info |
 | `docs\ui\components.md` | No hardcoded API keys in docs | error |
 | `docs\ui\components.md` | No hardcoded localhost URLs in docs | info |
+

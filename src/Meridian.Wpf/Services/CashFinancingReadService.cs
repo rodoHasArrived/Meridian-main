@@ -3,7 +3,7 @@ using Meridian.Contracts.Workstation;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// Fund-level cash, financing, and capital-control projection for governance and trading shells.
+/// Fund-level cash, financing, and capital-control projection for Accounting and Trading shells.
 /// </summary>
 public sealed class CashFinancingReadService
 {

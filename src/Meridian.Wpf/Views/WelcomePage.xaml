@@ -149,7 +149,7 @@
                                 Content="Open Strategy"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Command="{Binding NavigateToWorkspaceCommand}"
-                                CommandParameter="ResearchShell" />
+                                CommandParameter="StrategyShell" />
                     </Grid>
 
                     <TextBlock Text="Each shell owns a distinct part of the operator journey while keeping the same top-level navigation model across the desktop."

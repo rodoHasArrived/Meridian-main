@@ -12,9 +12,8 @@ public sealed record WorkspaceCopyEntry(string Key, string Text);
 
 public static class WorkspaceCopyCatalog
 {
-    // Compatibility constants for existing XAML surfaces that still use legacy class names.
-    public const string ResearchShellTitle = Strategy.ShellTitle;
-    public const string DataOperationsShellTitle = Data.ShellTitle;
+    public const string StrategyShellTitle = Strategy.ShellTitle;
+    public const string DataShellTitle = Data.ShellTitle;
 
     public static class Trading
     {

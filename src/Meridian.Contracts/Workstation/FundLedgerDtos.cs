@@ -12,7 +12,7 @@ public enum FundLedgerScope : byte
 }
 
 /// <summary>
-/// Query for governance-first fund ledger views.
+/// Query for Accounting-first fund ledger views.
 /// </summary>
 /// <remarks>
 /// Selection semantics:
@@ -66,7 +66,7 @@ public sealed record FundLedgerTotalsDto(
     decimal ExpenseBalance);
 
 /// <summary>
-/// Slice-level ledger projection that supports governance drill-in by logical ledger key.
+/// Slice-level ledger projection that supports Accounting drill-in by logical ledger key.
 /// </summary>
 public sealed record FundLedgerSliceDto(
     string SliceKey,
@@ -81,7 +81,7 @@ public sealed record FundLedgerSliceDto(
     IReadOnlyDictionary<string, string>? Metadata = null);
 
 /// <summary>
-/// Governance-facing fund ledger summary.
+/// Accounting-facing fund ledger summary.
 /// </summary>
 public sealed record FundLedgerSummary(
     string FundProfileId,

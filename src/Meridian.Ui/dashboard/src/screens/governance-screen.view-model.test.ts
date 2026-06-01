@@ -1954,6 +1954,8 @@ describe("governance-screen view model", () => {
   it("keeps reconciliation narratives in the view model", () => {
     expect(buildReconciliationNarrative(reconciliationQueue[0])).toContain("Open reconciliation breaks remain");
     expect(buildReconciliationNarrative({ ...reconciliationQueue[0], reconciliationStatus: "Balanced" })).toContain("currently balanced");
+    expect(buildReconciliationNarrative({ ...reconciliationQueue[0], reconciliationStatus: "NotStarted" })).toContain("Accounting review work");
+    expect(buildReconciliationNarrative({ ...reconciliationQueue[0], reconciliationStatus: "NotStarted" })).not.toContain("governance review work");
   });
 
   it("derives reconciliation detail presentation state", () => {
@@ -1994,7 +1996,7 @@ describe("governance-screen view model", () => {
         profileCount: 2,
         recommendedProfiles: ["board"],
         reportPackTargets: ["board", "audit"],
-        summary: "2 export/reporting profiles are available for governance workflows.",
+        summary: "2 export/reporting profiles are available for Accounting and Reporting workflows.",
         profiles: [
           {
             id: "excel",

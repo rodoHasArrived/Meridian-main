@@ -20,7 +20,7 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 - MCP tool arguments supplied by an attached LLM client.
 
 **Operator-controlled inputs**
-- `appsettings.json`, `MDC_*` environment variables, provider credentials, DB connection/schema values, `DataRoot`, CppTrader executable path, and deployment topology.
+- `appsettings.json`, `MDC_*` environment variables, provider credentials, DB connection/schema values, `DataRoot`, and deployment topology.
 - Live execution enablement and brokerage wiring.
 
 **Developer-controlled inputs**
@@ -79,7 +79,6 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 
 ### Scripting, MCP, and native adapters
 - QuantScript remains opt-in and should be treated as trusted-host code execution, not a strong sandbox for hostile code.
-- CppTrader process and frame parsing paths remain sensitive to resource-exhaustion and trust-boundary mistakes.
 
 ## 4. Criticality calibration (current)
 

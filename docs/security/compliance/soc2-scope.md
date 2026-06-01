@@ -17,9 +17,9 @@ Define the Meridian systems and workflows that are in scope for SOC 2 readiness 
 
 Initial evidence pointers:
 - `docs/security/threat-model-current-state.md`
-- `docs/operations/operator-runbook.md`
-- `docs/operations/live-execution-controls.md`
-- `docs/operations/preflight-checklist.md`
+- `docs/operators/README.md`
+- `docs/operators/deployment-packaging.md`
+- `docs/operators/preflight-checklist.md`
 
 ### 2) Operator interfaces (WPF + browser workstation)
 
@@ -28,8 +28,8 @@ Initial evidence pointers:
 - Role-aware operator flows and command execution paths that can mutate production-like state.
 
 Initial evidence pointers:
-- `docs/development/wpf-implementation-notes.md`
-- `docs/operations/workstation-governance-approval-runbook.md`
+- `docs/engineering/README.md`
+- `docs/operators/README.md`
 - `docs/status/evidence/wave2-cockpit-evidence-packet.md`
 
 ### 3) Storage and data integrity surfaces
@@ -41,8 +41,9 @@ Initial evidence pointers:
 Initial evidence pointers:
 - `docs/operations/reconciliation-operations.md`
 - `docs/operations/reconciliation-runbook.md`
-- `docs/operations/portable-data-packager.md`
-- `docs/operations/fund-ops-persistence-cutover-runbook.md`
+- `docs/operators/reconciliation-operations.md`
+- `docs/operators/deployment-packaging.md`
+- `docs/operators/fund-ops-persistence-cutover.md`
 
 ### 4) Provider and integration boundary controls
 
@@ -51,10 +52,10 @@ Initial evidence pointers:
 - External endpoint governance for integration host/port configuration.
 
 Initial evidence pointers:
-- `docs/operations/provider-credential-management.md`
-- `docs/operations/provider-degradation-policy.md`
-- `docs/operations/provider-degradation-calibration.md`
-- `docs/status/provider-validation-matrix.md`
+- `docs/operators/provider-credentials.md`
+- `docs/reference/provider-capability-matrix.md`
+- `docs/reference/provider-validation-evidence-schema.md`
+- `docs/reference/provider-validation-matrix.md`
 - `docs/status/evidence/dk1-pilot-parity-runbook.md`
 
 ### 5) CI/CD and release workflows

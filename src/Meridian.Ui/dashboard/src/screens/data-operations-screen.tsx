@@ -449,7 +449,7 @@ export function DataOperationsScreen({
         <Card aria-labelledby="data-recent-exports-title">
           <CardHeader>
             <CardTitle id="data-recent-exports-title">Recent exports</CardTitle>
-            <CardDescription>Latest package and reporting outputs tied to data operations evidence.</CardDescription>
+            <CardDescription>Latest package and reporting outputs tied to Data workspace evidence.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">

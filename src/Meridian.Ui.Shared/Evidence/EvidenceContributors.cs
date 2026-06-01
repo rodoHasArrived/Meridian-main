@@ -416,7 +416,7 @@ public sealed class ReportPackEvidenceContributor : IEvidenceContributor
         var repository = _services.GetService<IGovernanceReportPackRepository>();
         if (repository is null)
         {
-            return new EvidenceContribution([], [], [], [], ["Governance report-pack repository is not registered."]);
+            return new EvidenceContribution([], [], [], [], ["Report-pack repository is not registered."]);
         }
 
         FundReportPackSnapshotDto? snapshot = null;

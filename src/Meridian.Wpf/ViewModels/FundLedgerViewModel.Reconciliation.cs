@@ -775,7 +775,7 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailSignoffText = BuildReconciliationDetailSignoffText(detail, SelectedBreakQueueItem);
         ReconciliationDetailLastUpdatedText = detail.LastUpdatedText;
         ReconciliationDetailGuidanceText = detail.SourceType == FundReconciliationSourceType.AccountRun
-            ? "Account-level reconciliation is read-only in Governance. Open the account workflow to rerun or resolve it."
+            ? "Account-level reconciliation is read-only in Accounting. Open the account workflow to rerun or resolve it."
             : detail.SupportsBreakActions
                 ? "Inline break actions update the shared workstation queue and keep operator notes attached to the exception."
                 : "Select a break from Break Queue to start review, resolve, or dismiss it inline.";
@@ -804,7 +804,7 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailLifecycleText = "Select a break queue item to see detection, review, decision, and audit posture.";
         ReconciliationDetailSignoffText = "Sign-off posture appears here when a reconciliation break is selected.";
         ReconciliationDetailLastUpdatedText = "-";
-        ReconciliationDetailGuidanceText = "Break queue items support inline review and resolution. Account runs stay read-only in Governance.";
+        ReconciliationDetailGuidanceText = "Break queue items support inline review and resolution. Account runs stay read-only in Accounting.";
         ReconciliationDetailTotalChecksText = "0";
         ReconciliationDetailMatchedText = "0";
         ReconciliationDetailBreaksText = "0";
@@ -1117,12 +1117,12 @@ public sealed partial class FundLedgerViewModel
         var status = selectedBreak.SignoffStatusLabel;
         if (string.Equals(role, "Not configured", StringComparison.OrdinalIgnoreCase))
         {
-            return $"Sign-off: {status}. Required role is not configured; keep the break out of close approval until governance ownership is assigned.";
+            return $"Sign-off: {status}. Required role is not configured; keep the break out of close approval until accounting ownership is assigned.";
         }
 
         if (selectedBreak.ResolvedAt is not null && !status.Contains("signed", StringComparison.OrdinalIgnoreCase))
         {
-            return $"Decision captured; sign-off: {status} by {role}. Keep close approval blocked until governance sign-off is recorded.";
+            return $"Decision captured; sign-off: {status} by {role}. Keep close approval blocked until accounting sign-off is recorded.";
         }
 
         if (status.Contains("signed", StringComparison.OrdinalIgnoreCase))
@@ -1130,7 +1130,7 @@ public sealed partial class FundLedgerViewModel
             return $"Sign-off: {status} for {role}. Confirm close-pack evidence before final reporting.";
         }
 
-        return $"Sign-off: {status} by {role}. Keep the break in the governance queue until review, decision, and audit evidence align.";
+        return $"Sign-off: {status} by {role}. Keep the break in the accounting queue until review, decision, and audit evidence align.";
     }
 
     private static string FormatOperatorLabel(string? actor, string fallback)

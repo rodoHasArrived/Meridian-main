@@ -567,7 +567,7 @@ public sealed class StrategyRunWorkspaceService
         {
             StrategyRunMode.Paper => $"{summary.Engine} execution remains a simulated trading boundary until review is complete.",
             StrategyRunMode.Live => "Broker-connected execution still depends on governed operator review and audit continuity.",
-            _ => "Research results stay out of the trading lane until promotion review is complete."
+            _ => "Strategy results stay out of the trading lane until promotion review is complete."
         };
 
         if (issues.Count == 0)
@@ -675,7 +675,7 @@ public sealed class StrategyRunWorkspaceService
         {
             return CreateStatusItem(
                 "Awaiting runs",
-                "Validation coverage appears after recorded runs project governance controls.",
+                "Validation coverage appears after recorded runs project governed controls.",
                 TradingWorkspaceStatusTone.Info);
         }
 

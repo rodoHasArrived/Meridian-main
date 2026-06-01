@@ -95,7 +95,7 @@ type RawBreakFacts = {
     MappingResolved: bool option
 }
 
-/// Stable classification output for UI/API governance surfaces.
+/// Stable classification output for UI/API Accounting surfaces.
 type CanonicalBreakClassification = {
     TaxonomyVersion: BreakTaxonomyVersion
     BreakClass: CanonicalBreakClass

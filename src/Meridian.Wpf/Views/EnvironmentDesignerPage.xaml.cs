@@ -347,8 +347,8 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
                         LaneId: "advisory-lane",
                         Name: "Advisory Practice",
                         Archetype: EnvironmentLaneArchetype.AdvisoryPractice,
-                        DefaultWorkspaceId: "governance",
-                        DefaultLandingPageTag: "GovernanceShell",
+                        DefaultWorkspaceId: "accounting",
+                        DefaultLandingPageTag: "AccountingShell",
                         RootNodeDefinitionId: "advisory-business",
                         DefaultContextNodeDefinitionId: "advisory-business",
                         AllowedManagedScopeKinds:

@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-05-29
+last_reviewed: 2026-05-30
 ---
 
 # src/Meridian.Contracts
@@ -76,8 +76,8 @@ routes back to run continuity, ledger trial-balance, reconciliation, and Securit
 evidence. Keep these fields shared so browser, WPF, and service tests enforce the same publication,
 drilldown, and no-orphan-evidence rules.
 
-Fund-structure contracts include the shared entity setup draft, validation summary, graph preview, and create-result payloads used by WPF, browser, and `/api/fund-structure` to create organization, business-lane, client/fund, legal-entity, vehicle, investment-portfolio, ownership, and account-handoff records without UI-local command vocabulary. Fund-structure contracts include the ledger mapping workbench payload used by accounting and
-governance surfaces to show account-to-ledger-group assignment source, unresolved mapping issues,
+Fund-structure contracts include the shared entity setup draft, validation summary, graph preview, and create-result payloads used by WPF, browser, and `/api/fund-structure` to create organization, business-lane, client/fund, legal-entity, vehicle, investment-portfolio, ownership, and account-handoff records without UI-local command vocabulary. Fund-structure contracts include the ledger mapping workbench payload used by Accounting
+surfaces to show account-to-ledger-group assignment source, unresolved mapping issues,
 and recommended operator action without requiring clients to duplicate mapping precedence rules.
 Investment Accounting Transaction Lab contracts carry shared preview payloads for trades,
 dividends, fees, accruals, corporate actions, and broker-reconciliation examples. These payloads
@@ -89,8 +89,10 @@ server-owned broker-staging readiness, required approvals, blockers, evidence id
 broker action before any paper/live movement is routed.
 
 Auth contracts include the role and permission catalog plus custom role-profile upsert payloads.
-Keep role-profile requests, result envelopes, and audit-event metadata in contracts so browser,
-desktop, and endpoint tests share the same authority-configuration vocabulary.
+`ManageFundStructure` covers governance-impacting ownership lifecycle mutations so ReadOnly and
+analytics-only sessions cannot alter fund-structure relationship records. Keep role-profile
+requests, result envelopes, and audit-event metadata in contracts so browser, desktop, and endpoint
+tests share the same authority-configuration vocabulary.
 
 Operations approval policy contracts include a shared approval policy matrix for close governance,
 governed approval-policy rule upsert requests, result envelopes, and audit-event metadata.
@@ -119,6 +121,13 @@ payloads contract-owned, including object-kind/object-id and related-object filt
 WPF clients search the same audit vocabulary instead of inventing client-local timelines. Manual
 override rows now use `OperatorAction` object kind keyed by override id, and circuit breaker rows
 use `ExecutionControl` object kind with control-route evidence links for operations review.
+`UiApiRoutes` also owns the canonical workstation root route constants for Strategy, Data,
+Accounting, Reporting, Trading, and Portfolio while retaining Research, Data Operations, and
+Governance constants as compatibility aliases. Shared endpoints and clients should consume the
+canonical constants for new route references so visible workspace routing stays aligned across
+browser and WPF surfaces. Contract XML documentation should describe visible workspaces as
+Strategy, Data, and Accounting even when retained DTO names preserve legacy Research or Governance
+identifiers for compatibility.
 
 Instrument Passport contracts are attached to the shared Security Master workstation trust
 workbench payloads. `InstrumentPassportDto` carries identifier and provider mappings, lifecycle

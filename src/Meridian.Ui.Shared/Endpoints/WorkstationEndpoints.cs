@@ -50,25 +50,25 @@ public static partial class WorkstationEndpoints
     {
         var group = app.MapGroup("/api/workstation").WithTags("Workstation");
 
-        group.MapGet("/session", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSession), async (HttpContext context) =>
         {
             return await BuildSessionPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationSession");
 
-        group.MapGet("/research", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearch), async (HttpContext context) =>
         {
             return await BuildResearchPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationResearch");
 
-        group.MapGet("/strategy", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategy), async (HttpContext context) =>
         {
             return await BuildResearchPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationStrategy");
 
-        group.MapGet("/research/briefing", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearchBriefing), async (HttpContext context) =>
         {
             var briefing = await BuildResearchBriefingAsync(context).ConfigureAwait(false);
             return Results.Json(briefing, jsonOptions);
@@ -76,7 +76,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationResearchBriefing")
         .Produces<ResearchBriefingDto>(200);
 
-        group.MapGet("/strategy/briefing", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyBriefing), async (HttpContext context) =>
         {
             var briefing = await BuildResearchBriefingAsync(context).ConfigureAwait(false);
             return Results.Json(briefing, jsonOptions);
@@ -314,13 +314,13 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/trading", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTrading), async (HttpContext context) =>
         {
             return await BuildTradingPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationTrading");
 
-        group.MapGet("/trading/readiness", async (Guid? fundAccountId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTradingReadiness), async (Guid? fundAccountId, HttpContext context) =>
         {
             var readiness = await GetTradingOperatorReadinessAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(readiness, jsonOptions);
@@ -344,7 +344,7 @@ public static partial class WorkstationEndpoints
         .Produces<ExposureSnapshotDto>(200)
         .Produces(403);
 
-        group.MapGet("/operator/inbox", async (Guid? fundAccountId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationOperatorInbox), async (Guid? fundAccountId, HttpContext context) =>
         {
             var inbox = await BuildOperatorInboxAsync(fundAccountId, context).ConfigureAwait(false);
             return Results.Json(inbox, jsonOptions);
@@ -352,37 +352,37 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationOperatorInbox")
         .Produces<OperatorInboxDto>(200);
 
-        group.MapGet("/data-operations", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataOperations), async (HttpContext context) =>
         {
             return await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationDataOperations");
 
-        group.MapGet("/data", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationData), async (HttpContext context) =>
         {
             return await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationData");
 
-        group.MapGet("/governance", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationGovernance), async (HttpContext context) =>
         {
             return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationGovernance");
 
-        group.MapGet("/accounting", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationAccounting), async (HttpContext context) =>
         {
             return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationAccounting");
 
-        group.MapGet("/reporting", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationReporting), async (HttpContext context) =>
         {
             return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationReporting");
 
-        group.MapGet("/portfolio", async (HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolio), async (HttpContext context) =>
         {
             var payload = await BuildPortfolioPayloadAsync(context).ConfigureAwait(false);
             return Results.Json(payload, jsonOptions);
@@ -390,7 +390,7 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationPortfolio")
         .Produces<WorkstationPortfolioPayload>(200);
 
-        group.MapGet("/portfolio/summary", async (string? fundAccountId, string? strategyId, string? entity, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolioSummary), async (string? fundAccountId, string? strategyId, string? entity, HttpContext context) =>
         {
             var payload = await BuildPortfolioSummaryPayloadAsync(context, fundAccountId, strategyId, entity).ConfigureAwait(false);
             return Results.Json(payload, jsonOptions);
@@ -2622,7 +2622,7 @@ public static partial class WorkstationEndpoints
         {
             return new WorkstationSessionPayload(
                 DisplayName: "Meridian Operator",
-                Role: "Research Lead",
+                Role: "Strategy Lead",
                 Environment: "paper",
                 ActiveWorkspace: "strategy",
                 CommandCount: 6,
@@ -2757,7 +2757,7 @@ public static partial class WorkstationEndpoints
                 HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
                 Summary: latestRun is null
                     ? "Start a backtest or restore a saved run to populate the Market Briefing."
-                    : $"{activeRuns} active research session(s), {promotionCandidates} promotion candidate(s), and {alertItems.Count} alert(s) on the desk."),
+                    : $"{activeRuns} active Strategy session(s), {promotionCandidates} promotion candidate(s), and {alertItems.Count} alert(s) on the desk."),
             InsightFeed: BuildBriefingInsightFeed(runs, details, alertItems.Count),
             Watchlists: Array.Empty<WorkstationWatchlist>(),
             RecentRuns: runs
@@ -2782,11 +2782,11 @@ public static partial class WorkstationEndpoints
                 LatestStrategyName: "Mean Reversion FX",
                 HasLedgerCoverage: true,
                 HasPortfolioCoverage: true,
-                Summary: "Research is organized around briefing context first, then run studio drill-ins."),
+                Summary: "Strategy is organized around briefing context first, then run studio drill-ins."),
             InsightFeed: new InsightFeed(
                 FeedId: "research-market-briefing",
                 Title: "Pinned Insights",
-                Summary: "A compact market briefing with pinned research tiles, saved comparisons, and promotion posture.",
+                Summary: "A compact market briefing with pinned Strategy tiles, saved comparisons, and promotion posture.",
                 GeneratedAt: generatedAt,
                 Widgets:
                 [
@@ -3611,7 +3611,7 @@ public static partial class WorkstationEndpoints
                 [
                     "Daily loss guard set to -$12,000.",
                     "Max position notional guard set to $120,000.",
-                    "Kill-switch can be engaged manually from governance lane."
+                    "Kill-switch can be engaged manually from Accounting review."
                 ]),
             Brokerage: new WorkstationTradingBrokerageState(
                 Provider: "Interactive Brokers",
@@ -3773,7 +3773,7 @@ public static partial class WorkstationEndpoints
             ],
             Exports:
             [
-                new WorkstationDataExportRecord("EX-2196", "python-pandas", "research pack", "Ready", "118k", "7m ago"),
+                new WorkstationDataExportRecord("EX-2196", "python-pandas", "strategy pack", "Ready", "118k", "7m ago"),
                 new WorkstationDataExportRecord("EX-2198", "postgresql", "ops warehouse", "Attention", "42k", "9m ago")
             ],
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
@@ -4322,7 +4322,7 @@ public static partial class WorkstationEndpoints
                 .ToArray();
 
             // Fetch details for the most recent runs to power the cash-flow summary.
-            // Mirrors the Governance workspace pattern; bounded to avoid amplifying load.
+            // Mirrors the Accounting workspace pattern; bounded to avoid amplifying load.
             var cashFlowRuns = allRuns.Take(6).ToArray();
             runDetailsForCashFlow = cashFlowRuns.Length == 0
                 ? []
@@ -4718,7 +4718,7 @@ public static partial class WorkstationEndpoints
                 ExceptionRoute: "governance-variance-escalation",
                 ToleranceProfileId: "critical-zero-tolerance",
                 ToleranceBand: 0m,
-                RequiredSignoffRole: "Governance sign-off",
+                RequiredSignoffRole: "Accounting sign-off",
                 SignoffStatus: "pending-signoff"),
             new ReconciliationBreakQueueItem(
                 BreakId: "BRK-gov-run-001-2",
@@ -4738,7 +4738,7 @@ public static partial class WorkstationEndpoints
                 ExceptionRoute: "security-master-governance-review",
                 ToleranceProfileId: "coverage-classification-review",
                 ToleranceBand: 0m,
-                RequiredSignoffRole: "Governance analyst",
+                RequiredSignoffRole: "Accounting analyst",
                 SignoffStatus: "in-review")
         };
         return new WorkstationGovernancePayload(
@@ -4801,7 +4801,7 @@ public static partial class WorkstationEndpoints
             eyebrow = "Strategy Lane · PlotTool",
             title = $"{chartTitle} workstation",
             description = "API-backed PlotTool workspace state from workstation strategy payload.",
-            statusBadgeLabel = (activeRun?.Mode.ToString() ?? "research").ToUpperInvariant(),
+            statusBadgeLabel = (activeRun?.Mode.ToString() ?? "Strategy").ToUpperInvariant(),
             statusBadgeVariant = ResolveModeVariant(activeRun?.Mode),
             expression = $"{SlugifyForExpression(activeStrategy)}.spread() vs {(companionStrategy is null ? SlugifyForExpression(activeStrategy) : SlugifyForExpression(companionStrategy))}.implied_volatility(3m, forward, 100)",
             toolbarPills = new[] { "MAX", "Daily (MAX)", companionStrategy is null ? "Single study" : "Pair overlay", "0d lag" },
@@ -5902,7 +5902,7 @@ public static partial class WorkstationEndpoints
             RecommendedProfiles: recommended,
             Profiles: profiles,
             ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
-            Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.",
+            Summary: $"{profiles.Length} export/reporting profiles are available for Accounting and Reporting workflows.",
             Templates: templates,
             RecentRuns: recentRuns);
     }
@@ -5963,10 +5963,10 @@ public static partial class WorkstationEndpoints
 
     private static string BuildRole(StrategyRunSummary? latest)
         => latest is null
-            ? "Research Lead"
+            ? "Strategy Lead"
             : latest.Mode == StrategyRunMode.Live
                 ? "Live Operations"
-                : "Research Lead";
+                : "Strategy Lead";
 
     private static string MapEnvironment(StrategyRunSummary? latest)
         => latest?.Mode switch
@@ -5995,7 +5995,7 @@ public static partial class WorkstationEndpoints
                 StrategyRunPromotionState.CandidateForPaper => "Completed backtest awaiting paper review.",
                 StrategyRunPromotionState.CandidateForLive => "Paper run pending live promotion review.",
                 StrategyRunPromotionState.RequiresCompletion => "Run must complete before promotion review can proceed.",
-                _ => "Run is flagged for governance review."
+                _ => "Run is flagged for Accounting review."
             };
         }
 
@@ -6466,7 +6466,7 @@ public static partial class WorkstationEndpoints
                     : "governance-variance-escalation",
                 ToleranceProfileId: "critical-zero-tolerance",
                 ToleranceBand: 0m,
-                RequiredSignoffRole: "Governance sign-off",
+                RequiredSignoffRole: "Accounting sign-off",
                 SignoffStatus: "pending-signoff");
         }
 
@@ -6486,7 +6486,7 @@ public static partial class WorkstationEndpoints
                 ExceptionRoute: "security-master-governance-review",
                 ToleranceProfileId: "coverage-classification-review",
                 ToleranceBand: 0m,
-                RequiredSignoffRole: "Governance analyst",
+                RequiredSignoffRole: "Accounting analyst",
                 SignoffStatus: "routing-review");
         }
 
@@ -6737,7 +6737,7 @@ public static partial class WorkstationEndpoints
             return $"{activeBreakCount} reconciliation break(s) need review across {profileCount} tolerance profile(s); {pendingSignoffCount} sign-off item(s) remain open.";
         }
 
-        return "All reconciliation breaks are resolved or dismissed; calibration is ready for governance sign-off.";
+        return "All reconciliation breaks are resolved or dismissed; calibration is ready for accounting sign-off.";
     }
 
     private static bool HasMissingCalibrationMetadata(ReconciliationBreakQueueItem item)

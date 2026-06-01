@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.Domain.Enums;
 
 /// <summary>
@@ -5,6 +7,7 @@ namespace Meridian.Contracts.Domain.Enums;
 /// Determines monitoring thresholds for gap detection, completeness scoring,
 /// SLA freshness, and anomaly detection.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum LiquidityProfile : byte
 {
     /// <summary>

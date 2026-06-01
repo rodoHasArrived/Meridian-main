@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.Domain.Enums;
 
 /// <summary>
 /// Classification of financial instruments supported by the system.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum InstrumentType : byte
 {
     /// <summary>

@@ -178,7 +178,7 @@ public sealed class TradingWorkspaceShellPageTests
             PrimaryBlocker: new WorkflowBlockerSummary(
                 Code: "choose-context",
                 Label: "No operating context selected",
-                Detail: "Paper review, live posture, and governance-linked trading actions scope to the active operating context.",
+                Detail: "Paper review, live posture, and Accounting-linked trading actions scope to the active operating context.",
                 Tone: "Warning",
                 IsBlocking: true),
             Evidence: []);
@@ -806,7 +806,7 @@ public sealed class TradingWorkspaceShellPageTests
             WorkItemId: "reconciliation-break-route-52",
             Kind: OperatorWorkItemKindDto.ReconciliationBreak,
             Label: "Reconciliation break requires review",
-            Detail: "Cash mismatch is open and assigned to governance review.",
+            Detail: "Cash mismatch is open and assigned to Accounting review.",
             Tone: OperatorWorkItemToneDto.Warning,
             CreatedAt: new DateTimeOffset(2026, 4, 27, 17, 30, 0, TimeSpan.Zero),
             TargetRoute: $"{UiApiRoutes.ReconciliationBreakQueue}/break-123/review",

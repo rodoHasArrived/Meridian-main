@@ -6,7 +6,7 @@
 
 Meridian's WPF desktop application (`src/Meridian.Wpf/`) is an active native Windows desktop operator surface for the platform alongside the browser workstation. It exposes Meridian capability through a workspace-based shell with a command palette, seven canonical workspaces (Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings), and compatibility aliases for legacy Research, Data Operations, and Governance routes.
 
-For Wave 2-4 workflow work, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) before accepting a WPF slice as progress. Desktop changes must map to a real operator scenario in Lane A trading cockpit reliability, Lane B run -> portfolio -> ledger continuity, or Lane C reconciliation/governance close flow, and must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation.
+For the Wave two-to-four acceptance lanes, use [`../plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) before accepting a WPF slice as progress. Desktop changes must map to a real operator scenario in Lane A trading cockpit reliability, Lane B run -> portfolio -> ledger continuity, or Lane C reconciliation/governance close flow, and must consume shared contracts, services, read models, or workstation endpoints before WPF composes the presentation.
 
 ## Architecture
 
@@ -151,8 +151,6 @@ The shell applies the shared inbox payload as soon as the endpoint returns, befo
 **Activity Log triage strip** — `ActivityLogPage` now keeps retained error count, warning count, visible entry count, latest entry time, and active filter scope above the virtualized list. `ActivityLogViewModel` projects this from the retained in-memory log window and owns the level, category, and search filter bindings; when filters hide retained entries, the empty state exposes a bound `Reset Filters` action that restores the in-memory activity window without another backend request or code-behind synchronization. The header actions now follow the same retained-window state: `Export` disables when no rows are visible, and `Clear` disables until there is retained activity to remove.
 
 **Messaging Hub delivery posture** — `MessagingHubPage` now promotes message-flow state into a compact delivery posture panel with recent-activity scope text and an automation-addressable empty state. `MessagingHubViewModel` derives waiting, subscriber-ready, flowing, and failure-review copy from the page's existing session counters and subscription counts, keeps only the latest 50 activity rows, and exposes bound refresh and clear commands so the header shows the last statistics refresh while the Clear button disables itself when there is no retained activity to clear.
-
-**Agent local-AI readiness** — `AgentPage` now surfaces a bound readiness card, model-scope chip, empty-conversation state, and input guidance before an operator sends a prompt. `AgentViewModel` owns Ollama availability, installed-model state, selected-model readiness, send/clear command enablement, and conversation empty-state copy, so missing local runtime or missing-model setup is explained without page workflow logic.
 
 **Watchlist posture card** — `WatchlistPage` now summarizes saved watchlists, pinned lists, symbol coverage, current search scope, and the next operator action above the grid. `WatchlistViewModel` projects this from already-loaded local watchlist display models, so search misses and unpinned libraries get actionable copy without another service call; the search-miss empty state also exposes a bound `Clear Search` recovery action that resets the in-memory filter.
 
@@ -567,8 +565,9 @@ make desktop-test
 
 - [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md) — Layer boundaries
 - [`docs/development/desktop-testing-guide.md`](./desktop-testing-guide.md) — Testing procedures
-- [`docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-4 desktop acceptance lanes, shared-contract checks, and evidence rules
+- [`docs/plans/desktop-ui-workflow-acceptance-matrix.md`](../plans/desktop-ui-workflow-acceptance-matrix.md) — Wave 2-to-4 desktop acceptance lanes, shared-contract checks, and evidence rules
 - [`docs/evaluations/desktop-platform-improvements-implementation-guide.md`](../evaluations/desktop-platform-improvements-implementation-guide.md) — Platform improvement roadmap and implementation reference
 - [`docs/development/ui-fixture-mode-guide.md`](./ui-fixture-mode-guide.md) — Offline / fixture mode development
-- [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — Desktop items in the project roadmap
+- [`docs/roadmap/README.md`](../roadmap/README.md) — Desktop items in the project roadmap
 - [`docs/development/policies/desktop-support-policy.md`](./policies/desktop-support-policy.md) — Contribution requirements
+

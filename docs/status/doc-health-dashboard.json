@@ -1,126 +1,1086 @@
 {
-  "total_files": 409,
-  "total_lines": 100073,
-  "orphaned_count": 86,
-  "no_heading_count": 0,
-  "stale_count": 0,
-  "todo_count": 285,
-  "average_lines": 244.7,
-  "health_score": 89,
+  "total_files": 574,
+  "total_lines": 133939,
+  "orphaned_count": 101,
+  "no_heading_count": 20,
+  "stale_count": 59,
+  "todo_count": 301,
+  "average_lines": 233.3,
+  "health_score": 88,
   "orphaned_files": [
-    "AGENTS.md",
+    ".nuget/packages/communitytoolkit.highperformance/8.4.0/License.md",
+    ".nuget/packages/farmer/1.9.26/readme.md",
+    ".nuget/packages/microsoft.aspnetcore.openapi/9.0.15/PACKAGE.md",
+    ".nuget/packages/microsoft.bcl.asyncinterfaces/10.0.3/PACKAGE.md",
+    ".nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/PACKAGE.md",
+    ".nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md",
+    ".nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.caching.abstractions/10.0.5/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.caching.memory/10.0.1/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.caching.memory/10.0.5/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration.abstractions/10.0.0/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration.abstractions/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration.binder/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration.commandline/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration.environmentvariables/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration.fileextensions/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration.json/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration.usersecrets/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.dependencyinjection.abstractions/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.dependencyinjection/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.dependencymodel/10.0.0/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.fileproviders.abstractions/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.fileproviders.physical/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.filesystemglobbing/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.hosting.abstractions/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.hosting/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.http.polly/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.http/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.logging.abstractions/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.logging.console/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.logging.debug/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.logging/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.options.configurationextensions/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.options/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.primitives/10.0.5/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.primitives/10.0.7/PACKAGE.md",
+    ".nuget/packages/microsoft.netcore.app.runtime.win-x64/10.0.8/PACKAGE.md",
+    ".nuget/packages/microsoft.testing.extensions.telemetry/1.9.0/PACKAGE.md",
+    ".nuget/packages/microsoft.testing.extensions.trxreport.abstractions/1.9.0/PACKAGE.md",
+    ".nuget/packages/microsoft.testing.extensions.vstestbridge/1.9.0/PACKAGE.md",
+    ".nuget/packages/microsoft.testing.platform.msbuild/1.9.0/PACKAGE.md",
+    ".nuget/packages/microsoft.testing.platform/1.9.0/PACKAGE.md",
+    ".nuget/packages/newtonsoft.json/13.0.4/LICENSE.md",
+    ".nuget/packages/polly.core/8.6.6/package-readme.md",
+    ".nuget/packages/polly.extensions/8.6.6/package-readme.md",
+    ".nuget/packages/polly/8.6.6/package-readme.md",
+    ".nuget/packages/swashbuckle.aspnetcore.swagger/10.1.7/package-readme.md",
+    ".nuget/packages/swashbuckle.aspnetcore.swaggergen/10.1.7/package-readme.md",
+    ".nuget/packages/swashbuckle.aspnetcore.swaggerui/10.1.7/package-readme.md",
+    ".nuget/packages/swashbuckle.aspnetcore/10.1.7/docs/package-readme.md",
+    ".nuget/packages/system.configuration.configurationmanager/8.0.0/PACKAGE.md",
+    ".nuget/packages/system.diagnostics.eventlog/10.0.7/PACKAGE.md",
+    ".nuget/packages/system.diagnostics.eventlog/8.0.0/PACKAGE.md",
+    ".nuget/packages/system.reactive/6.1.0/readme.md",
+    ".nuget/packages/system.runtime.caching/8.0.0/PACKAGE.md",
+    ".nuget/packages/system.security.cryptography.protecteddata/9.0.2/PACKAGE.md",
     "Meridian Design System/BRAND_GUIDELINES.md",
     "Meridian Design System/CONTENT_FUNDAMENTALS.md",
     "Meridian Design System/ICONOGRAPHY.md",
     "Meridian Design System/INSPIRATION_BRIEF.md",
     "Meridian Design System/SKILL.md",
     "Meridian Design System/VISUAL_FOUNDATIONS.md",
-    "benchmarks/BOTTLENECK_REPORT.md",
-    "docs/ai/claude/CLAUDE.api.md",
-    "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
-    "docs/ai/claude/CLAUDE.structure.md",
-    "docs/ai/copilot/ai-sync-workflow.md",
-    "docs/architecture/workstation-continuity-payload-profile.md",
-    "docs/audits/CODE_REVIEW_2026-03-16.md",
-    "docs/audits/workspace-visual-audit-checklist-2026-04-22.md",
-    "docs/development/fund-account-traversal.md",
-    "docs/development/policies/promotion-policy-matrix.md",
-    "docs/development/score-reason-taxonomy.md",
-    "docs/development/synthetic-provider-test-harness.md",
-    "docs/docfx/api/index.md",
-    "docs/generated/adr-index.md",
-    "docs/generated/documentation-coverage.md",
-    "docs/generated/interfaces.md",
-    "docs/generated/project-dependencies.md",
-    "docs/generated/provider-registry.md",
-    "docs/generated/workflows-overview.md",
-    "docs/integrations/tastytrade-endpoint-coverage.md",
-    "docs/operations/broker-order-routing-phased-runbook.md",
-    "docs/operations/ibkr-promotion-checklist.md",
-    "docs/operations/live-execution-controls.md",
-    "docs/operations/provider-degradation-policy.md",
-    "docs/operations/reconciliation-operations.md",
-    "docs/operations/reconciliation-policy-operations.md",
-    "docs/operations/reconciliation-runbook.md",
-    "docs/operations/tradier-provider-endpoint-catalog.md",
-    "docs/plans/adapters-completion-plan.md",
-    "docs/plans/approach-b-plus-v2-implementation-plan.md",
-    "docs/plans/covered-call-writing-slice-1-blueprint.md",
-    "docs/plans/wave-implementation-checklists.md",
-    "docs/prompts/roadmap-source-docs-implementation-prompt.md",
-    "docs/providers/broker-adapter-template-guide.md",
-    "docs/providers/tradestation-endpoint-inventory.md",
-    "docs/reference/brand-assets.md",
-    "docs/roadmap/generated-doc-policy.md",
-    "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-    "docs/roadmap/generated/roadmap-register.md",
-    "docs/roadmap/roadmap-governance.md",
-    "docs/roadmap/roadmap-item-template.md",
-    "docs/roadmap/schema-versioning.md",
-    "docs/roadmap/status-taxonomy.md",
-    "docs/security/codex-security-remediation-2026-05-20.md",
-    "docs/source/generated/source-module-index.md",
-    "docs/source/generated/source-roadmap-traceability.md",
-    "docs/source/generated/source-todo-checklist.md",
-    "docs/source/source-diagram-standard.md",
-    "docs/source/source-documentation-standard.md",
-    "docs/source/source-readme-template.md",
-    "docs/source/source-todo-standard.md",
-    "docs/status/ROADMAP_SUMMARY.md",
-    "docs/status/broker-phase-promotion-checklist-template.md",
-    "docs/status/dead-code-inventory.md",
-    "docs/status/doc-health-dashboard.md",
-    "docs/status/ibkr-provider-inventory.md",
-    "docs/status/provider-adapters-closure-summary.md",
-    "docs/status/provider-capability-inventory.md",
-    "docs/status/provider-core-hardening-notes.md",
-    "docs/status/provider-failover-hardening.md",
-    "docs/status/provider-test-gap-baseline.md",
-    "docs/status/provider-test-minimums.md",
-    "docs/status/workflow-drift-report.md",
-    "docs/testing/wave2-cockpit-reliability-evidence-runbook.md",
-    "plugins/frontend-web-dev/agents/electron-angular-native.md",
-    "plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md",
-    "plugins/frontend-web-dev/skills/playwright-explore-website/SKILL.md",
-    "plugins/frontend-web-dev/skills/playwright-generate-test/SKILL.md",
-    "plugins/security-best-practices/skills/ai-prompt-engineering-safety-review/SKILL.md",
-    "plugins/testing-automation/agents/playwright-tester.md",
-    "plugins/testing-automation/agents/tdd-green.md",
-    "plugins/testing-automation/agents/tdd-red.md",
-    "plugins/testing-automation/agents/tdd-refactor.md",
-    "plugins/testing-automation/skills/ai-prompt-engineering-safety-review/SKILL.md",
-    "plugins/testing-automation/skills/csharp-nunit/SKILL.md",
-    "plugins/testing-automation/skills/java-junit/SKILL.md",
-    "plugins/testing-automation/skills/playwright-explore-website/SKILL.md",
-    "plugins/testing-automation/skills/playwright-generate-test/SKILL.md",
-    "tests/setup-script-tests.md"
+    "benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
+    "benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
+    "benchmarks/results/20260521_111257/composite/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md",
+    "benchmarks/results/20260521_111257/wal/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherThroughputBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.DepthCollectorBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.EndToEndPipelineBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.TradeCollectorBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "benchmarks/results/20260521_181635/results/Meridian.Benchmarks.EventPipelineBenchmarks-report-github.md",
+    "benchmarks/results/20260521_181812/results/Meridian.Benchmarks.EventBufferBenchmarks-report-github.md",
+    "benchmarks/results/20260521_182021/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
+    "benchmarks/results/20260521_182313/results/Meridian.Benchmarks.JsonSerializationBenchmarks-report-github.md",
+    "benchmarks/results/20260521_182521/results/Meridian.Benchmarks.JsonParsingBenchmarks-report-github.md",
+    "benchmarks/results/latest-manual/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "benchmarks/results/short-run-short/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "docs/api/oms-ems-integration.md",
+    "docs/architecture/operator-observability-dashboard.md",
+    "docs/architecture/runtime-component-state-boundaries.md",
+    "docs/architecture/write-path-invariants.md",
+    "docs/operations/environment-and-deployment-standard.md",
+    "docs/operations/failover-and-recovery-runbook.md",
+    "docs/operations/fund-ops-persistence-cutover-runbook.md",
+    "docs/operations/reconciliation-resilience-runbook.md",
+    "docs/plans/performance-todo-2026-05-21.md",
+    "docs/security/buyer-packet/architecture-summary.md",
+    "docs/security/buyer-packet/control-mapping.md",
+    "docs/security/buyer-packet/document-index.md",
+    "docs/security/buyer-packet/operational-controls.md",
+    "docs/security/buyer-packet/threat-model-summary.md",
+    "docs/security/buyer-packet/vulnerability-management.md",
+    "docs/security/security-remediation-backlog.md",
+    "docs/source/generated/stale-docs.md",
+    "docs/status/fund-ops-persistence-cutover-status.md",
+    "docs/status/provider-validation-evidence-schema.md"
   ],
-  "no_heading_files": [],
-  "stale_files": [],
+  "no_heading_files": [
+    ".nuget/packages/newtonsoft.json/13.0.4/LICENSE.md",
+    "benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
+    "benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
+    "benchmarks/results/20260521_111257/composite/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md",
+    "benchmarks/results/20260521_111257/wal/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherThroughputBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.DepthCollectorBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.EndToEndPipelineBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.TradeCollectorBenchmarks-report-github.md",
+    "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "benchmarks/results/20260521_181635/results/Meridian.Benchmarks.EventPipelineBenchmarks-report-github.md",
+    "benchmarks/results/20260521_181812/results/Meridian.Benchmarks.EventBufferBenchmarks-report-github.md",
+    "benchmarks/results/20260521_182021/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
+    "benchmarks/results/20260521_182313/results/Meridian.Benchmarks.JsonSerializationBenchmarks-report-github.md",
+    "benchmarks/results/20260521_182521/results/Meridian.Benchmarks.JsonParsingBenchmarks-report-github.md",
+    "benchmarks/results/latest-manual/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "benchmarks/results/short-run-short/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md"
+  ],
+  "stale_files": [
+    ".nuget/packages/azure.core/1.38.0/CHANGELOG.md",
+    ".nuget/packages/azure.core/1.38.0/README.md",
+    ".nuget/packages/azure.core/1.46.2/CHANGELOG.md",
+    ".nuget/packages/azure.core/1.46.2/README.md",
+    ".nuget/packages/azure.core.amqp/1.3.1/CHANGELOG.md",
+    ".nuget/packages/azure.core.amqp/1.3.1/README.md",
+    ".nuget/packages/azure.identity/1.11.4/CHANGELOG.md",
+    ".nuget/packages/azure.identity/1.11.4/README.md",
+    ".nuget/packages/azure.messaging.servicebus/7.20.1/CHANGELOG.md",
+    ".nuget/packages/azure.messaging.servicebus/7.20.1/README.md",
+    ".nuget/packages/communitytoolkit.highperformance/8.4.0/License.md",
+    ".nuget/packages/farmer/1.9.26/readme.md",
+    ".nuget/packages/fluentvalidation/12.1.1/README.md",
+    ".nuget/packages/fsharpplus/1.9.1/README.md",
+    ".nuget/packages/fstoolkit.errorhandling/5.2.0/README.md",
+    ".nuget/packages/microsoft.bcl.asyncinterfaces/10.0.3/PACKAGE.md",
+    ".nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/PACKAGE.md",
+    ".nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/Microsoft.CodeAnalysis.Analyzers.md",
+    ".nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md",
+    ".nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.caching.memory/10.0.1/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.configuration.abstractions/10.0.0/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.dependencymodel/10.0.0/PACKAGE.md",
+    ".nuget/packages/microsoft.identity.client/4.61.3/README.md",
+    ".nuget/packages/microsoft.io.recyclablememorystream/3.0.0/README.md",
+    ".nuget/packages/microsoft.io.recyclablememorystream/3.0.1/README.md",
+    ".nuget/packages/microsoft.openapi/1.6.17/README.md",
+    ".nuget/packages/microsoft.openapi/2.4.1/README.md",
+    ".nuget/packages/microsoft.testing.extensions.telemetry/1.9.0/PACKAGE.md",
+    ".nuget/packages/microsoft.testing.extensions.trxreport.abstractions/1.9.0/PACKAGE.md",
+    ".nuget/packages/microsoft.testing.extensions.vstestbridge/1.9.0/PACKAGE.md",
+    ".nuget/packages/microsoft.testing.platform/1.9.0/PACKAGE.md",
+    ".nuget/packages/microsoft.testing.platform.msbuild/1.9.0/PACKAGE.md",
+    ".nuget/packages/newtonsoft.json/13.0.4/LICENSE.md",
+    ".nuget/packages/newtonsoft.json/13.0.4/README.md",
+    ".nuget/packages/opentelemetry.api.providerbuilderextensions/1.15.0/README.md",
+    ".nuget/packages/opentelemetry.exporter.prometheus.aspnetcore/1.14.0-beta.1/README.md",
+    ".nuget/packages/opentelemetry.instrumentation.http/1.15.0/README.md",
+    ".nuget/packages/parquet.net/5.5.0/README.md",
+    ".nuget/packages/prometheus-net/8.2.1/README.md",
+    ".nuget/packages/prometheus-net.aspnetcore/8.2.1/README.md",
+    ".nuget/packages/rabbitmq.client/7.2.1/README.md",
+    ".nuget/packages/serilog/4.3.1/README.md",
+    ".nuget/packages/serilog.extensions.logging/10.0.0/README.md",
+    ".nuget/packages/serilog.settings.configuration/10.0.0/README.md",
+    ".nuget/packages/serilog.sinks.console/6.1.1/README.md",
+    ".nuget/packages/serilog.sinks.file/7.0.0/README.md",
+    ".nuget/packages/skender.stock.indicators/2.7.1/README.md",
+    ".nuget/packages/system.clientmodel/1.4.2/CHANGELOG.md",
+    ".nuget/packages/system.clientmodel/1.4.2/README.md",
+    ".nuget/packages/system.configuration.configurationmanager/8.0.0/PACKAGE.md",
+    ".nuget/packages/system.diagnostics.eventlog/8.0.0/PACKAGE.md",
+    ".nuget/packages/system.memory.data/1.0.2/CHANGELOG.md",
+    ".nuget/packages/system.memory.data/1.0.2/README.md",
+    ".nuget/packages/system.reactive/6.1.0/readme.md",
+    ".nuget/packages/system.runtime.caching/8.0.0/PACKAGE.md",
+    ".nuget/packages/system.security.cryptography.protecteddata/9.0.2/PACKAGE.md",
+    ".nuget/packages/websocket.client/5.3.0/README.md",
+    ".nuget/packages/ziggycreatures.fusioncache.serialization.systemtextjson/2.6.0/README.md"
+  ],
   "all_files": [
     {
       "path": "AGENTS.md",
-      "line_count": 572,
+      "line_count": 55,
       "has_heading": true,
-      "todo_count": 8,
-      "last_modified_utc": "2026-05-20T12:37:07.623471+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T06:14:32.315949+00:00",
       "stale": false
     },
     {
       "path": "CLAUDE.md",
-      "line_count": 135,
+      "line_count": 166,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T12:37:07.853410+00:00",
+      "last_modified_utc": "2026-05-28T16:08:19.777873+00:00",
       "stale": false
     },
     {
       "path": "README.md",
-      "line_count": 278,
+      "line_count": 304,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.601974+00:00",
+      "last_modified_utc": "2026-05-30T04:00:51.809043+00:00",
       "stale": false
+    },
+    {
+      "path": ".nuget/packages/azure.core/1.38.0/CHANGELOG.md",
+      "line_count": 457,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-02-26T15:22:24+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/azure.core/1.38.0/README.md",
+      "line_count": 267,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-02-26T15:24:48+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/azure.core/1.46.2/CHANGELOG.md",
+      "line_count": 564,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-06-05T22:11:26+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/azure.core/1.46.2/README.md",
+      "line_count": 265,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-06-05T22:14:46+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/azure.core.amqp/1.3.1/CHANGELOG.md",
+      "line_count": 55,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-07-30T18:19:48+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/azure.core.amqp/1.3.1/README.md",
+      "line_count": 3,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-07-30T18:23:06+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/azure.identity/1.11.4/CHANGELOG.md",
+      "line_count": 714,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-06-10T16:41:32+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/azure.identity/1.11.4/README.md",
+      "line_count": 435,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-06-10T16:43:56+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/azure.messaging.servicebus/7.20.1/CHANGELOG.md",
+      "line_count": 765,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-06-12T19:35:22+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/azure.messaging.servicebus/7.20.1/README.md",
+      "line_count": 527,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-06-12T19:38:38+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/communitytoolkit.highperformance/8.4.0/License.md",
+      "line_count": 13,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-12-12T07:36:08+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/farmer/1.9.26/readme.md",
+      "line_count": 11,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-12-05T13:26:44+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/fluentvalidation/12.1.1/README.md",
+      "line_count": 53,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2022-05-26T16:35:10+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/fsharpplus/1.9.1/README.md",
+      "line_count": 45,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-01-11T15:46:16+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/fstoolkit.errorhandling/5.2.0/README.md",
+      "line_count": 115,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-07-12T18:18:56+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.aspnetcore.openapi/9.0.15/PACKAGE.md",
+      "line_count": 54,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-26T21:41:12+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.bcl.asyncinterfaces/10.0.3/PACKAGE.md",
+      "line_count": 64,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-01-25T16:05:58+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/PACKAGE.md",
+      "line_count": 64,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2023-10-31T14:49:26+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/Microsoft.CodeAnalysis.Analyzers.md",
+      "line_count": 641,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-12-25T10:07:02+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md",
+      "line_count": 5,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-12-25T09:50:32+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md",
+      "line_count": 3,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-02-20T14:54:20+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.caching.abstractions/10.0.5/PACKAGE.md",
+      "line_count": 53,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-03T17:47:26+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.caching.memory/10.0.1/PACKAGE.md",
+      "line_count": 89,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-11-19T14:04:50+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.caching.memory/10.0.5/PACKAGE.md",
+      "line_count": 89,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-03T17:47:26+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.configuration/10.0.7/PACKAGE.md",
+      "line_count": 82,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.configuration.abstractions/10.0.0/PACKAGE.md",
+      "line_count": 82,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-10-23T22:45:54+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.configuration.abstractions/10.0.7/PACKAGE.md",
+      "line_count": 82,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.configuration.binder/10.0.7/PACKAGE.md",
+      "line_count": 138,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.configuration.commandline/10.0.7/PACKAGE.md",
+      "line_count": 44,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.configuration.environmentvariables/10.0.7/PACKAGE.md",
+      "line_count": 44,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.configuration.fileextensions/10.0.7/PACKAGE.md",
+      "line_count": 19,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.configuration.json/10.0.7/PACKAGE.md",
+      "line_count": 78,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.configuration.usersecrets/10.0.7/PACKAGE.md",
+      "line_count": 19,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.dependencyinjection/10.0.7/PACKAGE.md",
+      "line_count": 50,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.dependencyinjection.abstractions/10.0.7/PACKAGE.md",
+      "line_count": 34,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.dependencymodel/10.0.0/PACKAGE.md",
+      "line_count": 49,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-10-23T22:45:54+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.fileproviders.abstractions/10.0.7/PACKAGE.md",
+      "line_count": 51,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.fileproviders.physical/10.0.7/PACKAGE.md",
+      "line_count": 70,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.filesystemglobbing/10.0.7/PACKAGE.md",
+      "line_count": 52,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.hosting/10.0.7/PACKAGE.md",
+      "line_count": 81,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.hosting.abstractions/10.0.7/PACKAGE.md",
+      "line_count": 43,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.http/10.0.7/PACKAGE.md",
+      "line_count": 81,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.http.polly/10.0.7/PACKAGE.md",
+      "line_count": 68,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:08+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.logging/10.0.7/PACKAGE.md",
+      "line_count": 146,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.logging.abstractions/10.0.7/PACKAGE.md",
+      "line_count": 164,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.logging.console/10.0.7/PACKAGE.md",
+      "line_count": 106,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.logging.debug/10.0.7/PACKAGE.md",
+      "line_count": 100,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.options/10.0.7/PACKAGE.md",
+      "line_count": 170,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.options.configurationextensions/10.0.7/PACKAGE.md",
+      "line_count": 145,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.primitives/10.0.5/PACKAGE.md",
+      "line_count": 109,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-03T17:47:26+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.extensions.primitives/10.0.7/PACKAGE.md",
+      "line_count": 109,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:34+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.identity.client/4.61.3/README.md",
+      "line_count": 66,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-06-06T21:48:38+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.io.recyclablememorystream/3.0.0/README.md",
+      "line_count": 288,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2023-12-11T21:47:08+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.io.recyclablememorystream/3.0.1/README.md",
+      "line_count": 290,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-06-11T20:17:38+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.netcore.app.runtime.win-x64/10.0.8/PACKAGE.md",
+      "line_count": 20,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-30T00:06:54+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/microsoft.openapi/1.6.17/README.md",
+      "line_count": 130,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-08-06T09:09:56+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.openapi/2.4.1/README.md",
+      "line_count": 124,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-12-18T11:41:08+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.testing.extensions.telemetry/1.9.0/PACKAGE.md",
+      "line_count": 9,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-10-01T10:26:54+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.testing.extensions.trxreport.abstractions/1.9.0/PACKAGE.md",
+      "line_count": 11,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-10-01T10:26:54+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.testing.extensions.vstestbridge/1.9.0/PACKAGE.md",
+      "line_count": 9,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-10-01T10:26:54+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.testing.platform/1.9.0/PACKAGE.md",
+      "line_count": 9,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-10-01T10:26:54+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/microsoft.testing.platform.msbuild/1.9.0/PACKAGE.md",
+      "line_count": 9,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-10-01T10:26:54+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/newtonsoft.json/13.0.4/LICENSE.md",
+      "line_count": 20,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2025-09-16T07:56:58+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/newtonsoft.json/13.0.4/README.md",
+      "line_count": 71,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-09-16T07:56:58+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/npgsql/10.0.2/README.md",
+      "line_count": 44,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-12T15:53:46+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/opentelemetry/1.15.3/README.md",
+      "line_count": 165,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-21T07:52:48+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/opentelemetry.api/1.15.3/README.md",
+      "line_count": 555,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-21T07:52:42+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/opentelemetry.api.providerbuilderextensions/1.15.0/README.md",
+      "line_count": 27,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-01-21T06:32:34+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/opentelemetry.api.providerbuilderextensions/1.15.3/README.md",
+      "line_count": 27,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-21T07:52:40+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/opentelemetry.exporter.console/1.15.1/README.md",
+      "line_count": 78,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-27T06:19:42+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/opentelemetry.exporter.opentelemetryprotocol/1.15.3/README.md",
+      "line_count": 694,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-21T07:52:44+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/opentelemetry.exporter.prometheus.aspnetcore/1.14.0-beta.1/README.md",
+      "line_count": 120,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-11-12T18:12:50+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/opentelemetry.extensions.hosting/1.15.3/README.md",
+      "line_count": 150,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-21T07:52:46+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/opentelemetry.instrumentation.aspnetcore/1.15.1/README.md",
+      "line_count": 376,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-03-11T10:18:36+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/opentelemetry.instrumentation.http/1.15.0/README.md",
+      "line_count": 414,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-01-21T11:46:24+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/parquet.net/5.5.0/README.md",
+      "line_count": 1023,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-02-01T20:35:50+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/polly/8.6.6/package-readme.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-04T12:42:30+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/polly.core/8.6.6/package-readme.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-04T12:42:30+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/polly.extensions/8.6.6/package-readme.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-04T12:42:30+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/prometheus-net/8.2.1/README.md",
+      "line_count": 906,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-01-03T18:58:22+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/prometheus-net.aspnetcore/8.2.1/README.md",
+      "line_count": 906,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2024-01-03T18:58:22+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/rabbitmq.client/7.2.1/README.md",
+      "line_count": 1,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-02-25T20:18:24+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/serilog/4.3.1/README.md",
+      "line_count": 119,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-02-10T22:01:12+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/serilog.extensions.logging/10.0.0/README.md",
+      "line_count": 189,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-11-21T21:46:28+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/serilog.settings.configuration/10.0.0/README.md",
+      "line_count": 518,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-11-26T22:39:32+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/serilog.sinks.console/6.1.1/README.md",
+      "line_count": 178,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-11-02T20:58:30+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/serilog.sinks.file/7.0.0/README.md",
+      "line_count": 211,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-04-28T00:37:30+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/sharpino/4.9.4/README.md",
+      "line_count": 477,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-03-18T09:10:30+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/sharpino.core/4.8.8/README.md",
+      "line_count": 475,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-03-12T13:58:24+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/skender.stock.indicators/2.7.1/README.md",
+      "line_count": 22,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-12-21T23:41:58+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/snappier/1.3.1/README.md",
+      "line_count": 115,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-28T14:18:12+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/swashbuckle.aspnetcore/10.1.7/docs/package-readme.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-25T21:47:28+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/swashbuckle.aspnetcore.swagger/10.1.7/package-readme.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-25T21:47:28+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/swashbuckle.aspnetcore.swaggergen/10.1.7/package-readme.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-25T21:47:28+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/swashbuckle.aspnetcore.swaggerui/10.1.7/package-readme.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-25T21:47:28+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/system.clientmodel/1.4.2/CHANGELOG.md",
+      "line_count": 208,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-06-05T19:51:46+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/system.clientmodel/1.4.2/README.md",
+      "line_count": 382,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-06-05T19:55:18+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/system.configuration.configurationmanager/8.0.0/PACKAGE.md",
+      "line_count": 86,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2023-10-31T14:49:28+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/system.diagnostics.eventlog/10.0.7/PACKAGE.md",
+      "line_count": 87,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-04-17T17:14:36+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/system.diagnostics.eventlog/8.0.0/PACKAGE.md",
+      "line_count": 87,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2023-10-31T14:49:28+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/system.memory.data/1.0.2/CHANGELOG.md",
+      "line_count": 17,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2021-04-08T16:42:48+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/system.memory.data/1.0.2/README.md",
+      "line_count": 67,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2021-04-08T16:42:48+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/system.reactive/6.1.0/readme.md",
+      "line_count": 96,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-10-03T06:00:58+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/system.runtime.caching/8.0.0/PACKAGE.md",
+      "line_count": 46,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2023-10-31T14:49:30+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/system.security.cryptography.protecteddata/9.0.2/PACKAGE.md",
+      "line_count": 72,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-01-16T18:49:22+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/websocket.client/5.3.0/README.md",
+      "line_count": 242,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2025-09-26T12:55:00+00:00",
+      "stale": true
+    },
+    {
+      "path": ".nuget/packages/ziggycreatures.fusioncache/2.6.0/README.md",
+      "line_count": 192,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-14T09:21:30+00:00",
+      "stale": false
+    },
+    {
+      "path": ".nuget/packages/ziggycreatures.fusioncache.serialization.systemtextjson/2.6.0/README.md",
+      "line_count": 13,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2025-04-18T23:45:54+00:00",
+      "stale": true
     },
     {
       "path": "benchmarks/BOTTLENECK_REPORT.md",
@@ -131,11 +1091,163 @@
       "stale": false
     },
     {
+      "path": "benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:39.932653+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:39.934664+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_111257/composite/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:39.934664+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_111257/wal/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:39.936677+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
+      "line_count": 18,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.196219+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherThroughputBenchmarks-report-github.md",
+      "line_count": 19,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.198218+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.199219+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.DepthCollectorBenchmarks-report-github.md",
+      "line_count": 21,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.201222+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.EndToEndPipelineBenchmarks-report-github.md",
+      "line_count": 25,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.203218+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.TradeCollectorBenchmarks-report-github.md",
+      "line_count": 21,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.205218+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_180245/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.214221+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_181635/results/Meridian.Benchmarks.EventPipelineBenchmarks-report-github.md",
+      "line_count": 28,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.219221+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_181812/results/Meridian.Benchmarks.EventBufferBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.227100+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_182021/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
+      "line_count": 37,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.230595+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_182313/results/Meridian.Benchmarks.JsonSerializationBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.232810+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/20260521_182521/results/Meridian.Benchmarks.JsonParsingBenchmarks-report-github.md",
+      "line_count": 18,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:38.234829+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/latest-manual/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:39.938692+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/short-run-short/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:39.942761+00:00",
+      "stale": false
+    },
+    {
+      "path": "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+      "line_count": 17,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T02:13:39.944862+00:00",
+      "stale": false
+    },
+    {
       "path": "build/scripts/docs/README.md",
-      "line_count": 533,
+      "line_count": 574,
       "has_heading": true,
       "todo_count": 8,
-      "last_modified_utc": "2026-05-21T03:16:20.335388+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.867871+00:00",
       "stale": false
     },
     {
@@ -148,18 +1260,18 @@
     },
     {
       "path": "docs/HELP.md",
-      "line_count": 127,
+      "line_count": 222,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.157407+00:00",
+      "last_modified_utc": "2026-05-28T22:52:21.365181+00:00",
       "stale": false
     },
     {
       "path": "docs/README.md",
-      "line_count": 178,
+      "line_count": 191,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T12:37:08.138520+00:00",
+      "last_modified_utc": "2026-05-30T04:06:18.645691+00:00",
       "stale": false
     },
     {
@@ -324,26 +1436,26 @@
     },
     {
       "path": "docs/ai/assistant-workflow-contract.md",
-      "line_count": 205,
+      "line_count": 232,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:50:29.272919+00:00",
+      "last_modified_utc": "2026-05-28T16:07:32.377805+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/README.md",
-      "line_count": 159,
+      "line_count": 175,
       "has_heading": true,
       "todo_count": 8,
-      "last_modified_utc": "2026-05-21T02:50:29.273916+00:00",
+      "last_modified_utc": "2026-05-28T16:07:45.371438+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/agents/README.md",
-      "line_count": 103,
+      "line_count": 149,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.903144+00:00",
+      "last_modified_utc": "2026-05-28T16:08:10.931154+00:00",
       "stale": false
     },
     {
@@ -380,10 +1492,10 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.providers.md",
-      "line_count": 879,
+      "line_count": 878,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.918338+00:00",
+      "last_modified_utc": "2026-05-30T04:06:18.653179+00:00",
       "stale": false
     },
     {
@@ -399,7 +1511,7 @@
       "line_count": 61,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.918338+00:00",
+      "last_modified_utc": "2026-05-29T01:21:33.268226+00:00",
       "stale": false
     },
     {
@@ -412,10 +1524,10 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.structure.md",
-      "line_count": 1578,
+      "line_count": 1577,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-05-18T04:10:13.918338+00:00",
+      "last_modified_utc": "2026-05-26T23:30:36.899374+00:00",
       "stale": false
     },
     {
@@ -423,15 +1535,31 @@
       "line_count": 831,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.918338+00:00",
+      "last_modified_utc": "2026-05-25T01:02:51.335249+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/codex/quickstart.md",
+      "line_count": 72,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T06:14:32.317960+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/codex/README.md",
-      "line_count": 128,
+      "line_count": 186,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:50:29.275990+00:00",
+      "last_modified_utc": "2026-05-28T06:14:32.319968+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/codex/route-cards.md",
+      "line_count": 79,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T06:14:32.319968+00:00",
       "stale": false
     },
     {
@@ -439,23 +1567,31 @@
       "line_count": 53,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T10:38:56.150956+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.907306+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/copilot/instructions.md",
-      "line_count": 105,
+      "line_count": 106,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T10:39:47.751178+00:00",
+      "last_modified_utc": "2026-05-25T00:59:46.425747+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/generated/recent-changes.md",
+      "line_count": 49,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T04:12:36.945699+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/generated/repo-navigation.md",
-      "line_count": 108,
+      "line_count": 150,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.930440+00:00",
+      "last_modified_utc": "2026-05-30T04:12:36.942892+00:00",
       "stale": false
     },
     {
@@ -463,31 +1599,39 @@
       "line_count": 130,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T02:55:42.679459+00:00",
+      "last_modified_utc": "2026-05-22T02:13:39.948885+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/navigation/README.md",
-      "line_count": 94,
+      "line_count": 96,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.936015+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.911258+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/prompts/README.md",
-      "line_count": 119,
+      "line_count": 132,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T11:04:21.320006+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.913272+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/skills/README.md",
-      "line_count": 104,
+      "line_count": 133,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T02:06:20.760053+00:00",
+      "last_modified_utc": "2026-05-28T16:07:59.488796+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/api/oms-ems-integration.md",
+      "line_count": 23,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.915285+00:00",
       "stale": false
     },
     {
@@ -495,7 +1639,7 @@
       "line_count": 61,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.940040+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.075160+00:00",
       "stale": false
     },
     {
@@ -511,7 +1655,7 @@
       "line_count": 152,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.942054+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.077161+00:00",
       "stale": false
     },
     {
@@ -540,42 +1684,50 @@
     },
     {
       "path": "docs/architecture/evidence-workflow-fabric.md",
-      "line_count": 86,
+      "line_count": 110,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T11:24:25.933428+00:00",
+      "last_modified_utc": "2026-05-28T19:35:19.297707+00:00",
       "stale": false
     },
     {
       "path": "docs/architecture/layer-boundaries.md",
-      "line_count": 136,
+      "line_count": 132,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T07:30:59.015409+00:00",
+      "last_modified_utc": "2026-05-25T00:24:24.521143+00:00",
       "stale": false
     },
     {
       "path": "docs/architecture/ledger-architecture.md",
-      "line_count": 338,
+      "line_count": 592,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T10:32:57.099621+00:00",
+      "last_modified_utc": "2026-05-29T09:50:52.827346+00:00",
       "stale": false
     },
     {
       "path": "docs/architecture/module-map.md",
-      "line_count": 46,
+      "line_count": 81,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T06:45:01.823656+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.086895+00:00",
       "stale": false
     },
     {
       "path": "docs/architecture/mvvm-guidelines.md",
-      "line_count": 58,
+      "line_count": 62,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T06:33:39.856195+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.093218+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/operator-observability-dashboard.md",
+      "line_count": 28,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.917299+00:00",
       "stale": false
     },
     {
@@ -583,15 +1735,15 @@
       "line_count": 113,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T08:28:50.110955+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.093218+00:00",
       "stale": false
     },
     {
       "path": "docs/architecture/project-structure.md",
-      "line_count": 77,
+      "line_count": 76,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T12:37:08.587363+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.917299+00:00",
       "stale": false
     },
     {
@@ -607,7 +1759,15 @@
       "line_count": 73,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T11:43:59.456440+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.072500+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/runtime-component-state-boundaries.md",
+      "line_count": 52,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.917299+00:00",
       "stale": false
     },
     {
@@ -668,10 +1828,18 @@
     },
     {
       "path": "docs/architecture/wpf-workstation-shell-ux.md",
-      "line_count": 180,
+      "line_count": 181,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.954212+00:00",
+      "last_modified_utc": "2026-05-28T20:10:36.746359+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/write-path-invariants.md",
+      "line_count": 28,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-25T00:24:24.523143+00:00",
       "stale": false
     },
     {
@@ -724,10 +1892,10 @@
     },
     {
       "path": "docs/design/design-system-usage.md",
-      "line_count": 35,
+      "line_count": 41,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T12:37:10.158416+00:00",
+      "last_modified_utc": "2026-05-28T22:21:58.667801+00:00",
       "stale": false
     },
     {
@@ -740,10 +1908,10 @@
     },
     {
       "path": "docs/developer/build-test-run.md",
-      "line_count": 165,
+      "line_count": 193,
       "has_heading": true,
       "todo_count": 6,
-      "last_modified_utc": "2026-05-21T00:55:34.614156+00:00",
+      "last_modified_utc": "2026-05-26T23:30:40.496218+00:00",
       "stale": false
     },
     {
@@ -751,7 +1919,7 @@
       "line_count": 65,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T09:47:53.952883+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.121421+00:00",
       "stale": false
     },
     {
@@ -764,10 +1932,10 @@
     },
     {
       "path": "docs/developer/setup.md",
-      "line_count": 49,
+      "line_count": 64,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T12:37:09.323046+00:00",
+      "last_modified_utc": "2026-05-28T22:52:21.368276+00:00",
       "stale": false
     },
     {
@@ -795,35 +1963,51 @@
       "stale": false
     },
     {
-      "path": "docs/development/desktop-command-surface-migration.md",
-      "line_count": 29,
+      "path": "docs/development/codex-workflow.md",
+      "line_count": 72,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.986116+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.919314+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/development/desktop-command-surface-migration.md",
+      "line_count": 30,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-21T05:24:29.118044+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/development/desktop-resource-management.md",
+      "line_count": 54,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-21T06:42:57.127619+00:00",
       "stale": false
     },
     {
       "path": "docs/development/desktop-testing-guide.md",
-      "line_count": 457,
+      "line_count": 511,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T07:30:59.019776+00:00",
+      "last_modified_utc": "2026-05-28T11:01:11.062886+00:00",
       "stale": false
     },
     {
       "path": "docs/development/desktop-workflow-automation.md",
-      "line_count": 212,
+      "line_count": 241,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.991508+00:00",
+      "last_modified_utc": "2026-05-28T22:52:21.369271+00:00",
       "stale": false
     },
     {
       "path": "docs/development/documentation-automation.md",
-      "line_count": 529,
+      "line_count": 535,
       "has_heading": true,
       "todo_count": 40,
-      "last_modified_utc": "2026-05-21T00:55:34.616155+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.124420+00:00",
       "stale": false
     },
     {
@@ -831,7 +2015,7 @@
       "line_count": 722,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-05-18T07:32:57.202586+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.126419+00:00",
       "stale": false
     },
     {
@@ -883,6 +2067,14 @@
       "stale": false
     },
     {
+      "path": "docs/development/modular-desktop-architecture.md",
+      "line_count": 44,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-21T06:42:57.127619+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/development/otlp-trace-visualization.md",
       "line_count": 161,
       "has_heading": true,
@@ -892,10 +2084,10 @@
     },
     {
       "path": "docs/development/process-lifecycle-diagnostics.md",
-      "line_count": 44,
+      "line_count": 56,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T07:22:05.282556+00:00",
+      "last_modified_utc": "2026-05-28T09:27:34.247195+00:00",
       "stale": false
     },
     {
@@ -908,10 +2100,10 @@
     },
     {
       "path": "docs/development/README.md",
-      "line_count": 115,
+      "line_count": 119,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.615154+00:00",
+      "last_modified_utc": "2026-05-21T06:42:57.140622+00:00",
       "stale": false
     },
     {
@@ -948,10 +2140,10 @@
     },
     {
       "path": "docs/development/runtime-observability.md",
-      "line_count": 159,
+      "line_count": 210,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T01:18:05.722454+00:00",
+      "last_modified_utc": "2026-05-26T23:30:40.498215+00:00",
       "stale": false
     },
     {
@@ -960,6 +2152,14 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-18T04:10:14.009445+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/development/shared-workstation-components.md",
+      "line_count": 55,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-21T06:42:57.127619+00:00",
       "stale": false
     },
     {
@@ -996,10 +2196,10 @@
     },
     {
       "path": "docs/development/wpf-implementation-notes.md",
-      "line_count": 562,
+      "line_count": 574,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:14.009445+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.921327+00:00",
       "stale": false
     },
     {
@@ -1023,7 +2223,7 @@
       "line_count": 546,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-18T04:10:14.009445+00:00",
+      "last_modified_utc": "2026-05-30T04:06:18.663230+00:00",
       "stale": false
     },
     {
@@ -1084,18 +2284,18 @@
     },
     {
       "path": "docs/docfx/README.md",
-      "line_count": 111,
+      "line_count": 110,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T06:59:47.770411+00:00",
+      "last_modified_utc": "2026-05-30T04:06:18.647701+00:00",
       "stale": false
     },
     {
       "path": "docs/docfx/api/index.md",
-      "line_count": 63,
+      "line_count": 62,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.496894+00:00",
+      "last_modified_utc": "2026-05-30T04:06:18.651169+00:00",
       "stale": false
     },
     {
@@ -1191,7 +2391,7 @@
       "line_count": 73,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-05-18T04:10:19.548283+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.128422+00:00",
       "stale": false
     },
     {
@@ -1276,10 +2476,10 @@
     },
     {
       "path": "docs/generated/project-dependencies.md",
-      "line_count": 916,
+      "line_count": 1262,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.579665+00:00",
+      "last_modified_utc": "2026-05-30T04:11:53.539027+00:00",
       "stale": false
     },
     {
@@ -1300,18 +2500,18 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 5098,
+      "line_count": 14043,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-19T09:29:22.149346+00:00",
+      "todo_count": 7,
+      "last_modified_utc": "2026-05-30T04:11:10.697480+00:00",
       "stale": false
     },
     {
       "path": "docs/generated/workflow-command-reference.md",
-      "line_count": 35,
+      "line_count": 117,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.581687+00:00",
+      "last_modified_utc": "2026-05-28T22:52:21.371272+00:00",
       "stale": false
     },
     {
@@ -1327,7 +2527,7 @@
       "line_count": 115,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.588363+00:00",
+      "last_modified_utc": "2026-05-22T02:13:38.244415+00:00",
       "stale": false
     },
     {
@@ -1335,7 +2535,7 @@
       "line_count": 133,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.581687+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.130421+00:00",
       "stale": false
     },
     {
@@ -1387,11 +2587,19 @@
       "stale": false
     },
     {
+      "path": "docs/operations/canonical-buyer-workflow.md",
+      "line_count": 271,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.925988+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operations/cleanup-and-maintenance.md",
       "line_count": 99,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T09:47:53.955983+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.137624+00:00",
       "stale": false
     },
     {
@@ -1408,6 +2616,38 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-18T06:33:39.858206+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operations/environment-and-deployment-standard.md",
+      "line_count": 29,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.925988+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operations/error-budget-policy-runbook.md",
+      "line_count": 81,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.927998+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operations/failover-and-recovery-runbook.md",
+      "line_count": 43,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.927998+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operations/fund-ops-persistence-cutover-runbook.md",
+      "line_count": 29,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-25T00:24:24.527143+00:00",
       "stale": false
     },
     {
@@ -1444,18 +2684,26 @@
     },
     {
       "path": "docs/operations/msix-packaging.md",
-      "line_count": 154,
+      "line_count": 172,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.609062+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.927998+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/operator-runbook.md",
-      "line_count": 636,
+      "line_count": 681,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.611074+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.930011+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operations/orphaned-doc-triage-index.md",
+      "line_count": 121,
+      "has_heading": true,
+      "todo_count": 4,
+      "last_modified_utc": "2026-05-28T05:40:21.932023+00:00",
       "stale": false
     },
     {
@@ -1476,10 +2724,10 @@
     },
     {
       "path": "docs/operations/preflight-checklist.md",
-      "line_count": 28,
+      "line_count": 29,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.611074+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.932023+00:00",
       "stale": false
     },
     {
@@ -1508,10 +2756,10 @@
     },
     {
       "path": "docs/operations/README.md",
-      "line_count": 35,
+      "line_count": 38,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T06:32:45.142493+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.925988+00:00",
       "stale": false
     },
     {
@@ -1531,6 +2779,14 @@
       "stale": false
     },
     {
+      "path": "docs/operations/reconciliation-resilience-runbook.md",
+      "line_count": 98,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.932023+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operations/reconciliation-runbook.md",
       "line_count": 23,
       "has_heading": true,
@@ -1540,10 +2796,18 @@
     },
     {
       "path": "docs/operations/service-level-objectives.md",
-      "line_count": 255,
+      "line_count": 271,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.617242+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.934033+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operations/slo-review-template.md",
+      "line_count": 71,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.934033+00:00",
       "stale": false
     },
     {
@@ -1579,14 +2843,6 @@
       "stale": false
     },
     {
-      "path": "docs/plans/approach-b-plus-v2-implementation-plan.md",
-      "line_count": 205,
-      "has_heading": true,
-      "todo_count": 11,
-      "last_modified_utc": "2026-05-21T00:55:34.645153+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/plans/assembly-performance-roadmap.md",
       "line_count": 369,
       "has_heading": true,
@@ -1607,7 +2863,7 @@
       "line_count": 393,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.667151+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.139622+00:00",
       "stale": false
     },
     {
@@ -1615,7 +2871,7 @@
       "line_count": 452,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.674152+00:00",
+      "last_modified_utc": "2026-05-22T02:13:39.950894+00:00",
       "stale": false
     },
     {
@@ -1623,23 +2879,47 @@
       "line_count": 183,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.688149+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/plans/covered-call-writing-slice-1-blueprint.md",
-      "line_count": 1030,
-      "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.689152+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.141626+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/current-direction-and-status.md",
-      "line_count": 148,
+      "line_count": 216,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.697151+00:00",
+      "todo_count": 2,
+      "last_modified_utc": "2026-05-30T03:33:00.088905+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/desktop-shell-modularity-roadmap.md",
+      "line_count": 383,
+      "has_heading": true,
+      "todo_count": 7,
+      "last_modified_utc": "2026-05-22T05:42:39.055030+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/desktop-ui-workflow-acceptance-matrix.md",
+      "line_count": 145,
+      "has_heading": true,
+      "todo_count": 4,
+      "last_modified_utc": "2026-05-30T03:33:00.090918+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/desktop-workstation-screen-blueprint.md",
+      "line_count": 1069,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T03:33:00.097523+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/entity-aware-workstation-capability-blueprint.md",
+      "line_count": 1023,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T03:33:00.099535+00:00",
       "stale": false
     },
     {
@@ -1647,7 +2927,7 @@
       "line_count": 138,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.698150+00:00",
+      "last_modified_utc": "2026-05-21T18:28:48.957297+00:00",
       "stale": false
     },
     {
@@ -1655,7 +2935,7 @@
       "line_count": 806,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.699148+00:00",
+      "last_modified_utc": "2026-05-29T05:10:19.691845+00:00",
       "stale": false
     },
     {
@@ -1663,7 +2943,7 @@
       "line_count": 586,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.700149+00:00",
+      "last_modified_utc": "2026-05-29T05:10:19.689835+00:00",
       "stale": false
     },
     {
@@ -1671,7 +2951,7 @@
       "line_count": 323,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.701153+00:00",
+      "last_modified_utc": "2026-05-29T09:28:13.513666+00:00",
       "stale": false
     },
     {
@@ -1679,7 +2959,7 @@
       "line_count": 674,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.702151+00:00",
+      "last_modified_utc": "2026-05-29T05:10:19.697833+00:00",
       "stale": false
     },
     {
@@ -1687,23 +2967,23 @@
       "line_count": 129,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.702151+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.142625+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/l3-inference-implementation-plan.md",
-      "line_count": 1098,
+      "line_count": 1103,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.704151+00:00",
+      "last_modified_utc": "2026-05-28T21:56:08.371924+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ledger.md",
-      "line_count": 422,
+      "line_count": 501,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.707150+00:00",
+      "last_modified_utc": "2026-05-29T09:51:06.627792+00:00",
       "stale": false
     },
     {
@@ -1711,7 +2991,7 @@
       "line_count": 330,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.709152+00:00",
+      "last_modified_utc": "2026-05-29T09:35:01.109902+00:00",
       "stale": false
     },
     {
@@ -1727,7 +3007,7 @@
       "line_count": 210,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.711153+00:00",
+      "last_modified_utc": "2026-05-21T18:29:04.811648+00:00",
       "stale": false
     },
     {
@@ -1743,7 +3023,15 @@
       "line_count": 534,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.714149+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.947111+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/performance-todo-2026-05-21.md",
+      "line_count": 115,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "2026-05-25T00:24:24.528144+00:00",
       "stale": false
     },
     {
@@ -1764,10 +3052,10 @@
     },
     {
       "path": "docs/plans/README.md",
-      "line_count": 118,
+      "line_count": 159,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-21T00:55:34.638154+00:00",
+      "todo_count": 6,
+      "last_modified_utc": "2026-05-30T03:33:00.088905+00:00",
       "stale": false
     },
     {
@@ -1775,7 +3063,7 @@
       "line_count": 674,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.719150+00:00",
+      "last_modified_utc": "2026-05-22T02:13:39.962287+00:00",
       "stale": false
     },
     {
@@ -1787,195 +3075,251 @@
       "stale": false
     },
     {
+      "path": "docs/plans/sfo-mvp-implementation-design.md",
+      "line_count": 111,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T03:33:00.101546+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/plans/trading-workstation-migration-blueprint.md",
       "line_count": 510,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.721150+00:00",
+      "last_modified_utc": "2026-05-29T09:32:52.083638+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/ufl-accounting-impact-model.md",
+      "line_count": 80,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T05:13:42.507956+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/ufl-asset-profile-template.md",
+      "line_count": 88,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T05:13:42.505941+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-bond-target-state-v2.md",
-      "line_count": 575,
+      "line_count": 100,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.722148+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T05:08:43.506546+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/ufl-capability-model.md",
+      "line_count": 125,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T05:12:57.483591+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-cash-sweep-target-state-v2.md",
-      "line_count": 348,
+      "line_count": 416,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.724148+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.523786+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-certificate-of-deposit-target-state-v2.md",
-      "line_count": 350,
+      "line_count": 419,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.732150+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.514309+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-cfd-target-state-v2.md",
-      "line_count": 145,
+      "line_count": 213,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.733149+00:00",
+      "last_modified_utc": "2026-05-29T05:05:05.199877+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-commercial-paper-target-state-v2.md",
-      "line_count": 348,
+      "line_count": 415,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.734149+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.521775+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-commodity-target-state-v2.md",
-      "line_count": 143,
+      "line_count": 212,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.735148+00:00",
+      "last_modified_utc": "2026-05-29T05:03:22.241239+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/ufl-conformance-matrix.md",
+      "line_count": 53,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T05:13:42.507956+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-crypto-target-state-v2.md",
-      "line_count": 139,
+      "line_count": 209,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.735148+00:00",
+      "last_modified_utc": "2026-05-29T05:04:19.276110+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/ufl-custom-asset-composability.md",
+      "line_count": 190,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T09:21:07.886869+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-deposit-target-state-v2.md",
-      "line_count": 352,
+      "line_count": 421,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.736149+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.508559+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-direct-lending-implementation-roadmap.md",
-      "line_count": 494,
+      "line_count": 502,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.736149+00:00",
+      "last_modified_utc": "2026-05-29T05:08:55.199744+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-direct-lending-target-state-v2.md",
-      "line_count": 1082,
+      "line_count": 1198,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.738148+00:00",
+      "last_modified_utc": "2026-05-29T05:06:31.531699+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-equity-target-state-v2.md",
-      "line_count": 363,
+      "line_count": 97,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.739149+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T05:08:43.502525+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-future-target-state-v2.md",
-      "line_count": 358,
+      "line_count": 426,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.740148+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.500508+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-fx-spot-target-state-v2.md",
-      "line_count": 350,
+      "line_count": 419,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.740148+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.498139+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-money-market-fund-target-state-v2.md",
-      "line_count": 347,
+      "line_count": 417,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.744149+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.492535+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-option-target-state-v2.md",
-      "line_count": 359,
+      "line_count": 99,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.745157+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T05:08:43.504535+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-other-security-target-state-v2.md",
-      "line_count": 352,
+      "line_count": 420,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.746151+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.504535+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/ufl-projection-and-evidence-kernel.md",
+      "line_count": 101,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T05:13:42.514532+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-repo-target-state-v2.md",
-      "line_count": 352,
+      "line_count": 420,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.747149+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.515747+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-supported-assets-index.md",
-      "line_count": 61,
+      "line_count": 106,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.747149+00:00",
+      "last_modified_utc": "2026-05-29T05:16:30.190862+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-swap-target-state-v2.md",
-      "line_count": 359,
+      "line_count": 430,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.748149+00:00",
+      "last_modified_utc": "2026-05-29T05:08:43.515747+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-treasury-bill-target-state-v2.md",
-      "line_count": 346,
+      "line_count": 96,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.749149+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-29T05:08:43.482474+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-warrant-target-state-v2.md",
-      "line_count": 172,
+      "line_count": 242,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.750148+00:00",
+      "last_modified_utc": "2026-05-29T05:05:05.201891+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/wave-implementation-checklists.md",
-      "line_count": 244,
+      "line_count": 304,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.750148+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.101546+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/waves-2-4-operator-readiness-addendum.md",
-      "line_count": 438,
+      "line_count": 450,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.753149+00:00",
+      "last_modified_utc": "2026-05-29T05:51:27.311875+00:00",
       "stale": false
     },
     {
@@ -1983,31 +3327,31 @@
       "line_count": 291,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.754149+00:00",
+      "last_modified_utc": "2026-05-29T09:27:37.001860+00:00",
       "stale": false
     },
     {
       "path": "docs/prompts/automation-prompts.md",
-      "line_count": 47,
+      "line_count": 49,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T11:03:44.579944+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.953148+00:00",
       "stale": false
     },
     {
       "path": "docs/prompts/README.md",
-      "line_count": 10,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T06:33:39.862224+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.951137+00:00",
       "stale": false
     },
     {
       "path": "docs/prompts/repo-maintenance-prompts.md",
-      "line_count": 39,
+      "line_count": 40,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T06:33:39.870611+00:00",
+      "last_modified_utc": "2026-05-28T05:40:21.953148+00:00",
       "stale": false
     },
     {
@@ -2092,10 +3436,10 @@
     },
     {
       "path": "docs/providers/security-master-guide.md",
-      "line_count": 241,
+      "line_count": 296,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T12:54:29.088847+00:00",
+      "last_modified_utc": "2026-05-29T08:58:12.945924+00:00",
       "stale": false
     },
     {
@@ -2159,7 +3503,7 @@
       "line_count": 378,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.811828+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.170134+00:00",
       "stale": false
     },
     {
@@ -2203,6 +3547,14 @@
       "stale": false
     },
     {
+      "path": "docs/reference/oms-ems-integration.md",
+      "line_count": 87,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T22:52:21.374273+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/open-source-references.md",
       "line_count": 638,
       "has_heading": true,
@@ -2212,10 +3564,10 @@
     },
     {
       "path": "docs/reference/README.md",
-      "line_count": 64,
+      "line_count": 65,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.803385+00:00",
+      "last_modified_utc": "2026-05-28T22:52:21.374273+00:00",
       "stale": false
     },
     {
@@ -2236,10 +3588,10 @@
     },
     {
       "path": "docs/reference/strategy-promotion-history.md",
-      "line_count": 32,
+      "line_count": 36,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.820834+00:00",
+      "last_modified_utc": "2026-05-29T07:38:32.842391+00:00",
       "stale": false
     },
     {
@@ -2295,7 +3647,7 @@
       "line_count": 244,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T02:52:35.275928+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.111583+00:00",
       "stale": false
     },
     {
@@ -2303,15 +3655,23 @@
       "line_count": 32,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T02:52:35.271614+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.109632+00:00",
       "stale": false
     },
     {
       "path": "docs/screenshots/README.md",
-      "line_count": 13,
+      "line_count": 32,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.782147+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.114774+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/screenshots/desktop/README.md",
+      "line_count": 101,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T03:33:00.116785+00:00",
       "stale": false
     },
     {
@@ -2332,10 +3692,106 @@
     },
     {
       "path": "docs/security/README.md",
-      "line_count": 16,
+      "line_count": 22,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.870530+00:00",
+      "last_modified_utc": "2026-05-28T05:40:22.452638+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/security-remediation-backlog.md",
+      "line_count": 85,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.467358+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/threat-model-current-state.md",
+      "line_count": 108,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T04:06:18.661220+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/buyer-packet/architecture-summary.md",
+      "line_count": 75,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.454646+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/buyer-packet/control-mapping.md",
+      "line_count": 36,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.454646+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/buyer-packet/document-index.md",
+      "line_count": 31,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.454646+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/buyer-packet/operational-controls.md",
+      "line_count": 39,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.454646+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/buyer-packet/threat-model-summary.md",
+      "line_count": 54,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.461321+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/buyer-packet/vulnerability-management.md",
+      "line_count": 50,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.461321+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/compliance/soc2-control-matrix.md",
+      "line_count": 25,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.461321+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/compliance/soc2-evidence-calendar.md",
+      "line_count": 36,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.467358+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/compliance/soc2-roadmap.md",
+      "line_count": 46,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.467358+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/security/compliance/soc2-scope.md",
+      "line_count": 85,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.467358+00:00",
       "stale": false
     },
     {
@@ -2356,18 +3812,18 @@
     },
     {
       "path": "docs/source/source-documentation-standard.md",
-      "line_count": 62,
+      "line_count": 110,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-05-21T02:48:27.936423+00:00",
+      "last_modified_utc": "2026-05-21T03:42:24.960377+00:00",
       "stale": false
     },
     {
       "path": "docs/source/source-readme-template.md",
-      "line_count": 44,
+      "line_count": 68,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:48:27.938426+00:00",
+      "last_modified_utc": "2026-05-21T03:31:36.964531+00:00",
       "stale": false
     },
     {
@@ -2380,26 +3836,34 @@
     },
     {
       "path": "docs/source/generated/source-module-index.md",
-      "line_count": 48,
+      "line_count": 47,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T03:15:40.594770+00:00",
+      "last_modified_utc": "2026-05-30T04:10:04.160866+00:00",
       "stale": false
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "line_count": 89,
+      "line_count": 88,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T03:15:40.596785+00:00",
+      "last_modified_utc": "2026-05-30T04:10:04.180788+00:00",
       "stale": false
     },
     {
       "path": "docs/source/generated/source-todo-checklist.md",
-      "line_count": 20,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-05-21T02:52:35.285414+00:00",
+      "last_modified_utc": "2026-05-21T18:05:08.220111+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/source/generated/stale-docs.md",
+      "line_count": 14,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T04:10:41.637259+00:00",
       "stale": false
     },
     {
@@ -2419,14 +3883,6 @@
       "stale": false
     },
     {
-      "path": "docs/status/broker-phase-promotion-checklist-template.md",
-      "line_count": 120,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/status/CHANGELOG.md",
       "line_count": 84,
       "has_heading": true,
@@ -2436,10 +3892,10 @@
     },
     {
       "path": "docs/status/contract-compatibility-matrix.md",
-      "line_count": 179,
+      "line_count": 188,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
+      "last_modified_utc": "2026-05-28T22:52:21.385151+00:00",
       "stale": false
     },
     {
@@ -2451,35 +3907,11 @@
       "stale": false
     },
     {
-      "path": "docs/status/dead-code-inventory.md",
-      "line_count": 90,
+      "path": "docs/status/desktop-application-screens.md",
+      "line_count": 178,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.789151+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/dk1-baseline-trust-thresholds.md",
-      "line_count": 70,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.947281+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/dk1-pilot-parity-runbook.md",
-      "line_count": 175,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.794147+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/dk1-trust-rationale-mapping.md",
-      "line_count": 52,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.947281+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.138832+00:00",
       "stale": false
     },
     {
@@ -2487,7 +3919,7 @@
       "line_count": 79,
       "has_heading": true,
       "todo_count": 5,
-      "last_modified_utc": "2026-05-21T03:08:17.996387+00:00",
+      "last_modified_utc": "2026-05-21T03:18:07.775008+00:00",
       "stale": false
     },
     {
@@ -2503,7 +3935,7 @@
       "line_count": 884,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-18T04:10:19.874718+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.209319+00:00",
       "stale": false
     },
     {
@@ -2516,58 +3948,42 @@
     },
     {
       "path": "docs/status/FEATURE_INVENTORY.md",
-      "line_count": 739,
+      "line_count": 864,
       "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-21T01:17:57.478610+00:00",
+      "todo_count": 13,
+      "last_modified_utc": "2026-05-30T04:06:18.659209+00:00",
       "stale": false
     },
     {
-      "path": "docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md",
-      "line_count": 357,
+      "path": "docs/status/FULL_IMPLEMENTATION_TODO.md",
+      "line_count": 358,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.883203+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.124826+00:00",
       "stale": false
     },
     {
-      "path": "docs/status/health-dashboard.md",
-      "line_count": 79,
-      "has_heading": true,
-      "todo_count": 5,
-      "last_modified_utc": "2026-05-18T04:10:19.953850+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/ibkr-provider-inventory.md",
-      "line_count": 90,
+      "path": "docs/status/fund-ops-persistence-cutover-status.md",
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
+      "last_modified_utc": "2026-05-25T00:24:24.534143+00:00",
       "stale": false
     },
     {
       "path": "docs/status/IMPROVEMENTS.md",
-      "line_count": 1602,
+      "line_count": 1606,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-05-18T04:10:19.883203+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.128772+00:00",
       "stale": false
     },
     {
       "path": "docs/status/kernel-readiness-dashboard.md",
-      "line_count": 127,
+      "line_count": 129,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.796148+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/KERNEL_PARITY_STATUS.md",
-      "line_count": 33,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.883203+00:00",
+      "last_modified_utc": "2026-05-29T07:59:51.799927+00:00",
       "stale": false
     },
     {
@@ -2588,18 +4004,18 @@
     },
     {
       "path": "docs/status/OPPORTUNITY_SCAN.md",
-      "line_count": 220,
+      "line_count": 243,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T10:42:15.585279+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.130785+00:00",
       "stale": false
     },
     {
       "path": "docs/status/production-status.md",
-      "line_count": 239,
+      "line_count": 269,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T01:18:04.485008+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.138832+00:00",
       "stale": false
     },
     {
@@ -2607,55 +4023,23 @@
       "line_count": 18,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.968529+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.141406+00:00",
       "stale": false
     },
     {
       "path": "docs/status/PROGRAM_STATE.md",
-      "line_count": 23,
+      "line_count": 24,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.910882+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/provider-adapters-closure-summary.md",
-      "line_count": 45,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.796148+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/provider-capability-inventory.md",
-      "line_count": 75,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.132796+00:00",
       "stale": false
     },
     {
       "path": "docs/status/provider-capability-matrix.md",
-      "line_count": 38,
+      "line_count": 53,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.797147+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/provider-core-hardening-notes.md",
-      "line_count": 71,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.797147+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/provider-failover-hardening.md",
-      "line_count": 31,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.797147+00:00",
+      "last_modified_utc": "2026-05-21T18:05:08.222104+00:00",
       "stale": false
     },
     {
@@ -2664,22 +4048,6 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-21T00:55:34.798145+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/provider-test-gap-baseline.md",
-      "line_count": 145,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.798145+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/status/provider-test-minimums.md",
-      "line_count": 68,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.799146+00:00",
       "stale": false
     },
     {
@@ -2695,7 +4063,7 @@
       "line_count": 167,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.800146+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.261657+00:00",
       "stale": false
     },
     {
@@ -2708,26 +4076,26 @@
     },
     {
       "path": "docs/status/README.md",
-      "line_count": 122,
+      "line_count": 162,
       "has_heading": true,
       "todo_count": 6,
-      "last_modified_utc": "2026-05-20T10:42:17.751780+00:00",
+      "last_modified_utc": "2026-05-29T06:03:24.440963+00:00",
       "stale": false
     },
     {
       "path": "docs/status/ROADMAP.md",
-      "line_count": 545,
+      "line_count": 589,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-05-20T10:41:21.535276+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.134807+00:00",
       "stale": false
     },
     {
       "path": "docs/status/ROADMAP_COMBINED.md",
-      "line_count": 222,
+      "line_count": 285,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T10:41:22.521903+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.136820+00:00",
       "stale": false
     },
     {
@@ -2735,7 +4103,7 @@
       "line_count": 32,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T02:52:35.279925+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.136820+00:00",
       "stale": false
     },
     {
@@ -2748,10 +4116,10 @@
     },
     {
       "path": "docs/status/TARGET_END_PRODUCT.md",
-      "line_count": 189,
+      "line_count": 210,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T10:42:16.347834+00:00",
+      "last_modified_utc": "2026-05-29T09:20:57.405974+00:00",
       "stale": false
     },
     {
@@ -2763,19 +4131,19 @@
       "stale": false
     },
     {
-      "path": "docs/status/wave4-evidence-template.md",
-      "line_count": 86,
+      "path": "docs/status/workflow-drift-report.md",
+      "line_count": 75,
       "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.968529+00:00",
+      "todo_count": 1,
+      "last_modified_utc": "2026-05-28T05:40:22.532167+00:00",
       "stale": false
     },
     {
-      "path": "docs/status/workflow-drift-report.md",
-      "line_count": 68,
+      "path": "docs/status/workstation-cockpit-acceptance-matrix.md",
+      "line_count": 44,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-18T04:10:19.974397+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T22:52:21.388153+00:00",
       "stale": false
     },
     {
@@ -2784,6 +4152,54 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/evidence/dk1-baseline-trust-thresholds.md",
+      "line_count": 70,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T23:54:15.254903+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/evidence/dk1-pilot-parity-runbook.md",
+      "line_count": 175,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T23:54:15.256117+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/evidence/dk1-trust-rationale-mapping.md",
+      "line_count": 52,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T23:54:15.257645+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/evidence/wave2-cockpit-evidence-packet.md",
+      "line_count": 134,
+      "has_heading": true,
+      "todo_count": 3,
+      "last_modified_utc": "2026-05-22T23:54:15.258659+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/evidence/wave4-evidence-template.md",
+      "line_count": 86,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T23:54:15.258659+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/slo-reports/README.md",
+      "line_count": 25,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:22.532167+00:00",
       "stale": false
     },
     {
@@ -2828,10 +4244,10 @@
     },
     {
       "path": "docs/ui/README.md",
-      "line_count": 13,
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T06:28:39.826790+00:00",
+      "last_modified_utc": "2026-05-21T18:21:17.564054+00:00",
       "stale": false
     },
     {
@@ -2871,23 +4287,23 @@
       "line_count": 134,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.584136+00:00",
+      "last_modified_utc": "2026-05-29T00:25:28.139057+00:00",
       "stale": false
     },
     {
       "path": "Meridian Design System/SKILL.md",
-      "line_count": 58,
+      "line_count": 59,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.584136+00:00",
+      "last_modified_utc": "2026-05-29T00:24:38.759446+00:00",
       "stale": false
     },
     {
       "path": "Meridian Design System/VISUAL_FOUNDATIONS.md",
-      "line_count": 175,
+      "line_count": 177,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.584136+00:00",
+      "last_modified_utc": "2026-05-29T00:24:23.174256+00:00",
       "stale": false
     },
     {
@@ -2912,14 +4328,6 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-18T04:10:13.662875+00:00",
-      "stale": false
-    },
-    {
-      "path": "native/cpptrader-host/README.md",
-      "line_count": 16,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.974397+00:00",
       "stale": false
     },
     {
@@ -3071,15 +4479,15 @@
       "line_count": 62,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:49:17.206640+00:00",
+      "last_modified_utc": "2026-05-22T23:54:15.345205+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian/README.md",
-      "line_count": 65,
+      "line_count": 81,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:52:35.287415+00:00",
+      "last_modified_utc": "2026-05-29T07:15:22.622849+00:00",
       "stale": false
     },
     {
@@ -3092,74 +4500,74 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 66,
+      "line_count": 149,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:52:35.290487+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.158253+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Backtesting/README.md",
-      "line_count": 63,
+      "line_count": 87,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.638535+00:00",
+      "last_modified_utc": "2026-05-28T21:47:10.030022+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Backtesting.Sdk/README.md",
-      "line_count": 62,
+      "line_count": 76,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.641699+00:00",
+      "last_modified_utc": "2026-05-28T21:43:12.099668+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 67,
+      "line_count": 293,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:52:35.293518+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.171970+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Core/README.md",
-      "line_count": 67,
+      "line_count": 73,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.608169+00:00",
+      "last_modified_utc": "2026-05-29T08:23:32.860713+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Domain/README.md",
-      "line_count": 66,
+      "line_count": 72,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.610349+00:00",
+      "last_modified_utc": "2026-05-28T22:52:21.426578+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 66,
+      "line_count": 82,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.626447+00:00",
+      "last_modified_utc": "2026-05-29T09:45:43.508908+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Execution.Sdk/README.md",
-      "line_count": 63,
+      "line_count": 68,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.629457+00:00",
+      "last_modified_utc": "2026-05-28T19:38:59.526068+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.FSharp/README.md",
-      "line_count": 63,
+      "line_count": 73,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.653277+00:00",
+      "last_modified_utc": "2026-05-28T11:43:47.131889+00:00",
       "stale": false
     },
     {
@@ -3172,10 +4580,10 @@
     },
     {
       "path": "src/Meridian.FSharp.Ledger/README.md",
-      "line_count": 63,
+      "line_count": 73,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.659056+00:00",
+      "last_modified_utc": "2026-05-29T05:37:24.326047+00:00",
       "stale": false
     },
     {
@@ -3196,26 +4604,18 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 66,
+      "line_count": 94,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.618092+00:00",
-      "stale": false
-    },
-    {
-      "path": "src/Meridian.Infrastructure.CppTrader/README.md",
-      "line_count": 62,
-      "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.620101+00:00",
+      "last_modified_utc": "2026-05-28T22:52:21.454239+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 63,
+      "line_count": 114,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.650698+00:00",
+      "last_modified_utc": "2026-05-29T09:50:43.854325+00:00",
       "stale": false
     },
     {
@@ -3227,19 +4627,11 @@
       "stale": false
     },
     {
-      "path": "src/Meridian.McpServer/README.md",
-      "line_count": 62,
-      "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.669819+00:00",
-      "stale": false
-    },
-    {
       "path": "src/Meridian.ProviderSdk/README.md",
-      "line_count": 64,
+      "line_count": 67,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.614065+00:00",
+      "last_modified_utc": "2026-05-28T20:07:27.698554+00:00",
       "stale": false
     },
     {
@@ -3260,18 +4652,18 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 68,
+      "line_count": 95,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.624447+00:00",
+      "last_modified_utc": "2026-05-29T08:01:38.145078+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Strategies/README.md",
-      "line_count": 66,
+      "line_count": 80,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.635451+00:00",
+      "last_modified_utc": "2026-05-29T07:38:24.860062+00:00",
       "stale": false
     },
     {
@@ -3284,34 +4676,34 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 69,
+      "line_count": 166,
       "has_heading": true,
       "todo_count": 3,
-      "last_modified_utc": "2026-05-21T02:52:35.300522+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.209556+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui.Services/README.md",
-      "line_count": 67,
+      "line_count": 83,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:52:35.295518+00:00",
+      "last_modified_utc": "2026-05-29T04:57:40.228139+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 65,
+      "line_count": 391,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:52:35.297521+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.188065+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 321,
+      "line_count": 146,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T02:52:35.323791+00:00",
+      "last_modified_utc": "2026-05-30T03:33:00.240880+00:00",
       "stale": false
     },
     {
@@ -3336,6 +4728,30 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-18T04:10:25.718035+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/README.md",
+      "line_count": 47,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-25T00:24:24.587202+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/roadmap/README.md",
+      "line_count": 46,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-21T06:18:57.183022+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/source_docs/README.md",
+      "line_count": 45,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-21T06:18:57.183022+00:00",
       "stale": false
     },
     {
@@ -3371,6 +4787,6 @@
       "stale": false
     }
   ],
-  "scan_time": "2026-05-21T03:18:07.753616+00:00",
+  "scan_time": "2026-05-30T04:12:47.345754+00:00",
   "root_dir": "D:\\Meridian-main"
 }

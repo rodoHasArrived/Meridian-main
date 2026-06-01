@@ -2,7 +2,7 @@ namespace Meridian.Execution.Sdk;
 
 /// <summary>
 /// Enumerates brokerage or custodian accounts that can be imported into Meridian's
-/// read-side portfolio, ledger, and governance workflows.
+/// read-side Portfolio, ledger, and Accounting workflows.
 /// </summary>
 public interface IBrokerageAccountCatalog
 {

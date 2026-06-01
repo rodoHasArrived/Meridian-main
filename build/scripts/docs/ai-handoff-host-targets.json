@@ -1,0 +1,17 @@
+{
+  "requiredReferences": [
+    "agent-handoff-checklist.md",
+    "parallel-task-manifest-template.md",
+    "work-modes.md"
+  ],
+  "targets": [
+    "CLAUDE.md",
+    ".codex/AGENTS.md",
+    ".github/copilot-instructions.md",
+    "docs/ai/README.md",
+    "docs/ai/assistant-workflow-contract.md",
+    "docs/ai/codex/README.md",
+    "docs/ai/copilot/instructions.md",
+    "docs/ai/skills/README.md"
+  ]
+}

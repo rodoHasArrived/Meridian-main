@@ -30,7 +30,7 @@ public enum BacktestCommissionKind
 /// directly to <c>BacktestEngine.RunAsync</c>.
 /// </param>
 /// <param name="AssetEvents">Optional sequence of asset events (dividends, splits) to apply during the simulation.</param>
-/// <param name="EngineMode">Selects the managed or CppTrader-backed replay engine.</param>
+/// <param name="EngineMode">Selects the managed replay engine.</param>
 /// <param name="DefaultExecutionModel">
 /// Fallback fill model used when an order's own <see cref="ExecutionModel"/> is <see cref="ExecutionModel.Auto"/>.
 /// Defaults to <see cref="ExecutionModel.Auto"/>, which lets the engine pick the most detailed model available.

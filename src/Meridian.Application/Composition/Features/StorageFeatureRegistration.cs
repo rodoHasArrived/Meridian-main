@@ -19,6 +19,7 @@ using Meridian.Application.FxSpot;
 using Meridian.Application.MoneyMarketFunds;
 using Meridian.Application.Options;
 using Meridian.Application.OperationsContinuity;
+using Meridian.Application.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.Treasury;
@@ -30,9 +31,11 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Store;
 using Meridian.Contracts.Workstation;
+using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Reconciliation;
 using Meridian.Storage;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
@@ -73,6 +76,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
+        services.AddStatementReconciliationServices();
 
         // StorageOptions - configured from AppConfig or defaults
         services.AddSingleton<StorageOptions>(sp =>

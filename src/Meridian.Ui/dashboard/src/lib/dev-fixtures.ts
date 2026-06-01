@@ -200,14 +200,14 @@ const fixtureTradingReadiness: TradingOperatorReadiness = {
     requiredSampleCount: 4,
     readySampleCount: 4,
     validatedEvidenceDocumentCount: 4,
-    requiredOwners: ["Data Operations", "Provider Reliability", "Trading"],
+    requiredOwners: ["Data", "Provider Reliability", "Trading"],
     blockers: [],
     detail: "Signed DK1 parity packet is available for readiness projection.",
     operatorSignoff: {
       status: "signed",
       requiredBeforeDk1Exit: true,
-      requiredOwners: ["Data Operations", "Provider Reliability", "Trading"],
-      signedOwners: ["Data Operations", "Provider Reliability", "Trading"],
+      requiredOwners: ["Data", "Provider Reliability", "Trading"],
+      signedOwners: ["Data", "Provider Reliability", "Trading"],
       missingOwners: [],
       completedAt: "2026-04-27T22:10:00Z",
       sourcePath: "artifacts/provider-validation/_automation/2026-04-27/dk1-operator-signoff.json"
@@ -609,7 +609,7 @@ const fixtureDataOperationsWorkspace: DataOperationsWorkspaceResponse = {
     {
       exportId: "EX-2201",
       profile: "python-pandas",
-      target: "research pack",
+      target: "strategy pack",
       status: "Ready",
       rows: "124k",
       updatedAt: "4m ago"
@@ -690,7 +690,7 @@ const fixtureGovernanceWorkspace: GovernanceWorkspaceResponse = {
       }
     ],
     reportPackTargets: ["board"],
-    summary: "4 export/reporting profiles are available for governance workflows.",
+    summary: "4 export/reporting profiles are available for Accounting and Reporting workflows.",
     workflowRecords: [
       {
         reportId: "report-restated-demo",

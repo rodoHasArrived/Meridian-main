@@ -72,14 +72,7 @@ public static partial class ShellNavigationCatalog
             return workspace.Id;
         }
 
-        return workspaceId?.Trim().ToLowerInvariant() switch
-        {
-            "research" => "strategy",
-            "data-operations" => "data",
-            "data operations" => "data",
-            "governance" => "accounting",
-            _ => "strategy"
-        };
+        return WorkstationNavigationDefaults.NormalizeWorkspaceId(workspaceId);
     }
 
     private static string ToPascalWorkspaceId(string workspaceId)
@@ -88,4 +81,3 @@ public static partial class ShellNavigationCatalog
                 .Split(['-', ' '], StringSplitOptions.RemoveEmptyEntries)
                 .Select(static part => char.ToUpperInvariant(part[0]) + part[1..]));
 }
-

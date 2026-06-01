@@ -174,7 +174,9 @@ python3 scan-todos.py --include-notes false
 
 ### generate-structure-docs.py
 
-Generates repository structure documentation.
+Generates repository structure documentation. The tree skips local build/runtime artifacts, caches,
+backups, logs, and symlinked entries so generated output stays tied to repository structure rather
+than machine-specific working files.
 
 ```bash
 python3 generate-structure-docs.py --output docs/generated/repository-structure.md
@@ -198,6 +200,73 @@ Fails when `docs/ai/generated/repo-navigation.json` gets older than the allowed 
 
 ```bash
 python3 check-ai-navigation-freshness.py --max-age-days 14
+```
+
+### prompt-route-linter.py
+
+Validates deterministic prompt-routing rules and optionally classifies a prompt into lane, skill,
+mode, model route, validation-floor, telemetry, and escalation recommendations. By default it writes
+the canonical route artifact to `docs/status/prompt-route-lint-report.json`.
+
+```bash
+python3 prompt-route-linter.py --summary
+python3 prompt-route-linter.py --prompt "review this PR for regressions"
+python3 prompt-route-linter.py --prompt-file prompt.txt --json-output docs/status/prompt-route-lint-report.json
+```
+
+### handoff-packet-generator.py
+
+Generates a structured handoff packet from prompt-route-linter output, changed files, validation
+entries, route outcome, model route, and telemetry so lane transitions stay deterministic and
+compact. By default it writes `docs/status/ai-handoff-packet.md` and
+`docs/status/ai-handoff-packet.json`.
+
+```bash
+python3 handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json
+python3 handoff-packet-generator.py \
+  --route-json docs/status/prompt-route-lint-report.json \
+  --scope "Implement pilot step 2 handoff packet generation" \
+  --next-lane "implementation-assurance" \
+  --model "gpt-4.1" --input-tokens 1200 --output-tokens 400 --estimated-cost-usd 0.03 --latency-ms 850 \
+  --validation "python build/scripts/docs/prompt-route-linter.py --summary::pass"
+```
+
+### check-handoff-packet-schema.py
+
+Validates generated handoff packet schema and enforces route-declared telemetry completeness for
+high-risk routes (`Deep Review`, `provider`, `governance`).
+
+```bash
+python3 check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary
+```
+
+### check-validation-floor.py
+
+CI guard that enforces route-declared validation-floor script evidence for AI/docs-related changes.
+It reads `run-docs-automation.py` JSON summary output and fails when required scripts are missing
+or not successful.
+
+```bash
+python3 check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --summary
+python3 check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary
+```
+
+### check-mode-escalation.py
+
+Enforces route-declared escalation triggers when cross-lane, policy-touching, failed-validation, or
+high-risk model-route conditions indicate under-scoped execution.
+
+```bash
+python3 check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary
+```
+
+### check-ai-routing-parity.py
+
+Checks host documentation references so routing semantics remain consistent across Codex/shared AI
+surfaces.
+
+```bash
+python3 check-ai-routing-parity.py --summary
 ```
 
 ### update-claude-md.py
@@ -358,6 +427,43 @@ python3 check-ai-inventory.py \
   --json-output docs/status/ai-inventory-report.json
 ```
 
+### check-ai-handoff.py
+
+Checks that required host-level AI guidance references shared orchestration guidance:
+`docs/ai/agent-handoff-checklist.md`, `docs/ai/parallel-task-manifest-template.md`,
+and `docs/ai/work-modes.md`.
+
+```bash
+python3 check-ai-handoff.py \
+  --output docs/status/ai-handoff-checklist-report.md \
+  --json-output docs/status/ai-handoff-checklist-report.json
+```
+
+For a second-tier schema gate, pass `--strict` to require all required packet fields in
+`## 3) Required Handoff Packet`:
+
+```bash
+python3 check-ai-handoff.py --strict
+```
+
+Or run the strict automation alias through the docs runner:
+
+```bash
+python3 run-docs-automation.py --scripts check-ai-handoff-strict
+```
+
+### check-ai-contract-drift.py
+
+Validates that provider mirror policy files stay byte-aligned to the canonical
+`docs/ai/contract-policy.json`.
+
+```bash
+python3 check-ai-contract-drift.py \
+  --canonical docs/ai/contract-policy.json \
+  --mirror docs/ai/copilot/contract-policy.mirror.json \
+  --mirror docs/ai/claude/contract-policy.mirror.json
+```
+
 ### generate-coverage.py
 
 Measures documentation coverage of code constructs.
@@ -424,7 +530,8 @@ These scripts are integrated into the `.github/workflows/documentation.yml` work
 5. **coverage-report** job - Runs generate-coverage.py
 6. **validate-examples** job - Runs validate-examples.py
 7. **generate-changelog** job - Runs generate-changelog.py
-8. **AI inventory check** - Runs check-ai-inventory.py through the local runner profiles
+8. **AI policy checks** - Runs `check-ai-inventory.py`, `check-ai-handoff.py`, and
+   `check-ai-contract-drift.py` through the local runner profiles
 9. **Readiness dashboards** - `run-docs-automation.py --profile core` and `--profile full`
    include the pilot readiness, paper replay reliability, evidence continuity, governance
    readiness, and API contract coverage dashboards.

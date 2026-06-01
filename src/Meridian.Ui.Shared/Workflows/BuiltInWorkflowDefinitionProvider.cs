@@ -63,7 +63,7 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectExportManifest])
                 ],
                 EvidenceTags: ["run history", "promotion state", "portfolio coverage", "ledger coverage"],
-                MarketPatternTags: ["research to backtest", "backtest to paper handoff", "review queue"]),
+                MarketPatternTags: ["strategy to backtest", "backtest to paper handoff", "review queue"]),
 
             new WorkflowDefinitionDto(
                 WorkflowId: "paper-trading-readiness",
@@ -127,6 +127,65 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                 ],
                 EvidenceTags: ["readiness gates", "replay verification", "control evidence", "operator work items"],
                 MarketPatternTags: ["paper trading", "live readiness gate", "execution controls"]),
+
+            new WorkflowDefinitionDto(
+                WorkflowId: "portfolio-position-review",
+                Title: "Portfolio Position Review",
+                Summary: "Review holdings, exposures, account sync, run portfolios, and imported snapshots.",
+                WorkspaceId: "portfolio",
+                WorkspaceTitle: "Portfolio",
+                EntryPageTag: "PortfolioShell",
+                Tone: "Primary",
+                Actions:
+                [
+                    Action(
+                        WorkflowActionIds.PortfolioOpen,
+                        "Open Portfolio",
+                        "Open portfolio review, accounts, fund exposure, and import workflows.",
+                        "PortfolioShell",
+                        "Primary"),
+                    Action(
+                        WorkflowActionIds.PortfolioReviewAggregate,
+                        "Review Aggregate Exposure",
+                        "Monitor portfolio exposure across accounts, funds, entities, and active runs.",
+                        "AggregatePortfolio",
+                        "Primary",
+                        routePrefixes:
+                        [
+                            UiApiRoutes.PortfolioAggregate,
+                            UiApiRoutes.PortfolioExposure,
+                            "/api/portfolio/symbols"
+                        ]),
+                    Action(
+                        WorkflowActionIds.PortfolioReviewRunPortfolio,
+                        "Review Run Portfolio",
+                        "Inspect holdings, exposure, attribution, and cash-flow continuity for the selected run.",
+                        "RunPortfolio",
+                        "Primary",
+                        routePrefixes:
+                        [
+                            UiApiRoutes.ExecutionPortfolio,
+                            UiApiRoutes.RunsAttribution,
+                            UiApiRoutes.PortfolioCashFlows
+                        ]),
+                    Action(
+                        WorkflowActionIds.PortfolioReviewBrokerageSync,
+                        "Review Brokerage Sync",
+                        "Open account portfolio sync status and exception detail.",
+                        "AccountPortfolio",
+                        "Warning",
+                        workItemKind: OperatorWorkItemKindDto.BrokerageSync,
+                        routePrefixes: [UiApiRoutes.FundAccountBrokerageSyncAccounts],
+                        routeContains: ["/brokerage-sync"]),
+                    Action(
+                        WorkflowActionIds.PortfolioImportSnapshots,
+                        "Import Portfolio Snapshots",
+                        "Import external portfolio snapshots for reconciliation and downstream reporting.",
+                        "PortfolioImport",
+                        "Warning")
+                ],
+                EvidenceTags: ["positions", "exposure", "account sync", "run attribution", "snapshot imports"],
+                MarketPatternTags: ["portfolio review", "account sync", "exposure monitoring"]),
 
             new WorkflowDefinitionDto(
                 WorkflowId: "accounting-reconciliation-review",
@@ -260,29 +319,14 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
 
             new WorkflowDefinitionDto(
                 WorkflowId: "portfolio-reporting-output",
-                Title: "Portfolio Reporting Output",
-                Summary: "Review portfolio context, report packs, exports, and downstream approvals.",
+                Title: "Governed Reporting Output",
+                Summary: "Review report packs, exports, retained evidence, and downstream approvals.",
                 WorkspaceId: "reporting",
                 WorkspaceTitle: "Reporting",
                 EntryPageTag: "ReportingShell",
                 Tone: "Primary",
                 Actions:
                 [
-                    Action(
-                        WorkflowActionIds.PortfolioOpen,
-                        "Open Portfolio",
-                        "Open portfolio review, accounts, and fund exposure workflows.",
-                        "PortfolioShell",
-                        "Primary"),
-                    Action(
-                        WorkflowActionIds.PortfolioReviewBrokerageSync,
-                        "Review Brokerage Sync",
-                        "Open account portfolio sync status and exception detail.",
-                        "AccountPortfolio",
-                        "Warning",
-                        workItemKind: OperatorWorkItemKindDto.BrokerageSync,
-                        routePrefixes: [UiApiRoutes.FundAccountBrokerageSyncAccounts],
-                        routeContains: ["/brokerage-sync"]),
                     Action(
                         WorkflowActionIds.ReportingOpen,
                         "Open Reporting",
@@ -318,8 +362,8 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         "Primary",
                         routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectExportManifest])
                 ],
-                EvidenceTags: ["operating context", "account sync", "report pack", "export presets"],
-                MarketPatternTags: ["dashboard to export", "saved output preset", "approval queue"]),
+                EvidenceTags: ["report pack", "export presets", "retained evidence", "approval queue"],
+                MarketPatternTags: ["governed output", "saved output preset", "approval queue"]),
 
             new WorkflowDefinitionDto(
                 WorkflowId: "workstation-settings-support",

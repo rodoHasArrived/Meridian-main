@@ -51,7 +51,8 @@ The contract standardizes:
 - A table-scoped live region that announces selection changes and panel refreshes.
 
 Current dense-row detail consumers covered by regression tests include Portfolio positions,
-Portfolio run evidence, Trading recent fills, Data backfill queue rows, and Security Master lots.
+Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
+Security Master lots.
 
 ## Important workflows
 
@@ -81,6 +82,9 @@ command-triggered refresh paths on that lifecycle instead of adding ad-hoc revis
 Shared workflow targets must land on the same operator lane as WPF. `FundTrialBalance` resolves to
 the browser accounting ledger route (`/accounting/ledger`) so Lane B/W3 continuity actions from the
 shared workflow registry do not collapse to the accounting root.
+Browser workflow target routing accepts the retained desktop compatibility page tags
+`ResearchShell`, `DataOperationsShell`, and `GovernanceShell`, but materializes them as canonical
+browser routes under `/strategy`, `/data`, and `/accounting`.
 Trading readiness work-item actions consume shared route metadata when it is specific enough to
 resolve locally. Execution-control and promotion-review items carrying the shared
 `/api/workstation/trading/readiness` route land on `/trading`, while paper-replay items keep the
@@ -90,10 +94,15 @@ tolerance profile, priority, SLA badge label/tone, age band, root cause, resolut
 comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
 source origin/fingerprint, and decision note so browser recovery posture matches the retained WPF
 Fund Ledger detail panel without reimplementing casework rules.
+Accounting reconciliation narratives use canonical Accounting review language while retained
+Governance view-model names remain compatibility seams.
 Accounting reconciliation statement runs now use the shared statement-run endpoint/client seam for
 broker or custodian, account, period, status, validation, match, break, case, and import timing
 read models; React components only render these values and do not reimplement matching, tolerance,
 validation, or case-state rules.
+The Accounting screen also carries a stable Investment Accounting Transaction Lab panel view model
+so the browser renders the Books Before Broker preview entry point without crashing while endpoint
+request wiring remains a follow-on workflow.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
@@ -103,6 +112,13 @@ The close-package panel is likewise a read-only projection of the shared operati
 publication metadata: signer, sign-off rationale, retained manifest route, evidence hash, report
 pack id, retained evidence links, and checklist control approvals come from the server workflow
 payload rather than browser-local publication state.
+Operator readiness console API source identifiers use the canonical workspace roots
+`strategy`, `data`, `accounting`, and `reporting`; legacy payload type names and retained
+compatibility routes must not reintroduce visible `Research`, `Data Operations`, or `Governance`
+root keys. Demo fixtures, trust-gate owner lists, affected-workflow labels, and Security Master
+evidence packet distribution labels follow the same canonical root naming.
+The app-shell trading continuity title uses `Trading Controls` so cross-workspace recovery copy
+does not reintroduce `Governance` as a visible workspace label.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
 Portfolio run drill-ins consume the shared attribution, equity-curve, cash-flow, and fill payloads
 and project browser view state for run comparison, realized/unrealized P&L bridge rows, and recent
@@ -117,6 +133,14 @@ rows from a family-office entity structure shaped like the shared `FamilyOfficeO
 valuation projections instead of carrying a separate graph fixture. The workspace navigation and
 command palette surface the route from their route-catalog/view-model seams so discovery labels
 remain centralized.
+Strategy workspace navigation uses canonical Strategy labels for subroutes, including the retained
+`/strategy/research` route, so browser discovery does not expose `Research` as a visible root or
+lane name while compatibility routes continue to resolve.
+Strategy run-library live-region announcements and command failure messages also use canonical
+Strategy wording while retained `Research*` DTO and component names remain compatibility seams.
+Strategy Builder promotion-review warnings use risk/control wording in the browser view model,
+matching the shared strategy-service validation copy while retained cell kinds remain compatibility
+inputs.
 
 ## Diagrams
 

@@ -138,7 +138,7 @@ const data: GovernanceWorkspaceResponse = {
       }
     ],
     reportPackTargets: ["board"],
-    summary: "4 export/reporting profiles are available for governance workflows."
+    summary: "4 export/reporting profiles are available for Accounting and Reporting workflows."
   }
 };
 

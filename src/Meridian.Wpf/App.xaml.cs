@@ -313,9 +313,6 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
         services.AddSingleton<WpfServices.IStatementReconciliationWorkbenchService, WpfServices.StatementReconciliationWorkbenchService>();
 
-        // ── AI Agent service (local Ollama) ──────────────────────────────────
-        services.AddSingleton<WpfServices.IAgentLoopService, WpfServices.AgentLoopService>();
-
         // ── Data quality shared services ─────────────────────────────────────
         services.AddSingleton<IDataQualityApiClient, DataQualityApiClient>();
         services.AddSingleton<IDataQualityPresentationService, DataQualityPresentationService>();
@@ -345,7 +342,6 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();
-        services.AddTransient<AgentPage>();
         services.AddTransient<QualityArchivePage>();
 
         services.AddTransient<ClusterStatusPage>();
@@ -395,7 +391,6 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.CashFlowViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunRiskViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
-        services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
         services.AddSingleton<Meridian.Wpf.Services.BacktestDataAvailabilityService>();
         services.AddTransient<IBatchBacktestService>(sp => new BatchBacktestService(
             sp.GetRequiredService<ILogger<BatchBacktestService>>(),

@@ -253,7 +253,7 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
-            _logger.LogWarning(ex, "Skipping unreadable governance report-pack manifest {Path}", manifestPath);
+            _logger.LogWarning(ex, "Skipping unreadable governed report-pack manifest {Path}", manifestPath);
             return null;
         }
     }
@@ -277,60 +277,60 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
     {
         if (snapshot.Provenance is null)
         {
-            throw new ArgumentException("Governance report-pack provenance is required.", nameof(snapshot));
+            throw new ArgumentException("Report-pack provenance is required.", nameof(snapshot));
         }
 
         if (snapshot.Artifacts is null)
         {
-            throw new ArgumentException("Governance report-pack artifact metadata is required.", nameof(snapshot));
+            throw new ArgumentException("Report-pack artifact metadata is required.", nameof(snapshot));
         }
 
         if (snapshot.ValidationIssues is null)
         {
-            throw new ArgumentException("Governance report-pack validation issues are required.", nameof(snapshot));
+            throw new ArgumentException("Report-pack validation issues are required.", nameof(snapshot));
         }
 
         if (snapshot.LifecycleEvents is null)
         {
-            throw new ArgumentException("Governance report-pack lifecycle events are required.", nameof(snapshot));
+            throw new ArgumentException("Report-pack lifecycle events are required.", nameof(snapshot));
         }
 
         if (!string.Equals(snapshot.ContractName, GovernanceReportPackContract.ContractName, StringComparison.Ordinal))
         {
             throw new ArgumentException(
-                $"Governance report-pack contract must be '{GovernanceReportPackContract.ContractName}'.",
+                $"Report-pack contract must be '{GovernanceReportPackContract.ContractName}'.",
                 nameof(snapshot));
         }
 
         if (snapshot.SchemaVersion != GovernanceReportPackContract.CurrentSchemaVersion)
         {
             throw new ArgumentException(
-                $"Governance report-pack schema version must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
+                $"Report-pack schema version must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
                 nameof(snapshot));
         }
 
         if (snapshot.Provenance.SchemaVersion != GovernanceReportPackContract.CurrentSchemaVersion)
         {
             throw new ArgumentException(
-                $"Governance report-pack provenance schema version must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
+                $"Report-pack provenance schema version must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
                 nameof(snapshot));
         }
 
         if (snapshot.Artifacts.Any(static artifact => artifact.SchemaVersion != GovernanceReportPackContract.CurrentSchemaVersion))
         {
             throw new ArgumentException(
-                $"Governance report-pack artifact schema versions must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
+                $"Report-pack artifact schema versions must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
                 nameof(snapshot));
         }
 
         if (snapshot.Status == GovernanceReportPackStatusDto.Unknown)
         {
-            throw new ArgumentException("Governance report-pack status is required.", nameof(snapshot));
+            throw new ArgumentException("Report-pack status is required.", nameof(snapshot));
         }
 
         if (snapshot.LifecycleEvents.Count == 0)
         {
-            throw new ArgumentException("Governance report-pack lifecycle events are required.", nameof(snapshot));
+            throw new ArgumentException("Report-pack lifecycle events are required.", nameof(snapshot));
         }
     }
 

@@ -170,7 +170,7 @@ public sealed class WorkspaceShellContextService
 
         return new WorkspaceShellContext
         {
-            WorkspaceTitle = input.WorkspaceTitle,
+            WorkspaceTitle = WorkstationNavigationDefaults.NormalizeWorkspaceTitle(input.WorkspaceTitle),
             WorkspaceSubtitle = input.WorkspaceSubtitle,
             Badges = badges
         };

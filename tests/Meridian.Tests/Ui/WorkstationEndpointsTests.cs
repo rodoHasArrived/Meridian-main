@@ -124,6 +124,38 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_CanonicalWorkspaceRouteConstants_ShouldExposeBootstrapPayloads()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        UiApiRoutes.WorkstationStrategy.Should().Be("/api/workstation/strategy");
+        UiApiRoutes.WorkstationData.Should().Be("/api/workstation/data");
+        UiApiRoutes.WorkstationAccounting.Should().Be("/api/workstation/accounting");
+        UiApiRoutes.WorkstationReporting.Should().Be("/api/workstation/reporting");
+        UiApiRoutes.WorkstationTrading.Should().Be("/api/workstation/trading");
+
+        using var strategy = await ReadJsonAsync(client, UiApiRoutes.WorkstationStrategy);
+        using var data = await ReadJsonAsync(client, UiApiRoutes.WorkstationData);
+        using var accounting = await ReadJsonAsync(client, UiApiRoutes.WorkstationAccounting);
+        using var reporting = await ReadJsonAsync(client, UiApiRoutes.WorkstationReporting);
+        using var trading = await ReadJsonAsync(client, UiApiRoutes.WorkstationTrading);
+        using var legacyResearch = await ReadJsonAsync(client, UiApiRoutes.WorkstationResearch);
+        using var legacyDataOperations = await ReadJsonAsync(client, UiApiRoutes.WorkstationDataOperations);
+        using var legacyGovernance = await ReadJsonAsync(client, UiApiRoutes.WorkstationGovernance);
+
+        strategy.RootElement.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(1);
+        data.RootElement.GetProperty("providers").GetArrayLength().Should().BeGreaterThan(0);
+        accounting.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
+        reporting.RootElement.GetProperty("reporting").GetProperty("profiles").GetArrayLength().Should().BeGreaterThan(0);
+        ContainsStringValue(trading.RootElement, "Kill-switch can be engaged manually from Accounting review.").Should().BeTrue();
+        ContainsStringValue(trading.RootElement, "governance lane").Should().BeFalse();
+        legacyResearch.RootElement.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(1);
+        legacyDataOperations.RootElement.GetProperty("providers").GetArrayLength().Should().BeGreaterThan(0);
+        legacyGovernance.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
     {
         await using var app = await CreateAppAsync(services =>
@@ -153,7 +185,7 @@ public sealed partial class WorkstationEndpointsTests
 
         using var session = await ReadJsonAsync(client, "/api/workstation/session");
         session.RootElement.GetProperty("displayName").GetString().Should().Be("Carry Pair Desk");
-        session.RootElement.GetProperty("role").GetString().Should().Be("Research Lead");
+        session.RootElement.GetProperty("role").GetString().Should().Be("Strategy Lead");
         session.RootElement.GetProperty("environment").GetString().Should().Be("paper");
         session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("trading");
         session.RootElement.GetProperty("latestRun").GetProperty("runId").GetString().Should().Be("run-latest");
@@ -207,7 +239,7 @@ public sealed partial class WorkstationEndpointsTests
 
         using var session = await ReadJsonAsync(client, "/api/workstation/session");
         session.RootElement.GetProperty("displayName").GetString().Should().Be("Meridian Operator");
-        session.RootElement.GetProperty("role").GetString().Should().Be("Research Lead");
+        session.RootElement.GetProperty("role").GetString().Should().Be("Strategy Lead");
         session.RootElement.GetProperty("environment").GetString().Should().Be("paper");
         session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("strategy");
         session.RootElement.GetProperty("commandCount").GetInt32().Should().Be(6);
@@ -231,6 +263,12 @@ public sealed partial class WorkstationEndpointsTests
         using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
         reporting.RootElement.GetProperty("reporting").GetProperty("profiles").GetArrayLength().Should().BeGreaterThan(0);
 
+        using var data = await ReadJsonAsync(client, "/api/workstation/data");
+        data.RootElement.GetProperty("exports").EnumerateArray()
+            .Should()
+            .Contain(export => export.GetProperty("target").GetString() == "strategy pack");
+        ContainsStringValue(data.RootElement, "research pack").Should().BeFalse();
+
         var runs = research.RootElement.GetProperty("runs");
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
@@ -238,6 +276,9 @@ public sealed partial class WorkstationEndpointsTests
         research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("title").GetString()
             .Should()
             .Contain("Mean Reversion FX");
+        research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("statusBadgeLabel").GetString()
+            .Should()
+            .Be("PAPER");
 
         using var strategy = await ReadJsonAsync(client, "/api/workstation/strategy");
         strategy.RootElement.GetProperty("runs")[0].GetProperty("id").GetString().Should().Be("run-research-001");
@@ -984,7 +1025,7 @@ public sealed partial class WorkstationEndpointsTests
             feedReference: "synthetic:equities"));
 
         var client = app.GetTestClient();
-        var response = await client.GetAsync("/api/workstation/research/briefing");
+        var response = await client.GetAsync(UiApiRoutes.WorkstationStrategyBriefing);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
@@ -993,6 +1034,8 @@ public sealed partial class WorkstationEndpointsTests
         briefing!.Workspace.TotalRuns.Should().Be(2);
         briefing.Workspace.LatestRunId.Should().Be("run-latest");
         briefing.Workspace.HasLedgerCoverage.Should().BeTrue();
+        briefing.Workspace.Summary.Should().Contain("active Strategy session(s)");
+        briefing.Workspace.Summary.Should().NotContain("active research session(s)");
         briefing.InsightFeed.Widgets.Should().HaveCount(2);
         briefing.RecentRuns.Should().HaveCount(2);
         briefing.RecentRuns[0].RunId.Should().Be("run-latest");
@@ -1035,7 +1078,7 @@ public sealed partial class WorkstationEndpointsTests
             .Should()
             .Be("/api/portfolio/run%20latest%2Fencoded/cash-flows");
 
-        var response = await client.GetAsync("/api/workstation/research/briefing");
+        var response = await client.GetAsync(UiApiRoutes.WorkstationStrategyBriefing);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
@@ -1052,7 +1095,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
 
-        var response = await client.GetAsync("/api/workstation/research/briefing");
+        var response = await client.GetAsync(UiApiRoutes.WorkstationStrategyBriefing);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
@@ -1060,11 +1103,20 @@ public sealed partial class WorkstationEndpointsTests
         briefing.Should().NotBeNull();
         briefing!.Workspace.TotalRuns.Should().Be(24);
         briefing.Workspace.LatestRunId.Should().Be("run-research-001");
+        briefing.Workspace.Summary.Should().Be("Strategy is organized around briefing context first, then run studio drill-ins.");
+        briefing.InsightFeed.Summary.Should().Contain("pinned Strategy tiles");
+        briefing.InsightFeed.Summary.Should().NotContain("pinned research tiles");
         briefing.InsightFeed.Widgets.Should().HaveCount(3);
         briefing.Watchlists.Should().HaveCount(2);
         briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "run-research-001");
         briefing.Alerts.Should().NotBeEmpty();
         briefing.WhatChanged.Should().NotBeEmpty();
+
+        var legacyResponse = await client.GetAsync(UiApiRoutes.WorkstationResearchBriefing);
+        legacyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var legacyBriefing = await legacyResponse.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+        legacyBriefing.Should().NotBeNull();
+        legacyBriefing!.Workspace.TotalRuns.Should().Be(briefing.Workspace.TotalRuns);
     }
 
     [Fact]
@@ -1420,7 +1472,7 @@ public sealed partial class WorkstationEndpointsTests
         readiness.TrustGate.OperatorSignoffStatus.Should().Be("pending");
         readiness.TrustGate.OperatorSignoff.Should().NotBeNull();
         readiness.TrustGate.OperatorSignoff!.MissingOwners.Should().BeEquivalentTo(
-            ["Data Operations", "Provider Reliability", "Trading"]);
+            ["Data", "Provider Reliability", "Trading"]);
         readiness.TrustGate.OperatorSignoff.SignedOwners.Should().BeEmpty();
         readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
         readiness.ReadyForPaperOperation.Should().BeFalse();
@@ -1756,8 +1808,8 @@ public sealed partial class WorkstationEndpointsTests
             automationRoot,
             """
             {
-              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
-              "signedOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "requiredOwners": [ "Data", "Provider Reliability", "Trading" ],
+              "signedOwners": [ "Data", "Provider Reliability", "Trading" ],
               "status": "signed",
               "requiredBeforeDk1Exit": true,
               "signedAtUtc": "2026-04-28T16:00:00Z"
@@ -2988,7 +3040,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task Dk1TrustGateReadinessService_WithSignedOperatorPacket_ShouldExposeOwnerEvidence()
+    public async Task Dk1TrustGateReadinessService_WithLegacySignedOperatorPacket_ShouldNormalizeOwnerEvidence()
     {
         var automationRoot = Path.Combine(
             Path.GetTempPath(),
@@ -3041,7 +3093,7 @@ public sealed partial class WorkstationEndpointsTests
         readiness.OperatorSignoffStatus.Should().Be("signed");
         readiness.OperatorSignoff.Should().NotBeNull();
         readiness.OperatorSignoff!.SignedOwners.Should().BeEquivalentTo(
-            ["Data Operations", "Provider Reliability", "Trading"]);
+            ["Data", "Provider Reliability", "Trading"]);
         readiness.OperatorSignoff.MissingOwners.Should().BeEmpty();
         readiness.OperatorSignoff.CompletedAt.Should().Be(new DateTimeOffset(2026, 4, 26, 16, 2, 0, TimeSpan.Zero));
         readiness.Detail.Should().Contain("operator sign-off is complete");
@@ -3171,10 +3223,10 @@ public sealed partial class WorkstationEndpointsTests
             automationRoot,
             """
             {
-              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "requiredOwners": [ "Data", "Provider Reliability", "Trading" ],
               "status": "signed",
               "requiredBeforeDk1Exit": true,
-              "signedOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "signedOwners": [ "Data", "Provider Reliability", "Trading" ],
               "missingOwners": []
             }
             """,
@@ -3872,7 +3924,7 @@ public sealed partial class WorkstationEndpointsTests
         summary.CriticalOpenBreakCount.Should().Be(0);
         summary.SignedOffCount.Should().Be(summary.TotalBreakCount);
         summary.Profiles.Should().OnlyContain(profile => profile.PendingSignoffCount == 0);
-        summary.Summary.Should().Contain("ready for governance sign-off");
+        summary.Summary.Should().Contain("ready for accounting sign-off");
         summary.BreakCountTrend.Should().BeLessThanOrEqualTo(0);
         summary.T0ClosureRate.Should().Be(1m);
         summary.T0ClosureRateAlertTriggered.Should().BeFalse();
@@ -4094,9 +4146,9 @@ public sealed partial class WorkstationEndpointsTests
         var client = app.GetTestClient();
         var canonicalContinuityRoute = UiApiRoutes.RunsContinuity.Replace("{runId}", "run-continuity-shared", StringComparison.Ordinal);
 
-        using var research = await ReadJsonAsync(client, "/api/workstation/research");
-        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
-        using var briefing = await ReadJsonAsync(client, "/api/workstation/research/briefing");
+        using var research = await ReadJsonAsync(client, UiApiRoutes.WorkstationStrategy);
+        using var trading = await ReadJsonAsync(client, UiApiRoutes.WorkstationTrading);
+        using var briefing = await ReadJsonAsync(client, UiApiRoutes.WorkstationStrategyBriefing);
 
         ContainsStringValue(research.RootElement, canonicalContinuityRoute).Should().BeTrue();
         ContainsStringValue(trading.RootElement, canonicalContinuityRoute).Should().BeTrue();
@@ -4138,6 +4190,13 @@ public sealed partial class WorkstationEndpointsTests
             !string.IsNullOrWhiteSpace(item.Workspace) &&
             !string.IsNullOrWhiteSpace(item.TargetRoute) &&
             !string.IsNullOrWhiteSpace(item.TargetPageTag));
+        first.WorkItems.Should().Contain(item =>
+            item.Kind == OperatorWorkItemKindDto.ReconciliationBreak &&
+            item.Workspace == "Accounting" &&
+            item.TargetRoute == UiApiRoutes.ReconciliationBreakQueue &&
+            item.TargetPageTag == "FundReconciliation");
+        first.WorkItems.Should().NotContain(static item =>
+            string.Equals(item.Workspace, "Governance", StringComparison.OrdinalIgnoreCase));
         first.WorkItems.Should().ContainSingle(item =>
             item.WorkItemId == $"promotion-review-{runId.ToLowerInvariant()}" &&
             item.Kind == OperatorWorkItemKindDto.PromotionReview &&
@@ -5822,7 +5881,7 @@ public sealed partial class WorkstationEndpointsTests
         Directory.CreateDirectory(packetDirectory);
         operatorSignoffJson ??= """
             {
-              "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+              "requiredOwners": [ "Data", "Provider Reliability", "Trading" ],
               "status": "pending",
               "requiredBeforeDk1Exit": true
             }

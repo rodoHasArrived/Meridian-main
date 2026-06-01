@@ -32,6 +32,11 @@ public sealed class LayerBoundaryTests
             typeof(Meridian.Infrastructure.Adapters.Core.IProviderMetadata).Assembly,
             // Domain
             typeof(Meridian.Domain.Events.MarketEvent).Assembly,
+            // Application
+            typeof(Meridian.Application.Reconciliation.StatementReconciliationService).Assembly,
+            // UI shared/services
+            typeof(Meridian.Ui.Shared.Services.ProviderLedgerReconciliationService).Assembly,
+            typeof(Meridian.Ui.Services.Services.Reconciliation.ReconciliationApiService).Assembly,
             // Infrastructure (adapters, providers, resilience)
             typeof(Meridian.Infrastructure.Adapters.Core.ProviderTemplate).Assembly)
         .Build();
@@ -206,6 +211,32 @@ public sealed class LayerBoundaryTests
             .Or().HaveNameEndingWith("CandleStatus")
             .Should().NotBePublic()
             .Because("Provider-local constants and endpoint strings are implementation details that must not leak into the public API.");
+
+        rule.Check(Architecture);
+    }
+
+    [Fact]
+    public void ReconciliationContext_ShouldNot_DependOn_UiShared_Or_UiServices()
+    {
+        var rule = Types()
+            .That().ResideInNamespaceMatching(@"^Meridian\.Application\.Reconciliation\.")
+            .Should().NotDependOnAny(
+                Types().That().ResideInNamespaceMatching(@"^Meridian\.Ui\.(Shared|Services)\."))
+            .Because("Reconciliation context ownership must stay in Application and expose contracts to UI layers rather than depend on UI implementations.")
+            .WithoutRequiringPositiveResults();
+
+        rule.Check(Architecture);
+    }
+
+    [Fact]
+    public void UiReconciliationApi_ShouldNot_DependOn_InfrastructureReconciliation()
+    {
+        var rule = Types()
+            .That().ResideInNamespaceMatching(@"^Meridian\.Ui\.Services\.Services\.Reconciliation\.")
+            .Should().NotDependOnAny(
+                Types().That().ResideInNamespaceMatching(@"^Meridian\.Infrastructure\.Reconciliation\."))
+            .Because("UI reconciliation services should consume application-owned workflows instead of orchestrating infrastructure reconciliation storage directly.")
+            .WithoutRequiringPositiveResults();
 
         rule.Check(Architecture);
     }

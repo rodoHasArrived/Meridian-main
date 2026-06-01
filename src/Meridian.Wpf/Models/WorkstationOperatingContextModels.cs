@@ -41,7 +41,7 @@ public static class OperatingContextScopeKindExtensions
 }
 
 /// <summary>
-/// Explicit governance subareas surfaced inside the Governance workspace.
+/// Explicit accounting and operational-governance subareas surfaced inside the Accounting workspace.
 /// </summary>
 public enum GovernanceSubarea : byte
 {
@@ -75,8 +75,8 @@ public sealed record WorkstationOperatingContext
     public IReadOnlyList<string> EntityIds { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> PortfolioIds { get; init; } = Array.Empty<string>();
     public IReadOnlyList<string> LedgerGroupIds { get; init; } = Array.Empty<string>();
-    public string DefaultWorkspaceId { get; init; } = "research";
-    public string DefaultLandingPageTag { get; init; } = "ResearchShell";
+    public string DefaultWorkspaceId { get; init; } = WorkstationNavigationDefaults.StrategyWorkspaceId;
+    public string DefaultLandingPageTag { get; init; } = WorkstationNavigationDefaults.StrategyPageTag;
     public OperatingEnvironmentKind OperatingEnvironmentKind { get; init; } = OperatingEnvironmentKind.LegacyFundProfile;
     public string? EnvironmentLaneId { get; init; }
     public string? EnvironmentLaneName { get; init; }

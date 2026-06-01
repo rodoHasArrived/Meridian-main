@@ -56,7 +56,6 @@ class Doctor:
         self._check_global_json()
         self._check_packages_props()
         self._check_env_vars()
-        self._check_native_tools()
         if not self.quick:
             self._check_network()
         return self.results
@@ -444,51 +443,6 @@ class Doctor:
                         fix=f"export {var}=<your-key>",
                     )
                 )
-
-    def _check_native_tools(self) -> None:
-        """Check CMake and C++ compiler (optional — needed for CppTrader)."""
-        if shutil.which("cmake"):
-            version = self._command_version(["cmake", "--version"])
-            self.results.append(
-                DoctorResult(
-                    name="CMake",
-                    status="pass",
-                    details=f"Installed {version.splitlines()[0]}",
-                    expected="CMake (optional — CppTrader)",
-                )
-            )
-        else:
-            self.results.append(
-                DoctorResult(
-                    name="CMake",
-                    status="warn",
-                    details="Not installed (optional — needed for CppTrader native engine)",
-                    expected="CMake (optional — CppTrader)",
-                    fix="Install CMake from https://cmake.org/download/",
-                )
-            )
-
-        cpp = shutil.which("g++") or shutil.which("clang++") or shutil.which("cl")
-        if cpp:
-            compiler_name = Path(cpp).name
-            self.results.append(
-                DoctorResult(
-                    name="C++ compiler",
-                    status="pass",
-                    details=f"{compiler_name} found",
-                    expected="C++ compiler (optional — CppTrader)",
-                )
-            )
-        else:
-            self.results.append(
-                DoctorResult(
-                    name="C++ compiler",
-                    status="warn",
-                    details="Not found (optional — needed for CppTrader native engine)",
-                    expected="C++ compiler (optional — CppTrader)",
-                    fix="Linux: apt install build-essential  |  macOS: xcode-select --install",
-                )
-            )
 
     def _check_network(self) -> None:
         try:

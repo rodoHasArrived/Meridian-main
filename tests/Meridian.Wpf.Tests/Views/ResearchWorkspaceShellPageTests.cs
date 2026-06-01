@@ -19,14 +19,14 @@ public sealed class ResearchWorkspaceShellPageTests
             },
             activeRun: null,
             workflow: new WorkspaceWorkflowSummary(
-                WorkspaceId: "research",
-                WorkspaceTitle: "Research",
+                WorkspaceId: "strategy",
+                WorkspaceTitle: "Strategy",
                 StatusLabel: "Ready for a new research cycle",
                 StatusDetail: "No live workflow summary is available, so the shell is using deterministic fallback guidance.",
                 StatusTone: "Info",
                 NextAction: new WorkflowNextAction(
                     Label: "Start Backtest",
-                    Detail: "Launch a new simulation from the research workspace.",
+                    Detail: "Launch a new simulation from the strategy workspace.",
                     TargetPageTag: "Backtest",
                     Tone: "Primary"),
                 PrimaryBlocker: new WorkflowBlockerSummary(
@@ -74,8 +74,8 @@ public sealed class ResearchWorkspaceShellPageTests
                 CanPromoteToPaper = true
             },
             workflow: new WorkspaceWorkflowSummary(
-                WorkspaceId: "research",
-                WorkspaceTitle: "Research",
+                WorkspaceId: "strategy",
+                WorkspaceTitle: "Strategy",
                 StatusLabel: "Candidate for paper review",
                 StatusDetail: "The leading backtest has complete evidence and can move into paper review.",
                 StatusTone: "Success",
@@ -116,6 +116,8 @@ public sealed class ResearchWorkspaceShellPageTests
         var viewModel = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\ResearchWorkspaceShellViewModel.cs"));
 
         xaml.Should().Contain("Strategy Desk Briefing");
+        xaml.Should().Contain("WorkspaceCopyCatalog.StrategyShellTitle");
+        xaml.Should().NotContain("WorkspaceCopyCatalog.ResearchShellTitle");
         xaml.Should().Contain("PlotTool workstation");
         xaml.Should().Contain("Run scripts");
         xaml.Should().Contain("Console &amp; compare");
@@ -139,6 +141,8 @@ public sealed class ResearchWorkspaceShellPageTests
         models.Should().Contain("internal readonly record struct ResearchDeskHeroState(");
         service.Should().Contain("internal static ResearchDeskHeroState BuildDeskHeroState(");
         service.Should().Contain("internal async Task<ResearchWorkspaceShellPresentationState> BuildAsync(");
+        service.Should().Contain("WorkspaceCopyCatalog.Strategy.ShellTitle");
+        service.Should().NotContain("WorkspaceCopyCatalog.Research.");
         viewModel.Should().Contain("public async Task RefreshAsync()");
         viewModel.Should().Contain("public async Task OpenRunStudioAsync");
     }

@@ -217,7 +217,23 @@ public static class LedgerPeriodPostingGuard
             normalized.Equals("Short Securities Payable", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("Option Premium Asset", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("Option Premium Liability", StringComparison.OrdinalIgnoreCase) ||
-            normalized.Equals("Futures MTM Settlement", StringComparison.OrdinalIgnoreCase);
+            normalized.Equals("Futures MTM Settlement", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("LoanPrincipal", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("LoanAndAccrualsClearing", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("AccruedInterestReceivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("InterestIncome", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("CommitmentFeeReceivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("CommitmentFeeIncome", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("PenaltyReceivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("PenaltyIncome", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("FeeReceivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("FeeIncome", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("WriteOffExpense", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("LoanDiscount", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("DiscountAmortizationExpense", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("LoanPremium", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("PremiumAmortizationIncome", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("RestructuringLoss", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TryGetMetadataTag(JournalEntryMetadata metadata, string key, out string value)

@@ -279,8 +279,11 @@ public static class FundStructureEndpoints
             }
         })
         .WithName("UpdateOwnershipLink")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageFundStructure))
         .Produces<OwnershipLinkDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapPost("/links/{ownershipLinkId:guid}/expire", async (Guid ownershipLinkId, JsonElement body, HttpContext context) =>
         {
@@ -306,8 +309,11 @@ public static class FundStructureEndpoints
             }
         })
         .WithName("ExpireOwnershipLink")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageFundStructure))
         .Produces<OwnershipLinkDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapPost("/links/{ownershipLinkId:guid}/replace", async (Guid ownershipLinkId, JsonElement body, HttpContext context) =>
         {
@@ -333,8 +339,11 @@ public static class FundStructureEndpoints
             }
         })
         .WithName("ReplaceOwnershipLink")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageFundStructure))
         .Produces<OwnershipLinkDto>(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapPost("/links/validate", async (JsonElement body, HttpContext context) =>
         {

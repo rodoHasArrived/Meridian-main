@@ -49,9 +49,7 @@ public sealed class FamilyOfficeReadServiceTests
         await fundStructure.CreateLegalEntityAsync(new CreateLegalEntityRequest(
             entityId, LegalEntityTypeDto.LimitedPartner, "TRUST", "Founders Trust", "US-DE", "USD", now.AddYears(-1), "test"), CancellationToken.None);
         await fundStructure.LinkNodesAsync(new LinkFundStructureNodesRequest(
-            Guid.NewGuid(), clientId, fundId, OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", OwnershipPercent: 100m), CancellationToken.None);
-        await fundStructure.LinkNodesAsync(new LinkFundStructureNodesRequest(
-            Guid.NewGuid(), fundId, entityId, OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test"), CancellationToken.None);
+            Guid.NewGuid(), fundId, entityId, OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", OwnershipPercent: 100m), CancellationToken.None);
 
         await fundAccounts.CreateAccountAsync(new CreateAccountRequest(
             accountId,
@@ -113,8 +111,6 @@ public sealed class FamilyOfficeReadServiceTests
             fundId, "FND", "Founders Holdings", "USD", now.AddYears(-1), "test", BusinessId: businessId), CancellationToken.None);
         await fundStructure.CreateLegalEntityAsync(new CreateLegalEntityRequest(
             entityId, LegalEntityTypeDto.LimitedPartner, "TRUST", "Founders Trust", "US-DE", "USD", now.AddYears(-1), "test"), CancellationToken.None);
-        await fundStructure.LinkNodesAsync(new LinkFundStructureNodesRequest(
-            Guid.NewGuid(), clientId, fundId, OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", OwnershipPercent: 100m), CancellationToken.None);
         await fundStructure.LinkNodesAsync(new LinkFundStructureNodesRequest(
             Guid.NewGuid(), fundId, entityId, OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", OwnershipPercent: 100m), CancellationToken.None);
         await fundAccounts.CreateAccountAsync(new CreateAccountRequest(

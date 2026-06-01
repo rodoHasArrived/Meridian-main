@@ -121,7 +121,22 @@ Use repo navigation first whenever the main problem is "where should I start?" r
 
 Choose the CoS runtime path when the task crosses multiple subsystems, requires an approval gate
 or operator sign-off, or needs a structured briefing with trace/evidence retention. See
-`tools/chief-of-staff-runtime/runtime.py` and `docs/development/chief-of-staff-runtime.md`.
+`tools/chief-of-staff-runtime/runtime.py` and the operator runbook guidance in `docs/operators/README.md`.
+
+## AI Contract Coverage
+
+- Repo navigation: `../navigation/README.md`, `../generated/repo-navigation.md`
+- Agent edit rules: `../assistant-workflow-contract.md`, `.codex/skills/_shared/project-context.md`,
+  `.agents/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`
+- Generated-file handling: AI and repo-navigation generated artifacts are owned by their generators;
+  do not hand-edit docs under `docs/ai/generated/` or generator outputs in `docs/generated/`.
+- Agent orchestration: `docs/ai/parallel-task-manifest-template.md`, `docs/ai/agent-handoff-checklist.md`,
+  and `.codex/agents/` profiles for cross-lane routing
+- Parallel workflow: keep lane scopes disjoint in the manifest and record handoff expectations before merge
+- Token/context management: choose a mode in `docs/ai/work-modes.md` and summarize context scope in handoff packets
+- Validation: `python build/scripts/docs/check-ai-inventory.py --summary`, `python build/scripts/docs/check-codex-skills.py --summary`,
+  `python build/scripts/docs/validate-skill-packages.py`, and `python build/scripts/docs/check-ai-contract-drift.py ...` when surfaces change
+- Documentation ownership: `../documentation-ownership.md` and `../assistant-workflow-contract.md`
 
 ### Agent Design Pattern Selection
 

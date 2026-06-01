@@ -21,21 +21,23 @@ The value proposition is simple: fewer disconnected tools, fewer manual handoffs
 ## Start Here
 
 - [Documentation Index](docs/README.md)
+- [Start Here](docs/start/README.md)
+- [Product Direction](docs/product/README.md)
+- [Engineering Guide](docs/engineering/README.md)
+- [Operator Guide](docs/operators/README.md)
+- [Reference Lookup](docs/reference/README.md)
 - [Project Structure](docs/architecture/project-structure.md)
 - [Module Map](docs/architecture/module-map.md)
-- [Developer Setup](docs/developer/setup.md)
-- [Build, Test, Run](docs/developer/build-test-run.md)
-- [Publish Standalone EXE](docs/developer/publish-standalone-exe.md)
-- [Project Roadmap](docs/status/ROADMAP.md)
-- [Current Direction and Status](docs/plans/current-direction-and-status.md)
-- [Feature Inventory](docs/status/FEATURE_INVENTORY.md)
-- [Improvements Tracker](docs/status/IMPROVEMENTS.md)
-- [Cleanup and Maintenance](docs/operations/cleanup-and-maintenance.md)
-- [Prompt and Agent Guidance](docs/prompts/repo-maintenance-prompts.md)
-- [Evidence-Backed Investment Operations Plan](docs/plans/evidence-backed-investment-operations-plan.md)
-- [Web UI Development Pivot](docs/plans/web-ui-development-pivot.md)
+- [AI Guide](docs/ai/README.md)
+- [Developer Setup](docs/start/README.md)
+- [Build, Test, Run](docs/engineering/README.md)
+- [Publish Standalone EXE](docs/operators/README.md)
 - [Roadmap Registry](docs/roadmap/README.md)
+- [Roadmap Data Registry](docs/roadmap/data/)
 - [Source Documentation Mesh](docs/source/README.md)
+- [Documentation Ownership Contract](docs/documentation-ownership.md)
+- [Design Charter (canonical)](docs/product/meridian-design-document.md)
+- [Legacy status context](docs/status/README.md), [legacy plans archive index](docs/plans/README.md), [archived docs](archive/docs/README.md)
 
 ## Current Product Direction
 
@@ -60,7 +62,7 @@ The solution currently includes these major areas:
 - `src/Meridian.Backtesting` and `src/Meridian.Backtesting.Sdk` for replay and backtesting
 - `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger`, and `src/Meridian.FSharp.DirectLending.Aggregates` for accounting and direct-lending/domain-specialized work
 - `src/Meridian.QuantScript` for scripting and charting-oriented tooling
-- `src/Meridian.Mcp` and `src/Meridian.McpServer` for Model Context Protocol integration surfaces
+- `src/Meridian.Mcp` for Model Context Protocol integration surfaces
 - `src/Meridian.Ui/dashboard`, `src/Meridian.Ui/wwwroot/workstation`, `src/Meridian.Ui.Services`, and `src/Meridian.Ui.Shared` for the active web workstation and shared UI/API layers
 - `src/Meridian.Wpf` for the active Windows desktop workstation shell
 - `tests/` and `benchmarks/` for automated validation and performance work
@@ -210,15 +212,6 @@ A lightweight [Model Context Protocol](https://modelcontextprotocol.io/) server.
 dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj
 ```
 
-### MCP server (market data) — `src/Meridian.McpServer`
-
-A full-featured MCP server that exposes market data capabilities (provider queries, backfill, storage catalog, symbol management) as MCP tools, resources, and prompts. Lets LLMs interact with live provider data over the stdio transport.
-
-```bash
-dotnet run --project src/Meridian.McpServer/Meridian.McpServer.csproj -- --config config/appsettings.json
-```
-
-Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
 
 ### Windows WPF desktop app — `src/Meridian.Wpf`
 
@@ -274,7 +267,7 @@ make bench-quick    # Quick bottleneck benchmarks (~10 min)
 make setup-dev      # One-shot local dev setup (hooks, config, restore, build)
 ```
 
-Desktop workflow automation (workflow runs, manual generation, screenshot capture) is PowerShell-script based; see [docs/development/desktop-command-surface-migration.md](docs/development/desktop-command-surface-migration.md).
+Desktop workflow automation (workflow runs, manual generation, screenshot capture) is PowerShell-script based; see [docs/operators/README.md](docs/operators/README.md).
 
 See [docs/HELP.md](docs/HELP.md) for the full operator/developer quick reference including environment variables, configuration schema, and provider credential setup.
 
@@ -296,16 +289,16 @@ Build safety note:
 
 Use these documents together when planning or implementing new work:
 
-- [docs/plans/current-direction-and-status.md](docs/plans/current-direction-and-status.md) for the consolidated current direction, status, and plan-file roles
-- [docs/status/ROADMAP_COMBINED.md](docs/status/ROADMAP_COMBINED.md) for the shortest roadmap and target-state summary
-- [docs/status/ROADMAP.md](docs/status/ROADMAP.md) for the canonical wave order: closed Wave 1 provider confidence and checkpoint evidence, closed Wave 2 paper-trading cockpit baseline, closed Wave 3 shared run / portfolio / ledger continuity baseline, and active Wave 4 governance and fund-operations productization on top of the delivered Security Master baseline
-- [docs/plans/evidence-backed-investment-operations-plan.md](docs/plans/evidence-backed-investment-operations-plan.md) for the product-category filter, commercial differentiation bets, sequencing rule, and archive-placement rule
-- [docs/plans/meridian-6-week-roadmap.md](docs/plans/meridian-6-week-roadmap.md) for the current time-boxed Waves 1-4 execution slice
-- [docs/status/provider-validation-matrix.md](docs/status/provider-validation-matrix.md) for the current provider-confidence evidence gate; the completed Wave 1 blueprint is archived at [archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](archive/docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md)
-- [docs/plans/trading-workstation-migration-blueprint.md](docs/plans/trading-workstation-migration-blueprint.md) for the Wave 2-3 workstation and shared-model implementation shape; the evidence-backed investment-operations plan supersedes older generic workstation positioning
-- [docs/plans/governance-fund-ops-blueprint.md](docs/plans/governance-fund-ops-blueprint.md) for Wave 4 governance and fund-operations depth on top of the delivered Security Master baseline
-- [docs/status/FEATURE_INVENTORY.md](docs/status/FEATURE_INVENTORY.md) for current-vs-target capability status
-- [docs/status/IMPROVEMENTS.md](docs/status/IMPROVEMENTS.md) for tracked implementation themes
+- [docs/roadmap/README.md](docs/roadmap/README.md) for active roadmap and wave-state (`docs/roadmap/data/*.yml` is the truth source)
+- [docs/roadmap/data/](docs/roadmap/data/) for wave and gate records
+- [docs/roadmap/generated/ROADMAP_SUMMARY.md](docs/roadmap/generated/ROADMAP_SUMMARY.md) for current generated roadmap summary
+- [docs/product/meridian-design-document.md](docs/product/meridian-design-document.md) for current product framing and evidence-backed operations model
+- [docs/reference/provider-capability-matrix.md](docs/reference/provider-capability-matrix.md) and [docs/reference/provider-validation-matrix.md](docs/reference/provider-validation-matrix.md) for operational validation scope
+- [docs/reference/provider-validation-matrix.md](docs/reference/provider-validation-matrix.md) and [docs/reference/provider-capability-matrix.md](docs/reference/provider-capability-matrix.md) for current provider-confidence scope.
+- [docs/engineering/README.md](docs/engineering/README.md) for execution architecture and shared-model guidance (legacy migration path documents remain in plans)
+- [docs/operators/README.md](docs/operators/README.md) for current operator governance and support posture
+- Legacy planning inputs: `docs/status/FEATURE_INVENTORY.md`, `docs/status/IMPROVEMENTS.md` (source material, not canonical status)
+- [Legacy status inventory](docs/status/IMPROVEMENTS.md) for historical implementation tracking context
 <!-- readme-tree start -->
 
 The full repository tree is generated in [docs/generated/repository-structure.md](docs/generated/repository-structure.md). For maintained ownership and dependency boundaries, use [docs/architecture/project-structure.md](docs/architecture/project-structure.md) and [docs/architecture/module-map.md](docs/architecture/module-map.md).

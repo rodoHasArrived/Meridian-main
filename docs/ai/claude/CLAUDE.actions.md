@@ -1,18 +1,22 @@
 # CLAUDE.actions.md - GitHub Actions & CI/CD Guide
 
 This guide covers the current Meridian GitHub Actions surface. Keep it aligned with
-`.github/workflows/README.md` and `docs/development/github-actions-summary.md`.
+`.github/workflows/README.md` and `docs/engineering/README.md`.
 
 ## Workflow Inventory
 
-The active workflow set is deliberately small:
+The active workflow set is documented in `.github/workflows/README.md`; use that file
+as the source of truth before editing workflow behavior.
 
 | Workflow | File | Trigger | Purpose |
 | --- | --- | --- | --- |
-| CI | `ci.yml` | Pull requests, pushes to `main`, manual | Restore, format check, Release build, non-integration .NET tests, dashboard tests, dashboard build |
-| Windows Desktop Build | `windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Full WPF build and tests on Windows, plus desktop publish smoke |
-| Publish Smoke | `publish-smoke.yml` | Manual | Uploads standalone Windows publish output for `collector` or `desktop` |
-| Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly, manual | Workflow hygiene and Action YAML linting |
+| CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | `verify-fast`, source-doc determinism, browser workstation validation, and scheduled/manual `verify-full` coverage. |
+| CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly, manual | CodeQL analysis for C# and JavaScript/TypeScript; C# uses an explicit .NET 10 restore/build. |
+| Golden Path Validation | `golden-path-validation.yml` | Golden-path surface changes, pushes to `main`, manual | Browser W4 parity, WPF W4 acceptance, pilot-acceptance evidence, and readiness dashboard generation. |
+| Windows Desktop Build | `windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Full WPF build and tests on Windows, plus desktop publish smoke. |
+| Publish Smoke | `publish-smoke.yml` | Manual | Uploads standalone Windows publish output for collector, desktop, or web workstation smoke inspection. |
+| Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes, manual | Builds desktop installer packages and attaches release assets for tag runs. |
+| Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly, manual | Workflow hygiene, tooling metadata validation, Action YAML linting, and AI contract freshness checks. |
 
 ## Common Tasks
 
@@ -21,9 +25,9 @@ The active workflow set is deliberately small:
 ```bash
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
-dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
-dotnet test Meridian.sln -c Release --no-build --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
-npm ci --prefix src/Meridian.Ui/dashboard
+dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
+npm install --prefix src/Meridian.Ui/dashboard --include=optional
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
@@ -62,9 +66,8 @@ python build/scripts/ci/check-workflow-hygiene.py
 ## Related Documentation
 
 - [Workflow README](../../../.github/workflows/README.md)
-- [GitHub Actions Summary](../../development/github-actions-summary.md)
-- [GitHub Actions Testing Checklist](../../development/github-actions-testing.md)
-- [Build, Test, Run](../../developer/build-test-run.md)
-- [Publish Standalone EXE](../../developer/publish-standalone-exe.md)
+- [Engineering entrypoint](../../engineering/README.md)
+- [Build, Test, Run](../../engineering/README.md)
+- [Start guide](../../start/README.md)
 
-*Last Updated: 2026-05-18*
+*Last Updated: 2026-06-01*

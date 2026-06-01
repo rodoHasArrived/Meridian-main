@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-29
+last_reviewed: 2026-05-30
 ---
 
 # src/Meridian.Ui.Shared
@@ -29,7 +29,8 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
-`FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients. The create endpoint is a governed mutation and must require `AdminMaintenance` or `ManageDirectLending`, resolving audit attribution from the authenticated session actor rather than the client-submitted draft.
+`FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
+Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links.
 
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
@@ -47,6 +48,9 @@ The shared workflow library owns close-lane command routing as well: `Accounting
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
 target tags instead of inventing client-local close-workflow routes.
+Portfolio is also a first-class shared workflow library lane. The built-in `portfolio-position-review`
+workflow owns Portfolio workspace entry, aggregate exposure review, run-portfolio inspection,
+brokerage-sync review, and snapshot import targets so Portfolio is not hidden inside Reporting.
 Run comparison endpoints consume contract-owned compare and diff payloads from
 `Meridian.Contracts.Workstation`; keep request/result schema additions in contracts and let this
 layer focus on endpoint validation, dependency resolution, and service orchestration.
@@ -96,7 +100,7 @@ source-session, ledger-entry, reconciliation-case, or reconciliation-run pointer
 line must carry ledger, provider-event, Security Master definition, reconciliation-outcome, and
 approval references before publication. That keeps value-level report lineage enforceable in the
 shared service instead of client code.
-Generated governance report packs enrich line-level provenance with display labels,
+Generated governed report packs enrich line-level provenance with display labels,
 source-system tags, related ledger and journal evidence IDs, line amounts, latest evidence
 timestamps, and API routes back to run continuity, ledger trial-balance, reconciliation, and
 Security Master search evidence so report consumers can drill into accounting support without
@@ -113,7 +117,9 @@ Master id metadata to the drilldown. Provider-ledger
 corporate-action/factor casework now also retains ledger-effect metadata, so the drilldown surfaces
 the valuation or journal-support kind, principal/income amount, and journal
 preview line count so report-line users can see how provider factor, amortization schedule, or cash
-activity supports the ledger amount. Warnings remain only when neither retained lineage nor durable
+activity supports the ledger amount. Comma-separated required provider feeds, such as amortization
+and factor schedules on the same provider event, are preserved as one structured evidence value
+instead of being truncated at the first feed. Warnings remain only when neither retained lineage nor durable
 casework can identify provider evidence for the amount. Ledger amount provenance also projects retained strategy/run
 lineage into structured run links, including run id, display label, route, source system, capture
 time, and whether the run pointer was captured at the selected line scope. Browser and WPF
@@ -125,6 +131,22 @@ client surfaces consume the same readiness posture instead of recalculating it l
 The workflow-summary endpoint also projects a cross-workflow Meridian Assurance Score from the
 shared workspace postures, giving browser and WPF shells the same readiness indicator for Trading,
 Portfolio, Accounting, Reporting, Strategy, Data, and Settings instead of client-local scoring.
+Shared workstation fallback payloads keep retained `Research*` and `Governance*` contract names for
+route and DTO compatibility, but visible session roles, strategy summaries, reconciliation
+sign-off roles, and calibration summaries use canonical Strategy and Accounting wording.
+Trading fallback guardrails and strategy promotion fallbacks also use Accounting wording so shared
+bootstrap payloads do not expose legacy governance-lane copy while route aliases remain intact.
+Workstation root endpoints are mapped from `UiApiRoutes` canonical constants for Strategy, Data,
+Accounting, Reporting, Trading, and Portfolio, with Research, Data Operations, and Governance
+routes retained as compatibility aliases that return the same shared payloads.
+DK1 trust-gate readiness also normalizes retained owner labels from older automation packets, so
+`Research`, `Data Operations`, and `Governance` become Strategy, Data, and Accounting before the
+shared readiness payload reaches browser or WPF shells.
+Run review packets also keep compatibility target tags such as `FundReconciliation` and
+`SecurityMaster`, while their visible work-item workspace labels route reconciliation and coverage
+attention through Accounting. Report-pack readiness and evidence warnings use neutral report-pack
+wording instead of exposing the retained Governance repository type name to operators; repository
+validation errors follow the same wording while retaining the contract-owned type names.
 The file-backed Evidence Vault now stores more than manifest retention: retained local artifact
 refs with file paths are copied into a vault bundle with content hash, size, source route, and
 canonical subject metadata, while route-only artifacts stay as manifest references. The vault write
@@ -155,6 +177,9 @@ actions, pricing/trading-parameter readiness, downstream usage, and trust postur
 WPF clients. Each provider mapping also carries a confidence row with source, freshness, confidence
 score, related identifier-conflict IDs, conflict summaries, and override history so clients can show
 provider-to-Security-Master trust without rebuilding mapping logic locally.
+Security Master trust and conflict summaries use downstream Data, Accounting, and Reporting
+workflow labels so browser and WPF clients do not surface retained Governance-era wording for
+operator-facing review.
 The shared Security Master endpoints also expose the approved starter custom asset profile catalog
 at `/api/security-master/asset-profiles` and allow `/api/security-master/search` requests to filter
 profile-backed securities by custom profile id, pinned profile version, profile field key, or

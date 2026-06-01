@@ -88,6 +88,66 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Theory]
+    [InlineData("research", "strategy")]
+    [InlineData("governance", "accounting")]
+    [InlineData("Data Operations", "data")]
+    [InlineData("portfolio", "portfolio")]
+    public void WorkstationNavigationDefaults_ShouldCanonicalizeLegacyWorkspaceIds(
+        string workspaceId,
+        string expectedWorkspaceId)
+    {
+        WorkstationNavigationDefaults.NormalizeWorkspaceId(workspaceId).Should().Be(expectedWorkspaceId);
+    }
+
+    [Fact]
+    public void WorkstationNavigationDefaults_ShouldExposeCanonicalCompatibilityAliases()
+    {
+        WorkstationNavigationDefaults.WorkspaceCompatibilityAliases.Should().Contain(new Dictionary<string, string>
+        {
+            ["research"] = "strategy",
+            ["governance"] = "accounting",
+            ["dataoperations"] = "data",
+            ["data-operations"] = "data",
+            ["data operations"] = "data"
+        });
+    }
+
+    [Theory]
+    [InlineData("ResearchShell", "StrategyShell")]
+    [InlineData("GovernanceShell", "AccountingShell")]
+    [InlineData("DataOperationsShell", "DataShell")]
+    [InlineData("TradingShell", "TradingShell")]
+    public void WorkstationNavigationDefaults_ShouldCanonicalizeLegacyPageTags(
+        string pageTag,
+        string expectedPageTag)
+    {
+        WorkstationNavigationDefaults.NormalizePageTag(pageTag).Should().Be(expectedPageTag);
+    }
+
+    [Fact]
+    public void WorkspaceRegistry_ShouldExposeSevenCanonicalRoots()
+    {
+        WorkspaceRegistry.All
+            .Select(static workspace => workspace.Id)
+            .Should()
+            .Equal("trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings");
+
+        WorkspaceRegistry.GetDefaultWorkspace().Id.Should().Be("strategy");
+    }
+
+    [Theory]
+    [InlineData("research", "strategy")]
+    [InlineData("governance", "accounting")]
+    [InlineData("data-operations", "data")]
+    [InlineData("Data Operations", "data")]
+    public void WorkspaceRegistry_ShouldResolveLegacyWorkspaceIdsToCanonicalDefinitions(
+        string workspaceId,
+        string expectedWorkspaceId)
+    {
+        WorkspaceRegistry.GetWorkspaceById(workspaceId)?.Id.Should().Be(expectedWorkspaceId);
+    }
+
+    [Theory]
     [InlineData("trading", ShellPosture.Terminal, "WorkspaceHomeTradingTerminalTemplate")]
     [InlineData("portfolio", ShellPosture.Cockpit, "WorkspaceHomePortfolioCockpitTemplate")]
     [InlineData("accounting", ShellPosture.Cockpit, "WorkspaceHomeAccountingCockpitTemplate")]

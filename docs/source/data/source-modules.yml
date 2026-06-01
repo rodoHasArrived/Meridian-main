@@ -167,25 +167,6 @@ modules:
     todos: []
     last_reviewed: 2026-05-20
 
-  - id: SRC-INFRASTRUCTURE-CPPTRADER
-    path: src/Meridian.Infrastructure.CppTrader
-    name: CppTrader infrastructure adapter
-    layer: Infrastructure
-    status: active
-    owner_lane: Data Confidence and Validation
-    purpose: CppTrader integration support kept isolated from core provider and application contracts.
-    readme: src/Meridian.Infrastructure.CppTrader/README.md
-    roadmap_items:
-      - W1-DATA-001
-    stage_gates:
-      - DataConfidence
-    validation:
-      - dotnet build src/Meridian.Infrastructure.CppTrader/Meridian.Infrastructure.CppTrader.csproj /p:EnableWindowsTargeting=true
-    diagrams:
-      - DIA-ASSURANCE-LOOP
-    todos: []
-    last_reviewed: 2026-05-20
-
   - id: SRC-STORAGE
     path: src/Meridian.Storage
     name: Meridian storage

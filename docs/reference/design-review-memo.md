@@ -1,4 +1,8 @@
-# Design Review Memo (Institutional Sign-Off)
+# Design Review Memo (Institutional Sign-Off) — Source-Material (Legacy)
+
+**Classification:** Source material. This document is preserved for historical context.
+**Canonical replacement:** [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md) is the active product framing source.
+**Status:** Do not use as source of truth for current planning.
 
 ## Document Control
 - **System:** Meridian — Integrated Trading Platform
@@ -92,7 +96,7 @@ ledger/position evidence screens where dense master-detail review already improv
 Wave 3 can reach Reporting, Strategy, and Trading only where schedule or evidence workflows exist.
 Do not restyle unrelated screens solely for visual uniformity.
 
-The reusable component contract lives in [`../ui/components.md`](../ui/components.md#security-master-master-detail-pattern). Product planning for this lane lives in [`../plans/web-ui-development-pivot.md`](../plans/web-ui-development-pivot.md).
+The reusable component contract lives in the archived historical note: [`../../archive/docs/ui/README.md`](../../archive/docs/ui/README.md). Product planning for this lane lives in [`../../archive/docs/plans/web-ui-development-pivot.md`](../../archive/docs/plans/web-ui-development-pivot.md).
 
 ### Key Control: Unified Event Stream
 All market data outputs normalize to `MarketEvent(Type, Symbol, Timestamp, Payload)` with typed payload records (Trade, L2Snapshot, BboQuote, OrderFlow, IntegrityEvent). This provides:
@@ -376,3 +380,4 @@ This reduces restart risk and prevents partial-write corruption. Changes apply w
 - Completion of high-priority hardening items (compliance review, authentication, execution integration)
 - Regular audits and security reviews
 - Post-deployment monitoring and incident tracking
+

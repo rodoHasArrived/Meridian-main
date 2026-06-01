@@ -55,7 +55,7 @@
                                            HorizontalAlignment="Center" />
                             </Border>
                             <StackPanel>
-                                <TextBlock Text="Governance Accounts" Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="Accounting Accounts" Style="{StaticResource PageTitleStyle}" />
                                 <TextBlock Text="{Binding FundContextLabel}"
                                            Style="{StaticResource CardDescriptionStyle}"
                                            Margin="0,4,0,0" />

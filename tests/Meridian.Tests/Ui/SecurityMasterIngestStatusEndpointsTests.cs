@@ -160,12 +160,14 @@ public sealed class SecurityMasterIngestStatusEndpointsTests
         var queryService = Substitute.For<ContractsSecurityMasterQueryService>();
         var conflictService = Substitute.For<ISecurityMasterConflictService>();
         var ingestStatusService = Substitute.For<ISecurityMasterIngestStatusService>();
+        var commandService = Substitute.For<ISecurityMasterService>();
         var importService = Substitute.For<ISecurityMasterImportService>();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
-        using var app = CreateApp(
+        await using var app = await CreateAppAsync(
             queryService,
             conflictService,
             ingestStatusService,
+            commandService,
             importService,
             eventStore);
         var client = app.GetTestClient();

@@ -712,8 +712,8 @@ public sealed class StrategyRunReadService
     }
 
     /// <summary>
-    /// Builds the list of governance hooks for a run detail response.
-    /// Each hook captures a single governance seam (parameters, portfolio, ledger, audit, promotion).
+    /// Builds the list of governed-control hooks for a run detail response.
+    /// Each hook captures a single governed-control seam (parameters, portfolio, ledger, audit, promotion).
     /// Seams that are satisfied are included with <see cref="StrategyRunGovernanceHook.IsSatisfied"/> = true;
     /// missing seams are included so callers can surface gaps.
     /// </summary>

@@ -76,7 +76,7 @@ public sealed class ShellRouteRegistryTests
             .Select(route => route.PageTag)
             .ToArray();
 
-        visiblePrimaryTargets.Should().Contain(["TradingShell", "FundLedger", "FundReconciliation", "ReportingShell", "DataShell"],
+        visiblePrimaryTargets.Should().Contain(["TradingShell", "PortfolioShell", "AggregatePortfolio", "FundLedger", "FundReconciliation", "ReportingShell", "DataShell"],
             "cross-surface workflow targets need visible operator entry points in WPF");
     }
 }

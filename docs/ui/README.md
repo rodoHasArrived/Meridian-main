@@ -1,14 +1,10 @@
-# UI Documentation
+# UI Documentation (archived)
 
-This folder holds UI component and surface guidance that is not specific to the
-root Meridian Design System package.
+This folder is now migrated to `archive/docs/ui/` during documentation rebuild migration.
 
-- [Components](components.md)
-- [Design System Usage](../design/design-system-usage.md)
-- [Web UI Development Pivot](../plans/web-ui-development-pivot.md)
+- [UI components](../../archive/docs/ui/components.md)
+- [UI migration note](../../archive/docs/ui/README.md)
 
-Use `src/Meridian.Ui/dashboard/` for browser workstation work and `src/Meridian.Wpf/`
-for Windows desktop workstation work. Keep business behavior in shared contracts,
-local/web API endpoints, or shared read models before composing it into either
-operator surface.
-
+For current UI implementation guidance, use:
+- [engineering docs](../engineering/README.md)
+- [reference docs](../reference/README.md)

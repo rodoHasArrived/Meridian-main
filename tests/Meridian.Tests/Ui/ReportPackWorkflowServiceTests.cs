@@ -158,6 +158,28 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void Publish_RejectsLineProvenancePointersMissingFromRetainedManifest()
+    {
+        var svc = new ReportPackWorkflowService();
+        var approved = CreateApprovedPack(
+            svc,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+
+        Action act = () => svc.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("ledger-evidence-1", "Line evidence", "/evidence/ledger-evidence-1", "reporting")]);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Report pack publication has orphan provenance pointers: approval-1, case-1, definition-1, ledger-entry-1, provider-event-1, provider-session-1, recon-run-1, run-1, security-1.");
+    }
+
+    [Fact]
     public void Publish_RequiresReportValueAndSourcePointerForLineProvenance()
     {
         var svc = new ReportPackWorkflowService();
@@ -274,7 +296,7 @@ public sealed class ReportPackWorkflowServiceTests
             "sha256:abc123",
             "manifest-1",
             "vault/report-packs/manifest-1.json",
-            [new ReportPackEvidenceLinkDto("ledger-evidence-1", "Line evidence", "/evidence/ledger-evidence-1", "reporting")]);
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
 
         var line = published.LineProvenance.Should().ContainSingle().Subject;
         line.LedgerEntryId.Should().Be("ledger-entry-1");
@@ -577,6 +599,20 @@ public sealed class ReportPackWorkflowServiceTests
             "manifest-1",
             "vault/report-packs/manifest-1.json",
             [new ReportPackEvidenceLinkDto(evidenceId, "Line evidence", $"/evidence/{evidenceId}", "reporting")]);
+
+    private static IReadOnlyList<ReportPackEvidenceLinkDto> CompleteLineProvenanceEvidenceLinks(string evidenceId) =>
+    [
+        new ReportPackEvidenceLinkDto(evidenceId, "Line evidence", $"/evidence/{evidenceId}", "reporting"),
+        new ReportPackEvidenceLinkDto("ledger-entry-1", "Ledger entry", "/evidence/ledger-entry-1", "ledger"),
+        new ReportPackEvidenceLinkDto("provider-event-1", "Provider event", "/evidence/provider-event-1", "provider"),
+        new ReportPackEvidenceLinkDto("security-1", "Security Master identity", "/evidence/security-1", "security-master"),
+        new ReportPackEvidenceLinkDto("definition-1", "Security definition", "/evidence/definition-1", "security-master"),
+        new ReportPackEvidenceLinkDto("case-1", "Reconciliation case", "/evidence/case-1", "reconciliation"),
+        new ReportPackEvidenceLinkDto("recon-run-1", "Reconciliation run", "/evidence/recon-run-1", "reconciliation"),
+        new ReportPackEvidenceLinkDto("approval-1", "Approval", "/evidence/approval-1", "approval"),
+        new ReportPackEvidenceLinkDto("run-1", "Strategy run", "/evidence/run-1", "strategy"),
+        new ReportPackEvidenceLinkDto("provider-session-1", "Provider source session", "/evidence/provider-session-1", "provider")
+    ];
 
     private static ReportPackLineProvenanceDto CompleteLineProvenance(string lineKey, string evidenceId) =>
         new(

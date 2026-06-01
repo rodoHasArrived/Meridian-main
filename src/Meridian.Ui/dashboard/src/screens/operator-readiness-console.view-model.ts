@@ -1599,7 +1599,7 @@ function buildApiSources({
       level: dataOperations ? "ready" : "review"
     },
     {
-      id: "governance",
+      id: "accounting",
       label: "Accounting",
       endpoint: WORKSTATION_API_ENDPOINTS.accounting,
       status: governance ? `${governance.breakQueue.length} breaks` : "Unavailable",

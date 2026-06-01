@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.Domain.Enums;
 
 /// <summary>
 /// Exercise style of an option contract.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OptionStyle : byte
 {
     /// <summary>

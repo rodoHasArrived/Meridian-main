@@ -31,7 +31,10 @@ and UI presentation concerns in their owning layers.
   Accounting operator inbox with `FundReconciliation` navigation instead of becoming log-only
   failures. Ledger-impacting commands project balanced `LedgerJournalEntryWrite` records before
   persistence and pass them to the direct-lending state store with the same generated loan event id
-  as ledger source lineage.
+  as ledger source lineage. Loan terms that produce ledger postings must carry a
+  `DirectLendingSecurityMasterReferenceDto`; the projector stamps the resolved Security Master id,
+  symbol, approval, provenance, active status, and ledger-mapping reference on central ledger writes
+  before the posting guard accepts direct-lending instrument lines.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
   and approval close lanes. Approval and close commands enforce shared close-checklist control
@@ -67,8 +70,9 @@ and UI presentation concerns in their owning layers.
 - `Reconciliation/` - statement reconciliation orchestration and broker/custodian intake that
   validates canonical external statement files, creates durable reconciliation cases for unresolved
   cash/activity rows, requires row currency equality before broker/custodian auto-match, appends
-  reconciliation decision journals through crash-safe copy-on-write JSONL writes, and attaches
-  break explanations plus retained statement-row evidence.
+  reconciliation decision journals through crash-safe copy-on-write JSONL writes, attaches
+  break explanations plus retained statement-row evidence, and owns the statement-run workflow that
+  persists canonical imports, open breaks, and case materialization for shared UI consumers.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot
@@ -85,6 +89,8 @@ and UI presentation concerns in their owning layers.
   custom profile id, version, field-key, or field-value filters are supplied. Profile definitions
   are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
+  Security Master validation messages use operator-review wording for override audit remediation so
+  application-layer guidance does not expose legacy Governance workspace language.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. Ownership-link policy validation prevents invalid setup graphs
   by blocking self-parenting, active cycles, incompatible relationship types, overlapping primary

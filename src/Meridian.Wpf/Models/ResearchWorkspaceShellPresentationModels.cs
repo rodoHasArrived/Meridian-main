@@ -63,7 +63,7 @@ internal sealed class ResearchWorkspaceShellPresentationState
 
     public string ScenarioStrategyText { get; init; } = "No strategy selected";
 
-    public string ScenarioCoverageText { get; init; } = "No research session restored.";
+    public string ScenarioCoverageText { get; init; } = "No strategy session restored.";
 
     public string RunStatusText { get; init; } = "Awaiting run selection";
 
@@ -83,7 +83,7 @@ internal sealed class ResearchWorkspaceShellPresentationState
         "Risk and audit preview becomes available after a completed run is selected.";
 
     public string BriefingSummaryText { get; init; } =
-        "Pinned research context, watchlists, saved comparisons, and workflow alerts.";
+        "Pinned strategy context, watchlists, saved comparisons, and workflow alerts.";
 
     public string BriefingGeneratedText { get; init; } = "Updated just now";
 
@@ -119,14 +119,14 @@ internal static class ResearchWorkspaceShellPresentationDefaults
 {
     public static WorkspaceWorkflowSummary Workflow { get; } =
         new(
-            WorkspaceId: "research",
+            WorkspaceId: WorkstationNavigationDefaults.StrategyWorkspaceId,
             WorkspaceTitle: "Strategy",
-            StatusLabel: "Ready for a new research cycle",
+            StatusLabel: "Ready for a new strategy cycle",
             StatusDetail: "No live workflow summary is available, so the shell is using deterministic fallback guidance.",
             StatusTone: "Info",
             NextAction: new WorkflowNextAction(
                 Label: "Start Backtest",
-                Detail: "Launch a new simulation from the research workspace.",
+                Detail: "Launch a new simulation from the strategy workspace.",
                 TargetPageTag: "Backtest",
                 Tone: "Primary"),
             PrimaryBlocker: new WorkflowBlockerSummary(

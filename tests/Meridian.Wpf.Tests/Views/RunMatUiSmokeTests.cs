@@ -41,6 +41,9 @@ public sealed class RunMatUiSmokeTests
             facade.ViewModel.CurrentPageTitle.Should().Be("Run scripts");
 
             var runMatXaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunMatPage.xaml"));
+            runMatXaml.Should().Contain("Strategy scripts, runtime settings, and saved MATLAB-style execution workflows.");
+            runMatXaml.Should().Contain("Strategy scripts, runtime settings, and saved `.m` files.");
+            runMatXaml.Should().NotContain("Research scripts");
             runMatXaml.Should().Contain("AutomationProperties.AutomationId=\"RunMatPageTitle\"");
             runMatXaml.Should().Contain("AutomationProperties.AutomationId=\"RunMatExecutablePathInput\"");
             runMatXaml.Should().Contain("AutomationProperties.AutomationId=\"RunMatWorkingDirectoryInput\"");

@@ -55,7 +55,6 @@ do_not_edit: true
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `W6-LIVE-001` | Live-readiness governance |
-| `SRC-INFRASTRUCTURE-CPPTRADER` | CppTrader infrastructure adapter | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-LEDGER` | Meridian ledger | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-LEDGER` | Meridian ledger | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-MCP` | Meridian MCP host | `W6-LIVE-001` | Live-readiness governance |

@@ -13,7 +13,7 @@
 
 | SOC 2 Criterion (Summary) | Meridian Control Activity | Evidence Artifact Examples |
 |---|---|---|
-| CC1/CC2 Control environment & governance | Security ownership, documented operational guidance, route/workflow governance references | `docs/security/README.md`, `docs/plans/current-direction-and-status.md`, buyer packet `document-index.md` |
+| CC1/CC2 Control environment & governance | Security ownership, documented operational guidance, route/workflow governance references | `docs/security/README.md`, `docs/product/meridian-design-document.md`, buyer packet `document-index.md` |
 | CC3 Risk assessment | Threat modeling and current-state risk documentation | `docs/security/threat-model-current-state.md`, buyer packet `threat-model-summary.md` |
 | CC4 Monitoring activities | Diagnostics commands, health checks, operator readiness/inbox visibility | CLI diagnostics help/usage docs, paper-trading readiness probes, status dashboards |
 | CC5 Control activities (change management) | PR-gated changes with focused validation and pre-PR checks | Build/test command references, CI logs, targeted test artifacts |

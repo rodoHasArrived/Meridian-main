@@ -4,9 +4,8 @@
 
 This page keeps the high-traffic local operator and developer commands in one stable target for
 docs links. For roadmap status and product direction, start with
-[`plans/current-direction-and-status.md`](plans/current-direction-and-status.md), then use
-[`status/ROADMAP.md`](status/ROADMAP.md) and
-[`status/FEATURE_INVENTORY.md`](status/FEATURE_INVENTORY.md).
+`docs/product/meridian-design-document.md`, then use
+[`docs/roadmap/README.md`](roadmap/README.md) and the registry-backed generated views.
 
 ## Command-line usage
 
@@ -133,11 +132,11 @@ Known local-environment pitfalls:
 
 ## Workstation governance workflow references
 
-For workstation governance lifecycle, approval/rejection/reopen guidance, and API route catalog:
+For workstation governance lifecycle, approval/rejection/reopen guidance, and API route catalog, use the operator and reference lanes:
 
-- [`status/workstation-governance-state-model.md`](status/workstation-governance-state-model.md)
-- [`operations/workstation-governance-approval-runbook.md`](operations/workstation-governance-approval-runbook.md)
-- [`reference/api-reference.md`](reference/api-reference.md) (Workstation governance routes)
+- [Operator preflight and cutover procedures](operators/preflight-checklist.md)
+- [Fund-ops persistence and approval continuity controls](operators/fund-ops-persistence-cutover.md)
+- [Workstation API governance route catalog](reference/api-reference.md)
 
 <!-- BEGIN AUTO-GENERATED: WORKFLOW-MANIFEST-HELP -->
 ### Canonical Workflow Manifest (Generated)

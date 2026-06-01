@@ -24,9 +24,9 @@ items:
     evidence_posture: complete
     current_summary: Provider validation packets and DK1 operator sign-off are the baseline evidence for trusted data operations.
     exit_criteria:
-      - Provider parity packet exists and is linked from status documentation.
+      - Provider parity packet exists and is linked from reference documentation.
       - Operator sign-off evidence is available for DK1 readiness.
-      - Provider validation matrix remains the readable front door.
+      - Provider validation matrix remains in `docs/reference/provider-validation-matrix.md`.
     source_modules:
       - SRC-HOST
       - SRC-APP
@@ -34,8 +34,8 @@ items:
     diagrams:
       - DIA-ASSURANCE-LOOP
     evidence:
-      - type: status
-        path: docs/status/provider-validation-matrix.md
+      - type: reference
+        path: docs/reference/provider-validation-matrix.md
     last_reviewed: 2026-05-20
 
   - id: W2-TRD-001
@@ -70,7 +70,7 @@ items:
       - type: test-plan
         path: docs/testing/WAVE2_ACCEPTANCE_TESTS.md
       - type: status
-        path: docs/plans/current-direction-and-status.md
+        path: docs/roadmap/generated/ROADMAP_SUMMARY.md
     last_reviewed: 2026-05-28
 
   - id: W2-PROMO-001
@@ -100,7 +100,7 @@ items:
       - DIA-ASSURANCE-LOOP
     evidence:
       - type: status
-        path: docs/plans/current-direction-and-status.md
+        path: docs/roadmap/generated/ROADMAP_SUMMARY.md
     last_reviewed: 2026-05-28
 
   - id: W3-CONT-001
@@ -130,7 +130,7 @@ items:
       - DIA-BROWSER-WORKSTATION
     evidence:
       - type: status
-        path: docs/plans/current-direction-and-status.md
+        path: docs/roadmap/generated/ROADMAP_SUMMARY.md
     last_reviewed: 2026-05-28
 
   - id: W4-RECON-001
@@ -160,7 +160,7 @@ items:
       - DIA-ASSURANCE-LOOP
     evidence:
       - type: status
-        path: docs/plans/current-direction-and-status.md
+        path: docs/roadmap/generated/ROADMAP_SUMMARY.md
       - type: test
         path: tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs
       - type: test
@@ -194,7 +194,7 @@ items:
       - DIA-ASSURANCE-LOOP
     evidence:
       - type: status
-        path: docs/plans/current-direction-and-status.md
+        path: docs/roadmap/generated/ROADMAP_SUMMARY.md
       - type: test
         path: tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs
       - type: test

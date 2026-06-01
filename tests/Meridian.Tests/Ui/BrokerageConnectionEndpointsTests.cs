@@ -6,9 +6,13 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.Reconciliation;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian;
+using Meridian.Domain.Reconciliation;
+using Meridian.Infrastructure.Reconciliation;
+using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -185,6 +189,41 @@ public sealed class BrokerageConnectionEndpointsTests
         }
         finally
         {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UiServer_ResolvesReconciliationServices_FromCompositionRoot()
+    {
+        var originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
+        var originalAspNetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "ui-server-reconciliation", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, CreateMinimalConfig(root));
+
+        try
+        {
+            await using var server = new UiServer(configPath, port: 0);
+            var app = GetServerApp(server);
+
+            app.Services.GetRequiredService<ICanonicalStatementStore>().Should().NotBeNull();
+            app.Services.GetRequiredService<IReconciliationCaseStore>().Should().NotBeNull();
+            app.Services.GetRequiredService<IReconciliationBreakStore>().Should().NotBeNull();
+            app.Services.GetRequiredService<IBrokerStatementService>().Should().NotBeNull();
+            app.Services.GetRequiredService<IStatementRunWorkflowService>().Should().NotBeNull();
+            app.Services.GetRequiredService<IReconciliationApiService>().Should().NotBeNull();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", originalUseInMemoryGovernance);
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", originalAspNetCoreEnvironment);
             if (Directory.Exists(root))
             {
                 Directory.Delete(root, recursive: true);

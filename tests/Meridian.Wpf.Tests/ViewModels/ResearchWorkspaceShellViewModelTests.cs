@@ -18,7 +18,7 @@ public sealed class ResearchWorkspaceShellViewModelTests
                 PendingReviewCount = 0
             },
             activeRun: null,
-            workflow: CreateWorkflow("Ready for a new research cycle", "Backtest"));
+            workflow: CreateWorkflow("Ready for a new strategy cycle", "Backtest"));
 
         hero.FocusLabel.Should().Be("New cycle");
         hero.Summary.Should().Be("Strategy queue is empty.");
@@ -68,6 +68,8 @@ public sealed class ResearchWorkspaceShellViewModelTests
             workflow: CreateWorkflow("Review active run", "RunDetail", isBlocking: false));
 
         hero.FocusLabel.Should().Be("Selected run");
+        hero.Summary.Should().Be("Gamma Rotation is the active Strategy run.");
+        hero.Summary.Should().NotContain("active research run");
         hero.BadgeText.Should().Be("In review");
         hero.PrimaryActionId.Should().Be("RunDetail");
         hero.SecondaryActionId.Should().Be("RunPortfolio");
@@ -131,6 +133,25 @@ public sealed class ResearchWorkspaceShellViewModelTests
     }
 
     [Fact]
+    public void Constructor_UsesCanonicalStrategyWorkspaceShell()
+    {
+        var viewModel = new ResearchWorkspaceShellViewModel();
+
+        viewModel.WorkspaceDefinition.WorkspaceId.Should().Be("strategy");
+        viewModel.ScenarioCoverageText.Should().Be("No strategy session restored.");
+        viewModel.BriefingSummaryText.Should().Be("Pinned strategy context, watchlists, saved comparisons, and workflow alerts.");
+    }
+
+    [Fact]
+    public void FallbackWorkflow_UsesCanonicalStrategyWorkspaceCopy()
+    {
+        ResearchWorkspaceShellPresentationDefaults.Workflow.WorkspaceId.Should().Be("strategy");
+        ResearchWorkspaceShellPresentationDefaults.Workflow.WorkspaceTitle.Should().Be("Strategy");
+        ResearchWorkspaceShellPresentationDefaults.Workflow.StatusLabel.Should().Be("Ready for a new strategy cycle");
+        ResearchWorkspaceShellPresentationDefaults.Workflow.NextAction.Detail.Should().Contain("strategy workspace");
+    }
+
+    [Fact]
     public void ReviewPromotion_RaisesRunDetailNavigationRequest()
     {
         var viewModel = new ResearchWorkspaceShellViewModel();
@@ -169,6 +190,8 @@ public sealed class ResearchWorkspaceShellViewModelTests
 
         group.PrimaryCommands.Single(command => command.Id == "PromoteToPaper").IsEnabled.Should().BeFalse();
         group.PrimaryCommands.Single(command => command.Id == "OpenTradingCockpit").IsEnabled.Should().BeFalse();
+        group.PrimaryCommands.Single(command => command.Id == "ResetStudio").Description.Should().Be("Reset the strategy studio layout");
+        group.SecondaryCommands.Single(command => command.Id == "FundAuditTrail").Description.Should().Be("Open Accounting audit trail");
     }
 
     [Fact]
@@ -188,20 +211,20 @@ public sealed class ResearchWorkspaceShellViewModelTests
         string tone = "Info",
         bool isBlocking = true)
         => new(
-            WorkspaceId: "research",
-            WorkspaceTitle: "Research",
+            WorkspaceId: "strategy",
+            WorkspaceTitle: "Strategy",
             StatusLabel: statusLabel,
-            StatusDetail: "Workflow detail keeps the research desk next action explicit.",
+            StatusDetail: "Workflow detail keeps the strategy desk next action explicit.",
             StatusTone: tone,
             NextAction: new WorkflowNextAction(
                 Label: targetPageTag == "Backtest" ? "Start Backtest" : "Open Target",
-                Detail: "Open the next research workflow surface.",
+                Detail: "Open the next strategy workflow surface.",
                 TargetPageTag: targetPageTag,
                 Tone: "Primary"),
             PrimaryBlocker: new WorkflowBlockerSummary(
                 Code: "test-blocker",
                 Label: "Workflow blocker",
-                Detail: "A workflow blocker explains why the research desk needs attention.",
+                Detail: "A workflow blocker explains why the strategy desk needs attention.",
                 Tone: isBlocking ? "Warning" : "Info",
                 IsBlocking: isBlocking),
             Evidence:

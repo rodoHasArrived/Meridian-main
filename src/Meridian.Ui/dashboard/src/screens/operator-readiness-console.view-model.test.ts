@@ -77,7 +77,7 @@ const readiness: TradingOperatorReadiness = {
     requiredSampleCount: 4,
     readySampleCount: 4,
     validatedEvidenceDocumentCount: 4,
-    requiredOwners: ["Data Operations", "Trading"],
+    requiredOwners: ["Data", "Trading"],
     blockers: [],
     detail: "Signed DK1 packet is attached.",
     operatorSignoff: null
@@ -349,6 +349,13 @@ describe("operator readiness console view model", () => {
     expect(state.promotionRows.some((row) => row.label === "Promotion checklist")).toBe(true);
     expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "Targets present", level: "ready" }));
     expect(state.apiSources.map((source) => source.endpoint)).toContain("/api/workstation/operator/inbox");
+    expect(state.apiSources.map((source) => source.id)).toEqual(expect.arrayContaining([
+      "strategy-runs",
+      "data-confidence",
+      "accounting",
+      "reporting"
+    ]));
+    expect(state.apiSources.map((source) => source.id)).not.toContain("governance");
     expect(state.apiSources.map((source) => source.endpoint)).toEqual(expect.arrayContaining([
       "/api/workstation/strategy",
       "/api/workstation/data",

@@ -1,12 +1,17 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 
 namespace Meridian.Wpf.Views;
 
-public partial class WorkspaceDialogChromeControl : UserControl
+public class WorkspaceDialogChromeControl : ContentControl
 {
     public static readonly DependencyProperty DialogAutomationIdProperty =
-        DependencyProperty.Register(nameof(DialogAutomationId), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata("WorkspaceDialogChrome"));
+        DependencyProperty.Register(
+            nameof(DialogAutomationId),
+            typeof(string),
+            typeof(WorkspaceDialogChromeControl),
+            new PropertyMetadata("WorkspaceDialogChrome", OnDialogAutomationIdChanged));
 
     public static readonly DependencyProperty TitleAutomationIdProperty =
         DependencyProperty.Register(nameof(TitleAutomationId), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata("WorkspaceDialogTitle"));
@@ -18,17 +23,18 @@ public partial class WorkspaceDialogChromeControl : UserControl
         DependencyProperty.Register(nameof(BodyAutomationId), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata("WorkspaceDialogBody"));
 
     public static readonly DependencyProperty TitleTextProperty =
-        DependencyProperty.Register(nameof(TitleText), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata("Dialog"));
+        DependencyProperty.Register(
+            nameof(TitleText),
+            typeof(string),
+            typeof(WorkspaceDialogChromeControl),
+            new PropertyMetadata("Dialog", OnTitleTextChanged));
 
     public static readonly DependencyProperty SubtitleTextProperty =
         DependencyProperty.Register(nameof(SubtitleText), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(string.Empty));
 
-    public static readonly DependencyProperty BodyProperty =
-        DependencyProperty.Register(nameof(Body), typeof(object), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(null));
-
     public WorkspaceDialogChromeControl()
     {
-        InitializeComponent();
+        ApplyAutomationMetadata();
     }
 
     public string DialogAutomationId
@@ -67,9 +73,25 @@ public partial class WorkspaceDialogChromeControl : UserControl
         set => SetValue(SubtitleTextProperty, value);
     }
 
-    public object? Body
+    private static void OnDialogAutomationIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        get => GetValue(BodyProperty);
-        set => SetValue(BodyProperty, value);
+        if (d is WorkspaceDialogChromeControl control)
+        {
+            AutomationProperties.SetAutomationId(control, e.NewValue as string ?? string.Empty);
+        }
+    }
+
+    private static void OnTitleTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is WorkspaceDialogChromeControl control)
+        {
+            AutomationProperties.SetName(control, e.NewValue as string ?? string.Empty);
+        }
+    }
+
+    private void ApplyAutomationMetadata()
+    {
+        AutomationProperties.SetAutomationId(this, DialogAutomationId);
+        AutomationProperties.SetName(this, TitleText);
     }
 }

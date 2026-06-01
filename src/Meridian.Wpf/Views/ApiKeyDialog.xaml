@@ -20,56 +20,54 @@
                                         BodyAutomationId="ApiKeyDialogBody"
                                         TitleText="Configure API Key"
                                         SubtitleText="Provider credential setup">
-        <views:WorkspaceDialogChromeControl.Body>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-                <TextBlock x:Name="DescriptionText"
-                           Grid.Row="0"
-                           TextWrapping="Wrap"
-                           Style="{StaticResource CardDescriptionStyle}"
-                           AutomationProperties.AutomationId="ApiKeyDialogDescription" />
+            <TextBlock x:Name="DescriptionText"
+                       Grid.Row="0"
+                       TextWrapping="Wrap"
+                       Style="{StaticResource CardDescriptionStyle}"
+                       AutomationProperties.AutomationId="ApiKeyDialogDescription" />
 
-                <TextBlock x:Name="HintText"
-                           Grid.Row="1"
-                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                           FontSize="11"
-                           Margin="0,8,0,12"
-                           AutomationProperties.AutomationId="ApiKeyDialogEnvironmentHint" />
+            <TextBlock x:Name="HintText"
+                       Grid.Row="1"
+                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                       FontSize="11"
+                       Margin="0,8,0,12"
+                       AutomationProperties.AutomationId="ApiKeyDialogEnvironmentHint" />
 
-                <TextBox x:Name="ApiKeyBox"
-                         Grid.Row="2"
-                         Style="{StaticResource FormTextBoxStyle}"
-                         FontFamily="Consolas"
-                         Margin="0,0,0,16"
-                         AutomationProperties.AutomationId="ApiKeyDialogInput"
-                         AutomationProperties.Name="API key" />
+            <TextBox x:Name="ApiKeyBox"
+                     Grid.Row="2"
+                     Style="{StaticResource FormTextBoxStyle}"
+                     FontFamily="Consolas"
+                     Margin="0,0,0,16"
+                     AutomationProperties.AutomationId="ApiKeyDialogInput"
+                     AutomationProperties.Name="API key" />
 
-                <StackPanel Grid.Row="4"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right">
-                    <Button Content="Cancel"
-                            MinWidth="96"
-                            Style="{StaticResource GhostButtonStyle}"
-                            Margin="0,0,8,0"
-                            Click="Cancel_Click"
-                            AutomationProperties.AutomationId="ApiKeyDialogCancelButton"
-                            AutomationProperties.Name="Cancel API key setup" />
-                    <Button Content="Save"
-                            MinWidth="96"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Click="Save_Click"
-                            IsDefault="True"
-                            AutomationProperties.AutomationId="ApiKeyDialogSaveButton"
-                            AutomationProperties.Name="Save API key" />
-                </StackPanel>
-            </Grid>
-        </views:WorkspaceDialogChromeControl.Body>
+            <StackPanel Grid.Row="4"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <Button Content="Cancel"
+                        MinWidth="96"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Margin="0,0,8,0"
+                        Click="Cancel_Click"
+                        AutomationProperties.AutomationId="ApiKeyDialogCancelButton"
+                        AutomationProperties.Name="Cancel API key setup" />
+                <Button Content="Save"
+                        MinWidth="96"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Click="Save_Click"
+                        IsDefault="True"
+                        AutomationProperties.AutomationId="ApiKeyDialogSaveButton"
+                        AutomationProperties.Name="Save API key" />
+            </StackPanel>
+        </Grid>
     </views:WorkspaceDialogChromeControl>
 </Window>

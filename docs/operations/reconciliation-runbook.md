@@ -1,23 +1,13 @@
-# Statement Reconciliation Runbook
+# Meridian Operations Archive Stub
 
-## Workflow
+**Status:** archive-migration-stub
+**Owner:** core-team
+**Reviewed:** 2026-05-31
+**Retirement path:** `docs/operations/reconciliation-runbook.md`
+**Replacement:** `archive/docs/operations/reconciliation-runbook.md`
 
-1. Validate statement inputs before persistence.
-2. Import statement rows and immutable source metadata.
-3. Run reconciliation and triage unresolved cases.
-4. Resolve with linked corrective evidence, or waive with explicit justification.
+This legacy operator document is archived source-material.
 
-## CLI
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-validate --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-import --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
-dotnet run --project src/Meridian/Meridian.csproj -- --statement-reconcile --statement-source-kind local --statement-source-path ./incoming/statements/ibkr-jan.csv
-```
-
-## Guardrails
-
-- Waive only when the variance is operationally acknowledged and no corrective ledger/order action is required.
-- Resolve when accounting or trade evidence exists and can be linked to a deterministic corrective entry.
-- Every state transition must include operator identity, timestamp, and rationale note.
-- Re-runs must preserve prior evidence; append new events rather than rewriting case history.
+- Canonical operator guidance: [operators/README.md](../operators/README.md)
+- Archived copy: [archive/docs/operations/reconciliation-runbook.md](../../archive/docs/operations/reconciliation-runbook.md)
+- Archive migration index: [archive/docs/operations/README.md](../../archive/docs/operations/README.md)

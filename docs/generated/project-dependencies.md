@@ -1,13 +1,13 @@
 # Project Dependency Graph
 
-> Generated: 2026-04-08 03:32:19 UTC
+> Generated: 2026-05-30 04:11:52 UTC
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| Total Projects | 34 |
-| Root Projects | 12 |
+| Total Projects | 42 |
+| Root Projects | 22 |
 | Leaf Projects | 5 |
 | Circular Dependencies | 0 |
 
@@ -20,33 +20,63 @@ These projects are not referenced by other projects:
 - **FSharpInteropGenerator**
 - **Meridian.Backtesting.Tests**
   - Dependencies: 3
-  - NuGet Packages: 5
+  - NuGet Packages: 6
 - **Meridian.Benchmarks**
-  - Dependencies: 5
-  - NuGet Packages: 4
+  - Dependencies: 6
+  - NuGet Packages: 3
 - **Meridian.DirectLending.Tests**
   - Dependencies: 3
   - NuGet Packages: 7
+- **Meridian.FundStructure.Tests**
+  - Dependencies: 3
+  - NuGet Packages: 4
 - **Meridian.Mcp**
   - NuGet Packages: 2
-- **Meridian.McpServer.Tests**
-  - Dependencies: 4
-  - NuGet Packages: 7
 - **Meridian.QuantScript.Tests**
   - Dependencies: 1
   - NuGet Packages: 8
 - **Meridian.Tests**
-  - Dependencies: 14
-  - NuGet Packages: 14
-- **Meridian.Ui**
-  - Dependencies: 1
-  - NuGet Packages: 3
+  - Dependencies: 15
+  - NuGet Packages: 15
 - **Meridian.Ui.Tests**
   - Dependencies: 1
   - NuGet Packages: 6
 - **Meridian.Wpf.Tests**
-  - Dependencies: 4
+  - Dependencies: 2
   - NuGet Packages: 7
+- **Meridian.Wpf_1fdztfjd_wpftmp**
+  - Dependencies: 6
+  - NuGet Packages: 14
+- **Meridian.Wpf_1iibccgd_wpftmp**
+  - Dependencies: 6
+  - NuGet Packages: 14
+- **Meridian.Wpf_4qqooq4f_wpftmp**
+  - Dependencies: 5
+  - NuGet Packages: 14
+- **Meridian.Wpf_bqftum4u_wpftmp**
+  - Dependencies: 5
+  - NuGet Packages: 14
+- **Meridian.Wpf_dgkhv3uj_wpftmp**
+  - Dependencies: 5
+  - NuGet Packages: 17
+- **Meridian.Wpf_loq1dgav_wpftmp**
+  - Dependencies: 6
+  - NuGet Packages: 14
+- **Meridian.Wpf_orjnur5i_wpftmp**
+  - Dependencies: 6
+  - NuGet Packages: 14
+- **Meridian.Wpf_tsxd4nsk_wpftmp**
+  - Dependencies: 6
+  - NuGet Packages: 14
+- **Meridian.Wpf_uelpy5ah_wpftmp**
+  - Dependencies: 5
+  - NuGet Packages: 14
+- **Meridian.Wpf_xx5ueail_wpftmp**
+  - Dependencies: 5
+  - NuGet Packages: 14
+- **Meridian.Wpf_zrcduyo2_wpftmp**
+  - Dependencies: 5
+  - NuGet Packages: 14
 
 ## Most Complex Projects
 
@@ -54,31 +84,31 @@ Projects with the most dependencies:
 
 | Project | Project Deps | Package Deps | Total |
 |---------|--------------|--------------|-------|
-| Meridian.Application | 10 | 33 | 43 |
-| Meridian.Infrastructure | 7 | 23 | 30 |
-| Meridian.Tests | 14 | 14 | 28 |
-| Meridian.Wpf | 5 | 18 | 23 |
-| Meridian | 10 | 9 | 19 |
-| Meridian.Storage | 4 | 12 | 16 |
-| Meridian.Infrastructure.CppTrader | 7 | 6 | 13 |
-| Meridian.McpServer | 4 | 8 | 12 |
-| Meridian.QuantScript | 7 | 4 | 11 |
-| Meridian.Strategies | 9 | 2 | 11 |
+| Meridian.Application | 10 | 22 | 32 |
+| Meridian.Tests | 15 | 15 | 30 |
+| Meridian.Wpf_dgkhv3uj_wpftmp | 5 | 17 | 22 |
+| Meridian.Infrastructure | 8 | 12 | 20 |
+| Meridian.Wpf | 6 | 14 | 20 |
+| Meridian.Wpf_1fdztfjd_wpftmp | 6 | 14 | 20 |
+| Meridian.Wpf_1iibccgd_wpftmp | 6 | 14 | 20 |
+| Meridian.Wpf_loq1dgav_wpftmp | 6 | 14 | 20 |
+| Meridian.Wpf_orjnur5i_wpftmp | 6 | 14 | 20 |
+| Meridian.Wpf_tsxd4nsk_wpftmp | 6 | 14 | 20 |
 
 ## Dependency Graph
 
 ```mermaid
 graph LR
     Meridian[Meridian] --> Meridian_Application[Meridian.Application]
-    Meridian[Meridian] --> Meridian_Backtesting[Meridian.Backtesting]
     Meridian[Meridian] --> Meridian_Infrastructure[Meridian.Infrastructure]
-    Meridian[Meridian] --> Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader]
     Meridian[Meridian] --> Meridian_Storage[Meridian.Storage]
     Meridian[Meridian] --> Meridian_Core[Meridian.Core]
     Meridian[Meridian] --> Meridian_Domain[Meridian.Domain]
     Meridian[Meridian] --> Meridian_Contracts[Meridian.Contracts]
     Meridian[Meridian] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
+    Meridian[Meridian] --> Meridian_QuantScript[Meridian.QuantScript]
     Meridian[Meridian] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian[Meridian] --> Meridian_Ui_Services[Meridian.Ui.Services]
     Meridian_Application[Meridian.Application] --> Meridian_Infrastructure[Meridian.Infrastructure]
     Meridian_Application[Meridian.Application] --> Meridian_Storage[Meridian.Storage]
     Meridian_Application[Meridian.Application] --> Meridian_Core[Meridian.Core]
@@ -101,6 +131,7 @@ graph LR
     Meridian_Benchmarks[Meridian.Benchmarks] --> Meridian[Meridian]
     Meridian_Benchmarks[Meridian.Benchmarks] --> Meridian_Application[Meridian.Application]
     Meridian_Benchmarks[Meridian.Benchmarks] --> Meridian_Core[Meridian.Core]
+    Meridian_Benchmarks[Meridian.Benchmarks] --> Meridian_Strategies[Meridian.Strategies]
     Meridian_Benchmarks[Meridian.Benchmarks] --> Meridian_Domain[Meridian.Domain]
     Meridian_Benchmarks[Meridian.Benchmarks] --> Meridian_Storage[Meridian.Storage]
     Meridian_Core[Meridian.Core] --> Meridian_Contracts[Meridian.Contracts]
@@ -116,8 +147,10 @@ graph LR
     Meridian_Execution[Meridian.Execution] --> Meridian_Application[Meridian.Application]
     Meridian_Execution[Meridian.Execution] --> Meridian_Core[Meridian.Core]
     Meridian_Execution[Meridian.Execution] --> Meridian_Contracts[Meridian.Contracts]
-    Meridian_Execution[Meridian.Execution] --> Meridian_Storage[Meridian.Storage]
     Meridian_Execution_Sdk[Meridian.Execution.Sdk] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_FundStructure_Tests[Meridian.FundStructure.Tests] --> Meridian_Application[Meridian.Application]
+    Meridian_FundStructure_Tests[Meridian.FundStructure.Tests] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_FundStructure_Tests[Meridian.FundStructure.Tests] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_Core[Meridian.Core]
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_Domain[Meridian.Domain]
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_Contracts[Meridian.Contracts]
@@ -125,23 +158,9 @@ graph LR
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_Storage[Meridian.Storage]
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_IbApi_SmokeStub[Meridian.IbApi.SmokeStub]
-    Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader] --> Meridian_Execution[Meridian.Execution]
-    Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
-    Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader] --> Meridian_Infrastructure[Meridian.Infrastructure]
-    Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
-    Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader] --> Meridian_Contracts[Meridian.Contracts]
-    Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader] --> Meridian_Core[Meridian.Core]
-    Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader] --> Meridian_Domain[Meridian.Domain]
+    Meridian_Infrastructure[Meridian.Infrastructure] --> $(ResolvedIbApiProjectPath)[$(ResolvedIbApiProjectPath)]
     Meridian_Ledger[Meridian.Ledger] --> Meridian_Core[Meridian.Core]
     Meridian_Ledger[Meridian.Ledger] --> Meridian_FSharp_Ledger[Meridian.FSharp.Ledger]
-    Meridian_McpServer[Meridian.McpServer] --> Meridian_Application[Meridian.Application]
-    Meridian_McpServer[Meridian.McpServer] --> Meridian_Contracts[Meridian.Contracts]
-    Meridian_McpServer[Meridian.McpServer] --> Meridian_Core[Meridian.Core]
-    Meridian_McpServer[Meridian.McpServer] --> Meridian_Storage[Meridian.Storage]
-    Meridian_McpServer_Tests[Meridian.McpServer.Tests] --> Meridian_McpServer[Meridian.McpServer]
-    Meridian_McpServer_Tests[Meridian.McpServer.Tests] --> Meridian_Application[Meridian.Application]
-    Meridian_McpServer_Tests[Meridian.McpServer.Tests] --> Meridian_Storage[Meridian.Storage]
-    Meridian_McpServer_Tests[Meridian.McpServer.Tests] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_ProviderSdk[Meridian.ProviderSdk] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Backtesting[Meridian.Backtesting]
@@ -158,6 +177,7 @@ graph LR
     Meridian_Storage[Meridian.Storage] --> Meridian_Core[Meridian.Core]
     Meridian_Storage[Meridian.Storage] --> Meridian_Domain[Meridian.Domain]
     Meridian_Storage[Meridian.Storage] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_Storage[Meridian.Storage] --> Meridian_Ledger[Meridian.Ledger]
     Meridian_Storage[Meridian.Storage] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Backtesting_Sdk[Meridian.Backtesting.Sdk]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Contracts[Meridian.Contracts]
@@ -170,11 +190,11 @@ graph LR
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Infrastructure[Meridian.Infrastructure]
     Meridian_Tests[Meridian.Tests] --> Meridian[Meridian]
     Meridian_Tests[Meridian.Tests] --> Meridian_Application[Meridian.Application]
+    Meridian_Tests[Meridian.Tests] --> Meridian_Backtesting[Meridian.Backtesting]
     Meridian_Tests[Meridian.Tests] --> Meridian_Backtesting_Sdk[Meridian.Backtesting.Sdk]
     Meridian_Tests[Meridian.Tests] --> Meridian_Execution[Meridian.Execution]
     Meridian_Tests[Meridian.Tests] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
     Meridian_Tests[Meridian.Tests] --> Meridian_Infrastructure[Meridian.Infrastructure]
-    Meridian_Tests[Meridian.Tests] --> Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader]
     Meridian_Tests[Meridian.Tests] --> Meridian_Ledger[Meridian.Ledger]
     Meridian_Tests[Meridian.Tests] --> Meridian_Risk[Meridian.Risk]
     Meridian_Tests[Meridian.Tests] --> Meridian_Storage[Meridian.Storage]
@@ -182,24 +202,90 @@ graph LR
     Meridian_Tests[Meridian.Tests] --> Meridian_Core[Meridian.Core]
     Meridian_Tests[Meridian.Tests] --> Meridian_Domain[Meridian.Domain]
     Meridian_Tests[Meridian.Tests] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
-    Meridian_Ui[Meridian.Ui] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Tests[Meridian.Tests] --> Meridian_Ui_Services[Meridian.Ui.Services]
     Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Infrastructure[Meridian.Infrastructure]
+    Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Application[Meridian.Application]
+    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Backtesting_Sdk[Meridian.Backtesting.Sdk]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Execution[Meridian.Execution]
-    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Infrastructure_CppTrader[Meridian.Infrastructure.CppTrader]
+    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_FSharp[Meridian.FSharp]
+    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_FSharp_Ledger[Meridian.FSharp.Ledger]
+    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_QuantScript[Meridian.QuantScript]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Storage[Meridian.Storage]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Strategies[Meridian.Strategies]
     Meridian_Ui_Tests[Meridian.Ui.Tests] --> Meridian_Ui_Services[Meridian.Ui.Services]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Ui_Services[Meridian.Ui.Services]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf[Meridian.Wpf] --> Meridian_Storage[Meridian.Storage]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Strategies[Meridian.Strategies]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_QuantScript[Meridian.QuantScript]
-    Meridian_Wpf_Tests[Meridian.Wpf.Tests] --> Meridian_Application[Meridian.Application]
-    Meridian_Wpf_Tests[Meridian.Wpf.Tests] --> Meridian_Strategies[Meridian.Strategies]
     Meridian_Wpf_Tests[Meridian.Wpf.Tests] --> Meridian_Wpf[Meridian.Wpf]
     Meridian_Wpf_Tests[Meridian.Wpf.Tests] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_1fdztfjd_wpftmp[Meridian.Wpf_1fdztfjd_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_1fdztfjd_wpftmp[Meridian.Wpf_1fdztfjd_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_1fdztfjd_wpftmp[Meridian.Wpf_1fdztfjd_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_1fdztfjd_wpftmp[Meridian.Wpf_1fdztfjd_wpftmp] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Wpf_1fdztfjd_wpftmp[Meridian.Wpf_1fdztfjd_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_1fdztfjd_wpftmp[Meridian.Wpf_1fdztfjd_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_1iibccgd_wpftmp[Meridian.Wpf_1iibccgd_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_1iibccgd_wpftmp[Meridian.Wpf_1iibccgd_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_1iibccgd_wpftmp[Meridian.Wpf_1iibccgd_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_1iibccgd_wpftmp[Meridian.Wpf_1iibccgd_wpftmp] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Wpf_1iibccgd_wpftmp[Meridian.Wpf_1iibccgd_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_1iibccgd_wpftmp[Meridian.Wpf_1iibccgd_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_4qqooq4f_wpftmp[Meridian.Wpf_4qqooq4f_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_4qqooq4f_wpftmp[Meridian.Wpf_4qqooq4f_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_4qqooq4f_wpftmp[Meridian.Wpf_4qqooq4f_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_4qqooq4f_wpftmp[Meridian.Wpf_4qqooq4f_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_4qqooq4f_wpftmp[Meridian.Wpf_4qqooq4f_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_bqftum4u_wpftmp[Meridian.Wpf_bqftum4u_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_bqftum4u_wpftmp[Meridian.Wpf_bqftum4u_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_bqftum4u_wpftmp[Meridian.Wpf_bqftum4u_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_bqftum4u_wpftmp[Meridian.Wpf_bqftum4u_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_bqftum4u_wpftmp[Meridian.Wpf_bqftum4u_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_dgkhv3uj_wpftmp[Meridian.Wpf_dgkhv3uj_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_dgkhv3uj_wpftmp[Meridian.Wpf_dgkhv3uj_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_dgkhv3uj_wpftmp[Meridian.Wpf_dgkhv3uj_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_dgkhv3uj_wpftmp[Meridian.Wpf_dgkhv3uj_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_dgkhv3uj_wpftmp[Meridian.Wpf_dgkhv3uj_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_loq1dgav_wpftmp[Meridian.Wpf_loq1dgav_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_loq1dgav_wpftmp[Meridian.Wpf_loq1dgav_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_loq1dgav_wpftmp[Meridian.Wpf_loq1dgav_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_loq1dgav_wpftmp[Meridian.Wpf_loq1dgav_wpftmp] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Wpf_loq1dgav_wpftmp[Meridian.Wpf_loq1dgav_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_loq1dgav_wpftmp[Meridian.Wpf_loq1dgav_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_orjnur5i_wpftmp[Meridian.Wpf_orjnur5i_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_orjnur5i_wpftmp[Meridian.Wpf_orjnur5i_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_orjnur5i_wpftmp[Meridian.Wpf_orjnur5i_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_orjnur5i_wpftmp[Meridian.Wpf_orjnur5i_wpftmp] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Wpf_orjnur5i_wpftmp[Meridian.Wpf_orjnur5i_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_orjnur5i_wpftmp[Meridian.Wpf_orjnur5i_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_tsxd4nsk_wpftmp[Meridian.Wpf_tsxd4nsk_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_tsxd4nsk_wpftmp[Meridian.Wpf_tsxd4nsk_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_tsxd4nsk_wpftmp[Meridian.Wpf_tsxd4nsk_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_tsxd4nsk_wpftmp[Meridian.Wpf_tsxd4nsk_wpftmp] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Wpf_tsxd4nsk_wpftmp[Meridian.Wpf_tsxd4nsk_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_tsxd4nsk_wpftmp[Meridian.Wpf_tsxd4nsk_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_uelpy5ah_wpftmp[Meridian.Wpf_uelpy5ah_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_uelpy5ah_wpftmp[Meridian.Wpf_uelpy5ah_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_uelpy5ah_wpftmp[Meridian.Wpf_uelpy5ah_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_uelpy5ah_wpftmp[Meridian.Wpf_uelpy5ah_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_uelpy5ah_wpftmp[Meridian.Wpf_uelpy5ah_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_xx5ueail_wpftmp[Meridian.Wpf_xx5ueail_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_xx5ueail_wpftmp[Meridian.Wpf_xx5ueail_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_xx5ueail_wpftmp[Meridian.Wpf_xx5ueail_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_xx5ueail_wpftmp[Meridian.Wpf_xx5ueail_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_xx5ueail_wpftmp[Meridian.Wpf_xx5ueail_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
+    Meridian_Wpf_zrcduyo2_wpftmp[Meridian.Wpf_zrcduyo2_wpftmp] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Wpf_zrcduyo2_wpftmp[Meridian.Wpf_zrcduyo2_wpftmp] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Wpf_zrcduyo2_wpftmp[Meridian.Wpf_zrcduyo2_wpftmp] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Wpf_zrcduyo2_wpftmp[Meridian.Wpf_zrcduyo2_wpftmp] --> Meridian_Strategies[Meridian.Strategies]
+    Meridian_Wpf_zrcduyo2_wpftmp[Meridian.Wpf_zrcduyo2_wpftmp] --> Meridian_QuantScript[Meridian.QuantScript]
 ```
 
 ## Project Details
@@ -221,23 +307,22 @@ graph LR
 
 **Project References:**
 - Meridian.Application
-- Meridian.Backtesting
 - Meridian.Contracts
 - Meridian.Core
 - Meridian.Domain
 - Meridian.Infrastructure
-- Meridian.Infrastructure.CppTrader
 - Meridian.ProviderSdk
+- Meridian.QuantScript
 - Meridian.Storage
+- Meridian.Ui.Services
 - Meridian.Ui.Shared
 
 **Referenced By:**
 - Meridian.Benchmarks
 - Meridian.Tests
 
-**NuGet Packages (9):**
+**NuGet Packages (8):**
 - Microsoft.AspNetCore.OpenApi
-- Microsoft.Extensions.Hosting
 - QuantConnect.Common
 - QuantConnect.Indicators
 - QuantConnect.Lean
@@ -268,25 +353,23 @@ graph LR
 - Meridian.Benchmarks
 - Meridian.DirectLending.Tests
 - Meridian.Execution
-- Meridian.McpServer
-- Meridian.McpServer.Tests
+- Meridian.FundStructure.Tests
 - Meridian.QuantScript
 - Meridian.Tests
 - Meridian.Ui.Shared
-- Meridian.Wpf.Tests
 
-**NuGet Packages (33):**
+**NuGet Packages (22):**
 - FluentValidation
-- Microsoft.Extensions.Configuration
-- Microsoft.Extensions.Configuration.Binder
-- Microsoft.Extensions.Configuration.CommandLine
-- Microsoft.Extensions.Configuration.EnvironmentVariables
-- Microsoft.Extensions.Configuration.Json
-- Microsoft.Extensions.DependencyInjection
-- Microsoft.Extensions.DependencyInjection.Abstractions
-- Microsoft.Extensions.Hosting
-- Microsoft.Extensions.Http
-- ... and 23 more
+- Microsoft.Extensions.Http.Polly
+- Npgsql
+- OpenTelemetry
+- OpenTelemetry.Api
+- OpenTelemetry.Exporter.Console
+- OpenTelemetry.Exporter.OpenTelemetryProtocol
+- OpenTelemetry.Exporter.Prometheus.AspNetCore
+- OpenTelemetry.Extensions.Hosting
+- OpenTelemetry.Instrumentation.AspNetCore
+- ... and 12 more
 
 ### Meridian.Backtesting
 
@@ -299,13 +382,24 @@ graph LR
 - Meridian.Strategies
 
 **Referenced By:**
-- Meridian
 - Meridian.Backtesting.Tests
 - Meridian.QuantScript
+- Meridian.Tests
+- Meridian.Ui.Shared
 - Meridian.Wpf
+- Meridian.Wpf_1fdztfjd_wpftmp
+- Meridian.Wpf_1iibccgd_wpftmp
+- Meridian.Wpf_4qqooq4f_wpftmp
+- Meridian.Wpf_bqftum4u_wpftmp
+- Meridian.Wpf_dgkhv3uj_wpftmp
+- Meridian.Wpf_loq1dgav_wpftmp
+- Meridian.Wpf_orjnur5i_wpftmp
+- Meridian.Wpf_tsxd4nsk_wpftmp
+- Meridian.Wpf_uelpy5ah_wpftmp
+- Meridian.Wpf_xx5ueail_wpftmp
+- Meridian.Wpf_zrcduyo2_wpftmp
 
-**NuGet Packages (2):**
-- Microsoft.Extensions.Logging
+**NuGet Packages (1):**
 - Microsoft.Extensions.Logging.Abstractions
 
 ### Meridian.Backtesting.Sdk
@@ -322,6 +416,7 @@ graph LR
 - Meridian.QuantScript
 - Meridian.Strategies
 - Meridian.Tests
+- Meridian.Ui.Shared
 
 ### Meridian.Backtesting.Tests
 
@@ -332,8 +427,9 @@ graph LR
 - Meridian.Backtesting.Sdk
 - Meridian.Infrastructure
 
-**NuGet Packages (5):**
+**NuGet Packages (6):**
 - FluentAssertions
+- FsCheck.Xunit
 - Microsoft.NET.Test.Sdk
 - coverlet.collector
 - xunit
@@ -349,12 +445,12 @@ graph LR
 - Meridian.Core
 - Meridian.Domain
 - Meridian.Storage
+- Meridian.Strategies
 
-**NuGet Packages (4):**
+**NuGet Packages (3):**
 - BenchmarkDotNet
 - BenchmarkDotNet.Diagnostics.Windows
 - Newtonsoft.Json
-- System.Text.Json
 
 ### Meridian.Contracts
 
@@ -369,10 +465,8 @@ graph LR
 - Meridian.Domain
 - Meridian.Execution
 - Meridian.Execution.Sdk
+- Meridian.FundStructure.Tests
 - Meridian.Infrastructure
-- Meridian.Infrastructure.CppTrader
-- Meridian.McpServer
-- Meridian.McpServer.Tests
 - Meridian.ProviderSdk
 - Meridian.QuantScript
 - Meridian.Risk
@@ -380,9 +474,6 @@ graph LR
 - Meridian.Strategies
 - Meridian.Ui.Services
 - Meridian.Ui.Shared
-
-**NuGet Packages (1):**
-- System.Text.Json
 
 ### Meridian.Core
 
@@ -399,21 +490,17 @@ graph LR
 - Meridian.Benchmarks
 - Meridian.Execution
 - Meridian.Infrastructure
-- Meridian.Infrastructure.CppTrader
 - Meridian.Ledger
-- Meridian.McpServer
 - Meridian.Storage
 - Meridian.Strategies
 - Meridian.Tests
 
-**NuGet Packages (7):**
+**NuGet Packages (5):**
 - Microsoft.Extensions.Configuration
 - Serilog
 - Serilog.Settings.Configuration
 - Serilog.Sinks.Console
 - Serilog.Sinks.File
-- System.Text.Json
-- System.Threading.Channels
 
 ### Meridian.DirectLending.Tests
 
@@ -447,7 +534,6 @@ graph LR
 - Meridian.Benchmarks
 - Meridian.Core
 - Meridian.Infrastructure
-- Meridian.Infrastructure.CppTrader
 - Meridian.QuantScript
 - Meridian.Storage
 - Meridian.Tests
@@ -462,19 +548,16 @@ graph LR
 - Meridian.Core
 - Meridian.Execution.Sdk
 - Meridian.Ledger
-- Meridian.Storage
 
 **Referenced By:**
-- Meridian.Infrastructure.CppTrader
 - Meridian.Risk
 - Meridian.Strategies
 - Meridian.Tests
 - Meridian.Ui.Shared
 
-**NuGet Packages (3):**
+**NuGet Packages (2):**
 - Microsoft.Extensions.DependencyInjection.Abstractions
 - Microsoft.Extensions.Logging.Abstractions
-- System.Threading.Channels
 
 ### Meridian.Execution.Sdk
 
@@ -486,10 +569,24 @@ graph LR
 **Referenced By:**
 - Meridian.Execution
 - Meridian.Infrastructure
-- Meridian.Infrastructure.CppTrader
 - Meridian.Risk
 - Meridian.Strategies
 - Meridian.Tests
+
+### Meridian.FundStructure.Tests
+
+**Path:** `tests\Meridian.FundStructure.Tests\Meridian.FundStructure.Tests.csproj`
+
+**Project References:**
+- Meridian.Application
+- Meridian.Contracts
+- Meridian.Ui.Shared
+
+**NuGet Packages (4):**
+- Microsoft.NET.Test.Sdk
+- coverlet.collector
+- xunit
+- xunit.runner.visualstudio
 
 ### Meridian.IbApi.SmokeStub
 
@@ -503,6 +600,7 @@ graph LR
 **Path:** `src\Meridian.Infrastructure\Meridian.Infrastructure.csproj`
 
 **Project References:**
+- $(ResolvedIbApiProjectPath)
 - Meridian.Contracts
 - Meridian.Core
 - Meridian.Domain
@@ -515,11 +613,11 @@ graph LR
 - Meridian
 - Meridian.Application
 - Meridian.Backtesting.Tests
-- Meridian.Infrastructure.CppTrader
 - Meridian.Strategies
 - Meridian.Tests
+- Meridian.Ui.Services
 
-**NuGet Packages (23):**
+**NuGet Packages (12):**
 - FluentValidation
 - Microsoft.Extensions.DependencyInjection.Abstractions
 - Microsoft.Extensions.Hosting
@@ -528,35 +626,9 @@ graph LR
 - Microsoft.Extensions.ObjectPool
 - Polly
 - Polly.Extensions
-- Renci.SshNet
+- SSH.NET
 - Serilog
-- ... and 13 more
-
-### Meridian.Infrastructure.CppTrader
-
-**Path:** `src\Meridian.Infrastructure.CppTrader\Meridian.Infrastructure.CppTrader.csproj`
-
-**Project References:**
-- Meridian.Contracts
-- Meridian.Core
-- Meridian.Domain
-- Meridian.Execution
-- Meridian.Execution.Sdk
-- Meridian.Infrastructure
-- Meridian.ProviderSdk
-
-**Referenced By:**
-- Meridian
-- Meridian.Tests
-- Meridian.Ui.Shared
-
-**NuGet Packages (6):**
-- Microsoft.Extensions.DependencyInjection.Abstractions
-- Microsoft.Extensions.Hosting.Abstractions
-- Microsoft.Extensions.Logging.Abstractions
-- Microsoft.Extensions.Options
-- Microsoft.Extensions.Options.ConfigurationExtensions
-- System.Threading.Channels
+- ... and 2 more
 
 ### Meridian.Ledger
 
@@ -570,6 +642,7 @@ graph LR
 - Meridian.Application
 - Meridian.Backtesting.Sdk
 - Meridian.Execution
+- Meridian.Storage
 - Meridian.Tests
 
 ### Meridian.Mcp
@@ -579,48 +652,6 @@ graph LR
 **NuGet Packages (2):**
 - Microsoft.Extensions.Hosting
 - ModelContextProtocol
-
-### Meridian.McpServer
-
-**Path:** `src\Meridian.McpServer\Meridian.McpServer.csproj`
-
-**Project References:**
-- Meridian.Application
-- Meridian.Contracts
-- Meridian.Core
-- Meridian.Storage
-
-**Referenced By:**
-- Meridian.McpServer.Tests
-
-**NuGet Packages (8):**
-- Microsoft.Extensions.Hosting
-- Microsoft.Extensions.Logging
-- ModelContextProtocol
-- ModelContextProtocol.AspNetCore
-- Serilog.Extensions.Logging
-- Serilog.Settings.Configuration
-- Serilog.Sinks.Console
-- System.Text.Json
-
-### Meridian.McpServer.Tests
-
-**Path:** `tests\Meridian.McpServer.Tests\Meridian.McpServer.Tests.csproj`
-
-**Project References:**
-- Meridian.Application
-- Meridian.Contracts
-- Meridian.McpServer
-- Meridian.Storage
-
-**NuGet Packages (7):**
-- FluentAssertions
-- Microsoft.NET.Test.Sdk
-- ModelContextProtocol
-- Moq
-- coverlet.collector
-- xunit
-- xunit.runner.visualstudio
 
 ### Meridian.ProviderSdk
 
@@ -635,7 +666,6 @@ graph LR
 - Meridian.Core
 - Meridian.Domain
 - Meridian.Infrastructure
-- Meridian.Infrastructure.CppTrader
 - Meridian.QuantScript
 - Meridian.Storage
 
@@ -657,11 +687,25 @@ graph LR
 - Meridian.Storage
 
 **Referenced By:**
+- Meridian
 - Meridian.QuantScript.Tests
+- Meridian.Ui.Shared
 - Meridian.Wpf
+- Meridian.Wpf_1fdztfjd_wpftmp
+- Meridian.Wpf_1iibccgd_wpftmp
+- Meridian.Wpf_4qqooq4f_wpftmp
+- Meridian.Wpf_bqftum4u_wpftmp
+- Meridian.Wpf_dgkhv3uj_wpftmp
+- Meridian.Wpf_loq1dgav_wpftmp
+- Meridian.Wpf_orjnur5i_wpftmp
+- Meridian.Wpf_tsxd4nsk_wpftmp
+- Meridian.Wpf_uelpy5ah_wpftmp
+- Meridian.Wpf_xx5ueail_wpftmp
+- Meridian.Wpf_zrcduyo2_wpftmp
 
-**NuGet Packages (4):**
+**NuGet Packages (5):**
 - Microsoft.CodeAnalysis.CSharp.Scripting
+- Microsoft.Extensions.DependencyInjection.Abstractions
 - Microsoft.Extensions.Logging.Abstractions
 - Microsoft.Extensions.Options
 - Skender.Stock.Indicators
@@ -708,6 +752,7 @@ graph LR
 - Meridian.Contracts
 - Meridian.Core
 - Meridian.Domain
+- Meridian.Ledger
 - Meridian.ProviderSdk
 
 **Referenced By:**
@@ -716,15 +761,19 @@ graph LR
 - Meridian.Backtesting
 - Meridian.Benchmarks
 - Meridian.DirectLending.Tests
-- Meridian.Execution
 - Meridian.Infrastructure
-- Meridian.McpServer
-- Meridian.McpServer.Tests
 - Meridian.QuantScript
 - Meridian.Tests
+- Meridian.Ui.Services
 - Meridian.Ui.Shared
+- Meridian.Wpf
+- Meridian.Wpf_1fdztfjd_wpftmp
+- Meridian.Wpf_1iibccgd_wpftmp
+- Meridian.Wpf_loq1dgav_wpftmp
+- Meridian.Wpf_orjnur5i_wpftmp
+- Meridian.Wpf_tsxd4nsk_wpftmp
 
-**NuGet Packages (12):**
+**NuGet Packages (9):**
 - Apache.Arrow
 - K4os.Compression.LZ4.Streams
 - Microsoft.Extensions.DependencyInjection.Abstractions
@@ -732,10 +781,8 @@ graph LR
 - Npgsql
 - Parquet.Net
 - Serilog
-- System.IO.Compression
-- System.Text.Json
-- System.Threading.Channels
-- ... and 2 more
+- ZstdSharp.Port
+- prometheus-net
 
 ### Meridian.Strategies
 
@@ -754,10 +801,21 @@ graph LR
 
 **Referenced By:**
 - Meridian.Backtesting
+- Meridian.Benchmarks
 - Meridian.Tests
 - Meridian.Ui.Shared
 - Meridian.Wpf
-- Meridian.Wpf.Tests
+- Meridian.Wpf_1fdztfjd_wpftmp
+- Meridian.Wpf_1iibccgd_wpftmp
+- Meridian.Wpf_4qqooq4f_wpftmp
+- Meridian.Wpf_bqftum4u_wpftmp
+- Meridian.Wpf_dgkhv3uj_wpftmp
+- Meridian.Wpf_loq1dgav_wpftmp
+- Meridian.Wpf_orjnur5i_wpftmp
+- Meridian.Wpf_tsxd4nsk_wpftmp
+- Meridian.Wpf_uelpy5ah_wpftmp
+- Meridian.Wpf_xx5ueail_wpftmp
+- Meridian.Wpf_zrcduyo2_wpftmp
 
 **NuGet Packages (2):**
 - Microsoft.Extensions.DependencyInjection.Abstractions
@@ -770,22 +828,24 @@ graph LR
 **Project References:**
 - Meridian
 - Meridian.Application
+- Meridian.Backtesting
 - Meridian.Backtesting.Sdk
 - Meridian.Core
 - Meridian.Domain
 - Meridian.Execution
 - Meridian.Execution.Sdk
 - Meridian.Infrastructure
-- Meridian.Infrastructure.CppTrader
 - Meridian.Ledger
 - Meridian.Risk
 - Meridian.Storage
 - Meridian.Strategies
+- Meridian.Ui.Services
 - Meridian.Ui.Shared
 
-**NuGet Packages (14):**
+**NuGet Packages (15):**
 - Bogus
 - FluentAssertions
+- FsCheck.Xunit
 - Microsoft.AspNetCore.Mvc.Testing
 - Microsoft.NET.Test.Sdk
 - Moq
@@ -793,20 +853,7 @@ graph LR
 - Npgsql
 - System.Reactive
 - Testcontainers.PostgreSql
-- TngTech.ArchUnitNET
-- ... and 4 more
-
-### Meridian.Ui
-
-**Path:** `src\Meridian.Ui\Meridian.Ui.csproj`
-
-**Project References:**
-- Meridian.Ui.Shared
-
-**NuGet Packages (3):**
-- Microsoft.AspNetCore.OpenApi
-- Serilog.AspNetCore
-- prometheus-net.AspNetCore
+- ... and 5 more
 
 ### Meridian.Ui.Services
 
@@ -814,17 +861,32 @@ graph LR
 
 **Project References:**
 - Meridian.Contracts
+- Meridian.Infrastructure
+- Meridian.Storage
+- Meridian.Ui.Shared
 
 **Referenced By:**
+- Meridian
+- Meridian.Tests
 - Meridian.Ui.Tests
 - Meridian.Wpf
 - Meridian.Wpf.Tests
+- Meridian.Wpf_1fdztfjd_wpftmp
+- Meridian.Wpf_1iibccgd_wpftmp
+- Meridian.Wpf_4qqooq4f_wpftmp
+- Meridian.Wpf_bqftum4u_wpftmp
+- Meridian.Wpf_dgkhv3uj_wpftmp
+- Meridian.Wpf_loq1dgav_wpftmp
+- Meridian.Wpf_orjnur5i_wpftmp
+- Meridian.Wpf_tsxd4nsk_wpftmp
+- Meridian.Wpf_uelpy5ah_wpftmp
+- Meridian.Wpf_xx5ueail_wpftmp
+- Meridian.Wpf_zrcduyo2_wpftmp
 
-**NuGet Packages (5):**
+**NuGet Packages (4):**
 - CommunityToolkit.Mvvm
 - Microsoft.Extensions.Http
 - Microsoft.Extensions.Http.Polly
-- System.Text.Json
 - ZstdSharp.Port
 
 ### Meridian.Ui.Shared
@@ -833,17 +895,33 @@ graph LR
 
 **Project References:**
 - Meridian.Application
+- Meridian.Backtesting
+- Meridian.Backtesting.Sdk
 - Meridian.Contracts
 - Meridian.Execution
-- Meridian.Infrastructure.CppTrader
+- Meridian.FSharp
+- Meridian.FSharp.Ledger
+- Meridian.QuantScript
 - Meridian.Storage
 - Meridian.Strategies
 
 **Referenced By:**
 - Meridian
+- Meridian.FundStructure.Tests
 - Meridian.Tests
-- Meridian.Ui
+- Meridian.Ui.Services
 - Meridian.Wpf
+- Meridian.Wpf_1fdztfjd_wpftmp
+- Meridian.Wpf_1iibccgd_wpftmp
+- Meridian.Wpf_4qqooq4f_wpftmp
+- Meridian.Wpf_bqftum4u_wpftmp
+- Meridian.Wpf_dgkhv3uj_wpftmp
+- Meridian.Wpf_loq1dgav_wpftmp
+- Meridian.Wpf_orjnur5i_wpftmp
+- Meridian.Wpf_tsxd4nsk_wpftmp
+- Meridian.Wpf_uelpy5ah_wpftmp
+- Meridian.Wpf_xx5ueail_wpftmp
+- Meridian.Wpf_zrcduyo2_wpftmp
 
 **NuGet Packages (3):**
 - Microsoft.AspNetCore.OpenApi
@@ -872,6 +950,7 @@ graph LR
 **Project References:**
 - Meridian.Backtesting
 - Meridian.QuantScript
+- Meridian.Storage
 - Meridian.Strategies
 - Meridian.Ui.Services
 - Meridian.Ui.Shared
@@ -879,7 +958,7 @@ graph LR
 **Referenced By:**
 - Meridian.Wpf.Tests
 
-**NuGet Packages (18):**
+**NuGet Packages (14):**
 - AvalonEdit
 - CommunityToolkit.Mvvm
 - Dirkster.AvalonDock
@@ -890,15 +969,13 @@ graph LR
 - Microsoft.Extensions.Hosting
 - Microsoft.Extensions.Http
 - Microsoft.Extensions.Http.Polly
-- ... and 8 more
+- ... and 4 more
 
 ### Meridian.Wpf.Tests
 
 **Path:** `tests\Meridian.Wpf.Tests\Meridian.Wpf.Tests.csproj`
 
 **Project References:**
-- Meridian.Application
-- Meridian.Strategies
 - Meridian.Ui.Services
 - Meridian.Wpf
 
@@ -910,6 +987,275 @@ graph LR
 - coverlet.collector
 - xunit
 - xunit.runner.visualstudio
+
+### Meridian.Wpf_1fdztfjd_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_1fdztfjd_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Storage
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
+
+### Meridian.Wpf_1iibccgd_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_1iibccgd_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Storage
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
+
+### Meridian.Wpf_4qqooq4f_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_4qqooq4f_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
+
+### Meridian.Wpf_bqftum4u_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_bqftum4u_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
+
+### Meridian.Wpf_dgkhv3uj_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_dgkhv3uj_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (17):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 7 more
+
+### Meridian.Wpf_loq1dgav_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_loq1dgav_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Storage
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
+
+### Meridian.Wpf_orjnur5i_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_orjnur5i_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Storage
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
+
+### Meridian.Wpf_tsxd4nsk_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_tsxd4nsk_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Storage
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
+
+### Meridian.Wpf_uelpy5ah_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_uelpy5ah_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
+
+### Meridian.Wpf_xx5ueail_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_xx5ueail_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
+
+### Meridian.Wpf_zrcduyo2_wpftmp
+
+**Path:** `src\Meridian.Wpf\Meridian.Wpf_zrcduyo2_wpftmp.csproj`
+
+**Project References:**
+- Meridian.Backtesting
+- Meridian.QuantScript
+- Meridian.Strategies
+- Meridian.Ui.Services
+- Meridian.Ui.Shared
+
+**NuGet Packages (14):**
+- AvalonEdit
+- CommunityToolkit.Mvvm
+- Dirkster.AvalonDock
+- FSharp.Core
+- LiveChartsCore.SkiaSharpView.WPF
+- MaterialDesignThemes
+- Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
+- Microsoft.Extensions.Http.Polly
+- ... and 4 more
 
 ---
 

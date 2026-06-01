@@ -1035,7 +1035,7 @@ public sealed class SecurityMasterViewModelTests
                         ? "Golden copy is stable, but trading readiness is incomplete."
                         : !areCorporateActionsTrusted
                             ? "Golden copy is stable, but upcoming corporate actions require review."
-                            : "Golden copy is trusted for downstream governance workflows.",
+                            : "Golden copy is trusted for downstream Accounting and Reporting workflows.",
                 GoldenCopySource: "golden-edm",
                 GoldenCopyRule: "Preserve winner unless the current winner is blank or the values are equivalent.",
                 TradingParametersStatus: tradingParametersComplete
@@ -1312,7 +1312,7 @@ public sealed class SecurityMasterViewModelTests
                 _ => "Preserve golden-edm as the current winner."
             },
             ImpactSeverity: isBulkEligible ? SecurityMasterImpactSeverity.None : SecurityMasterImpactSeverity.Medium,
-            ImpactSummary: isBulkEligible ? "Low-risk scoped exposure only." : "Manual review required for downstream governance workflows.",
+            ImpactSummary: isBulkEligible ? "Low-risk scoped exposure only." : "Manual review required for downstream Accounting workflows.",
             ImpactDetail: isBulkEligible ? "Eligible for low-risk bulk assist." : "Keep this resolution operator-reviewed.",
             IsBulkEligible: isBulkEligible,
             BulkIneligibilityReason: isBulkEligible ? null : "Conflict does not meet the low-risk bulk policy.");

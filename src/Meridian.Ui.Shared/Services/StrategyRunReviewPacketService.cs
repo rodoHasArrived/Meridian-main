@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// Builds a single review packet for Research, Trading, and Governance to inspect
+/// Builds a single review packet for Strategy, Trading, and Accounting to inspect
 /// the same run, portfolio, ledger, reconciliation, brokerage, and coverage evidence.
 /// </summary>
 public sealed class StrategyRunReviewPacketService
@@ -244,11 +244,11 @@ public sealed class StrategyRunReviewPacketService
         return kind switch
         {
             OperatorWorkItemKindDto.SecurityMasterCoverage => (
-                "Governance",
+                "Accounting",
                 UiApiRoutes.WorkstationSecurityMasterSearch,
                 "SecurityMaster"),
             OperatorWorkItemKindDto.ReconciliationBreak or OperatorWorkItemKindDto.ReportPackApproval => (
-                "Governance",
+                "Accounting",
                 UiApiRoutes.ReconciliationBreakQueue,
                 "FundReconciliation"),
             OperatorWorkItemKindDto.BrokerageSync => (

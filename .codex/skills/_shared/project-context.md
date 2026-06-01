@@ -1,8 +1,8 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-05-23
-> Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`, and
-> `docs/architecture/project-structure.md`
+> Last verified: 2026-05-31
+> Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`,
+> `docs/product/meridian-design-document.md`, and `docs/architecture/project-structure.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, current product
 direction, commands, and architecture when a Codex skill needs repository grounding without
@@ -37,23 +37,28 @@ repeating the same facts in every `SKILL.md`.
 Use these together before changing AI guidance, routing, or workflow-oriented skills:
 
 - `README.md`
+- `docs/README.md`
+- `docs/start/README.md`
+- `docs/product/README.md`
+- `docs/product/meridian-design-document.md`
+- `docs/engineering/README.md`
+- `docs/operators/README.md`
+- `docs/documentation-ownership.md`
 - `docs/architecture/project-structure.md`
 - `docs/architecture/module-map.md`
 - `docs/architecture/mvvm-guidelines.md`
-- `docs/developer/build-test-run.md`
 - `docs/prompts/repo-maintenance-prompts.md`
-- `docs/status/ROADMAP.md`
-- `docs/status/FEATURE_INVENTORY.md`
-- `docs/status/IMPROVEMENTS.md`
-- `docs/status/production-status.md`
-- `docs/plans/web-ui-development-pivot.md`
-- `docs/plans/evidence-backed-investment-operations-plan.md`
-- `docs/plans/trading-workstation-migration-blueprint.md`
-- `docs/plans/governance-fund-ops-blueprint.md`
-- `docs/plans/meridian-6-week-roadmap.md`
+- `docs/roadmap/README.md`
+- `docs/roadmap/data/roadmap-items.yml`
 
 ## Source Documentation Mesh
 
+- Active documentation is being rebuilt around `docs/start/`, `docs/product/`,
+  `docs/engineering/`, `docs/operators/`, `docs/ai/`, `docs/roadmap/`, `docs/source/`,
+  `docs/reference/`, and `docs/generated/`. Treat older hand-authored folders such as
+  `docs/plans/`, `docs/status/`, `docs/developer/`, `docs/development/`,
+  `docs/operations/`, `docs/evaluations/`, and `docs/audits/` as canonical only when linked from
+  the rebuilt indexes or registry-owned workflows.
 - Roadmap truth lives in `docs/roadmap/data/*.yml`; generated roadmap views live in
   `docs/roadmap/generated/`.
 - Source/module truth lives in `docs/source/data/*.yml`; registered modules have local

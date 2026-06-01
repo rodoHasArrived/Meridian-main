@@ -125,10 +125,10 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 return "Load a fund profile before account queues and provider routing can be evaluated.";
 
             if (TotalAccountCount == 0)
-                return "No accounts are loaded for the active fund profile; create or ingest accounts before reconciling governance evidence.";
+                return "No accounts are loaded for the active fund profile; create or ingest accounts before reconciling accounting evidence.";
 
             if (SelectedAccount is null)
-                return "Pick an account from a governance lane to review balances, shared-data access, and route previews.";
+                return "Pick an account from an accounting lane to review balances, shared-data access, and route previews.";
 
             if (IsProviderRoutingBusy)
                 return $"Refreshing provider route previews for {SelectedAccount.DisplayName}.";
@@ -220,7 +220,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
             : $"{SelectedAccount.DisplayName} • {SelectedAccount.AccountType} • {SelectedAccount.BaseCurrency} • {SelectedAccount.Institution ?? "Institution not set"}";
 
     public string AccountQueueStatusText
-        => $"{TotalAccountCount} account(s) across {BrokerageAccounts.Count} brokerage, {CustodianAccounts.Count} custody, {BankAccounts.Count} bank, and {OtherAccounts.Count} other governance lanes.";
+        => $"{TotalAccountCount} account(s) across {BrokerageAccounts.Count} brokerage, {CustodianAccounts.Count} custody, {BankAccounts.Count} bank, and {OtherAccounts.Count} other accounting lanes.";
 
     public string TotalAccountCountText
         => TotalAccountCount.ToString();
@@ -242,7 +242,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
 
     public string SelectedAccountScopeText
         => SelectedAccount is null
-            ? "No governance scope selected."
+            ? "No accounting scope selected."
             : BuildSelectedAccountScopeText(SelectedAccount);
 
     public string SelectedAccountWorkflowLinkText

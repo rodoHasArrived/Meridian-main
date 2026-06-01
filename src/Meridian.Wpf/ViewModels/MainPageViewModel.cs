@@ -830,13 +830,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             return descriptor.Id;
         }
 
-        return workspace?.Trim().ToLowerInvariant() switch
-        {
-            "research" => "strategy",
-            "data-operations" => "data",
-            "governance" => "accounting",
-            _ => DefaultWorkspace
-        };
+        var canonicalWorkspace = WorkstationNavigationDefaults.NormalizeWorkspaceId(workspace, DefaultWorkspace);
+        return ShellNavigationCatalog.GetWorkspace(canonicalWorkspace)?.Id ?? DefaultWorkspace;
     }
 
     private static string? InferWorkspaceFromPage(string? pageTag)
@@ -1504,7 +1499,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var targetWorkspace = ShellNavigationCatalog.GetWorkspace(ShellNavigationCatalog.InferWorkspaceIdForPageTag(target));
         var owner = string.IsNullOrWhiteSpace(primaryWorkItem.Workspace)
             ? targetWorkspace?.Title ?? WorkspaceHeading
-            : primaryWorkItem.Workspace.Trim();
+            : WorkstationNavigationDefaults.NormalizeWorkspaceTitle(primaryWorkItem.Workspace);
 
         return $"{countText}: {primaryWorkItem.Label} | {severity} | {owner} | open {target}";
     }

@@ -4,13 +4,26 @@ This page is the Codex-specific AI workflow index for Meridian. Shared, provider
 still lives in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md); this page
 tracks repo-local Codex skill behavior, validation, and documentation ownership.
 
+For documentation work, start from the rebuilt canonical docs model:
+[`../../README.md`](../../README.md), [`../../start/README.md`](../../start/README.md),
+[`../../product/README.md`](../../product/README.md),
+[`../../product/meridian-design-document.md`](../../product/meridian-design-document.md),
+[`../../engineering/README.md`](../../engineering/README.md),
+[`../../operators/README.md`](../../operators/README.md), and
+[`../../documentation-ownership.md`](../../documentation-ownership.md).
+
 ## Active Codex Surfaces
 
 | Surface | Purpose |
 | --- | --- |
 | [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox and approval defaults |
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
+| [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
+| [`prompt-route-rules.json`](prompt-route-rules.json) | Schema v2 deterministic routing rules for lane, skill, mode, model route, validation floor, telemetry, and escalation triggers |
 | [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, and validation lanes |
+| [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md) | Shared handoff format for multi-agent/lane transitions and context minimization |
+| [`../work-modes.md`](../work-modes.md) | Mode selection contract for context budget and escalation control |
+| [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) | Shared parallel-lane ownership manifest to prevent overlap and duplicate discovery |
 | [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring documentation, cleanup, roadmap, navigation, and user-panel work |
 | [`.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex skill catalog and maintenance rules |
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
@@ -81,8 +94,10 @@ route by task phase:
 
 For speed, start with [`quickstart.md`](quickstart.md) when the task shape is unclear, then use
 [`route-cards.md`](route-cards.md) after generated navigation identifies the subsystem. Keep broad
-command discovery in `docs/developer/build-test-run.md`, `docs/HELP.md`, and route-specific docs
-instead of copying long command catalogs into assistant shims.
+command discovery in [`../../start/README.md`](../../start/README.md),
+[`../../engineering/README.md`](../../engineering/README.md),
+[`../../HELP.md`](../../HELP.md), and route-specific docs instead of copying long command
+catalogs into assistant shims.
 
 ## Required Gates For Codex AI/Tooling Changes
 
@@ -93,6 +108,14 @@ behavior changes:
 make ai-codex-skills-check
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
+python3 build/scripts/docs/prompt-route-linter.py --summary
+python3 build/scripts/docs/prompt-route-linter.py --prompt "review this change for regressions"
+python3 build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json
+python3 build/scripts/docs/handoff-packet-generator.py --route-json docs/status/prompt-route-lint-report.json --scope "Task scope" --next-lane "implementation-assurance" --model "gpt-4.1" --input-tokens 1000 --output-tokens 300 --estimated-cost-usd 0.02 --latency-ms 700 --validation "python build/scripts/docs/prompt-route-linter.py --summary::pass"
+python3 build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary
+python3 build/scripts/docs/check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary
+python3 build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary
+python3 build/scripts/docs/check-ai-routing-parity.py --summary
 python3 build/scripts/docs/validate-skill-packages.py
 python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --json
 git diff --check
@@ -102,6 +125,17 @@ make ai-arch-check
 
 If `make` is unavailable in the local Windows shell, run the target's underlying command directly
 and report that the wrapper could not be invoked.
+
+Canonical Codex orchestration artifacts:
+
+- Route artifact: `docs/status/prompt-route-lint-report.json`
+- Handoff artifact: `docs/status/ai-handoff-packet.json`
+- Route rules source: `docs/ai/codex/prompt-route-rules.json`
+
+Route schema v2 requires each route to declare `modelRouteId`, `validationFloor`,
+`validationScripts`, `requiredTelemetry`, and `escalationTriggers`. High-risk routes such as
+provider/governance lanes must carry complete telemetry through the handoff packet before schema
+validation passes.
 
 ## Tooling Split
 
@@ -137,6 +171,9 @@ Local helper surfaces:
 ## Maintenance Rules
 
 - Keep Codex-only guidance in `.codex/skills/` and this `docs/ai/codex/` index.
+- Route documentation rebuild and migration work through `docs/README.md`,
+  `docs/documentation-ownership.md`, and `docs/documentation-inventory.md` before editing older
+  folders such as `docs/plans/`, `docs/status/`, `docs/development/`, or `docs/operations/`.
 - Keep root `AGENTS.md` compact. It should route to canonical docs, not duplicate command catalogs,
   repo maps, or long validation tables.
 - Before editing `src/**`, read the nearest registered source README and identify the module in

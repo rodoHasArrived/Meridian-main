@@ -29,15 +29,15 @@ public sealed class GovernanceWorkspaceShellPageTests
     public void BuildLaneHeroState_WithoutFundContext_UsesSwitchContextForSelectedLane()
     {
         var workflow = new WorkspaceWorkflowSummary(
-            WorkspaceId: "governance",
-            WorkspaceTitle: "Governance",
+            WorkspaceId: "accounting",
+            WorkspaceTitle: "Accounting",
             StatusLabel: "Context required",
-            StatusDetail: "Governance review cannot start until a fund-linked operating context is selected.",
+            StatusDetail: "Accounting review cannot start until a fund-linked operating context is selected.",
             StatusTone: "Warning",
             NextAction: new WorkflowNextAction(
                 Label: "Choose Context",
-                Detail: "Select the active context before opening governance lanes.",
-                TargetPageTag: "GovernanceShell",
+                Detail: "Select the active context before opening accounting lanes.",
+                TargetPageTag: "AccountingShell",
                 Tone: "Primary"),
             PrimaryBlocker: new WorkflowBlockerSummary(
                 Code: "choose-context",
@@ -74,8 +74,8 @@ public sealed class GovernanceWorkspaceShellPageTests
             DisplayName: "Atlas Opportunities",
             LegalEntityName: "Atlas Opportunities LP",
             BaseCurrency: "USD",
-            DefaultWorkspaceId: "governance",
-            DefaultLandingPageTag: "GovernanceShell",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "AccountingShell",
             DefaultLedgerScope: FundLedgerScope.Consolidated);
         var ledger = new FundLedgerSummary(
             FundProfileId: profile.FundProfileId,
@@ -175,10 +175,10 @@ public sealed class GovernanceWorkspaceShellPageTests
                 Profiles: [],
                 Summary: "Two governance profiles ready."));
         var workflow = new WorkspaceWorkflowSummary(
-            WorkspaceId: "governance",
-            WorkspaceTitle: "Governance",
+            WorkspaceId: "accounting",
+            WorkspaceTitle: "Accounting",
             StatusLabel: "3 break(s) open",
-            StatusDetail: "Three reconciliation breaks are blocking governance sign-off.",
+            StatusDetail: "Three reconciliation breaks are blocking close sign-off.",
             StatusTone: "Warning",
             NextAction: new WorkflowNextAction(
                 Label: "Review Breaks",
@@ -188,7 +188,7 @@ public sealed class GovernanceWorkspaceShellPageTests
             PrimaryBlocker: new WorkflowBlockerSummary(
                 Code: "open-breaks",
                 Label: "Approval hold",
-                Detail: "3 break(s) block governance sign-off until the queue is reviewed.",
+                Detail: "3 break(s) block close sign-off until the queue is reviewed.",
                 Tone: "Warning",
                 IsBlocking: true),
             Evidence:
@@ -218,7 +218,7 @@ public sealed class GovernanceWorkspaceShellPageTests
 
         hero.LaneLabel.Should().Be("Reconciliation");
         hero.Summary.Should().Be("3 break(s) open");
-        hero.Detail.Should().Contain("block governance sign-off");
+        hero.Detail.Should().Contain("block close sign-off");
         hero.HandoffTitle.Should().Be("Review breaks before approval release");
         hero.HandoffDetail.Should().Contain("security coverage");
         hero.PrimaryActionId.Should().Be("FundReconciliation");
@@ -237,8 +237,8 @@ public sealed class GovernanceWorkspaceShellPageTests
             DisplayName: "Atlas Opportunities",
             LegalEntityName: "Atlas Opportunities LP",
             BaseCurrency: "USD",
-            DefaultWorkspaceId: "governance",
-            DefaultLandingPageTag: "GovernanceShell",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "AccountingShell",
             DefaultLedgerScope: FundLedgerScope.Consolidated);
         var workspace = new FundOperationsWorkspaceDto(
             FundProfileId: profile.FundProfileId,

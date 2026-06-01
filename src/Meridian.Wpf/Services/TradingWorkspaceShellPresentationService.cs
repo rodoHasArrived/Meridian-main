@@ -206,7 +206,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         return action.TargetPageTag switch
         {
             "StrategyRuns" => new(action.TargetPageTag, "StrategyRuns", PaneDropAction.Replace, null, true, false, null),
-            "GovernanceShell" => new(action.TargetPageTag, "GovernanceShell", PaneDropAction.Replace, null, true, false, null),
+            "GovernanceShell" => new(action.TargetPageTag, "AccountingShell", PaneDropAction.Replace, null, true, false, null),
             "FundTrialBalance" => CreateActionRequest("FundTrialBalance", activeRun),
             "FundReconciliation" => CreateActionRequest("FundReconciliation", activeRun),
             _ => new(action.TargetPageTag, action.TargetPageTag, PaneDropAction.Replace, null, true, false, null)
@@ -837,7 +837,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
                 Label: hasOperatingContext ? "Workflow summary unavailable" : "No operating context selected",
                 Detail: hasOperatingContext
                     ? "Fallback guidance keeps one stable desk action visible while shared workflow data refreshes."
-                    : "Paper review, live posture, and governance-linked trading actions scope to the active operating context.",
+                    : "Paper review, live posture, and Accounting-linked trading actions scope to the active operating context.",
                 Tone: hasOperatingContext ? "Info" : "Warning",
                 IsBlocking: !hasOperatingContext),
             Evidence: []);

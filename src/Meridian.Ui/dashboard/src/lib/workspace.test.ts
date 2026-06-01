@@ -100,6 +100,9 @@ describe("workspace metadata", () => {
     expect(workflowTargetPath("Backtest", "strategy")).toBe("/strategy");
     expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/reporting/evidence");
     expect(workflowTargetPath("TradingShell", "trading")).toBe("/trading");
+    expect(workflowTargetPath("ResearchShell", null)).toBe("/strategy");
+    expect(workflowTargetPath("DataOperationsShell", null)).toBe("/data");
+    expect(workflowTargetPath("GovernanceShell", null)).toBe("/accounting");
     expect(workflowTargetPath("TradingReadiness", "trading")).toBe("/trading/readiness");
     expect(workflowTargetPath("TradingReadinessConsole", "trading")).toBe("/trading/readiness");
     expect(workflowTargetPath("RunRisk", "trading")).toBe("/trading/readiness");
@@ -124,6 +127,7 @@ describe("workspace metadata", () => {
       "Backfill",
       "Backtest",
       "BrokerageSync",
+      "DataOperationsShell",
       "DataShell",
       "EvidenceWorkbench",
       "FundAuditTrail",
@@ -131,6 +135,7 @@ describe("workspace metadata", () => {
       "FundReportPack",
       "FundStructureSetup",
       "FundTrialBalance",
+      "GovernanceShell",
       "OperationsClose",
       "OperationsContinuity",
       "PortfolioFamilyOffice",
@@ -139,6 +144,7 @@ describe("workspace metadata", () => {
       "ProviderTrust",
       "ReportPackApproval",
       "ReportingShell",
+      "ResearchShell",
       "RunRisk",
       "SecurityMaster",
       "SettingsShell",

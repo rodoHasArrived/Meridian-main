@@ -1105,13 +1105,13 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         if (isStreaming)
         {
             workflows.Add("Live quotes");
-            workflows.Add(IsBrokerageProvider(providerId) ? "Paper trading" : "Research");
+            workflows.Add(IsBrokerageProvider(providerId) ? "Paper trading" : "Strategy");
         }
 
         if (isBackfill)
         {
             workflows.Add("Backfill");
-            workflows.Add("Research");
+            workflows.Add("Strategy");
         }
 
         if (IsBrokerageProvider(providerId))
@@ -1463,7 +1463,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
 
         return new ProviderHealthPostureState(
             "Configure provider access",
-            "Provider entries are present but none are ready for operator workflows. Finish credentials and connectivity before starting data operations.",
+            "Provider entries are present but none are ready for operator workflows. Finish credentials and connectivity before starting Data workspace workflows.",
             "Configure provider access",
             "Provider credentials",
             evidence,

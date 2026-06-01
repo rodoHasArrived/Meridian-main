@@ -325,7 +325,7 @@ const baseCompanySections: SecurityMasterCompanySection[] = [
       { id: "industry", label: "Industry", value: "Capital markets" },
       { id: "sic", label: "SIC", value: "6211 · Security brokers, dealers, and flotation companies" },
       { id: "ir", label: "Investor relations", value: "ir@gs.com · +1 212 902 0300" },
-      { id: "coverage", label: "Coverage owner", value: "Data Operations / Security Master desk" },
+      { id: "coverage", label: "Coverage owner", value: "Data / Security Master desk" },
       { id: "service-level", label: "Review cadence", value: "Intraday with EOD packet sign-off" }
     ]
   }
@@ -419,9 +419,9 @@ const equityChecklist: SecurityMasterPrintChecklistItem[] = [
 const equityExports: SecurityMasterExportEvidence[] = [
   {
     id: "export-1",
-    title: "Research pack",
-    detail: "Security profile, aliases, and venue matrix added to the daily analyst packet.",
-    destination: "report-pack / research"
+    title: "Strategy pack",
+    detail: "Security profile, aliases, and venue matrix added to the daily strategy packet.",
+    destination: "report-pack / strategy"
   },
   {
     id: "export-2",
@@ -496,7 +496,7 @@ function makeEquityRecord(overrides: Partial<SecurityMasterRecord> & Pick<Securi
     filings: equityFilings,
     printPacketId: "SM-PACKET-2026-05-31-GS",
     printGeneratedAt: "2026-05-31 09:18 UTC",
-    printDistribution: "Data Operations · Reporting · Fund Accounting",
+    printDistribution: "Data · Reporting · Fund Accounting",
     printSummary: "Print/export evidence packet combines identifiers, venue routing, and corporate actions into a reviewable handoff for downstream workflows.",
     printSections: equityPrintSections,
     printChecklist: equityChecklist,
@@ -613,7 +613,7 @@ const SECURITY_MASTER_RECORDS: SecurityMasterRecord[] = [
       { id: "filing-2", form: "Agent Notice", description: "Paying agent coupon confirmation", meta: "Updated 2026-05-29 · Clearstream" }
     ],
     printPacketId: "SM-PACKET-2026-06-09-GOS",
-    printDistribution: "Data Operations · Treasury Ops · Fund Accounting",
+    printDistribution: "Data · Treasury Ops · Fund Accounting",
     printSummary: "Debt packet focuses on coupon evidence, paying agent notices, and route-safe identifiers."
   },
   makeEquityRecord({

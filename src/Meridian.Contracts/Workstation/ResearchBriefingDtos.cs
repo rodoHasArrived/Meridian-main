@@ -14,7 +14,7 @@ public sealed record InsightWidget(
     string? DrillInRoute = null);
 
 /// <summary>
-/// Personalized insight feed shown at the top of the Research workspace.
+/// Personalized insight feed shown at the top of the Strategy workspace.
 /// </summary>
 public sealed record InsightFeed(
     string FeedId,
@@ -127,7 +127,7 @@ public sealed record ResearchBriefingWorkspaceSummary(
     string Summary);
 
 /// <summary>
-/// Typed Research workspace briefing payload shared across workstation surfaces.
+/// Typed retained research briefing payload shared by Strategy workstation surfaces.
 /// </summary>
 public sealed record ResearchBriefingDto(
     ResearchBriefingWorkspaceSummary Workspace,

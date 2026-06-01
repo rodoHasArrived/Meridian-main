@@ -319,4 +319,5 @@ OperatorInbox_OverallStatusReflectsBlockingGates
 
 - [`docs/testing/WAVE2_ACCEPTANCE_TESTS.md`](WAVE2_ACCEPTANCE_TESTS.md) - Full test suite documentation
 - [`docs/plans/paper-trading-cockpit-reliability-sprint.md`](../plans/paper-trading-cockpit-reliability-sprint.md) - Original gate definitions
-- [`docs/status/ROADMAP.md`](../status/ROADMAP.md) - Wave 2 roadmap context
+- [roadmap/README.md](../roadmap/README.md) - Wave 2 roadmap context
+

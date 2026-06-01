@@ -22,6 +22,7 @@ public sealed class WorkflowLibraryViewModelTests
                 navigationService);
 
             viewModel.Workflows.Should().Contain(workflow => workflow.WorkflowId == "data-provider-recovery");
+            viewModel.Workflows.Should().Contain(workflow => workflow.WorkflowId == "portfolio-position-review");
             viewModel.SummaryText.Should().Contain("workflows");
             viewModel.ResultScopeText.Should().StartWith("Showing");
             viewModel.HasActiveSearch.Should().BeFalse();

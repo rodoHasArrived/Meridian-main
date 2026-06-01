@@ -238,10 +238,6 @@ public static class UiApiRoutes
     public const string DiagnosticsTestConnectivity = "/api/diagnostics/test-connectivity";
     public const string DiagnosticsValidateConfig = "/api/diagnostics/validate-config";
     public const string DiagnosticsCoordination = "/api/diagnostics/coordination";
-    public const string CppTraderStatus = "/api/cpptrader/status";
-    public const string CppTraderSessions = "/api/cpptrader/sessions";
-    public const string CppTraderSymbols = "/api/cpptrader/symbols";
-    public const string CppTraderExecutionSnapshot = "/api/cpptrader/execution/{symbol}/snapshot";
 
     // Admin/Maintenance endpoints
     public const string AdminMaintenanceSchedule = "/api/admin/maintenance/schedule";
@@ -533,8 +529,22 @@ public static class UiApiRoutes
     public const string PromotionReject = "/api/promotion/reject";
     public const string PromotionHistory = "/api/promotion/history";
 
-    // Strategy run comparison and diff endpoints
+    // Workstation root and compatibility workspace endpoints
+    public const string WorkstationSession = "/api/workstation/session";
+    public const string WorkstationResearch = "/api/workstation/research";
+    public const string WorkstationStrategy = "/api/workstation/strategy";
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
+    public const string WorkstationStrategyBriefing = "/api/workstation/strategy/briefing";
+    public const string WorkstationTrading = "/api/workstation/trading";
+    public const string WorkstationDataOperations = "/api/workstation/data-operations";
+    public const string WorkstationData = "/api/workstation/data";
+    public const string WorkstationGovernance = "/api/workstation/governance";
+    public const string WorkstationAccounting = "/api/workstation/accounting";
+    public const string WorkstationReporting = "/api/workstation/reporting";
+    public const string WorkstationPortfolio = "/api/workstation/portfolio";
+    public const string WorkstationPortfolioSummary = "/api/workstation/portfolio/summary";
+
+    // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationFeatureCapabilities = "/api/workstation/settings/feature-capabilities";
     public const string WorkstationFeatureCapabilityByKey = "/api/workstation/settings/feature-capabilities/{capabilityKey}";
