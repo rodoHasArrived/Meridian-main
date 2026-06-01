@@ -8,7 +8,7 @@ public sealed class ModelRoutingPolicyValidatorTests
     public void Validate_WithCurrentPolicyDocument_ReturnsValid()
     {
         var validator = new ModelRoutingPolicyValidator();
-        var json = File.ReadAllText(Path.Combine("docs", "ai", "model-routing-policy.json"));
+        var json = File.ReadAllText(GetRepositoryFilePath(Path.Combine("docs", "ai", "model-routing-policy.json")));
 
         var result = validator.Validate(json);
 
@@ -40,5 +40,22 @@ public sealed class ModelRoutingPolicyValidatorTests
 
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(error => error.Contains("unknown modelClass", StringComparison.Ordinal));
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
     }
 }

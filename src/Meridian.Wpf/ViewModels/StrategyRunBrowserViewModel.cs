@@ -384,7 +384,9 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
     public string ComparisonPanelDetail
         => IsComparisonVisible
             ? $"Detailing shared comparison evidence for {ComparisonHeaderAText} and {ComparisonHeaderBText}."
-            : ComparisonGuidanceText;
+            : CanCompareRuns
+                ? $"Ready to compare {ComparisonHeaderAText} against {ComparisonHeaderBText}."
+                : ComparisonGuidanceText;
 
     public string ComparisonPlaceholderText
         => IsComparisonVisible ? string.Empty : ComparisonGuidanceText;
