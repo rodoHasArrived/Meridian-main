@@ -13,14 +13,14 @@ This matrix defines the single promotion-gating domain policy used by `Promotion
 
 | Gate ID | Applies To | Owner | Required Evidence | Pass Condition | Failure Outcome | Override Precedence |
 |---|---|---|---|---|---|---|
-| `RunCompleted` | All promotions | Strategy Research | Run lifecycle evidence | Run has `EndedAt` | Blocked | None |
-| `MetricsPresent` | All promotions | Strategy Research | Backtest metrics evidence | Run has metrics payload | Blocked | None |
-| `SharpeThreshold` | All promotions | Strategy Research | Backtest metrics evidence | `SharpeRatio >= MinSharpeRatio` | Human review required | Cannot be bypassed |
-| `DrawdownThreshold` | All promotions | Strategy Research | Backtest metrics evidence | `MaxDrawdownPercent <= MaxAllowedDrawdownPercent` | Human review required | Cannot be bypassed |
-| `TotalReturnThreshold` | All promotions | Strategy Research | Backtest metrics evidence | `TotalReturn >= MinTotalReturn` | Human review required | Cannot be bypassed |
-| `TrustEvidenceFresh` | Paper -> Live | Governance Operations | Provider trust snapshot evidence | Trust snapshot considered fresh | Manual override required | Cannot bypass stale evidence |
-| `TrustEvidenceComplete` | Paper -> Live | Governance Operations | Provider trust snapshot evidence | Trust evidence complete for live decision | Manual override required | Cannot bypass missing evidence |
-| `BrokerageLiveEnabled` | Paper -> Live | Governance Operations | Brokerage config evidence | `LiveExecutionEnabled = true` | Manual override required | High (before approval) |
+| `RunCompleted` | All promotions | Strategy | Run lifecycle evidence | Run has `EndedAt` | Blocked | None |
+| `MetricsPresent` | All promotions | Strategy | Backtest metrics evidence | Run has metrics payload | Blocked | None |
+| `SharpeThreshold` | All promotions | Strategy | Backtest metrics evidence | `SharpeRatio >= MinSharpeRatio` | Human review required | Cannot be bypassed |
+| `DrawdownThreshold` | All promotions | Strategy | Backtest metrics evidence | `MaxDrawdownPercent <= MaxAllowedDrawdownPercent` | Human review required | Cannot be bypassed |
+| `TotalReturnThreshold` | All promotions | Strategy | Backtest metrics evidence | `TotalReturn >= MinTotalReturn` | Human review required | Cannot be bypassed |
+| `TrustEvidenceFresh` | Paper -> Live | Accounting Operations | Provider trust snapshot evidence | Trust snapshot considered fresh | Manual override required | Cannot bypass stale evidence |
+| `TrustEvidenceComplete` | Paper -> Live | Accounting Operations | Provider trust snapshot evidence | Trust evidence complete for live decision | Manual override required | Cannot bypass missing evidence |
+| `BrokerageLiveEnabled` | Paper -> Live | Accounting Operations | Brokerage config evidence | `LiveExecutionEnabled = true` | Manual override required | High (before approval) |
 | `CircuitBreakerClosed` | Paper -> Live | Execution Controls | Circuit breaker evidence | Circuit breaker is closed | Manual override required | High (before approval) |
 | `ConflictingOverrideClear` | Paper -> Live | Execution Controls | Manual override evidence | No conflicting `ForceBlockOrders` override for run/strategy | Manual override required | Higher than allow override |
 | `LivePromotionOverrideActive` | Paper -> Live | Execution Controls | Manual override evidence | Active `AllowLivePromotion` override is present | Manual override required | Required final override gate |

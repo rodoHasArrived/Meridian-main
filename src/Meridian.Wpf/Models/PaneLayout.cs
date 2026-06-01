@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 
 namespace Meridian.Wpf.Models;
@@ -21,6 +22,8 @@ public static class PaneLayouts
     public static readonly PaneLayout StrategyData = new(
         PaneLayoutKind.StrategyData, "Strategy + Data", "⬛⬜", 2,
         new[] { new GridLength(1, GridUnitType.Star), new GridLength(1, GridUnitType.Star) });
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static readonly PaneLayout ResearchData = StrategyData;
 
     public static readonly PaneLayout TradingCockpit = new(

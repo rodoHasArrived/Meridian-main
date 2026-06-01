@@ -154,7 +154,7 @@ $requiredDocs = @(
     },
     [ordered]@{
         name = "Provider validation matrix"
-        path = "docs/status/provider-validation-matrix.md"
+        path = "docs/reference/provider-validation-matrix.md"
         gate = "parity"
         requiredTokens = @(
             "Alpaca core provider confidence",
@@ -167,7 +167,7 @@ $requiredDocs = @(
     }
 )
 
-$requiredOperatorOwners = @("Data Operations", "Provider Reliability", "Trading")
+$requiredOperatorOwners = @("Data", "Provider Reliability", "Trading")
 
 $script:SummarySteps = if ($summary.PSObject.Properties.Name -contains "steps") { @($summary.steps) } else { @() }
 
@@ -681,7 +681,7 @@ $blockers = New-Object System.Collections.Generic.List[string]
 if ($summaryResult -ne "passed") {
     $blockers.Add("Wave 1 validation summary result is '$summaryResult'.")
 }
-if ($script:SummarySteps.Count -eq 0) {
+if (@($script:SummarySteps).Count -eq 0) {
     $blockers.Add("Wave 1 validation summary has no step results.")
 }
 foreach ($sample in $missingSamples) {
@@ -769,8 +769,8 @@ $packet = [ordered]@{
     status = $packetStatus
     requiredPilotSamples = $requiredSamples
     sampleReview = [ordered]@{
-        requiredCount = $requiredSamples.Count
-        observedCount = $observedSamples.Count
+        requiredCount = @($requiredSamples).Count
+        observedCount = @($observedSamples).Count
         missingSampleIds = @($missingSamples | ForEach-Object { [string]$_.id })
         duplicateSampleIds = $duplicateSamples
         samples = @($sampleReviews)

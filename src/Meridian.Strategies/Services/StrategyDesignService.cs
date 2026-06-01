@@ -697,13 +697,13 @@ public sealed class StrategyDesignService
                         new("liquid-universe", "Liquid equity universe", "visual", "universe", "PRICE > 20 && VOLUME_AVG_20D > 1000000", ["PRICE", "VOLUME_AVG_20D"], null),
                         new("momentum-score", "Momentum score", "formula", "rank", "MOMENTUM_63D - VOLATILITY_20D", ["MOMENTUM_63D", "VOLATILITY_20D"], null),
                         new("rebalance-loop", "Weekly rebalance loop", "code", "backtest", "rebalance every Friday with max 20 names", ["PRICE"], null),
-                        new("governance-pack", "Review packet", "governance", "governance", "record dataset fingerprint, field list, run trace", ["PORTFOLIO_WEIGHT"], null)
+                        new("review-packet", "Review packet", "governance", "control", "record dataset fingerprint, field list, run trace", ["PORTFOLIO_WEIGHT"], null)
                     ],
                     [
                         new("t1", "liquid-universe", "momentum-score", "next", "universe ready"),
                         new("t2", "momentum-score", "rebalance-loop", "next", "rank complete"),
                         new("t3", "rebalance-loop", "momentum-score", "loop", "weekly rebalance", 260, "One pass per trading week over the requested backtest window."),
-                        new("t4", "rebalance-loop", "governance-pack", "next", "run complete")
+                        new("t4", "rebalance-loop", "review-packet", "next", "run complete")
                     ],
                     new Dictionary<string, string> { ["prototypeCommit"] = "2826afc0dc5ca4590bf0860871acd45933088bad" },
                     now,
@@ -725,7 +725,7 @@ public sealed class StrategyDesignService
                     [
                         new("option-context", "Option chain context", "visual", "universe", "underlying == SPY && expiry <= 45d", ["OPTION_EXPIRATION", "OPTION_DELTA", "PRICE"], null),
                         new("payoff-panel", "Options payoff panel", "visual", "options-payoff", "bull call spread payoff sample", ["OPTION_DELTA", "PRICE"], null),
-                        new("review-proof", "Review proof", "governance", "governance", "attach payoff, run trace, and no-live-trading acknowledgement", ["PORTFOLIO_WEIGHT"], null)
+                        new("review-proof", "Review proof", "governance", "control", "attach payoff, run trace, and no-live-trading acknowledgement", ["PORTFOLIO_WEIGHT"], null)
                     ],
                     [
                         new("t1", "option-context", "payoff-panel", "next", "option context ready"),

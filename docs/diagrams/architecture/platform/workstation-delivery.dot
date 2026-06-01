@@ -13,7 +13,7 @@ digraph WorkstationDelivery {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - Workstation Delivery\nShared read models, governance handoffs, and security review across WPF and desktop-local API surfaces";
+  label="Meridian - Workstation Delivery\nShared read models, accounting handoffs, and security review across WPF and desktop-local API surfaces";
 
   subgraph cluster_surfaces {
     label="Operator Surfaces";
@@ -22,7 +22,7 @@ digraph WorkstationDelivery {
     bgcolor="#faf5ff";
 
     WPF_SURFACES [fillcolor="#805ad5", fontcolor="white",
-                  label="Meridian.Wpf\nResearchWorkspaceShellPage\nTradingWorkspaceShellPage\nGovernanceWorkspaceShellPage\nSecurityMasterPage\n(queue + action inspector)"];
+                  label="Meridian.Wpf\nStrategyWorkspaceShellPage\nTradingWorkspaceShellPage\nAccountingWorkspaceShellPage\nSecurityMasterPage\n(queue + action inspector)"];
     WEB_SHELL [fillcolor="#805ad5", fontcolor="white",
                label="Desktop-local API host\nlocalhost-only /api/*\nSwagger + retained workstation routes"];
     API_SURFACE [fillcolor="#c4b5fd",
@@ -36,7 +36,7 @@ digraph WorkstationDelivery {
     bgcolor="#dbeafe";
 
     WPF_WORKSPACE [fillcolor="#bfdbfe",
-                   label="StrategyRunWorkspaceService\nactive run context\nrun browser + governance handoff"];
+                   label="StrategyRunWorkspaceService\nactive run context\nrun browser + accounting handoff"];
     WORKSTATION_ENDPOINTS [fillcolor="#93c5fd",
                            label="WorkstationEndpoints\nruns / ledger / cash-flow\nsecurity master / reconciliation\nbreak queue + retained APIs"];
     RUN_READ [fillcolor="#bfdbfe",

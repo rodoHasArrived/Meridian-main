@@ -6,6 +6,24 @@ namespace Meridian.Wpf.Models;
 
 public static partial class ShellNavigationCatalog
 {
+    private static IReadOnlyList<string> LegacyStrategyShellAliases =>
+    [
+        "ResearchShell",
+        "ResearchWorkspace"
+    ];
+
+    private static IReadOnlyList<string> LegacyStrategyAutomationAliases =>
+    [
+        "ResearchAutomation"
+    ];
+
+    private static IReadOnlyList<string> LegacyAccountingShellAliases =>
+    [
+        "GovernanceShell",
+        "GovernanceWorkspace",
+        "AccountingWorkspace"
+    ];
+
     private static readonly Lazy<IShellPageRegistry> RegistryValue =
         new(ShellPageRegistryBuilder.BuildDefault);
 

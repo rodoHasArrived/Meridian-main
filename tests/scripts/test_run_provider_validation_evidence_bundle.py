@@ -7,6 +7,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.scripts.test_generate_dk1_pilot_parity_packet import (
+    _build_packet_review,
+    _build_passing_summary,
+    _build_ready_packet,
+    _build_signed_signoff,
+)
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "dev" / "run-provider-validation-evidence-bundle.ps1"
 
@@ -28,24 +35,13 @@ class RunProviderValidationEvidenceBundleTests(unittest.TestCase):
             packet_path = bundle_root / "dk1-pilot-parity-packet.json"
             signoff_path = bundle_root / "dk1-operator-signoff.json"
 
-            summary_path.write_text(json.dumps({"generatedAtUtc": "2026-05-01T10:00:00Z", "result": "passed"}), encoding="utf-8")
-            packet_path.write_text(json.dumps({"generatedAtUtc": "2026-05-01T10:01:00Z", "status": "ready-for-operator-review"}), encoding="utf-8")
-            signoff_path.write_text(json.dumps({
-                "requiredOwners": ["Data Operations", "Provider Reliability", "Trading"],
-                "approvals": [
-                    {"owner": "Data Operations", "signedBy": "data.ops", "signedAtUtc": "2026-05-01T10:02:00Z", "decision": "approved", "rationale": "ok"},
-                    {"owner": "Provider Reliability", "signedBy": "provider.reliability", "signedAtUtc": "2026-05-01T10:03:00Z", "decision": "approved", "rationale": "ok"},
-                    {"owner": "Trading", "signedBy": "trading.owner", "signedAtUtc": "2026-05-01T10:04:00Z", "decision": "approved", "rationale": "ok"},
-                ],
-                "packetReview": {
-                    "path": str(packet_path),
-                    "generatedAtUtc": "2026-05-01T10:01:00Z",
-                    "status": "ready-for-operator-review",
-                    "validForOperatorReview": True,
-                    "readySampleCount": 4,
-                    "validatedEvidenceDocumentCount": 4,
-                },
-            }), encoding="utf-8")
+            summary = _build_passing_summary()
+            summary["generatedAtUtc"] = "2026-05-01T10:00:00Z"
+            summary_path.write_text(json.dumps(summary), encoding="utf-8")
+            packet = _build_ready_packet(summary_path, "2026-05-01T10:01:00Z")
+            packet_path.write_text(json.dumps(packet), encoding="utf-8")
+            packet_review = _build_packet_review(packet_path, packet)
+            signoff_path.write_text(json.dumps(_build_signed_signoff(packet_review)), encoding="utf-8")
 
             subprocess.run(
                 [

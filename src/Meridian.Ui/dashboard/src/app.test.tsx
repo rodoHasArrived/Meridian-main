@@ -694,7 +694,7 @@ describe("App", () => {
     expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
   });
 
-  it("opens and closes the mobile workspace navigation drawer", async () => {
+  it("opens and closes the responsive workspace navigation drawer", async () => {
     const user = userEvent.setup();
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 

@@ -48,7 +48,7 @@ The index below keeps basename references for readability; use the folders above
 | **Runtime Hosts & Startup Modes** | Runnable projects plus the shared startup orchestration behind `src/Meridian` | `runtime-hosts.dot` |
 | **Workstation Delivery** | How WPF shells, governance review surfaces, and desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services | `workstation-delivery.dot` |
 | **Security Master Lifecycle** | Import, ingest status, grouped conflict triage, projections, cache warmup, and workstation/query consumers | `security-master-lifecycle.dot` |
-| **Fund Ops & Reconciliation** | Governance workspace review loop across reconciliation services, F# rules, and persisted break queues | `fund-ops-reconciliation.dot` |
+| **Fund Ops & Reconciliation** | Accounting workspace review loop across reconciliation services, F# rules, and persisted break queues | `fund-ops-reconciliation.dot` |
 | **UI Navigation Map** | Auto-generated WPF sidebar/workspace navigation map from source code without hand-maintained drift | `ui-navigation-map.dot` |
 | **UI Implementation Flow** | Auto-generated WPF shell/DI/navigation flow from source code without hand-maintained drift | `ui-implementation-flow.dot` |
 | **Backtesting Engine** | Tick-level backtest replay: universe discovery, fill models, portfolio simulation, and metrics | `backtesting-engine.dot` |
@@ -235,7 +235,7 @@ Shows the currently runnable Meridian hosts and the shared startup path behind `
 
 Shows how Meridian now delivers workstation features across the desktop shell and retained local API seams:
 
-- **Desktop surface**: `ResearchWorkspaceShellPage`, `TradingWorkspaceShellPage`, `GovernanceWorkspaceShellPage`, and `SecurityMasterPage` with its grouped conflict queue and action inspector
+- **Desktop surface**: `StrategyWorkspaceShellPage`, `TradingWorkspaceShellPage`, `AccountingWorkspaceShellPage`, and `SecurityMasterPage` with its grouped conflict queue and action inspector
 - **API surface**: retained `/api/workstation/*` plus adjacent `/api/portfolio/*`, `/api/strategies/*`, and `/api/security-master/*` routes
 - **Shared read models**: `StrategyRunWorkspaceService`, `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, and `CashFlowProjectionService`
 - **Security enrichment**: `SecurityMasterSecurityReferenceLookup` → `ISecurityMasterQueryService`
@@ -257,7 +257,7 @@ Shows the current Security Master path from ingest to workstation consumption:
 
 Shows the current governance and reconciliation review loop:
 
-- **Workbench surface**: `GovernanceWorkspaceShellPage`, `FundLedgerViewModel`, `FundReconciliationWorkbenchService`
+- **Workbench surface**: `AccountingWorkspaceShellPage`, `FundLedgerViewModel`, `FundReconciliationWorkbenchService`
 - **API path**: `IWorkstationReconciliationApiClient` → `/api/workstation/reconciliation/*`
 - **Core services**: `ReconciliationRunService`, `ReconciliationProjectionService`, `StrategyRunReadService`, optional `IBankTransactionSource`
 - **Rule engine + state**: `LedgerInterop.ReconcilePortfolioLedgerChecks`, `IReconciliationRunRepository`, `StrategyRunStore`

@@ -204,7 +204,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 ReviewedBy = request.ReviewedBy,
                 ReviewedAt = now,
                 ResolutionNote = request.ReviewNote,
-                SignoffStatus = "investigating"
+                SignoffStatus = "in-review"
             };
 
             updated = StampComputedFields(updated, now);

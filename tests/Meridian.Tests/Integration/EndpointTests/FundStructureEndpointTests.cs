@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
@@ -264,9 +265,10 @@ public sealed class FundStructureEndpointTests
         expireResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         replaceResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 
-        var graph = await structureService.GetOwnershipGraphAsync(seed.EffectiveFrom.AddDays(3));
-        graph.Links.Should().HaveCount(1);
-        var unchanged = graph.Links.Single(link => link.OwnershipLinkId == seed.LinkId);
+        var graph = await structureService.GetFundStructureGraphAsync(
+            new FundStructureQuery(AsOf: seed.EffectiveFrom.AddDays(3)));
+        graph.OwnershipLinks.Should().HaveCount(1);
+        var unchanged = graph.OwnershipLinks.Single(link => link.OwnershipLinkId == seed.LinkId);
         unchanged.RelationshipType.Should().Be(OwnershipRelationshipTypeDto.AllocatesTo);
         unchanged.OwnershipPercent.Should().BeNull();
         unchanged.IsPrimary.Should().BeFalse();

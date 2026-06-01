@@ -2993,6 +2993,7 @@ export function buildReconciliationBreakRows(
 
 function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): ReconciliationBreakDetailViewModel {
   const routingActionHref = buildReconciliationBreakRoutingHref(row.routingTarget);
+  const explanation = row.breakExplanation;
 
   return {
     id: row.detailPanelId,
@@ -3024,14 +3025,25 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Required sign-off", value: buildReconciliationBreakSignoffText(row) },
       { label: "Decision note", value: formatReconciliationMetadata(row.resolutionNote, "No decision captured") },
       { label: "Routing", value: row.routingTarget ?? "No routing target" },
-      { label: "Fund account", value: row.fundAccountId ?? "Not scoped" }
+      { label: "Fund account", value: row.fundAccountId ?? "Not scoped" },
+      { label: "Explanation summary", value: formatReconciliationMetadata(explanation?.summary, "No shared explanation") },
+      { label: "Source systems", value: formatReconciliationList(explanation?.sourceSystems, "No source systems") },
+      { label: "Probable cause", value: formatReconciliationMetadata(explanation?.probableCause, "No probable cause") },
+      { label: "Ledger impact", value: formatReconciliationMetadata(explanation?.ledgerImpact, "No ledger impact") },
+      { label: "Suggested next action", value: formatReconciliationMetadata(explanation?.suggestedNextAction, "No suggested action") },
+      { label: "Explanation evidence", value: formatReconciliationList(explanation?.evidenceLinks, "No explanation evidence") }
     ],
-    analysisText: row.explainabilitySummary ?? null,
-    recommendedActionText: row.recommendedAction ?? null,
+    analysisText: explanation?.summary ?? row.explainabilitySummary ?? null,
+    recommendedActionText: explanation?.suggestedNextAction ?? row.recommendedAction ?? null,
     routingActionLabel: routingActionHref ? "Open routing target" : null,
     routingActionHref,
     routingActionAriaLabel: routingActionHref ? `Open routing target for reconciliation break ${row.breakId}` : null
   };
+}
+
+function formatReconciliationList(values: string[] | null | undefined, fallback: string): string {
+  const normalized = values?.map((value) => value.trim()).filter(Boolean) ?? [];
+  return normalized.length > 0 ? normalized.join(", ") : fallback;
 }
 
 

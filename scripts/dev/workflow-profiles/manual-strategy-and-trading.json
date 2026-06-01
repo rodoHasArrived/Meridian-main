@@ -17,7 +17,7 @@
     "port": 8080
   },
   "screenshots": {
-    "outputRoot": "docs/screenshots/desktop/manuals/manual-governance",
+    "outputRoot": "docs/screenshots/desktop/manuals/manual-strategy-and-trading",
     "retention": {
       "maxAgeDays": 14,
       "retainLatest": 10

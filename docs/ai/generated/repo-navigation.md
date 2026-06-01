@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-05-31T12:05:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-01T22:40:31Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -132,19 +132,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs` | Providers and Storage | `33dd6fa9d` (2026-05-31T03:54:29-07:00) | 3 |
-| `src/Meridian.Wpf/Services/ModelRoutingPolicyValidator.cs` | Desktop and UI Workflows | `aae51bdea` (2026-05-31T03:46:52-07:00) | 1 |
-| `src/Meridian.Wpf/App.xaml.cs` | Desktop and UI Workflows | `50d11b246` (2026-05-31T03:37:12-07:00) | 14 |
-| `src/Meridian.Wpf/Views/Pages.cs` | Desktop and UI Workflows | `50d11b246` (2026-05-31T03:37:12-07:00) | 1 |
-| `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs` | Desktop and UI Workflows | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 8 |
-| `src/Meridian.Wpf/Styles/ThemeControls.xaml` | Desktop and UI Workflows | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 3 |
-| `src/Meridian.Wpf/Views/ApiKeyDialog.xaml` | Desktop and UI Workflows | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 2 |
-| `src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml` | Desktop and UI Workflows | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 2 |
-| `src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml` | Desktop and UI Workflows | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 2 |
-| `src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs` | Desktop and UI Workflows | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 2 |
-| `src/Meridian.Contracts/Domain/Enums/InstrumentType.cs` | Host and Composition | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 1 |
-| `src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs` | Host and Composition | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 1 |
-| `src/Meridian.Contracts/Domain/Enums/OptionRight.cs` | Host and Composition | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 1 |
-| `src/Meridian.Contracts/Domain/Enums/OptionStyle.cs` | Host and Composition | `4a9ed0ef3` (2026-05-30T01:22:56-07:00) | 1 |
-| `src/Meridian.Application/README.md` | Host and Composition | `b8171ed82` (2026-05-29T23:27:51-07:00) | 34 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 53 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 51 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `5f46af969` (2026-06-01T12:04:35-07:00) | 44 |
+| `src/Meridian.Application/README.md` | Host and Composition | `5f46af969` (2026-06-01T12:04:35-07:00) | 38 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 37 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 30 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 30 |
+| `src/Meridian.Contracts/Api/UiApiRoutes.cs` | Host and Composition | `5f46af969` (2026-06-01T12:04:35-07:00) | 29 |
+| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 26 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `5f46af969` (2026-06-01T12:04:35-07:00) | 20 |
+| `src/Meridian.Ui/dashboard/src/lib/api.ts` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 20 |
+| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 17 |
+| `src/Meridian.Ui.Services/README.md` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 15 |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 15 |
+| `src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.test.ts` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 14 |
 

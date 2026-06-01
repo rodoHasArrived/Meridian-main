@@ -48,6 +48,10 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+The root workstation bootstrap endpoints return canonical `WorkstationDataPayload` and
+`WorkstationAccountingPayload` contract types for Data and Accounting. Retained
+`/api/workstation/data-operations` and `/api/workstation/governance` routes remain compatibility
+aliases only and must not drive new contract type names.
 Plaid endpoints are registered as their own shared endpoint group from `UiApiRoutes`, with read
 and mutation access resolved from the workstation session. The shared Plaid workstation service
 keeps link-token creation, public-token exchange, item sync, webhook retention, and sandbox
@@ -81,7 +85,7 @@ gate.
 Lean result ingestion uses `CanonicalBacktestResultNormalizer.FromLeanResult` from
 `Meridian.Backtesting.Sdk` so imported QuantConnect runs enter the same `BacktestResult` storage
 and comparison model as native Backtest Studio output. Summary-only Lean imports must retain their
-coverage warnings so Research/Portfolio compare and diff views do not imply fill, cash-flow,
+coverage warnings so Strategy/Portfolio compare and diff views do not imply fill, cash-flow,
 attribution, or ledger parity that was not imported.
 The shared Investment Accounting Transaction Lab service previews Books Before Broker accounting
 impact for trades, dividends, fees, accruals, corporate actions, and broker-reconciliation examples.

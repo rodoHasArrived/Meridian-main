@@ -35,73 +35,6 @@ export const STRATEGY_PLOT_STUDY_DETAIL_PANEL_ID = "plottool-selected-study-deta
 export const STRATEGY_DIFF_POSITION_DETAIL_PANEL_ID = "strategy-run-diff-selected-position-detail";
 export const STRATEGY_DIFF_PARAMETER_DETAIL_PANEL_ID = "strategy-run-diff-selected-parameter-detail";
 
-export type ResearchCommand = StrategyCommand;
-export type ResearchPlotToolView = StrategyPlotToolView;
-export type ResearchRunLibraryServices = StrategyRunLibraryServices;
-export type ResearchRunLibraryState = StrategyRunLibraryState;
-export type ResearchLoadingState = StrategyLoadingState;
-export type ResearchCommandState = StrategyCommandState;
-export type ResearchResultTableState<T> = StrategyResultTableState<T>;
-export type ResearchRunTableRow = StrategyRunTableRow;
-export type ResearchComparisonTableRow = StrategyComparisonTableRow;
-export type ResearchComparisonDetailState = StrategyComparisonDetailState;
-export type ResearchDiffChangeRow = StrategyDiffChangeRow;
-export type ResearchParameterChangeRow = StrategyParameterChangeRow;
-export type ResearchDiffDetailState = StrategyDiffDetailState;
-export type ResearchDiffMetricRow = StrategyDiffMetricRow;
-export type ResearchDiffPanelState = StrategyDiffPanelState;
-export type ResearchPromotionHistoryRow = StrategyPromotionHistoryRow;
-export type ResearchPromotionHistoryDetailState = StrategyPromotionHistoryDetailState;
-export type ResearchPlotToolState = StrategyPlotToolState;
-export type ResearchPlotStudyItem = StrategyPlotStudyItem;
-export type ResearchPlotStudyDetailState = StrategyPlotStudyDetailState;
-export type ResearchPlotWorkspaceState = StrategyPlotWorkspaceState;
-export type ResearchToolbarItem = StrategyToolbarItem;
-export type ResearchPlotStatisticsState = StrategyPlotStatisticsState;
-export type ResearchPlotAxisTick = StrategyPlotAxisTick;
-export type ResearchPlotScatterPoint = StrategyPlotScatterPoint;
-export type ResearchPlotScatterChartState = StrategyPlotScatterChartState;
-export type ResearchPlotChartLine = StrategyPlotChartLine;
-export type ResearchPlotTrendLineState = StrategyPlotTrendLineState;
-export type ResearchPlotScatterPointMark = StrategyPlotScatterPointMark;
-export type ResearchPlotMarkerState = StrategyPlotMarkerState;
-export type ResearchPlotDistributionChartState = StrategyPlotDistributionChartState;
-export type ResearchPlotDistributionBar = StrategyPlotDistributionBar;
-export type ResearchPlotWorkspaceField = StrategyPlotWorkspaceField;
-export type ResearchPlotLegendItem = StrategyPlotLegendItem;
-export type ResearchPlotFocusPointState = StrategyPlotFocusPointState;
-export type ResearchPlotSignalCard = StrategyPlotSignalCard;
-export type ResearchPlotSummaryTile = StrategyPlotSummaryTile;
-export type ResearchPlotMomentRow = StrategyPlotMomentRow;
-export type ResearchPlotRegressionState = StrategyPlotRegressionState;
-export type ResearchPlotSampleRow = StrategyPlotSampleRow;
-export type ResearchPromotionPanelState = StrategyPromotionPanelState;
-export type ResearchEvidenceAction = StrategyEvidenceAction;
-export type ResearchPromotionEvaluationState = StrategyPromotionEvaluationState;
-export type ResearchPromotionMetricRow = StrategyPromotionMetricRow;
-export type ResearchPromotionBlockingReason = StrategyPromotionBlockingReason;
-export type ResearchPromotionSessionState = StrategyPromotionSessionState;
-export type ResearchPromotionCashFormState = StrategyPromotionCashFormState;
-export type ResearchPlotToolTab = StrategyPlotToolTab;
-export type ResearchRunHistorySummaryState = StrategyRunHistorySummaryState;
-export type ResearchRunHistorySummaryCard = StrategyRunHistorySummaryCard;
-export type ResearchRunInlineDetailState = StrategyRunInlineDetailState;
-export type ResearchRunDetailState = StrategyRunDetailState;
-export type ResearchRunDetailBadgeVariant = StrategyRunDetailBadgeVariant;
-export type ResearchRunDetailSummaryRow = StrategyRunDetailSummaryRow;
-export type ResearchComparisonBadgeVariant = StrategyComparisonBadgeVariant;
-export type ResearchComparisonValueTone = StrategyComparisonValueTone;
-export type ResearchDiffBadgeVariant = StrategyDiffBadgeVariant;
-export type ResearchDiffMetricTone = StrategyDiffMetricTone;
-export type ResearchPromotionHistoryBadgeVariant = StrategyPromotionHistoryBadgeVariant;
-
-export const RESEARCH_RUN_DETAIL_PANEL_ID = STRATEGY_RUN_DETAIL_PANEL_ID;
-export const RESEARCH_COMPARISON_DETAIL_PANEL_ID = STRATEGY_COMPARISON_DETAIL_PANEL_ID;
-export const RESEARCH_PROMOTION_HISTORY_DETAIL_PANEL_ID = STRATEGY_PROMOTION_HISTORY_DETAIL_PANEL_ID;
-export const RESEARCH_PLOT_STUDY_DETAIL_PANEL_ID = STRATEGY_PLOT_STUDY_DETAIL_PANEL_ID;
-export const RESEARCH_DIFF_POSITION_DETAIL_PANEL_ID = STRATEGY_DIFF_POSITION_DETAIL_PANEL_ID;
-export const RESEARCH_DIFF_PARAMETER_DETAIL_PANEL_ID = STRATEGY_DIFF_PARAMETER_DETAIL_PANEL_ID;
-
 export interface StrategyRunLibraryState {
   loadingState: StrategyLoadingState;
   runs: StrategyRunRecord[];
@@ -3486,8 +3419,3 @@ function buildStrategyStatusAnnouncement({
 
   return "";
 }
-
-export const buildResearchRunLibraryState = buildStrategyRunLibraryState;
-export const buildResearchLoadingState = buildStrategyLoadingState;
-export const buildResearchCommandStates = buildStrategyCommandStates;
-export const buildResearchEvidenceAction = buildStrategyEvidenceAction;

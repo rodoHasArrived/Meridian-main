@@ -490,10 +490,6 @@ export function getStrategyBriefing(options: ApiRequestOptions = {}) {
   return getJson<StrategyBriefingResponse>(WORKSTATION_API_ENDPOINTS.strategyBriefing, options);
 }
 
-export function getResearchWorkspace(options: ApiRequestOptions = {}) {
-  return getStrategyWorkspace(options);
-}
-
 export function getTradingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<TradingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.trading, options);
 }

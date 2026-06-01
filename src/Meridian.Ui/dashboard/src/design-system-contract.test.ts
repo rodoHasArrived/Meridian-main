@@ -174,7 +174,7 @@ describe("dashboard design-system contract", () => {
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
     const wpfThemeTokens = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeTokens.xaml");
     const wpfThemeSurfaces = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeSurfaces.xaml");
-    const designDocs = readRepositoryFile("docs/design/design-system-usage.md");
+    const designDocs = readRepositoryFile("archive/docs/plans/desktop-ui-workflow-acceptance-matrix.md");
     const screenshotDocs = readRepositoryFile("docs/screenshots/README.md");
     const screenshotValidator = readRepositoryFile("scripts/dev/validate-screenshot-captures.py");
 
@@ -196,11 +196,12 @@ describe("dashboard design-system contract", () => {
     }
 
     expect(wpfThemeSurfaces).toContain('Binding="{Binding Tone}" Value="Info"');
-    expect(designDocs).toContain("success, warning, danger, info, and muted");
-    expect(designDocs).toContain("manifest-orphan captures");
+    expect(designDocs).toContain("Ready/review/blocked/current/muted mapping");
+    expect(designDocs).toContain("screenshot quality gates");
     expect(screenshotDocs).toContain("semantic-state evidence");
     expect(screenshotValidator).toContain("capture is likely blank");
     expect(screenshotValidator).toContain("capture is likely low-entropy");
     expect(screenshotValidator).toContain("Manifest is missing expected");
+    expect(screenshotValidator).toContain("Unexpected screenshot files");
   });
 });

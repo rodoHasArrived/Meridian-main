@@ -117,6 +117,9 @@ export interface CommandPaletteViewModel {
   searchDescribedBy: string;
   filteredItems: CommandPaletteItem[];
   commandGroups: CommandPaletteGroup[];
+  recommendedItems: CommandPaletteItem[];
+  recommendedItemsLabel: string;
+  recommendedItemsCountLabel: string;
   filteredItemCountLabel: string;
   emptyState: CommandPaletteEmptyState | null;
 }
@@ -274,6 +277,7 @@ export function buildCommandPaletteViewModel(
   const activeWorkspace = workspaceItems.find((item) => item.active);
   const activeRoute = routeItems.find((item) => item.active);
   const activeWorkspaceLabel = activeWorkspace ? `Current: ${activeWorkspace.label}` : "No active workspace";
+  const recommendedItems = buildRecommendedCommandItems(items, activeRoute?.id ?? null, activeWorkspace?.id ?? null);
 
   return {
     title: hasWorkflowBackend ? "Open workflow command" : "Open workstation command",
@@ -315,17 +319,50 @@ export function buildCommandPaletteViewModel(
     items,
     query,
     searchInputLabel: "Search command palette",
-    searchPlaceholder: hasWorkflowBackend
-      ? "Search workflows, routes, presets, or workspaces"
-      : "Search routes or workspaces",
+    searchPlaceholder: "Go to route, action, evidence...",
     searchDescribedBy: emptyState
       ? `${COMMAND_PALETTE_FILTER_COUNT_ID} ${emptyState.detailId}`
       : COMMAND_PALETTE_FILTER_COUNT_ID,
     filteredItems,
     commandGroups,
+    recommendedItems,
+    recommendedItemsLabel: "Recommended commands",
+    recommendedItemsCountLabel: `${recommendedItems.length} recommended command${recommendedItems.length === 1 ? "" : "s"}`,
     filteredItemCountLabel: buildFilteredItemCountLabel(filteredItems.length, items.length, normalizedQuery),
     emptyState
   };
+}
+
+function buildRecommendedCommandItems(
+  items: CommandPaletteItem[],
+  activeRouteId: string | null,
+  activeWorkspaceId: string | null
+): CommandPaletteItem[] {
+  const recommendedIds = [
+    ...items.filter((item) => item.kind === "focus").map((item) => item.id),
+    activeRouteId,
+    activeWorkspaceId,
+    ...items
+      .filter((item) => item.kind === "route" && /evidence|readiness|reconciliation|provider|report/i.test(`${item.label} ${item.description}`))
+      .map((item) => item.id),
+    ...items.filter((item) => item.kind === "preset").map((item) => item.id)
+  ].filter((id): id is string => Boolean(id));
+
+  const seen = new Set<string>();
+  const recommendedItems: CommandPaletteItem[] = [];
+
+  for (const id of recommendedIds) {
+    if (seen.has(id)) continue;
+    const item = items.find((candidate) => candidate.id === id);
+    if (!item) continue;
+
+    seen.add(id);
+    recommendedItems.push(item);
+
+    if (recommendedItems.length >= 4) break;
+  }
+
+  return recommendedItems;
 }
 
 function buildCommandPaletteEmptyState(

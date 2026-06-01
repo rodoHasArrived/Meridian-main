@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildAppShellViewState,
@@ -33,6 +35,15 @@ const sessionPayload: AppShellWorkspacePayload = {
 };
 
 describe("app shell view model", () => {
+  it("uses canonical Strategy helper names for shell continuity internals", () => {
+    const source = readFileSync(resolve(process.cwd(), "src/app-shell.view-model.ts"), "utf8");
+
+    expect(source).toContain("buildStrategyContinuityStatus");
+    expect(source).toContain("buildOperatorFocusCandidateFromStrategyRun");
+    expect(source).not.toContain("buildResearchContinuityStatus");
+    expect(source).not.toContain("buildOperatorFocusCandidateFromResearchRun");
+  });
+
   it("normalizes route paths to workspace keys", () => {
     expect(normalizeWorkspace("/")).toBe("trading");
     expect(normalizeWorkspace("/trading/orders")).toBe("trading");
@@ -193,6 +204,38 @@ describe("app shell view model", () => {
       summary: expect.stringContaining("Strategy comparison")
     });
     expect(state.workflowContinuity.summary).not.toContain("strategy comparison");
+  });
+
+  it("routes retained research overview events into the Strategy workspace", () => {
+    const state = buildAppShellViewState({
+      pathname: "/strategy",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        overview: {
+          recentEvents: [
+            {
+              id: "research-legacy-event",
+              source: "Research",
+              type: "warning",
+              message: "Legacy research continuity event needs Strategy review.",
+              timestamp: "2026-05-14T22:00:00Z"
+            }
+          ]
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.evidenceTimelineItems).toContainEqual(
+      expect.objectContaining({
+        label: "Research warning",
+        workspaceLabel: "Strategy",
+        route: "/strategy",
+        tone: "review"
+      })
+    );
   });
 
   it("routes shell trust strip failures to diagnostics and live readiness", () => {
@@ -1005,7 +1048,7 @@ describe("app shell view model", () => {
   it("derives accessible command palette trigger state", () => {
     expect(buildCommandPaletteTriggerState(false)).toEqual({
       label: "Open workstation command palette (Ctrl K)",
-      placeholder: "Search workflows, routes, presets...",
+      placeholder: "Go to route, action, evidence...",
       shortcutLabel: "Ctrl K",
       controlsId: "command-palette-dialog",
       expanded: false,

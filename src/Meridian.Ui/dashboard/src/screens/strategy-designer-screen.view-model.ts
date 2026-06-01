@@ -648,8 +648,8 @@ const STRATEGY_BUILDER_FIELD_CATALOG: StrategyBuilderFieldCatalogItem[] = [
   {
     fieldId: "AMX_PRIVATE_SCORE",
     label: "AMX private score",
-    source: "Unmapped AMX vocabulary",
-    dataSet: "unmapped",
+    source: "External strategy upload",
+    dataSet: "strategy-import",
     typeName: "decimal",
     description: "Prototype-only field kept visible for traceability.",
     isEnabled: false,

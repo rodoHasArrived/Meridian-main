@@ -40,7 +40,6 @@ const defaultOperatorOverridesService: OperatorOverridesService = {
 
 const STORAGE_PREFIX_OVERRIDES = "meridian.security.overrides.";
 const STORAGE_PREFIX_LOTS = "meridian.security.lots.";
-const STORAGE_NAMESPACE = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 const OVERRIDES_CHANGED_EVENT = "meridian:security-overrides-changed";
 
 interface OverridesChangedDetail {
@@ -77,7 +76,7 @@ function safeLocalStorage(): Storage | null {
 }
 
 function storageKey(prefix: string, securityId: string): string {
-  return `${prefix}${STORAGE_NAMESPACE}.${securityId}`;
+  return `${prefix}${securityId}`;
 }
 
 function loadOverrides(securityId: string): Record<string, string> {

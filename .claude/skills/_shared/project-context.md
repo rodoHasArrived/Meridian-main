@@ -4,10 +4,9 @@
 > routing, runtime semantics, or key architecture guidance changes; mirrored Codex and GitHub AI
 > surfaces should follow from here.
 >
-> **Last verified:** 2026-05-21
-> **Primary grounding docs:** `README.md`, `docs/status/ROADMAP.md`,
-> `docs/plans/trading-workstation-migration-blueprint.md`,
-> `docs/plans/governance-fund-ops-blueprint.md`
+> **Last verified:** 2026-06-01
+> **Primary grounding docs:** `README.md`, `docs/roadmap/data/*.yml`,
+> `docs/roadmap/generated/ROADMAP_SUMMARY.md`, `docs/product/meridian-design-document.md`
 
 ---
 
@@ -42,13 +41,13 @@
 Read these before changing skills, agents, or workflow guidance:
 
 - `README.md`
-- `docs/status/ROADMAP.md`
-- `docs/status/FEATURE_INVENTORY.md`
-- `docs/status/IMPROVEMENTS.md`
-- `docs/status/production-status.md`
-- `docs/plans/trading-workstation-migration-blueprint.md`
-- `docs/plans/governance-fund-ops-blueprint.md`
-- `docs/plans/meridian-6-week-roadmap.md`
+- `docs/roadmap/README.md`
+- `docs/roadmap/data/*.yml`
+- `docs/roadmap/generated/ROADMAP_SUMMARY.md`
+- `docs/roadmap/generated/roadmap-register.md`
+- `docs/product/meridian-design-document.md`
+- `docs/product/README.md`
+- `docs/status/README.md` for migration routing only
 
 ---
 

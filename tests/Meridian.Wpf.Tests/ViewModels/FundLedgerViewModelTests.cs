@@ -662,10 +662,18 @@ public sealed class FundLedgerViewModelTests
 
         source.Should().Contain("Accounting fund operations are loaded for the active fund profile.");
         source.Should().Contain("Accounting operator");
+        source.Should().Contain("_accountingLifecycle");
+        source.Should().Contain("accountingWorkspaceTask");
+        source.Should().Contain("accountingWorkspace");
+        source.Should().Contain("\"shared-accounting\"");
         source.Should().NotContain("Governance fund operations are loaded for the active fund profile.");
         source.Should().NotContain("Governance operator");
         source.Should().NotContain("governance artifacts");
         source.Should().NotContain("shared governance workbench");
+        source.Should().NotContain("_governanceLifecycle");
+        source.Should().NotContain("governanceWorkspaceTask");
+        source.Should().NotContain("var governanceWorkspace");
+        source.Should().NotContain("\"shared-governance\"");
 
         sectionSource.Should().Contain("Accounting operator sign-off is pending.");
         sectionSource.Should().Contain("read-only in Accounting");

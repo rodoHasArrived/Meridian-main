@@ -430,7 +430,7 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
       id: "actions",
       label: "Actions",
       render: (item) => (
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="panel-action-zone">
           <Button
             size="sm"
             variant="outline"
@@ -555,6 +555,22 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
           </nav>
         </div>
       </section>
+
+      <nav className="operator-mode-toggle" aria-label="Accounting operator modes">
+        <a href="#accounting-posture" aria-current="page">Monitor</a>
+        <a href="#accounting-exceptions">Investigate</a>
+        <a href="#accounting-actions">Act</a>
+      </nav>
+
+      <section id="accounting-posture" className="workspace-section-band" aria-labelledby="accounting-posture-heading">
+        <div className="workspace-section-subheader">
+          <div className="min-w-0">
+            <p className="eyebrow-label">Posture</p>
+            <h3 id="accounting-posture-heading" className="workspace-section-title">Accounting close posture</h3>
+            <p className="workspace-section-summary">Close metrics, control center, cash flow, and lane context stay grouped for monitoring.</p>
+          </div>
+          <a className="workspace-section-jump" href="#accounting-exceptions">Exceptions</a>
+        </div>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
@@ -686,8 +702,18 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
           </CardContent>
         </Card>
       </section>
+      </section>
 
       {workstream === "reconciliation" ? (
+        <section id="accounting-exceptions" className="workspace-section-band" aria-labelledby="accounting-exceptions-heading">
+          <div className="workspace-section-subheader">
+            <div className="min-w-0">
+              <p className="eyebrow-label">Exceptions</p>
+              <h3 id="accounting-exceptions-heading" className="workspace-section-title">Reconciliation exceptions and evidence</h3>
+              <p className="workspace-section-summary">Statement runs, selected queue detail, and evidence links are grouped for investigation.</p>
+            </div>
+            <a className="workspace-section-jump" href="#accounting-actions">Actions</a>
+          </div>
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card className="panel-surface xl:col-span-2">
             <CardHeader>
@@ -813,7 +839,8 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
 
           <Card
             id={reconciliation.queuePanelView.detailPanelId}
-            className="panel-surface-strong bg-panel-strong text-foreground"
+            data-selected-source="Selected from reconciliation queue"
+            className="row-detail-panel panel-surface-strong bg-panel-strong text-foreground"
             role="region"
             aria-live="polite"
             aria-label={selectedReconciliationDetail?.ariaLabel ?? reconciliation.queuePanelView.detailEmptyAriaLabel}
@@ -844,7 +871,7 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
                     {selectedReconciliationDetail.narrative}
                   </div>
                   {reconciliation.detailActions ? (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="panel-action-footer">
                       <Button asChild variant="secondary">
                         <Link
                           to={reconciliation.detailActions.evidencePacketHref}
@@ -882,6 +909,7 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
               )}
             </CardContent>
           </Card>
+        </section>
         </section>
       ) : null}
 
@@ -960,6 +988,7 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
                       id={reconciliation.trialBalanceView.detailPanelId}
                       role="region"
                       aria-label={reconciliation.trialBalanceView.detailEmptyAriaLabel}
+                      data-selected-source="Selected from trial balance"
                       className="row-detail-panel h-fit min-w-0"
                     >
                       <div className="eyebrow-label">Trial-balance detail</div>
@@ -1633,6 +1662,15 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
       )}
 
       {workstream === "reconciliation" && (
+        <section id="accounting-actions" className="workspace-section-band" aria-labelledby="accounting-actions-heading">
+          <div className="workspace-section-subheader">
+            <div className="min-w-0">
+              <p className="eyebrow-label">Actions</p>
+              <h3 id="accounting-actions-heading" className="workspace-section-title">Break resolution actions</h3>
+              <p className="workspace-section-summary">Resolve, dismiss, route, and calibration actions use a shared action placement.</p>
+            </div>
+            <a className="workspace-section-jump" href="#accounting-history">History</a>
+          </div>
         <section
           id={reconciliation.detailActions?.breakChecklistTargetId ?? "reconciliation-break-queue"}
           aria-label="Reconciliation break checklist"
@@ -1686,7 +1724,7 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
                 ariaLabel={reconciliation.tableLabel}
                 caption={reconciliation.tableCaption}
               />
-              <div id={reconciliation.detailPanelId} aria-live="polite">
+              <div id={reconciliation.detailPanelId} aria-live="polite" data-selected-source="Selected from break queue" className="row-detail-panel">
                 {reconciliation.selectedDetail ? (
                   <EntitySummary
                     eyebrow={reconciliation.selectedDetail.eyebrow}
@@ -1757,7 +1795,7 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
                       <p id={resolveDialog.active.helpId} className="text-xs text-muted-foreground">
                         {resolveDialog.active.helpText}
                       </p>
-                      <div className="flex gap-2">
+                      <div className="panel-action-zone justify-start">
                         <Button
                           type="submit"
                           size="sm"
@@ -1778,6 +1816,7 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
 
           <CalibrationSummaryPanel view={reconciliation.calibrationView} />
         </section>
+        </section>
       )}
     </div>
   );
@@ -1787,7 +1826,7 @@ function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }
   const StatusIcon = view.statusIcon === "check" ? CheckCircle2 : AlertCircle;
 
   return (
-    <Card className="panel-surface">
+    <Card id="accounting-history" className="panel-surface">
       <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -1949,6 +1988,7 @@ function CorporateActionsPanel({
             />
             <div
               id={view.detailPanelId}
+              data-selected-source="Selected from corporate actions"
               className="row-detail-panel h-fit min-w-0"
             >
               {view.selectedDetail ? (
@@ -2030,7 +2070,7 @@ function SecuritySchedulesPanel({
             ariaLabel={view.tableLabel}
             caption={view.tableCaption}
           />
-          <div id={view.detailPanelId} className="row-detail-panel h-fit min-w-0">
+          <div id={view.detailPanelId} data-selected-source="Selected from schedule events" className="row-detail-panel h-fit min-w-0">
             {view.selectedDetail ? (
               <EntitySummary
                 eyebrow={view.selectedDetail.eyebrow}
@@ -2115,7 +2155,7 @@ function SecurityOpenLotReadModelPanel({
                 ariaLabel={view.tableLabel}
                 caption={view.tableCaption}
               />
-              <div id={view.detailPanelId} className="row-detail-panel h-fit min-w-0">
+              <div id={view.detailPanelId} data-selected-source="Selected from open lots" className="row-detail-panel h-fit min-w-0">
                 {view.selectedDetail ? (
                   <EntitySummary
                     eyebrow={view.selectedDetail.eyebrow}

@@ -26,7 +26,7 @@ cohesive operator product across Trading, Portfolio, Accounting, Reporting, Stra
 Settings.
 
 **Key facts for reviewers:**
-- **Use current repo docs as authoritative context.** Treat `README.md`, `docs/status/ROADMAP.md`, and `.claude/skills/_shared/project-context.md` as the source of truth rather than stale file-count snapshots.
+- **Use current repo docs as authoritative context.** Treat `README.md`, `docs/roadmap/data/*.yml`, `docs/roadmap/generated/ROADMAP_SUMMARY.md`, and `.claude/skills/_shared/project-context.md` as the source of truth rather than stale file-count snapshots or migrated status stubs.
 - **Browser and WPF are active operator surfaces.** `Meridian.Ui.Services` and `Meridian.Ui.Shared` serve shared read models for both clients; flag WPF-only leakage into shared projects.
 - The project already has strong backend patterns — bounded channels, WAL durability, backpressure handling, replay, and shared read-model seams. Review run, portfolio, ledger, and governance workflows as first-class product surfaces, not optional add-ons.
 - There is a dedicated `Meridian.ProviderSdk` project with clean interfaces for provider implementations.

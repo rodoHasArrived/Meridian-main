@@ -63,7 +63,7 @@ Content Frame
 
 **Canonical sidebar buckets** — the shell now standardizes the left-rail group labels as `Home`, `Active Work`, `Review / Alerts`, and `Admin / Support`. The workspace selector tiles expose the same grouping model in their hover help so operators can see the shell structure before they switch workspaces.
 
-**Welcome landing next-action panel** — `WelcomePage` now turns the system-overview snapshot into three readiness checks (provider session, symbol inventory, storage target), a readiness progress strip, and a primary next-step recommendation. Provider, symbol, storage, and freshness blockers route the operator back into Data Operations before the landing page suggests Research, Trading, or Governance shells.
+**Welcome landing next-action panel** — `WelcomePage` now turns the system-overview snapshot into three readiness checks (provider session, symbol inventory, storage target), a readiness progress strip, and a primary next-step recommendation. Provider, symbol, storage, and freshness blockers route the operator back into Data before the landing page suggests Strategy, Trading, or Accounting shells.
 
 **Add Provider catalog filtering** — `AddProviderWizardPage` now keeps provider catalog filtering, active-filter state, result-scope copy, empty-state recovery, connection feedback, save feedback, credential guidance, and setup-progress fills bound to `AddProviderWizardViewModel`. The page still owns navigation and dynamic credential-field control creation, but it no longer mutates provider card item sources or filter button styles directly.
 
@@ -78,7 +78,7 @@ The shell applies the shared inbox payload as soon as the endpoint returns, befo
 
 **Persistent status bar pipeline pressure** — `StatusBarControl` now shows a compact queue-pressure label beside throughput. `StatusBarViewModel` formats queue size/capacity or normalized utilization from the existing `StatusResponse.Pipeline` snapshot, colors the label by utilization thresholds, and includes the same queue state in the status tooltip without adding another timer, service call, or buffer.
 
-**Research desk briefing hero** — `ResearchWorkspaceShellPage` now keeps the current research cycle, blocker, and next handoff visible above the market briefing. The hero reuses existing workflow-summary and active-run state so empty queues route into `Backtest`, queued promotion candidates route into `StrategyRuns`, and promotable active runs expose trading-review plus direct promotion actions without introducing a separate fetch path.
+**Strategy desk briefing hero** — `StrategyWorkspaceShellPage` now keeps the current strategy cycle, blocker, and next handoff visible above the market briefing. The hero reuses existing workflow-summary and active-run state so empty queues route into `Backtest`, queued promotion candidates route into `StrategyRuns`, and promotable active runs expose trading-review plus direct promotion actions without introducing a separate fetch path.
 
 **Strategy run browser filter recovery** — `StrategyRunsPage` now shows visible-vs-recorded run scope beside search and overlays a dynamic empty state when no rows are visible. `StrategyRunBrowserViewModel` distinguishes a truly empty run library from search or mode filters that hide retained rows, and its `ClearRunFiltersCommand` restores the in-memory run list without another run-store read.
 
@@ -94,7 +94,7 @@ The shell applies the shared inbox payload as soon as the endpoint returns, befo
 
 **Run Cash Flow blocked-continuity guard** — `CashFlowViewModelTests` now includes a retained-run scenario where cash-flow entries load successfully while shared continuity reports an open reconciliation blocker. The expected desktop presentation remains `Continuity blocked` with the shared `open-reconciliation-breaks` warning visible, which prevents the WPF cash-flow ladder from looking acceptance-ready just because rows are present.
 
-**Governance lane briefing card** — `GovernanceWorkspaceShellPage` now keeps the selected governance lane, blocker summary, and next handoff visible above the lane buttons. The hero state reuses the same fund-context, workflow-summary, reconciliation, reporting, and notification inputs already loaded for the shell, so lane switches update immediately without another service round-trip.
+**Accounting lane briefing card** — `AccountingWorkspaceShellPage` now keeps the selected accounting lane, blocker summary, and next handoff visible above the lane buttons. The hero state reuses the same fund-context, workflow-summary, reconciliation, reporting, and notification inputs already loaded for the shell, so lane switches update immediately without another service round-trip.
 
 **Fund Accounts operator briefing** — `FundAccountsPage` now turns the static operator brief into a stateful fund-account handoff. `FundAccountsViewModel` projects fund-context, empty account queue, missing route evidence, blocked provider routes, shared-data access gaps, ready-for-reconciliation states, and balance-evidence snapshot posture from the already-loaded account queue, route previews, provider bindings, balance history, and `FundStructureSharedDataAccessDto` baseline without another service call.
 
@@ -162,7 +162,7 @@ The shell applies the shared inbox payload as soon as the endpoint returns, befo
 
 **Storage archive posture** — `StoragePage` now places an archive-posture card above the configuration and preview panels. `StorageViewModel` projects daily growth, capacity horizon, last scan, and one operator handoff from the already-loaded `StorageAnalytics` snapshot, so capacity pressure and stalled archive growth are visible without adding another storage scan, timer, or persistence write.
 
-**Data Operations next-handoff card** — `DataWorkspaceShellPage` turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
+**Data next-handoff card** — `DataWorkspaceShellPage` turns the previously static right-side hero card into a priority handoff surface. Provider outages, storage blockers, resumable backfills, active exports, collection sessions, and steady-state readiness each project one explicit CTA with a target label, while the same hero shows compact provider, backfill, and storage health chips so operators can confirm the readiness posture before scanning the full workbench.
 
 **Backfill start readiness** — `BackfillPage` now shows an automation-addressable start-readiness card above the run controls. `BackfillViewModel` owns symbol normalization, date-range validation, request scope text, validation label visibility, and Start enablement so empty-symbol and invalid-date states are visible before an operator launches a historical backfill; the page code-behind only refreshes the VM from existing WPF controls and delegates the launch to the existing backfill command path.
 
@@ -190,14 +190,20 @@ The shell applies the shared inbox payload as soon as the endpoint returns, befo
 
 ### Workspace system (`WorkspaceService`, `WorkspacePage`)
 
-Four built-in workspace templates:
+Seven built-in workspace templates:
 
 | Workspace ID | Pages |
 | --- | --- |
-| `research` | Dashboard, LiveData, Charts, RunMat, StrategyRuns, OrderBook, Watchlist |
-| `trading` | Backtest, StrategyRuns, LeanIntegration, PortfolioImport, TradingHours |
-| `data-operations` | Provider, ProviderHealth, Symbols, Backfill, Storage, DataExport, PackageManager, Schedules |
-| `governance` | DataQuality, SystemHealth, Diagnostics, Settings, AdminMaintenance |
+| `trading` | TradingShell, OrderBook, PositionBlotter, RunRisk |
+| `portfolio` | PortfolioShell, RunPortfolio, FundAccounts |
+| `accounting` | AccountingShell, RunLedger, FundLedger |
+| `reporting` | ReportingShell, ReportPacks, EvidenceWorkbench |
+| `strategy` | StrategyShell, Backtest, RunMat, StrategyRuns, Charts |
+| `data` | DataShell, Provider, ProviderHealth, Symbols, Backfill, Storage, DataExport |
+| `settings` | SettingsShell, Settings, Diagnostics, AdminMaintenance |
+
+Persisted legacy IDs such as `research`, `data-operations`, and `governance` are normalized to the
+canonical Strategy, Data, and Accounting workspaces during restore.
 
 Each workspace persists:
 
@@ -213,7 +219,7 @@ Each workspace persists:
 - **Fuzzy search** — exact → prefix → contains → character-sequence fuzzy, top-15 results
 - **Recency tracking** — LRU 10, shown when palette opens empty
 - **In-input result traversal** — when the shell palette is open, `Up` and `Down` move the selected result without leaving the search box; `Enter` opens the selection and `Esc` closes the overlay
-- **Workspace labels** in descriptions: `Research workspace — Dashboard`, `Trading workspace — LiveData`, etc.
+- **Workspace labels** in descriptions: `Strategy workspace — Dashboard`, `Trading workspace — LiveData`, etc.
 
 ---
 
@@ -229,7 +235,7 @@ over that catalog, so adding a new shell page typically requires:
 
 Only non-catalog utility pages still need direct manual registration in `App.xaml.cs`.
 
-### Research workspace pages
+### Strategy workspace pages
 
 | Tag | Class | Notes |
 | --- | --- | --- |
@@ -253,7 +259,7 @@ Only non-catalog utility pages still need direct manual registration in `App.xam
 | `PortfolioImport` | `PortfolioImportPage` | CSV/bulk import |
 | `TradingHours` | `TradingHoursPage` | Market calendar |
 
-### Data Operations workspace pages
+### Data workspace pages
 
 | Tag | Class |
 | --- | --- |
@@ -279,7 +285,7 @@ Only non-catalog utility pages still need direct manual registration in `App.xam
 | `PackageManager` | `PackageManagerPage` |
 | `Schedules` | `ScheduleManagerPage` |
 
-### Governance workspace pages
+### Accounting workspace pages
 
 | Tag | Class |
 | --- | --- |
@@ -460,11 +466,11 @@ Shell implementation now shares descriptor-driven infrastructure:
 - `IWorkspaceShellStateProvider` and `WorkspaceShellState` translate active run, operating-context, and preset state into declarative default panes
 - `ShellNavigationCatalog.Workspaces.cs` is the source of truth for default panes and preset layouts across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`
 
-### `ResearchWorkspaceShellPage` (`Views/ResearchWorkspaceShellPage.xaml`)
+### `StrategyWorkspaceShellPage` (`Views/StrategyWorkspaceShellPage.xaml`)
 
 **Purpose**: Single-page landing for the Strategy workspace. Shows the current strategy-cycle handoff, recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser. `ResearchShell` remains a hidden compatibility alias for this page.
 
-`ResearchWorkspaceShellViewModel` owns the shell's loading/error state, KPI text, desk-briefing hero, workflow blocker/evidence, active-run summary, briefing collections, command group, and action requests. `ResearchWorkspaceShellPresentationService` composes the existing run workspace, research briefing, watchlist, fund/operating context, shell context, workflow summary, and optional promotion services into immutable UI state without adding backend behavior. `ResearchWorkspaceShellPage.xaml.cs` stays limited to lifecycle, AvalonDock pane hosting, tone resource application, and forwarding view-model action requests to `NavigationService` or `OpenWorkspacePage`.
+`StrategyWorkspaceShellViewModel` owns the shell's loading/error state, KPI text, desk-briefing hero, workflow blocker/evidence, active-run summary, briefing collections, command group, and action requests. `StrategyWorkspaceShellPresentationService` composes the existing run workspace, strategy briefing, watchlist, fund/operating context, shell context, workflow summary, and optional promotion services into immutable UI state without adding backend behavior. `StrategyWorkspaceShellPage.xaml.cs` stays limited to lifecycle, AvalonDock pane hosting, tone resource application, and forwarding view-model action requests to `NavigationService` or `OpenWorkspacePage`.
 
 **Design zones**:
 
@@ -492,7 +498,7 @@ handlers for toolbar selection, date validation, indicator state, or refresh rea
 3. **Workbench rail** — Active positions plus capital and risk inspector cards for the current trading posture
 4. **KPI strip and support lanes** — Active paper/live run counts, total equity, and supporting market-core / audit quick actions
 
-Replay and collection-session review stay on their owning Data Operations and Governance pages until the trading shell has a proven need for another deep-review lane.
+Replay and collection-session review stay on their owning Data and Accounting pages until the trading shell has a proven need for another deep-review lane.
 
 ### `DataWorkspaceShellPage` (`Features/Data/Shell/DataWorkspaceShellPage.xaml`)
 
@@ -540,7 +546,7 @@ dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 
 | Test project | Count | Covers |
 | --- | --- | --- |
-| `Meridian.Wpf.Tests` | 106 | WPF-specific services and shell projections: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, Data Operations shell projection, operator inbox action, etc. |
+| `Meridian.Wpf.Tests` | 106 | WPF-specific services and shell projections: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, Data shell projection, operator inbox action, etc. |
 | `Meridian.Ui.Tests` | 171 | Shared services: ApiClient, Backfill, Charting, Watchlist, DataQuality, StrategyRun drill-ins |
 
 Run with:

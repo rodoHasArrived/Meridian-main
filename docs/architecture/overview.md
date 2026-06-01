@@ -87,9 +87,9 @@ Examples of existing areas the plan builds on:
 
 Security Master already has meaningful anchors in contracts, application, storage, migrations, and F# domain modules. The governance plan layers new workstation-facing services and projections on top of those existing modules rather than introducing a separate subsystem.
 
-## Planned Governance Expansion
+## Planned Accounting And Governance-Control Expansion
 
-The active governance blueprint adds first-class product workflows for:
+The active accounting and governance-control blueprint adds first-class product workflows for:
 
 - Security Master
 - account and entity management foundations
@@ -100,7 +100,9 @@ The active governance blueprint adds first-class product workflows for:
 - report generation and report packs
 - investor reporting
 
-These capabilities are intended to live inside the existing Governance workspace and shared product model, not as an unrelated side application.
+These capabilities are intended to live inside the canonical `Accounting` workspace and shared
+product model, with governance controls expressed as policy and evidence workflows rather than a
+separate visible root workspace.
 
 ## Related Documents
 

@@ -726,9 +726,9 @@ function Get-WorkspaceShellMarker {
 
     switch ($WorkspaceId) {
         "trading" { return "Trading Workspace" }
-        "data-operations" { return "Data Operations Workspace" }
-        "governance" { return "Governance Workspace" }
-        default { return "Research Workspace" }
+        "data-operations" { return "Data Workspace" }
+        "governance" { return "Accounting Workspace" }
+        default { return "Strategy Workspace" }
     }
 }
 
@@ -737,9 +737,9 @@ function Get-WorkspaceTileNames {
 
     switch ($WorkspaceId) {
         "trading" { return @("Trading") }
-        "data-operations" { return @("Data Ops", "Data Operations") }
-        "governance" { return @("Governance") }
-        default { return @("Research") }
+        "data-operations" { return @("Data") }
+        "governance" { return @("Accounting") }
+        default { return @("Strategy") }
     }
 }
 function Wait-ForShellReady {
@@ -751,7 +751,7 @@ function Wait-ForShellReady {
     )
 
     $selectionMarkers = @("Operating Context Selection", "Fund Profile Selection", "Choose Fund Profile")
-    $shellMarkers = @("Research Workspace", "Trading Workspace", "Data Operations Workspace", "Governance Workspace")
+    $shellMarkers = @("Strategy Workspace", "Trading Workspace", "Data Workspace", "Accounting Workspace")
     $initialMarkers = $selectionMarkers + $shellMarkers + $PageMarkers
 
     $state = Wait-Until -TimeoutSeconds $TimeoutSeconds -FailureMessage "Timed out waiting for Meridian startup." -Condition {

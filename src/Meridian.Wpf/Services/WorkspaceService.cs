@@ -781,9 +781,7 @@ public sealed class WorkspaceService
             }
         }
 
-        AddOwner(owners, "ResearchShell", "strategy");
-        AddOwner(owners, "DataOperationsShell", "data");
-        AddOwner(owners, "GovernanceShell", "accounting");
+        AddLegacyWorkspaceOwnerAliases(owners, AddOwner);
 
         return owners
             .Where(static pair => pair.Value.Count == 1)
@@ -791,6 +789,15 @@ public sealed class WorkspaceService
                 static pair => pair.Key,
                 static pair => pair.Value.Single(),
                 StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static void AddLegacyWorkspaceOwnerAliases(
+        IDictionary<string, HashSet<string>> owners,
+        Action<IDictionary<string, HashSet<string>>, string, string> addOwner)
+    {
+        addOwner(owners, "ResearchShell", "strategy");
+        addOwner(owners, "DataOperationsShell", "data");
+        addOwner(owners, "GovernanceShell", "accounting");
     }
 
     private static string? NormalizeFundProfileId(string? fundProfileId)

@@ -48,6 +48,14 @@ public sealed class StrategyDesignerWorkstationEndpointsTests
             ServerJsonOptions);
 
         templates.Should().Contain(template => template.TemplateId == "options-payoff");
+        templates.Should().Contain(template =>
+            template.TemplateId == "equity-momentum-breakout" &&
+            template.Document.Cells.Any(cell =>
+                cell.CellId == "review-packet" &&
+                cell.Label == "Review packet" &&
+                cell.Purpose == "control"));
+        templates.Should().NotContain(template =>
+            template.Document.Cells.Any(cell => cell.CellId == "governance-pack"));
         fields.Should().Contain(field =>
             field.FieldId == "AMX_PRIVATE_SCORE" &&
             !field.IsEnabled &&

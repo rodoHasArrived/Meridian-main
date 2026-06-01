@@ -497,6 +497,22 @@ export function TradingScreen({ data }: TradingScreenProps) {
         </div>
       </section>
 
+      <nav className="operator-mode-toggle" aria-label="Trading operator modes">
+        <a href="#trading-posture" aria-current="page">Monitor</a>
+        <a href="#trading-exceptions">Investigate</a>
+        <a href="#trading-actions">Act</a>
+      </nav>
+
+      <section id="trading-posture" className="workspace-section-band" aria-labelledby="trading-posture-heading">
+        <div className="workspace-section-subheader">
+          <div className="min-w-0">
+            <p className="eyebrow-label">Posture</p>
+            <h3 id="trading-posture-heading" className="workspace-section-title">Trading readiness posture</h3>
+            <p className="workspace-section-summary">Route context, acceptance status, and workflow state stay grouped for monitoring.</p>
+          </div>
+          <a className="workspace-section-jump" href="#trading-actions">Act</a>
+        </div>
+
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -572,7 +588,17 @@ export function TradingScreen({ data }: TradingScreenProps) {
           />
         ))}
       </div>
+      </section>
 
+      <section id="trading-exceptions" className="workspace-section-band" aria-labelledby="trading-exceptions-heading">
+        <div className="workspace-section-subheader">
+          <div className="min-w-0">
+            <p className="eyebrow-label">Exceptions</p>
+            <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
+            <p className="workspace-section-summary">Business guardrails and brokerage wiring are separated from platform diagnostics.</p>
+          </div>
+          <a className="workspace-section-jump" href="#trading-actions">Actions</a>
+        </div>
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -608,7 +634,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   {executionEvidence.controlsPanel?.title ?? "Execution controls snapshot"}
                 </p>
-                <div className="flex flex-wrap items-center justify-end gap-2">
+                <div className="panel-action-zone">
                   <Button
                     size="sm"
                     variant="outline"
@@ -679,7 +705,17 @@ export function TradingScreen({ data }: TradingScreenProps) {
           </CardContent>
         </Card>
       </section>
+      </section>
 
+      <section id="trading-actions" className="workspace-section-band" aria-labelledby="trading-actions-heading">
+        <div className="workspace-section-subheader">
+          <div className="min-w-0">
+            <p className="eyebrow-label">Actions</p>
+            <h3 id="trading-actions-heading" className="workspace-section-title">Blotter actions and selected detail</h3>
+            <p className="workspace-section-summary">Selectable rows, order actions, and linked detail panels remain visually paired.</p>
+          </div>
+          <a className="workspace-section-jump" href="#trading-history">History</a>
+        </div>
       <section className="grid gap-4 xl:grid-cols-2">
         <Card className="panel-surface">
           <CardHeader>
@@ -711,7 +747,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
               onRowSelect={(position) => blotterVm.selectPosition(position.id)}
               emptyText={blotterVm.positionEmptyText}
             />
-            <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} />
+            <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} selectedSourceLabel="Selected from live positions" />
           </CardContent>
         </Card>
 
@@ -722,7 +758,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 <ClipboardList className="h-4 w-4 text-primary" />
                 Open orders
               </CardTitle>
-              <div className="flex items-center gap-2">
+              <div className="panel-action-zone">
                 <Button
                   size="sm"
                   variant="outline"
@@ -879,7 +915,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   </div>
                 )}
 
-                <div className="flex gap-3">
+                <div className="panel-action-zone justify-start">
                   <Button
                     type="submit"
                     size="sm"
@@ -930,7 +966,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
               onRowSelect={(order) => blotterVm.selectOrder(order.id)}
               emptyText={blotterVm.orderEmptyText}
             />
-            <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} />
+            <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} selectedSourceLabel="Selected from open orders" />
           </CardContent>
         </Card>
       </section>
@@ -966,11 +1002,21 @@ export function TradingScreen({ data }: TradingScreenProps) {
               onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
               emptyText={blotterVm.fillEmptyText}
             />
-            <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} />
+            <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} selectedSourceLabel="Selected from recent fills" />
           </div>
         </CardContent>
       </Card>
+      </section>
 
+      <section id="trading-history" className="workspace-section-band" aria-labelledby="trading-history-heading">
+        <div className="workspace-section-subheader">
+          <div className="min-w-0">
+            <p className="eyebrow-label">History</p>
+            <h3 id="trading-history-heading" className="workspace-section-title">Paper session history and execution evidence</h3>
+            <p className="workspace-section-summary">Session restore, replay verification, and audit events are kept in the same history band.</p>
+          </div>
+          <a className="workspace-section-jump" href="#trading-posture">Posture</a>
+        </div>
       <section className="grid gap-4 xl:grid-cols-2">
         {/* Paper session management */}
         <Card className="panel-surface">
@@ -1064,7 +1110,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 <p id={paperSessions.formDescriptionId} className="text-xs text-muted-foreground">
                   {paperSessions.formRequirementText}
                 </p>
-                <div className="flex gap-3">
+                <div className="panel-action-zone justify-start">
                   <Button
                     type="submit"
                     size="sm"
@@ -1116,7 +1162,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
                         {session.strategyId} · {session.initialCashText} · {session.statusLabel}
                       </div>
                     </div>
-                    <div className="ml-4 flex shrink-0 gap-2">
+                    <div className="panel-action-zone ml-4 shrink-0">
                       <Button
                         size="sm"
                         variant="outline"
@@ -1208,6 +1254,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
         </Card>
 
         {/* Strategy lifecycle controls — moved to sheet; trigger in Workflow Tools strip */}
+      </section>
       </section>
 
       {/* ---- Strategy Controls Sheet ---- */}
@@ -1896,7 +1943,7 @@ function AcceptanceStatusCard({
               Session, replay, audit, and promotion signals for the current paper workflow.
             </CardDescription>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="panel-action-zone">
             <Button asChild size="sm" variant="secondary">
               <Link to="/trading/readiness">Open console</Link>
             </Button>
@@ -2231,7 +2278,7 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
                 />
               </span>
             </label>
-            <div className="flex justify-end gap-3">
+            <div className="panel-action-zone">
               <Button variant="outline" onClick={vm.closeConfirm} disabled={!vm.canClose}>
                 {vm.cancelButtonLabel}
               </Button>
@@ -2248,7 +2295,7 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         )}
 
         {vm.isCompleted && (
-          <div className="flex justify-end pt-2">
+          <div className="panel-action-zone pt-2">
             <Button variant="outline" onClick={vm.closeConfirm} aria-label={vm.closeAriaLabel}>
               {vm.closeButtonLabel}
             </Button>
@@ -2262,16 +2309,19 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
 function TradingBlotterDetailPanel({
   id,
   detail,
-  emptyText
+  emptyText,
+  selectedSourceLabel
 }: {
   id: string;
   detail: TradingBlotterDetail | null;
   emptyText: string;
+  selectedSourceLabel: string;
 }) {
   return (
     <DenseRowDetailPanel
       id={id}
       ariaLabel={detail?.ariaLabel ?? "Trading blotter detail"}
+      selectedSourceLabel={selectedSourceLabel}
       className={cn(
         "rounded-md border bg-background/70 p-3",
         detail ? dataTonePanelClass[detail.statusTone] : "border-border/70"

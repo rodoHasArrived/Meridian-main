@@ -73,6 +73,8 @@ describe("strategy designer view-model", () => {
 
     expect(filtered.map((field) => field.fieldId)).toContain("AMX_PRIVATE_SCORE");
     expect(filtered[0].isEnabled).toBe(false);
+    expect(filtered[0].source).toBe("External strategy upload");
+    expect(filtered[0].dataSet).toBe("strategy-import");
     expect(filtered[0].disabledReason).toContain("No Meridian canonical source");
   });
 

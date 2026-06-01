@@ -50,7 +50,7 @@ Copy this block for each Wave 4 scenario:
   - `POST /api/workstation/governance/reconciliation/resolve-conflict` -> returns stable conflict ID, selected canonical identifier, and `resolutionState=Resolved`.
   - `GET /api/workstation/governance/reconciliation/breaks?classification=IdentifierConflict` -> excludes resolved break and preserves audit trail reference.
 - **Expected workstation assertions:**
-  - `Governance > Reconciliation > Identifier Conflicts` queue shows one fewer pending conflict and displays canonical identifier in history row.
+  - `Accounting > Reconciliation > Identifier Conflicts` queue shows one fewer pending conflict and displays canonical identifier in history row.
   - Conflict detail drawer shows immutable source identifiers, chosen canonical ID, resolver, and resolution timestamp.
 - **Produced artifact location:** `artifacts/wave4/evidence/wave4-governance-identifier-conflict-resolution-v1/`
 - **Regression owner:** `Governance and Ledger / Reconciliation On-Call`
@@ -65,8 +65,8 @@ Copy this block for each Wave 4 scenario:
   - `POST /api/workstation/governance/corporate-actions/replay` -> reports applied actions count, impacted ledgers count, and deterministic replay checksum.
   - `GET /api/workstation/fund-operations/portfolio-impact?asOf=2026-02-21` -> position quantity, cost basis, and cash-flow deltas match fixture expectations.
 - **Expected workstation assertions:**
-  - `Governance > Fund Operations` impact panel surfaces action lineage and before/after portfolio posture for each affected sleeve.
-  - `Governance > Reports` preview shows propagated corporate-action footnotes with matching reconciliation references.
+  - `Accounting > Fund Operations` impact panel surfaces action lineage and before/after portfolio posture for each affected sleeve.
+  - `Reporting > Reports` preview shows propagated corporate-action footnotes with matching reconciliation references.
 - **Produced artifact location:** `artifacts/wave4/evidence/wave4-governance-corporate-action-propagation-impact-v1/`
 - **Regression owner:** `Governance and Ledger / Fund Ops Productization`
 
@@ -80,7 +80,7 @@ Copy this block for each Wave 4 scenario:
   - `POST /api/workstation/governance/reconciliation/classify-breaks` -> each break gets exactly one classification and severity according to deterministic classification ruleset `v1`.
   - `GET /api/workstation/governance/reconciliation/summary?scope=multi-ledger` -> summary totals equal per-break classifications and unresolved SLA counters.
 - **Expected workstation assertions:**
-  - `Governance > Reconciliation` board groups breaks by classification with counts matching API summary.
+  - `Accounting > Reconciliation` board groups breaks by classification with counts matching API summary.
   - `Notification Center` inbox entries for unresolved high-severity breaks include playbook deep links and assigned owner.
 - **Produced artifact location:** `artifacts/wave4/evidence/wave4-governance-multi-ledger-reconciliation-break-classification-v1/`
 - **Regression owner:** `Governance and Ledger / Ledger Integrity Rotation`

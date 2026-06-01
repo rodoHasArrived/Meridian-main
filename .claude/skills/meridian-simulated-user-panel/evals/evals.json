@@ -364,7 +364,8 @@
         "artifact_type": "roadmap-review",
         "artifact_paths": [
           "docs/plans/research-backtest-trust-and-velocity-blueprint.md",
-          "docs/status/ROADMAP.md"
+          "docs/roadmap/data/roadmap-items.yml",
+          "docs/roadmap/generated/ROADMAP_SUMMARY.md"
         ],
         "artifact_summary": "Roadmap item: create a research-to-live promotion workspace that lets operators compare a paper strategy run, inspect risk and portfolio impacts, approve a promotion plan, and transition the strategy into a later live workflow with recorded sign-off.",
         "persona_set": {

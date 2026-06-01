@@ -243,8 +243,6 @@ export interface StrategyRunRecord {
   finalEquity?: number | null;
 }
 
-export type ResearchRunRecord = StrategyRunRecord;
-
 // --- Promotion workflow types ---
 
 export interface PromotionEvaluationResult {
@@ -1518,8 +1516,6 @@ export interface StrategyWorkspaceResponse {
   plotTool?: StrategyPlotToolPayload | null;
 }
 
-export type ResearchWorkspaceResponse = StrategyWorkspaceResponse;
-
 export interface StrategyRunDrillInLinks {
   equityCurve: string;
   fills: string;
@@ -1649,10 +1645,7 @@ export interface StrategyPlotToolPayload {
   activeView?: "workspace" | "statistics";
 }
 
-export type ResearchPlotToolTabPayload = StrategyPlotToolTabPayload;
-export type ResearchPlotToolPayload = StrategyPlotToolPayload;
-
-export interface DataOperationsProviderRecord {
+export interface DataProviderRecord {
   providerId?: string;
   displayName?: string;
   provider: string;
@@ -1666,11 +1659,11 @@ export interface DataOperationsProviderRecord {
   recommendedAction?: string;
   gateImpact?: string;
   connectionSummary?: ProviderConnectionRow | null;
-  routingSummary?: DataOperationsProviderRoutingSummary | null;
-  diagnostics?: DataOperationsProviderDiagnosticSummary[] | null;
+  routingSummary?: DataProviderRoutingSummary | null;
+  diagnostics?: DataProviderDiagnosticSummary[] | null;
 }
 
-export interface DataOperationsProviderRoutingSummary {
+export interface DataProviderRoutingSummary {
   connectionId: string | null;
   providerFamilyId: string | null;
   productionReady: boolean | null;
@@ -1680,7 +1673,7 @@ export interface DataOperationsProviderRoutingSummary {
   healthStatus: string | null;
 }
 
-export interface DataOperationsProviderDiagnosticSummary {
+export interface DataProviderDiagnosticSummary {
   id: string;
   label: string;
   status: "pass" | "warning" | "fail" | "pending";
@@ -1688,7 +1681,7 @@ export interface DataOperationsProviderDiagnosticSummary {
   detail: string;
 }
 
-export interface DataOperationsBackfillRecord {
+export interface DataBackfillRecord {
   jobId: string;
   scope: string;
   provider: string;
@@ -1697,7 +1690,7 @@ export interface DataOperationsBackfillRecord {
   updatedAt: string;
 }
 
-export interface DataOperationsExportRecord {
+export interface DataExportRecord {
   exportId: string;
   profile: string;
   target: string;
@@ -1706,14 +1699,19 @@ export interface DataOperationsExportRecord {
   updatedAt: string;
 }
 
-export interface DataOperationsWorkspaceResponse {
+export interface DataWorkspaceResponse {
   metrics: MetricSnapshot[];
-  providers: DataOperationsProviderRecord[];
-  backfills: DataOperationsBackfillRecord[];
-  exports: DataOperationsExportRecord[];
+  providers: DataProviderRecord[];
+  backfills: DataBackfillRecord[];
+  exports: DataExportRecord[];
 }
 
-export type DataWorkspaceResponse = DataOperationsWorkspaceResponse;
+export type DataOperationsProviderRecord = DataProviderRecord;
+export type DataOperationsProviderRoutingSummary = DataProviderRoutingSummary;
+export type DataOperationsProviderDiagnosticSummary = DataProviderDiagnosticSummary;
+export type DataOperationsBackfillRecord = DataBackfillRecord;
+export type DataOperationsExportRecord = DataExportRecord;
+export type DataOperationsWorkspaceResponse = DataWorkspaceResponse;
 
 export interface TradingPosition {
   positionKey?: string;
@@ -2062,6 +2060,15 @@ export type ReconciliationCaseSlaState = "NotStarted" | "OnTrack" | "Warning" | 
 export type ReconciliationCaseCommentVisibility = "Internal" | "CloseEvidence" | "ExternalSummary";
 export type ReconciliationCaseworkAction = "Assign" | "ChangePriority" | "TransitionStatus" | "AddComment" | "EditComment" | "DeleteComment" | "SetRootCause" | "SetResolution" | "LinkEvidence" | "SignOff" | "Reopen" | "Resolve";
 
+export interface ReconciliationBreakExplanation {
+  summary: string;
+  sourceSystems: string[];
+  probableCause: string;
+  ledgerImpact: string;
+  suggestedNextAction: string;
+  evidenceLinks: string[];
+}
+
 export interface ReconciliationBreakQueueItem {
   breakId: string;
   runId: string;
@@ -2122,6 +2129,7 @@ export interface ReconciliationBreakQueueItem {
   relatedCaseCount?: number;
   slaBadgeLabel?: string | null;
   slaBadgeTone?: "info" | "warning" | "danger" | "neutral" | "success" | string | null;
+  breakExplanation?: ReconciliationBreakExplanation | null;
 }
 
 export interface ReconciliationCaseComment {

@@ -46,7 +46,7 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceShellPage\"");
         xaml.Should().NotContain("DataOperationsWorkspaceShellPageBase");
         xaml.Should().NotContain("AutomationProperties.AutomationId=\"DataOperationsWorkspaceShellPage\"");
-        xaml.Should().NotContain("WorkspaceShellContextStripControl");
+        xaml.Should().Contain("WorkspaceShellContextStripControl");
         xaml.Should().Contain("Next Handoff");
         xaml.Should().Contain("OperationsHeroScopeText");
         xaml.Should().Contain("OperationsHeroSummaryText");
@@ -95,6 +95,17 @@ public sealed class DataWorkspaceShellSmokeTests
         code.Should().Contain("WorkspaceDecisionInvokedEventArgs e");
         code.Should().NotContain("OnQueuePrimaryActionClick");
         code.Should().NotContain("OnQueueSecondaryActionClick");
+    }
+
+    [Fact]
+    public void DataFeatureModuleSource_ShouldIsolateLegacyDataShellAliases()
+    {
+        var source = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\DataFeatureModule.cs"));
+
+        source.Should().Contain("LegacyDataShellAliases");
+        source.Should().Contain("ShellPageRegistryBuilder.Page<DataWorkspaceShellPage>");
+        source.Should().Contain("LegacyDataShellAliases),");
+        source.Should().NotContain("[\"DataOperationsShell\", \"DataOperationsWorkspace\"]");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

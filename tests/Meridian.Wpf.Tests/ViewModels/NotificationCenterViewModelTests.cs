@@ -18,7 +18,7 @@ public sealed class NotificationCenterViewModelTests
             SeedNotification(viewModel, "Order Reject", "AAPL order rejected by guardrail.", NotificationType.Error, isRead: false, historyIndex: 0, minutesAgo: 3);
             SeedNotification(viewModel, "Data Gap", "MSFT feed delayed.", NotificationType.Warning, isRead: true, historyIndex: 1, minutesAgo: 9);
             SeedNotification(viewModel, "Backfill Complete", "AAPL session repaired.", NotificationType.Success, isRead: false, historyIndex: 2, minutesAgo: 15);
-            SeedNotification(viewModel, "Research Export", "Notebook snapshot published.", NotificationType.Info, isRead: false, historyIndex: 3, minutesAgo: 21);
+            SeedNotification(viewModel, "Strategy Export", "Notebook snapshot published.", NotificationType.Info, isRead: false, historyIndex: 3, minutesAgo: 21);
 
             viewModel.ApplyCheckboxFilters(showErrors: true, showWarnings: false, showInfo: false, showSuccess: false);
             viewModel.SearchText = "AAPL";

@@ -11,6 +11,21 @@ namespace Meridian.Wpf.Tests.Services;
 
 public sealed class WorkstationOperatingContextServiceTests
 {
+    [Theory]
+    [InlineData(OperatingContextScopeKind.Client)]
+    [InlineData(OperatingContextScopeKind.InvestmentPortfolio)]
+    public void DefaultWindowPresetId_ForInvestmentContexts_ShouldUseStrategyComparePreset(OperatingContextScopeKind scopeKind)
+    {
+        var context = new WorkstationOperatingContext
+        {
+            ScopeKind = scopeKind,
+            ScopeId = "scope-1",
+            DisplayName = "Strategy mandate"
+        };
+
+        context.DefaultWindowPresetId.Should().Be("strategy-compare");
+    }
+
     [Fact]
     public async Task LoadAsync_ShouldBuildFundCompatibilityContexts()
     {

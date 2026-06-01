@@ -10,7 +10,7 @@
 <title>WorkstationDelivery</title>
 <polygon fill="white" stroke="none" points="-36,36 -36,-532.8 2203.56,-532.8 2203.56,36 -36,36"/>
 <text xml:space="preserve" text-anchor="middle" x="1083.78" y="-482" font-family="Helvetica,sans-Serif" font-size="12.00">Meridian &#45; Workstation Delivery</text>
-<text xml:space="preserve" text-anchor="middle" x="1083.78" y="-467.6" font-family="Helvetica,sans-Serif" font-size="12.00">Shared read models, governance handoffs, and security review across WPF and desktop&#45;local API surfaces</text>
+<text xml:space="preserve" text-anchor="middle" x="1083.78" y="-467.6" font-family="Helvetica,sans-Serif" font-size="12.00">Shared read models, accounting handoffs, and security review across WPF and desktop&#45;local API surfaces</text>
 <g id="clust1" class="cluster">
 <title>cluster_surfaces</title>
 <path fill="#faf5ff" stroke="#805ad5" d="M20,-28C20,-28 494.4,-28 494.4,-28 500.4,-28 506.4,-34 506.4,-40 506.4,-40 506.4,-196 506.4,-196 506.4,-202 500.4,-208 494.4,-208 494.4,-208 20,-208 20,-208 14,-208 8,-202 8,-196 8,-196 8,-40 8,-40 8,-34 14,-28 20,-28"/>
@@ -36,9 +36,9 @@
 <title>WPF_SURFACES</title>
 <path fill="#805ad5" stroke="black" d="M180.51,-116C180.51,-116 38.42,-116 38.42,-116 32.42,-116 26.42,-110 26.42,-104 26.42,-104 26.42,-48 26.42,-48 26.42,-42 32.42,-36 38.42,-36 38.42,-36 180.51,-36 180.51,-36 186.51,-36 192.51,-42 192.51,-48 192.51,-48 192.51,-104 192.51,-104 192.51,-110 186.51,-116 180.51,-116"/>
 <text xml:space="preserve" text-anchor="middle" x="109.46" y="-103" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Meridian.Wpf</text>
-<text xml:space="preserve" text-anchor="middle" x="109.46" y="-91" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">ResearchWorkspaceShellPage</text>
+<text xml:space="preserve" text-anchor="middle" x="109.46" y="-91" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">StrategyWorkspaceShellPage</text>
 <text xml:space="preserve" text-anchor="middle" x="109.46" y="-79" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">TradingWorkspaceShellPage</text>
-<text xml:space="preserve" text-anchor="middle" x="109.46" y="-67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">GovernanceWorkspaceShellPage</text>
+<text xml:space="preserve" text-anchor="middle" x="109.46" y="-67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">AccountingWorkspaceShellPage</text>
 <text xml:space="preserve" text-anchor="middle" x="109.46" y="-55" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">SecurityMasterPage</text>
 <text xml:space="preserve" text-anchor="middle" x="109.46" y="-43" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">(queue + action inspector)</text>
 </g>
@@ -48,7 +48,7 @@
 <path fill="#bfdbfe" stroke="black" d="M741.53,-98C741.53,-98 596.93,-98 596.93,-98 590.93,-98 584.93,-92 584.93,-86 584.93,-86 584.93,-66 584.93,-66 584.93,-60 590.93,-54 596.93,-54 596.93,-54 741.53,-54 741.53,-54 747.53,-54 753.53,-60 753.53,-66 753.53,-66 753.53,-86 753.53,-86 753.53,-92 747.53,-98 741.53,-98"/>
 <text xml:space="preserve" text-anchor="middle" x="669.23" y="-85" font-family="Helvetica,sans-Serif" font-size="10.00">StrategyRunWorkspaceService</text>
 <text xml:space="preserve" text-anchor="middle" x="669.23" y="-73" font-family="Helvetica,sans-Serif" font-size="10.00">active run context</text>
-<text xml:space="preserve" text-anchor="middle" x="669.23" y="-61" font-family="Helvetica,sans-Serif" font-size="10.00">run browser + governance handoff</text>
+<text xml:space="preserve" text-anchor="middle" x="669.23" y="-61" font-family="Helvetica,sans-Serif" font-size="10.00">run browser + accounting handoff</text>
 </g>
 <!-- WPF_SURFACES&#45;&gt;WPF_WORKSPACE -->
 <g id="edge1" class="edge">

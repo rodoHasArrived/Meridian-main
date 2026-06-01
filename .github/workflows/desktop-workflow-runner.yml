@@ -12,9 +12,9 @@ on:
           - debug-startup
           - screenshot-catalog
           - manual-overview
-          - manual-data-operations
-          - manual-research-and-trading
-          - manual-governance
+          - manual-data
+          - manual-strategy-and-trading
+          - manual-accounting
 
 permissions:
   contents: read

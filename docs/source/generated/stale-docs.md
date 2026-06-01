@@ -8,7 +8,9 @@ do_not_edit: true
 
 This report marks registered source modules whose code or README hashes differ from the reviewed baseline.
 
-- Stale modules: 0
+- Stale modules: 1
 - Removed module hash entries: 0
 
-- No stale source docs detected.
+| Module | Path | README | Reason |
+| --- | --- | --- | --- |
+| `SRC-STRATEGIES` | `src/Meridian.Strategies` | `src/Meridian.Strategies/README.md` | `source_hash_drift` |

@@ -10,6 +10,7 @@ DESKTOP_WORKFLOW_RUNNER_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "deskto
 RUN_DESKTOP_WORKFLOW_SCRIPT = REPO_ROOT / "scripts" / "dev" / "run-desktop-workflow.ps1"
 WEB_SCREENSHOT_ROUTES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-routes.json"
 WEB_SCREENSHOT_FIXTURES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-fixtures.json"
+DESKTOP_WORKFLOWS = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
 
 
 class RefreshScreenshotsWorkflowTests(unittest.TestCase):
@@ -21,6 +22,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         cls.run_desktop_workflow_script = RUN_DESKTOP_WORKFLOW_SCRIPT.read_text(encoding="utf-8")
         cls.web_screenshot_routes = json.loads(WEB_SCREENSHOT_ROUTES.read_text(encoding="utf-8"))
         cls.web_screenshot_fixtures = json.loads(WEB_SCREENSHOT_FIXTURES.read_text(encoding="utf-8"))
+        cls.desktop_workflows = json.loads(DESKTOP_WORKFLOWS.read_text(encoding="utf-8"))
 
     def test_web_screenshot_job_installs_optional_native_packages(self) -> None:
         self.assertIn("run: npm install --prefix src/Meridian.Ui/dashboard --include=optional", self.web_workflow)
@@ -50,9 +52,16 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("name: desktop-screenshots-${{ github.run_number }}", self.desktop_screenshot_workflow)
 
     def test_desktop_workflow_runner_exposes_manual_capture_workflows(self) -> None:
-        self.assertIn("manual-data-operations", self.desktop_workflow_runner)
-        self.assertIn("manual-research-and-trading", self.desktop_workflow_runner)
+        self.assertIn("manual-data", self.desktop_workflow_runner)
+        self.assertIn("manual-strategy-and-trading", self.desktop_workflow_runner)
+        self.assertIn("manual-accounting", self.desktop_workflow_runner)
         self.assertIn("scripts/dev/run-desktop-workflow.ps1", self.desktop_workflow_runner)
+
+    def test_desktop_strategy_runs_workflows_use_canonical_checklist_id(self) -> None:
+        serialized = json.dumps(self.desktop_workflows)
+
+        self.assertIn("desktop-screen-strategy-runs", serialized)
+        self.assertNotIn("desktop-screen-strategy-research", serialized)
 
     def test_desktop_workflow_script_contains_context_selection_automation_elements(self) -> None:
         self.assertIn("ContextSelectionHint", self.run_desktop_workflow_script)
@@ -83,7 +92,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             "/reporting/exports",
             "/strategy",
             "/strategy/promotions",
-            "/strategy/research",
+            "/strategy/lab",
             "/strategy/quant-lab",
             "/strategy/designer",
             "/data",
@@ -123,7 +132,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             ],
             designer_capture.get("requiredApiRoutes"),
         )
-        self.assertIn("Mean Reversion FX", designer_capture.get("waitForTexts", []))
+        self.assertIn("Equity momentum breakout", designer_capture.get("waitForTexts", []))
         self.assertEqual(
             "strategy-designer-fixture-1",
             fixture_routes["/api/workstation/strategy/designer/templates"][0]["document"]["documentId"],

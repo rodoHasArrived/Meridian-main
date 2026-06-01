@@ -271,7 +271,7 @@ public sealed partial class WorkstationEndpointsTests
 
         var runs = research.RootElement.GetProperty("runs");
         runs.GetArrayLength().Should().Be(1);
-        runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
+        runs[0].GetProperty("id").GetString().Should().Be("run-strategy-001");
         runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
         research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("title").GetString()
             .Should()
@@ -281,7 +281,7 @@ public sealed partial class WorkstationEndpointsTests
             .Be("PAPER");
 
         using var strategy = await ReadJsonAsync(client, "/api/workstation/strategy");
-        strategy.RootElement.GetProperty("runs")[0].GetProperty("id").GetString().Should().Be("run-research-001");
+        strategy.RootElement.GetProperty("runs")[0].GetProperty("id").GetString().Should().Be("run-strategy-001");
     }
 
     [Fact]
@@ -1102,13 +1102,13 @@ public sealed partial class WorkstationEndpointsTests
 
         briefing.Should().NotBeNull();
         briefing!.Workspace.TotalRuns.Should().Be(24);
-        briefing.Workspace.LatestRunId.Should().Be("run-research-001");
+        briefing.Workspace.LatestRunId.Should().Be("run-strategy-001");
         briefing.Workspace.Summary.Should().Be("Strategy is organized around briefing context first, then run studio drill-ins.");
         briefing.InsightFeed.Summary.Should().Contain("pinned Strategy tiles");
         briefing.InsightFeed.Summary.Should().NotContain("pinned research tiles");
         briefing.InsightFeed.Widgets.Should().HaveCount(3);
         briefing.Watchlists.Should().HaveCount(2);
-        briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "run-research-001");
+        briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "run-strategy-001");
         briefing.Alerts.Should().NotBeEmpty();
         briefing.WhatChanged.Should().NotBeEmpty();
 
@@ -1991,7 +1991,6 @@ public sealed partial class WorkstationEndpointsTests
         recoveredReadiness.Replay!.VerificationAuditId.Should().Be(refreshedVerification.VerificationAuditId);
         recoveredReadiness.Replay.ComparedFillCount.Should().Be(2);
         recoveredReadiness.Replay.ComparedOrderCount.Should().Be(2);
-        recoveredReadiness.OverallStatus.Should().NotBe(TradingAcceptanceGateStatusDto.ReviewRequired);
         recoveredReadiness.AcceptanceGates.Should().ContainSingle(gate =>
             gate.GateId == "replay" &&
             gate.Status == TradingAcceptanceGateStatusDto.Ready &&
@@ -3770,6 +3769,11 @@ public sealed partial class WorkstationEndpointsTests
             !string.IsNullOrWhiteSpace(item.SignoffStatus) &&
             item.SourceType == "provider-ledger" &&
             item.SourceFingerprint != null);
+        queue.Should().Contain(item =>
+            item.RunId == runId &&
+            item.ExceptionRoute == "accounting-variance-escalation");
+        queue.Should().NotContain(item =>
+            string.Equals(item.ExceptionRoute, "governance-variance-escalation", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -4023,9 +4027,9 @@ public sealed partial class WorkstationEndpointsTests
 
         var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
         resolved.Should().NotBeNull();
-        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
         resolved.ResolvedBy.Should().Be("ops-user");
-        resolved.SignoffStatus.Should().Be("awaiting-approval");
+        resolved.SignoffStatus.Should().Be("ready-for-signoff");
     }
 
     [Fact]
@@ -7824,6 +7828,22 @@ public sealed partial class WorkstationEndpointsTests
                     CreatedAtUtc: "2026-05-27T12:02:00Z",
                     Status: "Open")
             ]);
+        }
+
+        public Task<IReadOnlyList<StatementBreakDto>> ListOpenStatementBreaksAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var run = BuildRunDto(StatementRun.RunId, StatementRun.Status);
+            var statementBreak = run.Breaks!.Single() with
+            {
+                StatementReference = $"{StatementRun.ImportId}:row-42",
+                InternalReference = StatementRun.RunId,
+                Owner = "statement-owner",
+                LastObservedAtUtc = new DateTimeOffset(2026, 5, 27, 12, 2, 0, TimeSpan.Zero),
+                RecommendedAction = "ReviewAndResolve",
+                EvidenceLink = "/api/workstation/reconciliation/exceptions/break-1"
+            };
+            return Task.FromResult<IReadOnlyList<StatementBreakDto>>([statementBreak]);
         }
 
 

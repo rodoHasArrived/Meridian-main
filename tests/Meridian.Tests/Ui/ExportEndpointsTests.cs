@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Export;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -55,6 +56,32 @@ public sealed class ExportEndpointsTests
         payload.Error.Should().Be("Export service not available");
         payload.Files.Should().BeEmpty();
         payload.Warnings.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task MapExportEndpoints_StrategyPackageRoute_ShouldRetainResearchCompatibilityAlias()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var strategyResponse = await client.PostAsJsonAsync(UiApiRoutes.ExportStrategyPackage, new
+        {
+            symbols = new[] { "SPY" },
+            includeMetadata = true
+        });
+        var researchResponse = await client.PostAsJsonAsync(UiApiRoutes.ExportResearchPackage, new
+        {
+            symbols = new[] { "SPY" },
+            includeMetadata = true
+        });
+
+        strategyResponse.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        researchResponse.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+
+        using var strategyPayload = await JsonDocument.ParseAsync(await strategyResponse.Content.ReadAsStreamAsync());
+        using var researchPayload = await JsonDocument.ParseAsync(await researchResponse.Content.ReadAsStreamAsync());
+        strategyPayload.RootElement.GetProperty("error").GetString().Should().Be("Export service not available");
+        researchPayload.RootElement.GetProperty("error").GetString().Should().Be("Export service not available");
     }
 
     private static async Task<WebApplication> CreateAppAsync()

@@ -1,19 +1,20 @@
 # Program State Summary (Generated)
 
-This file is generated from `docs/status/PROGRAM_STATE.md`.
+This file is generated from `docs/roadmap/data/program-state.yml` and `docs/roadmap/data/roadmap-items.yml`.
 
+Snapshot date: 2026-05-20
 
-| Wave | Status | Primary Owner | Backup Owner | Escalation SLA | Dependency Owners |
-| --- | --- | --- | --- | --- | --- |
-| W1 | Done | Data Confidence and Validation | Trading Workstation | 4 hours / 1 business day | Trading Workstation; Shared Platform Interop; Governance and Ledger |
-| W2 | Done | Execution and Fund Accounts | Workstation Shell and UX | 4 hours / 1 business day | Shared Workflow and Contracts; Data Confidence and Validation; Governance and Ledger |
-| W3 | Done | Shared Workflow and Contracts | Workstation Shell and UX | 1 business day / 2 business days | Execution and Fund Accounts; Governance and Ledger; Data Confidence and Validation |
-| W4 | Done | Governance and Ledger | Shared Workflow and Contracts | 1 business day / 2 business days | Execution and Fund Accounts; Workstation Shell and UX; Shared Platform Interop |
-| W5 | Planned | Strategy and Research | Shared Workflow and Contracts | 2 business days / 3 business days | Workstation Shell and UX; Data Confidence and Validation; Shared Platform Interop |
-| W6 | Planned | Execution and Brokerage Integrations | Governance and Ledger | 4 hours / 1 business day | Data Confidence and Validation; Shared Platform Interop; Workstation Shell and UX |
+| ID | Wave | Title | Workspaces | Status | Health | Priority | Owner Lane | Evidence Posture | Last Reviewed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| W1-DATA-001 | W1 | Provider trust gate and data confidence baseline | Data | done | green | critical | Data Confidence and Validation | complete | 2026-05-20 |
+| W2-PROMO-001 | W2 | Paper promotion evidence and operator acceptance | Strategy; Trading | done | green | high | Execution and Fund Accounts | complete | 2026-05-28 |
+| W2-TRD-001 | W2 | Paper trading cockpit reliability | Trading | done | green | critical | Execution and Fund Accounts | complete | 2026-05-28 |
+| W3-CONT-001 | W3 | Research to paper continuity | Strategy; Trading | done | green | high | Strategy and Research | complete | 2026-05-28 |
+| W4-RECON-001 | W4 | Portfolio ledger reconciliation readiness | Portfolio; Accounting | done | green | high | Governance and Ledger | complete | 2026-05-29 |
+| W4-RPT-001 | W4 | Governed report pack readiness | Reporting; Accounting | done | green | high | Governance and Ledger | complete | 2026-05-29 |
+| W5-BTSTUDIO-001 | W5 | Backtesting studio evidence loop | Strategy | planned | green | medium | Strategy and Research | planned_evidence | 2026-05-20 |
+| W6-LIVE-001 | W6 | Live-readiness governance | Trading; Settings | planned | green | medium | Governance and Ledger | planned_evidence | 2026-05-20 |
 
-## Escalation Routing
+## Source Contract
 
-Blocked or at-risk workflows should escalate to the wave `Primary Owner` first,
-then to the `Backup Owner` according to the published `Escalation SLA`.
-
+Durable roadmap truth belongs in `docs/roadmap/data/*.yml`; this status summary is a generated compatibility view.

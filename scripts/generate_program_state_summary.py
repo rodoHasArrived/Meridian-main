@@ -1,107 +1,154 @@
 #!/usr/bin/env python3
-"""Generate machine-readable and markdown summaries from docs/status/PROGRAM_STATE.md."""
+"""Generate machine-readable and Markdown summaries from roadmap registry data."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import re
+import sys
 from pathlib import Path
+from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_REPO_ROOT = SCRIPT_DIR.parent
-PROGRAM_STATE_DOC = "docs/status/PROGRAM_STATE.md"
+DOCS_COMMON_DIR = DEFAULT_REPO_ROOT / "build" / "scripts" / "docs"
+if str(DOCS_COMMON_DIR) not in sys.path:
+    sys.path.insert(0, str(DOCS_COMMON_DIR))
+
+from common import load_data, markdown_table  # noqa: E402
+
+PROGRAM_STATE_DATA = "docs/roadmap/data/program-state.yml"
+ROADMAP_ITEMS_DATA = "docs/roadmap/data/roadmap-items.yml"
 DEFAULT_JSON_OUT = "docs/status/program-state-summary.json"
 DEFAULT_MD_OUT = "docs/status/program-state-summary.md"
-
-BLOCK_RE = re.compile(
-    r"<!--\s*program-state:begin\s*-->(?P<body>.*?)<!--\s*program-state:end\s*-->",
-    re.DOTALL | re.IGNORECASE,
-)
+SUMMARY_SCHEMA_VERSION = "program-state-summary/v2"
 
 
-REQUIRED_HEADERS = [
-    "Wave",
-    "Owner",
-    "Primary Owner",
-    "Backup Owner",
-    "Escalation SLA",
-    "Dependency Owners",
-    "Status",
-    "Target Date",
-    "Evidence Link",
-]
+def _as_list(value: Any) -> list[Any]:
+    if isinstance(value, list):
+        return value
+    if value in (None, ""):
+        return []
+    return [value]
 
 
-def _parse_markdown_row(line: str) -> list[str] | None:
-    stripped = line.strip()
-    if not stripped.startswith("|"):
-        return None
-    return [part.strip() for part in stripped.strip("|").split("|")]
+def _join(values: Any) -> str:
+    return "; ".join(str(value) for value in _as_list(values) if str(value).strip())
 
 
-def parse_program_state_table(path: Path) -> list[dict[str, str]]:
-    text = path.read_text(encoding="utf-8")
-    match = BLOCK_RE.search(text)
-    if not match:
-        raise ValueError(f"missing program-state block in {path}")
+def _evidence_links(item: dict[str, Any]) -> str:
+    links: list[str] = []
+    for evidence in _as_list(item.get("evidence")):
+        if isinstance(evidence, dict) and evidence.get("path"):
+            links.append(str(evidence["path"]))
+        elif evidence:
+            links.append(str(evidence))
+    return "; ".join(links)
 
-    lines = [line.strip() for line in match.group("body").splitlines() if line.strip()]
-    if len(lines) < 3:
-        raise ValueError(f"program-state block is incomplete in {path}")
 
-    header = _parse_markdown_row(lines[0])
-    if header != REQUIRED_HEADERS:
-        raise ValueError(
-            f"unexpected headers in {path}; expected {REQUIRED_HEADERS}, found {header}"
-        )
+def load_program_state(root: Path) -> tuple[dict[str, Any], list[dict[str, str]]]:
+    program_data = load_data(root / PROGRAM_STATE_DATA)
+    roadmap_data = load_data(root / ROADMAP_ITEMS_DATA)
+
+    if not isinstance(program_data, dict):
+        raise ValueError(f"{PROGRAM_STATE_DATA} must contain a mapping")
+    if not isinstance(roadmap_data, dict):
+        raise ValueError(f"{ROADMAP_ITEMS_DATA} must contain a mapping")
+
+    items = roadmap_data.get("items")
+    if not isinstance(items, list) or not items:
+        raise ValueError(f"{ROADMAP_ITEMS_DATA} must contain roadmap items")
 
     rows: list[dict[str, str]] = []
-    for raw_line in lines[2:]:
-        values = _parse_markdown_row(raw_line)
-        if values is None or len(values) != len(header):
+    for item in sorted(items, key=lambda entry: str(entry.get("id", ""))):
+        if not isinstance(item, dict):
             continue
-
-        row = dict(zip(header, values))
-        if not re.fullmatch(r"W\d+", row["Wave"], flags=re.IGNORECASE):
-            continue
-
-        rows.append(row)
-
-    if not rows:
-        raise ValueError(f"no program-state rows parsed from {path}")
-
-    return rows
-
-
-def render_markdown(rows: list[dict[str, str]]) -> str:
-    lines = [
-        "# Program State Summary (Generated)",
-        "",
-        "This file is generated from `docs/status/PROGRAM_STATE.md`.",
-        "",
-        "",
-        "| Wave | Status | Primary Owner | Backup Owner | Escalation SLA | Dependency Owners |",
-        "| --- | --- | --- | --- | --- | --- |",
-    ]
-
-    for row in rows:
-        lines.append(
-            "| {Wave} | {Status} | {Primary Owner} | {Backup Owner} | {Escalation SLA} | {Dependency Owners} |".format(
-                **row
-            )
+        rows.append(
+            {
+                "ID": str(item.get("id", "")),
+                "Wave": str(item.get("wave", "")),
+                "Title": str(item.get("title", "")),
+                "Workspaces": _join(item.get("workspace")),
+                "Status": str(item.get("status", "")),
+                "Health": str(item.get("health", "")),
+                "Priority": str(item.get("priority", "")),
+                "Owner Lane": str(item.get("owner_lane", "")),
+                "Evidence Posture": str(item.get("evidence_posture", "")),
+                "Evidence": _evidence_links(item),
+                "Last Reviewed": str(item.get("last_reviewed", "")),
+            }
         )
 
-    lines.extend(
+    if not rows:
+        raise ValueError(f"no roadmap rows parsed from {ROADMAP_ITEMS_DATA}")
+
+    program = program_data.get("program", {})
+    if not isinstance(program, dict):
+        raise ValueError(f"{PROGRAM_STATE_DATA} must contain a program mapping")
+
+    return program, rows
+
+
+def render_markdown(program: dict[str, Any], rows: list[dict[str, str]]) -> str:
+    table_rows = [
         [
-            "",
-            "## Escalation Routing",
-            "",
-            "Blocked or at-risk workflows should escalate to the wave `Primary Owner` first,",
-            "then to the `Backup Owner` according to the published `Escalation SLA`.",
+            row["ID"],
+            row["Wave"],
+            row["Title"],
+            row["Workspaces"],
+            row["Status"],
+            row["Health"],
+            row["Priority"],
+            row["Owner Lane"],
+            row["Evidence Posture"],
+            row["Last Reviewed"],
         ]
+        for row in rows
+    ]
+    return (
+        "# Program State Summary (Generated)\n\n"
+        "This file is generated from `docs/roadmap/data/program-state.yml` and "
+        "`docs/roadmap/data/roadmap-items.yml`.\n\n"
+        f"Snapshot date: {program.get('snapshot_date', '-')}\n\n"
+        + markdown_table(
+            [
+                "ID",
+                "Wave",
+                "Title",
+                "Workspaces",
+                "Status",
+                "Health",
+                "Priority",
+                "Owner Lane",
+                "Evidence Posture",
+                "Last Reviewed",
+            ],
+            table_rows,
+        )
+        + "\n\n## Source Contract\n\n"
+        "Durable roadmap truth belongs in `docs/roadmap/data/*.yml`; this status summary is a generated compatibility view.\n"
     )
-    return "\n".join(lines) + "\n"
+
+
+def render_json(program: dict[str, Any], rows: list[dict[str, str]]) -> str:
+    payload = {
+        "schemaVersion": SUMMARY_SCHEMA_VERSION,
+        "programSource": PROGRAM_STATE_DATA,
+        "roadmapSource": ROADMAP_ITEMS_DATA,
+        "snapshotDate": str(program.get("snapshot_date", "")),
+        "program": {
+            "id": str(program.get("id", "")),
+            "title": str(program.get("title", "")),
+            "owner": str(program.get("owner", "")),
+            "status": str(program.get("status", "")),
+            "currentFocus": [str(item) for item in _as_list(program.get("current_focus"))],
+            "activeUiLane": str(program.get("active_ui_lane", "")),
+            "retainedSupportLane": str(program.get("retained_support_lane", "")),
+            "mobileLane": str(program.get("mobile_lane", "")),
+        },
+        "items": rows,
+    }
+    return json.dumps(payload, indent=2) + "\n"
 
 
 def parse_args() -> argparse.Namespace:
@@ -121,23 +168,18 @@ def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
 
-    rows = parse_program_state_table(repo_root / PROGRAM_STATE_DOC)
-    json_payload = {
-        "source": PROGRAM_STATE_DOC,
-        "waves": rows,
-    }
-    markdown_payload = render_markdown(rows)
+    program, rows = load_program_state(repo_root)
+    expected_json = render_json(program, rows)
+    expected_markdown = render_markdown(program, rows)
 
     json_out = repo_root / args.json_out
     md_out = repo_root / args.markdown_out
-
-    expected_json = json.dumps(json_payload, indent=2) + "\n"
 
     if args.check:
         issues = []
         if not json_out.exists() or json_out.read_text(encoding="utf-8") != expected_json:
             issues.append(str(json_out))
-        if not md_out.exists() or md_out.read_text(encoding="utf-8") != markdown_payload:
+        if not md_out.exists() or md_out.read_text(encoding="utf-8") != expected_markdown:
             issues.append(str(md_out))
         if issues:
             print("Program-state summary is out of date:")
@@ -148,7 +190,7 @@ def main() -> int:
         return 0
 
     json_out.write_text(expected_json, encoding="utf-8")
-    md_out.write_text(markdown_payload, encoding="utf-8")
+    md_out.write_text(expected_markdown, encoding="utf-8")
     print(f"Wrote {json_out}")
     print(f"Wrote {md_out}")
     return 0

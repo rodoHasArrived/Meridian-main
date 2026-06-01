@@ -141,7 +141,7 @@ describe("workspace nav view model", () => {
       "/strategy/formula-workbench",
       "/strategy/covered-call",
       "/strategy/promotions",
-      "/strategy/research",
+      "/strategy/lab",
       "/strategy/quant-lab"
     ]);
     expect(strategy?.subItems.find((item) => item.route === "/strategy/covered-call")).toMatchObject({
@@ -150,7 +150,7 @@ describe("workspace nav view model", () => {
       ariaCurrent: "page",
       ariaLabel: "Covered call, current page"
     });
-    expect(strategy?.subItems.find((item) => item.route === "/strategy/research")).toMatchObject({
+    expect(strategy?.subItems.find((item) => item.route === "/strategy/lab")).toMatchObject({
       label: "Strategy Lab",
       active: false,
       ariaCurrent: undefined,

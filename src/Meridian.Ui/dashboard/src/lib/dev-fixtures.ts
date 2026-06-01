@@ -1564,8 +1564,8 @@ const fixtureStrategyDesignerFieldCatalog: StrategyDesignFieldCatalogItem[] = [
   {
     fieldId: "AMX_PRIVATE_SCORE",
     label: "AMX private score",
-    source: "External research upload",
-    dataSet: "research-import",
+    source: "External strategy upload",
+    dataSet: "strategy-import",
     typeName: "decimal",
     description: "Analyst model extension field kept disabled until provenance is attached.",
     isEnabled: false,

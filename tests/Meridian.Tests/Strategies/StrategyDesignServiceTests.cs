@@ -33,7 +33,7 @@ public sealed class StrategyDesignServiceTests
         compiled.FieldRefs.Should().Contain("PRICE");
         compiled.FieldRefs.Should().Contain("MOMENTUM_63D");
         compiled.FieldRefs.Should().Contain("VOLATILITY_20D");
-        result.Success.Should().BeTrue(result.RuntimeError);
+        result.Success.Should().BeTrue(FormatRunFailure(result));
         result.Metrics.Should().Contain(metric => metric.Key == "Designer cells" && metric.Value == "4");
         result.ConsoleOutput.Should().Contain("Momentum score");
     }
@@ -47,7 +47,15 @@ public sealed class StrategyDesignServiceTests
 
         template.Description.Should().Contain("risk/control guard");
         template.Description.Should().NotContain("governance guard");
-        document.Cells.Should().Contain(cell => cell.CellId == "governance-pack" && cell.Label == "Review packet");
+        document.Cells.Should().Contain(cell =>
+            cell.CellId == "review-packet" &&
+            cell.Label == "Review packet" &&
+            cell.Kind == "governance" &&
+            cell.Purpose == "control");
+        document.Transitions.Should().Contain(transition =>
+            transition.FromCellId == "rebalance-loop" &&
+            transition.ToCellId == "review-packet");
+        document.Cells.Should().NotContain(cell => cell.CellId == "governance-pack");
         document.Cells.Should().NotContain(cell => cell.Label == "Governance packet");
     }
 
@@ -367,5 +375,15 @@ public sealed class StrategyDesignServiceTests
             Microsoft.Extensions.Options.Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
             NullLogger<ScriptRunner>.Instance,
             null);
+    }
+
+    private static string FormatRunFailure(ScriptRunResult result)
+    {
+        var compilationErrors = string.Join("; ", result.CompilationErrors.Select(error => error.Message));
+        var runtimeDiagnostics = string.Join("; ", result.RuntimeDiagnostics.Select(error => error.Message));
+        return string.Join(
+            " | ",
+            new[] { result.RuntimeError, compilationErrors, runtimeDiagnostics }
+                .Where(static part => !string.IsNullOrWhiteSpace(part)));
     }
 }

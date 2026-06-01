@@ -544,13 +544,16 @@ governance admin surface.
 | GET | `/api/environment-designer/runtime/versions/{versionId}` | Fetch the runtime projection for a specific published version. |
 
 
-### Workstation Governance Routes (v1 additive compatibility)
+### Workstation Accounting And Governance-Control Routes (v1 additive compatibility)
 
-The workstation governance workflow uses additive-compatible v1 contracts. Clients must tolerate
-additional JSON fields and additive state values without breaking existing flows.
+The workstation accounting and governance-control workflows use additive-compatible v1 contracts.
+Clients must tolerate additional JSON fields and additive state values without breaking existing
+flows. Legacy governance/data-operations aliases remain compatibility routes for retained clients.
 
 | Method | Route | Description |
 |--------|-------|-------------|
+| GET | `/api/workstation/accounting` | Accounting workspace payload for ledger, reconciliation, approvals, and governance-control posture. |
+| GET | `/api/workstation/data` | Data workspace payload for provider posture, backfill, storage, and quality handoffs. |
 | GET | `/api/workstation/trading/readiness` | Trading readiness projection with governance work-item posture. |
 | GET | `/api/workstation/operator/inbox` | Account-scoped operator queue for readiness + reconciliation work. |
 | GET | `/api/workstation/trading` | Trading shell payload that embeds readiness state. |
@@ -606,6 +609,6 @@ The coverage audit also tracks workstation shell routes and compatibility aliase
 | GET | `/api/config/data-sources` | Backward-compatible alias for data source listing (`/api/config/datasources`). |
 | POST | `/api/config/data-sources` | Backward-compatible alias for create/update of data sources. |
 | GET | `/session` | Legacy/session route marker reported by coverage scanner; workstation session data is served at `/api/workstation/session`. |
-| GET | `/research` | Legacy/research route marker reported by coverage scanner; research payload is served at `/api/workstation/research`. |
+| GET | `/research` | Legacy/research route marker reported by coverage scanner; Strategy payload is served at `/api/workstation/strategy`, with `/api/workstation/research` retained as a compatibility alias. |
 | GET | `/workstation` | Workstation shell entry point that serves the React index page. |
 | GET | `/workstation/{*path}` | SPA fallback route for workstation client-side navigation. |

@@ -3,6 +3,7 @@ import {
   ArrowRight,
   AlertTriangle,
   Bell,
+  ChevronDown,
   GitBranch,
   LoaderCircle,
   Menu,
@@ -532,6 +533,7 @@ function WorkflowContinuityDock({
 }) {
   const visibleSteps = viewModel.steps.filter((step) => step.active || step.next);
   const dockSteps = visibleSteps.length > 0 ? visibleSteps : viewModel.steps.slice(0, 2);
+  const decision = viewModel.decisionBrief;
 
   return (
     <section className="workflow-continuity-dock" aria-label={viewModel.ariaLabel}>
@@ -571,6 +573,36 @@ function WorkflowContinuityDock({
         ) : null}
       </div>
 
+      <article
+        className={cn(
+          "workflow-continuity-decision",
+          `workflow-continuity-decision-${decision.statusTone}`
+        )}
+        aria-labelledby="workflow-decision-title"
+      >
+        <div className="workflow-continuity-decision-copy">
+          <div className="workflow-continuity-decision-head">
+            <span className="eyebrow-label">{decision.label}</span>
+            <span className="workflow-continuity-decision-status">{decision.statusLabel}</span>
+          </div>
+          <h3 id="workflow-decision-title">{decision.title}</h3>
+          <p>{decision.summary}</p>
+          <div className="workflow-continuity-decision-reason">
+            <span>{decision.reasonLabel}</span>
+            <span>{decision.reason}</span>
+          </div>
+          {decision.evidenceLabel ? (
+            <span className="workflow-continuity-decision-evidence">{decision.evidenceLabel}</span>
+          ) : null}
+        </div>
+        <Button asChild variant="default" size="sm" className="workflow-continuity-decision-action">
+          <Link to={decision.actionHref} aria-label={decision.actionAriaLabel}>
+            <span>{decision.actionLabel}</span>
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </Button>
+      </article>
+
       <nav className="workflow-continuity-steps" aria-label={viewModel.stepsLabel}>
         {dockSteps.map((step) => (
           <Link
@@ -592,11 +624,21 @@ function WorkflowContinuityDock({
         ))}
       </nav>
 
-      <div className="workflow-continuity-operator-flow">
-        <div>
-          <div className="eyebrow-label">{viewModel.primaryOperatorFlowLabel}</div>
-          <p className="workflow-continuity-summary">{viewModel.primaryOperatorFlowSummary}</p>
-        </div>
+      <Button asChild variant="secondary" size="sm" className="workflow-continuity-next">
+        <Link to={viewModel.nextActionHref} aria-label={viewModel.nextActionAriaLabel}>
+          <span>{viewModel.nextActionLabel}</span>
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
+      </Button>
+
+      <details className="workflow-continuity-operator-flow">
+        <summary>
+          <span>
+            <span className="eyebrow-label">{viewModel.primaryOperatorFlowLabel}</span>
+            <span className="workflow-continuity-summary">{viewModel.primaryOperatorFlowSummary}</span>
+          </span>
+          <ChevronDown className="workflow-continuity-disclosure-icon h-4 w-4" aria-hidden="true" />
+        </summary>
         <nav className="workflow-continuity-steps" aria-label={viewModel.primaryOperatorFlowStepsLabel}>
           {viewModel.primaryOperatorFlowSteps.map((step) => (
             <Link
@@ -616,14 +658,7 @@ function WorkflowContinuityDock({
             </Link>
           ))}
         </nav>
-      </div>
-
-      <Button asChild variant="secondary" size="sm" className="workflow-continuity-next">
-        <Link to={viewModel.nextActionHref} aria-label={viewModel.nextActionAriaLabel}>
-          <span>{viewModel.nextActionLabel}</span>
-          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-        </Link>
-      </Button>
+      </details>
     </section>
   );
 }
@@ -938,12 +973,6 @@ function focusElementById(targetElementId: string, fallbackElement: HTMLElement 
 }
 
 function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () => void }) {
-  const toneClass =
-    panel.tone === "danger"
-      ? "border-danger/30 bg-danger/10"
-      : panel.tone === "warning"
-        ? "border-warning/30 bg-warning/10"
-        : "border-primary/25 bg-secondary/25";
   const Icon = panel.tone === "loading" ? LoaderCircle : AlertTriangle;
   const itemSummary = panel.items.length > 0
     ? `${panel.items.length} ${panel.items.length === 1 ? "detail" : "details"}`
@@ -958,14 +987,14 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
       aria-describedby={panel.detailId}
       aria-busy={panel.tone === "loading"}
       className={cn(
-        "mb-3 flex flex-col gap-3 rounded-md border px-3 py-2 text-sm md:flex-row md:items-center md:justify-between",
-        toneClass,
+        "shell-status-strip",
+        `shell-status-strip-${panel.tone}`,
         panel.tone === "loading" && "startup-status-panel"
       )}
     >
       <div className="min-w-0">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="eyebrow-label">Shell status</span>
+          <span className="eyebrow-label">Platform diagnostics</span>
           <span id={panel.titleId} className="inline-flex min-w-0 items-center gap-2 font-semibold text-foreground">
             <Icon aria-hidden="true" className={`h-4 w-4 shrink-0 ${panel.tone === "loading" ? "animate-spin" : ""}`} />
             <span className="min-w-0 truncate">{panel.title}</span>

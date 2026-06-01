@@ -6,7 +6,7 @@ namespace Meridian.Contracts.Workstation;
 //
 // These records replace the anonymous-object returns in WorkstationEndpoints.cs,
 // giving the bootstrap API surface a stable, testable, and governance-ready shape.
-// Follow the positional-record pattern used in ResearchBriefingDtos.cs.
+// Follow the positional-record pattern used in StrategyBriefingDtos.cs.
 // Sub-objects that are still complex/in-flight use object? as a migration placeholder.
 
 // ---------------------------------------------------------------------------
@@ -24,7 +24,7 @@ public sealed record WorkstationMetricCard(
     string Tone = "default");
 
 /// <summary>
-/// Minimal run digest attached to session and research payloads.
+/// Minimal run digest attached to session and strategy payloads.
 /// Fields match <c>BuildRunDigest</c> in WorkstationEndpoints.
 /// </summary>
 public sealed record WorkstationRunDigest(
@@ -38,7 +38,7 @@ public sealed record WorkstationRunDigest(
     object? SecurityCoverage = null);
 
 /// <summary>
-/// Per-strategy cross-mode comparison group used by research and trading surfaces.
+/// Per-strategy cross-mode comparison group used by strategy and trading surfaces.
 /// </summary>
 public sealed record WorkstationModeComparisonGroup(
     string StrategyName,
@@ -91,9 +91,9 @@ public sealed record WorkstationSessionPayload(
 // ---------------------------------------------------------------------------
 
 /// <summary>
-/// Workspace-level summary embedded inside <see cref="WorkstationResearchPayload"/>.
+/// Workspace-level summary embedded inside <see cref="WorkstationStrategyPayload"/>.
 /// </summary>
-public sealed record WorkstationResearchWorkspaceSummary(
+public sealed record WorkstationStrategyWorkspaceSummary(
     int TotalRuns,
     string? LatestRunId,
     string? LatestStrategyName,
@@ -102,7 +102,7 @@ public sealed record WorkstationResearchWorkspaceSummary(
     int PromotionCandidates);
 
 /// <summary>
-/// PlotTool tab strip state attached to the strategy/research payload.
+/// PlotTool tab strip state attached to the strategy payload.
 /// </summary>
 public sealed record WorkstationPlotToolTabState(
     string Id,
@@ -115,7 +115,7 @@ public sealed record WorkstationPlotToolTabState(
     string AriaLabel);
 
 /// <summary>
-/// PlotTool workspace/statistics payload embedded in research responses.
+/// PlotTool workspace/statistics payload embedded in strategy responses.
 /// </summary>
 public sealed record WorkstationPlotToolPayload(
     object Workspace,
@@ -128,12 +128,12 @@ public sealed record WorkstationPlotToolPayload(
 /// Typed payload returned by <c>GET /api/workstation/strategy</c>.
 /// Run cards and comparisons retain <c>object</c> pending their own DTO evolution.
 /// </summary>
-public sealed record WorkstationResearchPayload(
+public sealed record WorkstationStrategyPayload(
     IReadOnlyList<WorkstationMetricCard> Metrics,
     IReadOnlyList<object> Runs,
     IReadOnlyList<WorkstationModeComparisonGroup> Comparisons,
     IReadOnlyList<WorkstationTimelineCard> Timeline,
-    WorkstationResearchWorkspaceSummary Workspace,
+    WorkstationStrategyWorkspaceSummary Workspace,
     WorkstationPlotToolPayload? PlotTool = null);
 
 // ---------------------------------------------------------------------------
@@ -227,9 +227,9 @@ public sealed record WorkstationTradingPayload(
 // ---------------------------------------------------------------------------
 
 /// <summary>
-/// Workspace-level summary embedded inside <see cref="WorkstationGovernancePayload"/>.
+/// Workspace-level summary embedded inside <see cref="WorkstationAccountingPayload"/>.
 /// </summary>
-public sealed record WorkstationGovernanceWorkspaceSummary(
+public sealed record WorkstationAccountingWorkspaceSummary(
     int TotalRuns,
     int ReconciledRuns,
     int LedgerReadyRuns,
@@ -238,9 +238,9 @@ public sealed record WorkstationGovernanceWorkspaceSummary(
 
 /// <summary>
 /// A single export/reporting profile shown in the Reporting workspace.
-/// Matches <c>GovernanceReportingProfile</c> in the frontend types.
+/// Matches the Reporting profile type in browser workstation models.
 /// </summary>
-public sealed record WorkstationGovernanceReportingProfilePayload(
+public sealed record WorkstationReportingProfilePayload(
     string Id,
     string Name,
     string TargetTool,
@@ -276,14 +276,12 @@ public sealed record WorkstationReportingRunPayload(
     string? FailureReason);
 
 /// <summary>
-/// Typed reporting summary embedded inside <see cref="WorkstationGovernancePayload"/>.
-/// Replaces the anonymous-object placeholder introduced in the initial governance
-/// payload commit (PR-03 follow-on).
+/// Typed reporting summary embedded inside <see cref="WorkstationAccountingPayload"/>.
 /// </summary>
-public sealed record WorkstationGovernanceReportingPayload(
+public sealed record WorkstationReportingPayload(
     int ProfileCount,
     IReadOnlyList<string> RecommendedProfiles,
-    IReadOnlyList<WorkstationGovernanceReportingProfilePayload> Profiles,
+    IReadOnlyList<WorkstationReportingProfilePayload> Profiles,
     IReadOnlyList<string> ReportPackTargets,
     string Summary,
     IReadOnlyList<WorkstationReportingTemplatePayload> Templates,
@@ -296,13 +294,13 @@ public sealed record WorkstationGovernanceReportingPayload(
 /// <c>KernelObservability</c> are kept as <c>object</c> / <c>IReadOnlyList&lt;object&gt;</c>
 /// pending their own DTO evolution in a follow-on PR.
 /// </summary>
-public sealed record WorkstationGovernancePayload(
+public sealed record WorkstationAccountingPayload(
     IReadOnlyList<WorkstationMetricCard> Metrics,
     IReadOnlyList<object> ReconciliationQueue,
     IReadOnlyList<object> BreakQueue,
-    WorkstationGovernanceWorkspaceSummary Workspace,
+    WorkstationAccountingWorkspaceSummary Workspace,
     object CashFlow,
-    WorkstationGovernanceReportingPayload Reporting,
+    WorkstationReportingPayload Reporting,
     object ControlCenter,
     object KernelObservability);
 
@@ -434,7 +432,7 @@ public sealed record WorkstationDataExportRecord(
 /// Typed payload returned by <c>GET /api/workstation/data</c> and
 /// <c>GET /api/workstation/data-operations</c>.
 /// </summary>
-public sealed record WorkstationDataOperationsPayload(
+public sealed record WorkstationDataPayload(
     IReadOnlyList<WorkstationMetricCard> Metrics,
     IReadOnlyList<WorkstationDataProviderRecord> Providers,
     IReadOnlyList<WorkstationDataBackfillRecord> Backfills,

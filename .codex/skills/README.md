@@ -5,8 +5,9 @@ skills for the current AI workflow and should stay aligned with Meridian's activ
 operator UI direction, retained browser workstation support, fund-management/trading-platform
 scope, and no-mobile development policy.
 
-Last verified against `README.md`, `docs/status/ROADMAP.md`, and
-`docs/ai/assistant-workflow-contract.md`: 2026-05-23.
+Last verified against `README.md`, `docs/roadmap/data/*.yml`,
+`docs/roadmap/generated/ROADMAP_SUMMARY.md`, and `docs/ai/assistant-workflow-contract.md`:
+2026-06-01.
 
 ## Current Skills
 
@@ -88,8 +89,9 @@ different work:
 
 ## Maintenance Rules
 
-- Keep each skill's `description` aligned with the current `README.md` and
-  `docs/status/ROADMAP.md`, not with older market-data-only phrasing.
+- Keep each skill's `description` aligned with the current `README.md`, roadmap registry
+  (`docs/roadmap/data/*.yml`), and generated roadmap views, not with older market-data-only
+  phrasing or migrated status stubs.
 - Every current Codex skill must reference `_shared/project-context.md` and
   `_shared/codex-execution-contract.md` so execution behavior stays consistent without duplicating
   the full contract in each skill.

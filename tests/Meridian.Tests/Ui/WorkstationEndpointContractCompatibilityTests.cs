@@ -33,7 +33,7 @@ public sealed class WorkstationEndpointContractCompatibilityTests
         ]);
 
         var hash = ComputeSha256(descriptor);
-        hash.Should().Be("E102CE3B4B4AA43D85069E6429DE4D24A60A3A8E8BE22CEE7158257221A90F51");
+        hash.Should().Be("82C1EB677F409BF8714012FD3372559A4EE8421CE2E865F6BBAAD831FDB82B97");
     }
 
     [Fact]
@@ -92,6 +92,30 @@ public sealed class WorkstationEndpointContractCompatibilityTests
             "currentPortfolio", "replayPortfolio", "lastPersistedFillAt", "lastPersistedOrderUpdateAt",
             "verificationAuditId", "lastVerifiedAt"
         });
+    }
+
+    [Fact]
+    public void WorkstationBootstrapContracts_ShouldUseCanonicalWorkspaceTypeNames()
+    {
+        var contractTypes = typeof(WorkstationDataPayload).Assembly
+            .GetTypes()
+            .Where(static type => type.Namespace == typeof(WorkstationDataPayload).Namespace)
+            .Select(static type => type.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+        contractTypes.Should().Contain([
+            nameof(WorkstationStrategyPayload),
+            nameof(WorkstationDataPayload),
+            nameof(WorkstationAccountingPayload),
+            nameof(WorkstationReportingPayload)
+        ]);
+
+        contractTypes.Should().NotContain([
+            "WorkstationResearchPayload",
+            "WorkstationDataOperationsPayload",
+            "WorkstationGovernancePayload",
+            "WorkstationGovernanceReportingPayload"
+        ]);
     }
 
     [Property(MaxTest = 200)]

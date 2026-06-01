@@ -2,17 +2,17 @@
   "workspaces": [
     {
       "id": "research",
-      "name": "Research",
+      "name": "Strategy",
       "description": "Backtests, experiments, charts, strategy runs, and result analysis.",
-      "preferredPageTag": "ResearchShell",
+      "preferredPageTag": "StrategyShell",
       "category": 0,
       "isBuiltIn": true,
       "createdAt": "2026-04-14T00:00:00Z",
       "updatedAt": "2026-04-14T00:00:00Z",
       "pages": [
         {
-          "pageTag": "ResearchShell",
-          "title": "Research Workspace",
+          "pageTag": "StrategyShell",
+          "title": "Strategy Workspace",
           "isDefault": true,
           "scrollPosition": 0,
           "pageState": {}
@@ -62,17 +62,17 @@
     },
     {
       "id": "data-operations",
-      "name": "Data Operations",
+      "name": "Data",
       "description": "Providers, ingestion, storage, schedules, exports, and blocker visibility.",
-      "preferredPageTag": "DataOperationsShell",
+      "preferredPageTag": "DataShell",
       "category": 2,
       "isBuiltIn": true,
       "createdAt": "2026-04-14T00:00:00Z",
       "updatedAt": "2026-04-14T00:00:00Z",
       "pages": [
         {
-          "pageTag": "DataOperationsShell",
-          "title": "Data Operations Workspace",
+          "pageTag": "DataShell",
+          "title": "Data Workspace",
           "isDefault": true,
           "scrollPosition": 0,
           "pageState": {}
@@ -99,17 +99,17 @@
     },
     {
       "id": "governance",
-      "name": "Governance",
+      "name": "Accounting",
       "description": "Controls, diagnostics, fund operations, reconciliation, and trust-critical review.",
-      "preferredPageTag": "GovernanceShell",
+      "preferredPageTag": "AccountingShell",
       "category": 3,
       "isBuiltIn": true,
       "createdAt": "2026-04-14T00:00:00Z",
       "updatedAt": "2026-04-14T00:00:00Z",
       "pages": [
         {
-          "pageTag": "GovernanceShell",
-          "title": "Governance Workspace",
+          "pageTag": "AccountingShell",
+          "title": "Accounting Workspace",
           "isDefault": true,
           "scrollPosition": 0,
           "pageState": {}
@@ -123,18 +123,18 @@
   ],
   "activeWorkspaceId": "research",
   "lastSession": {
-    "activePageTag": "ResearchShell",
+    "activePageTag": "StrategyShell",
     "openPages": [
       {
-        "pageTag": "ResearchShell",
-        "title": "Research Workspace",
+        "pageTag": "StrategyShell",
+        "title": "Strategy Workspace",
         "isDefault": true,
         "scrollPosition": 0,
         "pageState": {}
       }
     ],
     "recentPages": [
-      "ResearchShell"
+      "StrategyShell"
     ],
     "widgetLayout": {},
     "activeFilters": {},

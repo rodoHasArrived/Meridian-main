@@ -203,15 +203,20 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
             return CreateActionRequest("RunPortfolio", activeRun);
         }
 
-        return action.TargetPageTag switch
+        var targetPageTag = NormalizeLegacyWorkflowTargetPageTag(action.TargetPageTag);
+        return targetPageTag switch
         {
-            "StrategyRuns" => new(action.TargetPageTag, "StrategyRuns", PaneDropAction.Replace, null, true, false, null),
-            "GovernanceShell" => new(action.TargetPageTag, "AccountingShell", PaneDropAction.Replace, null, true, false, null),
+            "StrategyRuns" => new(action.TargetPageTag, targetPageTag, PaneDropAction.Replace, null, true, false, null),
             "FundTrialBalance" => CreateActionRequest("FundTrialBalance", activeRun),
             "FundReconciliation" => CreateActionRequest("FundReconciliation", activeRun),
-            _ => new(action.TargetPageTag, action.TargetPageTag, PaneDropAction.Replace, null, true, false, null)
+            _ => new(action.TargetPageTag, targetPageTag, PaneDropAction.Replace, null, true, false, null)
         };
     }
+
+    private static string NormalizeLegacyWorkflowTargetPageTag(string targetPageTag)
+        => string.Equals(targetPageTag, "GovernanceShell", StringComparison.OrdinalIgnoreCase)
+            ? "AccountingShell"
+            : targetPageTag;
 
     internal static TradingPortfolioNavigationTarget ResolvePortfolioNavigationTarget(ActiveRunContext? activeRun)
         => activeRun is null
@@ -972,8 +977,11 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
     }
 
     private static bool IsWorkspaceShellTag(string pageTag)
+        => string.Equals(pageTag, "TradingShell", StringComparison.OrdinalIgnoreCase) ||
+           IsLegacyWorkspaceShellTag(pageTag);
+
+    private static bool IsLegacyWorkspaceShellTag(string pageTag)
         => string.Equals(pageTag, "ResearchShell", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(pageTag, "TradingShell", StringComparison.OrdinalIgnoreCase) ||
            string.Equals(pageTag, "DataOperationsShell", StringComparison.OrdinalIgnoreCase) ||
            string.Equals(pageTag, "GovernanceShell", StringComparison.OrdinalIgnoreCase);
 

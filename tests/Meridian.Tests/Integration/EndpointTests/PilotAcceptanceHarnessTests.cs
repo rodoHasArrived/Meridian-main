@@ -763,7 +763,13 @@ public sealed class PilotAcceptanceHarnessTests
             $"evidence-vault/report-packs/{generatedReportId:D}/manifest.json",
             [
                 new ReportPackEvidenceLinkDto(ledgerEvidenceId, "Ledger evidence", $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}/ledger/journal", "ledger"),
+                new ReportPackEvidenceLinkDto(seed.PaperRunId, "Paper strategy run", $"/api/workstation/runs/{Uri.EscapeDataString(seed.PaperRunId)}", "strategy"),
                 new ReportPackEvidenceLinkDto($"casework/{reconciliationRunId}", "Reconciliation casework", $"/api/workstation/reconciliation/runs/{Uri.EscapeDataString(reconciliationRunId)}", "reconciliation"),
+                new ReportPackEvidenceLinkDto(reconciliationRunId, "Reconciliation run", $"/api/workstation/reconciliation/runs/{Uri.EscapeDataString(reconciliationRunId)}", "reconciliation"),
+                new ReportPackEvidenceLinkDto($"provider-event/{seed.AccountId:D}/PILOT-BANK-001", "Provider event", null, "provider"),
+                new ReportPackEvidenceLinkDto("security-master/cash/USD", "Security Master identity", null, "security-master"),
+                new ReportPackEvidenceLinkDto("security-definition/cash/USD", "Security definition", null, "security-master"),
+                new ReportPackEvidenceLinkDto($"approval/{generatedReportId:D}/pilot.approver", "Accounting approval", null, "accounting"),
                 new ReportPackEvidenceLinkDto($"close-checklist/{seed.AccountId:D}/2026-04-11", "Accounting close checklist", null, "accounting-close"),
                 new ReportPackEvidenceLinkDto($"restatement-ready/{generatedReportId:D}", "Restatement readiness controls", null, "reporting-governance")
             ],
@@ -877,11 +883,11 @@ public sealed class PilotAcceptanceHarnessTests
         },
         new(
             PilotReadinessStageDto.ResearchRun,
-            "Research run evidence retained",
+            "Strategy run evidence retained",
             PilotReadinessStageStatusDto.Ready,
             [seed.BacktestRunId, DatasetEvidenceId],
             [],
-            "Research briefing returned the retained backtest run and dataset evidence.")
+            "Strategy briefing returned the retained backtest run and dataset evidence.")
         {
             WaveClaims = ["W3"]
         },
@@ -1270,7 +1276,7 @@ public sealed class PilotAcceptanceHarnessTests
                 "missingRequirements": []
               },
               "operatorSignoff": {
-                "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+                "requiredOwners": [ "Data", "Provider Reliability", "Trading" ],
                 "status": "pending",
                 "requiredBeforeDk1Exit": true
               },

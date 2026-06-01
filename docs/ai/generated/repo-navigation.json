@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-31T12:05:55Z",
+  "generatedAt": "2026-06-01T22:40:31Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2119,324 +2119,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-05-31T03:54:29-07:00",
-      "lastCommit": "33dd6fa9d",
-      "lastSummary": "Update docs: archive plans, fix links, and tweaks",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Wpf/Services/ModelRoutingPolicyValidator.cs",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-31T03:46:52-07:00",
-      "lastCommit": "aae51bdea",
-      "lastSummary": "Add ModelRoutingPolicyValidator and tests",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/App.xaml.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-31T03:37:12-07:00",
-      "lastCommit": "50d11b246",
-      "lastSummary": "Remove WPF agent UI; add AI coordination docs",
-      "touches": 14
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/Pages.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-31T03:37:12-07:00",
-      "lastCommit": "50d11b246",
-      "lastSummary": "Remove WPF agent UI; add AI coordination docs",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Wpf/Styles/ThemeControls.xaml",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/ApiKeyDialog.xaml",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/Domain/Enums/InstrumentType.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/Domain/Enums/OptionRight.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/Domain/Enums/OptionStyle.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-30T01:22:56-07:00",
-      "lastCommit": "4a9ed0ef3",
-      "lastSummary": "WPF dialog refactor and enum JSON converters",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T23:27:51-07:00",
-      "lastCommit": "b8171ed82",
-      "lastSummary": "Rework docs: add canonical indexes & archive audits",
-      "touches": 34
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-05-29T23:27:51-07:00",
-      "lastCommit": "b8171ed82",
-      "lastSummary": "Rework docs: add canonical indexes & archive audits",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Application/DirectLending/LoanAccountingProjector.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T23:27:51-07:00",
-      "lastCommit": "b8171ed82",
-      "lastSummary": "Rework docs: add canonical indexes & archive audits",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T23:27:51-07:00",
-      "lastCommit": "b8171ed82",
-      "lastSummary": "Rework docs: add canonical indexes & archive audits",
-      "touches": 1
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 53
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-29T21:29:58-07:00",
-      "lastCommit": "d33276068",
-      "lastSummary": "Enhance tiered storage ADR and ledger parsing",
-      "touches": 46
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-29T21:29:58-07:00",
-      "lastCommit": "d33276068",
-      "lastSummary": "Enhance tiered storage ADR and ledger parsing",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Contracts/Api/UiApiRoutes.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T21:10:23-07:00",
-      "lastCommit": "0ba1b0de9",
-      "lastSummary": "Archive CppTrader integration and update docs",
-      "touches": 28
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-29T21:10:23-07:00",
-      "lastCommit": "0ba1b0de9",
-      "lastSummary": "Archive CppTrader integration and update docs",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-29T21:06:05-07:00",
-      "lastCommit": "165a39cf4",
-      "lastSummary": "Archive CppTrader, refactor endpoints, add checks",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T21:06:05-07:00",
-      "lastCommit": "165a39cf4",
-      "lastSummary": "Archive CppTrader, refactor endpoints, add checks",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-29T21:06:05-07:00",
-      "lastCommit": "165a39cf4",
-      "lastSummary": "Archive CppTrader, refactor endpoints, add checks",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian/Meridian.csproj",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T21:06:05-07:00",
-      "lastCommit": "165a39cf4",
-      "lastSummary": "Archive CppTrader, refactor endpoints, add checks",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Backtesting.Sdk/BacktestRequest.cs",
-      "subsystem": "Backtesting and Research",
-      "lastModified": "2026-05-29T21:06:05-07:00",
-      "lastCommit": "165a39cf4",
-      "lastSummary": "Archive CppTrader, refactor endpoints, add checks",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FamilyOffice.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-29T21:06:05-07:00",
-      "lastCommit": "165a39cf4",
-      "lastSummary": "Archive CppTrader, refactor endpoints, add checks",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs",
-      "subsystem": "Backtesting and Research",
-      "lastModified": "2026-05-29T21:06:05-07:00",
-      "lastCommit": "165a39cf4",
-      "lastSummary": "Archive CppTrader, refactor endpoints, add checks",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Application/Reconciliation/StatementReconciliationService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T12:45:06-07:00",
-      "lastCommit": "3af40c29a",
-      "lastSummary": "Reject duplicate statement CSV headers",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-29T12:44:26-07:00",
-      "lastCommit": "49378a306",
-      "lastSummary": "Secure ledger mapping assignment endpoint",
-      "touches": 18
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 51
     },
     {
       "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T12:44:17-07:00",
-      "lastCommit": "9c004b2f5",
-      "lastSummary": "Verify Security Master status before ledger posting",
-      "touches": 41
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 44
+    },
+    {
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 38
+    },
+    {
+      "path": "src/Meridian.Wpf/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 37
     },
     {
       "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-29T12:44:17-07:00",
-      "lastCommit": "9c004b2f5",
-      "lastSummary": "Verify Security Master status before ledger posting",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
       "touches": 30
     },
     {
-      "path": "src/Meridian.Application/OperationsContinuity/OperationsContinuityWorkflowService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T12:44:17-07:00",
-      "lastCommit": "9c004b2f5",
-      "lastSummary": "Verify Security Master status before ledger posting",
-      "touches": 25
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 30
     },
     {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-05-29T12:44:17-07:00",
-      "lastCommit": "9c004b2f5",
-      "lastSummary": "Verify Security Master status before ledger posting",
+      "path": "src/Meridian.Contracts/Api/UiApiRoutes.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 29
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 26
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 20
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 20
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 17
+    },
+    {
+      "path": "src/Meridian.Ui.Services/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Wpf/App.xaml.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.Reconciliation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 13
+    },
+    {
+      "path": "src/Meridian.Strategies/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Wpf/Services/NavigationService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.Sections.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/hooks/use-workstation-data.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
       "touches": 9
     },
     {
-      "path": "src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T12:43:26-07:00",
-      "lastCommit": "13f43b943",
-      "lastSummary": "Validate fund structure ownership policies",
+      "path": "src/Meridian.Ui/dashboard/src/lib/workspace.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/styles/index.css",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellPage.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Wpf/Models/ShellNavigationCatalog.Workspaces.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/command-palette.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
       "touches": 8
     },
     {
-      "path": "src/Meridian.Application/FundStructure/FundStructurePolicyService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T12:43:26-07:00",
-      "lastCommit": "13f43b943",
-      "lastSummary": "Validate fund structure ownership policies",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/PostgresFundStructureService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T12:43:26-07:00",
-      "lastCommit": "13f43b943",
-      "lastSummary": "Validate fund structure ownership policies",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/IFundStructurePolicyService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-05-29T12:43:26-07:00",
-      "lastCommit": "13f43b943",
-      "lastSummary": "Validate fund structure ownership policies",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-05-29T12:43:11-07:00",
-      "lastCommit": "fad8ef7c4",
-      "lastSummary": "Require independent Security Master casework sign-off",
-      "touches": 3
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Wpf/Views/FundLedgerPage.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-01T12:04:35-07:00",
+      "lastCommit": "5f46af969",
+      "lastSummary": "Modernize workstation shells and scoped provider flows",
+      "touches": 8
     }
   ],
   "recentChangesWindowDays": 14,

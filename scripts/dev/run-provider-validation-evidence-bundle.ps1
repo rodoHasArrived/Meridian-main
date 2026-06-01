@@ -22,7 +22,13 @@ function ConvertTo-RepoRelativePath {
 }
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$bundleRoot = Join-Path (Join-Path $repoRoot $OutputRoot) $DateStamp
+$resolvedOutputRoot = if ([System.IO.Path]::IsPathRooted($OutputRoot)) {
+    [System.IO.Path]::GetFullPath($OutputRoot)
+}
+else {
+    Join-Path $repoRoot $OutputRoot
+}
+$bundleRoot = Join-Path $resolvedOutputRoot $DateStamp
 New-Item -ItemType Directory -Force -Path $bundleRoot | Out-Null
 
 $wave1Script = Join-Path $PSScriptRoot "run-wave1-provider-validation.ps1"

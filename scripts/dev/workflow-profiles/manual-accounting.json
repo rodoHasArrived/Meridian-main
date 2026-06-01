@@ -17,7 +17,7 @@
     "port": 8080
   },
   "screenshots": {
-    "outputRoot": "docs/screenshots/desktop/manuals/manual-research-and-trading",
+    "outputRoot": "docs/screenshots/desktop/manuals/manual-accounting",
     "retention": {
       "maxAgeDays": 14,
       "retainLatest": 10

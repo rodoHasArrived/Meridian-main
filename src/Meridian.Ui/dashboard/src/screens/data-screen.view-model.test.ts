@@ -1,4 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import * as workstationApi from "@/lib/api";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
@@ -42,9 +44,9 @@ import type {
   BackfillPreviewResult,
   BackfillTriggerRequest,
   BackfillTriggerResult,
-  DataOperationsBackfillRecord,
-  DataOperationsExportRecord,
-  DataOperationsProviderRecord,
+  DataBackfillRecord,
+  DataExportRecord,
+  DataProviderRecord,
   DataWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
@@ -52,7 +54,7 @@ import type {
   ProviderRoutingTrustSnapshot
 } from "@/types";
 
-const backfills: DataOperationsBackfillRecord[] = [
+const backfills: DataBackfillRecord[] = [
   {
     jobId: "BF-1042",
     scope: "US equities / 30d",
@@ -98,7 +100,7 @@ const completedBackfill: BackfillTriggerResult = {
   error: null
 };
 
-const providers: DataOperationsProviderRecord[] = [
+const providers: DataProviderRecord[] = [
   {
     providerId: "polygon",
     displayName: "Polygon.io",
@@ -115,7 +117,7 @@ const providers: DataOperationsProviderRecord[] = [
   }
 ];
 
-const alpacaProvider: DataOperationsProviderRecord = {
+const alpacaProvider: DataProviderRecord = {
   providerId: "alpaca",
   displayName: "Alpaca",
   provider: "Alpaca",
@@ -130,7 +132,7 @@ const alpacaProvider: DataOperationsProviderRecord = {
   gateImpact: "No gate impact"
 };
 
-const exports: DataOperationsExportRecord[] = [
+const exports: DataExportRecord[] = [
   {
     exportId: "EX-2201",
     profile: "python-pandas",
@@ -203,6 +205,19 @@ const polygonTrustSnapshot: ProviderRoutingTrustSnapshot = {
 };
 
 describe("data-screen view model", () => {
+  it("keeps Data workspace API types canonical with Data Operations compatibility aliases", () => {
+    const typesSource = readFileSync(resolve(process.cwd(), "src/types.ts"), "utf8");
+
+    expect(typesSource).toContain("export interface DataProviderRecord");
+    expect(typesSource).toContain("export interface DataWorkspaceResponse");
+    expect(typesSource).toContain("providers: DataProviderRecord[];");
+    expect(typesSource).toContain("backfills: DataBackfillRecord[];");
+    expect(typesSource).toContain("exports: DataExportRecord[];");
+    expect(typesSource).toContain("export type DataOperationsWorkspaceResponse = DataWorkspaceResponse;");
+    expect(typesSource).not.toContain("export interface DataOperationsWorkspaceResponse");
+    expect(typesSource).not.toContain("export type DataWorkspaceResponse = DataOperationsWorkspaceResponse");
+  });
+
   it("derives route-aware loading state with operator recovery actions", () => {
     const overview = buildDataLoadingState("overview");
     expect(overview).toMatchObject({
@@ -779,7 +794,7 @@ describe("data-screen view model", () => {
   });
 
   it("selects export detail rows by export id or table row id", () => {
-    const exportRecords: DataOperationsExportRecord[] = [
+    const exportRecords: DataExportRecord[] = [
       ...exports,
       {
         exportId: "EX-2202",
@@ -810,7 +825,7 @@ describe("data-screen view model", () => {
   });
 
   it("selects provider detail rows by provider name or table row id", () => {
-    const providerRecords: DataOperationsProviderRecord[] = [
+    const providerRecords: DataProviderRecord[] = [
       ...providers,
       {
         provider: "Databento",
@@ -1364,7 +1379,7 @@ describe("data-screen view model", () => {
   });
 
   it("uses canonical Data workspace copy for queued backfill narratives", () => {
-    const queuedBackfill: DataOperationsBackfillRecord = {
+    const queuedBackfill: DataBackfillRecord = {
       ...backfills[0],
       status: "Queued"
     };

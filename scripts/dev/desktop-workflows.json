@@ -19,10 +19,10 @@
       },
       "steps": [
         {
-          "title": "Research Workspace",
+          "title": "Strategy Workspace",
           "pageTag": "StrategyShell",
-          "captureName": "wpf-research-workspace",
-          "notes": "Validate that the shell loads cleanly and the Research workspace remains screenshot ready."
+          "captureName": "wpf-strategy-workspace",
+          "notes": "Validate that the shell loads cleanly and the Strategy workspace remains screenshot ready."
         },
         {
           "title": "Providers",
@@ -77,7 +77,7 @@
           "pageTag": "StrategyRuns",
           "captureName": "wpf-strategy-runs",
           "blueprintChecklistIds": [
-            "desktop-screen-strategy-research"
+            "desktop-screen-strategy-runs"
           ],
           "notes": "Capture the strategy run browser."
         },
@@ -126,9 +126,9 @@
       "purpose": "debug",
       "steps": [
         {
-          "title": "Research Workspace",
+          "title": "Strategy Workspace",
           "pageTag": "StrategyShell",
-          "captureName": "01-research-workspace",
+          "captureName": "01-strategy-workspace",
           "notes": "Confirm that the shell rendered, the demo data banner is visible, and the status bar started updating."
         },
         {
@@ -175,10 +175,10 @@
       "includeInManual": true,
       "steps": [
         {
-          "title": "Research Workspace",
+          "title": "Strategy Workspace",
           "pageTag": "StrategyShell",
-          "captureName": "01-research-workspace",
-          "notes": "Start on the Research workspace to review the shell status bar, demo data banner, and the first-launch landing experience."
+          "captureName": "01-strategy-workspace",
+          "notes": "Start on the Strategy workspace to review the shell status bar, demo data banner, and the first-launch landing experience."
         },
         {
           "title": "Workspace Layouts",
@@ -187,10 +187,10 @@
           "notes": "Use Workspace layouts to inspect saved layouts and workstation surface organization."
         },
         {
-          "title": "Research Workspace",
+          "title": "Strategy Workspace",
           "pageTag": "StrategyShell",
-          "captureName": "03-research-workspace",
-          "notes": "The Research workspace now keeps the current workspace next action above the fold while secondary workspace actions stay behind expansion."
+          "captureName": "03-strategy-workspace",
+          "notes": "The Strategy workspace now keeps the current workspace next action above the fold while secondary workspace actions stay behind expansion."
         },
         {
           "title": "Trading Workspace",
@@ -199,16 +199,16 @@
           "notes": "The Trading workspace now leads with active positions, workflow blocker/next action, and risk posture before KPI tiles and supporting desk lanes."
         },
         {
-          "title": "Data Operations Workspace",
+          "title": "Data Workspace",
           "pageTag": "DataShell",
-          "captureName": "05-data-operations-workspace",
-          "notes": "The Data Operations workspace centralizes providers, backfills, symbols, and storage operations."
+          "captureName": "05-data-workspace",
+          "notes": "The Data workspace centralizes providers, backfills, symbols, and storage operations."
         },
         {
-          "title": "Governance Workspace",
+          "title": "Accounting Workspace",
           "pageTag": "AccountingShell",
-          "captureName": "06-governance-workspace",
-          "notes": "The Governance workspace now exposes an explicit workbench identity so overview, accounting, reconciliation, and reporting modes stay obvious at a glance."
+          "captureName": "06-accounting-workspace",
+          "notes": "The Accounting workspace now exposes an explicit workbench identity so overview, accounting, reconciliation, and reporting modes stay obvious at a glance."
         },
         {
           "title": "Help",
@@ -219,17 +219,17 @@
       ]
     },
     {
-      "name": "manual-data-operations",
-      "title": "Data Operations Workflow",
+      "name": "manual-data",
+      "title": "Data Workflow",
       "description": "A practical walkthrough for operators who manage providers, symbols, storage, and backfills.",
       "purpose": "manual",
       "includeInManual": true,
       "steps": [
         {
-          "title": "Data Operations Workspace",
+          "title": "Data Workspace",
           "pageTag": "DataShell",
-          "captureName": "01-data-operations-shell",
-          "notes": "Begin in the workspace shell to orient around the operator dashboard and the available data operations tools."
+          "captureName": "01-data-shell",
+          "notes": "Begin in the workspace shell to orient around the operator dashboard and the available data tools."
         },
         {
           "title": "Providers",
@@ -256,7 +256,7 @@
           "title": "Data Sources",
           "pageTag": "DataSources",
           "captureName": "05-data-sources",
-          "notes": "Use Data Sources to review provider routing, failover ordering, and feed configuration without leaving the data operations workflow."
+          "notes": "Use Data Sources to review provider routing, failover ordering, and feed configuration without leaving the Data workflow."
         },
         {
           "title": "Storage",
@@ -273,17 +273,17 @@
       ]
     },
     {
-      "name": "manual-research-and-trading",
-      "title": "Research and Trading Workflow",
-      "description": "Walk through the core strategy research surfaces and the trading cockpit used to inspect positions and risk.",
+      "name": "manual-strategy-and-trading",
+      "title": "Strategy and Trading Workflow",
+      "description": "Walk through the core strategy surfaces and the trading cockpit used to inspect positions and risk.",
       "purpose": "manual",
       "includeInManual": true,
       "steps": [
         {
-          "title": "Research Workspace",
+          "title": "Strategy Workspace",
           "pageTag": "StrategyShell",
-          "captureName": "01-research-shell",
-          "notes": "The Research workspace is the umbrella view for strategy discovery, analysis, and run review."
+          "captureName": "01-strategy-shell",
+          "notes": "The Strategy workspace is the umbrella view for strategy discovery, analysis, and run review."
         },
         {
           "title": "Backtest",
@@ -299,7 +299,7 @@
           "pageTag": "StrategyRuns",
           "captureName": "03-strategy-runs",
           "blueprintChecklistIds": [
-            "desktop-screen-strategy-research"
+            "desktop-screen-strategy-runs"
           ],
           "notes": "Use Strategy Runs to browse completed runs and drill into the detail pages."
         },
@@ -341,23 +341,23 @@
       ]
     },
     {
-      "name": "manual-governance",
-      "title": "Governance Workflow",
+      "name": "manual-accounting",
+      "title": "Accounting Workflow",
       "description": "Cover the oversight surfaces used for accounting, reconciliation, reporting, and reference-data governance.",
       "purpose": "manual",
       "includeInManual": true,
       "steps": [
         {
-          "title": "Governance Workspace",
+          "title": "Accounting Workspace",
           "pageTag": "AccountingShell",
-          "captureName": "01-governance-shell",
-          "notes": "Start in Governance to orient around the oversight shell and confirm the shared workbench identity card."
+          "captureName": "01-accounting-shell",
+          "notes": "Start in Accounting to orient around the oversight shell and confirm the shared workbench identity card."
         },
         {
           "title": "Fund Ledger",
           "pageTag": "FundLedger",
           "captureName": "02-fund-ledger",
-          "notes": "Use Fund Ledger to capture the single governance workbench with explicit mode/workbench identity above the tabs."
+          "notes": "Use Fund Ledger to capture the single Accounting workbench with explicit mode/workbench identity above the tabs."
         },
         {
           "title": "Fund Reconciliation",

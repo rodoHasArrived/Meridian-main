@@ -1,7 +1,7 @@
 # DK1 Baseline Trust Thresholds and FP/FN Review Process
 
 **Last Updated:** 2026-04-21  
-**Owners:** Data Operations + Provider Reliability + Trading  
+**Owners:** Data + Provider Reliability + Trading
 **Scope:** Baseline trust thresholds for DK1 pilot and required false-positive/false-negative governance loop
 
 ---

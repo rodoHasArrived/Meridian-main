@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Export;
 
 namespace Meridian.Ui.Services.Services;
@@ -202,7 +203,7 @@ public sealed class AnalysisExportService
     public async Task<ResearchPackageResult> CreateResearchPackageAsync(ResearchPackageOptions options, CancellationToken ct = default)
     {
         var (success, errorMessage, data) = await PostApiAsync<ResearchPackageResponse>(
-            "/api/export/research-package",
+            UiApiRoutes.ExportStrategyPackage,
             new
             {
                 name = options.Name,

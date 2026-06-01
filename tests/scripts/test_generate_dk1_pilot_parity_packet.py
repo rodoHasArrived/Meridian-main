@@ -53,7 +53,7 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
             self.assertEqual(packet["operatorSignoff"]["packetReview"]["generatedAtUtc"], packet["generatedAtUtc"])
             self.assertEqual([], packet["operatorSignoff"]["missingOwners"])
             self.assertEqual(
-                ["Data Operations", "Provider Reliability", "Trading"],
+                ["Data", "Provider Reliability", "Trading"],
                 packet["operatorSignoff"]["signedOwners"],
             )
             self.assertEqual(3, len(packet["operatorSignoff"]["approvals"]))
@@ -246,7 +246,7 @@ def _build_signed_signoff(packet_review: dict[str, object] | None = None) -> dic
     signoff: dict[str, object] = {
         "approvals": [
             {
-                "owner": "Data Operations",
+                "owner": "Data",
                 "signedBy": "data.ops",
                 "signedAtUtc": "2026-04-26T15:58:00Z",
                 "decision": "approved",
@@ -296,7 +296,7 @@ def _build_ready_packet(summary_path: Path, generated_at: str) -> dict[str, obje
         ("DK1 pilot parity runbook", "parity", "docs/status/evidence/dk1-pilot-parity-runbook.md"),
         ("DK1 trust rationale mapping", "explainability", "docs/status/evidence/dk1-trust-rationale-mapping.md"),
         ("DK1 baseline trust thresholds", "calibration", "docs/status/evidence/dk1-baseline-trust-thresholds.md"),
-        ("Provider validation matrix", "parity", "docs/status/provider-validation-matrix.md"),
+        ("Provider validation matrix", "parity", "docs/reference/provider-validation-matrix.md"),
     ]
     return {
         "generatedAtUtc": generated_at,

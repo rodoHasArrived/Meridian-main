@@ -35,7 +35,7 @@ The browser app shell projects the design-document primary operator workflow
 state so host-served workstation assets retain the same financial-operations flow after rebuilds.
 The dashboard Accounting Closeout trail also mirrors the design-document Financial Operations flow:
 `Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
-The browser Accounting/Governance screen renders that same lane above its detailed closeout panels.
+The browser Accounting screen renders that same lane above its detailed closeout panels.
 Browser navigation and command-palette root commands canonicalize supplied workspace metadata to
 `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` so legacy
 root names stay compatibility aliases.

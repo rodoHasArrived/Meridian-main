@@ -499,6 +499,21 @@ public sealed class WorkspaceServiceTests : IDisposable
     }
 
     [Fact]
+    public void WorkspaceServiceSource_ShouldIsolateLegacyWorkspaceOwnerAliases()
+    {
+        var source = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\WorkspaceService.cs"));
+
+        source.Should().Contain("AddLegacyWorkspaceOwnerAliases(owners, AddOwner)");
+        source.Should().Contain("private static void AddLegacyWorkspaceOwnerAliases");
+        source.Should().Contain("addOwner(owners, \"ResearchShell\", \"strategy\")");
+        source.Should().Contain("addOwner(owners, \"DataOperationsShell\", \"data\")");
+        source.Should().Contain("addOwner(owners, \"GovernanceShell\", \"accounting\")");
+        source.Should().NotContain("AddOwner(owners, \"ResearchShell\", \"strategy\")");
+        source.Should().NotContain("AddOwner(owners, \"DataOperationsShell\", \"data\")");
+        source.Should().NotContain("AddOwner(owners, \"GovernanceShell\", \"accounting\")");
+    }
+
+    [Fact]
     public async Task GetLastSessionStateForContext_ShouldRestoreLegacyFundScopedSession()
     {
         var svc = CreateService();
@@ -1067,6 +1082,23 @@ public sealed class WorkspaceServiceTests : IDisposable
 
     private sealed class WorkspaceScopedProbe : IWorkspaceScopedService
     {
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new FileNotFoundException($"Could not locate repository file '{relativePath}'.");
     }
 
     private sealed class RecordingScopeFactory : IServiceScopeFactory

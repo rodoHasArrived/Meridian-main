@@ -405,8 +405,8 @@ function Initialize-FixtureOperatingContext {
                 DisplayName = 'Alpha Credit'
                 LegalEntityName = 'Alpha Credit Master Fund LP'
                 BaseCurrency = 'USD'
-                DefaultWorkspaceId = 'governance'
-                DefaultLandingPageTag = 'GovernanceShell'
+                DefaultWorkspaceId = 'accounting'
+                DefaultLandingPageTag = 'AccountingShell'
                 DefaultLedgerScope = 0
                 EntityIds = @()
                 SleeveIds = @()
@@ -594,6 +594,29 @@ function Ensure-EnteredOperatingContext {
     }
 
     if (-not $enterButton) {
+        $readyShell = Wait-ForElement -Attempts 6 -DelayMilliseconds 500 -Finder {
+            if ($null -ne $Process -and $Process.HasExited) {
+                throw "Meridian desktop exited before operating context readiness could be confirmed."
+            }
+
+            $currentWindow = Find-MeridianWindow -Process $Process
+            if ($null -eq $currentWindow) {
+                return $null
+            }
+
+            if (Test-ShellAutomationReady -Window $currentWindow) {
+                return $currentWindow
+            }
+
+            return $null
+        }
+
+        if ($readyShell) {
+            Write-Warn 'Operating context selector did not expose an Enter Workstation button; shell automation is already ready.'
+            Start-Sleep -Seconds $contextEnterSettleSeconds
+            return $true
+        }
+
         Write-Warn 'Operating context selector did not expose an Enter Workstation button.'
         return $false
     }
@@ -715,6 +738,29 @@ function Wait-ForStableShellPage {
     throw "Shell page tag did not stabilize before workflow navigation. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
 }
 
+function Test-BitmapHasVisualContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Drawing.Bitmap]$Bitmap
+    )
+
+    $sampledColors = New-Object 'System.Collections.Generic.HashSet[int]'
+    $sampleColumns = 8
+    $sampleRows = 8
+    for ($xIndex = 0; $xIndex -lt $sampleColumns; $xIndex += 1) {
+        $x = [Math]::Min($Bitmap.Width - 1, [Math]::Max(0, [int](($Bitmap.Width - 1) * $xIndex / [Math]::Max(1, $sampleColumns - 1))))
+        for ($yIndex = 0; $yIndex -lt $sampleRows; $yIndex += 1) {
+            $y = [Math]::Min($Bitmap.Height - 1, [Math]::Max(0, [int](($Bitmap.Height - 1) * $yIndex / [Math]::Max(1, $sampleRows - 1))))
+            [void]$sampledColors.Add($Bitmap.GetPixel($x, $y).ToArgb())
+            if ($sampledColors.Count -ge 4) {
+                return $true
+            }
+        }
+    }
+
+    return $false
+}
+
 function Save-WindowCapture {
     param(
         [Parameter(Mandatory = $true)]
@@ -737,10 +783,21 @@ using System.Runtime.InteropServices;
 public static class MeridianDesktopCaptureNative
 {
     public const uint PW_RENDERFULLCONTENT = 0x00000002;
+    public const int SRCCOPY = 0x00CC0020;
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint nFlags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern IntPtr GetDC(IntPtr hwnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool BitBlt(IntPtr hdcDest, int xDest, int yDest, int width, int height, IntPtr hdcSrc, int xSrc, int ySrc, int rop);
 }
 "@
     }
@@ -766,6 +823,36 @@ public static class MeridianDesktopCaptureNative
         if (-not $printSucceeded) {
             $lastError = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error()
             throw "PrintWindow failed while capturing desktop screenshot (Win32: $lastError)."
+        }
+
+        if (-not (Test-BitmapHasVisualContent -Bitmap $bitmap)) {
+            $screenDc = [MeridianDesktopCaptureNative]::GetDC([System.IntPtr]::Zero)
+            if ($screenDc -eq [System.IntPtr]::Zero) {
+                $lastError = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error()
+                throw "PrintWindow returned a blank capture and GetDC failed while preparing screen fallback (Win32: $lastError)."
+            }
+
+            try {
+                $blitSucceeded = [MeridianDesktopCaptureNative]::BitBlt(
+                    $hdc,
+                    0,
+                    0,
+                    [int]$rect.Width,
+                    [int]$rect.Height,
+                    $screenDc,
+                    [int]$rect.Left,
+                    [int]$rect.Top,
+                    [MeridianDesktopCaptureNative]::SRCCOPY
+                )
+
+                if (-not $blitSucceeded) {
+                    $lastError = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error()
+                    throw "PrintWindow returned a blank capture and screen fallback failed (Win32: $lastError)."
+                }
+            }
+            finally {
+                [MeridianDesktopCaptureNative]::ReleaseDC([System.IntPtr]::Zero, $screenDc) | Out-Null
+            }
         }
 
         $bitmap.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)

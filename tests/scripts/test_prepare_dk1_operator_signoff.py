@@ -40,11 +40,11 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
             payload = json.loads(output_path.read_text(encoding="utf-8-sig"))
 
             self.assertEqual(
-                ["Data Operations", "Provider Reliability", "Trading"],
+                ["Data", "Provider Reliability", "Trading"],
                 payload["requiredOwners"],
             )
             self.assertEqual(
-                ["Data Operations", "Provider Reliability", "Trading"],
+                ["Data", "Provider Reliability", "Trading"],
                 [row["owner"] for row in payload["approvals"]],
             )
             self.assertEqual(
@@ -84,7 +84,7 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
             self.assertTrue(review["validForDk1Exit"])
             self.assertEqual([], review["missingOwners"])
             self.assertEqual(
-                ["Data Operations", "Provider Reliability", "Trading"],
+                ["Data", "Provider Reliability", "Trading"],
                 review["signedOwners"],
             )
 
@@ -254,7 +254,7 @@ def _build_signed_signoff() -> dict[str, object]:
     return {
         "approvals": [
             {
-                "owner": "Data Operations",
+                "owner": "Data",
                 "signedBy": "data.ops",
                 "signedAtUtc": "2026-04-26T15:58:00Z",
                 "decision": "approved",
@@ -289,7 +289,7 @@ def _build_ready_packet() -> dict[str, object]:
         ("DK1 pilot parity runbook", "parity", "docs/status/evidence/dk1-pilot-parity-runbook.md"),
         ("DK1 trust rationale mapping", "explainability", "docs/status/evidence/dk1-trust-rationale-mapping.md"),
         ("DK1 baseline trust thresholds", "calibration", "docs/status/evidence/dk1-baseline-trust-thresholds.md"),
-        ("Provider validation matrix", "parity", "docs/status/provider-validation-matrix.md"),
+        ("Provider validation matrix", "parity", "docs/reference/provider-validation-matrix.md"),
     ]
     return {
         "generatedAtUtc": "2026-04-26T17:00:00Z",

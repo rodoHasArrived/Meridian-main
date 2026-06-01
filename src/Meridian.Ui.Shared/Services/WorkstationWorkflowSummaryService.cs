@@ -47,15 +47,15 @@ public sealed class WorkstationWorkflowSummaryService
             : runs.Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)).ToArray();
 
         var relevantRuns = string.IsNullOrWhiteSpace(fundProfileId) ? runs : scopedRuns;
-        var researchRuns = relevantRuns;
+        var strategyRuns = relevantRuns;
         var governedRuns = relevantRuns
             .Where(static run => run.Mode is StrategyRunMode.Paper or StrategyRunMode.Live)
             .ToArray();
 
-        var candidateForPaper = researchRuns.FirstOrDefault(static run =>
+        var candidateForPaper = strategyRuns.FirstOrDefault(static run =>
             run.Mode == StrategyRunMode.Backtest &&
             run.Promotion?.State == StrategyRunPromotionState.CandidateForPaper);
-        var activeResearchRun = researchRuns.FirstOrDefault(static run =>
+        var activeStrategyRun = strategyRuns.FirstOrDefault(static run =>
             run.Mode == StrategyRunMode.Backtest &&
             run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
         var activeTradingRun = governedRuns.FirstOrDefault(static run =>
@@ -64,16 +64,16 @@ public sealed class WorkstationWorkflowSummaryService
             run.Promotion?.State == StrategyRunPromotionState.CandidateForLive);
         var latestGovernedRun = governedRuns.FirstOrDefault();
 
-        var researchCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForPaper, ct);
+        var strategyCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForPaper, ct);
         var tradingActiveSnapshotTask = LoadRunSnapshotAsync(activeTradingRun, ct);
-        var governanceCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct);
+        var accountingCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct);
 
-        await Task.WhenAll(researchCandidateSnapshotTask, tradingActiveSnapshotTask, governanceCandidateSnapshotTask)
+        await Task.WhenAll(strategyCandidateSnapshotTask, tradingActiveSnapshotTask, accountingCandidateSnapshotTask)
             .ConfigureAwait(false);
 
-        var researchCandidateSnapshot = await researchCandidateSnapshotTask.ConfigureAwait(false);
+        var strategyCandidateSnapshot = await strategyCandidateSnapshotTask.ConfigureAwait(false);
         var tradingActiveSnapshot = await tradingActiveSnapshotTask.ConfigureAwait(false);
-        var governanceSnapshot = await governanceCandidateSnapshotTask.ConfigureAwait(false);
+        var accountingSnapshot = await accountingCandidateSnapshotTask.ConfigureAwait(false);
 
         var workspaces = new WorkspaceWorkflowSummary[]
         {
@@ -83,12 +83,12 @@ public sealed class WorkstationWorkflowSummaryService
                 activeTradingRun,
                 candidateForLive,
                 tradingActiveSnapshot,
-                researchCandidateSnapshot,
+                strategyCandidateSnapshot,
                 relevantRuns),
             BuildPortfolioSummary(contextSelected),
-            BuildAccountingSummary(contextSelected, candidateForLive, latestGovernedRun, governanceSnapshot, governedRuns),
+            BuildAccountingSummary(contextSelected, candidateForLive, latestGovernedRun, accountingSnapshot, governedRuns),
             BuildReportingSummary(contextSelected),
-            BuildStrategySummary(candidateForPaper, activeResearchRun, researchCandidateSnapshot, researchRuns),
+            BuildStrategySummary(candidateForPaper, activeStrategyRun, strategyCandidateSnapshot, strategyRuns),
             BuildDataSummary(),
             BuildSettingsSummary()
         };
@@ -156,9 +156,9 @@ public sealed class WorkstationWorkflowSummaryService
 
     private WorkspaceWorkflowSummary BuildStrategySummary(
         StrategyRunSummary? candidateForPaper,
-        StrategyRunSummary? activeResearchRun,
+        StrategyRunSummary? activeStrategyRun,
         WorkflowRunSnapshot? candidateSnapshot,
-        IReadOnlyList<StrategyRunSummary> researchRuns)
+        IReadOnlyList<StrategyRunSummary> strategyRuns)
     {
         if (candidateForPaper is not null)
         {
@@ -182,13 +182,13 @@ public sealed class WorkstationWorkflowSummaryService
                 Evidence: BuildRunEvidence(candidateForPaper, candidateSnapshot));
         }
 
-        if (activeResearchRun is not null)
+        if (activeStrategyRun is not null)
         {
             return new WorkspaceWorkflowSummary(
                 WorkspaceId: "strategy",
                 WorkspaceTitle: "Strategy",
                 StatusLabel: "Review active strategy run",
-                StatusDetail: $"{activeResearchRun.StrategyName} is still in motion and needs operator review before promotion can begin.",
+                StatusDetail: $"{activeStrategyRun.StrategyName} is still in motion and needs operator review before promotion can begin.",
                 StatusTone: "Info",
                 NextAction: new WorkflowNextAction(
                     Label: "Review Run",
@@ -197,23 +197,23 @@ public sealed class WorkstationWorkflowSummaryService
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "run-in-progress",
-                    label: activeResearchRun.Status == StrategyRunStatus.Paused ? "Run paused" : "Run still executing",
+                    label: activeStrategyRun.Status == StrategyRunStatus.Paused ? "Run paused" : "Run still executing",
                     detail: "Promotion review waits until the current strategy run is inspected or completed.",
                     tone: "Info",
                     isBlocking: false),
                 Evidence:
                 [
-                    new WorkflowEvidenceBadge("Run", activeResearchRun.Status.ToString(), "Info"),
-                    new WorkflowEvidenceBadge("Mode", activeResearchRun.Mode.ToString(), "Neutral"),
-                    new WorkflowEvidenceBadge("Promotion", activeResearchRun.Promotion?.State.ToString() ?? "Pending", "Neutral")
+                    new WorkflowEvidenceBadge("Run", activeStrategyRun.Status.ToString(), "Info"),
+                    new WorkflowEvidenceBadge("Mode", activeStrategyRun.Mode.ToString(), "Neutral"),
+                    new WorkflowEvidenceBadge("Promotion", activeStrategyRun.Promotion?.State.ToString() ?? "Pending", "Neutral")
                 ]);
         }
 
         return new WorkspaceWorkflowSummary(
             WorkspaceId: "strategy",
             WorkspaceTitle: "Strategy",
-            StatusLabel: researchRuns.Count == 0 ? "Ready for a new strategy cycle" : "No review queue",
-            StatusDetail: researchRuns.Count == 0
+            StatusLabel: strategyRuns.Count == 0 ? "Ready for a new strategy cycle" : "No review queue",
+            StatusDetail: strategyRuns.Count == 0
                 ? "No recorded backtests are available yet."
                 : "Recorded runs are available, but none currently require strategy handoff review.",
             StatusTone: "Success",
@@ -223,16 +223,16 @@ public sealed class WorkstationWorkflowSummaryService
                 TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.StrategyStartBacktest, "Backtest"),
                 Tone: "Primary"),
             PrimaryBlocker: CreateBlocker(
-                code: researchRuns.Count == 0 ? "no-runs" : "no-strategy-review",
-                label: researchRuns.Count == 0 ? "No strategy runs recorded" : "No active strategy blocker",
-                detail: researchRuns.Count == 0
+                code: strategyRuns.Count == 0 ? "no-runs" : "no-strategy-review",
+                label: strategyRuns.Count == 0 ? "No strategy runs recorded" : "No active strategy blocker",
+                detail: strategyRuns.Count == 0
                     ? "Record the first backtest to create a review and promotion queue."
                     : "Strategy can start a fresh run without a blocking handoff.",
-                tone: researchRuns.Count == 0 ? "Neutral" : "Success",
-                isBlocking: researchRuns.Count == 0),
+                tone: strategyRuns.Count == 0 ? "Neutral" : "Success",
+                isBlocking: strategyRuns.Count == 0),
             Evidence:
             [
-                new WorkflowEvidenceBadge("Runs", researchRuns.Count.ToString(), "Neutral")
+                new WorkflowEvidenceBadge("Runs", strategyRuns.Count.ToString(), "Neutral")
             ]);
     }
 
@@ -242,7 +242,7 @@ public sealed class WorkstationWorkflowSummaryService
         StrategyRunSummary? activeTradingRun,
         StrategyRunSummary? candidateForLive,
         WorkflowRunSnapshot? activeTradingSnapshot,
-        WorkflowRunSnapshot? candidateResearchSnapshot,
+        WorkflowRunSnapshot? candidateStrategySnapshot,
         IReadOnlyList<StrategyRunSummary> runs)
     {
         if (!hasOperatingContext)
@@ -284,8 +284,8 @@ public sealed class WorkstationWorkflowSummaryService
                     Detail: "Open the trading cockpit to continue the Strategy to Trading handoff.",
                     TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.TradingReviewPaperCandidate, "TradingShell"),
                     Tone: "Primary"),
-                PrimaryBlocker: BuildTradingBlocker(candidateForPaper, candidateResearchSnapshot),
-                Evidence: BuildRunEvidence(candidateForPaper, candidateResearchSnapshot));
+                PrimaryBlocker: BuildTradingBlocker(candidateForPaper, candidateStrategySnapshot),
+                Evidence: BuildRunEvidence(candidateForPaper, candidateStrategySnapshot));
         }
 
         if (activeTradingRun is not null)
@@ -471,7 +471,7 @@ public sealed class WorkstationWorkflowSummaryService
         bool hasOperatingContext,
         StrategyRunSummary? candidateForLive,
         StrategyRunSummary? latestGovernedRun,
-        WorkflowRunSnapshot? governanceSnapshot,
+        WorkflowRunSnapshot? accountingSnapshot,
         IReadOnlyList<StrategyRunSummary> governedRuns)
     {
         if (!hasOperatingContext)
@@ -499,14 +499,14 @@ public sealed class WorkstationWorkflowSummaryService
                 ]);
         }
 
-        var governanceRun = candidateForLive ?? latestGovernedRun;
-        if (governanceRun is not null && governanceSnapshot?.OpenBreakCount > 0)
+        var accountingRun = candidateForLive ?? latestGovernedRun;
+        if (accountingRun is not null && accountingSnapshot?.OpenBreakCount > 0)
         {
             return new WorkspaceWorkflowSummary(
                 WorkspaceId: "accounting",
                 WorkspaceTitle: "Accounting",
                 StatusLabel: "Reconciliation breaks require review",
-                StatusDetail: $"{governanceRun.StrategyName} has open reconciliation exceptions that block the accounting handoff.",
+                StatusDetail: $"{accountingRun.StrategyName} has open reconciliation exceptions that block the accounting handoff.",
                 StatusTone: "Warning",
                 NextAction: new WorkflowNextAction(
                     Label: "Review Reconciliation Breaks",
@@ -515,37 +515,37 @@ public sealed class WorkstationWorkflowSummaryService
                     Tone: "Primary"),
                 PrimaryBlocker: CreateBlocker(
                     code: "reconciliation-breaks",
-                    label: $"{governanceSnapshot.OpenBreakCount} open reconciliation break(s)",
+                    label: $"{accountingSnapshot.OpenBreakCount} open reconciliation break(s)",
                     detail: "Accounting cannot clear the workflow until breaks are reviewed.",
                     tone: "Warning",
                     isBlocking: true),
-                Evidence: BuildAccountingEvidence(governanceRun, governanceSnapshot));
+                Evidence: BuildAccountingEvidence(accountingRun, accountingSnapshot));
         }
 
-        if (governanceRun is not null && HasAccountingContinuityGap(governanceSnapshot))
+        if (accountingRun is not null && HasAccountingContinuityGap(accountingSnapshot))
         {
             return new WorkspaceWorkflowSummary(
                 WorkspaceId: "accounting",
                 WorkspaceTitle: "Accounting",
                 StatusLabel: "Ledger continuity needs review",
-                StatusDetail: $"{governanceRun.StrategyName} needs a continuity check before accounting can treat the handoff as review-ready.",
+                StatusDetail: $"{accountingRun.StrategyName} needs a continuity check before accounting can treat the handoff as review-ready.",
                 StatusTone: "Info",
                 NextAction: new WorkflowNextAction(
                     Label: "Review Ledger Continuity",
                     Detail: "Open trial-balance and continuity surfaces for the selected context.",
                     TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewLedgerContinuity, "FundTrialBalance"),
                     Tone: "Primary"),
-                PrimaryBlocker: BuildAccountingContinuityBlocker(governanceSnapshot),
-                Evidence: BuildAccountingEvidence(governanceRun, governanceSnapshot));
+                PrimaryBlocker: BuildAccountingContinuityBlocker(accountingSnapshot),
+                Evidence: BuildAccountingEvidence(accountingRun, accountingSnapshot));
         }
 
-        if (governanceRun is not null)
+        if (accountingRun is not null)
         {
             return new WorkspaceWorkflowSummary(
                 WorkspaceId: "accounting",
                 WorkspaceTitle: "Accounting",
                 StatusLabel: "Accounting review ready",
-                StatusDetail: $"{governanceRun.StrategyName} has reached the accounting lane with ledger and reconciliation posture available for review.",
+                StatusDetail: $"{accountingRun.StrategyName} has reached the accounting lane with ledger and reconciliation posture available for review.",
                 StatusTone: "Success",
                 NextAction: new WorkflowNextAction(
                     Label: "Open Accounting Shell",
@@ -558,7 +558,7 @@ public sealed class WorkstationWorkflowSummaryService
                     detail: "The current governed run is review-ready inside the shell.",
                     tone: "Success",
                     isBlocking: false),
-                Evidence: BuildAccountingEvidence(governanceRun, governanceSnapshot));
+                Evidence: BuildAccountingEvidence(accountingRun, accountingSnapshot));
         }
 
         return new WorkspaceWorkflowSummary(

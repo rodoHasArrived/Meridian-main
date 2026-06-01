@@ -371,8 +371,8 @@
       {
         "fieldId": "AMX_PRIVATE_SCORE",
         "label": "AMX private score",
-        "source": "External research upload",
-        "dataSet": "research-import",
+        "source": "External strategy upload",
+        "dataSet": "strategy-import",
         "typeName": "decimal",
         "description": "Analyst model extension field kept disabled until provenance is attached.",
         "isEnabled": false,
@@ -509,7 +509,7 @@
           }
         ],
         "reportPackTargets": ["board"],
-        "summary": "4 export/reporting profiles available for governance workflows."
+        "summary": "4 export/reporting profiles available for controlled reporting workflows."
       }
     },
     "/api/workstation/reporting": {
@@ -549,12 +549,12 @@
             "name": "Python / Pandas",
             "targetTool": "Python",
             "format": "Parquet",
-            "description": "Research pack for quant analyst review.",
+            "description": "Strategy pack for quant analyst review.",
             "loaderScript": true,
             "dataDictionary": false
           }
         ],
-        "reportPackTargets": ["board", "research"],
+        "reportPackTargets": ["board", "strategy"],
         "summary": "4 export/reporting profiles available for governed export."
       }
     },
@@ -613,7 +613,7 @@
         {
           "exportId": "EX-2201",
           "profile": "python-pandas",
-          "target": "research pack",
+          "target": "strategy pack",
           "status": "Ready",
           "rows": "124k",
           "updatedAt": "4m ago"

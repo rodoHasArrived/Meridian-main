@@ -55,9 +55,19 @@ dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore /p:EnableWindows
 ### Desktop slices
 
 ```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
+make desktop-test-dev
 dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter "Category!=Integration" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+```
+
+Use `-AllowConcurrentDotnet` only when the active repo-owned build/test processes have been
+inspected and intentional overlap is acceptable. The validation script serializes WPF builds by
+default using:
+
+```powershell
+dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --no-dependencies /m:1 /nr:false /p:BuildInParallel=false /p:UseSharedCompilation=false /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None -v:minimal
 ```
 
 ## Local Run

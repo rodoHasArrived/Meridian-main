@@ -80,7 +80,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _selectedLedgerAssetBalanceText = "-";
     private string _selectedLedgerEquityBalanceText = "-";
     private FundReportPackPreviewDto? _reportPackPreview;
-    private GovernanceLifecycleProjectionDto? _governanceLifecycle;
+    private GovernanceLifecycleProjectionDto? _accountingLifecycle;
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -707,11 +707,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var cashTask = _cashFinancingReadService.GetAsync(activeFund.FundProfileId, activeFund.BaseCurrency, ct);
         var reconciliationTask = _fundReconciliationWorkbenchService.GetSnapshotAsync(activeFund.FundProfileId, ct);
         var portfolioTask = BuildFundPortfolioAsync(activeFund.FundProfileId, ct);
-        var governanceWorkspaceTask = _fundOperationsWorkspaceReadService.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+        var accountingWorkspaceTask = _fundOperationsWorkspaceReadService.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
             FundProfileId: activeFund.FundProfileId,
             Currency: activeFund.BaseCurrency), ct);
 
-        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, governanceWorkspaceTask);
+        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, accountingWorkspaceTask);
 
         var ledger = await ledgerTask;
         var accounts = await accountsTask;
@@ -719,8 +719,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var cashSummary = await cashTask;
         var reconciliationSnapshot = await reconciliationTask;
         var portfolioPositions = await portfolioTask;
-        var governanceWorkspace = await governanceWorkspaceTask;
-        _governanceLifecycle = governanceWorkspace.Governance;
+        var accountingWorkspace = await accountingWorkspaceTask;
+        _accountingLifecycle = accountingWorkspace.Governance;
 
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is not null)
@@ -852,7 +852,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         AuditTrail.Clear();
         ReportPackAssetSections.Clear();
         _reportPackPreview = null;
-        _governanceLifecycle = null;
+        _accountingLifecycle = null;
         ReportPackStatusText = "Accounting report-pack preview is waiting for a fund context.";
         ReportPackReadinessState = WorkstationStateModel.Empty(
             "Report pack waiting for fund context",
@@ -1285,13 +1285,13 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         AuditTrail.Clear();
 
-        if (_governanceLifecycle is { WorkflowUpdatedAtUtc: { } workflowUpdatedAt } governance)
+        if (_accountingLifecycle is { WorkflowUpdatedAtUtc: { } workflowUpdatedAt } accountingLifecycle)
         {
             AuditTrail.Add(new FundAuditEntry(
                 Timestamp: workflowUpdatedAt,
                 Category: "Approval lifecycle",
-                Description: governance.AuditTraceability,
-                Reference: governance.ActiveWorkflowId ?? "shared-governance"));
+                Description: accountingLifecycle.AuditTraceability,
+                Reference: accountingLifecycle.ActiveWorkflowId ?? "shared-accounting"));
         }
 
         if (ledger is not null)
@@ -1574,8 +1574,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                             string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
             ? "Owner not confirmed"
             : $"Owner {ReconciliationOperatorText}";
-        var signoffPosture = _governanceLifecycle?.SignoffPosture;
-        var closeReadiness = _governanceLifecycle?.CloseReadiness;
+        var signoffPosture = _accountingLifecycle?.SignoffPosture;
+        var closeReadiness = _accountingLifecycle?.CloseReadiness;
         ReconciliationOwnershipText = string.IsNullOrWhiteSpace(signoffPosture)
             ? $"{operatorLabel}. Reconciliation sign-off should happen only after queue review, stale-snapshot confirmation, and security coverage checks are complete."
             : $"{operatorLabel}. {signoffPosture} {closeReadiness}".Trim();
@@ -1590,8 +1590,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                           string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
             ? "Accounting operator"
             : ReconciliationOperatorText;
-        var readiness = _governanceLifecycle?.CloseReadiness;
-        var traceability = _governanceLifecycle?.AuditTraceability;
+        var readiness = _accountingLifecycle?.CloseReadiness;
+        var traceability = _accountingLifecycle?.AuditTraceability;
         ReportPackOwnershipText = string.IsNullOrWhiteSpace(readiness)
             ? $"{reportOwner} owns final report-pack sign-off once accounting, reconciliation, and audit evidence align."
             : $"{reportOwner} owns final report-pack sign-off. {readiness}";

@@ -151,7 +151,7 @@ Scope guidance:
 
 Why first:
 
-- These scores drive trust signals consumed across Data Operations, monitoring, and downstream readiness gates.
+- These scores drive trust signals consumed across Data, monitoring, and downstream readiness gates.
 
 ### 2) Provider trust + degradation scoring
 

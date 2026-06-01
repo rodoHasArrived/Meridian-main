@@ -135,7 +135,7 @@ public sealed record WorkstationOperatingContext
 
     public string DefaultWindowPresetId => ScopeKind switch
     {
-        OperatingContextScopeKind.Client or OperatingContextScopeKind.InvestmentPortfolio => "research-compare",
+        OperatingContextScopeKind.Client or OperatingContextScopeKind.InvestmentPortfolio => "strategy-compare",
         OperatingContextScopeKind.Fund or OperatingContextScopeKind.Entity or OperatingContextScopeKind.Account or OperatingContextScopeKind.LedgerGroup => "accounting-review",
         _ => "trading-cockpit"
     };

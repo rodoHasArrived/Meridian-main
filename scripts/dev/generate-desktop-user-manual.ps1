@@ -188,7 +188,7 @@ $manualLines.Add('')
 $manualLines.Add('To capture a single workflow, pass one or more workflow names:')
 $manualLines.Add('')
 $manualLines.Add('```powershell')
-$manualLines.Add('pwsh -File scripts/dev/generate-desktop-user-manual.ps1 -Workflow manual-overview,manual-data-operations')
+$manualLines.Add('pwsh -File scripts/dev/generate-desktop-user-manual.ps1 -Workflow manual-overview,manual-data')
 $manualLines.Add('```')
 $manualLines.Add('')
 

@@ -89,7 +89,7 @@ Covered by five unit tests in `trading-screen.view-model.test.ts > trading readi
 
 DK1 operator sign-off baseline: `artifacts/provider-validation/_automation/2026-04-27/dk1-operator-signoff.json`  
 Packet: `artifacts/provider-validation/_automation/2026-04-27/dk1-pilot-parity-packet.json`  
-Sign-off status: `signed` by `RODO` for Data Operations, Provider Reliability, and Trading.
+Sign-off status: `signed` by `RODO` for Data, Provider Reliability, and Trading.
 
 The cockpit correctly reflects `ReadyForPaperOperation: false` until `operatorSignoffStatus = "signed"` is present in the trust gate, as proven by the green cockpit proof test and the DK1 pending inverse test.
 

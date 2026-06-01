@@ -75,7 +75,7 @@ public sealed class WorkstationPresentationModelsTests
             "Review handoff",
             "Review the linked evidence before distributing the report pack.",
             "FundReportPack",
-            "Governance operator",
+            "Accounting operator",
             WorkstationReadinessTone.EvidenceLinked,
             WorkspaceTone.Info);
 

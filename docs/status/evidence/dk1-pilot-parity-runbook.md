@@ -1,7 +1,7 @@
 # DK1 Pilot Parity Runbook (Alpaca, Robinhood, Yahoo)
 
 **Last Updated:** 2026-04-26
-**Owners:** Data Operations + Provider Reliability  
+**Owners:** Data + Provider Reliability
 **Scope:** Evidence-backed parity execution for DK1 pilot provider set (Alpaca, Robinhood, Yahoo)
 
 ---
@@ -74,7 +74,7 @@ when all test steps pass.
    - Confirm pilot-sample rows are `ready`, not merely present. The packet generator now checks each sample's provider, automation step, sample universe/window, required evidence anchors, and acceptance check.
    - Confirm evidence-document rows are `validated`, not merely present. The packet generator now checks required DK1 sample IDs, explainability payload fields/reason codes, baseline threshold metrics, and FP/FN review markers inside the linked docs.
 5. **Attach operator sign-off when approved**
-   - Create the operator sign-off JSON template after Data Operations, Provider Reliability, and Trading have reviewed the packet:
+   - Create the operator sign-off JSON template after Data, Provider Reliability, and Trading have reviewed the packet:
      `./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -PacketPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`.
    - Keep the generated `packetReview` block in the sign-off file. It binds approvals to the reviewed parity packet path, generated timestamp, status, sample counts, evidence-document counts, and explainability/calibration contract status.
    - Fill each required approval row with `signedBy`, `signedAtUtc`, an approved/signed `decision`, and `rationale`.
@@ -95,7 +95,7 @@ Use this JSON shape for `-OperatorSignoffPath`:
 {
   "approvals": [
     {
-      "owner": "Data Operations",
+      "owner": "Data",
       "signedBy": "data.ops.owner",
       "signedAtUtc": "2026-04-26T15:58:00Z",
       "decision": "approved",

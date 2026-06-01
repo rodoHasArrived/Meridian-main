@@ -62,11 +62,11 @@ public sealed class WorkstationWorkflowSummaryServiceTests
                 configStore: new Meridian.Application.UI.ConfigStore(configPath));
 
             var summary = await summaryService.GetAsync();
-            var dataOperationsSummary = summary.Workspaces.Single(static workspace => workspace.WorkspaceId == "data");
+            var dataSummary = summary.Workspaces.Single(static workspace => workspace.WorkspaceId == "data");
 
-            dataOperationsSummary.StatusLabel.Should().Be("Provider degradation detected");
-            dataOperationsSummary.NextAction.Label.Should().Be("Open Provider Health");
-            dataOperationsSummary.NextAction.TargetPageTag.Should().Be("ProviderHealth");
+            dataSummary.StatusLabel.Should().Be("Provider degradation detected");
+            dataSummary.NextAction.Label.Should().Be("Open Provider Health");
+            dataSummary.NextAction.TargetPageTag.Should().Be("ProviderHealth");
         }
         finally
         {
@@ -75,5 +75,40 @@ public sealed class WorkstationWorkflowSummaryServiceTests
                 Directory.Delete(root, recursive: true);
             }
         }
+    }
+
+    [Fact]
+    public void WorkstationWorkflowSummaryServiceSource_ShouldUseCanonicalWorkspaceTerms()
+    {
+        var source = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Ui.Shared\Services\WorkstationWorkflowSummaryService.cs"));
+
+        source.Should().Contain("strategyRuns");
+        source.Should().Contain("activeStrategyRun");
+        source.Should().Contain("strategyCandidateSnapshot");
+        source.Should().Contain("accountingSnapshot");
+        source.Should().NotContain("researchRuns");
+        source.Should().NotContain("activeResearchRun");
+        source.Should().NotContain("researchCandidateSnapshot");
+        source.Should().NotContain("candidateResearchSnapshot");
+        source.Should().NotContain("governanceCandidateSnapshot");
+        source.Should().NotContain("governanceSnapshot");
+        source.Should().NotContain("governanceRun");
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new FileNotFoundException($"Could not locate repository file '{relativePath}'.");
     }
 }

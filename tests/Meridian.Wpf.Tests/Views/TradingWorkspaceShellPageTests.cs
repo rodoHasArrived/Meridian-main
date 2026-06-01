@@ -818,6 +818,18 @@ public sealed class TradingWorkspaceShellPageTests
     }
 
     [Fact]
+    public void TradingWorkspaceShellPresentationServiceSource_ShouldIsolateLegacyWorkspaceShellTags()
+    {
+        var serviceCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\TradingWorkspaceShellPresentationService.cs"));
+
+        serviceCode.Should().Contain("NormalizeLegacyWorkflowTargetPageTag(action.TargetPageTag)");
+        serviceCode.Should().Contain("private static string NormalizeLegacyWorkflowTargetPageTag");
+        serviceCode.Should().Contain("private static bool IsLegacyWorkspaceShellTag");
+        serviceCode.Should().Contain("IsLegacyWorkspaceShellTag(pageTag)");
+        serviceCode.Should().NotContain("\"GovernanceShell\" => new");
+    }
+
+    [Fact]
     public void TradingWorkspaceShellPageSource_ShouldProjectConsistentDegradedStatusCard()
     {
         var viewModelCode = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\TradingWorkspaceShellViewModel.cs"));

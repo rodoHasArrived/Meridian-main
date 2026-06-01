@@ -492,7 +492,15 @@ const breakQueue: ReconciliationBreakQueueItem[] = [
     signoffStatus: "Pending Signoff",
     routingTarget: "FundTrialBalance",
     routingDetail: "Open the accounting trial balance for evidence review.",
-    recommendedAction: "Review matched fee entries before closing."
+    recommendedAction: "Review matched fee entries before closing.",
+    breakExplanation: {
+      summary: "Provider fees and Meridian ledger fees now match after operator review.",
+      sourceSystems: ["Provider activity", "Meridian ledger"],
+      probableCause: "The provider posted fees after the first reconciliation pass.",
+      ledgerImpact: "No remaining ledger adjustment is required.",
+      suggestedNextAction: "Attach the provider activity evidence before close sign-off.",
+      evidenceLinks: ["/accounting/evidence/provider-fees"]
+    }
   }
 ];
 
@@ -1871,7 +1879,8 @@ describe("accounting-screen view model", () => {
       title: "Intraday Vol Carry - FeeMismatch",
       statusLabel: "Resolved",
       statusBadgeVariant: "success",
-      recommendedActionText: "Review matched fee entries before closing.",
+      analysisText: "Provider fees and Meridian ledger fees now match after operator review.",
+      recommendedActionText: "Attach the provider activity evidence before close sign-off.",
       routingActionLabel: "Open routing target",
       routingActionHref: "/accounting/ledger",
       routingActionAriaLabel: "Open routing target for reconciliation break run-57:fees"
@@ -1886,7 +1895,13 @@ describe("accounting-screen view model", () => {
         label: "Required sign-off",
         value: "Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked."
       },
-      { label: "Decision note", value: "Reviewed in accounting panel." }
+      { label: "Decision note", value: "Reviewed in accounting panel." },
+      { label: "Explanation summary", value: "Provider fees and Meridian ledger fees now match after operator review." },
+      { label: "Source systems", value: "Provider activity, Meridian ledger" },
+      { label: "Probable cause", value: "The provider posted fees after the first reconciliation pass." },
+      { label: "Ledger impact", value: "No remaining ledger adjustment is required." },
+      { label: "Suggested next action", value: "Attach the provider activity evidence before close sign-off." },
+      { label: "Explanation evidence", value: "/accounting/evidence/provider-fees" }
     ]));
     expect(state.rows[1]).toMatchObject({
       isSelected: true,

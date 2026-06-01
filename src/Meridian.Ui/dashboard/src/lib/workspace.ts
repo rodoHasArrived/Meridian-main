@@ -78,7 +78,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   strategyFormulaWorkbench: "/strategy/formula-workbench",
   strategyCoveredCall: "/strategy/covered-call",
   strategyPromotions: "/strategy/promotions",
-  strategyResearch: "/strategy/research",
+  strategyLab: "/strategy/lab",
   strategyQuantLab: "/strategy/quant-lab",
   data: "/data",
   dataProviders: "/data/providers",

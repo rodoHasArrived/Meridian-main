@@ -380,10 +380,45 @@ public sealed class ShellNavigationCatalogTests
         ShellNavigationCatalog.GetPage("Dashboard")!.Title.Should().Be("Reporting dashboard");
     }
 
+    [Fact]
+    public void ShellNavigationCatalogSource_ShouldIsolateLegacyWorkspaceAliases()
+    {
+        var catalogSource = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Models\ShellNavigationCatalog.cs"));
+        var strategySource = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Models\ShellNavigationCatalog.Strategy.cs"));
+        var accountingSource = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Models\ShellNavigationCatalog.Accounting.cs"));
+
+        catalogSource.Should().Contain("LegacyStrategyShellAliases");
+        catalogSource.Should().Contain("LegacyStrategyAutomationAliases");
+        catalogSource.Should().Contain("LegacyAccountingShellAliases");
+        strategySource.Should().Contain("LegacyStrategyShellAliases");
+        strategySource.Should().Contain("LegacyStrategyAutomationAliases");
+        strategySource.Should().NotContain("[\"ResearchShell\", \"ResearchWorkspace\"]");
+        strategySource.Should().NotContain("[\"ResearchAutomation\"]");
+        accountingSource.Should().Contain("LegacyAccountingShellAliases");
+        accountingSource.Should().NotContain("[\"GovernanceShell\", \"GovernanceWorkspace\", \"AccountingWorkspace\"]");
+    }
+
     private static IEnumerable<WorkspacePaneDefinition> EnumeratePanes(WorkspaceShellDefinition shell)
         => shell.DefaultPanes
             .Concat(shell.ContextlessPanes)
             .Concat(shell.PresetPanes.Values.SelectMany(static panes => panes));
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new FileNotFoundException($"Could not locate repository file '{relativePath}'.");
+    }
 
     private static void AssertDoesNotContainBannedTerms(string value, string scope)
     {

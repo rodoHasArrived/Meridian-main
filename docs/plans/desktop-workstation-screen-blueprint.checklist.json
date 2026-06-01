@@ -36,7 +36,7 @@
           "captureName": "wpf-security-master"
         },
         {
-          "workflow": "manual-governance",
+          "workflow": "manual-accounting",
           "pageTag": "SecurityMaster",
           "captureName": "05-security-master"
         }
@@ -119,7 +119,7 @@
           "captureName": "wpf-backtest"
         },
         {
-          "workflow": "manual-research-and-trading",
+          "workflow": "manual-strategy-and-trading",
           "pageTag": "Backtest",
           "captureName": "02-backtest"
         }
@@ -137,14 +137,14 @@
       ]
     },
     {
-      "id": "desktop-screen-strategy-research",
-      "title": "Strategy Research Workspace",
+      "id": "desktop-screen-strategy-runs",
+      "title": "Strategy Workspace",
       "rootWorkspace": "Strategy",
-      "blueprintHeading": "### 5. Strategy Research Workspace",
+      "blueprintHeading": "### 5. Strategy Workspace",
       "status": "partial",
       "implementationPaths": [
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunBrowserViewModelTests.cs",
-        "tests/Meridian.Wpf.Tests/Views/ResearchWorkspaceShellPageTests.cs"
+        "tests/Meridian.Wpf.Tests/Views/StrategyWorkspaceShellPageTests.cs"
       ],
       "workflowCoverage": [
         {
@@ -153,20 +153,20 @@
           "captureName": "wpf-strategy-runs"
         },
         {
-          "workflow": "manual-research-and-trading",
+          "workflow": "manual-strategy-and-trading",
           "pageTag": "StrategyRuns",
           "captureName": "03-strategy-runs"
         }
       ],
       "validationCommands": [
-        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~StrategyRunBrowserViewModelTests|FullyQualifiedName~ResearchWorkspaceShellPageTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
+        "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~StrategyRunBrowserViewModelTests|FullyQualifiedName~StrategyWorkspaceShellPageTests\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger \"console;verbosity=normal\""
       ],
       "maturity": "Active but partial",
       "maturityEvidence": [
         {
           "kind": "focused-test",
           "path": "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunBrowserViewModelTests.cs",
-          "summary": "Focused Strategy Run browser tests and shell tests support the Research screen, with deeper workflow acceptance still open."
+          "summary": "Focused Strategy Run browser tests and shell tests support the Strategy screen, with deeper workflow acceptance still open."
         }
       ]
     },
@@ -202,7 +202,7 @@
       ],
       "workflowCoverage": [
         {
-          "workflow": "manual-research-and-trading",
+          "workflow": "manual-strategy-and-trading",
           "pageTag": "TradingShell",
           "captureName": "05-trading-shell"
         }
@@ -231,7 +231,7 @@
       ],
       "workflowCoverage": [
         {
-          "workflow": "manual-research-and-trading",
+          "workflow": "manual-strategy-and-trading",
           "pageTag": "TradingShell",
           "captureName": "05-trading-shell"
         }
@@ -282,7 +282,7 @@
       ],
       "workflowCoverage": [
         {
-          "workflow": "manual-research-and-trading",
+          "workflow": "manual-strategy-and-trading",
           "pageTag": "PositionBlotter",
           "captureName": "06-position-blotter"
         }
@@ -310,7 +310,7 @@
       ],
       "workflowCoverage": [
         {
-          "workflow": "manual-research-and-trading",
+          "workflow": "manual-strategy-and-trading",
           "pageTag": "RunRisk",
           "captureName": "07-run-risk"
         }
@@ -339,7 +339,7 @@
       ],
       "workflowCoverage": [
         {
-          "workflow": "manual-governance",
+          "workflow": "manual-accounting",
           "pageTag": "FundReconciliation",
           "captureName": "03-fund-reconciliation"
         }
@@ -369,7 +369,7 @@
       ],
       "workflowCoverage": [
         {
-          "workflow": "manual-governance",
+          "workflow": "manual-accounting",
           "pageTag": "FundReportPack",
           "captureName": "04-fund-report-pack"
         }
@@ -403,7 +403,7 @@
           "captureName": "wpf-backfill"
         },
         {
-          "workflow": "manual-data-operations",
+          "workflow": "manual-data",
           "pageTag": "Backfill",
           "captureName": "04-backfill"
         }
@@ -528,7 +528,7 @@
       ],
       "workflowCoverage": [
         {
-          "workflow": "manual-research-and-trading",
+          "workflow": "manual-strategy-and-trading",
           "pageTag": "PositionBlotter",
           "captureName": "06-position-blotter"
         }

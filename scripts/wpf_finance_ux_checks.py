@@ -130,32 +130,32 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
 
     main_page = read_required_text(repo_root, target_roots, "src/Meridian.Wpf/Views/MainPage.xaml")
     navigation_tokens = [
-        '<TextBlock Text="Home"',
-        '<TextBlock Text="Active Work"',
-        '<TextBlock Text="Review / Alerts"',
-        'AutomationProperties.AutomationId="WorkspacePrimaryNavList"',
-        'AutomationProperties.AutomationId="WorkspaceSecondaryNavList"',
-        'AutomationProperties.AutomationId="WorkspaceOverflowNavList"',
-        'AutomationProperties.AutomationId="RelatedWorkflowNavList"',
+        "ShellMastheadControl",
+        "ShellRailControl",
+        "WorkspaceCommandSurfaceControl",
+        "WorkspaceEvidenceStripControl",
+        'AutomationProperties.AutomationId="WorkspaceShellContextStrip"',
+        "SplitPaneHostControl",
+        "WorkspaceInspectorHostControl",
     ]
     missing_navigation_tokens = require_all_tokens(main_page, navigation_tokens)
     results.append(
         CheckResult(
-            name="Sidebar navigation exposes grouped workflow lists",
+            name="Main shell exposes institutional navigation and workflow surfaces",
             passed=not missing_navigation_tokens,
-            detail="Home, active-work, review-alert, and related workflow navigation groups are present."
+            detail="Masthead, rail, command surface, evidence strip, context strip, split panes, and inspector host are present."
             if not missing_navigation_tokens
-            else f"Missing navigation tokens: {', '.join(missing_navigation_tokens)}",
+            else f"Missing shell surface tokens: {', '.join(missing_navigation_tokens)}",
         )
     )
 
-    governance_page = read_required_text(
+    accounting_page = read_required_text(
         repo_root,
         target_roots,
-        "src/Meridian.Wpf/Views/GovernanceWorkspaceShellPage.xaml",
+        "src/Meridian.Wpf/Views/AccountingWorkspaceShellPage.xaml",
     )
-    governance_missing = require_all_tokens(
-        governance_page,
+    accounting_missing = require_all_tokens(
+        accounting_page,
         [
             "WorkspaceShellContextStripControl",
             "WorkspaceCommandBarControl",
@@ -170,19 +170,19 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
     )
     results.append(
         CheckResult(
-            name="Governance pilot exposes queue and empty-state UX",
-            passed=not governance_missing,
-            detail="Governance shell includes shared chrome, explicit governance lanes, grouped queues, and the Switch Context empty-state action."
-            if not governance_missing
-            else f"Missing governance UX tokens: {', '.join(governance_missing)}",
+            name="Accounting pilot exposes queue and empty-state UX",
+            passed=not accounting_missing,
+            detail="Accounting shell includes shared chrome, explicit oversight lanes, grouped queues, and the Switch Context empty-state action."
+            if not accounting_missing
+            else f"Missing accounting UX tokens: {', '.join(accounting_missing)}",
         )
     )
 
     context_shell_pages = {
-        "Research": "src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml",
+        "Strategy": "src/Meridian.Wpf/Views/StrategyWorkspaceShellPage.xaml",
         "Trading": "src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml",
         "Portfolio": "src/Meridian.Wpf/Features/Portfolio/Shell/PortfolioWorkspaceShellPage.xaml",
-        "Accounting": "src/Meridian.Wpf/Views/GovernanceWorkspaceShellPage.xaml",
+        "Accounting": "src/Meridian.Wpf/Views/AccountingWorkspaceShellPage.xaml",
         "Reporting": "src/Meridian.Wpf/Features/Reporting/Shell/ReportingWorkspaceShellPage.xaml",
         "Data": "src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellPage.xaml",
         "Settings": "src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPage.xaml",
@@ -204,9 +204,9 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
     )
 
     command_shell_pages = {
-        "Research": "src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml",
+        "Strategy": "src/Meridian.Wpf/Views/StrategyWorkspaceShellPage.xaml",
         "Trading": "src/Meridian.Wpf/Features/Trading/Shell/TradingWorkspaceShellPage.xaml",
-        "Accounting": "src/Meridian.Wpf/Views/GovernanceWorkspaceShellPage.xaml",
+        "Accounting": "src/Meridian.Wpf/Views/AccountingWorkspaceShellPage.xaml",
         "Data": "src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellPage.xaml",
         "Settings": "src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPage.xaml",
     }
@@ -220,7 +220,7 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
         CheckResult(
             name="Action-oriented WPF shells expose shared command bar",
             passed=not command_failures,
-            detail="Research, Trading, Accounting, Data, and Settings shells include the shared command bar."
+            detail="Strategy, Trading, Accounting, Data, and Settings shells include the shared command bar."
             if not command_failures
             else "; ".join(command_failures),
         )
@@ -402,6 +402,7 @@ def build_workstation_signifier_check(repo_root: Path, target_roots: list[Path])
         "src/Meridian.Wpf/Workstation/Controls/WorkstationStatePanelControl.xaml",
         "src/Meridian.Wpf/Workstation/Controls/WorkstationCommandBarControl.xaml",
         "src/Meridian.Wpf/Views/FundLedgerPage.xaml",
+        "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs",
     ]
     if not all(is_required_path_in_scope(repo_root, target_roots, path) for path in required_paths):
         return None
@@ -409,7 +410,8 @@ def build_workstation_signifier_check(repo_root: Path, target_roots: list[Path])
     models = read_required_text(repo_root, target_roots, required_paths[0])
     state_panel = read_required_text(repo_root, target_roots, required_paths[1])
     command_bar = read_required_text(repo_root, target_roots, required_paths[2])
-    fund_ledger = read_required_text(repo_root, target_roots, required_paths[3])
+    fund_ledger_page = read_required_text(repo_root, target_roots, required_paths[3])
+    fund_ledger_view_model = read_required_text(repo_root, target_roots, required_paths[4])
 
     missing_tokens: list[str] = []
     missing_tokens.extend(
@@ -449,14 +451,25 @@ def build_workstation_signifier_check(repo_root: Path, target_roots: list[Path])
         )
     )
     missing_tokens.extend(
-        f"fund ledger: {token}"
+        f"fund ledger page: {token}"
         for token in require_all_tokens(
-            fund_ledger,
+            fund_ledger_page,
             [
-                "FundReconciliationGovernanceSignifier",
-                "ReconciliationSection.GovernanceSignifierState",
-                "FundReportPackReadinessSignifier",
+                "ReconciliationOwnershipText",
+                "ReconciliationSnapshotWarningText",
                 "ReportPackReadinessState",
+            ],
+        )
+    )
+    missing_tokens.extend(
+        f"fund ledger view model: {token}"
+        for token in require_all_tokens(
+            fund_ledger_view_model,
+            [
+                "ReportPackReadinessState",
+                "BuildReportPackReadinessState",
+                "WorkstationStateModel.Recovery",
+                "new WorkstationSignoffRequirementModel",
             ],
         )
     )
@@ -475,7 +488,7 @@ def build_reconciliation_explanation_parity_check(repo_root: Path, target_roots:
         "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
         "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs",
         "src/Meridian.Ui/dashboard/src/types.ts",
-        "src/Meridian.Ui/dashboard/src/screens/governance-screen.view-model.ts",
+        "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
         "src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs",
         "src/Meridian.Wpf/Services/FundReconciliationWorkbenchService.cs",
         "src/Meridian.Wpf/ViewModels/FundLedgerViewModel.Reconciliation.cs",
@@ -600,7 +613,7 @@ def build_reconciliation_explanation_parity_check(repo_root: Path, target_roots:
         name="Reconciliation Explain-the-Break contract stays shared across browser and WPF",
         passed=not missing_tokens,
         detail=(
-            "Structured reconciliation break explanation fields are contract-owned, produced by Ui.Shared, and consumed by both browser governance and WPF Fund Ledger guidance."
+            "Structured reconciliation break explanation fields are contract-owned, produced by Ui.Shared, and consumed by both browser accounting and WPF Fund Ledger guidance."
             if not missing_tokens
             else "Missing reconciliation explanation parity tokens: " + ", ".join(missing_tokens)
         ),
@@ -674,7 +687,7 @@ def build_operations_continuity_workflow_route_check(repo_root: Path, target_roo
     required_paths = [
         "src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs",
         "src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs",
-        "src/Meridian.Wpf/Models/ShellNavigationCatalog.Governance.cs",
+        "src/Meridian.Wpf/Models/ShellNavigationCatalog.Accounting.cs",
         "src/Meridian.Wpf/Services/NavigationService.cs",
         "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs",
         "src/Meridian.Ui/dashboard/src/lib/workspace.ts",

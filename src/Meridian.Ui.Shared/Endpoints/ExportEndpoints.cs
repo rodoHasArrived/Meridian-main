@@ -290,11 +290,10 @@ public static class ExportEndpoints
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Research package export — wired to real backend
-        group.MapPost(UiApiRoutes.ExportResearchPackage, async (
-            ResearchPackageRequest? req,
+        async Task<IResult> ExportStrategyPackageAsync(
+            StrategyPackageRequest? req,
             [FromServices] AnalysisExportService? exportService,
-            CancellationToken ct) =>
+            CancellationToken ct)
         {
             CleanupOldExportDirectories();
 
@@ -303,7 +302,7 @@ public static class ExportEndpoints
                 return Results.Json(new { error = "Export service not available" }, jsonOptions, statusCode: 503);
             }
 
-            var outputDir = Path.Combine(Path.GetTempPath(), "meridian-exports", "research-" + DateTime.UtcNow.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture));
+            var outputDir = Path.Combine(Path.GetTempPath(), "meridian-exports", "strategy-" + DateTime.UtcNow.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture));
 
             var exportRequest = new ExportRequest
             {
@@ -331,7 +330,15 @@ public static class ExportEndpoints
                 error = result.Error,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
-        })
+        }
+
+        // Strategy package export is canonical; the research route is retained for clients still on the old API name.
+        group.MapPost(UiApiRoutes.ExportStrategyPackage, ExportStrategyPackageAsync)
+        .WithName("ExportStrategyPackage")
+        .Produces(200)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapPost(UiApiRoutes.ExportResearchPackage, ExportStrategyPackageAsync)
         .WithName("ExportResearchPackage")
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -340,7 +347,7 @@ public static class ExportEndpoints
     private sealed record ExportPreviewRequest(string? ProfileId, string[]? Symbols, string[]? EventTypes, DateTime? StartDate, DateTime? EndDate, int? SampleSize);
     private sealed record QualityReportExportRequest(string? Format, string[]? Symbols);
     private sealed record OrderflowExportRequest(string[]? Symbols, string? Format);
-    private sealed record ResearchPackageRequest(string[]? Symbols, bool? IncludeMetadata);
+    private sealed record StrategyPackageRequest(string[]? Symbols, bool? IncludeMetadata);
 
     private static string[] SplitCsv(string? value)
     {

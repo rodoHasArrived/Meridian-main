@@ -51,7 +51,7 @@
       "automatedTests": [
         { "project": "src/Meridian.Ui/dashboard", "filterableName": "workspace.test.ts > builds encoded Evidence Workbench subject routes" },
         { "project": "src/Meridian.Ui/dashboard", "filterableName": "operator-readiness-console.view-model.test.ts > keeps the headline in review when governed report-pack readiness is missing" },
-        { "project": "src/Meridian.Ui/dashboard", "filterableName": "governance-screen.view-model.test.ts > derives reporting profile selector rows and detail state" }
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "accounting-screen.view-model.test.ts > derives reporting profile selector rows and detail state" }
       ],
       "artifacts": [
         { "kind": "manifest", "path": "artifacts/reporting/latest-report-pack-manifest.json", "description": "Report-pack manifest with template, run, approval, and release metadata." },
@@ -63,13 +63,13 @@
       "criterion": "Reconciliation breaks must be visible as governance work items with deterministic detail, resolve/dismiss action state, narratives, and evidence packet links.",
       "routeOwnership": [
         { "kind": "api", "route": "/api/workstation/reconciliation/cases", "owner": "WorkstationEndpoints.Reconciliation" },
-        { "kind": "ui", "route": "/accounting/reconciliation", "owner": "GovernanceScreen.reconciliation" }
+        { "kind": "ui", "route": "/accounting/reconciliation", "owner": "AccountingScreen.reconciliation" }
       ],
       "uiBehaviorState": "The reconciliation lane must render open-break counts, selected detail, resolve/dismiss validation, failure copy, narrative context, and evidence packet actions for the selected run.",
       "automatedTests": [
         { "project": "tests/Meridian.Tests", "filterableName": "MapWorkstationEndpoints_OperatorInbox_ShouldIncludeOpenReconciliationBreaks" },
-        { "project": "src/Meridian.Ui/dashboard", "filterableName": "governance-screen.view-model.test.ts > derives reconciliation break action state and live announcements" },
-        { "project": "src/Meridian.Ui/dashboard", "filterableName": "governance-screen.view-model.test.ts > derives reconciliation detail actions from the selected run" }
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "accounting-screen.view-model.test.ts > derives reconciliation break action state and live announcements" },
+        { "project": "src/Meridian.Ui/dashboard", "filterableName": "accounting-screen.view-model.test.ts > derives reconciliation detail actions from the selected run" }
       ],
       "artifacts": [
         { "kind": "replay-output", "path": "artifacts/reconciliation/latest-break-replay.json", "description": "Replay output proving break queue state and transitions." },

@@ -268,7 +268,7 @@ public sealed class TradingOperatorReadinessService
                     OperatorWorkItemKindDto.PaperReplay,
                     "Paper replay verification stale",
                     replayFreshness.Detail,
-                    OperatorWorkItemToneDto.Critical,
+                    OperatorWorkItemToneDto.Warning,
                     replay.SessionId,
                     auditReference: replay.VerificationAuditId,
                     workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId),

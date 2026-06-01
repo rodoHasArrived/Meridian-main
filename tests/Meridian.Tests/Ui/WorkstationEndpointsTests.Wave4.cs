@@ -201,9 +201,10 @@ public sealed partial class WorkstationEndpointsTests
                 "SECURITY_MASTER_RESOLUTION_REQUIRED",
                 "BROKER_SYNC_STALE",
                 "BROKER_CASH_COVERAGE_INCOMPLETE",
-                "POSTING_INCOMPLETE",
-                "RECONCILIATION_BREAKS_OPEN",
-                "APPROVAL_MISSING"
+                "LEDGER_POSTING_REQUIRED",
+                "RECONCILIATION_CRITICAL_BREAKS_OPEN",
+                "REPORT_PACK_REQUIRED",
+                "APPROVAL_REQUIRED"
             ]);
         calendarItem.ReadinessNextActions.Should().NotBeNullOrEmpty();
     }
@@ -356,10 +357,10 @@ public sealed partial class WorkstationEndpointsTests
             [
                 "SECURITY_MASTER_RESOLUTION_REQUIRED",
                 "BROKER_SYNC_STALE",
-                "POSTING_INCOMPLETE",
-                "RECONCILIATION_BREAKS_OPEN",
-                "EVIDENCE_INCOMPLETE",
-                "APPROVAL_MISSING"
+                "LEDGER_POSTING_REQUIRED",
+                "RECONCILIATION_CRITICAL_BREAKS_OPEN",
+                "REPORT_PACK_REQUIRED",
+                "APPROVAL_REQUIRED"
             ]);
         readiness.NextActions.Should().OnlyContain(action => !string.IsNullOrWhiteSpace(action.Route));
     }
@@ -465,9 +466,9 @@ public sealed partial class WorkstationEndpointsTests
             .Contain(code =>
                 string.Equals(code, "OPERATIONS_GATES_NOT_PASSED", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(code, "OPERATIONS_PREREQUISITE_GATES_NOT_PASSED", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(code, "APPROVAL_MISSING", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(code, "POSTING_INCOMPLETE", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(code, "EVIDENCE_INCOMPLETE", StringComparison.OrdinalIgnoreCase));
+                string.Equals(code, "APPROVAL_REQUIRED", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(code, "LEDGER_POSTING_REQUIRED", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(code, "REPORT_PACK_REQUIRED", StringComparison.OrdinalIgnoreCase));
 
         using var timelineResponse = await client.GetAsync(UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityTimeline, "workflowId", workflowId.ToString()));
         timelineResponse.StatusCode.Should().Be(HttpStatusCode.OK);

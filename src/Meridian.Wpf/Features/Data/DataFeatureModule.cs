@@ -12,9 +12,15 @@ namespace Meridian.Wpf.Features.Data;
 
 public sealed class DataFeatureModule : IDesktopFeatureModule
 {
+    private static IReadOnlyList<string> LegacyDataShellAliases =>
+    [
+        "DataOperationsShell",
+        "DataOperationsWorkspace"
+    ];
+
     private static readonly IReadOnlyList<ShellPageDescriptor> Pages =
     [
-        ShellPageRegistryBuilder.Page<DataWorkspaceShellPage>("DataShell", "Data Workspace", "Monitor providers, collection jobs, storage, quality, and data products.", "data", "Launchpad", "\uEE94", 0, ShellNavigationVisibilityTier.Primary, ["data", "data operations", "home", "workspace"], ["Provider", "ProviderHealth", "Backfill", "Storage", "DataQuality"], ["DataOperationsShell", "DataOperationsWorkspace"]),
+        ShellPageRegistryBuilder.Page<DataWorkspaceShellPage>("DataShell", "Data Workspace", "Monitor providers, collection jobs, storage, quality, and data products.", "data", "Launchpad", "\uEE94", 0, ShellNavigationVisibilityTier.Primary, ["data", "data operations", "home", "workspace"], ["Provider", "ProviderHealth", "Backfill", "Storage", "DataQuality"], LegacyDataShellAliases),
         ShellPageRegistryBuilder.Page<ProviderPage>("Provider", "Providers", "Configure provider integrations and review readiness.", "data", "Operations Queue", "\uEC05", 10, ShellNavigationVisibilityTier.Primary, ["provider", "integrations", "configure"], ["ProviderHealth", "DataSources", "AddProviderWizard"], ["Providers"]),
         ShellPageRegistryBuilder.Page<BackfillPage>("Backfill", "Backfill", "Monitor gap-fill jobs and review blockers.", "data", "Operations Queue", "\uE896", 20, ShellNavigationVisibilityTier.Primary, ["historical", "backfill", "jobs", "monitor"], ["CollectionSessions", "DataQuality", "Storage"]),
         ShellPageRegistryBuilder.Page<SymbolsPage>("Symbols", "Symbols", "Review, add, and curate symbols used across workflows.", "data", "Catalog", "\uE8AB", 30, ShellNavigationVisibilityTier.Primary, ["symbol", "catalog", "search", "review"], ["SymbolMapping", "SymbolStorage", "SecurityMaster"]),

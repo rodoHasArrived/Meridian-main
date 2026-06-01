@@ -57,9 +57,9 @@ For migration context and replacement mappings, see:
 | `debug-startup` | Fast startup and diagnostics sweep for debugging | `artifacts/desktop-workflows/<timestamp>-debug-startup/` |
 | `screenshot-catalog` | Refresh the existing WPF screenshot set used by docs | `docs/screenshots/desktop/` when run through `capture-desktop-screenshots.ps1` |
 | `manual-overview` | Shell and workspace overview for operators | Included in the generated user manual |
-| `manual-data-operations` | Providers, symbols, storage, and backfill workflow | Included in the generated user manual |
-| `manual-research-and-trading` | Research, backtesting, Quant Script, and trading flow | Included in the generated user manual |
-| `manual-governance` | Governance, ledger, notifications, and reference data flow | Included in the generated user manual |
+| `manual-data` | Providers, symbols, storage, and backfill workflow | Included in the generated user manual |
+| `manual-strategy-and-trading` | Strategy, backtesting, Quant Script, and trading flow | Included in the generated user manual |
+| `manual-accounting` | Accounting, ledger, notifications, and reference data flow | Included in the generated user manual |
 
 The `Desktop Screenshot Capture` GitHub workflow runs the `screenshot-catalog` workflow for catalog
 captures and can commit refreshed PNGs under `docs/screenshots/desktop/`. Each hosted run also

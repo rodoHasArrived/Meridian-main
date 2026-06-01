@@ -10,7 +10,7 @@
 <title>FundOpsReconciliation</title>
 <polygon fill="white" stroke="none" points="-36,36 -36,-604.8 1799.29,-604.8 1799.29,36 -36,36"/>
 <text xml:space="preserve" text-anchor="middle" x="881.64" y="-554" font-family="Helvetica,sans-Serif" font-size="12.00">Meridian &#45; Fund Ops and Reconciliation</text>
-<text xml:space="preserve" text-anchor="middle" x="881.64" y="-539.6" font-family="Helvetica,sans-Serif" font-size="12.00">Governance workspace, reconciliation engine, and review loop</text>
+<text xml:space="preserve" text-anchor="middle" x="881.64" y="-539.6" font-family="Helvetica,sans-Serif" font-size="12.00">Accounting workspace, reconciliation engine, and review loop</text>
 <g id="clust1" class="cluster">
 <title>cluster_surfaces</title>
 <path fill="#faf5ff" stroke="#805ad5" d="M20,-198C20,-198 771.5,-198 771.5,-198 777.5,-198 783.5,-204 783.5,-210 783.5,-210 783.5,-268 783.5,-268 783.5,-274 777.5,-280 771.5,-280 771.5,-280 20,-280 20,-280 14,-280 8,-274 8,-268 8,-268 8,-210 8,-210 8,-204 14,-198 20,-198"/>
@@ -40,8 +40,8 @@
 <g id="node1" class="node">
 <title>GOVERNANCE_UI</title>
 <path fill="#805ad5" stroke="black" d="M170.08,-250C170.08,-250 28,-250 28,-250 22,-250 16,-244 16,-238 16,-238 16,-218 16,-218 16,-212 22,-206 28,-206 28,-206 170.08,-206 170.08,-206 176.08,-206 182.08,-212 182.08,-218 182.08,-218 182.08,-238 182.08,-238 182.08,-244 176.08,-250 170.08,-250"/>
-<text xml:space="preserve" text-anchor="middle" x="99.04" y="-237" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Governance workspace</text>
-<text xml:space="preserve" text-anchor="middle" x="99.04" y="-225" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">GovernanceWorkspaceShellPage</text>
+<text xml:space="preserve" text-anchor="middle" x="99.04" y="-237" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Accounting workspace</text>
+<text xml:space="preserve" text-anchor="middle" x="99.04" y="-225" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">AccountingWorkspaceShellPage</text>
 <text xml:space="preserve" text-anchor="middle" x="99.04" y="-213" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">FundLedgerViewModel</text>
 </g>
 <!-- API_CLIENT -->

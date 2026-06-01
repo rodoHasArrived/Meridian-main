@@ -34,8 +34,9 @@ operator workstations. The current delivery focus is turning that breadth into o
 cohesive operator product across Trading, Portfolio, Accounting, Reporting, Strategy, Data, and
 Settings.
 
-**Use current repo docs as authoritative context:** rely on `README.md`, `docs/status/ROADMAP.md`,
-and `.claude/skills/_shared/project-context.md` instead of fixed file-count snapshots.
+**Use current repo docs as authoritative context:** rely on `README.md`, `docs/roadmap/data/*.yml`,
+`docs/roadmap/generated/ROADMAP_SUMMARY.md`, and `.claude/skills/_shared/project-context.md`
+instead of fixed file-count snapshots or migrated status stubs.
 
 ---
 

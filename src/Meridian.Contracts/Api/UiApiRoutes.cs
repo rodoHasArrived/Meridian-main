@@ -444,6 +444,7 @@ public static class UiApiRoutes
     public const string ExportQualityReport = "/api/export/quality-report";
     public const string ExportOrderflow = "/api/export/orderflow";
     public const string ExportIntegrity = "/api/export/integrity";
+    public const string ExportStrategyPackage = "/api/export/strategy-package";
     public const string ExportResearchPackage = "/api/export/research-package";
 
     // Lean integration endpoints

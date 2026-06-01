@@ -136,8 +136,8 @@ Accounting, Reporting, Trading, and Portfolio while retaining Research, Data Ope
 Governance constants as compatibility aliases. Shared endpoints and clients should consume the
 canonical constants for new route references so visible workspace routing stays aligned across
 browser and WPF surfaces. Contract XML documentation should describe visible workspaces as
-Strategy, Data, and Accounting even when retained DTO names preserve legacy Research or Governance
-identifiers for compatibility.
+Strategy, Data, and Accounting. Legacy Research, Data Operations, and Governance identifiers are
+route or serialized payload compatibility concepts only, not active workstation contract type names.
 
 Instrument Passport contracts are attached to the shared Security Master workstation trust
 workbench payloads. `InstrumentPassportDto` carries identifier and provider mappings, lifecycle
@@ -172,6 +172,9 @@ Strategy briefing contracts live in `Workstation/StrategyBriefingDtos.cs` and pr
 canonical Strategy-named payloads for run drill-ins, saved comparisons, alerts, "what changed"
 items, workspace summary, and the full briefing DTO. Older `ResearchBriefing*` contracts are
 retained as compatibility payloads while WPF and new consumers move to the Strategy names.
+The workstation bootstrap contract in `Workstation/WorkstationBootstrapDtos.cs` now exposes
+`WorkstationStrategyPayload` as the canonical payload for `/api/workstation/strategy`;
+`/api/workstation/research` remains a compatibility alias for existing clients.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve

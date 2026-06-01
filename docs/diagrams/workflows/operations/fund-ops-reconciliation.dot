@@ -2,7 +2,7 @@
 // Meridian current project state
 // Last Updated: 2026-05-28
 //
-// This diagram shows the current governance/fund-ops reconciliation loop across
+// This diagram shows the current accounting/fund-ops reconciliation loop across
 // workstation views, reconciliation services, the F# reconciliation engine, and
 // the persisted break queue/history repository.
 
@@ -13,16 +13,16 @@ digraph FundOpsReconciliation {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - Fund Ops and Reconciliation\nGovernance workspace, reconciliation engine, and review loop";
+  label="Meridian - Fund Ops and Reconciliation\nAccounting workspace, reconciliation engine, and review loop";
 
   subgraph cluster_surfaces {
-    label="Governance Surfaces";
+    label="Accounting Surfaces";
     color="#805ad5";
     style="rounded";
     bgcolor="#faf5ff";
 
     GOVERNANCE_UI [fillcolor="#805ad5", fontcolor="white",
-                   label="Governance workspace\nGovernanceWorkspaceShellPage\nFundLedgerViewModel"];
+                   label="Accounting workspace\nAccountingWorkspaceShellPage\nFundLedgerViewModel"];
     API_CLIENT [fillcolor="#c4b5fd",
                 label="IWorkstationReconciliationApiClient\nreview / resolve / dismiss"];
     WORKSTATION_API [fillcolor="#c4b5fd",

@@ -10,8 +10,8 @@ import {
 } from "@/lib/workspace";
 import packageJson from "../package.json";
 import type {
-  DataOperationsBackfillRecord,
-  DataOperationsProviderRecord,
+  DataBackfillRecord,
+  DataProviderRecord,
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
   ReportingWorkspaceResponse,
@@ -553,7 +553,7 @@ function titleCase(value: string): string {
 export function buildCommandPaletteTriggerState(open: boolean): AppShellCommandPaletteTriggerState {
   return {
     label: open ? "Close workstation command palette (Ctrl K)" : "Open workstation command palette (Ctrl K)",
-    placeholder: "Search workflows, routes, presets...",
+    placeholder: "Go to route, action, evidence...",
     shortcutLabel: "Ctrl K",
     controlsId: COMMAND_PALETTE_DIALOG_ID,
     expanded: open,
@@ -1362,7 +1362,7 @@ function buildWorkflowContinuityStepStatus(
     case "quant-lab":
     case "covered-call":
     case "strategy":
-      return buildResearchContinuityStatus(context);
+      return buildStrategyContinuityStatus(context);
     case "readiness":
     case "paper-readiness":
     case "trading-readiness":
@@ -1440,7 +1440,7 @@ function buildTrustedDataContinuityStatus({ payload }: WorkflowContinuityStatusC
     : { label: "Trusted", tone: "ready" };
 }
 
-function buildResearchContinuityStatus({ payload, workflowError }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
+function buildStrategyContinuityStatus({ payload, workflowError }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
   if (workflowError) {
     return { label: "Catalog degraded", tone: "review" };
   }
@@ -1994,7 +1994,7 @@ function buildStrategyFocusItems({ payload }: WorkflowContinuityStatusContext): 
   }
 
   return (strategy.runs ?? [])
-    .map((run, index) => buildOperatorFocusCandidateFromResearchRun(run, index))
+    .map((run, index) => buildOperatorFocusCandidateFromStrategyRun(run, index))
     .filter((item): item is OperatorFocusCandidate => Boolean(item));
 }
 
@@ -2044,7 +2044,7 @@ function buildOperatorFocusCandidateFromGate(
 }
 
 function buildOperatorFocusCandidateFromProvider(
-  provider: DataOperationsProviderRecord,
+  provider: DataProviderRecord,
   index: number
 ): OperatorFocusCandidate | null {
   if (provider.status === "Healthy") {
@@ -2065,7 +2065,7 @@ function buildOperatorFocusCandidateFromProvider(
 }
 
 function buildOperatorFocusCandidateFromBackfill(
-  backfill: DataOperationsBackfillRecord,
+  backfill: DataBackfillRecord,
   index: number
 ): OperatorFocusCandidate | null {
   if (backfill.status !== "Review") {
@@ -2106,7 +2106,7 @@ function buildOperatorFocusCandidateFromBreak(
   });
 }
 
-function buildOperatorFocusCandidateFromResearchRun(
+function buildOperatorFocusCandidateFromStrategyRun(
   run: StrategyRunRecord,
   index: number
 ): OperatorFocusCandidate | null {
@@ -2655,7 +2655,7 @@ function inferPrimaryOperatingSymbol(payload: AppShellWorkspacePayload): string 
     ?? normalizeSubjectSymbol(payload.trading?.fills?.[0]?.symbol ?? null);
 }
 
-function findSymbolBackfill(backfills: DataOperationsBackfillRecord[], symbol: string): DataOperationsBackfillRecord | null {
+function findSymbolBackfill(backfills: DataBackfillRecord[], symbol: string): DataBackfillRecord | null {
   return backfills.find((backfill) => backfill.scope.toUpperCase().includes(symbol)) ?? null;
 }
 
@@ -3038,7 +3038,7 @@ function routeForSystemEvent(source: string): string {
     return WORKSTATION_ROUTE_CATALOG.reportingEvidence;
   }
 
-  if (normalized.includes("strategy") || normalized.includes("strategy")) {
+  if (normalized.includes("strategy") || normalized.includes("research")) {
     return WORKSTATION_ROUTE_CATALOG.strategy;
   }
 

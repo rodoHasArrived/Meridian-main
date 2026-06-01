@@ -14,10 +14,16 @@ describe("CommandPalette", () => {
     expect(screen.getByRole("navigation", { name: "23 workstation commands" })).toBeInTheDocument();
     expect(screen.getByText("Esc to close")).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveFocus();
+    expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveAttribute(
+      "placeholder",
+      "Go to route, action, evidence..."
+    );
+    expect(screen.getByRole("region", { name: "Recommended commands" })).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/^Recommended command:/)).toHaveLength(4);
     expect(screen.getByText("23 commands available")).toBeInTheDocument();
     expect(screen.getByLabelText("Workspaces: 7 workspaces")).toBeInTheDocument();
     expect(screen.getByLabelText("Quick routes: 16 quick routes")).toBeInTheDocument();
-    expect(screen.getByLabelText("Route /portfolio")).toBeInTheDocument();
+    expect(screen.getAllByLabelText("Route /portfolio").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveAttribute("aria-current", "page");
   });
 
@@ -80,6 +86,7 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings");
 
+    expect(screen.queryByRole("region", { name: "Recommended commands" })).not.toBeInTheDocument();
     expect(screen.getByText("2 of 23 commands match")).toBeInTheDocument();
     expect(screen.getByLabelText("Workspaces: 1 workspace")).toBeInTheDocument();
     expect(screen.getByLabelText("Quick routes: 1 quick route")).toBeInTheDocument();
@@ -194,7 +201,7 @@ describe("CommandPalette", () => {
       "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
     )).toHaveAttribute("href", "/settings#alpaca-provider-setup");
     expect(screen.getByText("Blocked")).toBeInTheDocument();
-    expect(screen.getByText("Fix provider setup")).toBeInTheDocument();
+    expect(screen.getAllByText("Fix provider setup").length).toBeGreaterThanOrEqual(1);
   });
 
   it("closes when the backdrop is selected", () => {

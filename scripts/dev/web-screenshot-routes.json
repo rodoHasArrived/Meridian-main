@@ -10,15 +10,15 @@
     {
       "id": "W00",
       "name": "web-overview-workspace",
-      "path": "/",
+      "path": "/trading",
       "docLabel": "Overview",
-      "waitForText": "Operator Workstation",
+      "waitForText": "Trading Workstation",
       "requiredApiRoutes": [
         "/api/workstation/session",
         "/api/status"
       ],
       "waitForTexts": [
-        "Providers Online",
+        "Trading Controls",
         "Ops Desk"
       ]
     },
@@ -89,8 +89,8 @@
         "/api/workstation/operator/inbox"
       ],
       "waitForTexts": [
-        "ReviewRequired",
-        "Promotion checklist review pending"
+        "REVIEW REQUIRED",
+        "Reconciliation clear"
       ]
     },
     {
@@ -231,8 +231,8 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Report Packs",
-        "Board-ready workbook export."
+        "Evidence Workbench",
+        "Evidence workbench failed to load."
       ]
     },
     {
@@ -279,9 +279,9 @@
     },
     {
       "id": "W05B",
-      "name": "web-strategy-research",
-      "path": "/strategy/research",
-      "docLabel": "Strategy \u2014 Research",
+      "name": "web-strategy-lab",
+      "path": "/strategy/lab",
+      "docLabel": "Strategy \u2014 Lab",
       "waitForText": "Strategy Lane",
       "requiredApiRoutes": [
         "/api/workstation/strategy"
@@ -301,8 +301,8 @@
         "/api/workstation/strategy"
       ],
       "waitForTexts": [
-        "Mean Reversion FX",
-        "Promotions"
+        "Quant Lab is ready.",
+        "Starter templates"
       ]
     },
     {
@@ -319,7 +319,7 @@
       ],
       "waitForTexts": [
         "Strategy Builder Workbench",
-        "Mean Reversion FX"
+        "Equity momentum breakout"
       ]
     },
     {
@@ -332,8 +332,8 @@
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Providers Healthy",
-        "Polygon"
+        "Data command deck",
+        "Provider Management"
       ]
     },
     {
@@ -346,8 +346,8 @@
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Providers Healthy",
-        "Polygon"
+        "Symbol watchlist",
+        "QUICK ADD"
       ]
     },
     {
@@ -360,8 +360,8 @@
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Providers Healthy",
-        "Polygon"
+        "Live Market Data Workspace",
+        "CONNECTION: CONNECTED"
       ]
     },
     {
@@ -374,8 +374,8 @@
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Providers Healthy",
-        "Polygon"
+        "Data command deck",
+        "Provider Management"
       ]
     },
     {
@@ -397,8 +397,8 @@
         "/api/brokerage-connections/alpaca/status"
       ],
       "waitForTexts": [
-        "Paper Trading Readiness",
-        "Daily paper readiness"
+        "Operator control posture",
+        "Profile and access posture"
       ]
     },
     {
@@ -420,8 +420,8 @@
         "/api/brokerage-connections/alpaca/status"
       ],
       "waitForTexts": [
-        "Paper Trading Readiness",
-        "Daily paper readiness"
+        "Operator control posture",
+        "Profile and access posture"
       ]
     },
     {
@@ -443,8 +443,8 @@
         "/api/brokerage-connections/alpaca/status"
       ],
       "waitForTexts": [
-        "Paper Trading Readiness",
-        "Daily paper readiness"
+        "Operator control posture",
+        "Profile and access posture"
       ]
     }
   ]

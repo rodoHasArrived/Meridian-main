@@ -17,7 +17,7 @@
     "port": 8080
   },
   "screenshots": {
-    "outputRoot": "docs/screenshots/desktop/manuals/manual-data-operations",
+    "outputRoot": "docs/screenshots/desktop/manuals/manual-data",
     "retention": {
       "maxAgeDays": 14,
       "retainLatest": 10

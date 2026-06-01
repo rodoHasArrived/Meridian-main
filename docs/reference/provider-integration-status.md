@@ -44,8 +44,8 @@
 
 | Surface | Primary owner | Backup owner | Minimum refresh cadence | Refresh trigger |
 | --- | --- | --- | --- | --- |
-| `provider-integration-status.md` (this board) | Data Operations & Provider Reliability owner | Trading Workstation owner | **Twice weekly during active integrations** (Monday + Thursday UTC) | Any provider phase move, blocker state change, new bounded-runtime evidence, or operator sign-off state change |
-| `provider-validation-matrix.md` | Data Operations & Provider Reliability owner | Shared Platform Interop owner | Weekly minimum (or same-day when evidence changes) | New `run-wave1-provider-validation.ps1` output, DK1 packet/sign-off updates, or deferred-provider scope changes |
+| `provider-integration-status.md` (this board) | Data & Provider Reliability owner | Trading Workstation owner | **Twice weekly during active integrations** (Monday + Thursday UTC) | Any provider phase move, blocker state change, new bounded-runtime evidence, or operator sign-off state change |
+| `provider-validation-matrix.md` | Data & Provider Reliability owner | Shared Platform Interop owner | Weekly minimum (or same-day when evidence changes) | New `run-wave1-provider-validation.ps1` output, DK1 packet/sign-off updates, or deferred-provider scope changes |
 | `../status/kernel-readiness-dashboard.md` | Trading Workstation owner | Governance/Fund Ops owner | Weekly minimum (Mon cadence rule already defined) | Any gate-status/readiness change, operator-sign-off movement, or milestone target-date update |
 
 ## Refresh workflow

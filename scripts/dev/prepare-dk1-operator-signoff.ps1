@@ -16,7 +16,7 @@ Set-StrictMode -Version Latest
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 . (Join-Path $PSScriptRoot "SharedCheckpoint.ps1")
 $dateStamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd")
-$requiredOperatorOwners = @("Data Operations", "Provider Reliability", "Trading")
+$requiredOperatorOwners = @("Data", "Provider Reliability", "Trading")
 
 if ([string]::IsNullOrWhiteSpace($OutputPath)) {
     $OutputPath = Join-Path $repoRoot "artifacts/provider-validation/_automation/$dateStamp/dk1-operator-signoff.json"
@@ -422,7 +422,7 @@ function New-OperatorSignoffTemplate {
         purpose = "DK1 operator sign-off for the Alpaca/Robinhood/Yahoo pilot parity packet."
         requiredOwners = $RequiredOwners
         instructions = @(
-            "Only fill this file after Data Operations, Provider Reliability, and Trading have reviewed the DK1 packet.",
+            "Only fill this file after Data, Provider Reliability, and Trading have reviewed the DK1 packet.",
             "When packetReview is present, do not copy this sign-off file to another DK1 packet; regenerate the template for each reviewed packet.",
             "Each approval must include owner, signedBy, signedAtUtc, approved decision, and rationale.",
             "Run prepare-dk1-operator-signoff.ps1 -Validate before passing this file to run-wave1-provider-validation.ps1 or generate-dk1-pilot-parity-packet.ps1."

@@ -3,7 +3,7 @@ import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
-  DataOperationsProviderRecord,
+  DataProviderRecord,
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
   ReportingWorkspaceResponse,
@@ -668,7 +668,7 @@ function buildActiveSessionFacts(readiness: TradingOperatorReadiness | null): Re
 
 function buildProviderTrustRows(
   readiness: TradingOperatorReadiness | null,
-  providers: DataOperationsProviderRecord[]
+  providers: DataProviderRecord[]
 ): ReadinessConsoleRowBase[] {
   const rows: ReadinessConsoleRowBase[] = [];
   const trustGate = readiness?.trustGate ?? null;

@@ -134,7 +134,7 @@ valuation projections instead of carrying a separate graph fixture. The workspac
 command palette surface the route from their route-catalog/view-model seams so discovery labels
 remain centralized.
 Strategy workspace navigation uses canonical Strategy labels for subroutes, including the retained
-`/strategy/research` route, so browser discovery does not expose `Research` as a visible root or
+`/strategy/lab` route, so browser discovery does not expose `Research` as a visible root or
 lane name while compatibility routes continue to resolve.
 Strategy run-library live-region announcements and command failure messages also use canonical
 Strategy wording while retained `Research*` DTO and component names remain compatibility seams.
@@ -214,4 +214,4 @@ Browser reconciliation route helpers include the shared Accounting casework fami
 
 ## Accounting close browser surface
 
-The Accounting route reuses governance ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/governance-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
+The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.

@@ -38,6 +38,7 @@ export interface DenseRowDetailPanelProps {
   className?: string;
   role?: "region" | "complementary" | "status";
   ariaLive?: "polite" | "assertive" | "off";
+  selectedSourceLabel?: string;
 }
 
 export function DenseRowDetailPanel({
@@ -46,7 +47,8 @@ export function DenseRowDetailPanel({
   children,
   className,
   role = "region",
-  ariaLive = "polite"
+  ariaLive = "polite",
+  selectedSourceLabel = "Selected detail"
 }: DenseRowDetailPanelProps) {
   return (
     <aside
@@ -56,6 +58,7 @@ export function DenseRowDetailPanel({
       aria-live={ariaLive === "off" ? undefined : ariaLive}
       tabIndex={-1}
       data-dense-row-detail-panel="true"
+      data-selected-source={selectedSourceLabel}
       className={className}
       onKeyDown={handleDenseRowDetailPanelKeyDown}
     >

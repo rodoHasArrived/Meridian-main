@@ -208,6 +208,42 @@ export function CommandPalette({
               {viewModel.filteredItemCountLabel}
             </div>
           </div>
+          {query.trim() === "" && viewModel.recommendedItems.length > 0 ? (
+            <section className="mb-3 rounded-md border border-primary/25 bg-primary/5 px-3 py-3" aria-label={viewModel.recommendedItemsLabel}>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="eyebrow-label">{viewModel.recommendedItemsLabel}</div>
+                <div className="font-mono text-[10px] text-muted-foreground">{viewModel.recommendedItemsCountLabel}</div>
+              </div>
+              <div className="grid gap-1 sm:grid-cols-2">
+                {viewModel.recommendedItems.map((item) => (
+                  <Link
+                    key={`recommended:${item.id}`}
+                    to={item.route}
+                    data-command-id={`recommended:${item.id}`}
+                    aria-label={`Recommended command: ${item.ariaLabel}`}
+                    className="command-palette-command rounded-md border border-border/60 bg-background/70 px-3 py-2 text-sm transition-colors hover:border-primary/35 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    onClick={() => {
+                      if (item.presetId && onPresetUsed) {
+                        void Promise.resolve(onPresetUsed(item.presetId)).catch(() => undefined);
+                      }
+
+                      closePalette();
+                    }}
+                  >
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="block truncate font-semibold leading-snug">{item.commandLabel}</span>
+                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{item.description}</span>
+                      </span>
+                      <span className="command-palette-route shrink-0" aria-label={`Route ${item.routeLabel}`}>
+                        {item.routeLabel}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
           {viewModel.emptyState ? (
             <section
               id={viewModel.emptyState.id}
@@ -268,6 +304,7 @@ export function CommandPalette({
                     ref={item.id === viewModel.initialFocusItemId ? initialCommandRef : undefined}
                     to={item.route}
                     data-command-id={item.id}
+                    data-command-list-item="true"
                     aria-label={item.ariaLabel}
                     aria-current={item.active ? "page" : undefined}
                     className={cn(
@@ -341,7 +378,7 @@ function getCommandPaletteCommandElements(dialog: HTMLDivElement | null): HTMLAn
     return [];
   }
 
-  return Array.from(dialog.querySelectorAll<HTMLAnchorElement>(".command-palette-command"));
+  return Array.from(dialog.querySelectorAll<HTMLAnchorElement>("[data-command-list-item='true']"));
 }
 
 function getCommandPaletteFocusTarget(

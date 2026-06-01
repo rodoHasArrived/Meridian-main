@@ -4,14 +4,12 @@ Use this file to decide which Meridian sources to read first and how to shape ro
 
 ## Source Priority
 
-1. `docs/status/ROADMAP.md`
-2. `docs/status/FEATURE_INVENTORY.md`
-3. `docs/status/FULL_IMPLEMENTATION_TODO_*.md`
-4. `docs/plans/trading-workstation-migration-blueprint.md`
-5. `docs/plans/meridian-6-week-roadmap.md`
-6. `docs/status/IMPROVEMENTS.md`
-7. `docs/status/EVALUATIONS_AND_AUDITS.md`
-8. directly relevant files in `src/` or `tests/` when a roadmap claim depends on current implementation
+1. `docs/roadmap/data/*.yml`
+2. `docs/roadmap/generated/ROADMAP_SUMMARY.md`
+3. `docs/roadmap/generated/roadmap-register.md`
+4. `docs/product/meridian-design-document.md`
+5. `docs/status/README.md` for migration routing and status/evidence boundaries
+6. directly relevant files in `src/` or `tests/` when a roadmap claim depends on current implementation
 
 ## Typical Tasks
 
@@ -24,7 +22,7 @@ Use this file to decide which Meridian sources to read first and how to shape ro
 
 ### Create a new time-boxed roadmap
 
-- Start from the active roadmap, not a greenfield list.
+- Start from the roadmap registry, not a greenfield list.
 - Pull only the items that fit the requested horizon.
 - Keep non-goals explicit.
 - Put enabling work ahead of surface polish.

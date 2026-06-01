@@ -265,7 +265,7 @@ public sealed class DesktopWorkflowScriptTests
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
         var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\wpf-dev-validation.yml"));
         var makefile = File.ReadAllText(GetRepositoryFilePath(@"make\desktop.mk"));
-        var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\development\desktop-testing-guide.md"));
+        var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\engineering\README.md"));
 
         script.Should().Contain("[string]$Filter = \"FullyQualifiedName~DesktopWorkflowScriptTests\"");
         script.Should().Contain("[switch]$BuildOnly");
