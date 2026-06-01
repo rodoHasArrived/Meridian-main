@@ -3378,11 +3378,11 @@ function buildResearchStatusAnnouncement({
   promotionHistoryLoaded?: boolean;
 }): string {
   if (activeCommand === "compare") {
-    return "Comparing selected research runs.";
+    return "Comparing selected strategy runs.";
   }
 
   if (activeCommand === "diff") {
-    return "Diffing selected research runs.";
+    return "Diffing selected strategy runs.";
   }
 
   if (activeCommand === "history") {
@@ -3390,7 +3390,7 @@ function buildResearchStatusAnnouncement({
   }
 
   if (actionError) {
-    return `Research command failed: ${actionError}`;
+    return `Strategy command failed: ${actionError}`;
   }
 
   if (runDiff) {

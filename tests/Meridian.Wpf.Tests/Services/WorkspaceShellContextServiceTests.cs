@@ -43,7 +43,7 @@ public sealed class WorkspaceShellContextServiceTests
             CriticalTone = WorkspaceTone.Info
         });
 
-        context.WorkspaceTitle.Should().Be("Governance");
+        context.WorkspaceTitle.Should().Be("Accounting");
         context.Badges.Should().ContainSingle(b => b.Label == "Fund" && b.Value.Contains("Alpha Credit"));
         context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Live" && b.Tone == WorkspaceTone.Success);
         context.Badges.Should().ContainSingle(b => b.Label == "Alerts" && b.Value == "No recent alerts");
@@ -81,6 +81,7 @@ public sealed class WorkspaceShellContextServiceTests
             ReviewStateTone = WorkspaceTone.Warning
         });
 
+        context.WorkspaceTitle.Should().Be("Data");
         context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Demo data" && b.Tone == WorkspaceTone.Info);
         context.Badges.Should().ContainSingle(b => b.Label == "Freshness" && b.Tone == WorkspaceTone.Warning);
         context.Badges.Should().ContainSingle(b => b.Label == "Alerts" && b.Value.Contains("1 unread") && b.Tone == WorkspaceTone.Warning);
@@ -122,6 +123,7 @@ public sealed class WorkspaceShellContextServiceTests
             ReviewStateTone = WorkspaceTone.Success
         });
 
+        context.WorkspaceTitle.Should().Be("Strategy");
         context.Badges.Should().ContainSingle(b => b.Label == "Scope" && b.Value.Contains("Alpha Credit"));
         context.Badges.Should().ContainSingle(b => b.Label == "Scope" && b.Value == "Fund");
         context.Badges.Should().ContainSingle(b => b.Label == "Currency" && b.Value == "USD");

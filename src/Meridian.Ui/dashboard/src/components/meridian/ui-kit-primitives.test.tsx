@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS, DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
@@ -137,6 +137,38 @@ describe("DenseDataTable", () => {
 
     expect(onButtonClick).toHaveBeenCalledTimes(1);
     expect(onRowSelect).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(screen.getByRole("button", { name: "Open AAPL" }), { key: "Enter" });
+
+    expect(onRowSelect).not.toHaveBeenCalled();
+  });
+
+  it("activates rows when keyboard events bubble from non-interactive cell content", () => {
+    const onRowSelect = vi.fn();
+
+    render(
+      <DenseDataTable
+        columns={[
+          {
+            id: "symbol",
+            label: "Symbol",
+            render: (row) => <span data-testid={`symbol-${row.id}`}>{row.symbol}</span>
+          },
+          { id: "status", label: "Status", render: (row) => row.status }
+        ]}
+        rows={rows}
+        getRowId={(row) => row.id}
+        getRowSelectAriaLabel={(row) => `Select ${row.symbol}`}
+        onRowSelect={onRowSelect}
+        selectedRowId="aapl"
+        emptyText="No rows"
+        ariaLabel="Bubbling table"
+      />
+    );
+
+    fireEvent.keyDown(screen.getByTestId("symbol-msft"), { key: "Enter" });
+
+    expect(onRowSelect).toHaveBeenLastCalledWith(rows[1]);
   });
 
   it("renders sortable headers with aria-sort and toggle commands", async () => {

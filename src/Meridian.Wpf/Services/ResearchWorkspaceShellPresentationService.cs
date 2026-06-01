@@ -140,7 +140,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
                 Detail: "Run, briefing, workflow, or shell-context state may be stale until the shell refresh succeeds.",
                 BadgeText: "Attention",
                 BadgeTone: ResearchDeskHeroTone.Warning,
-                HandoffTitle: "Reopen a stable research surface",
+                HandoffTitle: "Reopen a stable strategy surface",
                 HandoffDetail: "Use the run browser or backtest page to verify state while the shell briefing recovers.",
                 PrimaryActionId: "StrategyRuns",
                 PrimaryActionLabel: "Run Browser",
@@ -170,7 +170,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
         {
             var result = await _promotionService.ApproveAsync(new PromotionApprovalRequest(
                     RunId: activeRun.RunId,
-                    ReviewNotes: "Promoted from research workspace shell.",
+                    ReviewNotes: "Promoted from strategy workspace shell.",
                     ApprovedBy: Environment.UserName,
                     ApprovalReason: "Strategy workstation promotion",
                     ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)),
@@ -489,9 +489,9 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
 
         return new WorkspaceShellContextInput
         {
-            WorkspaceTitle = WorkspaceCopyCatalog.Research.ShellTitle,
-            WorkspaceSubtitle = WorkspaceCopyCatalog.Research.ShellSubtitle,
-            PrimaryScopeLabel = WorkspaceCopyCatalog.Research.PrimaryScopeLabel,
+            WorkspaceTitle = WorkspaceCopyCatalog.Strategy.ShellTitle,
+            WorkspaceSubtitle = WorkspaceCopyCatalog.Strategy.ShellSubtitle,
+            PrimaryScopeLabel = WorkspaceCopyCatalog.Strategy.PrimaryScopeLabel,
             PrimaryScopeValue = activeRun?.StrategyName
                 ?? briefing.Workspace.LatestStrategyName
                 ?? "No active research run",

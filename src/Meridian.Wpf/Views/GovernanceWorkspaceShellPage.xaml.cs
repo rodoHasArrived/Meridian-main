@@ -104,7 +104,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
                     ReviewStateValue = "Locked",
                     ReviewStateTone = WorkspaceTone.Warning,
                     CriticalLabel = "Attention",
-                    CriticalValue = unreadAlerts > 0 ? $"{unreadAlerts} unread alert(s)" : "Switch context to unlock governance queues",
+                    CriticalValue = unreadAlerts > 0 ? $"{unreadAlerts} unread alert(s)" : "Switch context to unlock accounting queues",
                     CriticalTone = unreadAlerts > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info
                 });
 
@@ -113,7 +113,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
                 NoFundEmptyState.Visibility = Visibility.Visible;
                 AttentionQueueScrollViewer.Visibility = Visibility.Collapsed;
                 QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? "Awaiting fund-linked scope";
-                QueueSummaryText.Text = "Governance queues unlock after a fund-linked operating context is selected.";
+                QueueSummaryText.Text = "Accounting queues unlock after a fund-linked operating context is selected.";
                 var workflow = await workflowSummaryTask.ConfigureAwait(true);
                 ApplyGovernanceLaneSummaries(profile: null, workspace: null, workflow, notifications, unreadAlerts);
                 if (workflow is not null)
@@ -149,7 +149,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             {
                     WorkspaceTitle = "Accounting Workspace",
                 WorkspaceSubtitle = "Review operations, accounting, reconciliations, reporting, and approval gates without leaving the workstation shell.",
-                PrimaryScopeLabel = "Governance Scope",
+                PrimaryScopeLabel = "Accounting Scope",
                 PrimaryScopeValue = operatingContext?.DisplayName ?? $"{profile.DisplayName} · {profile.BaseCurrency}",
                 AsOfValue = ledger?.AsOf.ToLocalTime().ToString("MMM dd yyyy HH:mm") ?? "Awaiting ledger snapshot",
                 FreshnessValue = ledger is null ? "Fund data not loaded" : $"Ledger {ledger.JournalEntryCount} journals · {ledger.TrialBalance.Count} lines",
@@ -211,7 +211,9 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
                 .ConfigureAwait(true);
 
             return summary.Workspaces.FirstOrDefault(static workspace =>
-                string.Equals(workspace.WorkspaceId, "governance", StringComparison.OrdinalIgnoreCase));
+                       string.Equals(workspace.WorkspaceId, "accounting", StringComparison.OrdinalIgnoreCase))
+                   ?? summary.Workspaces.FirstOrDefault(static workspace =>
+                       string.Equals(workspace.WorkspaceId, "governance", StringComparison.OrdinalIgnoreCase));
         }
         catch
         {
@@ -349,7 +351,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
 
         RecentWorkList.ItemsSource = notifications.Count > 0
             ? notifications.Take(3).Select(notification => new WorkspaceRecentItem { Title = notification.Title, Detail = notification.Message, Meta = $"{notification.Timestamp:g} · {notification.Type}", Tone = notification.IsRead ? WorkspaceTone.Neutral : WorkspaceTone.Warning, ActionId = "NotificationCenter", ActionLabel = "Open Alerts" }).ToArray()
-            : new[] { new WorkspaceRecentItem { Title = profile is null ? "Select the active context" : "Audit trail ready", Detail = profile is null ? "A fund-linked operating context is the main trust signal for governance review. Choose the context before working breaks or approvals." : "Open the audit trail to inspect recent governance activity and sign-off context.", Meta = profile is null ? "Locked shell" : "No recent notifications", Tone = profile is null ? WorkspaceTone.Warning : WorkspaceTone.Info, ActionId = profile is null ? "SwitchContext" : "FundAuditTrail", ActionLabel = profile is null ? "Switch Context" : "Open Audit Trail" } };
+            : new[] { new WorkspaceRecentItem { Title = profile is null ? "Select the active context" : "Audit trail ready", Detail = profile is null ? "A fund-linked operating context is the main trust signal for accounting review. Choose the context before working breaks or approvals." : "Open the audit trail to inspect recent accounting activity and sign-off context.", Meta = profile is null ? "Locked shell" : "No recent notifications", Tone = profile is null ? WorkspaceTone.Warning : WorkspaceTone.Info, ActionId = profile is null ? "SwitchContext" : "FundAuditTrail", ActionLabel = profile is null ? "Switch Context" : "Open Audit Trail" } };
     }
 
     private void UpdateGovernanceHero()

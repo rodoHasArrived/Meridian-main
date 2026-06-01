@@ -90,7 +90,7 @@ public sealed class ResearchBriefingWorkspaceService : IResearchBriefingWorkspac
                 HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
                 Summary: latestRun is null
                     ? "Start a backtest or open a saved run to populate the Market Briefing."
-                    : $"{activeRuns} active session(s), {promotionCandidates} promotion candidate(s), and {alerts.Count} alert(s) on the research desk."),
+                    : $"{activeRuns} active session(s), {promotionCandidates} promotion candidate(s), and {alerts.Count} alert(s) on the strategy desk."),
             InsightFeed: BuildInsightFeed(runs, details, alerts.Count),
             Watchlists: localWatchlists,
             RecentRuns: runs

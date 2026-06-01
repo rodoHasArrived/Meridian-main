@@ -58,6 +58,8 @@ public sealed class StrategyRunWorkspaceServiceTests
         activeContext!.PromotionStatus.Label.Should().Be("Candidate for paper");
         activeContext.AuditStatus.Label.Should().Be("Audit trail ready");
         activeContext.ValidationStatus.Label.Should().Be("Validation ready");
+        activeContext.ValidationStatus.Detail.Should().Contain("Strategy results stay out of the trading lane");
+        activeContext.ValidationStatus.Detail.Should().NotContain("Research results");
 
         var tradingSummary = await service.GetTradingSummaryAsync();
         tradingSummary.ActiveRunContext.Should().NotBeNull();

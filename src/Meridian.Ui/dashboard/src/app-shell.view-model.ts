@@ -1041,7 +1041,7 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   },
   {
     id: "trading-governance",
-    title: "Trading Governance",
+    title: "Trading Controls",
     summary: "Hold execution readiness, cockpit action, portfolio exposure, reconciliation, and report-pack review in one operational path.",
     steps: [
       {

@@ -235,9 +235,9 @@ public static class DataOperationsWorkspacePresentationBuilder
         {
             Context = new WorkspaceShellContextInput
             {
-                WorkspaceTitle = WorkspaceCopyCatalog.DataOperations.ShellTitle,
-                WorkspaceSubtitle = WorkspaceCopyCatalog.DataOperations.ShellSubtitle,
-                PrimaryScopeLabel = WorkspaceCopyCatalog.DataOperations.PrimaryScopeLabel,
+                WorkspaceTitle = WorkspaceCopyCatalog.Data.ShellTitle,
+                WorkspaceSubtitle = WorkspaceCopyCatalog.Data.ShellSubtitle,
+                PrimaryScopeLabel = WorkspaceCopyCatalog.Data.PrimaryScopeLabel,
                 PrimaryScopeValue = data.ScopeLabel,
                 AsOfValue = data.RetrievedAt.ToString("MMM dd yyyy HH:mm"),
                 FreshnessValue = freshnessValue,

@@ -24,7 +24,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private string _title = "Fund Operations";
     private string _statusText = "Select a fund profile to inspect fund operations.";
-    private string _overviewStatusText = "Select a fund profile to unlock governance fund operations.";
+    private string _overviewStatusText = "Select a fund profile to unlock accounting fund operations.";
     private string _portfolioStatusText = "No fund-scoped portfolio posture is available yet.";
     private string _bankingStatusText = "No banking snapshots are available yet.";
     private string _reconciliationStatusText = "No reconciliation runs are available yet.";
@@ -58,7 +58,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _projectionBucketSummaryText = "-";
     private string _openBreaksText = "0";
     private string _reconciliationRunsText = "0";
-    private string _reportPackStatusText = "Governance report-pack preview is waiting for a fund context.";
+    private string _reportPackStatusText = "Accounting report-pack preview is waiting for a fund context.";
     private string _reportPackKindText = GovernanceReportKindDto.TrialBalance.ToString();
     private string _reportPackAsOfText = "-";
     private string _reportPackNetAssetsText = "-";
@@ -728,7 +728,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 Title = $"Fund Operations · {activeFund.DisplayName}";
                 StatusText = accounts.Count == 0 && ledger?.JournalEntryCount is not > 0
                     ? "Fund operations are ready, but no linked account or ledger activity has been recorded yet."
-                    : "Governance fund operations are loaded for the active fund profile.";
+                    : "Accounting fund operations are loaded for the active fund profile.";
 
                 ApplyLedger(ledger);
                 ApplyAccounts(accounts, context);
@@ -750,7 +750,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             Title = $"Fund Operations · {activeFund.DisplayName}";
             StatusText = accounts.Count == 0 && ledger?.JournalEntryCount is not > 0
                 ? "Fund operations are ready, but no linked account or ledger activity has been recorded yet."
-                : "Governance fund operations are loaded for the active fund profile.";
+                : "Accounting fund operations are loaded for the active fund profile.";
 
             ApplyLedger(ledger);
             ApplyAccounts(accounts, context);
@@ -799,7 +799,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         Title = "Fund Operations";
         StatusText = "Select a fund profile to inspect fund operations.";
-        OverviewStatusText = "Select a fund profile to unlock governance fund operations.";
+        OverviewStatusText = "Select a fund profile to unlock accounting fund operations.";
         PortfolioStatusText = "No fund-scoped portfolio posture is available yet.";
         BankingStatusText = "No banking snapshots are available yet.";
         ReconciliationStatusText = "No reconciliation runs are available yet.";
@@ -851,7 +851,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ReportPackAssetSections.Clear();
         _reportPackPreview = null;
         _governanceLifecycle = null;
-        ReportPackStatusText = "Governance report-pack preview is waiting for a fund context.";
+        ReportPackStatusText = "Accounting report-pack preview is waiting for a fund context.";
         ReportPackReadinessState = WorkstationStateModel.Empty(
             "Report pack waiting for fund context",
             "Select a fund profile and refresh the preview before distributing reporting artifacts.",
@@ -1258,7 +1258,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         BrokerageAccountsText = summary.BrokerageAccountCount.ToString("N0");
         CustodyAccountsText = summary.CustodyAccountCount.ToString("N0");
         OverviewStatusText = summary.TotalAccounts == 0 && summary.JournalEntryCount == 0
-            ? "The governance shell is ready. Link accounts, import positions, or record a run to populate fund operations."
+            ? "The Accounting shell is ready. Link accounts, import positions, or record a run to populate fund operations."
             : BuildOverviewStatus(summary);
     }
 
@@ -1287,7 +1287,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         {
             AuditTrail.Add(new FundAuditEntry(
                 Timestamp: workflowUpdatedAt,
-                Category: "Governance lifecycle",
+                Category: "Approval lifecycle",
                 Description: governance.AuditTraceability,
                 Reference: governance.ActiveWorkflowId ?? "shared-governance"));
         }
@@ -1482,7 +1482,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var activeFund = _fundContextService.CurrentFundProfile;
         if (activeFund is null)
         {
-            ReportPackStatusText = "Select a fund profile to build a governance report-pack preview.";
+            ReportPackStatusText = "Select a fund profile to build an accounting report-pack preview.";
             ReportPackAssetSections.Clear();
             return;
         }
@@ -1586,7 +1586,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         var reportOwner = string.IsNullOrWhiteSpace(ReconciliationOperatorText) ||
                           string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)
-            ? "Governance operator"
+            ? "Accounting operator"
             : ReconciliationOperatorText;
         var readiness = _governanceLifecycle?.CloseReadiness;
         var traceability = _governanceLifecycle?.AuditTraceability;
@@ -1643,7 +1643,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             new WorkstationEvidenceLinkModel(
                 "Audit traceability",
                 "FundAuditTrail",
-                "governance lifecycle",
+                "approval lifecycle",
                 string.IsNullOrWhiteSpace(traceability) ? "Traceability not reported by the shared lifecycle." : traceability)
         };
 
@@ -1687,9 +1687,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         FundOperationsTab.Overview => ("Overview Mode", "Overview Workbench", "Fund-wide operating summary, liquidity posture, and exception pressure."),
         FundOperationsTab.Reconciliation => ("Reconciliation Mode", "Reconciliation Workbench", "Exception queue, operator ownership, stale-snapshot checks, and break resolution."),
-        FundOperationsTab.ReportPack => ("Reporting Mode", "Report Pack Workbench", "Reporting preview, handoff readiness, and sign-off posture for governance artifacts."),
+        FundOperationsTab.ReportPack => ("Reporting Mode", "Report Pack Workbench", "Reporting preview, handoff readiness, and sign-off posture for accounting artifacts."),
         FundOperationsTab.AuditTrail => ("Accounting Mode", "Audit Trail Workbench", "Recent journal and reconciliation evidence for operator review and traceability."),
-        FundOperationsTab.Portfolio => ("Accounting Mode", "Portfolio Accounting Workbench", "Fund-scoped positions, security coverage, and exposure review inside governance."),
+        FundOperationsTab.Portfolio => ("Accounting Mode", "Portfolio Accounting Workbench", "Fund-scoped positions, security coverage, and exposure review inside Accounting."),
         FundOperationsTab.Banking => ("Accounting Mode", "Banking Workbench", "Bank-facing balances, statements, and settlement posture for the active fund."),
         FundOperationsTab.CashFinancing => ("Accounting Mode", "Cash & Financing Workbench", "Funding ladder, financing cost, and pending-settlement review."),
         FundOperationsTab.Journal => ("Accounting Mode", "Journal Workbench", "Booked journal history and ledger-linked review for accounting operators."),
@@ -1711,7 +1711,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             "This deep link opened the reporting tab so preview freshness, handoff readiness, and sign-off posture are explicit."),
         _ => (
             "Routed to Fund Operations",
-            "This navigation landed inside the shared governance workbench.")
+            "This navigation landed inside the shared Accounting workbench.")
     };
 
     private static string BuildSnapshotWarningText(string timestampText, string fallback)

@@ -24,14 +24,14 @@ public sealed class ResearchWorkspaceShellViewModel : WorkspaceShellViewModelBas
     private string _activeRunNameText = "No selected run";
     private string _activeRunMetaText = "Start a backtest or choose a run from history.";
     private string _scenarioStrategyText = "No strategy selected";
-    private string _scenarioCoverageText = "No research session restored.";
+    private string _scenarioCoverageText = "No strategy session restored.";
     private string _runStatusText = "Awaiting run selection";
     private string _runPerformanceText = "Compare runs, equity, and fills from a selected strategy run.";
     private string _runCompareText = "Use the bottom history rail to select a run and load detail panels.";
     private string _portfolioPreviewText = "Portfolio inspector opens here once a run is selected.";
     private string _ledgerPreviewText = "Accounting impact preview opens here once a run is selected.";
     private string _riskPreviewText = "Risk and audit preview becomes available after a completed run is selected.";
-    private string _briefingSummaryText = "Pinned research context, watchlists, saved comparisons, and workflow alerts.";
+    private string _briefingSummaryText = "Pinned strategy context, watchlists, saved comparisons, and workflow alerts.";
     private string _briefingGeneratedText = "Updated just now";
     private IReadOnlyList<InsightWidget> _briefingInsights = Array.Empty<InsightWidget>();
     private IReadOnlyList<WorkstationWatchlist> _briefingWatchlists = Array.Empty<WorkstationWatchlist>();
@@ -75,8 +75,7 @@ public sealed class ResearchWorkspaceShellViewModel : WorkspaceShellViewModelBas
     private ResearchWorkspaceShellViewModel(
         ResearchWorkspaceShellPresentationService? presentationService,
         bool usePresentationService)
-        : base(ShellNavigationCatalog.GetWorkspaceShell("research")
-            ?? ShellNavigationCatalog.GetWorkspaceShell("strategy")!)
+        : base(ShellNavigationCatalog.GetWorkspaceShell(WorkstationNavigationDefaults.StrategyWorkspaceId)!)
     {
         _presentationService = usePresentationService ? presentationService : null;
         CommandGroup = ResearchWorkspaceShellPresentationService.BuildCommandGroup();

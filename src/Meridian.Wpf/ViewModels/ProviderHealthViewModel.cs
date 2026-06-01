@@ -1105,13 +1105,13 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         if (isStreaming)
         {
             workflows.Add("Live quotes");
-            workflows.Add(IsBrokerageProvider(providerId) ? "Paper trading" : "Research");
+            workflows.Add(IsBrokerageProvider(providerId) ? "Paper trading" : "Strategy");
         }
 
         if (isBackfill)
         {
             workflows.Add("Backfill");
-            workflows.Add("Research");
+            workflows.Add("Strategy");
         }
 
         if (IsBrokerageProvider(providerId))

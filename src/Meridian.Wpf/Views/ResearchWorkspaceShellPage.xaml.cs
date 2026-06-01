@@ -10,8 +10,8 @@ using Meridian.Wpf.ViewModels;
 namespace Meridian.Wpf.Views;
 
 /// <summary>
-/// Research workspace shell - landing page for the Research workspace.
-/// Hosts the Research shell view model and keeps code-behind limited to WPF
+/// Strategy workspace shell - compatibility page for the canonical Strategy workspace.
+/// Hosts the Strategy shell view model and keeps code-behind limited to WPF
 /// lifecycle, visual-resource tone application, and dock/navigation forwarding.
 /// </summary>
 public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase

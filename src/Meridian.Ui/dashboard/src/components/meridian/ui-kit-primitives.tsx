@@ -250,7 +250,7 @@ function handleSelectableRowKeyDown<T>(
     setSelectionAnnouncement: (announcement: string) => void;
   }
 ) {
-  if (event.target !== event.currentTarget) return;
+  if (event.target !== event.currentTarget && isInteractiveTableTarget(event.target)) return;
 
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();

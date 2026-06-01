@@ -112,7 +112,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         TemplatesCommand = new RelayCommand(OpenTemplates, () => !IsRunning);
         OpenRunBrowserCommand = new RelayCommand(OpenRunBrowser, () => CanOpenSelectedHistoryRun);
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => CanOpenSelectedHistoryRun);
-        CompareInResearchCommand = new RelayCommand(CompareInResearch, () => CanCompareSelectedHistoryRun);
+        CompareInStrategyCommand = new RelayCommand(CompareInStrategy, () => CanCompareSelectedHistoryRun);
         ExportSelectedRunHistoryCommand = new AsyncRelayCommand(ExportSelectedRunHistoryAsync, () => SelectedExecutionRecord is not null && !IsRunning);
 
         ConsoleOutput.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ConsoleTabHeader));
@@ -384,7 +384,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public IRelayCommand TemplatesCommand { get; }
     public IRelayCommand OpenRunBrowserCommand { get; }
     public IRelayCommand OpenRunDetailCommand { get; }
-    public IRelayCommand CompareInResearchCommand { get; }
+    public IRelayCommand CompareInStrategyCommand { get; }
     public IAsyncRelayCommand ExportSelectedRunHistoryCommand { get; }
 
     internal (double ChartHeight, double EditorHeight) OnActivated()
@@ -945,7 +945,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             _navigationService.NavigateTo("RunDetail", SelectedExecutionRecord.MirroredRunId);
     }
 
-    private void CompareInResearch()
+    private void CompareInStrategy()
     {
         if (SelectedExecutionRecord?.MirroredRunId is null)
             return;
@@ -1462,7 +1462,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(SelectedHistoryConsolePreview));
         OpenRunBrowserCommand.NotifyCanExecuteChanged();
         OpenRunDetailCommand.NotifyCanExecuteChanged();
-        CompareInResearchCommand.NotifyCanExecuteChanged();
+        CompareInStrategyCommand.NotifyCanExecuteChanged();
         ExportSelectedRunHistoryCommand.NotifyCanExecuteChanged();
     }
 

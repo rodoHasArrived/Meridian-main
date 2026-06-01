@@ -321,7 +321,7 @@ describe("research-screen view model", () => {
       busy: true
     });
     expect(busy.diffCommand.disabledReason).toBe("Wait for the current Strategy command to finish.");
-    expect(busy.statusAnnouncement).toBe("Comparing selected research runs.");
+    expect(busy.statusAnnouncement).toBe("Comparing selected strategy runs.");
 
     const failed = buildResearchRunLibraryState({
       runs,
@@ -334,7 +334,20 @@ describe("research-screen view model", () => {
       actionError: "Run comparison failed."
     });
 
-    expect(failed.statusAnnouncement).toBe("Research command failed: Run comparison failed.");
+    expect(failed.statusAnnouncement).toBe("Strategy command failed: Run comparison failed.");
+
+    const diffBusy = buildResearchRunLibraryState({
+      runs,
+      selectedIds: ["run-1", "run-2"],
+      selectedRun: null,
+      comparison: [],
+      runDiff: null,
+      promotionHistory: [],
+      activeCommand: "diff",
+      actionError: null
+    });
+
+    expect(diffBusy.statusAnnouncement).toBe("Diffing selected strategy runs.");
 
     const compared = buildResearchRunLibraryState({
       runs,

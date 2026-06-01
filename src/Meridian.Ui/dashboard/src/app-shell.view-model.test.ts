@@ -291,12 +291,13 @@ describe("app shell view model", () => {
     });
 
     expect(state.workflowContinuity).toMatchObject({
-      title: "Trading Governance",
+      title: "Trading Controls",
       contextValue: "Portfolio / MSFT",
       subjectSymbol: "MSFT",
       clearSubjectAriaLabel: "Clear MSFT operating context",
       summary: expect.stringContaining("Subject: MSFT.")
     });
+    expect(state.workflowContinuity.title).not.toContain("Governance");
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
       ["trading-readiness", "/trading/readiness?symbol=MSFT"],
       ["trading-cockpit", "/trading?symbol=MSFT"],
@@ -858,7 +859,7 @@ describe("app shell view model", () => {
     const state = buildAppShellViewState({
       pathname: "/accounting",
       loading: false,
-      error: "Data Operations unavailable",
+      error: "Data unavailable",
       workspaceErrors: {
         data: "Backfill summary timed out.",
         accounting: "Reconciliation queue unavailable."

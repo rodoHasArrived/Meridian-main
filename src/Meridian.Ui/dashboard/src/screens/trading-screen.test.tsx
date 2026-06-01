@@ -262,14 +262,14 @@ const serverReadinessData: TradingWorkspaceResponse = {
       requiredSampleCount: 4,
       readySampleCount: 4,
       validatedEvidenceDocumentCount: 4,
-      requiredOwners: ["Data Operations", "Provider Reliability", "Trading"],
+      requiredOwners: ["Data", "Provider Reliability", "Trading"],
       blockers: [],
       detail: "DK1 operator sign-off is complete.",
       operatorSignoff: {
         status: "signed",
         requiredBeforeDk1Exit: true,
-        requiredOwners: ["Data Operations", "Provider Reliability", "Trading"],
-        signedOwners: ["Data Operations", "Provider Reliability", "Trading"],
+        requiredOwners: ["Data", "Provider Reliability", "Trading"],
+        signedOwners: ["Data", "Provider Reliability", "Trading"],
         missingOwners: [],
         completedAt: "2026-04-26T16:00:00Z",
         sourcePath: "artifacts/provider-validation/dk1-operator-signoff.json"

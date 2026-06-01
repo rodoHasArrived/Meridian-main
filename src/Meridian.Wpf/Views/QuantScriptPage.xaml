@@ -946,7 +946,7 @@
                     <TextBlock FontSize="11" Text="Export" />
                   </Button>
                   <Button Padding="10,5"
-                          Command="{Binding CompareInResearchCommand}"
+                          Command="{Binding CompareInStrategyCommand}"
                           Style="{StaticResource GhostButtonStyle}"
                           AutomationProperties.AutomationId="QuantScriptRunHistoryCompareButton">
                     <TextBlock FontSize="11" Text="Compare" />

@@ -36,7 +36,7 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     private bool _hasRouteBanner;
     private string _reconciliationOwnershipText = "Assign an operator before reconciliation sign-off.";
     private string _reconciliationSnapshotWarningText = "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.";
-    private string _reportPackOwnershipText = "Governance operator sign-off is pending.";
+    private string _reportPackOwnershipText = "Accounting operator sign-off is pending.";
     private string _reportPackSnapshotWarningText = "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.";
     private WorkstationStateModel _reportPackReadinessState = WorkstationStateModel.Empty(
         "Report pack waiting for fund context",
@@ -124,7 +124,7 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     private string _detailLifecycleText = "Select a break queue item to see detection, review, decision, and audit posture.";
     private string _detailSignoffText = "Sign-off posture appears here when a reconciliation break is selected.";
     private string _detailLastUpdatedText = "-";
-    private string _detailGuidanceText = "Break queue items support inline review and resolution. Account runs stay read-only in Governance.";
+    private string _detailGuidanceText = "Break queue items support inline review and resolution. Account runs stay read-only in Accounting.";
     private string _detailTotalChecksText = "0";
     private string _detailMatchedText = "0";
     private string _detailBreaksText = "0";

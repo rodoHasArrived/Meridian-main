@@ -641,6 +641,41 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
+    public void FundLedgerAccountingDrillInCopy_ShouldUseCanonicalAccountingLabels()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundLedgerPage.xaml"));
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.cs"));
+        var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Sections.cs"));
+        var reconciliationSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Reconciliation.cs"));
+
+        xaml.Should().Contain("AutomationProperties.Name=\"Accounting Route Banner\"");
+        xaml.Should().Contain("Accounting Report-Pack Preview");
+        xaml.Should().Contain("inside Accounting");
+        xaml.Should().NotContain("AutomationProperties.Name=\"Governance Route Banner\"");
+        xaml.Should().NotContain("Governance Report-Pack Preview");
+        xaml.Should().NotContain("inside governance");
+
+        source.Should().Contain("Accounting fund operations are loaded for the active fund profile.");
+        source.Should().Contain("Accounting operator");
+        source.Should().NotContain("Governance fund operations are loaded for the active fund profile.");
+        source.Should().NotContain("Governance operator");
+        source.Should().NotContain("governance artifacts");
+        source.Should().NotContain("shared governance workbench");
+
+        sectionSource.Should().Contain("Accounting operator sign-off is pending.");
+        sectionSource.Should().Contain("read-only in Accounting");
+        sectionSource.Should().NotContain("Governance operator sign-off is pending.");
+        sectionSource.Should().NotContain("read-only in Governance");
+
+        reconciliationSource.Should().Contain("read-only in Accounting");
+        reconciliationSource.Should().Contain("accounting ownership");
+        reconciliationSource.Should().Contain("accounting queue");
+        reconciliationSource.Should().NotContain("read-only in Governance");
+        reconciliationSource.Should().NotContain("governance ownership");
+        reconciliationSource.Should().NotContain("governance queue");
+    }
+
+    [Fact]
     public void FundLedgerReconciliationSection_ShouldOwnQueueAndDetailCollectionsWithAdapterBindings()
     {
         var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Sections.cs"));
@@ -850,7 +885,8 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackStatusText.Should().Contain("preview is ready for operator handoff");
                 viewModel.ReportPackOwnershipText.Should().Contain("final report-pack sign-off");
                 viewModel.ReportPackOwnershipText.Should().Contain("Close readiness remains blocked");
-                viewModel.ReportPackSnapshotWarningText.Should().Contain("Traceability is backed");
+                viewModel.ReportPackSnapshotWarningText.Should().Contain("Snapshot confirmed");
+                viewModel.ReportPackSnapshotWarningText.Should().Contain("Refresh again before sign-off");
                 viewModel.CurrentWorkbenchSubtitleText.Should().Contain("handoff readiness");
                 viewModel.CurrentWorkbenchSubtitleText.Should().Contain("sign-off posture");
                 viewModel.ReportPackReadinessState.Kind.Should().Be(WorkstationStateKind.Ready);

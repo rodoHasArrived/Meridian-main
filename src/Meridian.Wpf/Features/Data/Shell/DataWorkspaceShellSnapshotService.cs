@@ -65,10 +65,10 @@ public sealed class DataWorkspaceShellSnapshotService : IDataWorkspaceShellSnaps
         var notifications = _notificationService.GetHistory().Take(4).ToArray();
         var operatingContext = _operatingContextService?.CurrentContext;
         var scopeLabel = operatingContext is null
-            ? WorkspaceCopyCatalog.DataOperations.DefaultScopeLabel
+            ? WorkspaceCopyCatalog.Data.DefaultScopeLabel
             : $"{operatingContext.ScopeKind.ToDisplayName()} · {operatingContext.DisplayName}";
         var scopeSummary = operatingContext is null
-            ? WorkspaceCopyCatalog.DataOperations.DefaultScopeSummary
+            ? WorkspaceCopyCatalog.Data.DefaultScopeSummary
             : $"Route providers, backfills, storage, and export jobs for {operatingContext.DisplayName} without leaving the shell.";
 
         var providersTask = LoadSafeAsync("provider catalog", async () => (await _statusService.GetAvailableProvidersAsync()).ToArray(), Array.Empty<ProviderInfoModel>());

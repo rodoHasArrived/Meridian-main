@@ -210,7 +210,9 @@ public sealed class ProviderHealthViewModelTests
                 row.CredentialStateText == "Configured" &&
                 row.VerificationStateText == "Verified" &&
                 row.AffectedWorkflowsText.Contains("Live quotes") &&
+                row.AffectedWorkflowsText.Contains("Strategy") &&
                 row.AffectedWorkflowsText.Contains("Backfill") &&
+                !row.AffectedWorkflowsText.Contains("Research") &&
                 row.ActionText == "View Details");
         rows.Should().ContainSingle(row => row.ProviderId == "yahoo")
             .Which.Should().Match<ProviderManagementRowModel>(row =>

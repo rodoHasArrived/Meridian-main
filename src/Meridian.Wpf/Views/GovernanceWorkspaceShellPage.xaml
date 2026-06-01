@@ -100,7 +100,7 @@
                                            HorizontalAlignment="Center" />
                             </Border>
                             <StackPanel Margin="12,0,0,0">
-                                <TextBlock Text="Governance"
+                                <TextBlock Text="Accounting"
                                            Style="{StaticResource PageTitleStyle}" />
                                 <TextBlock Text="Operations, accounting, reconciliation, reporting, and audit review stay aligned inside one control surface."
                                            Style="{StaticResource CardDescriptionStyle}"
@@ -164,7 +164,7 @@
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap"
-                                       Text="A fund-linked operating context is required before governance queues can be reviewed." />
+                                       Text="A fund-linked operating context is required before accounting queues can be reviewed." />
 
                             <WrapPanel Margin="0,14,0,0">
                                 <Button x:Name="GovernanceHeroPrimaryActionButton"
@@ -330,7 +330,7 @@
                                        Margin="0,6,0,0"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Governance work queues for operations, accounting, reconciliation, reporting, and audit review." />
+                                       Text="Accounting work queues for operations, accounting, reconciliation, reporting, and audit review." />
                         </StackPanel>
 
                         <Border Grid.Column="1"
@@ -365,14 +365,14 @@
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="Governance is locked until a fund-linked context is selected."
+                            <TextBlock Text="Accounting is locked until a fund-linked context is selected."
                                        Margin="0,18,0,0"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                        FontSize="22"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                        TextAlignment="Center" />
-                            <TextBlock Text="Switch context to unlock operations, accounting, reconciliation, reporting, and audit-first governance queues."
+                            <TextBlock Text="Switch context to unlock operations, accounting, reconciliation, reporting, and audit-first approval queues."
                                        Margin="0,12,0,0"
                                        FontSize="13"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
@@ -446,7 +446,7 @@
                 <StackPanel>
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
-                            <TextBlock Text="Active Governance Context"
+                            <TextBlock Text="Active Accounting Context"
                                        Style="{StaticResource CardHeaderStyle}" />
                             <TextBlock x:Name="FundSummaryTitleText"
                                        Margin="0,10,0,0"
@@ -518,7 +518,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Recent Governance Work"
+                                <TextBlock Text="Recent Accounting Work"
                                            Style="{StaticResource CardHeaderStyle}" />
                                 <Button Grid.Column="1"
                                         Content="Notifications"
@@ -534,7 +534,7 @@
                         <StackPanel>
                             <TextBlock Text="Audit Access"
                                        Style="{StaticResource CardHeaderStyle}" />
-                            <TextBlock Text="Use the rail below to jump into the audit trail, data-quality controls, or system readiness without losing the governance shell."
+                            <TextBlock Text="Use the rail below to jump into the audit trail, data-quality controls, or system readiness without losing the accounting shell."
                                        Margin="0,8,0,0"
                                        FontSize="11"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
@@ -569,7 +569,7 @@
                 <views:MeridianDockingManager x:Name="GovernanceDockManager"
                                               Height="320"
                                               PaneDropRequested="OnPaneDropRequested"
-                                              AutomationProperties.Name="Governance Dock Manager" />
+                                              AutomationProperties.Name="Accounting Dock Manager" />
             </StackPanel>
         </Border>
     </Grid>

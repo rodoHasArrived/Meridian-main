@@ -643,20 +643,8 @@ public partial class MainWindow : Window
     }
 
     private static string ResolveDefaultPageTag(string? workspaceId)
-        => ShellNavigationCatalog.GetWorkspace(NormalizeWorkspaceId(workspaceId))?.HomePageTag
+        => ShellNavigationCatalog.GetWorkspace(WorkstationNavigationDefaults.NormalizeWorkspaceId(workspaceId))?.HomePageTag
            ?? ShellNavigationCatalog.GetDefaultWorkspace().HomePageTag;
-
-    private static string NormalizeWorkspaceId(string? workspaceId)
-        => workspaceId?.Trim().ToLowerInvariant() switch
-        {
-            "research" => "strategy",
-            "data-operations" => "data",
-            "governance" => "accounting",
-            null or "" => "strategy",
-            var normalized => normalized
-        };
-
-
 
     /// <summary>
     /// Saves the current window position, size, and state to disk.

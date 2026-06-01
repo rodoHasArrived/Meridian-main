@@ -95,6 +95,8 @@ public sealed class ResearchBriefingWorkspaceServiceTests
         var briefing = await service.GetBriefingAsync();
 
         briefing.Workspace.TotalRuns.Should().Be(1);
+        briefing.Workspace.Summary.Should().Contain("strategy desk");
+        briefing.Workspace.Summary.Should().NotContain("research desk");
         briefing.Watchlists.Should().ContainSingle(watchlist => watchlist.Name == "Desk Watch");
         briefing.InsightFeed.Widgets.Should().ContainSingle();
         briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "briefing-run-1");

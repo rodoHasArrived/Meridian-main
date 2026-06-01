@@ -77,6 +77,25 @@ Data use `Terminal`, Portfolio, Accounting, Reporting, and Settings use `Cockpit
 Desktop launch surfaces, setup completion, environment starter lanes, and operating-context defaults
 emit canonical page tags (`StrategyShell`, `DataShell`, and `AccountingShell`) so new persisted state
 does not reintroduce legacy `Research`, `Data Operations`, or `Governance` root names.
+Workspace id compatibility normalization and the canonical legacy-alias list are centralized through
+`WorkstationNavigationDefaults` instead of repeated shell-local switch expressions.
+The shared context-strip service normalizes legacy workspace titles before rendering owner copy, so
+old callers cannot reintroduce `Research`, `Data Operations`, or `Governance` as visible workspace
+labels.
+`WorkspaceService` uses that same seam for persisted session and layout restore while keeping only
+older template aliases such as monitoring, storage-admin, and analysis-export local to the service.
+Strategy shell presentation defaults also emit the canonical `strategy` workspace id while retaining
+legacy research aliases for restored workflow summaries.
+Workspace shell copy and automation names use canonical Strategy/Data shell constants instead of
+legacy Research/Data Operations constant names.
+Accounting shell workflow summary selection prefers the canonical `accounting` workspace id while
+retaining `governance` as an inbound compatibility alias.
+Accounting shell visible copy, accessibility names, queue summaries, and presentation-service
+handoff text use canonical `Accounting` wording while retaining `Governance*` type names and
+legacy aliases only as compatibility seams.
+Fund Ledger and Fund Accounts drill-in surfaces use Accounting wording for route banners,
+report-pack preview, account queues, and reconciliation guidance while preserving compatibility
+type names where needed.
 `WorkspaceCommandSurfaceControl` and `WorkspaceEvidenceStripControl` take explicit automation ID
 properties from the active workspace layout descriptor so shell chrome can be reused without
 depending on ambient `MainPage` bindings.
@@ -100,6 +119,16 @@ workspace on shared dense-table behavior without changing data-quality service c
 Data terminal provider, backfill, and storage decision queues now use
 `WorkspaceDecisionQueueControl` while retaining existing queue-region empty/loading/error state
 templates and view-model-owned action resolution.
+Provider health affected-workflow labels use canonical workspace names such as `Strategy` and
+`Data`; retained provider DTO and page-tag compatibility names must not leak `Research` or
+`Data Operations` into operator-facing recovery tables.
+RunMat Lab is a Strategy workspace tool; its visible page descriptions and code comments use
+`Strategy` wording while retaining the existing `RunMat` page tag and automation IDs.
+QuantScript run-history handoffs use `CompareInStrategyCommand` for Strategy Runs comparison
+routing while preserving the existing button automation ID and run-detail navigation targets.
+Strategy shell fallback briefing summaries, deterministic workflow guidance, degraded-state
+recovery copy, and promotion notes also use canonical `Strategy` wording while retaining legacy
+research DTO/interface names for API compatibility.
 Backfill terminal work uses `DenseDataGridControl` for gap-analysis and per-symbol-progress tables,
 with table descriptors owned by `BackfillWorkbenchSectionViewModel` so long-running provider
 catch-up workflows reuse the shared dense-table/empty-state surface.

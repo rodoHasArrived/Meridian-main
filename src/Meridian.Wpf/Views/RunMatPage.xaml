@@ -53,7 +53,7 @@
                 </Border>
                 <StackPanel Margin="12,0,0,0">
                     <TextBlock Text="RunMat Lab" Style="{StaticResource PageTitleStyle}" />
-                    <TextBlock Text="Research scripts, runtime settings, and saved MATLAB-style execution workflows."
+                    <TextBlock Text="Strategy scripts, runtime settings, and saved MATLAB-style execution workflows."
                                Style="{StaticResource CardDescriptionStyle}" />
                 </StackPanel>
             </StackPanel>
@@ -67,7 +67,7 @@
                     <TextBlock Text="RunMat Lab" Style="{StaticResource CardHeaderStyle}"
                                AutomationProperties.AutomationId="RunMatPageTitle"
                                AutomationProperties.Name="RunMat Lab Title" />
-                    <TextBlock Text="Research scripts, runtime settings, and saved `.m` files."
+                    <TextBlock Text="Strategy scripts, runtime settings, and saved `.m` files."
                                Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,14" TextWrapping="Wrap" />
 
                     <TextBlock Text="Executable Path" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />

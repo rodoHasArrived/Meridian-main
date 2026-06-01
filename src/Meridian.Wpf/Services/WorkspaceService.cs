@@ -116,13 +116,9 @@ public sealed class WorkspaceService
         }
     }
 
-    private static readonly IReadOnlyDictionary<string, string> LegacyWorkspaceIdMap =
+    private static readonly IReadOnlyDictionary<string, string> AdditionalWorkspaceAliasMap =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["research"] = "strategy",
-            ["data-operations"] = "data",
-            ["governance"] = "accounting",
-            ["trading"] = "trading",
             ["monitoring"] = "strategy",
             ["backfill-ops"] = "trading",
             ["storage-admin"] = "data",
@@ -921,7 +917,13 @@ public sealed class WorkspaceService
         }
 
         var trimmed = workspaceId.Trim();
-        return LegacyWorkspaceIdMap.TryGetValue(trimmed, out var mappedWorkspaceId)
+        var canonicalWorkspaceId = WorkstationNavigationDefaults.NormalizeWorkspaceId(trimmed, trimmed);
+        if (!string.Equals(canonicalWorkspaceId, trimmed, StringComparison.OrdinalIgnoreCase))
+        {
+            return canonicalWorkspaceId;
+        }
+
+        return AdditionalWorkspaceAliasMap.TryGetValue(trimmed, out var mappedWorkspaceId)
             ? mappedWorkspaceId
             : trimmed;
     }
@@ -994,7 +996,8 @@ public sealed class WorkspaceService
             return false;
         }
 
-        if (LegacyWorkspaceIdMap.TryGetValue(workspaceId, out var migratedId))
+        var migratedId = NormalizeWorkspaceId(workspaceId);
+        if (!string.Equals(workspaceId, migratedId, StringComparison.OrdinalIgnoreCase))
         {
             builtIn = GetDefaultWorkspaces()
                 .First(workspace => string.Equals(workspace.Id, migratedId, StringComparison.OrdinalIgnoreCase));
@@ -1386,7 +1389,7 @@ public sealed class WorkspaceService
             keys.Add(BuildRawWorkspaceLayoutKey(workspaceId, fundProfileId));
         }
 
-        foreach (var legacyPair in LegacyWorkspaceIdMap)
+        foreach (var legacyPair in EnumerateWorkspaceCompatibilityAliases())
         {
             if (string.Equals(legacyPair.Key, legacyPair.Value, StringComparison.OrdinalIgnoreCase) ||
                 !string.Equals(legacyPair.Value, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase))
@@ -1400,7 +1403,7 @@ public sealed class WorkspaceService
         if (!string.IsNullOrWhiteSpace(fundProfileId))
         {
             keys.Add(normalizedWorkspaceId);
-            foreach (var legacyPair in LegacyWorkspaceIdMap)
+            foreach (var legacyPair in EnumerateWorkspaceCompatibilityAliases())
             {
                 if (!string.Equals(legacyPair.Value, normalizedWorkspaceId, StringComparison.OrdinalIgnoreCase))
                 {
@@ -1412,6 +1415,19 @@ public sealed class WorkspaceService
         }
 
         return keys.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private static IEnumerable<KeyValuePair<string, string>> EnumerateWorkspaceCompatibilityAliases()
+    {
+        foreach (var pair in WorkstationNavigationDefaults.WorkspaceCompatibilityAliases)
+        {
+            yield return pair;
+        }
+
+        foreach (var pair in AdditionalWorkspaceAliasMap)
+        {
+            yield return pair;
+        }
     }
 
     public event EventHandler<WorkspaceEventArgs>? WorkspaceCreated;

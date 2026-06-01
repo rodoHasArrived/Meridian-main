@@ -51,7 +51,8 @@ The contract standardizes:
 - A table-scoped live region that announces selection changes and panel refreshes.
 
 Current dense-row detail consumers covered by regression tests include Portfolio positions,
-Portfolio run evidence, Trading recent fills, Data backfill queue rows, and Security Master lots.
+Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
+Security Master lots.
 
 ## Important workflows
 
@@ -106,6 +107,13 @@ The close-package panel is likewise a read-only projection of the shared operati
 publication metadata: signer, sign-off rationale, retained manifest route, evidence hash, report
 pack id, retained evidence links, and checklist control approvals come from the server workflow
 payload rather than browser-local publication state.
+Operator readiness console API source identifiers use the canonical workspace roots
+`strategy`, `data`, `accounting`, and `reporting`; legacy payload type names and retained
+compatibility routes must not reintroduce visible `Research`, `Data Operations`, or `Governance`
+root keys. Demo fixtures, trust-gate owner lists, affected-workflow labels, and Security Master
+evidence packet distribution labels follow the same canonical root naming.
+The app-shell trading continuity title uses `Trading Controls` so cross-workspace recovery copy
+does not reintroduce `Governance` as a visible workspace label.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
 Portfolio run drill-ins consume the shared attribution, equity-curve, cash-flow, and fill payloads
 and project browser view state for run comparison, realized/unrealized P&L bridge rows, and recent
@@ -120,6 +128,11 @@ rows from a family-office entity structure shaped like the shared `FamilyOfficeO
 valuation projections instead of carrying a separate graph fixture. The workspace navigation and
 command palette surface the route from their route-catalog/view-model seams so discovery labels
 remain centralized.
+Strategy workspace navigation uses canonical Strategy labels for subroutes, including the retained
+`/strategy/research` route, so browser discovery does not expose `Research` as a visible root or
+lane name while compatibility routes continue to resolve.
+Strategy run-library live-region announcements and command failure messages also use canonical
+Strategy wording while retained `Research*` DTO and component names remain compatibility seams.
 
 ## Diagrams
 

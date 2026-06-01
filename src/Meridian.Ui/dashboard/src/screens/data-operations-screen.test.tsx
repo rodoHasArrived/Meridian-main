@@ -64,7 +64,7 @@ const data: DataOperationsWorkspaceResponse = {
     {
       exportId: "EX-2201",
       profile: "python-pandas",
-      target: "research pack",
+      target: "strategy pack",
       status: "Ready",
       rows: "124k",
       updatedAt: "4m ago"
@@ -88,7 +88,7 @@ const polygonConnection: ProviderConnectionRow = {
   maskedKeyPreview: "pk_live_****7F3A",
   environment: "paper",
   externalAccountId: null,
-  affectedWorkflows: ["Research", "Backfill"],
+  affectedWorkflows: ["Strategy", "Backfill"],
   recommendedAction: "Keep provider active.",
   actionHref: "/settings#provider-polygon"
 };
@@ -161,7 +161,8 @@ describe("DataOperationsScreen", () => {
     const exportDetail = screen.getByRole("region", { name: /export detail for EX-2201/i });
     expect(exportDetail).toHaveAttribute("id", DATA_EXPORT_DETAIL_PANEL_ID);
     expect(within(exportDetail).getByText("python-pandas")).toBeInTheDocument();
-    expect(within(exportDetail).getByText("research pack")).toBeInTheDocument();
+    expect(within(exportDetail).getByText("strategy pack")).toBeInTheDocument();
+    expect(within(exportDetail).queryByText("research pack")).not.toBeInTheDocument();
     expect(within(exportDetail).getByText("Next action")).toBeInTheDocument();
     expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
   });
@@ -455,11 +456,12 @@ describe("DataOperationsScreen", () => {
     expect(attentionExport).toHaveClass("bg-warning/5");
 
     attentionExport.focus();
+    expect(attentionExport).toHaveFocus();
     await user.keyboard("{Enter}");
 
-    expect(attentionExport).toHaveAttribute("aria-selected", "true");
+    await waitFor(() => expect(attentionExport).toHaveAttribute("aria-selected", "true"));
     expect(attentionExport).toHaveAttribute("aria-expanded", "true");
-    expect(readyExport).toHaveAttribute("aria-expanded", "false");
+    await waitFor(() => expect(readyExport).toHaveAttribute("aria-expanded", "false"));
     const detail = screen.getByRole("region", { name: /export detail for EX-2202/i });
     expect(detail).toHaveTextContent("report-pack");
     expect(detail).toHaveTextContent("Review export profile and target before report-pack use.");

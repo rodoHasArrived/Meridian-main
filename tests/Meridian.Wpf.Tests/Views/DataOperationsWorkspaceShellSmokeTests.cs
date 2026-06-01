@@ -38,7 +38,10 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
         var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellPage.xaml.cs"));
         var viewModel = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellViewModel.cs"));
         var snapshotService = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellSnapshotService.cs"));
+        var presentationBuilder = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\DataOperationsWorkspacePresentationBuilder.cs"));
 
+        xaml.Should().Contain("WorkspaceCopyCatalog.DataShellTitle");
+        xaml.Should().NotContain("WorkspaceCopyCatalog.DataOperationsShellTitle");
         xaml.Should().NotContain("WorkspaceShellContextStripControl");
         xaml.Should().Contain("Next Handoff");
         xaml.Should().Contain("OperationsHeroScopeText");
@@ -53,12 +56,16 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
         xaml.Should().Contain("OperationsHeroTargetText");
         xaml.IndexOf("OperationsHeroSummaryText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Operational Queues", StringComparison.Ordinal));
 
+        xaml.Should().Contain("Text=\"{Binding HeroScopeText}\"");
+        xaml.Should().Contain("Text=\"{Binding HeroSummaryText}\"");
+        xaml.Should().Contain("Text=\"{Binding HeroState.FocusText}\"");
+        xaml.Should().Contain("Text=\"{Binding HeroState.SummaryText}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding HeroMetrics}\"");
         code.Should().NotContain("ContextStrip.ShellContext");
-        code.Should().Contain("OperationsHeroScopeText.Text = viewModel.HeroScopeText;");
-        code.Should().Contain("OperationsHeroSummaryText.Text = viewModel.HeroSummaryText;");
-        code.Should().Contain("OperationsHeroFocusText.Text = heroState.FocusText;");
-        code.Should().Contain("OperationsHeroActionSummaryText.Text = heroState.SummaryText;");
-        code.Should().Contain("OperationsHeroMetricsList.ItemsSource = viewModel.HeroMetrics;");
+        code.Should().NotContain("OperationsHeroScopeText.Text =");
+        code.Should().Contain("DataViewModel.RefreshRequested += OnRefreshRequested;");
+        code.Should().Contain("DataViewModel.ActionRequested += OnActionRequested;");
+        code.Should().Contain("=> DataViewModel.RefreshAsync();");
         code.Should().NotContain("LoadWorkspaceDataAsync");
         code.Should().NotContain("DataOperationsWorkspacePresentationBuilder.Build");
         viewModel.Should().Contain("HeroState = DataOperationsHeroState.Loading();");
@@ -67,6 +74,10 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
         viewModel.Should().Contain("HeroState = DataOperationsHeroState.Error();");
         viewModel.Should().Contain("HeroMetrics = DataOperationsHeroMetric.ErrorMetrics();");
         snapshotService.Should().Contain("LoadAsync(CancellationToken cancellationToken = default)");
+        snapshotService.Should().Contain("WorkspaceCopyCatalog.Data.DefaultScopeLabel");
+        snapshotService.Should().NotContain("WorkspaceCopyCatalog.DataOperations.");
+        presentationBuilder.Should().Contain("WorkspaceCopyCatalog.Data.ShellTitle");
+        presentationBuilder.Should().NotContain("WorkspaceCopyCatalog.DataOperations.");
         code.Should().Contain("private async void OnOperationsHeroPrimaryActionClick");
         code.Should().Contain("private async void OnOperationsHeroSecondaryActionClick");
         xaml.Should().Contain("WorkspaceDecisionQueueControl");
