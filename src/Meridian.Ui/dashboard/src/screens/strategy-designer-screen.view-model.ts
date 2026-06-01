@@ -1269,7 +1269,7 @@ export function validateStrategyBuilderDocument(
       code: "RiskGuardRecommended",
       severity: "warning",
       targetId: document.documentId,
-      message: "Add a risk or governance cell before promotion review."
+      message: "Add a risk or control cell before promotion review."
     });
   }
 

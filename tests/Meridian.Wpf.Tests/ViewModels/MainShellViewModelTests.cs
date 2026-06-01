@@ -891,7 +891,7 @@ public sealed class MainShellViewModelTests
                         WorkItemId: "reconciliation-break-run-1-cash-mismatch",
                         Kind: OperatorWorkItemKindDto.ReconciliationBreak,
                         Label: "Reconciliation break requires review",
-                        Detail: "Cash mismatch needs governance review.",
+                        Detail: "Cash mismatch needs Accounting review.",
                         Tone: OperatorWorkItemToneDto.Warning,
                         CreatedAt: DateTimeOffset.UtcNow,
                         TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
@@ -1004,7 +1004,7 @@ public sealed class MainShellViewModelTests
                         WorkItemId: "reconciliation-break-run-1-cash-mismatch",
                         Kind: OperatorWorkItemKindDto.ReconciliationBreak,
                         Label: "Reconciliation break requires review",
-                        Detail: "Cash mismatch needs governance review.",
+                        Detail: "Cash mismatch needs Accounting review.",
                         Tone: OperatorWorkItemToneDto.Warning,
                         CreatedAt: DateTimeOffset.UtcNow,
                         Workspace: "Governance",
@@ -1040,7 +1040,7 @@ public sealed class MainShellViewModelTests
             vm.ShellContext.Badges.Should().ContainEquivalentOf(new WorkspaceShellBadge
             {
                 Label = "Attention",
-                Value = "1 review: Reconciliation break requires review | warning | Governance | open FundReconciliation",
+                Value = "1 review: Reconciliation break requires review | warning | Accounting | open FundReconciliation",
                 Glyph = "\uE7F4",
                 Tone = WorkspaceTone.Warning
             });

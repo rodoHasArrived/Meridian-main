@@ -32,7 +32,7 @@ public sealed class SettingsConfigurationService
     private SettingsConfigurationService()
     {
         // Seed built-in profiles
-        _profiles.Add(new ConfigProfile("research", "Research", "Balanced for analysis workflows. Gzip compression, BySymbol naming.", IsBuiltIn: true));
+        _profiles.Add(new ConfigProfile("research", "Strategy", "Balanced for strategy analysis workflows. Gzip compression, BySymbol naming.", IsBuiltIn: true));
         _profiles.Add(new ConfigProfile("low-latency", "Low Latency", "Minimum ingest latency. No compression, hourly partitioning.", IsBuiltIn: true));
         _profiles.Add(new ConfigProfile("archival", "Archival", "Long-term retention. ZSTD compression, monthly partitioning.", IsBuiltIn: true));
     }

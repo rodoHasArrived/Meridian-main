@@ -7,6 +7,19 @@ namespace Meridian.Ui.Tests.Services;
 public sealed class SettingsConfigurationServiceTests
 {
     [Fact]
+    public void GetProfiles_UsesCanonicalStrategyLabelForRetainedResearchProfile()
+    {
+        var profile = SettingsConfigurationService.Instance.GetProfiles()
+            .Should()
+            .ContainSingle(candidate => candidate.Id == "research")
+            .Subject;
+
+        profile.Name.Should().Be("Strategy");
+        profile.Name.Should().NotContain("Research");
+        profile.Description.Should().Contain("strategy analysis");
+    }
+
+    [Fact]
     public void GetProviderCatalog_MapsSharedCatalogCredentialFieldsIntoUiModel()
     {
         var entry = new Meridian.Contracts.Api.ProviderCatalogEntry

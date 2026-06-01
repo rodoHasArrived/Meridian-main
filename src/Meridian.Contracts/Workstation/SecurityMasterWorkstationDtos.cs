@@ -3,7 +3,7 @@ using Meridian.Contracts.SecurityMaster;
 namespace Meridian.Contracts.Workstation;
 
 /// <summary>
-/// Workstation-facing Security Master classification summary for governance surfaces.
+/// Workstation-facing Security Master classification summary for Data and Accounting surfaces.
 /// </summary>
 public sealed record SecurityClassificationSummaryDto(
     string AssetClass,
@@ -13,7 +13,7 @@ public sealed record SecurityClassificationSummaryDto(
     string? MatchedIdentifierKind = null,
     string? MatchedIdentifierValue = null,
     string? MatchedProvider = null,
-    /// <summary>ISO 3166-1 alpha-2 country code for governance risk routing.</summary>
+    /// <summary>ISO 3166-1 alpha-2 country code for governed risk routing.</summary>
     string? RiskCountry = null,
     /// <summary>Issuer type classification (e.g. Sovereign, Corporate, Municipal).</summary>
     string? IssuerType = null,
@@ -32,13 +32,13 @@ public sealed record SecurityEconomicDefinitionSummaryDto(
     string? SubType = null,
     string? AssetFamily = null,
     string? IssuerType = null,
-    /// <summary>ISO 3166-1 alpha-2 country code for governance risk routing.</summary>
+    /// <summary>ISO 3166-1 alpha-2 country code for governed risk routing.</summary>
     string? RiskCountry = null,
     /// <summary>Canonical type name within the asset class (e.g. CommonShare, Adr, ReitShare).</summary>
     string? TypeName = null);
 
 /// <summary>
-/// Workstation-facing Security Master row used by governance and search surfaces.
+/// Workstation-facing Security Master row used by Data, Accounting, and search surfaces.
 /// </summary>
 public sealed record SecurityMasterWorkstationDto(
     Guid SecurityId,
@@ -48,7 +48,7 @@ public sealed record SecurityMasterWorkstationDto(
     SecurityEconomicDefinitionSummaryDto EconomicDefinition);
 
 /// <summary>
-/// Governance drill-in showing the complete identifier and alias picture for a single security.
+/// Governed Security Master drill-in showing the complete identifier and alias picture for a single security.
 /// Built from the full <see cref="SecurityDetailDto"/> so it can be fetched in a single query.
 /// CommonTerms fields (IssuerName, CountryOfRisk, PrimaryListingMic, SettlementCycleDays) are
 /// extracted from the JSON blob when available.

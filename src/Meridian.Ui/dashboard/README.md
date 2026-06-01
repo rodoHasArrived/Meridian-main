@@ -94,10 +94,15 @@ tolerance profile, priority, SLA badge label/tone, age band, root cause, resolut
 comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
 source origin/fingerprint, and decision note so browser recovery posture matches the retained WPF
 Fund Ledger detail panel without reimplementing casework rules.
+Accounting reconciliation narratives use canonical Accounting review language while retained
+Governance view-model names remain compatibility seams.
 Accounting reconciliation statement runs now use the shared statement-run endpoint/client seam for
 broker or custodian, account, period, status, validation, match, break, case, and import timing
 read models; React components only render these values and do not reimplement matching, tolerance,
 validation, or case-state rules.
+The Accounting screen also carries a stable Investment Accounting Transaction Lab panel view model
+so the browser renders the Books Before Broker preview entry point without crashing while endpoint
+request wiring remains a follow-on workflow.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
@@ -133,6 +138,9 @@ Strategy workspace navigation uses canonical Strategy labels for subroutes, incl
 lane name while compatibility routes continue to resolve.
 Strategy run-library live-region announcements and command failure messages also use canonical
 Strategy wording while retained `Research*` DTO and component names remain compatibility seams.
+Strategy Builder promotion-review warnings use risk/control wording in the browser view model,
+matching the shared strategy-service validation copy while retained cell kinds remain compatibility
+inputs.
 
 ## Diagrams
 

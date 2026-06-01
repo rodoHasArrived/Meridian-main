@@ -158,7 +158,7 @@ public sealed class PromotionService
         {
             "approved" when hasBrokerageGap && brokerageValidation is not null => brokerageValidation.Summary,
             "approved" => "Meets all promotion policy gates.",
-            "requires_human_review" => "Promotion requires human governance review.",
+            "requires_human_review" => "Promotion requires operator promotion review.",
             "requires_manual_override" => "Promotion requires a manual override.",
             "blocked" => "Promotion is blocked by policy.",
             _ when hasBrokerageGap && brokerageValidation is not null => brokerageValidation.Summary,

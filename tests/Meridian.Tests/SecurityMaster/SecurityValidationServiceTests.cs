@@ -172,6 +172,9 @@ public sealed class SecurityValidationServiceTests
         report.Issues.Should().Contain(issue =>
             issue.Code == "SM_OVERRIDE_AUDIT_TRAIL_MISSING"
             && issue.Severity == SecurityValidationSeverityDto.Warning);
+        var auditTrailIssue = report.Issues.Single(issue => issue.Code == "SM_OVERRIDE_AUDIT_TRAIL_MISSING");
+        auditTrailIssue.SuggestedAction.Should().Contain("operator review");
+        auditTrailIssue.SuggestedAction.Should().NotContain("governance review");
     }
 
     [Fact]

@@ -1598,7 +1598,7 @@
                                             </StackPanel>
                                         </Border>
                                     </UniformGrid>
-                                    <TextBlock Text="Use this preview as the operator handoff checkpoint before board, investor, compliance, or fund-ops packs leave the governance workspace."
+                                    <TextBlock Text="Use this preview as the operator handoff checkpoint before board, investor, compliance, or fund-ops packs leave the Accounting workspace."
                                                Style="{StaticResource CardDescriptionStyle}"
                                                TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding ReportPackOwnershipText}"

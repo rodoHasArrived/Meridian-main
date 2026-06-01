@@ -1,8 +1,8 @@
-# Research Briefing Workflow
+# Strategy Briefing Workflow
 
 ## Purpose
 
-The Research workspace is moving from a generic landing page toward a `Market Briefing + Run Studio` workflow. The briefing surface packages the highest-frequency research context into one shared object model and keeps the existing run, portfolio, ledger, and promotion drill-ins attached to the same run lifecycle.
+The Strategy workspace moved from a generic landing page toward a `Market Briefing + Run Studio` workflow. The briefing surface packages the highest-frequency strategy context into one shared object model and keeps the existing run, portfolio, ledger, and promotion drill-ins attached to the same run lifecycle.
 
 This slice adds the typed seam that the desktop shell can consume now and that later automation, notebook, or companion surfaces can reuse without inventing page-local models.
 
@@ -21,14 +21,14 @@ Key types:
 
 ## Endpoint
 
-The workstation endpoint is exposed at `/api/workstation/research/briefing` through `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`.
+The canonical workstation endpoint is exposed at `/api/workstation/strategy/briefing` through `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`. The older `/api/workstation/research/briefing` route remains available as a compatibility alias for retained clients.
 
 Behavior:
 
 - prefers shared run history from `StrategyRunReadService`
 - projects alert, comparison, and "what changed" items from existing run continuity
 - falls back to an empty but typed briefing payload when the richer run service is unavailable
-- preserves the older `/api/workstation/research` route so existing consumers do not break while the shell migrates
+- preserves the older `/api/workstation/research` and `/api/workstation/research/briefing` routes so existing consumers do not break while the shell migrates
 
 ## Desktop Consumption
 
@@ -36,11 +36,11 @@ The WPF shell consumes the typed payload through `src/Meridian.Wpf/Services/Work
 
 Behavior:
 
-- `WorkstationResearchBriefingApiClient` requests the typed payload from `/api/workstation/research/briefing`
+- `WorkstationResearchBriefingApiClient` requests the typed payload from `/api/workstation/strategy/briefing`
 - `ResearchBriefingWorkspaceService` backfills watchlists from local desktop watchlists when the API payload omits them
 - if the API is unavailable, the service builds a local fallback briefing from `StrategyRunWorkspaceService` plus `IWatchlistReader`
 
-This keeps the Research shell on shared contracts first instead of creating new page-only view models that would later diverge from API or automation usage.
+This keeps the Strategy shell on shared contracts first instead of creating new page-only view models that would later diverge from API or automation usage.
 
 ## Shell Binding
 
@@ -64,7 +64,7 @@ Targeted validation for this slice lives in:
 - `tests/Meridian.Wpf.Tests/Views/ResearchWorkspaceShellSmokeTests.cs`
 - `tests/Meridian.Wpf.Tests/Views/ResearchWorkspaceShellWorkflowTests.cs`
 
-The workflow test loads the Research shell in a WPF window, seeds a saved briefing card, clicks it, and verifies that:
+The workflow test loads the Strategy shell compatibility page in a WPF window, seeds a saved briefing card, clicks it, and verifies that:
 
 - the active run context is updated
 - the run studio reflects the selected run

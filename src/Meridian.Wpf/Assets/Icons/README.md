@@ -16,14 +16,17 @@ available for use in web dashboards, documentation, and future cross-platform ta
 
 ## Workspace Icons
 
+Legacy source filenames and WPF resource keys are retained for compatibility, but the
+operator-facing workspace labels are the canonical Meridian roots.
+
 | File | Workspace | Replaces |
 |------|-----------|---------|
-| `research.svg` | Research | 🔬 |
+| `research.svg` | Strategy | 🔬 |
 | `trading.svg` | Trading | ⚡ |
-| `data-operations.svg` | Data Operations | 🗂 |
-| `governance.svg` | Governance | 🛡 |
+| `data-operations.svg` | Data | 🗂 |
+| `governance.svg` | Accounting | 🛡 |
 
-## Page Icons — Research Workspace
+## Page Icons — Strategy Workspace
 
 | File | Page | Replaces |
 |------|------|---------|
@@ -47,7 +50,7 @@ available for use in web dashboards, documentation, and future cross-platform ta
 | `run-mat.svg` | RunMat | 🎯 |
 | `trading-hours.svg` | Trading Hours | 🕐 |
 
-## Page Icons — Data Operations Workspace
+## Page Icons — Data Workspace
 
 | File | Page | Replaces |
 |------|------|---------|
@@ -68,7 +71,7 @@ available for use in web dashboards, documentation, and future cross-platform ta
 | `schedule-manager.svg` | Schedule Manager | ⏰ |
 | `collection-sessions.svg` | Collection Sessions | 🎬 |
 
-## Page Icons — Governance Workspace
+## Page Icons — Accounting and Settings Workspaces
 
 | File | Page | Replaces |
 |------|------|---------|
@@ -94,6 +97,7 @@ The glyph codes are defined as `sys:String` resources in `IconResources.xaml` an
 To render a workspace icon in XAML:
 
 ```xml
+<!-- Compatibility key used for the canonical Strategy workspace icon. -->
 <TextBlock Text="{StaticResource IconResearch}"
            Style="{StaticResource IconMediumStyle}" />
 ```
@@ -104,6 +108,6 @@ The React dashboard uses **lucide-react** for most icons. For custom icons not c
 lucide-react, import the SVG directly:
 
 ```tsx
-import ResearchIcon from '@/assets/icons/research.svg?react';
-// <ResearchIcon className="w-5 h-5" />
+import StrategyIcon from '@/assets/icons/research.svg?react';
+// <StrategyIcon className="w-5 h-5" />
 ```

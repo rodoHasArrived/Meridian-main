@@ -2049,6 +2049,32 @@ export function useGovernanceReconciliationViewModel(
     }),
     [reconciliationQueue, selectedRunId, statementRuns, statementRunsError, statementRunsLoading]
   );
+  const transactionLabView = useMemo(
+    () => ({
+      title: "Investment Accounting Transaction Lab",
+      description: "Preview accounting journal impact before committing ledger or reconciliation changes.",
+      statusTone: "default" as "default" | "success" | "warning" | "danger",
+      requestSummaryLabel: selectedReconciliation ? "Ready for request" : "Select run",
+      statusRole: "status" as const,
+      statusText: selectedReconciliation
+        ? "Transaction Lab preview wiring is available for this Accounting surface but not yet connected to an operator request."
+        : "Select a reconciliation run before previewing accounting transaction impact.",
+      journalLineCountLabel: "Pending preview",
+      ledgerImpactLabel: "Pending preview",
+      reconciliationLabel: selectedReconciliation ? selectedReconciliation.status : "No run selected",
+      evidenceLabel: selectedReconciliation ? selectedReconciliation.runId : "Pending evidence",
+      impactRows: [] as Array<{ id: string; label: string; value: string; tone: "default" | "success" | "warning" | "danger" }>,
+      canPreview: false,
+      disabledReason: "Transaction Lab preview request wiring is not enabled from this Accounting surface yet.",
+      busy: false,
+      previewButtonLabel: "Preview accounting impact",
+      previewButtonAriaLabel: "Preview accounting transaction impact"
+    }),
+    [selectedReconciliation]
+  );
+  const runTransactionLabPreview = useCallback(async () => {
+    // Reserved for the Investment Accounting Transaction Lab endpoint wiring.
+  }, []);
 
   return {
     reconciliationQueue,
@@ -2060,6 +2086,8 @@ export function useGovernanceReconciliationViewModel(
     queuePanelView,
     statementRunsView,
     refreshStatementRuns,
+    transactionLabView,
+    runTransactionLabPreview,
     trialBalance,
     trialBalanceLoading,
     trialBalanceErrorText: trialBalanceError?.summary ?? null,
@@ -3115,7 +3143,7 @@ export function buildReconciliationNarrative(item: GovernanceWorkspaceResponse["
   }
 
   if (item.reconciliationStatus === "NotStarted") {
-    return "No reconciliation pass has been recorded yet. This run should be queued behind currently active governance review work.";
+    return "No reconciliation pass has been recorded yet. This run should be queued behind currently active Accounting review work.";
   }
 
   return "Open reconciliation breaks remain on this run. Prioritize amount mismatches, timing drift, and unresolved references before moving on.";

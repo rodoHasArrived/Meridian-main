@@ -142,6 +142,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.Workspace.TotalAccounts.Should().Be(2);
         workspace.Governance.Should().NotBeNull();
         workspace.Governance!.DecisionPosture.Should().NotBeNullOrWhiteSpace();
+        workspace.Governance.DecisionPosture.Should().Contain("shared Accounting state");
+        workspace.Governance.DecisionPosture.Should().NotContain("shared governance state");
         workspace.Governance.SignoffPosture.Should().NotBeNullOrWhiteSpace();
         workspace.Governance.CloseReadiness.Should().NotBeNullOrWhiteSpace();
     }
@@ -181,7 +183,12 @@ public sealed class FundOperationsWorkspaceReadServiceTests
                     "evidence-ledger-1",
                     RunId: "run-restatement-1",
                     LedgerEntryId: "ledger-entry-1",
-                    ReportValue: "1250000")
+                    ReportValue: "1250000",
+                    ReconciliationRunId: "reconciliation-run-nav-1",
+                    ProviderEventId: "provider-event-nav-1",
+                    SecurityMasterId: "security-master-nav-1",
+                    ReconciliationOutcome: "matched",
+                    ApprovalId: "approval-nav-1")
             ]);
         workflowService.Transition(report.ReportId, ReportPackWorkflowStateDto.Validated, "reviewer", "reviewer");
         workflowService.Transition(report.ReportId, ReportPackWorkflowStateDto.PendingApproval, "reviewer", "reviewer");
@@ -194,7 +201,15 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             "sha256:report-pack",
             "manifest-1",
             "vault/report-packs/manifest-1.json",
-            [new ReportPackEvidenceLinkDto("evidence-ledger-1", "Ledger line", "/reporting/evidence?subject=report-pack", "ledger")]);
+            [
+                new ReportPackEvidenceLinkDto("evidence-ledger-1", "Ledger line", "/reporting/evidence?subject=report-pack", "ledger"),
+                new ReportPackEvidenceLinkDto("ledger-entry-1", "Ledger entry", "/reporting/evidence?subject=ledger-entry", "ledger"),
+                new ReportPackEvidenceLinkDto("run-restatement-1", "Strategy run", "/strategy/runs/run-restatement-1", "strategy"),
+                new ReportPackEvidenceLinkDto("reconciliation-run-nav-1", "Reconciliation run", "/accounting/reconciliation/reconciliation-run-nav-1", "reconciliation"),
+                new ReportPackEvidenceLinkDto("provider-event-nav-1", "Provider event", "/data/provider-events/provider-event-nav-1", "provider"),
+                new ReportPackEvidenceLinkDto("security-master-nav-1", "Security Master record", "/data/security-master/security-master-nav-1", "security-master"),
+                new ReportPackEvidenceLinkDto("approval-nav-1", "Approval record", "/accounting/approvals/approval-nav-1", "approval")
+            ]);
         var restated = workflowService.Restate(
             report.ReportId,
             "approver",
@@ -560,6 +575,44 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     }
 
     [Fact]
+    public async Task ReportPackRepository_WithInvalidSnapshot_UsesCanonicalReportPackValidationWording()
+    {
+        var fundProfileId = $"fund-report-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-report-invalid",
+            strategyId: "report-invalid",
+            strategyName: "Report Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Governed Report Fund"));
+
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var repository = CreateReportPackRepository(tempRoot);
+            var service = CreateReportPackService(accountService, strategyRepository, repository);
+
+            var snapshot = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "unit-test",
+                ExpectedSchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion));
+
+            var act = () => repository.SaveAsync(
+                snapshot with { Status = GovernanceReportPackStatusDto.Unknown },
+                []);
+
+            var exception = await act.Should().ThrowAsync<ArgumentException>();
+            exception.Which.Message.Should().Contain("Report-pack status is required.");
+            exception.Which.Message.Should().NotContain("Governance report-pack");
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
     public async Task ReportPackHistory_ListsNewestFirstAndRetrievesById()
     {
         var fundProfileId = $"fund-history-{Guid.NewGuid():N}";
@@ -629,7 +682,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
 
             await act.Should()
                 .ThrowAsync<ArgumentException>()
-                .WithMessage("*Unsupported governance report-pack schema version*");
+                .WithMessage("*Unsupported governed report-pack schema version*");
         }
         finally
         {

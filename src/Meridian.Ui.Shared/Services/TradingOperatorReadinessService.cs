@@ -551,8 +551,8 @@ public sealed class TradingOperatorReadinessService
             return new TradingReportPackReadinessDto(
                 Status: TradingAcceptanceGateStatusDto.ReviewRequired,
                 Detail: string.IsNullOrWhiteSpace(fundProfileId)
-                    ? $"Governance report-pack repository is not registered, and latest run {primaryRunId} has no fund profile."
-                    : $"Governance report-pack repository is not registered for fund {fundProfileId}.",
+                    ? $"Report-pack repository is not registered, and latest run {primaryRunId} has no fund profile."
+                    : $"Report-pack repository is not registered for fund {fundProfileId}.",
                 FundProfileId: fundProfileId,
                 ReportId: null,
                 GeneratedAt: null,

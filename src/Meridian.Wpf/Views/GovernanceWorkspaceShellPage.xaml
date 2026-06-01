@@ -136,7 +136,7 @@
                                            FontSize="12"
                                            Foreground="#D7C2A4"
                                            TextWrapping="Wrap"
-                                           Text="Keep the selected governance lane visible before moving into the queue wall." />
+                                           Text="Keep the selected Accounting lane visible before moving into the queue wall." />
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -458,7 +458,7 @@
                                        Margin="0,6,0,0"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Switch to a fund-linked context to unlock governance review." />
+                                       Text="Switch to a fund-linked context to unlock Accounting review." />
                             <TextBlock x:Name="FundSummaryMetaText"
                                        Margin="0,6,0,0"
                                        FontSize="11"

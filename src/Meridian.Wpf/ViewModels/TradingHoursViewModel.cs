@@ -321,14 +321,14 @@ public sealed class TradingHoursViewModel : BindableBase
             "AfterHours" => new SessionBriefing(
                 "After-hours review",
                 "Extended session is active after the close",
-                "Review late fills, reconciliation notes, and overnight research handoffs before the next open.",
+                "Review late fills, reconciliation notes, and overnight Strategy handoffs before the next open.",
                 "After-hours: 4:00 PM - 8:00 PM ET"),
             _ => new SessionBriefing(
                 "Closed planning",
                 "Regular trading is closed",
                 string.IsNullOrWhiteSpace(nextSessionText)
-                    ? $"{reasonText} Review overnight research, queued backfills, and staged orders before the next open."
-                    : $"{nextSessionText}. Review overnight research, queued backfills, and staged orders before the open.",
+                    ? $"{reasonText} Review overnight Strategy, queued backfills, and staged orders before the next open."
+                    : $"{nextSessionText}. Review overnight Strategy, queued backfills, and staged orders before the open.",
                 "Regular session: 9:30 AM - 4:00 PM ET")
         };
     }

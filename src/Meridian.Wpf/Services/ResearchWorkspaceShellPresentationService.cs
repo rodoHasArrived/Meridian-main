@@ -273,7 +273,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
                 {
                     Id = "ResetStudio",
                     Label = "Reset Studio",
-                    Description = "Reset the research studio layout",
+                    Description = "Reset the strategy studio layout",
                     ShortcutHint = "Ctrl+R",
                     Glyph = "\uE9D9",
                     Tone = WorkspaceTone.Primary
@@ -306,7 +306,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
                 new WorkspaceCommandItem { Id = "RunLedger", Label = "Ledger Inspector", Description = "Open ledger inspector", Glyph = "\uEE94" },
                 new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Open Accounting Impact", Description = "Open trial-balance impact view", Glyph = "\uE9D9" },
                 new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Review Recon Breaks", Description = "Review reconciliation breaks", Glyph = "\uE895" },
-                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Open Audit Trail", Description = "Open governance audit trail", Glyph = "\uE7BA" },
+                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Open Audit Trail", Description = "Open Accounting audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "LeanIntegration", Label = "Lean Integration", Description = "Open Lean integration", Glyph = "\uE943" }
             ]
         };
@@ -340,7 +340,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
         {
             return new ResearchDeskHeroState(
                 FocusLabel: "Selected run",
-                Summary: $"{activeRun.StrategyName} is the active research run.",
+                Summary: $"{activeRun.StrategyName} is the active Strategy run.",
                 Detail: BuildActiveRunHeroDetail(activeRun),
                 BadgeText: effectiveWorkflow.PrimaryBlocker.IsBlocking ? "Attention" : "In review",
                 BadgeTone: effectiveWorkflow.PrimaryBlocker.IsBlocking ? ResearchDeskHeroTone.Warning : ResearchDeskHeroTone.Info,
@@ -494,7 +494,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
             PrimaryScopeLabel = WorkspaceCopyCatalog.Strategy.PrimaryScopeLabel,
             PrimaryScopeValue = activeRun?.StrategyName
                 ?? briefing.Workspace.LatestStrategyName
-                ?? "No active research run",
+                ?? "No active Strategy run",
             AsOfValue = briefing.InsightFeed.GeneratedAt.ToString("MMM dd yyyy HH:mm"),
             FreshnessValue = activeRun is null
                 ? $"{activeSessions} active session(s)"
@@ -625,7 +625,7 @@ public sealed class ResearchWorkspaceShellPresentationService : IWorkspaceScoped
             Name: "No selected run",
             Meta: "Start a backtest or choose a run from history.",
             ScenarioStrategy: "No strategy selected",
-            ScenarioCoverage: "No research session restored.",
+            ScenarioCoverage: "No strategy session restored.",
             RunStatus: "Awaiting run selection",
             RunPerformance: "Compare runs, equity, and fills from a selected strategy run.",
             RunCompare: "Use the bottom history rail to select a run and load detail panels.",

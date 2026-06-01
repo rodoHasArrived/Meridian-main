@@ -19,7 +19,7 @@ using Meridian.Strategies.Services;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// Builds the shared governance and fund-operations workspace projection used by
+/// Builds the shared Accounting and fund-operations workspace projection used by
 /// the local API and future cross-workspace surfaces.
 /// </summary>
 public sealed class FundOperationsWorkspaceReadService
@@ -253,7 +253,7 @@ public sealed class FundOperationsWorkspaceReadService
         ct.ThrowIfCancellationRequested();
 
         var repository = _reportPackRepository
-            ?? throw new InvalidOperationException("Governance report-pack repository has not been configured.");
+            ?? throw new InvalidOperationException("Report-pack repository has not been configured.");
         var schemaVersion = ResolveReportPackSchemaVersion(request.ExpectedSchemaVersion);
         var formats = NormalizeReportFormats(request.Formats);
         var normalizedFundProfileId = request.FundProfileId.Trim();
@@ -378,7 +378,7 @@ public sealed class FundOperationsWorkspaceReadService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fundProfileId);
         var repository = _reportPackRepository
-            ?? throw new InvalidOperationException("Governance report-pack repository has not been configured.");
+            ?? throw new InvalidOperationException("Report-pack repository has not been configured.");
         return repository.GetHistoryAsync(fundProfileId.Trim(), limit, ct);
     }
 
@@ -387,7 +387,7 @@ public sealed class FundOperationsWorkspaceReadService
         CancellationToken ct = default)
     {
         var repository = _reportPackRepository
-            ?? throw new InvalidOperationException("Governance report-pack repository has not been configured.");
+            ?? throw new InvalidOperationException("Report-pack repository has not been configured.");
         return repository.GetAsync(reportId, ct);
     }
 
@@ -1128,7 +1128,7 @@ public sealed class FundOperationsWorkspaceReadService
         if (schemaVersion != GovernanceReportPackContract.CurrentSchemaVersion)
         {
             throw new ArgumentException(
-                $"Unsupported governance report-pack schema version '{schemaVersion}'. Current version is {GovernanceReportPackContract.CurrentSchemaVersion}.",
+                $"Unsupported governed report-pack schema version '{schemaVersion}'. Current version is {GovernanceReportPackContract.CurrentSchemaVersion}.",
                 nameof(expectedSchemaVersion));
         }
 
@@ -1665,7 +1665,7 @@ public sealed class FundOperationsWorkspaceReadService
                 => "Reconciliation decisions are cleared in shared lifecycle state.",
             _ when reconciliation.OpenBreakCount > 0
                 => $"{reconciliation.OpenBreakCount} reconciliation break(s) still need shared decision records.",
-            _ => "Reconciliation decision posture is aligned with shared governance state."
+            _ => "Reconciliation decision posture is aligned with shared Accounting state."
         };
 
         var signoffPosture = activeWorkflow?.ApprovalState switch
@@ -1755,7 +1755,7 @@ public sealed class FundOperationsWorkspaceReadService
             RecommendedProfiles: recommended,
             ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
             Profiles: profiles,
-            Summary: $"{profiles.Length} export/reporting profiles are available for governance workflows.",
+            Summary: $"{profiles.Length} export/reporting profiles are available for Accounting and Reporting workflows.",
             WorkflowRecords: workflowRecords);
     }
 

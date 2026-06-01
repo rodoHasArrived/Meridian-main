@@ -66,6 +66,23 @@ public sealed class StrategyDesignServiceTests
     }
 
     [Fact]
+    public void Validate_StrategyWithoutRiskGuard_ShouldRecommendControlCellForPromotionReview()
+    {
+        var service = new StrategyDesignService();
+        var document = service.Normalize(BuildDocument(cells:
+        [
+            new("filter", "Filter universe", "visual", "filter", "PRICE > 20", ["PRICE"]),
+            new("rank", "Rank universe", "formula", "rank", "MOMENTUM_63D", ["MOMENTUM_63D"])
+        ]));
+
+        var validation = service.Validate(document);
+        var warning = validation.Messages.Single(message => message.Code == "RiskGuardRecommended");
+
+        warning.Message.Should().Be("Add a risk or control cell before promotion review.");
+        warning.Message.Should().NotContain("governance cell");
+    }
+
+    [Fact]
     public void Validate_BackwardTransitionWithoutLoopGuard_ShouldBlockExecution()
     {
         var service = new StrategyDesignService();

@@ -18,7 +18,7 @@ public sealed class ResearchWorkspaceShellViewModelTests
                 PendingReviewCount = 0
             },
             activeRun: null,
-            workflow: CreateWorkflow("Ready for a new research cycle", "Backtest"));
+            workflow: CreateWorkflow("Ready for a new strategy cycle", "Backtest"));
 
         hero.FocusLabel.Should().Be("New cycle");
         hero.Summary.Should().Be("Strategy queue is empty.");
@@ -68,6 +68,8 @@ public sealed class ResearchWorkspaceShellViewModelTests
             workflow: CreateWorkflow("Review active run", "RunDetail", isBlocking: false));
 
         hero.FocusLabel.Should().Be("Selected run");
+        hero.Summary.Should().Be("Gamma Rotation is the active Strategy run.");
+        hero.Summary.Should().NotContain("active research run");
         hero.BadgeText.Should().Be("In review");
         hero.PrimaryActionId.Should().Be("RunDetail");
         hero.SecondaryActionId.Should().Be("RunPortfolio");
@@ -188,6 +190,8 @@ public sealed class ResearchWorkspaceShellViewModelTests
 
         group.PrimaryCommands.Single(command => command.Id == "PromoteToPaper").IsEnabled.Should().BeFalse();
         group.PrimaryCommands.Single(command => command.Id == "OpenTradingCockpit").IsEnabled.Should().BeFalse();
+        group.PrimaryCommands.Single(command => command.Id == "ResetStudio").Description.Should().Be("Reset the strategy studio layout");
+        group.SecondaryCommands.Single(command => command.Id == "FundAuditTrail").Description.Should().Be("Open Accounting audit trail");
     }
 
     [Fact]

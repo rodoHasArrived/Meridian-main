@@ -715,6 +715,19 @@ describe("research-screen view model", () => {
     expect(plotTool.statistics.sampleTable.rows[0]).toMatchObject({ signalText: "Crowded vol", tone: "warning" });
   });
 
+  it("uses Strategy as the PlotTool badge when no run is active", () => {
+    const plotTool = buildPlotToolState({
+      metrics,
+      runs: [],
+      selectedRuns: [],
+      comparison: [],
+      runDiff: null
+    });
+
+    expect(plotTool.workspace.statusBadgeLabel).toBe("STRATEGY");
+    expect(plotTool.workspace.statusBadgeLabel).not.toBe("RESEARCH");
+  });
+
   it("builds PlotTool table states with explicit empty copy", () => {
     expect(buildPlotToolMomentsTable([])).toEqual({
       rows: [],

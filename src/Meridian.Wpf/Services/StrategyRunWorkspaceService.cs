@@ -675,7 +675,7 @@ public sealed class StrategyRunWorkspaceService
         {
             return CreateStatusItem(
                 "Awaiting runs",
-                "Validation coverage appears after recorded runs project governance controls.",
+                "Validation coverage appears after recorded runs project governed controls.",
                 TradingWorkspaceStatusTone.Info);
         }
 

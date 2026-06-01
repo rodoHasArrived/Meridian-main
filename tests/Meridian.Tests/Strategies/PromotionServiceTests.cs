@@ -545,6 +545,8 @@ public sealed class PromotionServiceTests
         var evaluation = await service.EvaluateAsync(run.RunId);
         evaluation.Found.Should().BeTrue();
         evaluation.IsEligible.Should().BeFalse("Risk metrics should block promotion");
+        evaluation.Reason.Should().Be("Promotion requires operator promotion review.");
+        evaluation.Reason.Should().NotContain("governance review");
         evaluation.BlockingReasons.Should().NotBeNull("Blocking reasons should be enumerated");
         evaluation.BlockingReasons.Should().NotBeEmpty("At least one blocking reason should be present");
 

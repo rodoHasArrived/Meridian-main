@@ -63,7 +63,7 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectExportManifest])
                 ],
                 EvidenceTags: ["run history", "promotion state", "portfolio coverage", "ledger coverage"],
-                MarketPatternTags: ["research to backtest", "backtest to paper handoff", "review queue"]),
+                MarketPatternTags: ["strategy to backtest", "backtest to paper handoff", "review queue"]),
 
             new WorkflowDefinitionDto(
                 WorkflowId: "paper-trading-readiness",

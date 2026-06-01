@@ -109,14 +109,14 @@ public sealed record StrategyRunPaperStatus(
     bool HasLedgerCoverage = false);
 
 /// <summary>
-/// Governance hook attached to a run detail or summary, capturing the relevant
+/// Governed-control hook attached to a run detail or summary, capturing the relevant
 /// approval, audit, and compliance signals for this run at the time of the query.
-/// Multiple hooks may be present — one per governance seam that is active.
+/// Multiple hooks may be present - one per governed-control seam that is active.
 /// </summary>
 public sealed record StrategyRunGovernanceHook(
-    /// <summary>Stable identifier for this governance seam (e.g. "approval", "audit", "compliance").</summary>
+    /// <summary>Stable identifier for this governed-control seam (e.g. "approval", "audit", "compliance").</summary>
     string SeamId,
-    /// <summary>Human-readable label shown on governance dashboards.</summary>
+    /// <summary>Human-readable label shown on Strategy, Trading, and Accounting control surfaces.</summary>
     string Label,
     /// <summary>Whether this seam is currently satisfied / cleared.</summary>
     bool IsSatisfied,
@@ -124,13 +124,13 @@ public sealed record StrategyRunGovernanceHook(
     string? StatusLabel,
     /// <summary>External reference for this governance record (e.g. ticket ID, audit log ID).</summary>
     string? ExternalReference,
-    /// <summary>When this governance hook was last evaluated or updated.</summary>
+    /// <summary>When this governed-control hook was last evaluated or updated.</summary>
     DateTimeOffset? LastEvaluatedAt,
-    /// <summary>Narrative note or reason for the current governance state.</summary>
+    /// <summary>Narrative note or reason for the current governed-control state.</summary>
     string? Note = null);
 
 /// <summary>
-/// Shared execution summary used by workstation drill-ins and governance surfaces.
+/// Shared execution summary used by workstation drill-ins and Accounting control surfaces.
 /// </summary>
 public sealed record StrategyRunExecutionSummary(
     int FillCount,
@@ -146,7 +146,7 @@ public sealed record StrategyRunExecutionSummary(
     string? AuditReference);
 
 /// <summary>
-/// Shared promotion summary used by research, trading, and governance workflows.
+/// Shared promotion summary used by Strategy, Trading, and Accounting workflows.
 /// </summary>
 public sealed record StrategyRunPromotionSummary(
     StrategyRunPromotionState State,
@@ -164,7 +164,7 @@ public sealed record StrategyRunPromotionSummary(
     IReadOnlyList<string>? EvidenceReferences = null);
 
 /// <summary>
-/// Shared governance summary used by audit and control surfaces.
+/// Shared governed-control summary used by audit and control surfaces.
 /// </summary>
 public sealed record StrategyRunGovernanceSummary(
     DateTimeOffset LastUpdatedAt,
@@ -359,7 +359,7 @@ public sealed record PortfolioPositionSummary(
     [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
 
 /// <summary>
-/// Shared ledger rollup for workstation governance and audit surfaces.
+/// Shared ledger rollup for workstation Accounting and audit surfaces.
 /// </summary>
 public sealed record LedgerSummary(
     string LedgerReference,
@@ -768,7 +768,7 @@ public sealed record RunPortfolioDrillInSummary(
     RunFillSummary? Trades);
 
 /// <summary>
-/// Lightweight run identity used to connect research, trading, and governance flows.
+/// Lightweight run identity used to connect Strategy, Trading, and Accounting flows.
 /// </summary>
 public sealed record StrategyRunContinuityLink(
     string RunId,
@@ -859,7 +859,7 @@ public sealed record StrategyRunContinuityStatus(
     IReadOnlyList<StrategyRunContinuityWarning> Warnings);
 
 /// <summary>
-/// Canonical shared continuity drill-in contract used by Research, Trading, and Governance run drill-ins.
+/// Canonical shared continuity drill-in contract used by Strategy, Trading, and Accounting run drill-ins.
 /// </summary>
 public record StrategyRunContinuityDto(
     StrategyRunDetail Run,

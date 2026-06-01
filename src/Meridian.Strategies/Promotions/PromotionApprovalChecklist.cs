@@ -4,7 +4,7 @@ namespace Meridian.Strategies.Promotions;
 
 /// <summary>
 /// Canonical checklist items that make promotion approvals traceable across
-/// research, trading, and governance review.
+/// Strategy, Trading, and operator review.
 /// </summary>
 public static class PromotionApprovalChecklist
 {

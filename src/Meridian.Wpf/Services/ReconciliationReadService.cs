@@ -7,7 +7,7 @@ using Meridian.Strategies.Services;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// Builds governance reconciliation posture across all accounts linked to a fund profile.
+/// Builds Accounting reconciliation posture across all accounts linked to a fund profile.
 /// </summary>
 public sealed class ReconciliationReadService
 {

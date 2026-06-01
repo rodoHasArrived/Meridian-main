@@ -6,7 +6,7 @@ using Meridian.Wpf.Models;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// Builds governance-first fund ledger views from recorded run ledgers assigned to a fund profile.
+/// Builds Accounting-first fund ledger views from recorded run ledgers assigned to a fund profile.
 /// </summary>
 public sealed class FundLedgerReadService
 {

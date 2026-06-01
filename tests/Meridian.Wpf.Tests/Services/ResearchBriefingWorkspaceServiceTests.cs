@@ -9,6 +9,17 @@ namespace Meridian.Wpf.Tests.Services;
 public sealed class ResearchBriefingWorkspaceServiceTests
 {
     [Fact]
+    public void WorkstationResearchBriefingApiClient_UsesCanonicalStrategyBriefingRoute()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Services\WorkstationResearchBriefingService.cs"));
+
+        source.Should().Contain("UiApiRoutes.WorkstationStrategyBriefing");
+        source.Should().NotContain("UiApiRoutes.WorkstationResearchBriefing, ct");
+        source.Should().NotContain("governance review");
+        source.Should().Contain("Run is flagged for Accounting review.");
+    }
+
+    [Fact]
     public async Task GetBriefingAsync_WhenEndpointReturnsPayload_ShouldPreferEndpointAndBackfillLocalWatchlists()
     {
         var store = new StrategyRunStore();

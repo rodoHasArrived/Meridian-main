@@ -26,7 +26,7 @@ public sealed class ResearchWorkspaceShellPageTests
                 StatusTone: "Info",
                 NextAction: new WorkflowNextAction(
                     Label: "Start Backtest",
-                    Detail: "Launch a new simulation from the research workspace.",
+                    Detail: "Launch a new simulation from the strategy workspace.",
                     TargetPageTag: "Backtest",
                     Tone: "Primary"),
                 PrimaryBlocker: new WorkflowBlockerSummary(

@@ -690,7 +690,7 @@ const fixtureGovernanceWorkspace: GovernanceWorkspaceResponse = {
       }
     ],
     reportPackTargets: ["board"],
-    summary: "4 export/reporting profiles are available for governance workflows.",
+    summary: "4 export/reporting profiles are available for Accounting and Reporting workflows.",
     workflowRecords: [
       {
         reportId: "report-restated-demo",

@@ -522,8 +522,8 @@ public sealed class SetupWizardService
             new()
             {
                 Id = "researcher",
-                Name = "Researcher",
-                Description = "Historical data focus for backtesting and analysis",
+                Name = "Strategy Analyst",
+                Description = "Historical strategy-data focus for backtesting and analysis",
                 Icon = "\uE8A1",
                 RecommendedProviders = new[] { "Polygon", "Tiingo", "Yahoo Finance" },
                 DefaultSymbols = new[] { "SPY", "QQQ", "IWM", "DIA", "VTI" },

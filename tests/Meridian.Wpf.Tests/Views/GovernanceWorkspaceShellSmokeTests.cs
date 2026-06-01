@@ -46,12 +46,16 @@ public sealed class GovernanceWorkspaceShellSmokeTests
         xaml.Should().Contain("Text=\"Active Accounting Context\"");
         xaml.Should().Contain("Text=\"Recent Accounting Work\"");
         xaml.Should().Contain("AutomationProperties.Name=\"Accounting Dock Manager\"");
+        xaml.Should().Contain("Keep the selected Accounting lane visible before moving into the queue wall.");
+        xaml.Should().Contain("Switch to a fund-linked context to unlock Accounting review.");
         xaml.Should().NotContain("Text=\"Governance\"");
         xaml.Should().NotContain("Governance work queues");
         xaml.Should().NotContain("Governance is locked");
         xaml.Should().NotContain("Active Governance Context");
         xaml.Should().NotContain("Recent Governance Work");
         xaml.Should().NotContain("Governance Dock Manager");
+        xaml.Should().NotContain("selected governance lane");
+        xaml.Should().NotContain("unlock governance review");
         xaml.IndexOf("GovernanceHeroLaneText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("OperationsLaneButton", StringComparison.Ordinal));
         xaml.Should().Contain("AccountingLaneSummaryText");
         xaml.Should().Contain("ReconciliationLaneSummaryText");

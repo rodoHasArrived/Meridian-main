@@ -91,6 +91,10 @@ public sealed class WorkflowLibraryEndpointTests
         library.Should().NotBeNull();
         library!.Workflows.Should().Contain(workflow => workflow.WorkflowId == "strategy-to-paper-review");
         library.Workflows.Should().Contain(workflow =>
+            workflow.WorkflowId == "strategy-to-paper-review" &&
+            workflow.MarketPatternTags.Contains("strategy to backtest") &&
+            !workflow.MarketPatternTags.Contains("research to backtest"));
+        library.Workflows.Should().Contain(workflow =>
             workflow.WorkflowId == "portfolio-position-review" &&
             workflow.WorkspaceId == "portfolio" &&
             workflow.EntryPageTag == "PortfolioShell");

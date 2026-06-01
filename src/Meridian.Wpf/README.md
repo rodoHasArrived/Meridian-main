@@ -52,7 +52,7 @@ Fund Ledger reconciliation actions call the shared workstation reconciliation en
 queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
 visible in the retained detail panel. The WPF queue projection carries the same source systems,
-probable cause, ledger impact, suggested next action, and evidence links as the browser governance
+probable cause, ledger impact, suggested next action, and evidence links as the browser Accounting
 detail so desktop operators do not rebuild reconciliation narratives locally.
 Shared close-workflow target tags stay explicit in desktop routing: `OperationsContinuity` and
 `OperationsClose` are WPF aliases for the Fund Operations page, with navigation parameters that
@@ -82,6 +82,15 @@ Workspace id compatibility normalization and the canonical legacy-alias list are
 The shared context-strip service normalizes legacy workspace titles before rendering owner copy, so
 old callers cannot reintroduce `Research`, `Data Operations`, or `Governance` as visible workspace
 labels.
+Operator-inbox attention badges use the same canonical workspace-title normalization before
+rendering owner labels, while retained API payloads may still carry legacy workspace names for
+compatibility.
+The two-pane workstation layout keeps the retained `ResearchData` compatibility identifier but
+renders the operator-facing label as `Strategy + Data`.
+WPF icon resources and SVG source filenames keep retained identifiers such as `IconResearch`,
+`IconDataOps`, `IconGovernance`, `research.svg`, `data-operations.svg`, and `governance.svg`, but
+the icon asset documentation maps those compatibility names to canonical Strategy, Data,
+Accounting, and Settings operator labels.
 `WorkspaceService` uses that same seam for persisted session and layout restore while keeping only
 older template aliases such as monitoring, storage-admin, and analysis-export local to the service.
 Strategy shell presentation defaults also emit the canonical `strategy` workspace id while retaining
@@ -96,6 +105,8 @@ legacy aliases only as compatibility seams.
 Fund Ledger and Fund Accounts drill-in surfaces use Accounting wording for route banners,
 report-pack preview, account queues, and reconciliation guidance while preserving compatibility
 type names where needed.
+Fund Ledger report-pack handoff preview copy also names the Accounting workspace so downstream
+board, investor, compliance, and fund-ops packets do not surface the legacy Governance root label.
 `WorkspaceCommandSurfaceControl` and `WorkspaceEvidenceStripControl` take explicit automation ID
 properties from the active workspace layout descriptor so shell chrome can be reused without
 depending on ambient `MainPage` bindings.
@@ -128,7 +139,9 @@ QuantScript run-history handoffs use `CompareInStrategyCommand` for Strategy Run
 routing while preserving the existing button automation ID and run-detail navigation targets.
 Strategy shell fallback briefing summaries, deterministic workflow guidance, degraded-state
 recovery copy, and promotion notes also use canonical `Strategy` wording while retaining legacy
-research DTO/interface names for API compatibility.
+research DTO/interface names for API compatibility. The desktop briefing client requests the
+canonical `/api/workstation/strategy/briefing` route while the shared host still serves the retained
+research briefing route as a compatibility alias.
 Backfill terminal work uses `DenseDataGridControl` for gap-analysis and per-symbol-progress tables,
 with table descriptors owned by `BackfillWorkbenchSectionViewModel` so long-running provider
 catch-up workflows reuse the shared dense-table/empty-state surface.
@@ -137,6 +150,9 @@ selected-position inspector state so paper/live desk review keeps row selection,
 next-action context in the shared dense table surface. `WorkspaceInspectorHostControl` owns
 empty, selected, loading, and error inspector states with caller-supplied automation IDs so
 workspace pages can migrate selected-row detail without changing route/page tags.
+Trading shell fallback and context-handoff copy routes reconciliation and kill-switch handoffs
+through Accounting wording while preserving retained `GovernanceShell` target tags for route
+compatibility.
 Accounting, Portfolio, Reporting, and Settings/Admin cockpit home decisions bind to view-model-owned `WorkspaceQueueItem`
 collections through `WorkspaceDecisionQueueControl`, preserving existing page tags while reusing
 `WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery

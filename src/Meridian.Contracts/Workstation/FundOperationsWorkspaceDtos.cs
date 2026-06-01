@@ -60,7 +60,7 @@ public static class GovernanceReportPackContract
 }
 
 /// <summary>
-/// Query for the shared governance and fund-operations workspace projection.
+/// Query for the shared Accounting and fund-operations workspace projection.
 /// </summary>
 /// <remarks>
 /// Selection semantics mirror <see cref="FundLedgerQuery"/>:
@@ -84,7 +84,7 @@ public sealed record FundNavAssetClassExposureDto(
     decimal NetBalance);
 
 /// <summary>
-/// Governance-facing NAV attribution summary for one fund workspace.
+/// Accounting-facing NAV attribution summary for one fund workspace.
 /// </summary>
 public sealed record FundNavAttributionSummaryDto(
     string Currency,
@@ -96,7 +96,7 @@ public sealed record FundNavAttributionSummaryDto(
     IReadOnlyList<FundNavAssetClassExposureDto> AssetClassExposure);
 
 /// <summary>
-/// Reporting profile metadata exposed to governance workflows.
+/// Reporting profile metadata exposed to Accounting and Reporting workflows.
 /// </summary>
 public sealed record FundReportingProfileDto(
     string Id,
@@ -108,7 +108,7 @@ public sealed record FundReportingProfileDto(
     bool DataDictionary);
 
 /// <summary>
-/// Report/export posture for the governance workspace.
+/// Report/export posture for the Accounting workspace.
 /// </summary>
 public sealed record FundReportingSummaryDto(
     int ProfileCount,
@@ -119,7 +119,7 @@ public sealed record FundReportingSummaryDto(
     IReadOnlyList<ReportPackWorkflowRecordDto>? WorkflowRecords = null);
 
 /// <summary>
-/// Shared governance workspace payload combining ledger, banking, cash, reconciliation,
+/// Shared Accounting workspace payload combining ledger, banking, cash, reconciliation,
 /// NAV, and reporting posture for one fund profile.
 /// </summary>
 public sealed record FundOperationsWorkspaceDto(
@@ -141,7 +141,7 @@ public sealed record FundOperationsWorkspaceDto(
     GovernanceLifecycleProjectionDto? Governance = null);
 
 /// <summary>
-/// Request to build a preview of a governance report pack for one fund profile.
+/// Request to build a preview of a governed report pack for one fund profile.
 /// </summary>
 public sealed record FundReportPackPreviewRequestDto(
     string FundProfileId,
@@ -157,7 +157,7 @@ public sealed record FundReportAssetClassSectionDto(
     decimal Total);
 
 /// <summary>
-/// Preview of a generated governance report pack without writing the artifact to disk.
+/// Preview of a generated governed report pack without writing the artifact to disk.
 /// </summary>
 public sealed record FundReportPackPreviewDto(
     Guid ReportId,
@@ -173,7 +173,7 @@ public sealed record FundReportPackPreviewDto(
     IReadOnlyList<FundReportAssetClassSectionDto> AssetClassSections);
 
 /// <summary>
-/// Request to generate and persist an immutable governance report pack.
+/// Request to generate and persist an immutable governed report pack.
 /// </summary>
 public sealed record FundReportPackGenerateRequestDto(
     string FundProfileId,
@@ -198,7 +198,7 @@ public sealed record FundReportPackArtifactDto(
     int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
 
 /// <summary>
-/// Source lineage captured with a generated governance report pack.
+/// Source lineage captured with a generated governed report pack.
 /// </summary>
 public sealed record FundReportPackProvenanceDto(
     IReadOnlyList<string> RelatedRunIds,
@@ -367,7 +367,7 @@ public sealed record FundReportPackLifecycleEventDto(
     string CorrelationId);
 
 /// <summary>
-/// Immutable manifest for a generated governance report pack.
+/// Immutable manifest for a generated governed report pack.
 /// </summary>
 public sealed record FundReportPackSnapshotDto(
     Guid ReportId,
@@ -395,7 +395,7 @@ public sealed record FundReportPackSnapshotDto(
 }
 
 /// <summary>
-/// Lightweight row used when listing generated governance report packs.
+/// Lightweight row used when listing generated governed report packs.
 /// </summary>
 public sealed record FundReportPackHistoryItemDto(
     Guid ReportId,

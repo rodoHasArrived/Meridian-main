@@ -3,7 +3,7 @@ using Meridian.Contracts.FundStructure;
 namespace Meridian.Contracts.Workstation;
 
 /// <summary>
-/// Tab targets within the governance-first fund operations workspace.
+/// Tab targets within the Accounting-first fund operations workspace.
 /// </summary>
 public enum FundOperationsTab : byte
 {
@@ -30,7 +30,7 @@ public sealed record FundOperationsNavigationContext(
     string? RunId = null);
 
 /// <summary>
-/// Summary cards shown at the top of the governance fund operations workspace.
+/// Summary cards shown at the top of the Accounting fund operations workspace.
 /// </summary>
 public sealed record FundWorkspaceSummary(
     string FundProfileId,
@@ -61,7 +61,7 @@ public sealed record FundWorkspaceSummary(
     string? ReportPackExceptionSummary = null);
 
 /// <summary>
-/// Account-first row used by governance banking and account tabs.
+/// Account-first row used by Accounting banking and account tabs.
 /// </summary>
 public sealed record FundAccountSummary(
     Guid AccountId,
@@ -128,7 +128,7 @@ public sealed record FundPortfolioPosition(
     int SecurityMissingContributions = 0);
 
 /// <summary>
-/// Shared cash and financing rollup for governance and trading capital-control surfaces.
+/// Shared cash and financing rollup for Accounting and Trading capital-control surfaces.
 /// </summary>
 public sealed record CashFinancingSummary(
     string Currency,
@@ -153,7 +153,7 @@ public sealed record CashFinancingSummary(
     IReadOnlyList<CashFlowEntryDto>? CashFlowEntries = null);
 
 /// <summary>
-/// Reconciliation row shown in governance operator queues.
+/// Reconciliation row shown in Accounting operator queues.
 /// </summary>
 public sealed record FundReconciliationItem(
     Guid ReconciliationRunId,
@@ -188,7 +188,7 @@ public sealed record ReconciliationSummary(
     bool HasCriticalBreakOpen = false);
 
 /// <summary>
-/// Shared governance lifecycle projection composed from operations continuity,
+/// Shared governed lifecycle projection composed from operations continuity,
 /// reconciliation break queue, report-pack lifecycle, and evidence workflow references.
 /// </summary>
 public sealed record GovernanceLifecycleProjectionDto(

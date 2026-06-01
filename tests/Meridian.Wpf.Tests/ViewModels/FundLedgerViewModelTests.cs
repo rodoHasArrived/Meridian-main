@@ -651,9 +651,11 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().Contain("AutomationProperties.Name=\"Accounting Route Banner\"");
         xaml.Should().Contain("Accounting Report-Pack Preview");
         xaml.Should().Contain("inside Accounting");
+        xaml.Should().Contain("leave the Accounting workspace");
         xaml.Should().NotContain("AutomationProperties.Name=\"Governance Route Banner\"");
         xaml.Should().NotContain("Governance Report-Pack Preview");
         xaml.Should().NotContain("inside governance");
+        xaml.Should().NotContain("leave the governance workspace");
 
         source.Should().Contain("Accounting fund operations are loaded for the active fund profile.");
         source.Should().Contain("Accounting operator");

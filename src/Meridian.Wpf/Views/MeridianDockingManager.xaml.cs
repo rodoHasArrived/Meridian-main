@@ -15,7 +15,7 @@ namespace Meridian.Wpf.Views;
 
 /// <summary>
 /// A UserControl that wraps an AvalonDock <see cref="DockingManager"/> to provide
-/// IDE-style floating, pinnable, and tear-off panes for the Trading and Research
+/// IDE-style floating, pinnable, and tear-off panes for the Trading and Strategy
 /// workspace shells.
 ///
 /// Key surface:

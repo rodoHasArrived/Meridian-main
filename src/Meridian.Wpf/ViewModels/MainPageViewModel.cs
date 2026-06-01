@@ -1499,7 +1499,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var targetWorkspace = ShellNavigationCatalog.GetWorkspace(ShellNavigationCatalog.InferWorkspaceIdForPageTag(target));
         var owner = string.IsNullOrWhiteSpace(primaryWorkItem.Workspace)
             ? targetWorkspace?.Title ?? WorkspaceHeading
-            : primaryWorkItem.Workspace.Trim();
+            : WorkstationNavigationDefaults.NormalizeWorkspaceTitle(primaryWorkItem.Workspace);
 
         return $"{countText}: {primaryWorkItem.Label} | {severity} | {owner} | open {target}";
     }

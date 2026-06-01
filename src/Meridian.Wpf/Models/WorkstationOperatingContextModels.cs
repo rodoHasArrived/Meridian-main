@@ -41,7 +41,7 @@ public static class OperatingContextScopeKindExtensions
 }
 
 /// <summary>
-/// Explicit governance subareas surfaced inside the Governance workspace.
+/// Explicit accounting and operational-governance subareas surfaced inside the Accounting workspace.
 /// </summary>
 public enum GovernanceSubarea : byte
 {

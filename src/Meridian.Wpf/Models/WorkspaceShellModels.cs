@@ -91,10 +91,10 @@ public sealed class TradingWorkspaceSummary
     public WorkspaceQueueRegionState ActivePositionsQueueState { get; set; } = WorkspaceQueueRegionState.None;
 }
 
-// ── Research Workspace ──────────────────────────────────────────────────────
+// ── Strategy Workspace ──────────────────────────────────────────────────────
 
 /// <summary>
-/// Display item for a recent strategy run shown in the Research workspace shell.
+/// Display item for a recent strategy run shown in the Strategy workspace shell.
 /// </summary>
 public sealed class ResearchRunSummaryItem
 {
@@ -119,7 +119,7 @@ public sealed class ResearchPromotionCandidateItem
 }
 
 /// <summary>
-/// Aggregated summary for the Research workspace landing page.
+/// Aggregated summary for the Strategy workspace landing page.
 /// </summary>
 public sealed class ResearchWorkspaceSummary
 {

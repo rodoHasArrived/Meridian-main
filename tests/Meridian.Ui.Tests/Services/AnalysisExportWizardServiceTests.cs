@@ -20,6 +20,19 @@ public sealed class AnalysisExportWizardServiceTests : IDisposable
     }
 
     [Fact]
+    public void GetExportProfiles_ShouldDescribeRunMatAsStrategyWorkflow()
+    {
+        var service = new AnalysisExportWizardService();
+
+        var runMatProfile = service.GetExportProfiles().Should()
+            .ContainSingle(profile => profile.Id == "runmat")
+            .Subject;
+
+        runMatProfile.Description.Should().Contain("RunMat Strategy workflows");
+        runMatProfile.Description.Should().NotContain("RunMat research workflows");
+    }
+
+    [Fact]
     public async Task ExportToCsvAsync_ShouldWriteUnionHeaderAndAlignSparseRows()
     {
         var sourcePath = WriteJsonl(

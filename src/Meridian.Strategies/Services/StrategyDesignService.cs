@@ -196,7 +196,7 @@ public sealed class StrategyDesignService
             string.Equals(cell.Kind, "governance", StringComparison.OrdinalIgnoreCase));
         if (!hasRiskGuard && cells.Count > 0)
         {
-            messages.Add(Warning("RiskGuardRecommended", document.DocumentId, "Add a risk or governance cell before promotion review."));
+            messages.Add(Warning("RiskGuardRecommended", document.DocumentId, "Add a risk or control cell before promotion review."));
         }
 
         var hasErrors = messages.Any(static message => string.Equals(message.Severity, "error", StringComparison.OrdinalIgnoreCase));

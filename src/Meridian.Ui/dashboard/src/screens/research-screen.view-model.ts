@@ -1864,8 +1864,8 @@ export function buildPlotToolState({
       eyebrow: "Strategy Lane · PlotTool",
       title: `${chartStudyLabel} workstation`,
       description: "Meridian notebooks, evidence cues, and factor scatter analysis folded into the Strategy route.",
-      statusBadgeLabel: formatText(activeRun?.mode ?? "research").toUpperCase(),
-      statusBadgeVariant: badgeVariantForMode(activeRun?.mode ?? "research"),
+      statusBadgeLabel: formatText(activeRun?.mode ?? "Strategy").toUpperCase(),
+      statusBadgeVariant: badgeVariantForMode(activeRun?.mode ?? "Strategy"),
       expression: buildPlotExpression(activeRun, companionRun),
       toolbarPills: [
         windowName,

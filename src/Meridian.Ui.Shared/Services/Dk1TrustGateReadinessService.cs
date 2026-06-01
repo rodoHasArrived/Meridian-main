@@ -17,7 +17,7 @@ public sealed class Dk1TrustGateReadinessService
 {
     private static readonly string[] DefaultRequiredOwners =
     [
-        "Data Operations",
+        "Data",
         "Provider Reliability",
         "Trading"
     ];
@@ -198,7 +198,7 @@ public sealed class Dk1TrustGateReadinessService
         var blockers = ReadStringArray(TryGetProperty(root, "blockers"))
             .Concat(BuildContractBlockers(trustRationaleContract, baselineThresholdContract))
             .ToArray();
-        var requiredOwners = ReadStringArray(operatorSignoff, "requiredOwners");
+        var requiredOwners = ReadOwnerArray(operatorSignoff, "requiredOwners");
         if (requiredOwners.Count == 0)
         {
             requiredOwners = DefaultRequiredOwners;
@@ -213,8 +213,8 @@ public sealed class Dk1TrustGateReadinessService
             string.Equals(document.Status, "validated", StringComparison.OrdinalIgnoreCase));
         var operatorSignoffStatus = GetString(operatorSignoff, "status") ?? "unknown";
         var operatorSignoffRequired = GetBoolean(operatorSignoff, "requiredBeforeDk1Exit") ?? true;
-        var signedOwners = ReadStringArray(operatorSignoff, "signedOwners");
-        var missingOwners = ReadStringArray(operatorSignoff, "missingOwners");
+        var signedOwners = ReadOwnerArray(operatorSignoff, "signedOwners");
+        var missingOwners = ReadOwnerArray(operatorSignoff, "missingOwners");
         if (missingOwners.Count == 0 && operatorSignoffRequired && !IsOperatorSignoffComplete(operatorSignoffStatus))
         {
             missingOwners = requiredOwners
@@ -672,6 +672,35 @@ public sealed class Dk1TrustGateReadinessService
 
     private static IReadOnlyList<string> ReadStringArray(JsonElement? element, string propertyName) =>
         ReadStringArray(TryGetProperty(element, propertyName));
+
+    private static IReadOnlyList<string> ReadOwnerArray(JsonElement? element, string propertyName) =>
+        NormalizeOwnerLabels(ReadStringArray(element, propertyName));
+
+    private static IReadOnlyList<string> NormalizeOwnerLabels(IReadOnlyList<string> owners) =>
+        owners
+            .Select(NormalizeOwnerLabel)
+            .ToArray();
+
+    private static string NormalizeOwnerLabel(string owner)
+    {
+        var trimmed = owner.Trim();
+        if (string.Equals(trimmed, "Research", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Strategy";
+        }
+
+        if (string.Equals(trimmed, "Data Operations", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Data";
+        }
+
+        if (string.Equals(trimmed, "Governance", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Accounting";
+        }
+
+        return trimmed;
+    }
 
     private static IReadOnlyList<string> ReadStringArray(JsonElement? element)
     {

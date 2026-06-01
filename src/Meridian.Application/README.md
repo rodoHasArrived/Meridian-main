@@ -89,6 +89,8 @@ and UI presentation concerns in their owning layers.
   custom profile id, version, field-key, or field-value filters are supplied. Profile definitions
   are governed by `SecurityAssetProfileGovernanceService`, which merges seeded starter definitions
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
+  Security Master validation messages use operator-review wording for override audit remediation so
+  application-layer guidance does not expose legacy Governance workspace language.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. Ownership-link policy validation prevents invalid setup graphs
   by blocking self-parenting, active cycles, incompatible relationship types, overlapping primary

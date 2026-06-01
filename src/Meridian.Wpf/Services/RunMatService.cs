@@ -77,7 +77,7 @@ public sealed class RunMatStatus
 }
 
 /// <summary>
-/// Manages RunMat script files, persisted settings, and process-backed execution for WPF research workflows.
+/// Manages RunMat script files, persisted settings, and process-backed execution for WPF Strategy workflows.
 /// </summary>
 public sealed class RunMatService
 {
