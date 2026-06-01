@@ -41,6 +41,7 @@ public sealed class ShellPresentationViewModelTests
             Detail: "Cash mismatch needs review.",
             Tone: OperatorWorkItemToneDto.Warning,
             CreatedAt: DateTimeOffset.UtcNow.AddMinutes(-10),
+            Workspace: "Accounting",
             TargetPageTag: "FundReconciliation")
         {
             PriorityScore = 520,
@@ -53,6 +54,7 @@ public sealed class ShellPresentationViewModelTests
             Detail: "Session changed after audit.",
             Tone: OperatorWorkItemToneDto.Critical,
             CreatedAt: DateTimeOffset.UtcNow,
+            Workspace: "Trading",
             TargetPageTag: "TradingShell")
         {
             PriorityScore = 860,

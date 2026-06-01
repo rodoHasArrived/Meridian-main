@@ -13,11 +13,10 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
         if (request.FundId.HasValue) assignedParents++;
         if (request.SleeveId.HasValue) assignedParents++;
         if (request.VehicleId.HasValue) assignedParents++;
-        if (request.EntityId.HasValue) assignedParents++;
 
         if (assignedParents > 1)
         {
-            throw new InvalidOperationException("Investment portfolios can only be assigned to one operating parent.");
+            throw new InvalidOperationException("Investment portfolios can only have one operating parent (client, fund, sleeve, or vehicle).");
         }
     }
 

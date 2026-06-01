@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
@@ -436,7 +437,11 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
             Timestamp = record.Timestamp.ToString("O"),
             record.Price,
             record.Size
-        }, new JsonSerializerOptions { WriteIndented = true });
+        }, new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = true
+        });
     }
 
     private void CopySelectedRecordJson()
