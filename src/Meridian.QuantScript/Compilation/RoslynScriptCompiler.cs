@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -18,7 +17,6 @@ namespace Meridian.QuantScript.Compilation;
 /// </summary>
 public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 {
-    private static readonly MetadataReferenceResolver SafeMetadataReferenceResolver = new RestrictedMetadataReferenceResolver();
     private static readonly SourceReferenceResolver SafeSourceReferenceResolver = new RestrictedSourceReferenceResolver();
 
     // Parameter comment convention: // @param Name:Label:Default:Min:Max:Description
@@ -38,6 +36,13 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         @"(?<name>Default|Min|Max|Description)\s*=\s*(?<value>(""[^""]*""|[^,]+))",
         RegexOptions.Compiled);
 
+    private static readonly Regex ScriptReferenceDirectiveRegex = new(
+        @"^\s*#\s*r\b",
+        RegexOptions.Compiled | RegexOptions.Multiline);
+
+    private static readonly Regex ScriptLoadDirectiveRegex = new(
+        @"^\s*#\s*load\b",
+        RegexOptions.Compiled | RegexOptions.Multiline);
 
     private static readonly string[] UnsafeApiMarkers =
     [
@@ -89,7 +94,7 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
                 {
                     var diagnostic = new ScriptDiagnostic(
                         "Error",
-                        $"Safe mode blocks use of '{marker}'. Set EnableUnsafeScripts=true to allow this script.",
+                        $"Safe mode blocks use of '{marker}' because it is disabled in safe mode. Set EnableUnsafeScripts=true to allow this script.",
                         1,
                         1);
                     return new ScriptCompilationResult(false, sw.Elapsed, [diagnostic]);
@@ -169,31 +174,10 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 
         if (!_options.Value.EnableUnsafeScripts)
         {
-            scriptOptions = scriptOptions
-                .WithMetadataResolver(SafeMetadataReferenceResolver)
-                .WithSourceResolver(SafeSourceReferenceResolver);
+            scriptOptions = scriptOptions.WithSourceResolver(SafeSourceReferenceResolver);
         }
 
         return scriptOptions;
-    }
-
-    private sealed class RestrictedMetadataReferenceResolver : MetadataReferenceResolver
-    {
-        public override bool Equals(object? other) => other is RestrictedMetadataReferenceResolver;
-
-        public override int GetHashCode() => typeof(RestrictedMetadataReferenceResolver).GetHashCode();
-
-        public override PortableExecutableReference? ResolveMissingAssembly(
-            MetadataReference definition,
-            AssemblyIdentity referenceIdentity) => null;
-
-        public override ImmutableArray<PortableExecutableReference> ResolveReference(
-            string reference,
-            string? baseFilePath,
-            MetadataReferenceProperties properties)
-        {
-            return ImmutableArray<PortableExecutableReference>.Empty;
-        }
     }
 
     private sealed class RestrictedSourceReferenceResolver : SourceReferenceResolver
@@ -215,6 +199,18 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 
     private static bool TryGetUnsafeMarker(string source, out string marker)
     {
+        if (ScriptReferenceDirectiveRegex.IsMatch(source))
+        {
+            marker = "#r";
+            return true;
+        }
+
+        if (ScriptLoadDirectiveRegex.IsMatch(source))
+        {
+            marker = "#load";
+            return true;
+        }
+
         foreach (var candidate in UnsafeApiMarkers)
         {
             if (source.Contains(candidate, StringComparison.Ordinal))

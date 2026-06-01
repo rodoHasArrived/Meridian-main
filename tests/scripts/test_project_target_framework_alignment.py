@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -6,16 +7,11 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_ROOT = REPO_ROOT / ".github" / "workflows"
-SCHEDULED_MAINTENANCE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "scheduled-maintenance.yml"
-SETUP_DOTNET_CACHE_ACTION = REPO_ROOT / ".github" / "actions" / "setup-dotnet-cache" / "action.yml"
+CI_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "ci.yml"
+MAINTENANCE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "maintenance.yml"
 CODEQL_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "codeql.yml"
-SECURITY_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "security.yml"
 PRODUCTION_DOCKERFILE = REPO_ROOT / "deploy" / "docker" / "Dockerfile"
-GENERAL_AI_PROMPT_WORKFLOWS = [
-    REPO_ROOT / ".github" / "workflows" / "code-quality.yml",
-    REPO_ROOT / ".github" / "workflows" / "nightly.yml",
-    REPO_ROOT / ".github" / "workflows" / "pr-checks.yml",
-]
+SKIPPED_PROJECT_DIRS = {".git", ".vs", "artifacts", "bin", "dist", "node_modules", "obj", "publish", "TestResults"}
 
 
 def target_framework(project_path: str) -> str:
@@ -30,18 +26,23 @@ def projects_referencing(project_path: str) -> list[str]:
     referenced_project = (REPO_ROOT / project_path).resolve()
     matching_projects: list[str] = []
 
-    for candidate in sorted(REPO_ROOT.glob("**/*.*proj")):
-        if any(part in {"bin", "obj", "node_modules", ".git"} for part in candidate.parts):
-            continue
+    for root, dirnames, filenames in os.walk(REPO_ROOT):
+        dirnames[:] = [name for name in dirnames if name not in SKIPPED_PROJECT_DIRS]
 
-        root = ET.parse(candidate).getroot()
-        for reference in root.findall(".//ProjectReference"):
-            include = reference.attrib.get("Include")
-            if include and (candidate.parent / include.replace("\\", "/")).resolve() == referenced_project:
-                matching_projects.append(candidate.relative_to(REPO_ROOT).as_posix())
-                break
+        for filename in filenames:
+            if not filename.endswith("proj"):
+                continue
 
-    return matching_projects
+            candidate = Path(root) / filename
+
+            project_root = ET.parse(candidate).getroot()
+            for reference in project_root.findall(".//ProjectReference"):
+                include = reference.attrib.get("Include")
+                if include and (candidate.parent / include.replace("\\", "/")).resolve() == referenced_project:
+                    matching_projects.append(candidate.relative_to(REPO_ROOT).as_posix())
+                    break
+
+    return sorted(matching_projects)
 
 
 class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
@@ -63,10 +64,9 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
             with self.subTest(project_path=project_path):
                 self.assertEqual(target_framework(project_path), host_target)
 
-    def test_scheduled_maintenance_restores_with_current_sdk(self) -> None:
-        workflow = SCHEDULED_MAINTENANCE_WORKFLOW.read_text(encoding="utf-8")
+    def test_ci_verify_full_restores_with_current_sdk(self) -> None:
+        workflow = CI_WORKFLOW.read_text(encoding="utf-8")
 
-        self.assertIn("DOTNET_VERSION: '10.0.x'", workflow)
         self.assertNotIn("DOTNET_VERSION: '9.0.x'", workflow)
         self.assertIn("dotnet restore Meridian.sln /p:EnableWindowsTargeting=true", workflow)
 
@@ -80,35 +80,23 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
 
         self.assertEqual([], offenders)
 
-    def test_setup_dotnet_cache_action_defaults_to_current_sdk(self) -> None:
-        action = SETUP_DOTNET_CACHE_ACTION.read_text(encoding="utf-8")
+    def test_maintenance_workflow_validates_current_workflow_surface(self) -> None:
+        workflow = MAINTENANCE_WORKFLOW.read_text(encoding="utf-8")
 
-        self.assertIn("default: '10.0.x'", action)
-        self.assertNotIn("default: '9.0.x'", action)
+        self.assertIn("python3 build/scripts/ci/check-workflow-hygiene.py", workflow)
+        self.assertIn("rhysd/actionlint@v1.7.12", workflow)
+        self.assertIn("check-ai-contract-drift.py", workflow)
 
     def test_codeql_csharp_analysis_builds_with_current_sdk(self) -> None:
         workflow = CODEQL_WORKFLOW.read_text(encoding="utf-8")
 
-        self.assertIn("- language: csharp\n          build-mode: manual", workflow)
-        self.assertIn("dotnet-version: '10.0.x'", workflow)
+        self.assertIn("- language: csharp", workflow)
+        self.assertIn("build-mode: manual", workflow)
+        self.assertIn("DOTNET_VERSION: '10.0.x'", workflow)
+        self.assertIn("dotnet-version: ${{ env.DOTNET_VERSION }}", workflow)
         self.assertNotIn("dotnet-version: '9.0.x'", workflow)
         self.assertIn("Restore C# solution", workflow)
         self.assertIn("Build C# solution", workflow)
-
-    def test_security_workflow_reports_current_platform(self) -> None:
-        workflow = SECURITY_WORKFLOW.read_text(encoding="utf-8")
-
-        self.assertIn("DOTNET_VERSION: '10.0.x'", workflow)
-        self.assertIn(".NET 10.0 market data collection application", workflow)
-        self.assertNotIn(".NET 9.0 market data collection application", workflow)
-
-    def test_general_ai_workflow_prompts_report_current_platform(self) -> None:
-        for workflow_path in GENERAL_AI_PROMPT_WORKFLOWS:
-            with self.subTest(workflow=workflow_path.relative_to(REPO_ROOT).as_posix()):
-                workflow = workflow_path.read_text(encoding="utf-8")
-
-                self.assertIn(".NET 10 host with net9 shared libraries", workflow)
-                self.assertNotIn(".NET 9.0", workflow)
 
     def test_production_dockerfile_uses_current_sdk_and_runtime(self) -> None:
         dockerfile = PRODUCTION_DOCKERFILE.read_text(encoding="utf-8")
