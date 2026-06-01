@@ -1463,7 +1463,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
 
         return new ProviderHealthPostureState(
             "Configure provider access",
-            "Provider entries are present but none are ready for operator workflows. Finish credentials and connectivity before starting data operations.",
+            "Provider entries are present but none are ready for operator workflows. Finish credentials and connectivity before starting Data workspace workflows.",
             "Configure provider access",
             "Provider credentials",
             evidence,

@@ -134,6 +134,15 @@ describe("strategy designer view-model", () => {
     });
 
     expect(getStrategyBuilderTemplates().map((template) => template.templateId)).toContain("options-payoff");
+    expect(getStrategyBuilderTemplates()).toContainEqual(
+      expect.objectContaining({
+        templateId: "equity-momentum-breakout",
+        description: "Formula autocomplete, transition map, risk/control cell, and proof run.",
+        tags: expect.not.arrayContaining(["governance"])
+      })
+    );
+    expect(loadStrategyBuilderTemplate("equity-momentum-breakout").description).toContain("risk/control guard");
+    expect(loadStrategyBuilderTemplate("equity-momentum-breakout").description).not.toContain("governance guard");
     expect(vm.selectedCellDetail?.title).toBe("Carry rank");
     expect(vm.trace.find((step) => step.cellId === "carry-rank")?.isSelectedCell).toBe(true);
     expect(vm.filteredFields.map((field) => field.fieldId)).toContain("DURATION");

@@ -39,6 +39,19 @@ public sealed class StrategyDesignServiceTests
     }
 
     [Fact]
+    public void GetTemplates_EquityMomentumTemplate_ShouldUseRiskControlReviewCopy()
+    {
+        var service = new StrategyDesignService();
+        var template = service.GetTemplates().Single(item => item.TemplateId == "equity-momentum-breakout");
+        var document = service.Normalize(template.Document);
+
+        template.Description.Should().Contain("risk/control guard");
+        template.Description.Should().NotContain("governance guard");
+        document.Cells.Should().Contain(cell => cell.CellId == "governance-pack" && cell.Label == "Review packet");
+        document.Cells.Should().NotContain(cell => cell.Label == "Governance packet");
+    }
+
+    [Fact]
     public void Validate_PrototypeOnlyAmxField_ShouldKeepFieldVisibleButBlockExecution()
     {
         var service = new StrategyDesignService();

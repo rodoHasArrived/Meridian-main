@@ -622,7 +622,7 @@ describe("data-operations-screen view model", () => {
 
     const exportSection = buildExportSection(exports);
     expect(exportSection.tableLabel).toBe("Recent exports");
-    expect(exportSection.description).toBe("Latest package and reporting outputs tied to data operations evidence");
+    expect(exportSection.description).toBe("Latest package and reporting outputs tied to Data workspace evidence");
     expect(exportSection.selectedRowId).toBe("export-row-ex-2201");
     expect(exportSection.rows[0].summaryText).toBe("strategy pack · 124k · 4m ago");
     expect(exportSection.rows[0].statusVariant).toBe("success");
@@ -1224,6 +1224,16 @@ describe("data-operations-screen view model", () => {
     expect(detail?.statusVariant).toBe("warning");
     expect(detail?.rows).toContainEqual({ id: "updated", label: "Updated", value: "5m ago" });
     expect(buildSelectedBackfillDetail([], null)).toBeNull();
+  });
+
+  it("uses canonical Data workspace copy for queued backfill narratives", () => {
+    const queuedBackfill: DataOperationsBackfillRecord = {
+      ...backfills[0],
+      status: "Queued"
+    };
+
+    expect(buildBackfillNarrative(queuedBackfill)).toContain("queued behind active Data workspace work");
+    expect(buildBackfillNarrative(queuedBackfill)).not.toContain("data operations");
   });
 
 

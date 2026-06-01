@@ -179,6 +179,22 @@ describe("app shell view model", () => {
     });
   });
 
+  it("uses canonical Strategy copy for the strategy-to-paper workflow", () => {
+    const state = buildAppShellViewState({
+      pathname: "/strategy",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(state.workflowContinuity).toMatchObject({
+      title: "Strategy To Paper",
+      summary: expect.stringContaining("Strategy comparison")
+    });
+    expect(state.workflowContinuity.summary).not.toContain("research comparison");
+  });
+
   it("routes shell trust strip failures to diagnostics and live readiness", () => {
     const state = buildAppShellViewState({
       pathname: "/trading",

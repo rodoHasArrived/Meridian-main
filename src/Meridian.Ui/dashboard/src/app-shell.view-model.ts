@@ -993,7 +993,7 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   {
     id: "strategy-to-paper",
     title: "Strategy To Paper",
-    summary: "Keep research comparison, strategy design, backtest evidence, paper-session readiness, portfolio impact, and audit packet review connected.",
+    summary: "Keep Strategy comparison, strategy design, backtest evidence, paper-session readiness, portfolio impact, and audit packet review connected.",
     steps: [
       {
         id: "strategy-runs",

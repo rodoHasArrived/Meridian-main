@@ -85,6 +85,26 @@ public sealed class ProviderHealthViewModelTests
     }
 
     [Fact]
+    public void BuildProviderPosture_WithProvidersButNoReadyCoverage_UsesCanonicalDataWorkspaceCopy()
+    {
+        var state = ProviderHealthViewModel.BuildProviderPosture(
+            connectedStreamingProviders: 0,
+            disconnectedStreamingProviders: 0,
+            streamingProviders: 0,
+            backfillProviders: 2,
+            availableBackfillProviders: 0,
+            isLastUpdateStale: false);
+
+        state.Tone.Should().Be(ProviderHealthPostureTone.Neutral);
+        state.Title.Should().Be("Configure provider access");
+        state.Detail.Should().Contain("Data workspace workflows");
+        state.Detail.Should().NotContain("data operations");
+        state.ActionText.Should().Be("Configure provider access");
+        state.TargetText.Should().Be("Provider credentials");
+        state.EvidenceText.Should().Be("0/0 streaming connected; 0/2 backfill available");
+    }
+
+    [Fact]
     public void ProviderHealthPageSource_ShouldExposeProviderPostureBriefing()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\ProviderHealthPage.xaml"));

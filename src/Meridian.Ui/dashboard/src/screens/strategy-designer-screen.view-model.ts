@@ -661,7 +661,7 @@ const STRATEGY_BUILDER_FIELD_CATALOG: StrategyBuilderFieldCatalogItem[] = [
 const DEFAULT_STRATEGY_BUILDER_DOCUMENT: StrategyBuilderDocument = {
   documentId: "equity-momentum-breakout",
   name: "Equity momentum breakout",
-  description: "Universe, momentum formula, governance guard, and proof run for liquid equities.",
+  description: "Universe, momentum formula, risk/control guard, and proof run for liquid equities.",
   version: "1",
   datasetReference: "provider-bars/equities/daily",
   universe: ["SPY", "QQQ", "AAPL", "MSFT"],
@@ -711,9 +711,9 @@ const STRATEGY_BUILDER_TEMPLATES: StrategyBuilderTemplate[] = [
   {
     templateId: "equity-momentum-breakout",
     name: "Equity momentum breakout",
-    description: "Formula autocomplete, transition map, governance cell, and proof run.",
+    description: "Formula autocomplete, transition map, risk/control cell, and proof run.",
     category: "Equities",
-    tags: ["formula", "backtest", "governance"],
+    tags: ["formula", "backtest", "control"],
     document: DEFAULT_STRATEGY_BUILDER_DOCUMENT,
     loadCommand: {
       label: "Load",

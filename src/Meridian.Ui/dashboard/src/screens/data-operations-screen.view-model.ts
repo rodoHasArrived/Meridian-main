@@ -2361,7 +2361,7 @@ export function buildExportSection(
       description: "Generated packages and reporting outputs will appear here with target, row count, and readiness status."
     },
     tableLabel: "Recent exports",
-    description: "Latest package and reporting outputs tied to data operations evidence",
+    description: "Latest package and reporting outputs tied to Data workspace evidence",
     selectedRowId,
     selectedDetail: buildSelectedExportDetail(exports, selectedExport?.exportId ?? null),
     detailEmptyState: exports.length === 0
@@ -2961,7 +2961,7 @@ export function buildBackfillNarrative(backfill: DataOperationsBackfillRecord): 
     return `${backfill.scope} is waiting on operator review before it can be treated as complete.`;
   }
 
-  return `${backfill.scope} is queued behind active data operations work.`;
+  return `${backfill.scope} is queued behind active Data workspace work.`;
 }
 
 function parseSymbols(value: string): string[] {
