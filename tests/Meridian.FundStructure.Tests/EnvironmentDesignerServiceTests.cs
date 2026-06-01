@@ -8,6 +8,24 @@ namespace Meridian.FundStructure.Tests;
 public sealed class EnvironmentDesignerServiceTests
 {
     [Fact]
+    public async Task CreateDraftAsync_WithLegacyLaneRouting_ShouldStoreCanonicalOperatorWorkspace()
+    {
+        var service = new EnvironmentDesignerService(persistencePath: null);
+
+        var draft = await service.CreateDraftAsync(CreateDraftRequest("Legacy Routing Starter", includeAccount: false));
+        var lane = Assert.Single(draft.Definition.Lanes);
+
+        Assert.Equal("accounting", lane.DefaultWorkspaceId);
+        Assert.Equal("AccountingShell", lane.DefaultLandingPageTag);
+
+        var version = await service.PublishAsync(new EnvironmentPublishPlanDto(draft.DraftId, "test"));
+        var runtimeLane = Assert.Single(version.Runtime.Lanes);
+
+        Assert.Equal("accounting", runtimeLane.DefaultWorkspaceId);
+        Assert.Equal("AccountingShell", runtimeLane.DefaultLandingPageTag);
+    }
+
+    [Fact]
     public async Task PublishAsync_ShouldPersistRuntimeAndPreserveStableNodeIdentityAcrossRepublishAndRollback()
     {
         var tempDirectory = CreateTempDirectory();

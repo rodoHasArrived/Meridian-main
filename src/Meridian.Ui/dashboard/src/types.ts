@@ -225,7 +225,7 @@ export interface StrategyRunSummaryApiRecord {
   lastUpdatedAt: string;
   auditReference?: string | null;
 }
-export interface ResearchRunRecord {
+export interface StrategyRunRecord {
   id: string;
   strategyName: string;
   engine: string;
@@ -242,6 +242,8 @@ export interface ResearchRunRecord {
   totalReturn?: number | null;
   finalEquity?: number | null;
 }
+
+export type ResearchRunRecord = StrategyRunRecord;
 
 // --- Promotion workflow types ---
 
@@ -1510,13 +1512,125 @@ export interface OrderResult {
   reason: string | null;
 }
 
-export interface ResearchWorkspaceResponse {
+export interface StrategyWorkspaceResponse {
   metrics: MetricSnapshot[];
-  runs: ResearchRunRecord[];
-  plotTool?: ResearchPlotToolPayload | null;
+  runs: StrategyRunRecord[];
+  plotTool?: StrategyPlotToolPayload | null;
 }
 
-export interface ResearchPlotToolTabPayload {
+export type ResearchWorkspaceResponse = StrategyWorkspaceResponse;
+
+export interface StrategyRunDrillInLinks {
+  equityCurve: string;
+  fills: string;
+  attribution: string;
+  ledger: string | null;
+  cashFlows: string;
+  continuity: string | null;
+}
+
+export interface StrategyBriefingRun {
+  runId: string;
+  strategyName: string;
+  mode: number;
+  status: number;
+  dataset: string;
+  windowLabel: string;
+  returnLabel: string;
+  sharpeLabel: string;
+  lastUpdatedLabel: string;
+  notes: string;
+  promotionState: number | null;
+  netPnl: number | null;
+  totalReturn: number | null;
+  finalEquity: number | null;
+  drillIn: StrategyRunDrillInLinks;
+}
+
+export interface StrategySavedComparisonMode {
+  runId: string;
+  mode: number;
+  status: number;
+  netPnl: number | null;
+  totalReturn: number | null;
+  drillIn: StrategyRunDrillInLinks;
+}
+
+export interface StrategySavedComparison {
+  comparisonId: string;
+  strategyName: string;
+  modeSummary: string;
+  summary: string;
+  anchorRunId: string | null;
+  modes: StrategySavedComparisonMode[];
+}
+
+export interface StrategyBriefingAlert {
+  alertId: string;
+  title: string;
+  summary: string;
+  tone: string;
+  runId: string | null;
+  actionLabel: string | null;
+}
+
+export interface StrategyWhatChangedItem {
+  changeId: string;
+  title: string;
+  summary: string;
+  category: string;
+  timestamp: string;
+  relativeTime: string;
+  runId: string | null;
+}
+
+export interface StrategyBriefingWorkspaceSummary {
+  totalRuns: number;
+  activeRuns: number;
+  promotionCandidates: number;
+  positivePnlRuns: number;
+  latestRunId: string | null;
+  latestStrategyName: string | null;
+  hasLedgerCoverage: boolean;
+  hasPortfolioCoverage: boolean;
+  summary: string;
+}
+
+export interface StrategyBriefingResponse {
+  workspace: StrategyBriefingWorkspaceSummary;
+  insightFeed: {
+    feedId: string;
+    title: string;
+    summary: string;
+    generatedAt: string;
+    widgets: Array<{
+      widgetId: string;
+      title: string;
+      subtitle: string;
+      headline: string;
+      tone: string;
+      summary: string;
+      runId: string | null;
+      drillInRoute: string | null;
+    }>;
+  };
+  watchlists: Array<{
+    watchlistId: string;
+    name: string;
+    symbols: string[];
+    symbolCount: number;
+    isPinned: boolean;
+    sortOrder: number;
+    accentColor: string | null;
+    summary: string | null;
+  }>;
+  recentRuns: StrategyBriefingRun[];
+  savedComparisons: StrategySavedComparison[];
+  alerts: StrategyBriefingAlert[];
+  whatChanged: StrategyWhatChangedItem[];
+}
+
+export interface StrategyPlotToolTabPayload {
   id: string;
   label: string;
   tabId: string;
@@ -1527,13 +1641,16 @@ export interface ResearchPlotToolTabPayload {
   ariaLabel: string;
 }
 
-export interface ResearchPlotToolPayload {
+export interface StrategyPlotToolPayload {
   workspace: unknown;
   statistics: unknown;
   studies: unknown[];
-  tabs: ResearchPlotToolTabPayload[];
+  tabs: StrategyPlotToolTabPayload[];
   activeView?: "workspace" | "statistics";
 }
+
+export type ResearchPlotToolTabPayload = StrategyPlotToolTabPayload;
+export type ResearchPlotToolPayload = StrategyPlotToolPayload;
 
 export interface DataOperationsProviderRecord {
   providerId?: string;
@@ -1595,6 +1712,8 @@ export interface DataOperationsWorkspaceResponse {
   backfills: DataOperationsBackfillRecord[];
   exports: DataOperationsExportRecord[];
 }
+
+export type DataWorkspaceResponse = DataOperationsWorkspaceResponse;
 
 export interface TradingPosition {
   positionKey?: string;
@@ -1683,7 +1802,7 @@ export interface PortfolioWorkspaceResponse {
   risk: TradingRiskState;
   brokerage: BrokerageWiringStatus;
   runs: PortfolioRunRow[];
-  cashFlow: GovernanceCashFlowSummary | null;
+  cashFlow: AccountingCashFlowSummary | null;
 }
 
 
@@ -1721,7 +1840,7 @@ export interface StatementRunException {
   status: string;
 }
 
-export interface GovernanceReconciliationRecord {
+export interface AccountingReconciliationRecord {
   runId: string;
   strategyName: string;
   mode: "paper" | "live" | "backtest";
@@ -1732,7 +1851,9 @@ export interface GovernanceReconciliationRecord {
   reconciliationStatus: "NotStarted" | "BreaksOpen" | "SecurityCoverageOpen" | "Resolved" | "Balanced";
 }
 
-export interface GovernanceCashFlowSummary {
+export type GovernanceReconciliationRecord = AccountingReconciliationRecord;
+
+export interface AccountingCashFlowSummary {
   totalCash: number;
   totalLedgerCash: number;
   netVariance: number;
@@ -1743,7 +1864,7 @@ export interface GovernanceCashFlowSummary {
   summary: string;
 }
 
-export interface GovernanceReportingProfile {
+export interface AccountingReportingProfile {
   id: string;
   name: string;
   targetTool: string;
@@ -1845,10 +1966,10 @@ export interface ReportingWorkflowRecord {
   publication: ReportingWorkflowPublication | null;
 }
 
-export interface GovernanceReportingSummary {
+export interface AccountingReportingSummary {
   profileCount: number;
   recommendedProfiles: string[];
-  profiles: GovernanceReportingProfile[];
+  profiles: AccountingReportingProfile[];
   reportPackTargets: string[];
   summary: string;
   templates?: ReportingTemplateMetadata[];
@@ -1856,12 +1977,16 @@ export interface GovernanceReportingSummary {
   workflowRecords?: ReportingWorkflowRecord[];
 }
 
-export interface GovernanceWorkspaceResponse {
+export type GovernanceCashFlowSummary = AccountingCashFlowSummary;
+export type GovernanceReportingProfile = AccountingReportingProfile;
+export type GovernanceReportingSummary = AccountingReportingSummary;
+
+export interface AccountingWorkspaceResponse {
   metrics: MetricSnapshot[];
-  reconciliationQueue: GovernanceReconciliationRecord[];
+  reconciliationQueue: AccountingReconciliationRecord[];
   breakQueue: ReconciliationBreakQueueItem[];
-  cashFlow: GovernanceCashFlowSummary;
-  reporting: GovernanceReportingSummary;
+  cashFlow: AccountingCashFlowSummary;
+  reporting: AccountingReportingSummary;
   controlCenter?: {
     closeReadiness: string;
     portfolioFilterOptions: string[];
@@ -1875,6 +2000,9 @@ export interface GovernanceWorkspaceResponse {
     alerts: { tone: "danger" | "warning" | "info"; message: string }[];
   };
 }
+
+export type GovernanceWorkspaceResponse = AccountingWorkspaceResponse;
+export type ReportingWorkspaceResponse = AccountingWorkspaceResponse;
 
 export interface ExportAnalysisResult {
   jobId: string | null;
@@ -3039,6 +3167,7 @@ export type ProviderKind =
   | "databento"
   | "alpaca"
   | "interactivebrokers"
+  | "plaid"
   | "yahoo"
   | "custom";
 
@@ -3050,6 +3179,10 @@ export interface ProviderKindMeta {
   needsApiSecret: boolean;
   needsEndpoint: boolean;
   defaultCapabilities: string[];
+  apiKeyLabel?: string;
+  apiKeyAriaLabel?: string;
+  apiSecretLabel?: string;
+  apiSecretAriaLabel?: string;
 }
 
 export interface ProviderSetupRequest {
@@ -3075,6 +3208,82 @@ export interface ProviderSetupResult {
   credentialReference?: string | null;
   environment?: string | null;
   warnings?: string[] | null;
+}
+
+export interface PlaidInstitution {
+  institutionId: string;
+  name: string;
+  products: string[];
+  countryCodes: string[];
+  url?: string | null;
+  primaryColor?: string | null;
+  logo?: string | null;
+}
+
+export interface PlaidInstitutionSearchResult {
+  query: string;
+  institutions: PlaidInstitution[];
+  requestId?: string | null;
+}
+
+export interface PlaidAccountLinkRequest {
+  plaidAccountId: string;
+  name: string;
+  officialName?: string | null;
+  mask?: string | null;
+  type: string;
+  subtype?: string | null;
+  persistentAccountId?: string | null;
+  meridianAccountId?: string | null;
+  entityId?: string | null;
+}
+
+export interface PlaidLinkTokenRequest {
+  userId: string;
+  meridianAccountId?: string | null;
+  products?: string[] | null;
+  webhookUrl?: string | null;
+  clientName?: string | null;
+  language?: string | null;
+  countryCodes?: string[] | null;
+  institutionId?: string | null;
+  institutionName?: string | null;
+}
+
+export interface PlaidLinkTokenResponse {
+  linkToken: string;
+  expiration?: string | null;
+  requestId?: string | null;
+  products: string[];
+  institutionId?: string | null;
+  institutionName?: string | null;
+  environment?: string | null;
+}
+
+export interface PlaidPublicTokenExchangeRequest {
+  publicToken: string;
+  institutionId?: string | null;
+  institutionName?: string | null;
+  accounts: PlaidAccountLinkRequest[];
+  requestedBy: string;
+}
+
+export interface PlaidPublicTokenExchangeResult {
+  item: {
+    itemId: string;
+    institutionId: string;
+    institutionName: string;
+    status: string;
+    linkedAt: string;
+  };
+  accounts: Array<{
+    plaidAccountId: string;
+    name: string;
+    mask?: string | null;
+    type: string;
+    subtype?: string | null;
+  }>;
+  requestId?: string | null;
 }
 
 export interface ProviderRouteScope {

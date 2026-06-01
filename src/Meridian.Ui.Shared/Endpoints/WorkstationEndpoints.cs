@@ -70,19 +70,19 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearchBriefing), async (HttpContext context) =>
         {
-            var briefing = await BuildResearchBriefingAsync(context).ConfigureAwait(false);
-            return Results.Json(briefing, jsonOptions);
+            var briefing = await BuildStrategyBriefingAsync(context).ConfigureAwait(false);
+            return Results.Json(ToResearchBriefingDto(briefing), jsonOptions);
         })
         .WithName("GetWorkstationResearchBriefing")
         .Produces<ResearchBriefingDto>(200);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyBriefing), async (HttpContext context) =>
         {
-            var briefing = await BuildResearchBriefingAsync(context).ConfigureAwait(false);
+            var briefing = await BuildStrategyBriefingAsync(context).ConfigureAwait(false);
             return Results.Json(briefing, jsonOptions);
         })
         .WithName("GetWorkstationStrategyBriefing")
-        .Produces<ResearchBriefingDto>(200);
+        .Produces<StrategyBriefingDto>(200);
 
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);
@@ -2716,12 +2716,12 @@ public static partial class WorkstationEndpoints
             PlotTool: BuildResearchPlotToolPayload(runs, selectedRunIds: Array.Empty<string>()));
     }
 
-    private static async Task<ResearchBriefingDto> BuildResearchBriefingAsync(HttpContext context)
+    private static async Task<StrategyBriefingDto> BuildStrategyBriefingAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         if (readService is null)
         {
-            return BuildResearchBriefingFallback();
+            return BuildStrategyBriefingFallback();
         }
 
         var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false))
@@ -2731,10 +2731,10 @@ public static partial class WorkstationEndpoints
                 runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
             .ConfigureAwait(false);
 
-        return BuildResearchBriefingFromRuns(runs, details);
+        return BuildStrategyBriefingFromRuns(runs, details);
     }
 
-    private static ResearchBriefingDto BuildResearchBriefingFromRuns(
+    private static StrategyBriefingDto BuildStrategyBriefingFromRuns(
         IReadOnlyList<StrategyRunSummary> runs,
         IReadOnlyList<StrategyRunDetail?> details)
     {
@@ -2745,8 +2745,8 @@ public static partial class WorkstationEndpoints
         var latestRun = runs.FirstOrDefault();
         var alertItems = BuildBriefingAlerts(runs, details);
 
-        return new ResearchBriefingDto(
-            Workspace: new ResearchBriefingWorkspaceSummary(
+        return new StrategyBriefingDto(
+            Workspace: new StrategyBriefingWorkspaceSummary(
                 TotalRuns: runs.Count,
                 ActiveRuns: activeRuns,
                 PromotionCandidates: promotionCandidates,
@@ -2769,11 +2769,11 @@ public static partial class WorkstationEndpoints
             WhatChanged: BuildWhatChangedItems(runs));
     }
 
-    private static ResearchBriefingDto BuildResearchBriefingFallback()
+    private static StrategyBriefingDto BuildStrategyBriefingFallback()
     {
         var generatedAt = DateTimeOffset.UtcNow;
-        return new ResearchBriefingDto(
-            Workspace: new ResearchBriefingWorkspaceSummary(
+        return new StrategyBriefingDto(
+            Workspace: new StrategyBriefingWorkspaceSummary(
                 TotalRuns: 24,
                 ActiveRuns: 6,
                 PromotionCandidates: 3,
@@ -2784,7 +2784,7 @@ public static partial class WorkstationEndpoints
                 HasPortfolioCoverage: true,
                 Summary: "Strategy is organized around briefing context first, then run studio drill-ins."),
             InsightFeed: new InsightFeed(
-                FeedId: "research-market-briefing",
+                FeedId: "strategy-market-briefing",
                 Title: "Pinned Insights",
                 Summary: "A compact market briefing with pinned Strategy tiles, saved comparisons, and promotion posture.",
                 GeneratedAt: generatedAt,
@@ -2841,7 +2841,7 @@ public static partial class WorkstationEndpoints
             ],
             RecentRuns:
             [
-                new ResearchBriefingRun(
+                new StrategyBriefingRun(
                     RunId: "run-research-001",
                     StrategyName: "Mean Reversion FX",
                     Mode: StrategyRunMode.Paper,
@@ -2856,7 +2856,7 @@ public static partial class WorkstationEndpoints
                     NetPnl: 4200m,
                     TotalReturn: 0.042m,
                     FinalEquity: 104200m,
-                    DrillIn: new ResearchRunDrillInLinks(
+                    DrillIn: new StrategyRunDrillInLinks(
                         EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-001"),
                         Fills: RunRoute(UiApiRoutes.RunsFills, "run-research-001"),
                         Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-research-001"),
@@ -2866,7 +2866,7 @@ public static partial class WorkstationEndpoints
             ],
             SavedComparisons:
             [
-                new ResearchSavedComparison(
+                new StrategySavedComparison(
                     ComparisonId: "cmp-meanrev-fx",
                     StrategyName: "Mean Reversion FX",
                     ModeSummary: "Backtest -> Paper",
@@ -2874,13 +2874,13 @@ public static partial class WorkstationEndpoints
                     AnchorRunId: "run-research-001",
                     Modes:
                     [
-                        new ResearchSavedComparisonMode(
+                        new StrategySavedComparisonMode(
                             RunId: "run-research-001",
                             Mode: StrategyRunMode.Paper,
                             Status: StrategyRunStatus.Running,
                             NetPnl: 4200m,
                             TotalReturn: 0.042m,
-                            DrillIn: new ResearchRunDrillInLinks(
+                            DrillIn: new StrategyRunDrillInLinks(
                                 EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-research-001"),
                                 Fills: RunRoute(UiApiRoutes.RunsFills, "run-research-001"),
                                 Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-research-001"),
@@ -2891,14 +2891,14 @@ public static partial class WorkstationEndpoints
             ],
             Alerts:
             [
-                new ResearchBriefingAlert(
+                new StrategyBriefingAlert(
                     AlertId: "alert-promotion-review",
                     Title: "Promotion review due",
                     Summary: "Mean Reversion FX is running in paper and is queued for live promotion review.",
                     Tone: "warning",
                     RunId: "run-research-001",
                     ActionLabel: "Review run"),
-                new ResearchBriefingAlert(
+                new StrategyBriefingAlert(
                     AlertId: "alert-cost-preview",
                     Title: "Execution costs widened",
                     Summary: "Volatility Breakout now shows a weaker transaction-cost preview than the prior saved comparison.",
@@ -2908,7 +2908,7 @@ public static partial class WorkstationEndpoints
             ],
             WhatChanged:
             [
-                new ResearchWhatChangedItem(
+                new StrategyWhatChangedItem(
                     ChangeId: "change-paper-ready",
                     Title: "Paper lane updated",
                     Summary: "Mean Reversion FX stayed profitable and kept full ledger continuity after the latest refresh.",
@@ -2916,7 +2916,7 @@ public static partial class WorkstationEndpoints
                     Timestamp: generatedAt.AddMinutes(-2),
                     RelativeTime: "2m ago",
                     RunId: "run-research-001"),
-                new ResearchWhatChangedItem(
+                new StrategyWhatChangedItem(
                     ChangeId: "change-backtest-failed",
                     Title: "Backtest needs review",
                     Summary: "Volatility Breakout completed with weaker returns and is now flagged for review.",
@@ -2926,6 +2926,84 @@ public static partial class WorkstationEndpoints
                     RunId: "run-research-022")
             ]);
     }
+
+    private static ResearchBriefingDto ToResearchBriefingDto(StrategyBriefingDto briefing)
+        => new(
+            Workspace: new ResearchBriefingWorkspaceSummary(
+                TotalRuns: briefing.Workspace.TotalRuns,
+                ActiveRuns: briefing.Workspace.ActiveRuns,
+                PromotionCandidates: briefing.Workspace.PromotionCandidates,
+                PositivePnlRuns: briefing.Workspace.PositivePnlRuns,
+                LatestRunId: briefing.Workspace.LatestRunId,
+                LatestStrategyName: briefing.Workspace.LatestStrategyName,
+                HasLedgerCoverage: briefing.Workspace.HasLedgerCoverage,
+                HasPortfolioCoverage: briefing.Workspace.HasPortfolioCoverage,
+                Summary: briefing.Workspace.Summary),
+            InsightFeed: briefing.InsightFeed,
+            Watchlists: briefing.Watchlists,
+            RecentRuns: briefing.RecentRuns
+                .Select(static run => new ResearchBriefingRun(
+                    RunId: run.RunId,
+                    StrategyName: run.StrategyName,
+                    Mode: run.Mode,
+                    Status: run.Status,
+                    Dataset: run.Dataset,
+                    WindowLabel: run.WindowLabel,
+                    ReturnLabel: run.ReturnLabel,
+                    SharpeLabel: run.SharpeLabel,
+                    LastUpdatedLabel: run.LastUpdatedLabel,
+                    Notes: run.Notes,
+                    PromotionState: run.PromotionState,
+                    NetPnl: run.NetPnl,
+                    TotalReturn: run.TotalReturn,
+                    FinalEquity: run.FinalEquity,
+                    DrillIn: ToResearchDrillInLinks(run.DrillIn)))
+                .ToArray(),
+            SavedComparisons: briefing.SavedComparisons
+                .Select(static comparison => new ResearchSavedComparison(
+                    ComparisonId: comparison.ComparisonId,
+                    StrategyName: comparison.StrategyName,
+                    ModeSummary: comparison.ModeSummary,
+                    Summary: comparison.Summary,
+                    AnchorRunId: comparison.AnchorRunId,
+                    Modes: comparison.Modes
+                        .Select(static mode => new ResearchSavedComparisonMode(
+                            RunId: mode.RunId,
+                            Mode: mode.Mode,
+                            Status: mode.Status,
+                            NetPnl: mode.NetPnl,
+                            TotalReturn: mode.TotalReturn,
+                            DrillIn: ToResearchDrillInLinks(mode.DrillIn)))
+                        .ToArray()))
+                .ToArray(),
+            Alerts: briefing.Alerts
+                .Select(static alert => new ResearchBriefingAlert(
+                    AlertId: alert.AlertId,
+                    Title: alert.Title,
+                    Summary: alert.Summary,
+                    Tone: alert.Tone,
+                    RunId: alert.RunId,
+                    ActionLabel: alert.ActionLabel))
+                .ToArray(),
+            WhatChanged: briefing.WhatChanged
+                .Select(static item => new ResearchWhatChangedItem(
+                    ChangeId: item.ChangeId,
+                    Title: item.Title,
+                    Summary: item.Summary,
+                    Category: item.Category,
+                    Timestamp: item.Timestamp,
+                    RelativeTime: item.RelativeTime,
+                    RunId: item.RunId))
+                .ToArray());
+
+    private static ResearchRunDrillInLinks ToResearchDrillInLinks(StrategyRunDrillInLinks links)
+        => new(
+            EquityCurve: links.EquityCurve,
+            Fills: links.Fills,
+            Attribution: links.Attribution,
+            Ledger: links.Ledger,
+            CashFlows: links.CashFlows,
+            Continuity: links.Continuity);
 
     // PR-03: returns typed DTO
     private static WorkstationResearchPayload BuildResearchFallbackPayload()
@@ -5039,7 +5117,7 @@ public static partial class WorkstationEndpoints
         if (runs.Count == 0)
         {
             return new InsightFeed(
-                FeedId: "research-market-briefing",
+                FeedId: "strategy-market-briefing",
                 Title: "Pinned Insights",
                 Summary: "No saved charts or run insights yet.",
                 GeneratedAt: generatedAt,
@@ -5060,14 +5138,14 @@ public static partial class WorkstationEndpoints
             .ToArray();
 
         return new InsightFeed(
-            FeedId: "research-market-briefing",
+            FeedId: "strategy-market-briefing",
             Title: "Pinned Insights",
             Summary: $"{runs.Count} tracked run(s) in briefing scope; {alertCount} alert(s) require attention.",
             GeneratedAt: generatedAt,
             Widgets: widgets);
     }
 
-    private static ResearchBriefingRun BuildBriefingRun(StrategyRunSummary run, StrategyRunDetail? detail)
+    private static StrategyBriefingRun BuildBriefingRun(StrategyRunSummary run, StrategyRunDetail? detail)
         => new(
             RunId: run.RunId,
             StrategyName: run.StrategyName,
@@ -5083,9 +5161,9 @@ public static partial class WorkstationEndpoints
             NetPnl: run.NetPnl,
             TotalReturn: run.TotalReturn,
             FinalEquity: run.FinalEquity,
-            DrillIn: BuildResearchDrillInLinks(run));
+            DrillIn: BuildStrategyDrillInLinks(run));
 
-    private static IReadOnlyList<ResearchSavedComparison> BuildSavedComparisons(IReadOnlyList<StrategyRunSummary> runs)
+    private static IReadOnlyList<StrategySavedComparison> BuildSavedComparisons(IReadOnlyList<StrategyRunSummary> runs)
     {
         var groupedComparisons = runs
             .GroupBy(static run => run.StrategyName, StringComparer.OrdinalIgnoreCase)
@@ -5093,16 +5171,16 @@ public static partial class WorkstationEndpoints
             {
                 var modes = group
                     .OrderBy(static run => run.Mode)
-                    .Select(static run => new ResearchSavedComparisonMode(
+                    .Select(static run => new StrategySavedComparisonMode(
                         RunId: run.RunId,
                         Mode: run.Mode,
                         Status: run.Status,
                         NetPnl: run.NetPnl,
                         TotalReturn: run.TotalReturn,
-                        DrillIn: BuildResearchDrillInLinks(run)))
+                        DrillIn: BuildStrategyDrillInLinks(run)))
                     .ToArray();
 
-                return new ResearchSavedComparison(
+                return new StrategySavedComparison(
                     ComparisonId: $"cmp-{group.First().RunId}",
                     StrategyName: group.Key,
                     ModeSummary: string.Join(" -> ", modes.Select(static mode => mode.Mode.ToString())),
@@ -5121,23 +5199,23 @@ public static partial class WorkstationEndpoints
 
         if (runs.Count < 2)
         {
-            return Array.Empty<ResearchSavedComparison>();
+            return Array.Empty<StrategySavedComparison>();
         }
 
         var syntheticModes = runs
             .Take(2)
-            .Select(static run => new ResearchSavedComparisonMode(
+            .Select(static run => new StrategySavedComparisonMode(
                 RunId: run.RunId,
                 Mode: run.Mode,
                 Status: run.Status,
                 NetPnl: run.NetPnl,
                 TotalReturn: run.TotalReturn,
-                DrillIn: BuildResearchDrillInLinks(run)))
+                DrillIn: BuildStrategyDrillInLinks(run)))
             .ToArray();
 
         return
         [
-            new ResearchSavedComparison(
+            new StrategySavedComparison(
                 ComparisonId: $"cmp-recent-{syntheticModes[0].RunId}",
                 StrategyName: "Recent Runs",
                 ModeSummary: string.Join(" vs ", syntheticModes.Select(static mode => mode.Mode.ToString())),
@@ -5147,11 +5225,11 @@ public static partial class WorkstationEndpoints
         ];
     }
 
-    private static IReadOnlyList<ResearchBriefingAlert> BuildBriefingAlerts(
+    private static IReadOnlyList<StrategyBriefingAlert> BuildBriefingAlerts(
         IReadOnlyList<StrategyRunSummary> runs,
         IReadOnlyList<StrategyRunDetail?> details)
     {
-        var alerts = new List<ResearchBriefingAlert>();
+        var alerts = new List<StrategyBriefingAlert>();
 
         for (var index = 0; index < runs.Count; index++)
         {
@@ -5161,7 +5239,7 @@ public static partial class WorkstationEndpoints
 
             if (run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled)
             {
-                alerts.Add(new ResearchBriefingAlert(
+                alerts.Add(new StrategyBriefingAlert(
                     AlertId: $"alert-status-{run.RunId}",
                     Title: $"{run.StrategyName} needs operator review",
                     Summary: $"Run finished with status {run.Status} and should be investigated before it is reused.",
@@ -5172,7 +5250,7 @@ public static partial class WorkstationEndpoints
 
             if (run.Promotion?.RequiresReview == true)
             {
-                alerts.Add(new ResearchBriefingAlert(
+                alerts.Add(new StrategyBriefingAlert(
                     AlertId: $"alert-promotion-{run.RunId}",
                     Title: $"{run.StrategyName} is queued for promotion review",
                     Summary: run.Promotion.Reason,
@@ -5183,7 +5261,7 @@ public static partial class WorkstationEndpoints
 
             if (coverageIssueCount > 0)
             {
-                alerts.Add(new ResearchBriefingAlert(
+                alerts.Add(new StrategyBriefingAlert(
                     AlertId: $"alert-security-{run.RunId}",
                     Title: $"{run.StrategyName} has Security Master gaps",
                     Summary: $"{coverageIssueCount} unresolved portfolio or ledger reference(s) should be fixed before handoff.",
@@ -5197,7 +5275,7 @@ public static partial class WorkstationEndpoints
         {
             return
             [
-                new ResearchBriefingAlert(
+                new StrategyBriefingAlert(
                     AlertId: "alert-none",
                     Title: "No blocking alerts",
                     Summary: "Recent runs have no failed states, open promotion blockers, or Security Master gaps.",
@@ -5211,10 +5289,10 @@ public static partial class WorkstationEndpoints
             .ToArray();
     }
 
-    private static IReadOnlyList<ResearchWhatChangedItem> BuildWhatChangedItems(IReadOnlyList<StrategyRunSummary> runs)
+    private static IReadOnlyList<StrategyWhatChangedItem> BuildWhatChangedItems(IReadOnlyList<StrategyRunSummary> runs)
         => runs
             .Take(4)
-            .Select(static run => new ResearchWhatChangedItem(
+            .Select(static run => new StrategyWhatChangedItem(
                 ChangeId: $"change-{run.RunId}",
                 Title: $"{run.StrategyName} moved to {run.Mode}",
                 Summary: BuildChangeSummary(run),
@@ -5237,7 +5315,7 @@ public static partial class WorkstationEndpoints
 
     private static string BuildComparisonSummary(
         string strategyName,
-        IReadOnlyList<ResearchSavedComparisonMode> modes)
+        IReadOnlyList<StrategySavedComparisonMode> modes)
     {
         if (modes.Count == 0)
         {
@@ -5281,7 +5359,7 @@ public static partial class WorkstationEndpoints
     private static int GetSecurityCoverageIssueCount(StrategyRunDetail? detail)
         => (detail?.Portfolio?.SecurityMissingCount ?? 0) + (detail?.Ledger?.SecurityMissingCount ?? 0);
 
-    private static ResearchRunDrillInLinks BuildResearchDrillInLinks(StrategyRunSummary run)
+    private static StrategyRunDrillInLinks BuildStrategyDrillInLinks(StrategyRunSummary run)
         => new(
             EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, run.RunId),
             Fills: RunRoute(UiApiRoutes.RunsFills, run.RunId),

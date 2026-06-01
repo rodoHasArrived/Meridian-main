@@ -149,7 +149,7 @@
                                 AutomationProperties.AutomationId="WorkspaceInspectorHostReporting">
                         <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                             <StackPanel>
-                                <TextBlock Text="Status Snapshot" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Summary Snapshot" Style="{StaticResource CardHeaderStyle}" />
                                 <UniformGrid Columns="3" Margin="0,12,0,0">
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
                                         <StackPanel>

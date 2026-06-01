@@ -1,4 +1,5 @@
 import {
+  canonicalizeWorkspaceSummaries,
   normalizeWorkspacePath,
   WORKSPACES,
   WORKSTATION_ROUTE_CATALOG,
@@ -197,6 +198,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall
   },
   {
+    id: "data-providers",
+    label: "Providers",
+    description: "Review provider catalog, onboarding posture, connection health, and routing evidence.",
+    route: WORKSTATION_ROUTE_CATALOG.dataProviders
+  },
+  {
     id: "data-watchlist",
     label: "Watchlist",
     description: "Add symbols and starter packs before validating live quotes.",
@@ -245,12 +252,13 @@ export function buildCommandPaletteViewModel(
 ): CommandPaletteViewModel {
   const activeKey = normalizeWorkspacePath(pathname);
   const activeRouteParts = splitActiveRoute(pathname);
+  const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
   const operatingScope = buildOperatingScopeFromSearch(activeRouteParts.search, {
     ...(operatingContextScope ?? {}),
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
   });
   const focusItems = buildFocusItems(workflowData.operatorFocusItems ?? [], pathname, operatingScope);
-  const workspaceItems = buildWorkspaceItems(workspaces, activeKey, operatingScope);
+  const workspaceItems = buildWorkspaceItems(visibleWorkspaces, activeKey, operatingScope);
   const routeItems = buildRouteItems(pathname, operatingScope);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, operatingScope);
   const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname, operatingScope);

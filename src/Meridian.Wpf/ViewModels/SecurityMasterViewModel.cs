@@ -873,7 +873,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         : $"{SelectedSecurity.DisplayName} is loaded into the desktop Security Master deck.";
 
     public string SearchDeckDetailText => SelectedSecurity is null
-        ? "Company context, corporate actions, and print packet evidence stay on one retained desktop surface."
+        ? "Company context, corporate actions, and print packet evidence stay on one desktop workstation surface."
         : $"{SelectedTrustPostureText} {SelectedTradingParameterCoverageText}".Trim();
 
     public string SelectedAssetClass =>

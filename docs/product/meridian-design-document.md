@@ -1,9 +1,9 @@
-# Meridian Design Document — Draft v1.0
+# Meridian Design Document — Version 0.1
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-05-31  
-**Source:** imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`
+**Reviewed:** 2026-06-01
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.1 extended from roadmap and source-module registry evidence.
 
 ## 1. Product Vision
 
@@ -50,6 +50,11 @@ Example profiles:
 * Single Family Office Profile
 * Private Credit / Alternative Asset Profile
 * Hybrid Institutional Profile
+
+The platform must also support scoped authority inside those profiles. A user is not only
+"Accounting" or "Administrator"; production authorization must be able to answer whether that user
+has that role or permission for a specific tenant, organization, fund, portfolio, legal entity, or
+account.
 
 ---
 
@@ -140,6 +145,88 @@ These users primarily consume information rather than operate workflows.
 | System Administrator              | Administration               | Maintain platform health and access                          | Users, logs, integrations, settings                                | Configure, monitor, manage                                | Daily / Weekly      |
 | Security Administrator            | Administration               | Protect platform and manage permissions                      | Roles, access logs, policies, user scopes                          | Grant, revoke, review, audit                              | Daily / Weekly      |
 | Integration Administrator         | Administration               | Maintain provider and system connections                     | API credentials, SFTP settings, mappings, import runs              | Configure, test, monitor                                  | Weekly              |
+
+---
+
+## Current Implementation Baseline
+
+This design document is not a greenfield specification. Meridian already has working foundations that shape the product direction and should be preserved while remaining capability gaps are closed.
+
+### Evidence Sources
+
+Current implementation claims in this section are grounded in:
+
+* `docs/roadmap/data/*.yml` and `docs/roadmap/generated/ROADMAP_SUMMARY.md` for wave status, acceptance posture, and stage gates
+* `docs/source/data/source-modules.yml` and registered `src/**/README.md` files for active module responsibilities
+* `docs/architecture/module-map.md` and `docs/architecture/project-structure.md` for layer boundaries and supported UI surfaces
+
+### Closed Baselines
+
+The roadmap registry marks W1-W4 as done, with green health and complete evidence posture:
+
+| Wave | Capability Baseline | Product Meaning |
+| --- | --- | --- |
+| W1 | Provider trust gate and data confidence baseline | Trusted data operations have provider validation packets and operator sign-off evidence. |
+| W2 | Paper trading cockpit reliability | Paper sessions, order-readiness surfaces, and operator acceptance paths are preserved as active baselines. |
+| W2 | Paper promotion evidence and operator acceptance | Research-to-paper promotion remains a governed handoff with evidence lineage before acceptance. |
+| W3 | Research-to-paper continuity | Strategy research outputs, run comparison, and promotion evidence remain connected to downstream paper validation. |
+| W4 | Portfolio ledger reconciliation readiness | Reconciliation queue actions, ledger evidence, accounting casework, and close-lane sign-off are established preservation targets. |
+| W4 | Governed report pack readiness | Report packs carry approval, provenance, publication, restatement, export, and evidence-vault support. |
+
+### Planned and Gated Baselines
+
+W5 and W6 remain planned, not complete:
+
+| Wave | Planned Capability | Gate |
+| --- | --- | --- |
+| W5 | Backtesting studio evidence loop | Backtest results must link to strategy lineage and operator-facing acceptance criteria. |
+| W6 | Live-readiness governance | Live operation remains gated by trusted data, paper validation, reconciliation, and governed reporting evidence. |
+
+### Active Product Surfaces
+
+Meridian has two active operator UI surfaces:
+
+* `src/Meridian.Ui/dashboard/` is the browser workstation source, with built host-served assets under `src/Meridian.Ui/wwwroot/workstation/`.
+* `src/Meridian.Wpf/` is the active Windows desktop operator workstation.
+* `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, and `src/Meridian.Contracts/` provide shared endpoint, read-model, and DTO support so browser and desktop do not invent separate product state.
+
+Visible root navigation should remain:
+
+```text
+Trading
+Portfolio
+Accounting
+Reporting
+Strategy
+Data
+Settings
+```
+
+`Research`, `Data Operations`, and `Governance` remain compatibility groupings or internal route concepts, not visible root workspaces. Meridian has no mobile development lane; responsive browser behavior is allowed only to keep the browser workstation usable.
+
+### Capability Posture by Domain
+
+| Domain | Current Posture | Existing Foundation |
+| --- | --- | --- |
+| Data & Integration | Implemented evidence | Provider SDK, infrastructure adapters, provider validation, credential/setup flows, source-module validation, and data-confidence gates. |
+| Financial Operations | Implemented evidence | Reconciliation, casework, accounting close, evidence routing, and W4 ledger review flows. |
+| Treasury & Payments | Supported foundation | Cash-flow views, payment-oriented workflow design, and account/ledger seams exist; full payment execution remains later productization. |
+| Portfolio & Investment Operations | Implemented evidence | Portfolio, fund-structure, brokerage sync, fund accounts, positions, paper-session, and ledger-backed workflows. |
+| Reference Data | Supported foundation | Security Master contracts, provider-to-security mapping, asset profiles, and trust/conflict summaries. |
+| Instrument, Contract & Obligation Management | Supported foundation | Security Master, direct-lending/F# rule kernels, factor/corporate-action evidence, and obligation-oriented ledger support. |
+| Entity & Relationship Management | Supported foundation | Fund-structure setup, ownership graph, legal-entity, vehicle, account-handoff, and assignment workflows. |
+| Alternative Asset Management | Supported foundation | Private-credit/direct-lending model support and custom asset profile seams exist; broad alternative-asset operations remain expansion work. |
+| Financing & Capital Structure Analysis | Design-led foundation | Capital-structure analysis remains a product design target with partial support through fund, vehicle, account, and ledger models. |
+| Planning, Forecasting & Decision Support | Design-led foundation | Strategy, run comparison, and reporting evidence exist; full planning and forecasting engines remain future work. |
+| Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, backtesting runtime, research continuity, and promotion evidence exist; W5 Backtesting Studio expansion is planned. |
+| Risk Management | Supported foundation | Pre-trade risk rules and live-readiness controls exist; full enterprise risk management remains expansion work. |
+| Client & Stakeholder Reporting | Implemented evidence | Governed report-pack readiness, provenance, export evidence, and publication/restatement lifecycle are W4 baselines. |
+| Collaboration & Communication | Design-led foundation | Workflow assignment, comments, audit events, and queue state exist; broad collaboration tooling remains later work. |
+| Administration & Governance | Implemented evidence | Settings, policy, provider setup, audit trail, approval controls, and governed stage gates exist. |
+| Audit, Compliance & Regulatory | Implemented evidence | Audit events, evidence manifests, report provenance, approval history, and controlled close/report workflows exist. |
+| Workflow & Process Automation | Supported foundation | Shared workflow DTOs, route targets, operator queues, lifecycle transitions, and acceptance gates exist; no-code workflow design remains future work. |
+| Document & Knowledge Management | Design-led foundation | Evidence links and report artifacts exist; full document vault and knowledge-management features remain future work. |
+| Reporting & Analytics Platform | Implemented evidence | Report-pack workflow, line provenance, trial-balance reporting, report freshness, and export evidence exist. |
 
 ---
 
@@ -1405,6 +1492,18 @@ Report Package
 Document
 ```
 
+### Authoritative Consistency Model
+
+Authoritative tenancy, scoped access, fund structure, approvals, ledger, reconciliation, and audit
+state should prefer consistency over write availability when Meridian runs multiple instances
+against shared data. During store conflicts, stale assignment versions, unavailable authoritative
+stores, or ambiguous scope resolution, Meridian should fail closed rather than allowing split-brain
+authority or conflicting operational state.
+
+Read models, search indexes, dashboards, and market-data caches may be eventually consistent where
+the workflow remains safe, but authorization decisions and governed write paths must consult the
+authoritative scope model or a verified fresh cache.
+
 ---
 
 ## 17. Permission Strategy
@@ -1450,6 +1549,43 @@ Data Scope
 Approval Limit
 Segregation of Duties Rule
 ```
+
+### Scoped Access Assignments
+
+Current implementation note: Meridian already has a fund/company structure model and a role/profile
+permission model. The structural gap is the binding between them: which user has which authority
+over which organization, business, client, fund, portfolio, legal entity, vehicle, sleeve, or
+account.
+
+The target governed access record is:
+
+```text
+UserAccessAssignment
+PrincipalId
+PrincipalKind
+ScopeKind
+ScopeId
+Role / RoleProfileName
+PermissionMask
+EffectiveFrom / EffectiveTo
+GrantedBy
+Rationale
+CorrelationId
+Version
+CreatedAtUtc / UpdatedAtUtc
+RevokedBy / RevokedAtUtc / RevocationReason
+Linked Audit Event
+```
+
+Authorization should evaluate:
+
+```text
+Can principal P perform permission X on scope S at time T?
+```
+
+Global permissions remain useful for local administration and single-company deployments. Multi-
+tenant or multi-company operation requires scoped access assignments with optimistic concurrency,
+audit evidence, and fail-closed behavior.
 
 ---
 
@@ -1721,13 +1857,13 @@ Configurability creates power, but also risk. Meridian should include guardrails
 
 ---
 
-## 25. Immediate Next Artifacts to Create
+## 25. Design Backlog and Remaining Productization Work
 
-The following artifacts should be created next to continue maturing the design document.
+The following artifacts should be maintained or expanded to keep the design document aligned with the existing implementation and remaining productization work.
 
 ### 1. Master Workflow Inventory
 
-A list of the 50–100 most important Meridian workflows.
+A registry-backed list of the most important Meridian workflows, including both implemented baselines and planned expansion workflows.
 
 Each workflow should define:
 
@@ -1758,9 +1894,9 @@ Example:
 
 ### 3. MVP Screen Inventory
 
-Defines the first version of the user experience.
+Defines the product screen inventory across the active browser workstation and WPF desktop lanes.
 
-Potential MVP screens:
+Initial and active operator screens include:
 
 * Home Dashboard
 * Provider Center
@@ -1778,21 +1914,23 @@ Potential MVP screens:
 * Reporting Packages
 * Administration Settings
 
-### 4. MVP Data Model
+### 4. Product Data Model
 
-Defines first-pass entities, relationships, and core tables/classes.
+Defines core entities, relationships, storage boundaries, read models, and contract DTOs that already exist or remain planned.
 
-### 5. MVP Delivery Roadmap
+### 5. Delivery Roadmap
 
-Defines build phases, starting with the smallest valuable operational slice.
+Uses `docs/roadmap/data/*.yml` as the durable source of delivery state, with the design document explaining why each wave matters.
 
 ---
 
-## 26. Recommended First Build Slice
+## 26. Foundational Product Slice
 
-The strongest first build slice is:
+The foundational product slice remains:
 
 # Data Operations + Reconciliation Foundation
+
+This slice is no longer only a recommendation. It is the product baseline that W1-W4 have begun to prove through trusted data, paper validation, research continuity, ledger reconciliation, and governed reporting.
 
 ### Includes
 
@@ -1811,15 +1949,29 @@ The strongest first build slice is:
 * Audit events
 * Basic reporting package
 
-### Does Not Yet Include
+### Existing Evidence
+
+Current repository evidence already covers:
+
+* Provider validation and data-confidence gates
+* Paper-session readiness and replayable acceptance evidence
+* Promotion review and research-to-paper continuity
+* Portfolio ledger reconciliation and close-lane casework
+* Governed report-pack approval, provenance, and export evidence
+* Shared browser and WPF workstation read models for operator workflows
+
+### Remaining Expansion Work
+
+The baseline does not yet imply completion of:
 
 * Full treasury payment execution
-* Full alternative asset modeling
+* Full alternative asset operations
 * Full forecasting engine
-* Full risk engine
+* Full enterprise risk engine
 * Complex capital structure modeling
 * Full client portal
 * Full no-code workflow designer
+* Full live-trading readiness
 
 ### Why This Slice Works
 

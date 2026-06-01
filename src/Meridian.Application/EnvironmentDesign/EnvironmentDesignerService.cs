@@ -21,20 +21,43 @@ public sealed partial class EnvironmentDesignerService :
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private static readonly HashSet<string> AllowedWorkspaceIds = new(StringComparer.OrdinalIgnoreCase)
     {
-        "research",
         "trading",
-        "data-operations",
-        "governance"
+        "portfolio",
+        "accounting",
+        "reporting",
+        "strategy",
+        "data",
+        "settings"
     };
 
     private static readonly HashSet<string> AllowedLandingPageTags = new(StringComparer.OrdinalIgnoreCase)
     {
-        "ResearchShell",
         "TradingShell",
-        "DataOperationsShell",
-        "GovernanceShell",
+        "PortfolioShell",
+        "AccountingShell",
+        "ReportingShell",
+        "StrategyShell",
+        "DataShell",
+        "SettingsShell",
         "EnvironmentDesigner"
     };
+
+    private static readonly IReadOnlyDictionary<string, string> WorkspaceIdAliases =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["research"] = "strategy",
+            ["data-operations"] = "data",
+            ["governance"] = "accounting",
+            ["overview"] = "trading"
+        };
+
+    private static readonly IReadOnlyDictionary<string, string> LandingPageTagAliases =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ResearchShell"] = "StrategyShell",
+            ["DataOperationsShell"] = "DataShell",
+            ["GovernanceShell"] = "AccountingShell"
+        };
 
     private static readonly IReadOnlyDictionary<EnvironmentNodeKind, EnvironmentNodeKind[]> AllowedParentKinds =
         new Dictionary<EnvironmentNodeKind, EnvironmentNodeKind[]>
@@ -396,10 +419,39 @@ public sealed partial class EnvironmentDesignerService :
                 ? "Untitled Organization"
                 : definition.OrganizationName.Trim(),
             BaseCurrency = NormalizeCurrency(definition.BaseCurrency),
-            Lanes = definition.Lanes ?? [],
+            Lanes = (definition.Lanes ?? []).Select(NormalizeLane).ToArray(),
             Nodes = definition.Nodes ?? [],
             Relationships = definition.Relationships ?? []
         };
+    }
+
+    private static EnvironmentLaneDefinitionDto NormalizeLane(EnvironmentLaneDefinitionDto lane)
+        => lane with
+        {
+            LaneId = lane.LaneId?.Trim() ?? string.Empty,
+            Name = string.IsNullOrWhiteSpace(lane.Name) ? "Untitled Lane" : lane.Name.Trim(),
+            DefaultWorkspaceId = NormalizeWorkspaceId(lane.DefaultWorkspaceId),
+            DefaultLandingPageTag = NormalizeLandingPageTag(lane.DefaultLandingPageTag),
+            RootNodeDefinitionId = lane.RootNodeDefinitionId?.Trim() ?? string.Empty,
+            DefaultContextNodeDefinitionId = lane.DefaultContextNodeDefinitionId?.Trim() ?? string.Empty,
+            AllowedManagedScopeKinds = lane.AllowedManagedScopeKinds ?? [],
+            Description = string.IsNullOrWhiteSpace(lane.Description) ? null : lane.Description.Trim()
+        };
+
+    private static string NormalizeWorkspaceId(string? workspaceId)
+    {
+        var normalized = string.IsNullOrWhiteSpace(workspaceId) ? "trading" : workspaceId.Trim();
+        return WorkspaceIdAliases.TryGetValue(normalized, out var canonical)
+            ? canonical
+            : normalized;
+    }
+
+    private static string NormalizeLandingPageTag(string? pageTag)
+    {
+        var normalized = string.IsNullOrWhiteSpace(pageTag) ? "TradingShell" : pageTag.Trim();
+        return LandingPageTagAliases.TryGetValue(normalized, out var canonical)
+            ? canonical
+            : normalized;
     }
 
     private static string NormalizeCurrency(string? currency)
@@ -416,6 +468,7 @@ public sealed partial class EnvironmentDesignerService :
         EnvironmentPublishPlanDto? publishPlan,
         PublishedEnvironmentVersionDto? currentVersion)
     {
+        definition = NormalizeDefinition(definition);
         var issues = new List<EnvironmentValidationIssueDto>();
         var nodes = definition.Nodes ?? [];
         var lanes = definition.Lanes ?? [];

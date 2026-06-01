@@ -35,6 +35,21 @@ shared_facts:
 
 open_assumptions:
   - <assumption needing confirmation>
+
+validation_reuse:
+  - command: <existing command evidence>
+    source_lane: <lane id>
+    still_valid_when: <conditions>
+    rerun_when: <file changes or risk triggers>
+
+context_budget:
+  required_context:
+    - <must-read files for next lane>
+  optional_context:
+    - <nice-to-read files>
+  output_budget:
+    summary_lines_max: <line budget>
+    raw_log_policy: <when full logs are allowed>
 ```
 
 ## Usage Rules
@@ -44,3 +59,4 @@ open_assumptions:
 - Reuse prior validation evidence when files are unchanged; rerun when touched files differ.
 - Summarize command output; attach raw logs only when diagnosis requires full output.
 - Keep `shared_facts` evidence-backed with concrete file paths, not inferred summaries.
+- Distinguish validated facts from open assumptions so downstream lanes know what still needs proof.

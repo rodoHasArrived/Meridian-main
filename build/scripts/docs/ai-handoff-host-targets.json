@@ -8,9 +8,11 @@
     "CLAUDE.md",
     ".codex/AGENTS.md",
     ".github/copilot-instructions.md",
+    "docs/ai/agents/README.md",
     "docs/ai/README.md",
     "docs/ai/assistant-workflow-contract.md",
     "docs/ai/codex/README.md",
+    "docs/ai/codex/quickstart.md",
     "docs/ai/copilot/instructions.md",
     "docs/ai/skills/README.md"
   ]

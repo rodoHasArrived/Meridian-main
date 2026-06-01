@@ -42,9 +42,9 @@ import { PriceAlertsProvider, usePriceAlerts } from "@/lib/price-alerts/service"
 import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect } from "@/lib/workspace";
 
-const DataOperationsScreen = lazy(() => import("@/screens/data-operations-screen").then((module) => ({ default: module.DataOperationsScreen })));
+const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: module.DataScreen })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
-const GovernanceScreen = lazy(() => import("@/screens/governance-screen").then((module) => ({ default: module.GovernanceScreen })));
+const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: module.AccountingScreen })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
@@ -55,7 +55,7 @@ const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").the
 const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").then((module) => ({ default: module.PriceAlertsScreen })));
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: module.ReportingScreen })));
-const ResearchScreen = lazy(() => import("@/screens/research-screen").then((module) => ({ default: module.ResearchScreen })));
+const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: module.StrategyScreen })));
 const StrategyFormulaWorkbenchScreen = lazy(() => import("@/screens/strategy-formula-workbench-screen").then((module) => ({ default: module.StrategyFormulaWorkbenchScreen })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
 const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: module.SettingsScreen })));
@@ -86,11 +86,11 @@ function AppShell() {
   const {
     session,
     overview,
-    research,
+    strategy,
     trading,
     portfolio,
-    dataOperations,
-    governance,
+    data,
+    accounting,
     reporting,
     brokerageConnection,
     providerConnections,
@@ -189,11 +189,11 @@ function AppShell() {
     payload: {
       session,
       overview,
-      research,
+      strategy,
       trading,
       portfolio,
-      dataOperations,
-      governance,
+      data,
+      accounting,
       reporting
     },
     operatingContextScope: operatingScopeInput
@@ -336,10 +336,10 @@ function AppShell() {
                   <Route path="/" element={<Navigate to="/trading" replace />} />
                   <Route path="/trading/readiness" element={(
                     <OperatorReadinessConsole
-                      research={research}
+                      strategy={strategy}
                       trading={trading}
-                      dataOperations={dataOperations}
-                      governance={governance}
+                      data={data}
+                      accounting={accounting}
                       reporting={reporting}
                     />
                   )} />
@@ -349,30 +349,30 @@ function AppShell() {
                     <PortfolioScreen
                       portfolio={portfolio}
                       trading={trading}
-                      research={research}
-                      governance={governance}
+                      strategy={strategy}
+                      accounting={accounting}
                       brokerageConnection={brokerageConnection}
                       brokeragePortfolio={brokeragePortfolio}
                     />
                   )} />
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
-                  <Route path="/accounting/*" element={<GovernanceScreen data={governance} />} />
+                  <Route path="/accounting/*" element={<AccountingScreen data={accounting} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
                   <Route path="/strategy/formula-workbench" element={<StrategyFormulaWorkbenchScreen />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
-                  <Route path="/strategy/*" element={<ResearchScreen data={research} />} />
+                  <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
                   <Route path="/data/quotes" element={<LiveQuotesScreen />} />
                   <Route path="/data/watchlist" element={<WatchlistScreen />} />
                   <Route path="/data/alerts" element={<PriceAlertsScreen />} />
                   <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/*" element={(
-                    <DataOperationsScreen
-                      data={dataOperations}
+                    <DataScreen
+                      data={data}
                       providerConnections={providerConnections}
                       providerRoutingConnections={providerRoutingConnections}
                       providerRoutingBindings={providerRoutingBindings}
@@ -386,11 +386,11 @@ function AppShell() {
                     <SettingsScreen
                       session={session}
                       overview={overview}
-                      research={research}
+                      strategy={strategy}
                       trading={trading}
                       portfolio={portfolio}
-                      dataOperations={dataOperations}
-                      governance={governance}
+                      data={data}
+                      accounting={accounting}
                       reporting={reporting}
                       brokerageConnection={brokerageConnection}
                       providerConnections={providerConnections}
@@ -413,9 +413,9 @@ function AppShell() {
                     />
                   )} />
                   <Route path="/overview/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/research/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/strategy/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data-operations/*" element={<LegacyWorkspaceRedirect />} />
-                  <Route path="/governance/*" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/accounting/*" element={<LegacyWorkspaceRedirect />} />
                     <Route path="*" element={<NotFoundScreen />} />
                   </Routes>
                 </Suspense>
@@ -591,6 +591,32 @@ function WorkflowContinuityDock({
           </Link>
         ))}
       </nav>
+
+      <div className="workflow-continuity-operator-flow">
+        <div>
+          <div className="eyebrow-label">{viewModel.primaryOperatorFlowLabel}</div>
+          <p className="workflow-continuity-summary">{viewModel.primaryOperatorFlowSummary}</p>
+        </div>
+        <nav className="workflow-continuity-steps" aria-label={viewModel.primaryOperatorFlowStepsLabel}>
+          {viewModel.primaryOperatorFlowSteps.map((step) => (
+            <Link
+              key={step.id}
+              to={step.href}
+              aria-label={step.ariaLabel}
+              aria-current={step.active ? "step" : undefined}
+              className={cn(
+                "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                `workflow-continuity-step-${step.statusTone}`,
+                step.active && "workflow-continuity-step-active"
+              )}
+            >
+              <span className="workflow-continuity-step-label">{step.label}</span>
+              <span className="workflow-continuity-step-description">{step.description}</span>
+              <span className="workflow-continuity-step-status">{step.statusLabel}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
 
       <Button asChild variant="secondary" size="sm" className="workflow-continuity-next">
         <Link to={viewModel.nextActionHref} aria-label={viewModel.nextActionAriaLabel}>

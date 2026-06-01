@@ -238,6 +238,17 @@ export function workspaceForKey(key: WorkspaceKey): WorkspaceSummary {
   return WORKSPACES.find((workspace) => workspace.key === key) ?? WORKSPACES[0];
 }
 
+export function canonicalizeWorkspaceSummaries(workspaces: WorkspaceSummary[]): WorkspaceSummary[] {
+  const inputByKey = new Map(workspaces.map((workspace) => [workspace.key, workspace]));
+
+  return WORKSPACES
+    .filter((workspace) => inputByKey.has(workspace.key))
+    .map((workspace) => ({
+      ...workspace,
+      status: inputByKey.get(workspace.key)?.status ?? workspace.status
+    }));
+}
+
 export function workspaceForPath(pathname: string): WorkspaceSummary {
   return workspaceForKey(normalizeWorkspacePath(pathname));
 }

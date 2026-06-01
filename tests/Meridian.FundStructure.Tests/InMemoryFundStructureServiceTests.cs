@@ -206,12 +206,12 @@ public sealed class InMemoryFundStructureServiceTests
             "test"));
         var fund = await service.CreateFundAsync(new CreateFundRequest(
             Guid.NewGuid(),
-            business.BusinessId,
             "FUND",
             "Flagship Fund",
             "USD",
             now,
-            "test"));
+            "test",
+            BusinessId: business.BusinessId));
         var firstEntity = await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
             Guid.NewGuid(),
             LegalEntityTypeDto.LimitedPartner,

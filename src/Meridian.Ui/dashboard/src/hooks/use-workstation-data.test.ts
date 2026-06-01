@@ -7,14 +7,15 @@ import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
-  DataOperationsWorkspaceResponse,
-  GovernanceWorkspaceResponse,
+  DataWorkspaceResponse,
+  AccountingWorkspaceResponse,
+  ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
@@ -26,12 +27,17 @@ import type {
 vi.mock("@/lib/api", () => ({
   getBrokerageHouseholdPortfolio: vi.fn(),
   getDataWorkspace: vi.fn(),
-  getGovernanceWorkspace: vi.fn(),
+  getAccountingWorkspace: vi.fn(),
   getAlpacaConnectionStatus: vi.fn(),
   getProviderConnections: vi.fn(),
   getProviderRoutingBindings: vi.fn(),
   getProviderRoutingConnections: vi.fn(),
   getProviderRoutingTrustSnapshots: vi.fn(),
+  getRolePermissionCatalog: vi.fn(),
+  getSecurityAssetProfiles: vi.fn(),
+  getLedgerMappingWorkbench: vi.fn(),
+  getOperationsApprovalPolicyMatrix: vi.fn(),
+  getOperationsCloseCalendar: vi.fn(),
   hasDevelopmentFixtureUsage: vi.fn(() => false),
   getPortfolioWorkspace: vi.fn(),
   getReportingWorkspace: vi.fn(),
@@ -55,16 +61,21 @@ type Deferred<T> = {
 const requests: Record<string, Deferred<unknown>[]> = {
   brokerageConnection: [],
   brokeragePortfolio: [],
-  dataOperations: [],
-  governance: [],
+  data: [],
+  accounting: [],
   overview: [],
   portfolio: [],
   providerConnections: [],
   providerRoutingBindings: [],
   providerRoutingConnections: [],
   providerRoutingTrustSnapshots: [],
+  rolePermissionCatalog: [],
+  securityAssetProfiles: [],
+  ledgerMappingWorkbench: [],
+  operationsApprovalPolicyMatrix: [],
+  operationsCloseCalendar: [],
   reporting: [],
-  research: [],
+  strategy: [],
   session: [],
   trading: [],
   workflowLibrary: [],
@@ -80,17 +91,22 @@ describe("useWorkstationData", () => {
 
     vi.mocked(api.getSession).mockImplementation(() => track<SessionInfo>("session"));
     vi.mocked(api.getSystemStatus).mockImplementation(() => track<SystemOverviewResponse>("overview"));
-    vi.mocked(api.getStrategyWorkspace).mockImplementation(() => track<ResearchWorkspaceResponse>("research"));
+    vi.mocked(api.getStrategyWorkspace).mockImplementation(() => track<StrategyWorkspaceResponse>("strategy"));
     vi.mocked(api.getTradingWorkspace).mockImplementation(() => track<TradingWorkspaceResponse>("trading"));
     vi.mocked(api.getPortfolioWorkspace).mockImplementation(() => track<PortfolioWorkspaceResponse>("portfolio"));
-    vi.mocked(api.getDataWorkspace).mockImplementation(() => track<DataOperationsWorkspaceResponse>("dataOperations"));
-    vi.mocked(api.getGovernanceWorkspace).mockImplementation(() => track<GovernanceWorkspaceResponse>("governance"));
-    vi.mocked(api.getReportingWorkspace).mockImplementation(() => track<GovernanceWorkspaceResponse>("reporting"));
+    vi.mocked(api.getDataWorkspace).mockImplementation(() => track<DataWorkspaceResponse>("data"));
+    vi.mocked(api.getAccountingWorkspace).mockImplementation(() => track<AccountingWorkspaceResponse>("accounting"));
+    vi.mocked(api.getReportingWorkspace).mockImplementation(() => track<ReportingWorkspaceResponse>("reporting"));
     vi.mocked(api.getAlpacaConnectionStatus).mockImplementation(() => track<BrokerageConnectionStatus>("brokerageConnection"));
     vi.mocked(api.getProviderConnections).mockImplementation(() => track<ProviderConnectionRow[]>("providerConnections"));
     vi.mocked(api.getProviderRoutingConnections).mockImplementation(() => track<ProviderRoutingConnection[]>("providerRoutingConnections"));
     vi.mocked(api.getProviderRoutingBindings).mockImplementation(() => track<ProviderRoutingBinding[]>("providerRoutingBindings"));
     vi.mocked(api.getProviderRoutingTrustSnapshots).mockImplementation(() => track<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots"));
+    vi.mocked(api.getRolePermissionCatalog).mockResolvedValue({ generatedAt: "2026-01-01T00:00:00Z", roles: [] } as never);
+    vi.mocked(api.getSecurityAssetProfiles).mockResolvedValue([]);
+    vi.mocked(api.getLedgerMappingWorkbench).mockResolvedValue({ generatedAt: "2026-01-01T00:00:00Z" } as never);
+    vi.mocked(api.getOperationsApprovalPolicyMatrix).mockResolvedValue({ generatedAt: "2026-01-01T00:00:00Z" } as never);
+    vi.mocked(api.getOperationsCloseCalendar).mockResolvedValue({ generatedAt: "2026-01-01T00:00:00Z" } as never);
     vi.mocked(api.getBrokerageHouseholdPortfolio).mockImplementation(() => track<BrokerageHouseholdPortfolio>("brokeragePortfolio"));
     vi.mocked(api.getWorkflowLibrary).mockImplementation(() => track<WorkflowLibrary>("workflowLibrary"));
     vi.mocked(api.getWorkflowPresets).mockImplementation(() => track<WorkflowPresetLibrary>("workflowPresets"));
@@ -180,12 +196,12 @@ describe("useWorkstationData", () => {
         })
       ));
       resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "overview" } as unknown as SystemOverviewResponse);
-      resolveRequest<ResearchWorkspaceResponse>("research", 0, { marker: "research" } as unknown as ResearchWorkspaceResponse);
+      resolveRequest<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
       resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
       resolveRequest<PortfolioWorkspaceResponse>("portfolio", 0, { marker: "portfolio" } as unknown as PortfolioWorkspaceResponse);
-      resolveRequest<DataOperationsWorkspaceResponse>("dataOperations", 0, { marker: "data" } as unknown as DataOperationsWorkspaceResponse);
-      resolveRequest<GovernanceWorkspaceResponse>("governance", 0, { marker: "accounting" } as unknown as GovernanceWorkspaceResponse);
-      resolveRequest<GovernanceWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as GovernanceWorkspaceResponse);
+      resolveRequest<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
+      resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
       resolveRequest<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
       resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
@@ -478,12 +494,12 @@ describe("useWorkstationData", () => {
         role: "Operator"
       });
       resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "overview" } as unknown as SystemOverviewResponse);
-      resolveRequest<ResearchWorkspaceResponse>("research", 0, { marker: "research" } as unknown as ResearchWorkspaceResponse);
+      resolveRequest<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
       resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
       rejectRequest("portfolio", 0, new Error("Portfolio workspace timed out."));
-      resolveRequest<DataOperationsWorkspaceResponse>("dataOperations", 0, { marker: "data" } as unknown as DataOperationsWorkspaceResponse);
-      resolveRequest<GovernanceWorkspaceResponse>("governance", 0, { marker: "accounting" } as unknown as GovernanceWorkspaceResponse);
-      resolveRequest<GovernanceWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as GovernanceWorkspaceResponse);
+      resolveRequest<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
+      resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
       rejectRequest("brokerageConnection", 0, new Error("Alpaca connection status failed."));
       resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
@@ -653,12 +669,12 @@ function resolveRefreshBatchWithIndexes({
     role: "Operator"
   });
   resolveRequest<SystemOverviewResponse>("overview", defaultIndex, { marker: `${marker} overview` } as unknown as SystemOverviewResponse);
-  resolveRequest<ResearchWorkspaceResponse>("research", defaultIndex, { marker: `${marker} research` } as unknown as ResearchWorkspaceResponse);
+  resolveRequest<StrategyWorkspaceResponse>("strategy", defaultIndex, { marker: `${marker} strategy` } as unknown as StrategyWorkspaceResponse);
   resolveRequest<TradingWorkspaceResponse>("trading", tradingIndex, { marker: `${marker} trading` } as unknown as TradingWorkspaceResponse);
   resolveRequest<PortfolioWorkspaceResponse>("portfolio", defaultIndex, { marker: `${marker} portfolio` } as unknown as PortfolioWorkspaceResponse);
-  resolveRequest<DataOperationsWorkspaceResponse>("dataOperations", defaultIndex, { marker: `${marker} data` } as unknown as DataOperationsWorkspaceResponse);
-  resolveRequest<GovernanceWorkspaceResponse>("governance", defaultIndex, { marker: `${marker} accounting` } as unknown as GovernanceWorkspaceResponse);
-  resolveRequest<GovernanceWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as GovernanceWorkspaceResponse);
+  resolveRequest<DataWorkspaceResponse>("data", defaultIndex, { marker: `${marker} data` } as unknown as DataWorkspaceResponse);
+  resolveRequest<AccountingWorkspaceResponse>("accounting", defaultIndex, { marker: `${marker} accounting` } as unknown as AccountingWorkspaceResponse);
+  resolveRequest<ReportingWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);
   resolveRequest<BrokerageConnectionStatus>("brokerageConnection", defaultIndex, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
   resolveRequest<ProviderConnectionRow[]>("providerConnections", defaultIndex, []);
   resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", defaultIndex, []);

@@ -58,6 +58,9 @@ Shared close-workflow target tags stay explicit in desktop routing: `OperationsC
 `OperationsClose` are WPF aliases for the Fund Operations page, with navigation parameters that
 land on the overview and report-pack readiness tabs while the browser resolves both tags to
 `/accounting/operations-continuity`.
+The browser `AccountingApprovals` approval route also resolves in WPF to the Fund Audit Trail
+surface, so the design-document approval step has a route-compatible desktop target for approval
+history, retained evidence, and accounting audit references.
 Shared evidence workflow target routing is also explicit: `EvidenceWorkbench` resolves to the WPF
 Fund Audit Trail surface while the browser resolves the same shared tag to `/reporting/evidence`.
 The route-registry parity test covers all built-in workflow entry and action target tags so shared
@@ -77,11 +80,20 @@ Data use `Terminal`, Portfolio, Accounting, Reporting, and Settings use `Cockpit
 Desktop launch surfaces, setup completion, environment starter lanes, and operating-context defaults
 emit canonical page tags (`StrategyShell`, `DataShell`, and `AccountingShell`) so new persisted state
 does not reintroduce legacy `Research`, `Data Operations`, or `Governance` root names.
+Catalog-backed operator pages, including Accounting entity setup, are registered exactly once
+through `AddMeridianWpfShell`; the App bootstrap keeps only non-catalog supplemental pages in its
+extra page-registration block.
+Shell coordinator, pane-host, and direct `NavigationService` paths accept compatibility aliases as
+inbound route requests but store and execute canonical page tags in active pane state, restored
+content creation, navigation history, navigation events, and pane-drop results.
 Workspace id compatibility normalization and the canonical legacy-alias list are centralized through
 `WorkstationNavigationDefaults` instead of repeated shell-local switch expressions.
 The shared context-strip service normalizes legacy workspace titles before rendering owner copy, so
 old callers cannot reintroduce `Research`, `Data Operations`, or `Governance` as visible workspace
 labels.
+The workspace layout page also renders built-in active workspace chips from canonical root names,
+not from retained legacy category enum names, so Portfolio, Reporting, and Settings do not appear as
+Accounting categories.
 Operator-inbox attention badges use the same canonical workspace-title normalization before
 rendering owner labels, while retained API payloads may still carry legacy workspace names for
 compatibility.
@@ -100,8 +112,14 @@ legacy Research/Data Operations constant names.
 Accounting shell workflow summary selection prefers the canonical `accounting` workspace id while
 retaining `governance` as an inbound compatibility alias.
 Accounting shell visible copy, accessibility names, queue summaries, and presentation-service
-handoff text use canonical `Accounting` wording while retaining `Governance*` type names and
-legacy aliases only as compatibility seams.
+handoff text use canonical `Accounting` wording. The shared presentation service now uses an
+`Accounting*` name, and Accounting shell page types, state providers, view models, page bases, and
+automation IDs use canonical `AccountingWorkspace*` names. Remaining `GovernanceShell` and
+`GovernanceWorkspace` names are route aliases only.
+The Accounting shell also projects the design-document Financial Operations workflow
+(`Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, `Produce Evidence`)
+from `AccountingWorkspacePresentationService`, so operator workflow state is derived from shared
+fund, reconciliation, approval, and audit posture instead of XAML-local copy.
 Fund Ledger and Fund Accounts drill-in surfaces use Accounting wording for route banners,
 report-pack preview, account queues, and reconciliation guidance while preserving compatibility
 type names where needed.
@@ -130,6 +148,17 @@ workspace on shared dense-table behavior without changing data-quality service c
 Data terminal provider, backfill, and storage decision queues now use
 `WorkspaceDecisionQueueControl` while retaining existing queue-region empty/loading/error state
 templates and view-model-owned action resolution.
+Data shell state providers and XAML page bases use canonical `DataWorkspace*` names; retained
+`DataOperationsShell` and `DataOperationsWorkspace` tags are inbound route aliases only.
+`DataWorkspacePresentationBuilder` projects the design-document Data Integration workflow
+(`Connect Source`, `Acquire Data`, `Validate Data`, `Normalize Data`, `Store Data`, `Publish Data`)
+into WPF inspector state so desktop operators see the same provider-to-publish progression as the
+browser workstation without XAML-owned workflow copy. Retained `DataOperations` route and smoke-test
+names are compatibility shims only, not the canonical presentation-model taxonomy.
+`MainPageViewModel` projects the design-document primary operator workflow
+(`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`) into the shared
+`WorkspaceEvidenceStripControl`, keeping browser and WPF shell chrome aligned while route targets
+remain WPF page tags.
 Provider health affected-workflow labels use canonical workspace names such as `Strategy` and
 `Data`; retained provider DTO and page-tag compatibility names must not leak `Research` or
 `Data Operations` into operator-facing recovery tables.
@@ -137,11 +166,15 @@ RunMat Lab is a Strategy workspace tool; its visible page descriptions and code 
 `Strategy` wording while retaining the existing `RunMat` page tag and automation IDs.
 QuantScript run-history handoffs use `CompareInStrategyCommand` for Strategy Runs comparison
 routing while preserving the existing button automation ID and run-detail navigation targets.
-Strategy shell fallback briefing summaries, deterministic workflow guidance, degraded-state
-recovery copy, and promotion notes also use canonical `Strategy` wording while retaining legacy
-research DTO/interface names for API compatibility. The desktop briefing client requests the
-canonical `/api/workstation/strategy/briefing` route while the shared host still serves the retained
-research briefing route as a compatibility alias.
+`StrategyWorkspaceShellPresentationService` owns Strategy shell briefing, workflow, degraded-state,
+command, and promotion presentation state. Strategy shell page types, state providers, view models,
+page bases, automation IDs, and hero/workflow bindings use canonical `StrategyWorkspace*` and
+`Strategy*` names, while `ResearchShell` and `ResearchWorkspace` remain route aliases only.
+Strategy shell fallback briefing summaries, deterministic workflow guidance, degraded-state recovery
+copy, and promotion notes also use canonical `Strategy` wording while retaining legacy research
+DTO/interface names for API compatibility. The desktop briefing client requests the canonical
+`/api/workstation/strategy/briefing` route while the shared host still serves the retained research
+briefing route as a compatibility alias.
 Backfill terminal work uses `DenseDataGridControl` for gap-analysis and per-symbol-progress tables,
 with table descriptors owned by `BackfillWorkbenchSectionViewModel` so long-running provider
 catch-up workflows reuse the shared dense-table/empty-state surface.

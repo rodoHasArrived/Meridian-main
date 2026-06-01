@@ -4,11 +4,11 @@ namespace Meridian.Wpf.Features.Data.Shell;
 
 public interface IDataWorkspaceShellPresentationService
 {
-    DataOperationsWorkspacePresentation Build(DataOperationsWorkspaceData data);
+    DataWorkspacePresentation Build(DataWorkspaceData data);
 }
 
 public sealed class DataWorkspaceShellPresentationService : IDataWorkspaceShellPresentationService, IWorkspaceScopedService
 {
-    public DataOperationsWorkspacePresentation Build(DataOperationsWorkspaceData data)
-        => DataOperationsWorkspacePresentationBuilder.Build(data);
+    public DataWorkspacePresentation Build(DataWorkspaceData data)
+        => DataWorkspacePresentationBuilder.Build(data);
 }

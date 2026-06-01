@@ -7,6 +7,7 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
+[Collection("NavigationServiceSerialCollection")]
 public sealed class WorkspacePageViewModelTests : IDisposable
 {
     private static string CreateTestSettingsFilePath()
@@ -16,7 +17,7 @@ public sealed class WorkspacePageViewModelTests : IDisposable
             "workspace-vm-tests",
             $"{Guid.NewGuid():N}.workspace-data.json");
 
-    private static async Task<WorkspaceService> CreateServiceAsync()
+    private static Task<WorkspaceService> CreateServiceAsync()
     {
         var settingsFilePath = CreateTestSettingsFilePath();
         var service = (WorkspaceService)Activator.CreateInstance(typeof(WorkspaceService), nonPublic: true)!;
@@ -28,8 +29,13 @@ public sealed class WorkspacePageViewModelTests : IDisposable
         }
 
         service.ResetForTests();
-        await service.LoadWorkspacesAsync();
-        return service;
+        WpfTestThread.Run(async () =>
+        {
+            WorkspaceService.SetSettingsFilePathOverrideForTests(settingsFilePath);
+            await service.LoadWorkspacesAsync();
+        });
+        WorkspaceService.SetSettingsFilePathOverrideForTests(settingsFilePath);
+        return Task.FromResult(service);
     }
 
     private static WorkspacePageViewModel CreateViewModel(WorkspaceService svc)
@@ -43,6 +49,7 @@ public sealed class WorkspacePageViewModelTests : IDisposable
     public void Dispose()
     {
         WorkspaceService.SetSettingsFilePathOverrideForTests(null);
+        WpfTestThread.Run(() => WorkspaceService.SetSettingsFilePathOverrideForTests(null));
     }
 
     [Fact]
@@ -73,6 +80,30 @@ public sealed class WorkspacePageViewModelTests : IDisposable
             await viewModel.LoadAsync();
 
             viewModel.ActiveWorkspaceName.Should().Be(workspace.Name);
+        });
+    }
+
+    [Theory]
+    [InlineData("trading", "Trading")]
+    [InlineData("portfolio", "Portfolio")]
+    [InlineData("accounting", "Accounting")]
+    [InlineData("reporting", "Reporting")]
+    [InlineData("strategy", "Strategy")]
+    [InlineData("data", "Data")]
+    [InlineData("settings", "Settings")]
+    public async Task LoadAsync_WhenBuiltInWorkspaceActive_UsesCanonicalRootCategoryText(
+        string workspaceId,
+        string expectedCategoryText)
+    {
+        var service = await CreateServiceAsync();
+        await service.ActivateWorkspaceAsync(workspaceId);
+
+        WpfTestThread.Run(async () =>
+        {
+            using var viewModel = CreateViewModel(service);
+            await viewModel.LoadAsync();
+
+            viewModel.ActiveWorkspaceCategoryText.Should().Be(expectedCategoryText);
         });
     }
 

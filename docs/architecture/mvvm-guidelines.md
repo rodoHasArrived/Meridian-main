@@ -1,7 +1,7 @@
 # MVVM Guidelines
 
 Meridian keeps workflow state in view models and shared read models so browser
-and retained desktop surfaces can render the same business posture without
+and desktop workstation surfaces can render the same business posture without
 forking behavior.
 
 ## Current UI Direction
@@ -42,14 +42,14 @@ shared across surfaces.
 - Keep accessibility part of correctness: selectable dense rows, detail panels,
   command buttons, loading states, and error states need stable names and states.
 
-## Retained WPF
+## WPF Desktop Workstation
 
 - Keep code-behind thin and focused on view lifecycle, binding setup, and WPF
   interop that cannot live elsewhere.
 - Preserve existing view-model tests when changing shell routing, workspace
   selection, command availability, or page binding coverage.
 - Do not copy browser-only behavior into WPF as a separate product lane. Use
-  shared contracts and read models when compatibility work is required.
+  shared contracts and read models when desktop compatibility work is required.
 
 ## Validation
 

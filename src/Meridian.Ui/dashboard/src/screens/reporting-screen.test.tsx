@@ -3,9 +3,9 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import { renderWithRouter } from "@/test/render";
-import type { GovernanceWorkspaceResponse } from "@/types";
+import type { AccountingWorkspaceResponse } from "@/types";
 
-const governance: GovernanceWorkspaceResponse = {
+const accounting: AccountingWorkspaceResponse = {
   metrics: [],
   reconciliationQueue: [],
   breakQueue: [],
@@ -82,7 +82,7 @@ describe("ReportingScreen", () => {
     vi.stubGlobal("fetch", fetchMock);
   });
 
-  it("renders loading copy when governance reporting data is unavailable", () => {
+  it("renders loading copy when reporting data is unavailable", () => {
     renderWithRouter(<ReportingScreen data={null} />, { initialEntries: ["/reporting"] });
 
     const loading = screen.getByRole("status", { name: "Loading Reporting" });
@@ -102,7 +102,7 @@ describe("ReportingScreen", () => {
   });
 
   it("renders report-pack targets with accessible row labels", () => {
-    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
     expect(screen.getByRole("list", { name: "Report-pack targets" })).toBeInTheDocument();
     expect(screen.getByLabelText("board report-pack target")).toBeInTheDocument();
@@ -110,10 +110,10 @@ describe("ReportingScreen", () => {
   });
 
   it("renders the VM-owned no-target state with warning token classes", () => {
-    const missingTargets: GovernanceWorkspaceResponse = {
-      ...governance,
+    const missingTargets: AccountingWorkspaceResponse = {
+      ...accounting,
       reporting: {
-        ...governance.reporting,
+        ...accounting.reporting,
         reportPackTargets: []
       }
     };
@@ -122,7 +122,7 @@ describe("ReportingScreen", () => {
 
     const emptyState = screen.getByRole("status", { name: "No report-pack targets loaded" });
     expect(emptyState).toHaveTextContent(
-      "No report-pack targets loaded. Configure governed targets in the governance policy before approving this packet."
+      "No report-pack targets loaded. Configure governed targets in the accounting policy before approving this packet."
     );
     expect(emptyState).toHaveClass("border-warning/30", "bg-warning/10", "text-warning");
     expect(screen.queryByRole("list", { name: "Report-pack targets" })).not.toBeInTheDocument();
@@ -130,7 +130,7 @@ describe("ReportingScreen", () => {
 
   it("renders the dedicated report-pack approval workflow panel", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting/report-packs"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-packs"] });
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
     expect(task).toBeInTheDocument();
@@ -211,10 +211,10 @@ describe("ReportingScreen", () => {
   });
 
   it("renders report-pack restatement review from shared workflow records", () => {
-    const restatedGovernance: GovernanceWorkspaceResponse = {
-      ...governance,
+    const restatedAccounting: AccountingWorkspaceResponse = {
+      ...accounting,
       reporting: {
-        ...governance.reporting,
+        ...accounting.reporting,
         workflowRecords: [
           {
             reportId: "report-restated-1",
@@ -266,7 +266,7 @@ describe("ReportingScreen", () => {
       }
     };
 
-    renderWithRouter(<ReportingScreen data={restatedGovernance} />, { initialEntries: ["/reporting/report-packs"] });
+    renderWithRouter(<ReportingScreen data={restatedAccounting} />, { initialEntries: ["/reporting/report-packs"] });
 
     const restatement = screen.getByRole("region", { name: "Report-pack restatement review" });
     expect(within(restatement).getByText("Restatement review")).toBeInTheDocument();
@@ -283,7 +283,7 @@ describe("ReportingScreen", () => {
   });
 
   it("keeps report-pack task and inspector action descriptions uniquely identified", () => {
-    const { container } = renderWithRouter(<ReportingScreen data={governance} />, {
+    const { container } = renderWithRouter(<ReportingScreen data={accounting} />, {
       initialEntries: ["/reporting/report-packs"]
     });
 
@@ -332,7 +332,7 @@ describe("ReportingScreen", () => {
         })
     );
 
-    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting/report-packs"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-packs"] });
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
     await user.click(within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" }));
@@ -356,7 +356,7 @@ describe("ReportingScreen", () => {
 
   it("updates selected profile detail and profile-scoped actions", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
     const profileTable = screen.getByRole("table", { name: "Export profiles" });
     const auditRow = within(profileTable).getByRole("row", { name: /select audit pack export profile/i });
@@ -410,7 +410,7 @@ describe("ReportingScreen", () => {
         })
     );
 
-    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
     await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
     const inspector = screen.getByRole("region", { name: /audit pack selected/i });
@@ -434,7 +434,7 @@ describe("ReportingScreen", () => {
 
   it("posts selected profile when running export analysis", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
     await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
     await user.click(screen.getByRole("button", { name: "Run Audit Pack export analysis" }));
@@ -477,7 +477,7 @@ describe("ReportingScreen", () => {
       })
     });
 
-    renderWithRouter(<ReportingScreen data={governance} />, { initialEntries: ["/reporting"] });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
     await user.click(screen.getByRole("row", { name: /select audit pack export profile/i }));
     await user.click(screen.getByRole("button", { name: "Run Audit Pack export analysis" }));
@@ -491,8 +491,8 @@ describe("ReportingScreen", () => {
   });
 
   it("renders explicit empty states for missing reporting profiles and pack targets", () => {
-    const emptyGovernance: GovernanceWorkspaceResponse = {
-      ...governance,
+    const emptyAccounting: AccountingWorkspaceResponse = {
+      ...accounting,
       reporting: {
         profileCount: 0,
         recommendedProfiles: [],
@@ -502,17 +502,17 @@ describe("ReportingScreen", () => {
       }
     };
 
-    renderWithRouter(<ReportingScreen data={emptyGovernance} />, { initialEntries: ["/reporting"] });
+    renderWithRouter(<ReportingScreen data={emptyAccounting} />, { initialEntries: ["/reporting"] });
 
     expect(screen.getByText(/no export profiles are configured/i)).toBeInTheDocument();
     expect(screen.getByRole("status", { name: "No report-pack targets loaded" })).toHaveTextContent(
-      "No report-pack targets loaded. Configure governed targets in the governance policy before approving this packet."
+      "No report-pack targets loaded. Configure governed targets in the accounting policy before approving this packet."
     );
   });
 
   it("renders report-pack approval task empty targets and profiles as accessible status panels", () => {
-    const emptyGovernance: GovernanceWorkspaceResponse = {
-      ...governance,
+    const emptyAccounting: AccountingWorkspaceResponse = {
+      ...accounting,
       reporting: {
         profileCount: 0,
         recommendedProfiles: [],
@@ -522,7 +522,7 @@ describe("ReportingScreen", () => {
       }
     };
 
-    renderWithRouter(<ReportingScreen data={emptyGovernance} />, { initialEntries: ["/reporting/report-packs"] });
+    renderWithRouter(<ReportingScreen data={emptyAccounting} />, { initialEntries: ["/reporting/report-packs"] });
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
     expect(within(task).getByRole("status", { name: "No report-pack approval targets" })).toHaveTextContent(

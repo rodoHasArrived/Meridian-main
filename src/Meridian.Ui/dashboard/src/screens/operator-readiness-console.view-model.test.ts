@@ -3,11 +3,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildOperatorReadinessConsoleState, useOperatorReadinessConsoleViewModel } from "@/screens/operator-readiness-console.view-model";
 import type { ApiRequestOptions } from "@/lib/api";
 import type {
-  DataOperationsWorkspaceResponse,
-  GovernanceWorkspaceResponse,
+  DataWorkspaceResponse,
+  AccountingWorkspaceResponse,
   OperatorInbox,
   OperatorWorkItem,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   TradingOperatorReadiness,
   TradingWorkspaceResponse
 } from "@/types";
@@ -129,7 +129,7 @@ const readiness: TradingOperatorReadiness = {
   warnings: []
 };
 
-const research: ResearchWorkspaceResponse = {
+const strategy: StrategyWorkspaceResponse = {
   metrics: [],
   runs: [
     {
@@ -176,7 +176,7 @@ const trading = {
   readiness
 } as TradingWorkspaceResponse;
 
-const dataOperations: DataOperationsWorkspaceResponse = {
+const data: DataWorkspaceResponse = {
   metrics: [],
   providers: [
     {
@@ -196,7 +196,7 @@ const dataOperations: DataOperationsWorkspaceResponse = {
   exports: []
 };
 
-const governance: GovernanceWorkspaceResponse = {
+const accounting: AccountingWorkspaceResponse = {
   metrics: [],
   reconciliationQueue: [],
   breakQueue: [
@@ -294,13 +294,13 @@ const readyTrading: TradingWorkspaceResponse = {
   readiness: readyReadiness
 };
 
-const cleanGovernance: GovernanceWorkspaceResponse = {
-  ...governance,
+const cleanGovernance: AccountingWorkspaceResponse = {
+  ...accounting,
   reconciliationQueue: [],
   breakQueue: []
 };
 
-const noReportPackGovernance: GovernanceWorkspaceResponse = {
+const noReportPackGovernance: AccountingWorkspaceResponse = {
   ...cleanGovernance,
   reporting: {
     profileCount: 0,
@@ -327,10 +327,10 @@ describe("operator readiness console view model", () => {
 
   it("builds the API-first readiness console from shared workstation payloads", () => {
     const state = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading,
-      dataOperations,
-      governance,
+      data,
+      accounting,
       operatorInbox: inbox,
       inboxLoading: false,
       inboxError: null
@@ -363,7 +363,7 @@ describe("operator readiness console view model", () => {
       "/api/workstation/reporting"
     ]));
     expect(state.apiSources.map((source) => source.endpoint)).not.toEqual(expect.arrayContaining([
-      "/api/workstation/research",
+      "/api/workstation/strategy",
       "/api/workstation/data-operations"
     ]));
     expect(state.apiSourcesLabel).toBe("Shared readiness API sources");
@@ -464,10 +464,10 @@ describe("operator readiness console view model", () => {
 
   it("derives safe work-item routes and fallback actions in the view model", () => {
     const state = buildOperatorReadinessConsoleState({
-      research: null,
+      strategy: null,
       trading: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       operatorInbox: {
         ...cleanInbox,
         items: [
@@ -503,14 +503,14 @@ describe("operator readiness console view model", () => {
             workItemId: "legacy-break-route",
             kind: "ReconciliationBreak",
             label: "Legacy break route",
-            detail: "Review a break from a legacy governance route.",
+            detail: "Review a break from a legacy accounting route.",
             tone: "Info",
             createdAt: "2026-04-29T12:04:00Z",
             runId: "run-1",
             fundAccountId: null,
             auditReference: null,
             workspace: "Accounting",
-            targetRoute: "/governance/reconciliation?runId=run-1#cash",
+            targetRoute: "/accounting/reconciliation?runId=run-1#cash",
             targetPageTag: "FundReconciliation"
           },
           {
@@ -615,10 +615,10 @@ describe("operator readiness console view model", () => {
 
   it("routes brokerage-sync work items to provider setup repair before portfolio review", () => {
     const state = buildOperatorReadinessConsoleState({
-      research: null,
+      strategy: null,
       trading: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       operatorInbox: {
         ...cleanInbox,
         items: [
@@ -665,10 +665,10 @@ describe("operator readiness console view model", () => {
 
   it("routes ledger-period close work items to the accounting reconciliation lane", () => {
     const state = buildOperatorReadinessConsoleState({
-      research: null,
+      strategy: null,
       trading: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       operatorInbox: {
         ...cleanInbox,
         items: [
@@ -743,9 +743,9 @@ describe("operator readiness console view model", () => {
       operatorInbox: null,
       inboxLoading: false,
       inboxError: null,
-      research,
-      dataOperations,
-      governance
+      strategy,
+      data,
+      accounting
     });
 
     expect(state.workItems[0]?.action).toEqual({
@@ -758,10 +758,10 @@ describe("operator readiness console view model", () => {
 
   it("blocks the headline from a critical inbox item when trading readiness is missing", () => {
     const state = buildOperatorReadinessConsoleState({
-      research: null,
+      strategy: null,
       trading: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       operatorInbox: {
         ...cleanInbox,
         items: [{
@@ -798,7 +798,7 @@ describe("operator readiness console view model", () => {
 
   it("maps replay mismatch and stale replay gates into the normalized checkpoints", () => {
     const mismatchState = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading: {
         ...readyTrading,
         readiness: {
@@ -821,14 +821,14 @@ describe("operator readiness console view model", () => {
           }]
         }
       },
-      dataOperations,
-      governance: cleanGovernance,
+      data,
+      accounting: cleanGovernance,
       operatorInbox: cleanInbox,
       inboxLoading: false,
       inboxError: null
     });
     const staleState = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading: {
         ...readyTrading,
         readiness: {
@@ -856,8 +856,8 @@ describe("operator readiness console view model", () => {
           }]
         }
       },
-      dataOperations,
-      governance: cleanGovernance,
+      data,
+      accounting: cleanGovernance,
       operatorInbox: cleanInbox,
       inboxLoading: false,
       inboxError: null
@@ -884,7 +884,7 @@ describe("operator readiness console view model", () => {
 
   it("maps brokerage sync health to blocked, review, and ready checkpoint states", () => {
     const buildState = (health: NonNullable<TradingOperatorReadiness["brokerageSync"]>["health"], isStale: boolean) => buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading: {
         ...readyTrading,
         readiness: {
@@ -897,8 +897,8 @@ describe("operator readiness console view model", () => {
           }
         }
       },
-      dataOperations,
-      governance: cleanGovernance,
+      data,
+      accounting: cleanGovernance,
       operatorInbox: cleanInbox,
       inboxLoading: false,
       inboxError: null
@@ -938,7 +938,7 @@ describe("operator readiness console view model", () => {
     };
 
     const state = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading: {
         ...readyTrading,
         readiness: {
@@ -948,8 +948,8 @@ describe("operator readiness console view model", () => {
           workItems: [duplicateReadiness]
         }
       },
-      dataOperations,
-      governance: cleanGovernance,
+      data,
+      accounting: cleanGovernance,
       operatorInbox: {
         ...cleanInbox,
         items: [duplicateInbox],
@@ -972,10 +972,10 @@ describe("operator readiness console view model", () => {
 
   it("keeps report-pack ownership aligned to Reporting when payloads are unavailable", () => {
     const state = buildOperatorReadinessConsoleState({
-      research: null,
+      strategy: null,
       trading: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       reporting: null,
       operatorInbox: null,
       inboxLoading: false,
@@ -1034,10 +1034,10 @@ describe("operator readiness console view model", () => {
     };
 
     const state = buildOperatorReadinessConsoleState({
-      research: null,
+      strategy: null,
       trading: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       operatorInbox: {
         ...cleanInbox,
         items: [...warningItems, criticalItem, infoItem],
@@ -1073,10 +1073,10 @@ describe("operator readiness console view model", () => {
 
   it("surfaces operator inbox failures while keeping payload fallbacks visible", () => {
     const state = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading,
-      dataOperations,
-      governance,
+      data,
+      accounting,
       operatorInbox: null,
       inboxLoading: false,
       inboxError: "Request failed for /api/workstation/operator/inbox (503)"
@@ -1101,10 +1101,10 @@ describe("operator readiness console view model", () => {
 
   it("keeps overall readiness in review while the operator inbox is still loading", () => {
     const state = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading: readyTrading,
-      dataOperations,
-      governance: cleanGovernance,
+      data,
+      accounting: cleanGovernance,
       operatorInbox: null,
       inboxLoading: true,
       inboxError: null
@@ -1118,20 +1118,20 @@ describe("operator readiness console view model", () => {
 
   it("requires a settled clean operator inbox before reporting overall ready", () => {
     const loadingState = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading: readyTrading,
-      dataOperations,
-      governance: cleanGovernance,
+      data,
+      accounting: cleanGovernance,
       operatorInbox: null,
       inboxLoading: false,
       inboxError: "Request failed for /api/workstation/operator/inbox (503)"
     });
 
     const readyState = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading: readyTrading,
-      dataOperations,
-      governance: cleanGovernance,
+      data,
+      accounting: cleanGovernance,
       operatorInbox: cleanInbox,
       inboxLoading: false,
       inboxError: null
@@ -1159,10 +1159,10 @@ describe("operator readiness console view model", () => {
 
   it("keeps the headline in review when governed report-pack readiness is missing", () => {
     const state = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading: readyTrading,
-      dataOperations,
-      governance: noReportPackGovernance,
+      data,
+      accounting: noReportPackGovernance,
       operatorInbox: cleanInbox,
       inboxLoading: false,
       inboxError: null
@@ -1184,10 +1184,10 @@ describe("operator readiness console view model", () => {
 
   it("keeps mirrored run-handoff identity and route metadata in operator work items", () => {
     const state = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading,
-      dataOperations,
-      governance,
+      data,
+      accounting,
       operatorInbox: inbox,
       inboxLoading: false,
       inboxError: null
@@ -1206,10 +1206,10 @@ describe("operator readiness console view model", () => {
 
   it("preserves route-aware packet continuity for blocker rows across state slices", () => {
     const state = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading,
-      dataOperations,
-      governance,
+      data,
+      accounting,
       operatorInbox: inbox,
       inboxLoading: false,
       inboxError: null
@@ -1252,11 +1252,11 @@ describe("operator readiness console view model", () => {
 
     const { result, rerender } = renderHook(
       ({ tradingPayload }: { tradingPayload: TradingWorkspaceResponse }) => useOperatorReadinessConsoleViewModel({
-        research,
+        strategy,
         trading: tradingPayload,
-        dataOperations,
-        governance: cleanGovernance,
-        reporting: governance
+        data,
+        accounting: cleanGovernance,
+        reporting: accounting
       }, services),
       { initialProps: { tradingPayload: readyTrading } }
     );
@@ -1302,11 +1302,11 @@ describe("operator readiness console view model", () => {
 
     const { result, rerender } = renderHook(
       ({ tradingPayload }: { tradingPayload: TradingWorkspaceResponse }) => useOperatorReadinessConsoleViewModel({
-        research,
+        strategy,
         trading: tradingPayload,
-        dataOperations,
-        governance: cleanGovernance,
-        reporting: governance
+        data,
+        accounting: cleanGovernance,
+        reporting: accounting
       }, services),
       { initialProps: { tradingPayload: readyTrading } }
     );
@@ -1342,11 +1342,11 @@ describe("operator readiness console view model", () => {
     const services = { getOperatorInbox };
 
     const { result } = renderHook(() => useOperatorReadinessConsoleViewModel({
-      research,
+      strategy,
       trading: readyTrading,
-      dataOperations,
-      governance: cleanGovernance,
-      reporting: governance
+      data,
+      accounting: cleanGovernance,
+      reporting: accounting
     }, services));
 
     await waitFor(() => expect(result.current.inboxErrorText).toBe("Operator inbox 503"));
@@ -1366,10 +1366,10 @@ describe("operator readiness console view model", () => {
 
   it("keeps selected operator work-item detail in the view model", () => {
     const state = buildOperatorReadinessConsoleState({
-      research: null,
+      strategy: null,
       trading: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       operatorInbox: {
         ...cleanInbox,
         items: [
@@ -1434,10 +1434,10 @@ describe("operator readiness console view model", () => {
       "active-paper-session": "paper-equity"
     };
     const state = buildOperatorReadinessConsoleState({
-      research,
+      strategy,
       trading,
-      dataOperations,
-      governance,
+      data,
+      accounting,
       operatorInbox: inbox,
       inboxLoading: false,
       inboxError: null,

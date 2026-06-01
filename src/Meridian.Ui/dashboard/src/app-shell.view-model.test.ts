@@ -13,11 +13,11 @@ import type { SessionInfo } from "@/types";
 const emptyPayload: AppShellWorkspacePayload = {
   session: null,
   overview: null,
-  research: null,
+  strategy: null,
   trading: null,
   portfolio: null,
-  dataOperations: null,
-  governance: null,
+  data: null,
+  accounting: null,
   reporting: null
 };
 
@@ -42,9 +42,9 @@ describe("app shell view model", () => {
     expect(normalizeWorkspace("/strategy/runs")).toBe("strategy");
     expect(normalizeWorkspace("/data/backfills")).toBe("data");
     expect(normalizeWorkspace("/settings/integrations")).toBe("settings");
-    expect(normalizeWorkspace("/research")).toBe("strategy");
+    expect(normalizeWorkspace("/strategy")).toBe("strategy");
     expect(normalizeWorkspace("/data-operations/backfills")).toBe("data");
-    expect(normalizeWorkspace("/governance/security-master")).toBe("accounting");
+    expect(normalizeWorkspace("/accounting/security-master")).toBe("accounting");
     expect(normalizeWorkspace("/unknown")).toBe("trading");
   });
 
@@ -125,7 +125,7 @@ describe("app shell view model", () => {
       usingDevelopmentFixtures: true,
       payload: {
         ...sessionPayload,
-        dataOperations: {
+        data: {
           metrics: [],
           providers: [
             {
@@ -192,7 +192,7 @@ describe("app shell view model", () => {
       title: "Strategy To Paper",
       summary: expect.stringContaining("Strategy comparison")
     });
-    expect(state.workflowContinuity.summary).not.toContain("research comparison");
+    expect(state.workflowContinuity.summary).not.toContain("strategy comparison");
   });
 
   it("routes shell trust strip failures to diagnostics and live readiness", () => {
@@ -272,6 +272,8 @@ describe("app shell view model", () => {
     });
     expect(state.workflowContinuity).toMatchObject({
       title: "Market Data To Paper",
+      primaryOperatorFlowLabel: "Primary operator workflow",
+      primaryOperatorFlowSummary: "Import -> Validate -> Reconcile -> Investigate -> Approve -> Report",
       contextLabel: "Operating context",
       contextValue: "Data / AAPL",
       routeLabel: "/data/quotes?symbol=AAPL",
@@ -294,6 +296,14 @@ describe("app shell view model", () => {
       ["Readiness", "Waiting"],
       ["Provider setup", "Available"]
     ]);
+    expect(state.workflowContinuity.primaryOperatorFlowSteps.map((step) => [step.id, step.label, step.active, step.href])).toEqual([
+      ["import", "Import", false, "/data/providers?symbol=AAPL"],
+      ["validate", "Validate", true, "/data/backfills?symbol=AAPL"],
+      ["reconcile", "Reconcile", false, "/accounting/reconciliation?symbol=AAPL"],
+      ["investigate", "Investigate", false, "/portfolio?symbol=AAPL"],
+      ["approve", "Approve", false, "/accounting/approvals?symbol=AAPL"],
+      ["report", "Report", false, "/reporting/report-packs?symbol=AAPL"]
+    ]);
   });
 
   it("keeps a persisted operating symbol in cross-workspace workflow routes", () => {
@@ -313,7 +323,7 @@ describe("app shell view model", () => {
       clearSubjectAriaLabel: "Clear MSFT operating context",
       summary: expect.stringContaining("Subject: MSFT.")
     });
-    expect(state.workflowContinuity.title).not.toContain("Governance");
+    expect(state.workflowContinuity.title).not.toContain("accounting");
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
       ["trading-readiness", "/trading/readiness?symbol=MSFT"],
       ["trading-cockpit", "/trading?symbol=MSFT"],
@@ -435,7 +445,7 @@ describe("app shell view model", () => {
             brokerageSync: null
           }
         },
-        dataOperations: {
+        data: {
           providers: [
             {
               provider: "Alpaca",
@@ -466,7 +476,7 @@ describe("app shell view model", () => {
             summary: "Exposure is inside guardrails."
           }
         },
-        governance: {
+        accounting: {
           breakQueue: [],
           reconciliationQueue: []
         },
@@ -510,7 +520,7 @@ describe("app shell view model", () => {
       workspaceErrors: {},
       payload: {
         ...sessionPayload,
-        dataOperations: {
+        data: {
           providers: [
             {
               provider: "Alpaca",
@@ -572,7 +582,7 @@ describe("app shell view model", () => {
             summary: "Exposure is inside guardrails."
           }
         },
-        governance: {
+        accounting: {
           breakQueue: [
             {
               status: "Open"
@@ -675,12 +685,12 @@ describe("app shell view model", () => {
       },
       payload: {
         ...sessionPayload,
-        dataOperations: {
+        data: {
           providers: [{ status: "Healthy" }],
           backfills: [],
           exports: []
         },
-        research: {
+        strategy: {
           metrics: [],
           runs: [{ status: "Needs Review" }]
         },
@@ -688,7 +698,7 @@ describe("app shell view model", () => {
           positions: [{ symbol: "AAPL" }],
           risk: { state: "Healthy" }
         },
-        governance: {
+        accounting: {
           breakQueue: [{ status: "Open" }],
           reconciliationQueue: [{ openBreakCount: 2 }]
         },
@@ -701,18 +711,18 @@ describe("app shell view model", () => {
     });
 
     expect(state.workflowContinuity.title).toBe("Accounting Closeout");
-    expect(state.workflowContinuity.contextValue).toBe("Accounting / Reconciliation");
-    expect(state.workflowContinuity.nextActionLabel).toBe("Next: Ledger");
-    expect(state.workflowContinuity.summary).toContain("3 steps need operator attention.");
+    expect(state.workflowContinuity.contextValue).toBe("Accounting / Match Records");
+    expect(state.workflowContinuity.nextActionLabel).toBe("Next: Resolve Exceptions");
+    expect(state.workflowContinuity.summary).toContain("4 steps need operator attention.");
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
-      ["security-master", "2 breaks", "review"],
-      ["reconciliation", "Current / 2 breaks", "review"],
-      ["ledger", "Next / 2 breaks", "review"],
-      ["evidence", "1 packs", "ready"],
-      ["report-packs", "1 packs", "ready"]
+      ["receive-activity", "2 breaks", "review"],
+      ["match-records", "Current / 2 breaks", "review"],
+      ["resolve-exceptions", "Next / 2 breaks", "review"],
+      ["approve-results", "2 breaks", "review"],
+      ["produce-evidence", "1 packs", "ready"]
     ]);
-    expect(state.workflowContinuity.steps.find((step) => step.id === "reconciliation")?.ariaLabel)
-      .toBe("Reconciliation, current workflow step, 2 breaks");
+    expect(state.workflowContinuity.steps.find((step) => step.id === "match-records")?.ariaLabel)
+      .toBe("Match Records, current workflow step, 2 breaks");
   });
 
   it("ranks cross-workspace operator focus items for the shell continuity dock", () => {
@@ -770,7 +780,7 @@ describe("app shell view model", () => {
             brokerageSync: null
           }
         },
-        dataOperations: {
+        data: {
           providers: [
             {
               provider: "Alpaca",
@@ -791,7 +801,7 @@ describe("app shell view model", () => {
             summary: "Exposure is within guardrails."
           }
         },
-        governance: {
+        accounting: {
           breakQueue: [],
           reconciliationQueue: [],
           reporting: {

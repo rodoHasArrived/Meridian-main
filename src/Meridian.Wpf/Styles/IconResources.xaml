@@ -26,11 +26,14 @@
     <!--   Assets/Icons/*.svg                       -->
     <!-- ========================================== -->
 
-    <!-- Workspace-level icons; retained keys preserve legacy route/resource compatibility. -->
-    <sys:String x:Key="IconResearch">&#xEC35;</sys:String>       <!-- Strategy    (🔬) -->
+    <!-- Workspace-level icons. Canonical keys drive active navigation; legacy keys preserve route/resource compatibility. -->
+    <sys:String x:Key="IconStrategy">&#xEC35;</sys:String>       <!-- Strategy    (🔬) -->
     <sys:String x:Key="IconTrading">&#xE945;</sys:String>        <!-- Lightning   (⚡) -->
-    <sys:String x:Key="IconDataOps">&#xEE94;</sys:String>        <!-- Data        (🗂) -->
-    <sys:String x:Key="IconGovernance">&#xE8D7;</sys:String>     <!-- Accounting  (🛡) -->
+    <sys:String x:Key="IconData">&#xEE94;</sys:String>           <!-- Data        (🗂) -->
+    <sys:String x:Key="IconAccounting">&#xE8D7;</sys:String>     <!-- Accounting  (🛡) -->
+    <sys:String x:Key="IconResearch">&#xEC35;</sys:String>       <!-- Legacy alias for Strategy -->
+    <sys:String x:Key="IconDataOps">&#xEE94;</sys:String>        <!-- Legacy alias for Data -->
+    <sys:String x:Key="IconGovernance">&#xE8D7;</sys:String>     <!-- Legacy alias for Accounting -->
 
     <!-- Strategy workspace page icons -->
     <sys:String x:Key="IconLiveData">&#xE9D2;</sys:String>       <!-- LineChart   (📈) -->

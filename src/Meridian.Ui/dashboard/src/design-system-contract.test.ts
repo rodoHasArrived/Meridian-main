@@ -10,12 +10,12 @@ function readTailwindConfig() {
   return readFileSync(resolve(process.cwd(), "tailwind.config.ts"), "utf8");
 }
 
-function readGovernanceScreen() {
-  return readFileSync(resolve(process.cwd(), "src/screens/governance-screen.tsx"), "utf8");
+function readAccountingScreen() {
+  return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.tsx"), "utf8");
 }
 
-function readGovernanceViewModel() {
-  return readFileSync(resolve(process.cwd(), "src/screens/governance-screen.view-model.ts"), "utf8");
+function readAccountingViewModel() {
+  return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.view-model.ts"), "utf8");
 }
 
 function readReferenceWorkbenchPreview() {
@@ -154,8 +154,8 @@ describe("dashboard design-system contract", () => {
   });
 
   it("keeps Security Master schedules on shared workbench primitives with view-model copy", () => {
-    const screen = readGovernanceScreen();
-    const viewModel = readGovernanceViewModel();
+    const screen = readAccountingScreen();
+    const viewModel = readAccountingViewModel();
 
     expect(screen).toContain("function SecuritySchedulesPanel");
     expect(screen).toContain("<DenseDataTable");

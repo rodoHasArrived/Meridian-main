@@ -629,7 +629,7 @@ function buildLoadingState(pathname: string): ReportingLoadingState {
 
 function buildPackTargetsEmptyState(): ReportingPackTargetsEmptyState {
   return {
-    text: "No report-pack targets loaded. Configure governed targets in the governance policy before approving this packet.",
+    text: "No report-pack targets loaded. Configure governed targets in the accounting policy before approving this packet.",
     ariaLabel: "No report-pack targets loaded"
   };
 }

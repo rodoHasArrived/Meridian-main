@@ -19,12 +19,13 @@ import {
   type SettingsRecentEventDetail,
   type SettingsRecentEventTableRow
 } from "@/screens/settings-screen.view-model";
-import { PROVIDER_KIND_CATALOG } from "@/screens/data-operations-screen.view-model";
+import { PROVIDER_KIND_CATALOG } from "@/screens/data-screen.view-model";
 import type {
   BrokerageConnectionStatus,
-  DataOperationsWorkspaceResponse,
+  DataWorkspaceResponse,
   FeatureCapabilitySettingsResponse,
-  GovernanceWorkspaceResponse,
+  AccountingWorkspaceResponse,
+  ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
@@ -40,7 +41,7 @@ import type {
   SecurityAssetProfileFieldDefinition,
   SecurityAssetProfileGovernanceResult,
   SecurityAssetProfileLineage,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
@@ -50,12 +51,12 @@ import type {
 interface SettingsScreenProps {
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
-  research?: ResearchWorkspaceResponse | null;
+  strategy?: StrategyWorkspaceResponse | null;
   trading?: TradingWorkspaceResponse | null;
   portfolio?: PortfolioWorkspaceResponse | null;
-  dataOperations?: DataOperationsWorkspaceResponse | null;
-  governance?: GovernanceWorkspaceResponse | null;
-  reporting?: GovernanceWorkspaceResponse | null;
+  data?: DataWorkspaceResponse | null;
+  accounting?: AccountingWorkspaceResponse | null;
+  reporting?: ReportingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   providerConnections?: ProviderConnectionRow[] | null;
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
@@ -313,11 +314,11 @@ const recentEventColumns: DenseDataTableColumn<SettingsRecentEventTableRow>[] = 
 export function SettingsScreen({
   session,
   overview,
-  research = null,
+  strategy = null,
   trading = null,
   portfolio = null,
-  dataOperations = null,
-  governance = null,
+  data = null,
+  accounting = null,
   reporting = null,
   brokerageConnection = null,
   providerConnections = null,
@@ -341,11 +342,11 @@ export function SettingsScreen({
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
-    research,
+    strategy,
     trading,
     portfolio,
-    dataOperations,
-    governance,
+    data,
+    accounting,
     reporting,
     brokerageConnection,
     providerConnections,
@@ -461,7 +462,7 @@ export function SettingsScreen({
     taskId: "",
     dueDate: "",
     owner: "",
-    rationale: "Update account close calendar ownership and due-date governance.",
+    rationale: "Update account close calendar ownership and due-date accounting.",
     busy: false,
     message: null,
     details: [],
@@ -2231,7 +2232,7 @@ export function SettingsScreen({
         </CardContent>
       </Card>
 
-      <Card id="asset-profile-governance" className="panel-surface scroll-mt-6 border border-border/70">
+      <Card id="asset-profile-accounting" className="panel-surface scroll-mt-6 border border-border/70">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>

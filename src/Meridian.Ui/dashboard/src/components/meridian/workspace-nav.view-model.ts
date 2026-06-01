@@ -4,7 +4,7 @@ import {
   summarizeOperatingScopeForRoute,
   type AppShellOperatingScopeInput
 } from "@/app-shell.view-model";
-import { isWorkspacePathActive, WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
+import { canonicalizeWorkspaceSummaries, isWorkspacePathActive, WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
 export interface WorkspaceNavSubItemViewModel {
@@ -90,6 +90,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
     { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab }
   ],
   data: [
+    { label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders },
     { label: "Watchlist", route: WORKSTATION_ROUTE_CATALOG.dataWatchlist },
     { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
     { label: "Price alerts", route: WORKSTATION_ROUTE_CATALOG.dataAlerts },
@@ -107,11 +108,12 @@ export function buildWorkspaceNavViewModel(
   search = "",
   operatingContextScope: AppShellOperatingScopeInput | null = null
 ): WorkspaceNavViewModel {
+  const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
   const currentWorkspace =
-    workspaces.find((workspace) => isWorkspacePathActive(pathname, workspace.key)) ?? workspaces[0];
+    visibleWorkspaces.find((workspace) => isWorkspacePathActive(pathname, workspace.key)) ?? visibleWorkspaces[0];
   const operatingScope = buildOperatingScopeFromSearch(search, operatingContextScope);
 
-  const items = workspaces.map<WorkspaceNavItemViewModel>((workspace) => {
+  const items = visibleWorkspaces.map<WorkspaceNavItemViewModel>((workspace) => {
     const active = isWorkspacePathActive(pathname, workspace.key);
     const statusTone = workspaceStatusTone(workspace.status);
     const workspaceCanonicalRoute = workspacePath(workspace.key);

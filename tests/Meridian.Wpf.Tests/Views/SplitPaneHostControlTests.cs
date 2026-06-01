@@ -14,7 +14,7 @@ public sealed class SplitPaneHostControlTests
     {
         WpfTestThread.Run(() =>
         {
-            var sut = CreateArrangedControl(PaneLayouts.ResearchData);
+            var sut = CreateArrangedControl(PaneLayouts.StrategyData);
 
             InvokeHitTestPaneIndex(sut, new Point(100, 100)).Should().Be(0);
             InvokeHitTestPaneIndex(sut, new Point(700, 100)).Should().Be(1);
@@ -26,7 +26,7 @@ public sealed class SplitPaneHostControlTests
     {
         WpfTestThread.Run(() =>
         {
-            var sut = CreateArrangedControl(PaneLayouts.ResearchData);
+            var sut = CreateArrangedControl(PaneLayouts.StrategyData);
             sut.ActivePaneIndex = 1;
 
             InvokeHitTestPaneIndex(sut, new Point(-10, -10)).Should().Be(1);

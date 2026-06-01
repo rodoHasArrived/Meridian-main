@@ -35,7 +35,7 @@ The current repository evidence supports these AI surfaces:
 | MCP-compatible clients | `src/Meridian.Mcp/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
 | Workflow guidance | `.github/workflows/README.md`, `docs/engineering/README.md`, `make/ai.mk` | Current build, test, publish, and maintenance workflow guidance |
 | Reusable prompt templates | `.github/prompts/`, `docs/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, automation runs, and manual assistant sessions |
-| Local AI maintenance tooling | `scripts/ai/`, `tools/codex/`, `make/ai.mk` | Provider-agnostic maintenance lanes, local AI setup/cleanup helpers, and Codex-specific quality scans |
+| Local AI maintenance tooling | `scripts/ai/`, `build/scripts/ai/`, `tools/codex/`, `make/ai.mk` | Provider-agnostic maintenance lanes, local AI setup/cleanup helpers, scoped deterministic edit tooling, and Codex-specific quality scans |
 | Shared AI documentation | `docs/ai/`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | Human-readable indexes, routing rules, known-error prevention, and shared project grounding |
 
 The AI inventory checker also watches optional IDE/provider assistant entrypoints such as
@@ -93,6 +93,8 @@ For mixed, multi-system work, switch modes with `work-modes.md` before widening 
 - Use `Standard` mode for routine refactors and AI-index edits; use `Deep-review` mode only when touching cross-lane workflows or generator contracts.
 - If a single pass is expected to require more than one generated surface or more than one registry/doc-source domain, start with a short handoff packet and explicit manifest.
 - On long sessions, every additional batch must include a handoff note with current objective, inspected scope, changed files, and the next narrow proof command.
+- Every lane handoff must separate `required context` from `optional context` and record whether validation evidence was reused or rerun.
+- Treat assumptions as first-class handoff data: list open assumptions explicitly so downstream lanes do not mistake them for validated facts.
 
 ### Validation Procedure
 
@@ -136,6 +138,8 @@ When launching parallel AI work:
   - edited files
   - decisions made
   - validation run + outcome
+  - validation reuse decision + rerun triggers
+  - required context vs optional context
   - residual risks
 
 ### Token and Context Boundary Guardrails
@@ -283,7 +287,7 @@ When editing `src/**`, assistants must:
 | Provider-agnostic prompt docs | `docs/prompts/automation-prompts.md`, `docs/prompts/repo-maintenance-prompts.md`, `docs/prompts/roadmap-source-docs-implementation-prompt.md` | `docs/prompts/README.md`, `docs/ai/prompts/README.md`, automation prompts, repo-maintenance prompts, and source-doc update prompts |
 | MCP tools, prompts, and resources | `src/Meridian.Mcp/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
 | AI prompt generation and evaluation | `build/scripts/docs/generate-prompts.py`, skill `evals/` folders, `.codex/skills/*/scripts/run_evals.py` | CI-derived prompt files, local eval reports, and archived workflow notes |
-| Local AI maintenance scripts and Codex tools | `scripts/ai/*.sh`, `tools/codex/*.ps1`, `make/ai.mk` | `make ai-maintenance-*`, `make ai-audit*`, Codex desktop quality reports, and local AI setup/cleanup lanes |
+| Local AI maintenance scripts and Codex tools | `scripts/ai/*.sh`, `build/scripts/ai/*.py`, `tools/codex/*.ps1`, `make/ai.mk` | `make ai-maintenance-*`, `make ai-audit*`, Codex desktop quality reports, scoped edit planning/apply lanes, and local AI setup/cleanup lanes |
 | Assistant entrypoints and provider config | `AGENTS.md`, `CLAUDE.md`, `.codex/config.toml`, `.codex/environments/`, `.claude/settings.json`, `.claude/settings.local.json`, `.github/copilot-instructions.md` | AI inventory drift checker, root shims, provider-specific startup/config flows |
 | Optional IDE/provider assistant entrypoints | `build/scripts/docs/check-ai-inventory.py`, this contract, `docs/ai/README.md` | Cursor, Windsurf, Continue, Cline, Roo, or Gemini files only when a real repo usage path is added |
 

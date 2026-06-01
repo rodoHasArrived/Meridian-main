@@ -999,7 +999,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnTypedResearchBriefing()
+    public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnTypedStrategyBriefing()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -1028,7 +1028,7 @@ public sealed partial class WorkstationEndpointsTests
         var response = await client.GetAsync(UiApiRoutes.WorkstationStrategyBriefing);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+        var briefing = await response.Content.ReadFromJsonAsync<StrategyBriefingDto>(ServerJsonOptions);
 
         briefing.Should().NotBeNull();
         briefing!.Workspace.TotalRuns.Should().Be(2);
@@ -1081,7 +1081,7 @@ public sealed partial class WorkstationEndpointsTests
         var response = await client.GetAsync(UiApiRoutes.WorkstationStrategyBriefing);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+        var briefing = await response.Content.ReadFromJsonAsync<StrategyBriefingDto>(ServerJsonOptions);
         briefing.Should().NotBeNull();
         briefing!.InsightFeed.Widgets[0].DrillInRoute.Should()
             .Be("/api/workstation/runs/run%20latest%2Fencoded/equity-curve");
@@ -1090,7 +1090,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackResearchBriefing()
+    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackStrategyBriefing()
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
@@ -1098,7 +1098,7 @@ public sealed partial class WorkstationEndpointsTests
         var response = await client.GetAsync(UiApiRoutes.WorkstationStrategyBriefing);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+        var briefing = await response.Content.ReadFromJsonAsync<StrategyBriefingDto>(ServerJsonOptions);
 
         briefing.Should().NotBeNull();
         briefing!.Workspace.TotalRuns.Should().Be(24);

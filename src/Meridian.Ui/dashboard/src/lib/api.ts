@@ -20,7 +20,7 @@ import type {
   CorporateAction,
   DataFetchRequest,
   DataFetchResult,
-  DataOperationsWorkspaceResponse,
+  DataWorkspaceResponse,
   EquityCurveSummary,
   EvidenceCompleteness,
   EvidenceGraph,
@@ -32,7 +32,8 @@ import type {
   ExportAnalysisResult,
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
-  GovernanceWorkspaceResponse,
+  AccountingWorkspaceResponse,
+  ReportingWorkspaceResponse,
   InvestmentAccountingTransactionLabPreview,
   InvestmentAccountingTransactionLabRequest,
   InstrumentPassport,
@@ -74,9 +75,9 @@ import type {
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
-  ResearchRunRecord,
+  StrategyBriefingResponse,
   StrategyRunSummaryApiRecord,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   RunAttributionSummary,
   RunCashFlowSummary,
   RunComparisonRow,
@@ -131,6 +132,11 @@ import type {
   OperationsCloseCalendar,
   OperationsCloseCalendarItemUpsertRequest,
   OperationsCloseCalendarItemUpsertResult,
+  PlaidLinkTokenRequest,
+  PlaidLinkTokenResponse,
+  PlaidPublicTokenExchangeRequest,
+  PlaidPublicTokenExchangeResult,
+  PlaidInstitutionSearchResult,
   RolePermissionCatalog,
   RolePermissionProfileUpsertRequest,
   RolePermissionProfileUpsertResult
@@ -142,6 +148,7 @@ import {
   EXPORT_API_ENDPOINTS,
   FUND_STRUCTURE_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
+  PLAID_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
   PROVIDER_ROUTING_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
@@ -476,11 +483,15 @@ export function getSession(options: ApiRequestOptions = {}) {
 }
 
 export function getStrategyWorkspace(options: ApiRequestOptions = {}) {
-  return getJson<ResearchWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.strategy, options);
+  return getJson<StrategyWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.strategy, options);
 }
 
-export function getResearchWorkspace() {
-  return getStrategyWorkspace();
+export function getStrategyBriefing(options: ApiRequestOptions = {}) {
+  return getJson<StrategyBriefingResponse>(WORKSTATION_API_ENDPOINTS.strategyBriefing, options);
+}
+
+export function getResearchWorkspace(options: ApiRequestOptions = {}) {
+  return getStrategyWorkspace(options);
 }
 
 export function getTradingWorkspace(options: ApiRequestOptions = {}) {
@@ -710,19 +721,23 @@ export function deleteWorkflowPreset(presetId: string) {
 }
 
 export function getDataWorkspace(options: ApiRequestOptions = {}) {
-  return getJson<DataOperationsWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.data, options);
+  return getJson<DataWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.data, options);
 }
 
-export function getDataOperationsWorkspace() {
-  return getDataWorkspace();
+export function getDataOperationsWorkspace(options: ApiRequestOptions = {}) {
+  return getDataWorkspace(options);
+}
+
+export function getAccountingWorkspace(options: ApiRequestOptions = {}) {
+  return getJson<AccountingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting, options);
 }
 
 export function getGovernanceWorkspace(options: ApiRequestOptions = {}) {
-  return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting, options);
+  return getAccountingWorkspace(options);
 }
 
 export function getReportingWorkspace(options: ApiRequestOptions = {}) {
-  return getJson<GovernanceWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
+  return getJson<ReportingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
 }
 
 export function runAnalysisExport(profileId: string, options: ApiRequestOptions = {}) {
@@ -1196,6 +1211,23 @@ export function previewBackfill(request: BackfillTriggerRequest) {
 
 export function setupProvider(request: import("@/types").ProviderSetupRequest) {
   return postJson<import("@/types").ProviderSetupResult>(PROVIDER_API_ENDPOINTS.configure, request);
+}
+
+export function searchPlaidInstitutions(query: string, options: ApiRequestOptions = {}) {
+  const params = new URLSearchParams({
+    query,
+    products: "transactions,auth,identity,investments",
+    countryCodes: "US"
+  });
+  return getJson<PlaidInstitutionSearchResult>(`${PLAID_API_ENDPOINTS.institutionSearch}?${params.toString()}`, options);
+}
+
+export function createPlaidLinkToken(request: PlaidLinkTokenRequest, options: ApiRequestOptions = {}) {
+  return postJson<PlaidLinkTokenResponse>(PLAID_API_ENDPOINTS.linkToken, request, options);
+}
+
+export function exchangePlaidPublicToken(request: PlaidPublicTokenExchangeRequest, options: ApiRequestOptions = {}) {
+  return postJson<PlaidPublicTokenExchangeResult>(PLAID_API_ENDPOINTS.publicTokenExchange, request, options);
 }
 
 export function getProviderRoutingConnections(options: ApiRequestOptions = {}) {

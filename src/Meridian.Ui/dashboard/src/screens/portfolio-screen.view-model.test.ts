@@ -10,9 +10,9 @@ import {
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
-  GovernanceWorkspaceResponse,
+  AccountingWorkspaceResponse,
   PortfolioWorkspaceResponse,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   StrategyRunContinuityDto,
   TradingWorkspaceResponse
 } from "@/types";
@@ -55,7 +55,7 @@ const trading: TradingWorkspaceResponse = {
   }
 };
 
-const research: ResearchWorkspaceResponse = {
+const strategy: StrategyWorkspaceResponse = {
   metrics: [],
   runs: [
     {
@@ -75,7 +75,7 @@ const research: ResearchWorkspaceResponse = {
   ]
 };
 
-const governance: GovernanceWorkspaceResponse = {
+const accounting: AccountingWorkspaceResponse = {
   metrics: [],
   reconciliationQueue: [],
   breakQueue: [],
@@ -323,7 +323,7 @@ const portfolio: PortfolioWorkspaceResponse = {
     }
   ],
   cashFlow: {
-    ...governance.cashFlow,
+    ...accounting.cashFlow,
     netVariance: -125,
     summary: "Portfolio endpoint cash posture."
   }
@@ -331,7 +331,7 @@ const portfolio: PortfolioWorkspaceResponse = {
 
 describe("buildPortfolioScreenViewModel", () => {
   it("returns position rows from trading data", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, research, governance });
+    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
     expect(vm.hasPositions).toBe(true);
     expect(vm.positionRows).toHaveLength(1);
     expect(vm.positionRows[0].symbol).toBe("AAPL");
@@ -342,8 +342,8 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedPosition?.title).toBe("AAPL");
   });
 
-  it("returns run rows from research data", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, research, governance });
+  it("returns run rows from strategy data", () => {
+    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
     expect(vm.hasRuns).toBe(true);
     expect(vm.runRows).toHaveLength(1);
     expect(vm.runRows[0].strategyName).toBe("Mean Reversion");
@@ -361,10 +361,10 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("surfaces selected-run portfolio and ledger continuity blockers", () => {
-    const balancedGovernance: GovernanceWorkspaceResponse = {
-      ...governance,
+    const balancedGovernance: AccountingWorkspaceResponse = {
+      ...accounting,
       cashFlow: {
-        ...governance.cashFlow,
+        ...accounting.cashFlow,
         netVariance: 0,
         tone: "success",
         summary: "Cash flow is balanced."
@@ -372,8 +372,8 @@ describe("buildPortfolioScreenViewModel", () => {
     };
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research,
-      governance: balancedGovernance,
+      strategy,
+      accounting: balancedGovernance,
       selectedRunContinuity
     });
 
@@ -406,10 +406,10 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("builds portfolio run comparison summary across strategy runs", () => {
-    const multiRunResearch: ResearchWorkspaceResponse = {
-      ...research,
+    const multiRunResearch: StrategyWorkspaceResponse = {
+      ...strategy,
       runs: [
-        research.runs[0],
+        strategy.runs[0],
         {
           id: "run-2",
           strategyName: "Volatility Carry",
@@ -443,8 +443,8 @@ describe("buildPortfolioScreenViewModel", () => {
 
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research: multiRunResearch,
-      governance,
+      strategy: multiRunResearch,
+      accounting,
       selectedRunId: "run-3"
     });
 
@@ -476,7 +476,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("summarizes selected-run drill-in evidence across attribution drawdown cash-flow and trades", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, research, governance });
+    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
     const summary = buildPortfolioRunDrillInSummary(vm.runRows[0], {
       runId: "run-1",
       attribution: {
@@ -593,23 +593,23 @@ describe("buildPortfolioScreenViewModel", () => {
     ]);
   });
 
-  it("surfaces cash-flow summary from governance data", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, research, governance });
+  it("surfaces cash-flow summary from accounting data", () => {
+    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
     expect(vm.cashFlowSummary).toBe("1 run needs variance review.");
     expect(vm.cashFlowTone).toBe("warning");
     expect(vm.cashVarianceLabel).toBe("$500");
   });
 
   it("returns empty state text when trading data is null", () => {
-    const vm = buildPortfolioScreenViewModel({ trading: null, research, governance });
+    const vm = buildPortfolioScreenViewModel({ trading: null, strategy, accounting });
     expect(vm.hasPositions).toBe(false);
     expect(vm.positionEmptyText).toContain("unavailable");
     expect(vm.metricsFromTrading).toBe(false);
     expect(vm.selectedPosition).toBeNull();
   });
 
-  it("returns empty run text when research data is null", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, research: null, governance });
+  it("returns empty run text when strategy data is null", () => {
+    const vm = buildPortfolioScreenViewModel({ trading, strategy: null, accounting });
     expect(vm.hasRuns).toBe(false);
     expect(vm.runEmptyText).toContain("unavailable");
     expect(vm.selectedRun).toBeNull();
@@ -620,13 +620,13 @@ describe("buildPortfolioScreenViewModel", () => {
       ...trading,
       positions: [{ ...trading.positions[0], unrealizedPnl: "-$200" }]
     };
-    const vm = buildPortfolioScreenViewModel({ trading: tradingWithLoss, research, governance });
+    const vm = buildPortfolioScreenViewModel({ trading: tradingWithLoss, strategy, accounting });
     expect(vm.positionRows[0].pnlTone).toBe("danger");
     expect(vm.selectedPosition?.fields.find((field) => field.label === "Unrealized P&L")?.tone).toBe("danger");
   });
 
   it("provides fallback stats when trading is available", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, research, governance });
+    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
     expect(vm.fallbackStats).toHaveLength(4);
     expect(vm.fallbackStats.find((s) => s.id === "portfolio-open-positions")).toMatchObject({
       label: "Open positions",
@@ -687,7 +687,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("derives named header chips without relying on fallback stat positions", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, research, governance });
+    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
 
     expect(vm.headerChips).toEqual([
       { label: "Alpaca paper equity", value: "—" },
@@ -700,7 +700,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("adds a Portfolio readiness handoff on the broad portfolio route", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, research, governance, pathname: "/portfolio" });
+    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting, pathname: "/portfolio" });
 
     expect(vm.workflowTaskPanel).toMatchObject({
       regionLabel: "Portfolio readiness handoff",
@@ -750,8 +750,8 @@ describe("buildPortfolioScreenViewModel", () => {
   it("builds a dedicated brokerage-sync task panel from trading posture", () => {
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research,
-      governance,
+      strategy,
+      accounting,
       pathname: "/portfolio/brokerage-sync"
     });
 
@@ -802,8 +802,8 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({
       portfolio,
       trading,
-      research,
-      governance,
+      strategy,
+      accounting,
       pathname: "/portfolio/brokerage-sync"
     });
 
@@ -824,8 +824,8 @@ describe("buildPortfolioScreenViewModel", () => {
   it("marks the brokerage-sync panel as blocked when portfolio posture is unavailable", () => {
     const vm = buildPortfolioScreenViewModel({
       trading: null,
-      research,
-      governance,
+      strategy,
+      accounting,
       pathname: "/portfolio/brokerage-sync"
     });
 
@@ -844,7 +844,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("uses stable placeholder header chips when trading data is unavailable", () => {
-    const vm = buildPortfolioScreenViewModel({ trading: null, research, governance });
+    const vm = buildPortfolioScreenViewModel({ trading: null, strategy, accounting });
 
     expect(vm.headerChips).toEqual([
       { label: "Alpaca paper equity", value: "—" },
@@ -876,8 +876,8 @@ describe("buildPortfolioScreenViewModel", () => {
 
     const vm = buildPortfolioScreenViewModel({
       trading: tradingWithTwoPositions,
-      research,
-      governance,
+      strategy,
+      accounting,
       selectedPositionId: "msft-short-1"
     });
 
@@ -895,10 +895,10 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("keeps selected run evidence state in the view model", () => {
-    const researchWithTwoRuns: ResearchWorkspaceResponse = {
-      ...research,
+    const researchWithTwoRuns: StrategyWorkspaceResponse = {
+      ...strategy,
       runs: [
-        research.runs[0],
+        strategy.runs[0],
         {
           id: "run-2",
           strategyName: "Volatility Carry",
@@ -918,8 +918,8 @@ describe("buildPortfolioScreenViewModel", () => {
 
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research: researchWithTwoRuns,
-      governance,
+      strategy: researchWithTwoRuns,
+      accounting,
       selectedRunId: "run-2"
     });
 
@@ -943,7 +943,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("owns portfolio detail empty-state labels", () => {
-    const vm = buildPortfolioScreenViewModel({ trading: null, research: null, governance });
+    const vm = buildPortfolioScreenViewModel({ trading: null, strategy: null, accounting });
 
     expect(vm.selectedPositionChip).toEqual({ label: "Selected detail", value: "None" });
     expect(vm.runEvidenceChip).toEqual({ label: "Run evidence", value: "No linked runs" });
@@ -955,8 +955,8 @@ describe("buildPortfolioScreenViewModel", () => {
   it("derives provider-aware account selector and filtered brokerage positions", () => {
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research,
-      governance,
+      strategy,
+      accounting,
       brokerageConnection,
       brokeragePortfolio,
       selectedBrokerageAccountKey: "fund-roth"
@@ -1006,8 +1006,8 @@ describe("buildPortfolioScreenViewModel", () => {
   it("keeps all-account brokerage detail as aggregate view state", () => {
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research,
-      governance,
+      strategy,
+      accounting,
       brokerageConnection,
       brokeragePortfolio
     });
@@ -1035,8 +1035,8 @@ describe("buildPortfolioScreenViewModel", () => {
     const selectBrokeragePosition = vi.fn();
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research,
-      governance,
+      strategy,
+      accounting,
       brokerageConnection,
       brokeragePortfolio,
       selectedBrokeragePositionId: "fund-taxable-MSFT-pos-msft",
@@ -1060,8 +1060,8 @@ describe("buildPortfolioScreenViewModel", () => {
   it("routes missing brokerage portfolio state to Settings provider setup", () => {
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research,
-      governance
+      strategy,
+      accounting
     });
 
     expect(vm.brokerageConnectionLabel).toBe("Not configured");
@@ -1086,8 +1086,8 @@ describe("buildPortfolioScreenViewModel", () => {
 
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research,
-      governance,
+      strategy,
+      accounting,
       brokerageConnection,
       brokeragePortfolio: warningPortfolio
     });
@@ -1129,8 +1129,8 @@ describe("buildPortfolioScreenViewModel", () => {
     const selectBrokerageAccount = vi.fn();
     const vm = buildPortfolioScreenViewModel({
       trading,
-      research,
-      governance,
+      strategy,
+      accounting,
       brokerageConnection,
       brokeragePortfolio,
       selectedBrokerageAccountKey: "fund-roth",

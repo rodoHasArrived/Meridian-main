@@ -7,8 +7,9 @@ public sealed class PaneLayoutTests
     [Fact]
     public void TwoPaneWorkbenchLayout_UsesCanonicalStrategyLabel()
     {
-        PaneLayouts.ResearchData.Kind.Should().Be(PaneLayoutKind.ResearchData);
-        PaneLayouts.ResearchData.Label.Should().Be("Strategy + Data");
-        PaneLayouts.ResearchData.Label.Should().NotContain("Research");
+        PaneLayouts.StrategyData.Kind.Should().Be(PaneLayoutKind.StrategyData);
+        PaneLayouts.StrategyData.Label.Should().Be("Strategy + Data");
+        PaneLayouts.StrategyData.Label.Should().NotContain("Research");
+        PaneLayouts.ResearchData.Should().BeSameAs(PaneLayouts.StrategyData);
     }
 }

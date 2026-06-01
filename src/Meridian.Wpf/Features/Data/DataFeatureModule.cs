@@ -73,7 +73,7 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
                 ],
                 PresetPanes: new Dictionary<string, IReadOnlyList<WorkspacePaneDefinition>>(StringComparer.OrdinalIgnoreCase),
                 ContextlessPanes: Array.Empty<WorkspacePaneDefinition>(),
-                StateProviderType: typeof(DataOperationsWorkspaceShellStateProvider),
+                StateProviderType: typeof(DataWorkspaceShellStateProvider),
                 ViewModelType: typeof(DataWorkspaceShellViewModel)),
             Pages);
 }

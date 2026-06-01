@@ -441,7 +441,7 @@ public sealed class ReportPackEvidenceContributor : IEvidenceContributor
             "report-pack",
             MapReportPackStatus(snapshot),
             $"{snapshot.DisplayName} is {FormatStatus(snapshot.Status)} with {snapshot.Artifacts.Count} artifact reference(s), {snapshot.ValidationIssues.Count} validation issue(s), and {snapshot.Warnings.Count} warning(s).",
-            "GovernanceReportPackRepository",
+            "report-pack-repository",
             snapshot.GeneratedAt,
             artifacts: snapshot.Artifacts.Select(artifact => Artifact(
                 $"{nodeId}:{artifact.ArtifactKind}:{artifact.RelativePath}",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildOperationsContinuityScreenViewModel } from "@/screens/operations-continuity-screen.view-model";
-import { buildReconciliationBreakQueueState } from "@/screens/governance-screen.view-model";
+import { buildReconciliationBreakQueueState } from "@/screens/accounting-screen.view-model";
 import { useReportingScreenViewModel } from "@/screens/reporting-screen.view-model";
 import { renderHook } from "@testing-library/react";
 import type {

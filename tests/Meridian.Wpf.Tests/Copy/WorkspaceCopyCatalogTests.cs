@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Text.RegularExpressions;
 using Meridian.Wpf.Copy;
 
@@ -44,5 +45,23 @@ public sealed class WorkspaceCopyCatalogTests
             .ToArray();
 
         overlong.Should().BeEmpty($"workspace subtitles must be <= {maxSubtitleLength} characters");
+    }
+
+    [Fact]
+    public void LegacyWorkspaceCopyClasses_ShouldBeHiddenCompatibilityAliases()
+    {
+        typeof(WorkspaceCopyCatalog.Research).ShouldBeHiddenCompatibilityAlias();
+        typeof(WorkspaceCopyCatalog.DataOperations).ShouldBeHiddenCompatibilityAlias();
+        typeof(WorkspaceCopyCatalog.Governance).ShouldBeHiddenCompatibilityAlias();
+    }
+}
+
+file static class WorkspaceCopyCatalogTestExtensions
+{
+    public static void ShouldBeHiddenCompatibilityAlias(this Type type)
+    {
+        type.GetCustomAttributes(typeof(EditorBrowsableAttribute), inherit: false)
+            .Should()
+            .ContainSingle(attribute => ((EditorBrowsableAttribute)attribute).State == EditorBrowsableState.Never);
     }
 }

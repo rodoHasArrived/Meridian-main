@@ -374,6 +374,7 @@ public sealed class ShellNavigationCatalogTests
         ShellNavigationCatalog.GetPage("ResearchShell").Should().BeSameAs(ShellNavigationCatalog.GetPage("StrategyShell"));
         ShellNavigationCatalog.GetPage("DataOperationsShell").Should().BeSameAs(ShellNavigationCatalog.GetPage("DataShell"));
         ShellNavigationCatalog.GetPage("GovernanceShell").Should().BeSameAs(ShellNavigationCatalog.GetPage("AccountingShell"));
+        ShellNavigationCatalog.GetPage("AccountingApprovals").Should().BeSameAs(ShellNavigationCatalog.GetPage("FundAuditTrail"));
 
         ShellNavigationCatalog.GetPage("Workspaces")!.SectionLabel.Should().Be("Workspace layouts");
         ShellNavigationCatalog.GetPage("Dashboard")!.Title.Should().Be("Reporting dashboard");

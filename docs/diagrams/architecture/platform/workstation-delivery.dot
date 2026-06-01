@@ -2,7 +2,7 @@
 // Meridian current project state
 // Last Updated: 2026-05-28
 //
-// This diagram shows how the WPF workstation and the retained desktop-local API
+// This diagram shows how the WPF workstation and the desktop-local API
 // seams converge on shared run, portfolio, ledger, cash-flow, reconciliation,
 // and security-review services.
 

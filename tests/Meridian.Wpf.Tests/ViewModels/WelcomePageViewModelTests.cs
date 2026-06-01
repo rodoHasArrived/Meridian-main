@@ -45,6 +45,15 @@ public sealed class WelcomePageViewModelTests : IDisposable
         });
     }
 
+    [Fact]
+    public void WelcomePageSource_ShouldUseCanonicalDataIconResource()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\WelcomePage.xaml"));
+
+        xaml.Should().Contain("{StaticResource IconData}");
+        xaml.Should().NotContain("{StaticResource IconDataOps}");
+    }
+
     [Theory]
     [InlineData("TradingShell")]
     [InlineData("PortfolioShell")]
@@ -66,13 +75,13 @@ public sealed class WelcomePageViewModelTests : IDisposable
     }
 
     [Fact]
-    public void NavigateToDataOperationsWorkspaceCommand_NavigatesToDataShell()
+    public void NavigateToDataWorkspaceCommand_NavigatesToDataShell()
     {
         WpfTestThread.Run(() =>
         {
             var viewModel = CreateViewModel();
 
-            viewModel.NavigateToDataOperationsWorkspaceCommand.Execute(null);
+            viewModel.NavigateToDataWorkspaceCommand.Execute(null);
 
             NavigationService.Instance.GetCurrentPageTag().Should().Be("DataShell");
         });

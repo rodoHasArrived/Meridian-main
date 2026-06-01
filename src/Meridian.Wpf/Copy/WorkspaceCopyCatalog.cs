@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace Meridian.Wpf.Copy;
 
 public sealed record WorkspaceDescriptorCopy(
@@ -126,6 +128,7 @@ public static class WorkspaceCopyCatalog
         public const string ShellSubtitle = "Workstation configuration, diagnostics, support, and operator setup.";
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class Research
     {
         public const string WorkspaceId = Strategy.WorkspaceId;
@@ -135,6 +138,7 @@ public static class WorkspaceCopyCatalog
         public const string PrimaryScopeLabel = Strategy.PrimaryScopeLabel;
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class DataOperations
     {
         public const string WorkspaceId = Data.WorkspaceId;
@@ -146,6 +150,7 @@ public static class WorkspaceCopyCatalog
         public const string DefaultScopeSummary = Data.DefaultScopeSummary;
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class Governance
     {
         public const string WorkspaceId = Accounting.WorkspaceId;

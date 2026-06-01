@@ -44,6 +44,7 @@ public sealed class WorkspaceShellPrimitiveControlsTests
             var control = new WorkspaceEvidenceStripControl
             {
                 StripAutomationId = "WorkspaceEvidenceStripTest",
+                PrimaryOperatorWorkflowStripAutomationId = "PrimaryOperatorWorkflowStripTest",
                 WorkflowSummaryStripAutomationId = "WorkflowSummaryStripTest",
                 PrimaryActionButtonAutomationId = "PrimaryWorkflowActionTest",
                 SecondaryToggleButtonAutomationId = "SecondaryWorkflowToggleTest"
@@ -52,6 +53,7 @@ public sealed class WorkspaceShellPrimitiveControlsTests
             Render(control, 1200, 360);
 
             AutomationProperties.GetAutomationId(control).Should().Be("WorkspaceEvidenceStripTest");
+            AutomationProperties.GetAutomationId(Get<Border>(control, "PrimaryOperatorWorkflowStrip")).Should().Be("PrimaryOperatorWorkflowStripTest");
             AutomationProperties.GetAutomationId(Get<Border>(control, "WorkflowSummaryStrip")).Should().Be("WorkflowSummaryStripTest");
             AutomationProperties.GetAutomationId(Get<Button>(control, "PrimaryWorkflowActionButton")).Should().Be("PrimaryWorkflowActionTest");
             AutomationProperties.GetAutomationId(Get<Button>(control, "SecondaryWorkflowToggleButton")).Should().Be("SecondaryWorkflowToggleTest");

@@ -1275,6 +1275,21 @@
     min-width: 0;
   }
 
+  .workflow-continuity-operator-flow {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(12rem, 0.45fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.5rem;
+    min-width: 0;
+    border-top: 1px solid rgba(31, 52, 76, 0.72);
+    padding-top: 0.625rem;
+  }
+
+  .workflow-continuity-operator-flow .workflow-continuity-steps {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
   .workflow-continuity-step {
     position: relative;
     min-width: 0;
@@ -2346,7 +2361,8 @@
   }
 
   .workflow-continuity-decision,
-  .workflow-continuity-steps {
+  .workflow-continuity-steps,
+  .workflow-continuity-operator-flow {
     grid-column: auto;
   }
 
@@ -2360,6 +2376,14 @@
   }
 
   .workflow-continuity-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workflow-continuity-operator-flow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workflow-continuity-operator-flow .workflow-continuity-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

@@ -140,7 +140,7 @@ public sealed class SystemHealthViewModelTests
 
         pending.Title.Should().Be("Event scan pending");
         pending.Detail.Should().Contain("Refresh health data");
-        emptySnapshot.Title.Should().Be("No recent events retained");
+        emptySnapshot.Title.Should().Be("No recent desktop events");
         emptySnapshot.Detail.Should().Contain("Continue monitoring");
     }
 

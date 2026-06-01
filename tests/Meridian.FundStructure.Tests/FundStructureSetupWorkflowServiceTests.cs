@@ -2,6 +2,7 @@ using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Ui.Shared.Services;
+using Xunit;
 
 namespace Meridian.FundStructure.Tests;
 

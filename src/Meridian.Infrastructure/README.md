@@ -47,6 +47,10 @@ Read-only normalized brokerage adapters can also pass through provider corporate
 events in activity snapshots, allowing downstream reconciliation to retain split, dividend,
 amortization, paydown, and factor evidence without storing provider credentials or rebuilding
 vendor-specific payloads in the workstation layer.
+The Plaid adapter family owns only vendor transport and file-backed connection persistence:
+link-token, public-token exchange, balances, transaction sync, investments, identity, webhooks,
+and sandbox-transfer calls are mapped into contract DTOs before shared workstation services attach
+them to fund-account, treasury, reconciliation, or evidence workflows.
 
 Streaming failover state is updated from explicit success, failure, and latency signals in addition
 to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider

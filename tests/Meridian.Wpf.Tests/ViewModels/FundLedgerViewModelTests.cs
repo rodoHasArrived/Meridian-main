@@ -195,13 +195,13 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReconciliationBlockerReasonText.Should().Contain("Broker statement market value");
                 viewModel.ReconciliationBlockerReasonText.Should().Contain("Ledger impact:");
                 viewModel.ReconciliationEvidenceLinksText.Should().Contain("statement-hash:price-gap");
-                viewModel.ReconciliationSection.GovernanceSignifierState.Kind.Should().Be(WorkstationStateKind.Blocked);
-                viewModel.ReconciliationSection.GovernanceSignifierState.ActionPosture!.Label.Should().Be("Start Review");
-                viewModel.ReconciliationSection.GovernanceSignifierState.SignoffRequirement!.Role.Should().Be("Fund operations lead");
-                viewModel.ReconciliationSection.GovernanceSignifierState.VisibleEvidenceLinks
+                viewModel.ReconciliationSection.AccountingSignifierState.Kind.Should().Be(WorkstationStateKind.Blocked);
+                viewModel.ReconciliationSection.AccountingSignifierState.ActionPosture!.Label.Should().Be("Start Review");
+                viewModel.ReconciliationSection.AccountingSignifierState.SignoffRequirement!.Role.Should().Be("Fund operations lead");
+                viewModel.ReconciliationSection.AccountingSignifierState.VisibleEvidenceLinks
                     .Should()
                     .Contain(link => link.Target.Contains("/api/workstation/reconciliation/break-queue/", StringComparison.Ordinal));
-                viewModel.ReconciliationSection.GovernanceSignifierState.VisibleEvidenceLinks
+                viewModel.ReconciliationSection.AccountingSignifierState.VisibleEvidenceLinks
                     .Should()
                     .Contain(link => link.Label == "Explain the Break evidence" && link.Target.Contains("statement-hash:price-gap", StringComparison.Ordinal));
                 viewModel.SupportsSelectedBreakActions.Should().BeTrue();
@@ -625,8 +625,10 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().Contain("ReconciliationRefreshQueueButton");
         xaml.Should().Contain("ReconciliationDetailLifecycleText");
         xaml.Should().Contain("ReconciliationDetailSignoffText");
-        xaml.Should().Contain("FundReconciliationGovernanceSignifier");
-        xaml.Should().Contain("ReconciliationSection.GovernanceSignifierState");
+        xaml.Should().Contain("FundReconciliationAccountingSignifier");
+        xaml.Should().Contain("ReconciliationSection.AccountingSignifierState");
+        xaml.Should().NotContain("FundReconciliationGovernanceSignifier");
+        xaml.Should().NotContain("ReconciliationSection.GovernanceSignifierState");
         xaml.Should().Contain("FundReportPackReadinessSignifier");
         xaml.Should().Contain("ReportPackReadinessState");
     }
@@ -636,7 +638,8 @@ public sealed class FundLedgerViewModelTests
     {
         var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.cs"));
 
-        source.Should().Contain("OpenGovernanceCommand = new RelayCommand(() => _navigationService.NavigateTo(\"AccountingShell\"))");
+        source.Should().Contain("OpenAccountingCommand = new RelayCommand(() => _navigationService.NavigateTo(\"AccountingShell\"))");
+        source.Should().Contain("OpenGovernanceCommand => OpenAccountingCommand");
         source.Should().NotContain("_navigationService.NavigateTo(\"GovernanceShell\")");
     }
 

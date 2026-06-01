@@ -307,9 +307,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.CashFinancingReadService>();
         services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
         services.AddSingleton<WpfServices.IWorkstationSecurityMasterApiClient, WpfServices.WorkstationSecurityMasterApiClient>();
-        services.AddSingleton<WpfServices.IWorkstationResearchBriefingApiClient, WpfServices.WorkstationResearchBriefingApiClient>();
+        services.AddSingleton<WpfServices.IWorkstationStrategyBriefingApiClient, WpfServices.WorkstationStrategyBriefingApiClient>();
         services.AddSingleton<WpfServices.IWorkstationOperatorInboxApiClient, WpfServices.WorkstationOperatorInboxApiClient>();
-        services.AddSingleton<WpfServices.IResearchBriefingWorkspaceService, WpfServices.ResearchBriefingWorkspaceService>();
+        services.AddSingleton<WpfServices.IStrategyBriefingWorkspaceService, WpfServices.StrategyBriefingWorkspaceService>();
         services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
         services.AddSingleton<WpfServices.IStatementReconciliationWorkbenchService, WpfServices.StatementReconciliationWorkbenchService>();
 
@@ -338,7 +338,6 @@ public partial class App : System.Windows.Application
 
         // ── Additional pages not yet catalog-backed ─────────────────────────
         services.AddTransient<FundProfileSelectionPage>();
-        services.AddTransient<FundStructureSetupPage>();
         services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();

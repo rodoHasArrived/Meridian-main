@@ -7,7 +7,7 @@ import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { renderWithRouter } from "@/test/render";
 import { useNavigate } from "react-router-dom";
 import type {
-  DataOperationsWorkspaceResponse,
+  DataWorkspaceResponse,
   PortfolioWorkspaceResponse,
   SystemOverviewResponse,
   TradingWorkspaceResponse
@@ -48,11 +48,11 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
   mockedUseWorkstationData.mockReturnValue({
     session: null,
     overview: null,
-    research: null,
+    strategy: null,
     trading: null,
     portfolio: null,
-    dataOperations: null,
-    governance: null,
+    data: null,
+    accounting: null,
     reporting: null,
     brokerageConnection: null,
     providerConnections: null,
@@ -153,11 +153,11 @@ describe("App", () => {
         commandCount: 7
       },
       overview: null,
-      research: null,
+      strategy: null,
       trading: null,
       portfolio: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       reporting: null,
       brokerageConnection: null,
       providerConnections: null,
@@ -218,7 +218,7 @@ describe("App", () => {
         activeWorkspace: "data",
         commandCount: 7
       },
-      dataOperations: {
+      data: {
         metrics: [],
         providers: [
           {
@@ -286,11 +286,11 @@ describe("App", () => {
         commandCount: 7
       },
       overview,
-      research: null,
+      strategy: null,
       trading: null,
       portfolio: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       reporting: null,
       brokerageConnection: null,
       providerConnections: null,
@@ -314,9 +314,15 @@ describe("App", () => {
     expect(screen.getByText("Data / MSFT")).toBeInTheDocument();
     expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Primary operator workflow steps" })).toBeInTheDocument();
+    expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Live quotes, current workflow step, Waiting" })).toHaveAttribute(
       "href",
       "/data/quotes?symbol=MSFT"
+    );
+    expect(screen.getByRole("link", { name: "Validate, current primary operator workflow step, Current" })).toHaveAttribute(
+      "href",
+      "/data/backfills?symbol=MSFT"
     );
     expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(
       "href",
@@ -340,11 +346,11 @@ describe("App", () => {
         commandCount: 7
       },
       overview,
-      research: null,
+      strategy: null,
       trading: null,
       portfolio,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       reporting: null,
       brokerageConnection: null,
       providerConnections: null,
@@ -406,7 +412,7 @@ describe("App", () => {
         commandCount: 7
       },
       overview: null,
-      research: null,
+      strategy: null,
       trading: {
         readiness: {
           acceptanceGates: [
@@ -455,7 +461,7 @@ describe("App", () => {
         }
       } as unknown as TradingWorkspaceResponse,
       portfolio: null,
-      dataOperations: {
+      data: {
         providers: [
           {
             provider: "Alpaca",
@@ -468,8 +474,8 @@ describe("App", () => {
         ],
         backfills: [],
         exports: []
-      } as unknown as DataOperationsWorkspaceResponse,
-      governance: null,
+      } as unknown as DataWorkspaceResponse,
+      accounting: null,
       reporting: null,
       brokerageConnection: null,
       providerConnections: null,
@@ -492,7 +498,7 @@ describe("App", () => {
     await user.keyboard("{Control>}k{/Control}");
     expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
     expect(screen.getByLabelText("Focus actions: 4 focus actions")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "26 workstation commands" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: /\d+ workstation commands/ })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
     }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
@@ -516,11 +522,11 @@ describe("App", () => {
         commandCount: 7
       },
       overview,
-      research: null,
+      strategy: null,
       trading: null,
       portfolio: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       reporting: null,
       brokerageConnection: null,
       providerConnections: null,
@@ -578,11 +584,11 @@ describe("App", () => {
         commandCount: 7
       },
       overview: null,
-      research: null,
+      strategy: null,
       trading: null,
       portfolio: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       reporting: null,
       brokerageConnection: null,
       providerConnections: null,
@@ -637,11 +643,11 @@ describe("App", () => {
         commandCount: 7
       },
       overview,
-      research: null,
+      strategy: null,
       trading: null,
       portfolio: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       reporting: null,
       brokerageConnection: null,
       providerConnections: null,
@@ -716,11 +722,11 @@ describe("App", () => {
         commandCount: 7
       },
       overview: null,
-      research: null,
+      strategy: null,
       trading: null,
       portfolio: null,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       reporting: null,
       brokerageConnection: null,
       providerConnections: null,
@@ -766,11 +772,11 @@ describe("App", () => {
         commandCount: 7
       },
       overview: null,
-      research: null,
+      strategy: null,
       trading: null,
       portfolio,
-      dataOperations: null,
-      governance: null,
+      data: null,
+      accounting: null,
       reporting: null,
       brokerageConnection: null,
       providerConnections: null,

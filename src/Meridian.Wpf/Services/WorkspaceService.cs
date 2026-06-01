@@ -701,10 +701,10 @@ public sealed class WorkspaceService
     private static WorkspaceCategory GetWorkspaceCategory(string workspaceId)
         => workspaceId switch
         {
-            "strategy" => WorkspaceCategory.Research,
+            "strategy" => WorkspaceCategory.Strategy,
             "trading" => WorkspaceCategory.Trading,
-            "data" => WorkspaceCategory.DataOperations,
-            "portfolio" or "accounting" or "reporting" or "settings" => WorkspaceCategory.Governance,
+            "data" => WorkspaceCategory.Data,
+            "portfolio" or "accounting" or "reporting" or "settings" => WorkspaceCategory.Accounting,
             _ => WorkspaceCategory.Custom
         };
 

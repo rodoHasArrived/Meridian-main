@@ -14,7 +14,7 @@ namespace Meridian.Wpf.Features.Data.Shell;
 
 public interface IDataWorkspaceShellSnapshotService
 {
-    Task<DataOperationsWorkspaceData> LoadAsync(CancellationToken cancellationToken = default);
+    Task<DataWorkspaceData> LoadAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed class DataWorkspaceShellSnapshotService : IDataWorkspaceShellSnapshotService, IWorkspaceScopedService
@@ -57,7 +57,7 @@ public sealed class DataWorkspaceShellSnapshotService : IDataWorkspaceShellSnaps
         _operatingContextService = operatingContextService;
     }
 
-    public async Task<DataOperationsWorkspaceData> LoadAsync(CancellationToken cancellationToken = default)
+    public async Task<DataWorkspaceData> LoadAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -100,7 +100,7 @@ public sealed class DataWorkspaceShellSnapshotService : IDataWorkspaceShellSnaps
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        return new DataOperationsWorkspaceData
+        return new DataWorkspaceData
         {
             EnvironmentMode = _fixtureModeDetector.ModeKind,
             ScopeLabel = scopeLabel,

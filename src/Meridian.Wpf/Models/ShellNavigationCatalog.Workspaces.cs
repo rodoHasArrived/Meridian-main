@@ -155,8 +155,8 @@ public static partial class ShellNavigationCatalog
                 Pane("FundTrialBalance", PaneDropAction.SplitRight),
                 Pane("FundAuditTrail", PaneDropAction.SplitBelow)
             ],
-            StateProviderType: typeof(GovernanceWorkspaceShellStateProvider),
-            ViewModelType: typeof(GovernanceWorkspaceShellViewModel));
+            StateProviderType: typeof(AccountingWorkspaceShellStateProvider),
+            ViewModelType: typeof(AccountingWorkspaceShellViewModel));
 
     private static readonly WorkspaceShellDefinition ReportingWorkspaceShellDefinition =
         new(
@@ -199,8 +199,8 @@ public static partial class ShellNavigationCatalog
                 ]
             },
             ContextlessPanes: Array.Empty<WorkspacePaneDefinition>(),
-            StateProviderType: typeof(ResearchWorkspaceShellStateProvider),
-            ViewModelType: typeof(ResearchWorkspaceShellViewModel));
+            StateProviderType: typeof(StrategyWorkspaceShellStateProvider),
+            ViewModelType: typeof(StrategyWorkspaceShellViewModel));
 
     private static readonly WorkspaceShellDefinition DataWorkspaceShellDefinition =
         new(
@@ -216,7 +216,7 @@ public static partial class ShellNavigationCatalog
             ],
             PresetPanes: new Dictionary<string, IReadOnlyList<WorkspacePaneDefinition>>(StringComparer.OrdinalIgnoreCase),
             ContextlessPanes: Array.Empty<WorkspacePaneDefinition>(),
-            StateProviderType: typeof(DataOperationsWorkspaceShellStateProvider),
+            StateProviderType: typeof(DataWorkspaceShellStateProvider),
             ViewModelType: typeof(DataWorkspaceShellViewModel));
 
     private static readonly WorkspaceShellDefinition SettingsWorkspaceShellDefinition =

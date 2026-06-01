@@ -96,7 +96,7 @@ public sealed class TradingWorkspaceSummary
 /// <summary>
 /// Display item for a recent strategy run shown in the Strategy workspace shell.
 /// </summary>
-public sealed class ResearchRunSummaryItem
+public sealed class StrategyRunSummaryItem
 {
     public string RunId { get; set; } = string.Empty;
     public string StrategyName { get; set; } = string.Empty;
@@ -110,7 +110,7 @@ public sealed class ResearchRunSummaryItem
 /// <summary>
 /// Display item for a strategy run that is a candidate for paper or live promotion.
 /// </summary>
-public sealed class ResearchPromotionCandidateItem
+public sealed class StrategyPromotionCandidateItem
 {
     public string RunId { get; set; } = string.Empty;
     public string StrategyName { get; set; } = string.Empty;
@@ -121,11 +121,11 @@ public sealed class ResearchPromotionCandidateItem
 /// <summary>
 /// Aggregated summary for the Strategy workspace landing page.
 /// </summary>
-public sealed class ResearchWorkspaceSummary
+public sealed class StrategyWorkspaceSummary
 {
     public int TotalRuns { get; set; }
     public int PromotedCount { get; set; }
     public int PendingReviewCount { get; set; }
-    public IReadOnlyList<ResearchRunSummaryItem> RecentRuns { get; set; } = [];
-    public IReadOnlyList<ResearchPromotionCandidateItem> PromotionCandidates { get; set; } = [];
+    public IReadOnlyList<StrategyRunSummaryItem> RecentRuns { get; set; } = [];
+    public IReadOnlyList<StrategyPromotionCandidateItem> PromotionCandidates { get; set; } = [];
 }

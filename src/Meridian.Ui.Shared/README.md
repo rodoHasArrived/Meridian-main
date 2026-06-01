@@ -32,6 +32,10 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 `FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
 Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links.
 
+Auth endpoints expose role-profile administration and scoped access assignment administration from
+the shared workstation host. `EndpointAuthorization` keeps the existing global role checks for
+compatibility and adds scoped authorization helpers so governance-core routes can require a
+permission on a specific organization, fund, portfolio, legal entity, or account.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. `FamilyOfficeReadService` composes the family-office
@@ -44,6 +48,11 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+Plaid endpoints are registered as their own shared endpoint group from `UiApiRoutes`, with read
+and mutation access resolved from the workstation session. The shared Plaid workstation service
+keeps link-token creation, public-token exchange, item sync, webhook retention, and sandbox
+transfer gating server-owned so browser and WPF clients do not handle Plaid access tokens or
+duplicate bank evidence ingestion rules.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
@@ -146,7 +155,8 @@ Run review packets also keep compatibility target tags such as `FundReconciliati
 `SecurityMaster`, while their visible work-item workspace labels route reconciliation and coverage
 attention through Accounting. Report-pack readiness and evidence warnings use neutral report-pack
 wording instead of exposing the retained Governance repository type name to operators; repository
-validation errors follow the same wording while retaining the contract-owned type names.
+validation errors and Evidence Workbench node source labels follow the same wording while retaining
+the contract-owned type names.
 The file-backed Evidence Vault now stores more than manifest retention: retained local artifact
 refs with file paths are copied into a vault bundle with content hash, size, source route, and
 canonical subject metadata, while route-only artifacts stay as manifest references. The vault write

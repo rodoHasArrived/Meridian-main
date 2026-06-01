@@ -76,6 +76,38 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         AlpacaCredentialEnvironment.NormalizeTradingEnvironment(endpoint).Should().Be(expectedEnvironment);
     }
 
+    [Theory]
+    [InlineData(null, "sandbox")]
+    [InlineData("", "sandbox")]
+    [InlineData("production", "production")]
+    [InlineData("development", "development")]
+    [InlineData("invalid", "sandbox")]
+    public async Task SaveAsync_NormalizesPlaidEnvironmentAndSetupRoute(
+        string? environment,
+        string expectedEnvironment)
+    {
+        var store = new FileProviderCredentialStore(_root);
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "plaid-api",
+            new Dictionary<string, string?>
+            {
+                ["ClientId"] = "plaid-client-id",
+                ["Secret"] = "plaid-secret"
+            },
+            Environment: environment,
+            Actor: "test-operator"));
+
+        var descriptor = ProviderCredentialCatalog.Find("plaid-api");
+        var status = await store.GetStatusAsync("plaid");
+
+        descriptor.Should().NotBeNull();
+        descriptor!.ProviderId.Should().Be("plaid");
+        descriptor.ResolvedActionHref.Should().Be("/settings#plaid-provider-setup");
+        status.Environment.Should().Be(expectedEnvironment);
+        status.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+    }
+
     [Fact]
     public async Task SaveAsync_DoesNotPersistPlaintextSecretsInVaultOrAudit()
     {

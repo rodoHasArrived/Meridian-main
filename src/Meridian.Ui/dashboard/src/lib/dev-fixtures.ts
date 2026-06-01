@@ -7,10 +7,10 @@ import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   CorporateAction,
-  DataOperationsWorkspaceResponse,
+  DataWorkspaceResponse,
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
-  GovernanceWorkspaceResponse,
+  AccountingWorkspaceResponse,
   HistoricalBarsResponse,
   OrderBookResponse,
   OperatorInbox,
@@ -31,7 +31,8 @@ import type {
   QuotesResponse,
   QuotesSnapshotResponse,
   ReconciliationCalibrationSummary,
-  ResearchWorkspaceResponse,
+  StrategyBriefingResponse,
+  StrategyWorkspaceResponse,
   ReplayFileRecord,
   SecurityIdentityDrillIn,
   SecurityMasterConflict,
@@ -98,7 +99,7 @@ const fixtureSystemOverview: SystemOverviewResponse = {
   recentEvents: []
 };
 
-const fixtureResearchWorkspace: ResearchWorkspaceResponse = {
+const fixtureStrategyWorkspace: StrategyWorkspaceResponse = {
   metrics: [
     { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
     { id: "queued", label: "Queued", value: "3", delta: "0%", tone: "default" },
@@ -133,6 +134,68 @@ const fixtureResearchWorkspace: ResearchWorkspaceResponse = {
       notes: "Completed backtest run available for compare and diff review."
     }
   ]
+};
+
+const fixtureStrategyBriefing: StrategyBriefingResponse = {
+  workspace: {
+    totalRuns: 2,
+    activeRuns: 1,
+    promotionCandidates: 1,
+    positivePnlRuns: 2,
+    latestRunId: "run-dev-1",
+    latestStrategyName: "Mean Reversion FX",
+    hasLedgerCoverage: true,
+    hasPortfolioCoverage: true,
+    summary: "Strategy briefing is populated from development fixtures."
+  },
+  insightFeed: {
+    feedId: "strategy-market-briefing",
+    title: "Pinned Insights",
+    summary: "Development Strategy briefing with pinned run context.",
+    generatedAt: "2026-04-28T18:15:00Z",
+    widgets: [
+      {
+        widgetId: "insight-run-dev-1",
+        title: "Mean Reversion FX",
+        subtitle: "Paper · Running",
+        headline: "+4.2%",
+        tone: "success",
+        summary: "Primary paper candidate for development preview.",
+        runId: "run-dev-1",
+        drillInRoute: "/api/workstation/runs/run-dev-1/equity-curve"
+      }
+    ]
+  },
+  watchlists: [],
+  recentRuns: [
+    {
+      runId: "run-dev-1",
+      strategyName: "Mean Reversion FX",
+      mode: 1,
+      status: 1,
+      dataset: "FX Majors",
+      windowLabel: "90d",
+      returnLabel: "+4.2%",
+      sharpeLabel: "1.41",
+      lastUpdatedLabel: "2m ago",
+      notes: "Primary paper candidate for development preview.",
+      promotionState: 2,
+      netPnl: 4200,
+      totalReturn: 0.042,
+      finalEquity: 104200,
+      drillIn: {
+        equityCurve: "/api/workstation/runs/run-dev-1/equity-curve",
+        fills: "/api/workstation/runs/run-dev-1/fills",
+        attribution: "/api/workstation/runs/run-dev-1/attribution",
+        ledger: "/api/workstation/runs/run-dev-1/ledger",
+        cashFlows: "/api/portfolio/run-dev-1/cash-flows",
+        continuity: "/api/workstation/runs/run-dev-1/continuity"
+      }
+    }
+  ],
+  savedComparisons: [],
+  alerts: [],
+  whatChanged: []
 };
 
 const fixtureTradingReadiness: TradingOperatorReadiness = {
@@ -550,7 +613,7 @@ const fixtureTradingWorkspace: TradingWorkspaceResponse = {
   readiness: fixtureTradingReadiness
 };
 
-const fixtureDataOperationsWorkspace: DataOperationsWorkspaceResponse = {
+const fixtureDataWorkspace: DataWorkspaceResponse = {
   metrics: [
     { id: "providers", label: "Providers Healthy", value: "4", delta: "0", tone: "success" },
     { id: "backfills", label: "Backfills Running", value: "2", delta: "+1", tone: "default" },
@@ -617,7 +680,7 @@ const fixtureDataOperationsWorkspace: DataOperationsWorkspaceResponse = {
   ]
 };
 
-const fixtureGovernanceWorkspace: GovernanceWorkspaceResponse = {
+const fixtureAccountingWorkspace: AccountingWorkspaceResponse = {
   metrics: [
     { id: "breaks", label: "Open Breaks", value: "2", delta: "+1", tone: "warning" },
     { id: "drift", label: "Timing Drift", value: "1", delta: "0%", tone: "warning" },
@@ -1365,7 +1428,7 @@ const fixturePortfolioWorkspace: PortfolioWorkspaceResponse = {
       promotionState: "ReviewRequired"
     }
   ],
-  cashFlow: fixtureGovernanceWorkspace.cashFlow
+  cashFlow: fixtureAccountingWorkspace.cashFlow
 };
 
 const fixtureQuantTemplates: QuantTemplatesResponse = {
@@ -2131,8 +2194,9 @@ const fixtureOperationsCloseCalendar: OperationsCloseCalendar = {
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
-  [WORKSTATION_API_ENDPOINTS.strategy]: fixtureResearchWorkspace,
-  "/api/workstation/research": fixtureResearchWorkspace,
+  [WORKSTATION_API_ENDPOINTS.strategy]: fixtureStrategyWorkspace,
+  [WORKSTATION_API_ENDPOINTS.strategyBriefing]: fixtureStrategyBriefing,
+  "/api/workstation/research": fixtureStrategyWorkspace,
   [WORKSTATION_API_ENDPOINTS.trading]: fixtureTradingWorkspace,
   [WORKSTATION_API_ENDPOINTS.portfolio]: fixturePortfolioWorkspace,
   [WORKSTATION_API_ENDPOINTS.tradingReadiness]: fixtureTradingReadiness,
@@ -2152,12 +2216,12 @@ const fixtures = {
   [brokerageConnectionStatusEndpoint("alpaca")]: fixtureAlpacaConnection,
   [brokerageConnectionStatusEndpoint("robinhood")]: fixtureAlpacaConnection,
   [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
-  [WORKSTATION_API_ENDPOINTS.data]: fixtureDataOperationsWorkspace,
-  "/api/workstation/data-operations": fixtureDataOperationsWorkspace,
-  [WORKSTATION_API_ENDPOINTS.accounting]: fixtureGovernanceWorkspace,
-  [WORKSTATION_API_ENDPOINTS.reporting]: fixtureGovernanceWorkspace,
-  "/api/workstation/governance": fixtureGovernanceWorkspace,
-  [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureGovernanceWorkspace.breakQueue,
+  [WORKSTATION_API_ENDPOINTS.data]: fixtureDataWorkspace,
+  "/api/workstation/data-operations": fixtureDataWorkspace,
+  [WORKSTATION_API_ENDPOINTS.accounting]: fixtureAccountingWorkspace,
+  [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace,
+  "/api/workstation/governance": fixtureAccountingWorkspace,
+  [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
   [QUANT_API_ENDPOINTS.templates]: fixtureQuantTemplates,
   [QUANT_API_ENDPOINTS.parameters]: fixtureQuantParameters,

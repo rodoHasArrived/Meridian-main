@@ -9,9 +9,9 @@ public sealed class WorkspaceShellHomeTemplateTests
     [Theory]
     [InlineData("trading", @"src\Meridian.Wpf\Features\Trading\Shell\TradingWorkspaceShellPage.xaml")]
     [InlineData("portfolio", @"src\Meridian.Wpf\Features\Portfolio\Shell\PortfolioWorkspaceShellPage.xaml")]
-    [InlineData("accounting", @"src\Meridian.Wpf\Views\GovernanceWorkspaceShellPage.xaml")]
+    [InlineData("accounting", @"src\Meridian.Wpf\Views\AccountingWorkspaceShellPage.xaml")]
     [InlineData("reporting", @"src\Meridian.Wpf\Features\Reporting\Shell\ReportingWorkspaceShellPage.xaml")]
-    [InlineData("strategy", @"src\Meridian.Wpf\Views\ResearchWorkspaceShellPage.xaml")]
+    [InlineData("strategy", @"src\Meridian.Wpf\Views\StrategyWorkspaceShellPage.xaml")]
     [InlineData("data", @"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellPage.xaml")]
     [InlineData("settings", @"src\Meridian.Wpf\Features\Settings\Shell\SettingsWorkspaceShellPage.xaml")]
     public void WorkspaceHomeSource_ShouldExposePostureTemplateAutomationContracts(string workspaceId, string relativePath)
@@ -109,7 +109,7 @@ public sealed class WorkspaceShellHomeTemplateTests
     public void AccountingCockpitHome_ShouldUseSharedDecisionQueues()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
-            @"src\Meridian.Wpf\Views\GovernanceWorkspaceShellPage.xaml"));
+            @"src\Meridian.Wpf\Views\AccountingWorkspaceShellPage.xaml"));
 
         xaml.Should().Contain("WorkspaceDecisionQueueControl");
         xaml.Should().Contain("QueueAutomationId=\"AccountingOperationsDecisionQueue\"");
@@ -117,7 +117,7 @@ public sealed class WorkspaceShellHomeTemplateTests
         xaml.Should().Contain("QueueAutomationId=\"AccountingReconciliationDecisionQueue\"");
         xaml.Should().Contain("QueueAutomationId=\"AccountingReportingDecisionQueue\"");
         xaml.Should().Contain("QueueAutomationId=\"AccountingAuditDecisionQueue\"");
-        xaml.Should().Contain("DecisionInvoked=\"OnGovernanceDecisionInvoked\"");
+        xaml.Should().Contain("DecisionInvoked=\"OnAccountingDecisionInvoked\"");
         xaml.Should().NotContain("QueueItemTemplate");
         xaml.Should().NotContain("OnQueuePrimaryActionClick");
         xaml.Should().NotContain("OnQueueSecondaryActionClick");

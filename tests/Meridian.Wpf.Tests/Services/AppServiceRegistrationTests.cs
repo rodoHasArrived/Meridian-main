@@ -53,11 +53,11 @@ public sealed class AppServiceRegistrationTests
             ResolveRequired<RunRiskPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<RunCashFlowPage>(serviceProvider).DataContext.Should().BeOfType<CashFlowViewModel>();
             ResolveRequired<EnvironmentDesignerPage>(serviceProvider).Should().NotBeNull();
-            ResolveRequired<ResearchWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<StrategyWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<TradingWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<DataWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<SettingsWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
-            ResolveRequired<GovernanceWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<AccountingWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             serviceProvider.GetRequiredService<IDataWorkspaceShellSnapshotService>().Should().BeOfType<DataWorkspaceShellSnapshotService>();
             serviceProvider.GetRequiredService<IDataWorkspaceShellPresentationService>().Should().BeOfType<DataWorkspaceShellPresentationService>();
             serviceProvider.GetRequiredService<ISettingsWorkspaceShellSnapshotService>().Should().BeOfType<SettingsWorkspaceShellSnapshotService>();
@@ -129,7 +129,7 @@ public sealed class AppServiceRegistrationTests
 
             services.Single(descriptor => descriptor.ServiceType == typeof(TradingWorkspaceShellPresentationService))
                 .Lifetime.Should().Be(ServiceLifetime.Scoped);
-            services.Single(descriptor => descriptor.ServiceType == typeof(ResearchWorkspaceShellPresentationService))
+            services.Single(descriptor => descriptor.ServiceType == typeof(StrategyWorkspaceShellPresentationService))
                 .Lifetime.Should().Be(ServiceLifetime.Scoped);
             services.Single(descriptor => descriptor.ServiceType == typeof(IDataWorkspaceShellSnapshotService))
                 .Lifetime.Should().Be(ServiceLifetime.Scoped);
@@ -177,7 +177,7 @@ public sealed class AppServiceRegistrationTests
     }
 
     [Fact]
-    public void ResearchWorkspaceShellPage_ShouldResolveEvenWithoutWorkspaceServiceRegistration()
+    public void StrategyWorkspaceShellPage_ShouldResolveEvenWithoutWorkspaceServiceRegistration()
     {
         WpfTestThread.Run(() =>
         {
@@ -193,7 +193,7 @@ public sealed class AppServiceRegistrationTests
 
             using var serviceProvider = services.BuildServiceProvider();
 
-            var exception = Record.Exception(() => serviceProvider.GetRequiredService<ResearchWorkspaceShellPage>());
+            var exception = Record.Exception(() => serviceProvider.GetRequiredService<StrategyWorkspaceShellPage>());
 
             exception.Should().BeNull();
         });

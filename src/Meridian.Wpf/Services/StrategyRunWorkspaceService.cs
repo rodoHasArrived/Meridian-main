@@ -229,7 +229,7 @@ public sealed class StrategyRunWorkspaceService
         };
     }
 
-    public async Task<ResearchWorkspaceSummary> GetResearchSummaryAsync(CancellationToken ct = default)
+    public async Task<StrategyWorkspaceSummary> GetStrategySummaryAsync(CancellationToken ct = default)
     {
         var runs = await _readService
             .GetRunsAsync(strategyId: null, runType: null, ct: ct)
@@ -248,7 +248,7 @@ public sealed class StrategyRunWorkspaceService
 
         var recentRuns = runs
             .Take(10)
-            .Select(r => new ResearchRunSummaryItem
+            .Select(r => new StrategyRunSummaryItem
             {
                 RunId = r.RunId,
                 StrategyName = r.StrategyName,
@@ -267,7 +267,7 @@ public sealed class StrategyRunWorkspaceService
             .ToList();
 
         var candidateItems = promotionCandidates
-            .Select(r => new ResearchPromotionCandidateItem
+            .Select(r => new StrategyPromotionCandidateItem
             {
                 RunId = r.RunId,
                 StrategyName = r.StrategyName,
@@ -276,7 +276,7 @@ public sealed class StrategyRunWorkspaceService
             })
             .ToList();
 
-        return new ResearchWorkspaceSummary
+        return new StrategyWorkspaceSummary
         {
             TotalRuns = runs.Count,
             PromotedCount = promoted,
@@ -540,18 +540,18 @@ public sealed class StrategyRunWorkspaceService
                 validation.HasBlockingGap ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Info);
         }
 
-        return BuildGovernanceValidationStatus(detail);
+        return BuildAccountingValidationStatus(detail);
     }
 
-    private static TradingWorkspaceStatusItem BuildGovernanceValidationStatus(StrategyRunDetail detail)
+    private static TradingWorkspaceStatusItem BuildAccountingValidationStatus(StrategyRunDetail detail)
     {
         var summary = detail.Summary;
-        var governance = detail.Governance ?? summary.Governance;
+        var accountingControls = detail.Governance ?? summary.Governance;
         var issues = new List<string>(6);
 
-        AppendCoverageIssue(governance?.HasParameters == true, "parameters", issues);
-        AppendCoverageIssue(governance?.HasPortfolio == true, "portfolio", issues);
-        AppendCoverageIssue(governance?.HasLedger == true, "ledger", issues);
+        AppendCoverageIssue(accountingControls?.HasParameters == true, "parameters", issues);
+        AppendCoverageIssue(accountingControls?.HasPortfolio == true, "portfolio", issues);
+        AppendCoverageIssue(accountingControls?.HasLedger == true, "ledger", issues);
 
         if (detail.Portfolio is { SecurityMissingCount: > 0 } portfolio)
         {

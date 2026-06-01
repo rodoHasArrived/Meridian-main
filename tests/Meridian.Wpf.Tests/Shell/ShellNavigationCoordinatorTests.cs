@@ -12,7 +12,7 @@ namespace Meridian.Wpf.Tests.Shell;
 public sealed class ShellNavigationCoordinatorTests
 {
     [Fact]
-    public void NavigateToRoute_KnownCompatibilityAlias_DelegatesOriginalTagToNavigationService()
+    public void NavigateToRoute_KnownCompatibilityAlias_DelegatesCanonicalTagToNavigationService()
     {
         var navigationService = new FakeNavigationService();
         var coordinator = CreateCoordinator(navigationService);
@@ -20,11 +20,11 @@ public sealed class ShellNavigationCoordinatorTests
         var result = coordinator.NavigateToRoute("ResearchShell");
 
         result.Should().BeTrue();
-        navigationService.NavigatedPageTags.Should().Equal("ResearchShell");
+        navigationService.NavigatedPageTags.Should().Equal("StrategyShell");
     }
 
     [Fact]
-    public void ApplyPaneDrop_KnownAlias_PreservesRequestedTagAndReturnsCanonicalTag()
+    public void ApplyPaneDrop_KnownAlias_StoresAndReturnsCanonicalTag()
     {
         var coordinator = CreateCoordinator();
         var paneHost = new PaneHostViewModel(new ShellRouteRegistry());
@@ -33,8 +33,9 @@ public sealed class ShellNavigationCoordinatorTests
         var result = coordinator.ApplyPaneDrop(paneHost, "Blotter", 0, PaneDropAction.Replace);
 
         result.ActivePaneIndex.Should().Be(0);
-        result.PageTag.Should().Be("Blotter");
+        result.PageTag.Should().Be("PositionBlotter");
         result.CanonicalPageTag.Should().Be("PositionBlotter");
+        paneHost.GetAssignedPageTag(0).Should().Be("PositionBlotter");
         paneHost.GetPaneContentState(0)!.CanonicalPageTag.Should().Be("PositionBlotter");
     }
 
@@ -51,7 +52,7 @@ public sealed class ShellNavigationCoordinatorTests
             var content = coordinator.CreatePaneContent(paneState.GetPaneContentState(0)!);
 
             content.Should().BeOfType<Page>();
-            factory.RequestedTags.Should().Equal("ResearchShell");
+            factory.RequestedTags.Should().Equal("StrategyShell");
         });
     }
 

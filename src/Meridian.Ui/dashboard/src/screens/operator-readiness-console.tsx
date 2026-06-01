@@ -18,18 +18,19 @@ import {
   type ReadinessConsoleSelectedWorkItemDetail
 } from "@/screens/operator-readiness-console.view-model";
 import type {
-  DataOperationsWorkspaceResponse,
-  GovernanceWorkspaceResponse,
-  ResearchWorkspaceResponse,
+  DataWorkspaceResponse,
+  AccountingWorkspaceResponse,
+  ReportingWorkspaceResponse,
+  StrategyWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
 
 interface OperatorReadinessConsoleProps {
-  research: ResearchWorkspaceResponse | null;
+  strategy: StrategyWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
-  dataOperations: DataOperationsWorkspaceResponse | null;
-  governance: GovernanceWorkspaceResponse | null;
-  reporting: GovernanceWorkspaceResponse | null;
+  data: DataWorkspaceResponse | null;
+  accounting: AccountingWorkspaceResponse | null;
+  reporting: ReportingWorkspaceResponse | null;
 }
 
 const levelBadge: Record<ReadinessConsoleLevel, "success" | "warning" | "danger" | "outline"> = {
@@ -114,17 +115,17 @@ const evidencePanelColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
 ];
 
 export function OperatorReadinessConsole({
-  research,
+  strategy,
   trading,
-  dataOperations,
-  governance,
+  data,
+  accounting,
   reporting
 }: OperatorReadinessConsoleProps) {
   const vm = useOperatorReadinessConsoleViewModel({
-    research,
+    strategy,
     trading,
-    dataOperations,
-    governance,
+    data,
+    accounting,
     reporting
   });
 

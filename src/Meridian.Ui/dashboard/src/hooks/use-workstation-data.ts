@@ -3,7 +3,7 @@ import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-re
 import {
   getBrokerageHouseholdPortfolio,
   getDataWorkspace,
-  getGovernanceWorkspace,
+  getAccountingWorkspace,
   getAlpacaConnectionStatus,
   getLedgerMappingWorkbench,
   getOperationsApprovalPolicyMatrix,
@@ -31,9 +31,10 @@ import { describeApiError } from "@/lib/api-errors";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
-  DataOperationsWorkspaceResponse,
+  DataWorkspaceResponse,
   FeatureCapabilitySettingsResponse,
-  GovernanceWorkspaceResponse,
+  AccountingWorkspaceResponse,
+  ReportingWorkspaceResponse,
   LedgerMappingWorkbench,
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
@@ -42,7 +43,7 @@ import type {
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
@@ -59,12 +60,12 @@ type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
 interface WorkstationDataState {
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
-  research: ResearchWorkspaceResponse | null;
+  strategy: StrategyWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
   portfolio: PortfolioWorkspaceResponse | null;
-  dataOperations: DataOperationsWorkspaceResponse | null;
-  governance: GovernanceWorkspaceResponse | null;
-  reporting: GovernanceWorkspaceResponse | null;
+  data: DataWorkspaceResponse | null;
+  accounting: AccountingWorkspaceResponse | null;
+  reporting: ReportingWorkspaceResponse | null;
   brokerageConnection: BrokerageConnectionStatus | null;
   providerConnections: ProviderConnectionRow[] | null;
   providerRoutingConnections: ProviderRoutingConnection[] | null;
@@ -94,11 +95,11 @@ interface WorkstationDataState {
 const initialState: WorkstationDataState = {
   session: null,
   overview: null,
-  research: null,
+  strategy: null,
   trading: null,
   portfolio: null,
-  dataOperations: null,
-  governance: null,
+  data: null,
+  accounting: null,
   reporting: null,
   brokerageConnection: null,
   providerConnections: null,
@@ -199,11 +200,11 @@ export function useWorkstationData() {
     const [
       session,
       overview,
-      research,
+      strategy,
       trading,
       portfolio,
-      dataOperations,
-      governance,
+      data,
+      accounting,
       reporting,
       brokerageConnection,
       providerConnections,
@@ -226,7 +227,7 @@ export function useWorkstationData() {
       getTradingWorkspace(requestOptions),
       getPortfolioWorkspace(requestOptions),
       getDataWorkspace(requestOptions),
-      getGovernanceWorkspace(requestOptions),
+      getAccountingWorkspace(requestOptions),
       getReportingWorkspace(requestOptions),
       getAlpacaConnectionStatus(requestOptions),
       getProviderConnections(requestOptions),
@@ -280,11 +281,11 @@ export function useWorkstationData() {
     const nextState = {
       session: readBootstrap(session),
       overview: readBootstrap(overview),
-      research: readWorkspace(["strategy"], research),
+      strategy: readWorkspace(["strategy"], strategy),
       trading: readWorkspace(["trading"], trading),
       portfolio: readWorkspace(["portfolio"], portfolio),
-      dataOperations: readWorkspace(["data"], dataOperations),
-      governance: readWorkspace(["accounting"], governance),
+      data: readWorkspace(["data"], data),
+      accounting: readWorkspace(["accounting"], accounting),
       reporting: readWorkspace(["reporting"], reporting),
       brokerageConnection: readWorkspace(["portfolio"], brokerageConnection),
       providerConnections: readWorkspace(["settings", "data"], providerConnections),

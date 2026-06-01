@@ -26,7 +26,7 @@ The first provider is `BuiltInWorkflowDefinitionProvider`. It intentionally regi
 
 Workflow presets are the first durable user-customization layer on top of the workflow catalog. A preset binds an operator-owned name, description, tags, pinned state, and recent-use timestamp to an existing registered workflow and optional workflow action. Presets cannot target arbitrary pages; `WorkflowPresetService` validates every save request against the current `WorkflowRegistry` so saved entries continue to launch real Meridian surfaces.
 
-`FileWorkflowPresetStore` writes the preset snapshot under the resolved Meridian data root at `workstation/workflows/workflow-presets.json`. The store uses the shared `AtomicFileWriter` write-to-temp-then-rename pattern so browser or retained desktop hosts do not leave partial JSON snapshots after interruption. The shared workstation API exposes:
+`FileWorkflowPresetStore` writes the preset snapshot under the resolved Meridian data root at `workstation/workflows/workflow-presets.json`. The store uses the shared `AtomicFileWriter` write-to-temp-then-rename pattern so browser or desktop workstation hosts do not leave partial JSON snapshots after interruption. The shared workstation API exposes:
 
 - `GET /api/workstation/workflows/presets`
 - `POST /api/workstation/workflows/presets`

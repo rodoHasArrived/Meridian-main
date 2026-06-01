@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
+import type { WorkspaceSummary } from "@/types";
 
 describe("workspace nav view model", () => {
   it("marks the active canonical workspace route", () => {
@@ -47,6 +48,45 @@ describe("workspace nav view model", () => {
       label: "Data",
       statusLabel: "Live posture",
       statusTone: "live"
+    });
+  });
+
+  it("canonicalizes caller-provided workspace metadata before rendering root navigation", () => {
+    const staleWorkspaces: WorkspaceSummary[] = [
+      {
+        key: "strategy",
+        label: "Research",
+        description: "Legacy research root label.",
+        status: "Preview"
+      },
+      {
+        key: "accounting",
+        label: "Governance",
+        description: "Legacy governance root label.",
+        status: "Live"
+      },
+      {
+        key: "data",
+        label: "Data Operations",
+        description: "Legacy data-operations root label.",
+        status: "Review"
+      }
+    ];
+
+    const model = buildWorkspaceNavViewModel("/governance/reconciliation", staleWorkspaces);
+
+    expect(model.items.map((item) => [item.key, item.label, item.statusLabel])).toEqual([
+      ["accounting", "Accounting", "Live · Current"],
+      ["strategy", "Strategy", "Preview"],
+      ["data", "Data", "Review"]
+    ]);
+    expect(model.items.map((item) => item.label)).not.toEqual(
+      expect.arrayContaining(["Research", "Governance", "Data Operations"])
+    );
+    expect(model.currentWorkspace).toMatchObject({
+      label: "Accounting",
+      description: "Ledger, cash-flow, reconciliation, Security Master coverage, and fund-account evidence.",
+      statusLabel: "Live posture"
     });
   });
 
@@ -124,6 +164,7 @@ describe("workspace nav view model", () => {
     const data = model.items.find((item) => item.key === "data");
 
     expect(data?.subItems.map((item) => item.route)).toEqual([
+      "/data/providers",
       "/data/watchlist",
       "/data/quotes",
       "/data/alerts",
@@ -134,6 +175,19 @@ describe("workspace nav view model", () => {
       active: true,
       ariaCurrent: "page",
       ariaLabel: "Price alerts, current page"
+    });
+  });
+
+  it("surfaces the provider catalog lane under Data", () => {
+    const model = buildWorkspaceNavViewModel("/data/providers");
+    const data = model.items.find((item) => item.key === "data");
+
+    expect(data?.subItems[0]).toMatchObject({
+      label: "Providers",
+      route: "/data/providers",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Providers, current page"
     });
   });
 

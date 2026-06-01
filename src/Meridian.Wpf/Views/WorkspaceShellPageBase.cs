@@ -219,12 +219,12 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     }
 }
 
-public class ResearchWorkspaceShellPageBase : WorkspaceShellPageBase<ResearchWorkspaceShellStateProvider, ResearchWorkspaceShellViewModel>
+public class StrategyWorkspaceShellPageBase : WorkspaceShellPageBase<StrategyWorkspaceShellStateProvider, StrategyWorkspaceShellViewModel>
 {
-    protected ResearchWorkspaceShellPageBase(
+    protected StrategyWorkspaceShellPageBase(
         NavigationService navigationService,
-        ResearchWorkspaceShellStateProvider stateProvider,
-        ResearchWorkspaceShellViewModel viewModel)
+        StrategyWorkspaceShellStateProvider stateProvider,
+        StrategyWorkspaceShellViewModel viewModel)
         : base(navigationService, stateProvider, viewModel)
     {
     }
@@ -241,23 +241,23 @@ public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorks
     }
 }
 
-public class DataOperationsWorkspaceShellPageBase : WorkspaceShellPageBase<DataOperationsWorkspaceShellStateProvider, Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel>
+public class DataWorkspaceShellPageBase : WorkspaceShellPageBase<DataWorkspaceShellStateProvider, Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel>
 {
-    protected DataOperationsWorkspaceShellPageBase(
+    protected DataWorkspaceShellPageBase(
         NavigationService navigationService,
-        DataOperationsWorkspaceShellStateProvider stateProvider,
+        DataWorkspaceShellStateProvider stateProvider,
         Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel viewModel)
         : base(navigationService, stateProvider, viewModel)
     {
     }
 }
 
-public class GovernanceWorkspaceShellPageBase : WorkspaceShellPageBase<GovernanceWorkspaceShellStateProvider, GovernanceWorkspaceShellViewModel>
+public class AccountingWorkspaceShellPageBase : WorkspaceShellPageBase<AccountingWorkspaceShellStateProvider, AccountingWorkspaceShellViewModel>
 {
-    protected GovernanceWorkspaceShellPageBase(
+    protected AccountingWorkspaceShellPageBase(
         NavigationService navigationService,
-        GovernanceWorkspaceShellStateProvider stateProvider,
-        GovernanceWorkspaceShellViewModel viewModel)
+        AccountingWorkspaceShellStateProvider stateProvider,
+        AccountingWorkspaceShellViewModel viewModel)
         : base(navigationService, stateProvider, viewModel)
     {
     }

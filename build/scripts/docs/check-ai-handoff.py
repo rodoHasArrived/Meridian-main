@@ -28,9 +28,11 @@ DEFAULT_LINK_TARGETS: Tuple[Path, ...] = (
     Path("CLAUDE.md"),
     Path(".codex/AGENTS.md"),
     Path(".github/copilot-instructions.md"),
+    Path("docs/ai/agents/README.md"),
     Path("docs/ai/README.md"),
     Path("docs/ai/assistant-workflow-contract.md"),
     Path("docs/ai/codex/README.md"),
+    Path("docs/ai/codex/quickstart.md"),
     Path("docs/ai/copilot/instructions.md"),
     Path("docs/ai/skills/README.md"),
 )

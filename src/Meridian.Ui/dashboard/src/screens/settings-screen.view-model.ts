@@ -25,15 +25,16 @@ import {
 import type {
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
-  DataOperationsWorkspaceResponse,
+  DataWorkspaceResponse,
   FeatureCapabilitySettingsResponse,
-  GovernanceWorkspaceResponse,
+  AccountingWorkspaceResponse,
+  ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
   LedgerMappingWorkbench,
@@ -974,12 +975,12 @@ export interface SettingsScreenViewModel {
 export interface SettingsScreenPayload {
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
-  research?: ResearchWorkspaceResponse | null;
+  strategy?: StrategyWorkspaceResponse | null;
   trading?: TradingWorkspaceResponse | null;
   portfolio?: PortfolioWorkspaceResponse | null;
-  dataOperations?: DataOperationsWorkspaceResponse | null;
-  governance?: GovernanceWorkspaceResponse | null;
-  reporting?: GovernanceWorkspaceResponse | null;
+  data?: DataWorkspaceResponse | null;
+  accounting?: AccountingWorkspaceResponse | null;
+  reporting?: ReportingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   providerConnections?: ProviderConnectionRow[] | null;
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
@@ -1055,7 +1056,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     description: "Provider posture, backfill queues, and export readiness.",
     ariaLabel: "Open Data workspace diagnostic endpoint",
     workspaceKey: "data",
-    isAvailable: (payload) => payload.dataOperations !== null && payload.dataOperations !== undefined,
+    isAvailable: (payload) => payload.data !== null && payload.data !== undefined,
     unavailableDetail: "Data workspace provider posture has not loaded."
   },
   {
@@ -1065,7 +1066,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     description: "Strategy run metrics and active run rows.",
     ariaLabel: "Open Strategy workspace diagnostic endpoint",
     workspaceKey: "strategy",
-    isAvailable: (payload) => payload.research !== null && payload.research !== undefined,
+    isAvailable: (payload) => payload.strategy !== null && payload.strategy !== undefined,
     unavailableDetail: "Strategy run payload has not loaded."
   },
   {
@@ -1085,7 +1086,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     description: "Reconciliation queue, cash flow, and accounting evidence.",
     ariaLabel: "Open Accounting workspace diagnostic endpoint",
     workspaceKey: "accounting",
-    isAvailable: (payload) => payload.governance !== null && payload.governance !== undefined,
+    isAvailable: (payload) => payload.accounting !== null && payload.accounting !== undefined,
     unavailableDetail: "Accounting workspace payload has not loaded."
   },
   {
@@ -1144,7 +1145,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.accounting,
     title: "Accounting and reconciliation",
     description: "Reconciliation run creation, break queues, audit history, calibration summary, cash flow, ledger drill-ins, and Security Master coverage.",
-    isAvailable: (payload) => payload.governance !== null && payload.governance !== undefined,
+    isAvailable: (payload) => payload.accounting !== null && payload.accounting !== undefined,
     unavailableDetail: "Accounting workspace payload has not loaded.",
     endpoints: [
       { id: "accounting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.accounting },
@@ -1178,7 +1179,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.strategy,
     title: "Strategy run library",
     description: "Strategy workspace payloads, run history, timeline, sweeps, comparisons, diffs, and promotion actions.",
-    isAvailable: (payload) => payload.research !== null && payload.research !== undefined,
+    isAvailable: (payload) => payload.strategy !== null && payload.strategy !== undefined,
     unavailableDetail: "Strategy workspace payload has not loaded.",
     endpoints: [
       { id: "strategy-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.strategy },
@@ -1196,7 +1197,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.data,
     title: "Data trust and provider operations",
     description: "Provider status, backfill trigger and preview, symbols, storage quality, and data-quality queues.",
-    isAvailable: (payload) => payload.dataOperations !== null && payload.dataOperations !== undefined,
+    isAvailable: (payload) => payload.data !== null && payload.data !== undefined,
     unavailableDetail: "Data workspace payload has not loaded.",
     endpoints: [
       { id: "data-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.data },
@@ -2368,7 +2369,7 @@ function buildAssetProfileGovernancePanel(
 ): SettingsAssetProfileGovernancePanel {
   if (!profiles) {
     return {
-      title: "Asset Profile Governance",
+      title: "Asset Profile accounting",
       summary: loading
         ? "Asset profiles are loading from Security Master."
         : "Asset profile catalog has not loaded.",
@@ -2377,7 +2378,7 @@ function buildAssetProfileGovernancePanel(
       approvedCountLabel: "0",
       projectedFieldCountLabel: "0",
       closeIdentifierCountLabel: "0",
-      listLabel: "Asset profile governance rows",
+      listLabel: "Asset profile accounting rows",
       canCreateSecurity: false,
       createDisabledReason: loading
         ? "Asset profile catalog is still loading."
@@ -2399,7 +2400,7 @@ function buildAssetProfileGovernancePanel(
     approvedProfiles.length > 0 ? "success" : "warning";
 
   return {
-    title: "Asset Profile Governance",
+    title: "Asset Profile accounting",
     summary: approvedProfiles.length > 0
       ? `${approvedProfiles.length} approved alternative-asset profile${approvedProfiles.length === 1 ? "" : "s"} are available for governed Security Master creation.`
       : "No approved asset profiles are available for Security Master creation.",
@@ -2475,7 +2476,7 @@ function buildOperationsControlCenter(payload: SettingsScreenPayload): SettingsO
     summary: checkingCount > 0
       ? `${checkingCount} configuration surface${checkingCount === 1 ? "" : "s"} still loading; ${loadedCount} loaded.`
       : reviewCount > 0
-        ? `${reviewCount} configuration surface${reviewCount === 1 ? "" : "s"} need operator review before close governance is clean.`
+        ? `${reviewCount} configuration surface${reviewCount === 1 ? "" : "s"} need operator review before close accounting is clean.`
         : "Ledger mappings, role authority, approval rules, and close posture are loaded for operator review.",
     statusLabel: checkingCount > 0
       ? `${checkingCount} checking`

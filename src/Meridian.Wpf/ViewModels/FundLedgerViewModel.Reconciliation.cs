@@ -1181,7 +1181,7 @@ public sealed partial class FundLedgerViewModel
             ReconciliationNextBestActionText = "Select a break to view the recommended next action.";
             ReconciliationBlockerReasonText = "No blocker is selected.";
             ReconciliationEvidenceLinksText = "Evidence links appear after selecting a break.";
-            ReconciliationSection.GovernanceSignifierState = WorkstationStateModel.Empty(
+            ReconciliationSection.AccountingSignifierState = WorkstationStateModel.Empty(
                 "Select reconciliation evidence",
                 "Choose a break queue item or reconciliation run to see lifecycle, sign-off, evidence, and recovery posture.",
                 "Select a break",
@@ -1202,7 +1202,7 @@ public sealed partial class FundLedgerViewModel
         ReconciliationEvidenceLinksText = SelectedBreakQueueItem.EvidenceLinksLabel == "No evidence links reported"
             ? $"/api/workstation/reconciliation/break-queue/{SelectedBreakQueueItem.BreakId}"
             : SelectedBreakQueueItem.EvidenceLinksLabel;
-        ReconciliationSection.GovernanceSignifierState = BuildSelectedBreakSignifierState(SelectedBreakQueueItem);
+        ReconciliationSection.AccountingSignifierState = BuildSelectedBreakSignifierState(SelectedBreakQueueItem);
     }
 
     private WorkstationStateModel BuildSelectedBreakSignifierState(FundReconciliationBreakQueueRow breakRow)

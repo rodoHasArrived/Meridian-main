@@ -28,14 +28,6 @@ public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
     }
 }
 
-public sealed class GovernanceWorkspaceShellViewModel : WorkspaceShellViewModelBase
-{
-    public GovernanceWorkspaceShellViewModel()
-        : base(ShellNavigationCatalog.GetWorkspaceShell("accounting")!)
-    {
-    }
-}
-
 public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     public IReadOnlyList<WorkspaceQueueItem> CockpitDecisionItems { get; } =

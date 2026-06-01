@@ -1,5 +1,6 @@
 using Meridian.Application.Config;
 using Meridian.Application.Accounts;
+using Meridian.Application.Auth;
 using Meridian.Application.Backtesting;
 using Meridian.Application.Banking;
 using Meridian.Application.Commodities;
@@ -89,6 +90,32 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             return config.Storage?.ToStorageOptions(dataRoot, compressionEnabled)
                 ?? StorageProfilePresets.CreateFromProfile(null, dataRoot, compressionEnabled);
         });
+        if (IsScopedAccessPostgresConfigured())
+        {
+            services.TryAddSingleton(new ScopedAccessStoreOptions
+            {
+                ConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
+                Schema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA") ?? "identity_access"
+            });
+            services.TryAddSingleton<IScopedAccessAssignmentStore>(sp =>
+            {
+                var store = new PostgresScopedAccessAssignmentStore(sp.GetRequiredService<ScopedAccessStoreOptions>());
+                store.EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return store;
+            });
+        }
+        else
+        {
+            services.TryAddSingleton<IScopedAccessAssignmentStore>(sp =>
+            {
+                var storageOptions = sp.GetRequiredService<StorageOptions>();
+                var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "user-access-assignments.json");
+                return new FileScopedAccessAssignmentStore(persistencePath);
+            });
+        }
+        services.TryAddSingleton<ScopedAccessService>();
+        services.TryAddSingleton<IScopedAccessAssignmentService>(sp => sp.GetRequiredService<ScopedAccessService>());
+        services.TryAddSingleton<IScopedAuthorizationService>(sp => sp.GetRequiredService<ScopedAccessService>());
         services.TryAddSingleton<ISecurityAssetProfileGovernanceService, SecurityAssetProfileGovernanceService>();
         services.TryAddSingleton<ISecurityAssetProfileCatalog>(sp => sp.GetRequiredService<ISecurityAssetProfileGovernanceService>());
         services.TryAddSingleton(sp => AssetClassValidatorRegistry.CreateDefault(sp.GetRequiredService<ISecurityAssetProfileCatalog>()));
@@ -480,6 +507,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             SchemaName = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable) ?? LedgerStartup.DefaultSchema,
             EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true)
         };
+
+    private static bool IsScopedAccessPostgresConfigured()
+        => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING"));
 
     private static int ParseInt(string name, int defaultValue)
         => int.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : defaultValue;

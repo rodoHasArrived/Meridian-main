@@ -494,7 +494,7 @@ describe("SettingsScreen", () => {
     );
   });
 
-  it("renders asset profile governance and profile-backed creation fields", () => {
+  it("renders asset profile accounting and profile-backed creation fields", () => {
     renderWithRouter(
       <SettingsScreen
         session={session}
@@ -725,7 +725,7 @@ describe("SettingsScreen", () => {
         eventType: "operations-approval-policy-rule-upserted",
         occurredAtUtc: "2026-05-28T00:00:00Z",
         actor: "Ops Lead",
-        rationale: "Tighten close approval governance",
+        rationale: "Tighten close approval accounting",
         correlationId: "settings-approval-policy-1",
         policyKey: approvalPolicyMatrix.rows[0].policyKey,
         action: approvalPolicyMatrix.rows[0].action,
@@ -758,7 +758,7 @@ describe("SettingsScreen", () => {
       "Controller packet and checklist control evidence."
     );
     await user.clear(within(form).getByLabelText("Approval policy rationale"));
-    await user.type(within(form).getByLabelText("Approval policy rationale"), "Tighten close approval governance");
+    await user.type(within(form).getByLabelText("Approval policy rationale"), "Tighten close approval accounting");
     await user.click(within(form).getByRole("button", { name: /Save policy/i }));
 
     expect(apiMocks.upsertOperationsApprovalPolicyRule).toHaveBeenCalledWith(expect.objectContaining({
@@ -767,7 +767,7 @@ describe("SettingsScreen", () => {
       requiredDistinctApprovals: 3,
       evidenceRequirement: "Controller packet and checklist control evidence.",
       requestedBy: "Ops Lead",
-      rationale: "Tighten close approval governance"
+      rationale: "Tighten close approval accounting"
     }));
     expect(onRefresh).toHaveBeenCalledOnce();
     expect(await within(form).findByText("Approval policy saved for Approve close.")).toBeInTheDocument();
@@ -985,11 +985,11 @@ describe("SettingsScreen", () => {
       <SettingsScreen
         session={session}
         overview={overview}
-        research={{ metrics: [], runs: [] }}
+        strategy={{ metrics: [], runs: [] }}
         trading={{} as never}
         portfolio={portfolio}
-        dataOperations={{ metrics: [], providers: [], backfills: [], exports: [] }}
-        governance={{} as never}
+        data={{ metrics: [], providers: [], backfills: [], exports: [] }}
+        accounting={{} as never}
         reporting={{} as never}
       />
     );
@@ -1214,11 +1214,11 @@ describe("SettingsScreen", () => {
       <SettingsScreen
         session={session}
         overview={overview}
-        research={{ metrics: [], runs: [] }}
+        strategy={{ metrics: [], runs: [] }}
         trading={{} as never}
         portfolio={portfolio}
-        dataOperations={{ metrics: [], providers: [], backfills: [], exports: [] }}
-        governance={{} as never}
+        data={{ metrics: [], providers: [], backfills: [], exports: [] }}
+        accounting={{} as never}
         reporting={{} as never}
       />
     );
@@ -1293,10 +1293,10 @@ describe("SettingsScreen", () => {
       <SettingsScreen
         session={session}
         overview={overview}
-        research={null}
+        strategy={null}
         trading={null}
-        dataOperations={null}
-        governance={null}
+        data={null}
+        accounting={null}
         error="Workstation request failed."
         workspaceErrors={{ trading: "Trading API returned 503." }}
       />

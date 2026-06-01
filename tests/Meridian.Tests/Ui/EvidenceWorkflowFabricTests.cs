@@ -11,6 +11,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -481,6 +482,25 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Warnings.Should().Contain(warning =>
             warning.Contains("Operations Continuity workflow service is not registered", StringComparison.OrdinalIgnoreCase));
         packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+    }
+
+    [Fact]
+    public async Task ReportPackEvidenceContributor_DuringReportPackReview_UsesNeutralSourceSystemLabel()
+    {
+        var reportId = Guid.NewGuid();
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, reportId.ToString("D"));
+        using var provider = new ServiceCollection()
+            .AddSingleton<IGovernanceReportPackRepository>(new InMemoryReportPackRepository(BuildReportPackSnapshot(reportId)))
+            .BuildServiceProvider();
+        var contributor = new ReportPackEvidenceContributor(provider);
+
+        var contribution = await contributor.ContributeAsync(new EvidenceContributionContext(subject, CancellationToken.None));
+
+        contribution.Nodes.Should().ContainSingle(node =>
+            node.Kind == "report-pack" &&
+            node.SourceSystem == "report-pack-repository");
+        contribution.Nodes.Should().NotContain(node =>
+            node.SourceSystem.Contains("Governance", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -1337,6 +1357,39 @@ public sealed class EvidenceWorkflowFabricTests
             ArtifactRefs: artifacts ?? [],
             RelatedWorkItemIds: workItemIds ?? []);
 
+    private static FundReportPackSnapshotDto BuildReportPackSnapshot(Guid reportId)
+    {
+        var generatedAt = new DateTimeOffset(2026, 6, 1, 16, 0, 0, TimeSpan.Zero);
+        return new FundReportPackSnapshotDto(
+            ReportId: reportId,
+            FundProfileId: "fund-ops",
+            DisplayName: "Fund Operations Report Pack",
+            ReportKind: GovernanceReportKindDto.TrialBalance,
+            Currency: "USD",
+            AsOf: generatedAt,
+            GeneratedAt: generatedAt,
+            TotalNetAssets: 1_000m,
+            AuditActor: "controller",
+            CorrelationId: "evidence-report-pack",
+            DecisionRationale: "monthly close",
+            Provenance: new FundReportPackProvenanceDto(
+                RelatedRunIds: [],
+                JournalEntryCount: 1,
+                LedgerEntryCount: 1,
+                TrialBalanceLineCount: 1,
+                ReconciliationRunCount: 1,
+                OpenReconciliationBreakCount: 0,
+                SecurityResolvedCount: 1,
+                SecurityMissingCount: 0,
+                LineagePointers: [],
+                SourceSnapshotHash: new string('a', 64)),
+            Artifacts: [],
+            Warnings: [])
+        {
+            Status = GovernanceReportPackStatusDto.Validated
+        };
+    }
+
     private static bool IsRouteOnlyArtifact(JsonElement artifact, string kind, string route)
         => artifact.GetProperty("kind").GetString() == kind &&
            artifact.GetProperty("route").GetString() == route &&
@@ -1369,6 +1422,27 @@ public sealed class EvidenceWorkflowFabricTests
             context.CancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(_contribute(context));
         }
+    }
+
+    private sealed class InMemoryReportPackRepository(FundReportPackSnapshotDto snapshot) : IGovernanceReportPackRepository
+    {
+        public Task<FundReportPackSnapshotDto> SaveAsync(
+            FundReportPackSnapshotDto snapshot,
+            IReadOnlyList<GovernanceReportPackArtifactContent> artifacts,
+            CancellationToken ct = default)
+            => Task.FromResult(snapshot);
+
+        public Task<IReadOnlyList<FundReportPackHistoryItemDto>> GetHistoryAsync(
+            string fundProfileId,
+            int limit,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<FundReportPackHistoryItemDto>>([]);
+
+        public Task<FundReportPackSnapshotDto?> GetAsync(Guid reportId, CancellationToken ct = default)
+            => Task.FromResult(reportId == snapshot.ReportId ? snapshot : null);
+
+        public Task<FundReportPackSnapshotDto?> FindLatestByRunIdAsync(string runId, CancellationToken ct = default)
+            => Task.FromResult<FundReportPackSnapshotDto?>(null);
     }
 
     private sealed class StubSecurityMasterConflictService(IReadOnlyList<SecurityMasterConflict> conflicts)

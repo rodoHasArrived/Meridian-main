@@ -9,7 +9,7 @@ namespace Meridian.Wpf.Models;
 ///
 /// Icon values are single-character Segoe MDL2 Assets glyph strings.
 /// The corresponding Segoe MDL2 Unicode code points are declared as StaticResource
-/// keys in Styles/IconResources.xaml (e.g. IconResearch, IconTrading …).
+/// keys in Styles/IconResources.xaml (e.g. IconStrategy, IconTrading, IconAccounting).
 /// High-quality SVG source files for every icon live in Assets/Icons/*.svg.
 /// </summary>
 public static class WorkspaceRegistry

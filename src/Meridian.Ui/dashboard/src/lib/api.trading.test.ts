@@ -10,14 +10,14 @@ import {
   evaluatePromotion,
   exportChiefOfStaffTrace,
   getAlpacaConnectionStatus,
+  getAccountingWorkspace,
   getBrokerageHouseholdPortfolio,
   getChiefOfStaffHealth,
   getChiefOfStaffSession,
   getChiefOfStaffSessions,
-  getDataOperationsWorkspace,
+  getDataWorkspace,
   developmentFixtureHeader,
   getExecutionControls,
-  getGovernanceWorkspace,
   getPaperSessionDetail,
   getPortfolioWorkspace,
   getPortfolioAggregate,
@@ -47,6 +47,7 @@ import {
   getSecurityTrustSnapshot,
   getSession,
   getSystemStatus,
+  getStrategyBriefing,
   getStrategyWorkspace,
   getTradingReadiness,
   getTradingWorkspace,
@@ -210,15 +211,17 @@ describe("trading endpoint wiring", () => {
     await expect(getSession()).resolves.toMatchObject({ displayName: "Ops Desk" });
     await expect(getSystemStatus()).resolves.toMatchObject({ providersTotal: 4, recentEvents: [] });
     await expect(getStrategyWorkspace()).resolves.toMatchObject({ runs: expect.any(Array) });
+    await expect(getStrategyBriefing()).resolves.toMatchObject({ workspace: expect.any(Object) });
     await expect(getTradingWorkspace()).resolves.toMatchObject({ openOrders: expect.any(Array) });
     await expect(getPortfolioWorkspace()).resolves.toMatchObject({ positions: expect.any(Array) });
-    await expect(getDataOperationsWorkspace()).resolves.toMatchObject({
+    await expect(getDataWorkspace()).resolves.toMatchObject({
       backfills: expect.any(Array),
       exports: [expect.objectContaining({ target: "strategy pack" })]
     });
-    await expect(getGovernanceWorkspace()).resolves.toMatchObject({ reconciliationQueue: expect.any(Array) });
+    await expect(getAccountingWorkspace()).resolves.toMatchObject({ reconciliationQueue: expect.any(Array) });
     await expect(getReportingWorkspace()).resolves.toMatchObject({ reporting: expect.any(Object) });
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/strategy", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/strategy/briefing", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/portfolio", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/data", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/accounting", expect.anything());

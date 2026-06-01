@@ -24,7 +24,7 @@ public sealed class WorkspaceQueueToneStylesTests
     {
         var dataOperationsXaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellPage.xaml"));
         var decisionQueueXaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\WorkspaceDecisionQueueControl.xaml"));
-        var governanceXaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\GovernanceWorkspaceShellPage.xaml"));
+        var accountingXaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\AccountingWorkspaceShellPage.xaml"));
 
         dataOperationsXaml.Should().Contain("WorkspaceDecisionQueueControl");
         dataOperationsXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneInspectorCardStyle}\"");
@@ -32,9 +32,9 @@ public sealed class WorkspaceQueueToneStylesTests
         decisionQueueXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneQueueCardStyle}\"");
         decisionQueueXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneBadgeStyle}\"");
 
-        governanceXaml.Should().Contain("WorkspaceDecisionQueueControl");
-        governanceXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneInspectorCardStyle}\"");
-        governanceXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneBadgeTextStyle}\"");
+        accountingXaml.Should().Contain("WorkspaceDecisionQueueControl");
+        accountingXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneInspectorCardStyle}\"");
+        accountingXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneBadgeTextStyle}\"");
         decisionQueueXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneQueueCardStyle}\"");
         decisionQueueXaml.Should().Contain("Style=\"{StaticResource WorkspaceToneBadgeStyle}\"");
     }

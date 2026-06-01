@@ -18,9 +18,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddTransient<GovernanceWorkspaceShellStateProvider>();
-        services.AddTransient<GovernanceWorkspaceShellViewModel>();
-        services.AddTransient<GovernanceWorkspaceShellPage>();
+        services.AddTransient<AccountingWorkspaceShellStateProvider>();
+        services.AddTransient<AccountingWorkspaceShellViewModel>();
+        services.AddTransient<AccountingWorkspaceShellPage>();
         services.TryAddSingleton<AccountingPostingService>();
         services.TryAddSingleton<TrialBalanceProjectionService>();
         services.TryAddSingleton<MonthEndCloseStateMachine>();

@@ -129,6 +129,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RefreshWorkspaceTiles();
         var initialPage = _navigationService.GetBreadcrumbs().FirstOrDefault()?.PageTag ?? DefaultPageTag;
         InitializeCurrentPageState(initialPage);
+        RefreshPrimaryOperatorWorkflowSteps();
         RefreshCommandPalettePages();
         RefreshRecentPages();
         SyncNavigationState();
@@ -171,6 +172,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> WorkflowSummaries => WorkflowSection.WorkflowSummaries;
 
     public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> SecondaryWorkflowSummaries => WorkflowSection.SecondaryWorkflowSummaries;
+
+    public ReadOnlyObservableCollection<PrimaryOperatorWorkflowStep> PrimaryOperatorWorkflowSteps => WorkflowSection.PrimaryOperatorWorkflowSteps;
 
     public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes => _navigationSection.WindowModes;
 
@@ -361,6 +364,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         ? "Current workspace action first. Other workspace actions stay one click away."
         : "Current workspace action first, with blockers and target pages kept visible.";
 
+    public string PrimaryOperatorWorkflowLabel => "Primary operator workflow";
+
+    public string PrimaryOperatorWorkflowSummary => "Import -> Validate -> Reconcile -> Investigate -> Approve -> Report";
+
+    public string PrimaryOperatorWorkflowStepsLabel => "Primary operator workflow steps";
+
     public Visibility PrimaryWorkflowDetailVisibility => _workflowSummaryStrip.PrimaryDetailVisibility;
 
     public bool IsWorkspaceHomePageActive
@@ -391,6 +400,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public bool IsStrategyWorkspaceActive => string.Equals(_currentWorkspace, "strategy", StringComparison.OrdinalIgnoreCase);
 
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public bool IsResearchWorkspaceActive => IsStrategyWorkspaceActive;
 
     public bool IsTradingWorkspaceActive => string.Equals(_currentWorkspace, "trading", StringComparison.OrdinalIgnoreCase);
@@ -403,10 +413,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public bool IsDataWorkspaceActive => string.Equals(_currentWorkspace, "data", StringComparison.OrdinalIgnoreCase);
 
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public bool IsDataOperationsWorkspaceActive => IsDataWorkspaceActive;
 
     public bool IsSettingsWorkspaceActive => string.Equals(_currentWorkspace, "settings", StringComparison.OrdinalIgnoreCase);
 
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public bool IsGovernanceWorkspaceActive => IsAccountingWorkspaceActive;
 
     public bool HasSecondaryNavigation => _navigationSection.SecondaryItems.Count > 0;
@@ -427,6 +439,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             }
 
             UpdateCurrentPageContent(normalized);
+            RefreshPrimaryOperatorWorkflowSteps();
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
@@ -795,20 +808,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaiseShellLayoutPropertiesChanged();
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
-            RaisePropertyChanged(nameof(IsStrategyWorkspaceActive));
-            RaisePropertyChanged(nameof(IsResearchWorkspaceActive));
-            RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
-            RaisePropertyChanged(nameof(IsPortfolioWorkspaceActive));
-            RaisePropertyChanged(nameof(IsAccountingWorkspaceActive));
-            RaisePropertyChanged(nameof(IsReportingWorkspaceActive));
-            RaisePropertyChanged(nameof(IsDataWorkspaceActive));
-            RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
-            RaisePropertyChanged(nameof(IsSettingsWorkspaceActive));
-            RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
+            RaiseCanonicalWorkspaceActivityPropertiesChanged();
+            RaiseLegacyWorkspaceActivityAliasPropertiesChanged();
             RefreshWorkspaceTileSelection();
             RefreshShellNavigation();
             RefreshCommandPalettePages();
             RefreshRecentPages();
+            RefreshPrimaryOperatorWorkflowSteps();
             UpdateWorkflowPresentation();
             RequestShellRefresh();
         }
@@ -962,6 +968,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             RefreshShellNavigation();
             RefreshCommandPalettePages();
+            RefreshPrimaryOperatorWorkflowSteps();
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
@@ -1347,6 +1354,118 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(PrimaryWorkflowDetailVisibility));
         ToggleSecondaryWorkflowSummariesCommand.NotifyCanExecuteChanged();
     }
+
+    private void RefreshPrimaryOperatorWorkflowSteps()
+    {
+        WorkflowSection.ReplacePrimaryOperatorWorkflowSteps(BuildPrimaryOperatorWorkflowSteps(CurrentPageTag));
+        RaisePropertyChanged(nameof(PrimaryOperatorWorkflowSteps));
+    }
+
+    private static IReadOnlyCollection<PrimaryOperatorWorkflowStep> BuildPrimaryOperatorWorkflowSteps(string pageTag)
+    {
+        var activeStepId = ResolvePrimaryOperatorWorkflowStepId(pageTag);
+        var definitions = new[]
+        {
+            new PrimaryOperatorWorkflowStepDefinition(
+                "import",
+                "Import",
+                "Bring provider, file, and account-source data into the active operating scope.",
+                "DataShell",
+                "data",
+                "\uE8B5"),
+            new PrimaryOperatorWorkflowStepDefinition(
+                "validate",
+                "Validate",
+                "Check data quality, provider health, and backfill evidence before downstream use.",
+                "Backfill",
+                "data",
+                "\uE73E"),
+            new PrimaryOperatorWorkflowStepDefinition(
+                "reconcile",
+                "Reconcile",
+                "Match source, ledger, cash, security, and position records with explainable breaks.",
+                "FundReconciliation",
+                "accounting",
+                "\uE7BA"),
+            new PrimaryOperatorWorkflowStepDefinition(
+                "investigate",
+                "Investigate",
+                "Review portfolio, strategy, and trading evidence behind exceptions or decisions.",
+                "PortfolioShell",
+                "portfolio",
+                "\uE9D9"),
+            new PrimaryOperatorWorkflowStepDefinition(
+                "approve",
+                "Approve",
+                "Capture accounting, control, and operations-continuity approvals with evidence.",
+                "AccountingApprovals",
+                "accounting",
+                "\uE8D7"),
+            new PrimaryOperatorWorkflowStepDefinition(
+                "report",
+                "Report",
+                "Publish governed report packs, exports, and stakeholder-ready evidence.",
+                "FundReportPack",
+                "reporting",
+                "\uE8A5")
+        };
+
+        return definitions
+            .Select(step => new PrimaryOperatorWorkflowStep(
+                step.StepId,
+                step.Label,
+                step.Detail,
+                step.TargetPageTag,
+                step.WorkspaceId,
+                step.Glyph,
+                string.Equals(step.StepId, activeStepId, StringComparison.OrdinalIgnoreCase)))
+            .ToArray();
+    }
+
+    private static string ResolvePrimaryOperatorWorkflowStepId(string pageTag)
+    {
+        var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
+        var workspaceId = InferWorkspaceFromPage(canonicalPageTag);
+
+        if (string.Equals(workspaceId, "reporting", StringComparison.OrdinalIgnoreCase))
+        {
+            return "report";
+        }
+
+        if (string.Equals(canonicalPageTag, "FundAuditTrail", StringComparison.OrdinalIgnoreCase))
+        {
+            return "approve";
+        }
+
+        if (string.Equals(workspaceId, "accounting", StringComparison.OrdinalIgnoreCase))
+        {
+            return "reconcile";
+        }
+
+        if (IsValidationPage(canonicalPageTag))
+        {
+            return "validate";
+        }
+
+        if (string.Equals(workspaceId, "data", StringComparison.OrdinalIgnoreCase))
+        {
+            return "import";
+        }
+
+        if (string.Equals(workspaceId, "trading", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(workspaceId, "portfolio", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(workspaceId, "strategy", StringComparison.OrdinalIgnoreCase))
+        {
+            return "investigate";
+        }
+
+        return "import";
+    }
+
+    private static bool IsValidationPage(string pageTag)
+        => string.Equals(pageTag, "Backfill", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(pageTag, "DataQuality", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(pageTag, "CollectionSessions", StringComparison.OrdinalIgnoreCase);
 
     private async Task<IReadOnlyCollection<WorkspaceWorkflowSummary>> BuildWorkflowSummariesAsync(CancellationToken ct)
     {
@@ -1838,6 +1957,24 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
     }
 
+    private void RaiseCanonicalWorkspaceActivityPropertiesChanged()
+    {
+        RaisePropertyChanged(nameof(IsStrategyWorkspaceActive));
+        RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
+        RaisePropertyChanged(nameof(IsPortfolioWorkspaceActive));
+        RaisePropertyChanged(nameof(IsAccountingWorkspaceActive));
+        RaisePropertyChanged(nameof(IsReportingWorkspaceActive));
+        RaisePropertyChanged(nameof(IsDataWorkspaceActive));
+        RaisePropertyChanged(nameof(IsSettingsWorkspaceActive));
+    }
+
+    private void RaiseLegacyWorkspaceActivityAliasPropertiesChanged()
+    {
+        RaisePropertyChanged(nameof(IsResearchWorkspaceActive));
+        RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
+        RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
+    }
+
     private void RaiseShellLayoutPropertiesChanged()
     {
         RaisePropertyChanged(nameof(CurrentShellLayoutDescriptor));
@@ -1864,6 +2001,28 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     public sealed record RecentPageEntry(string PageTag, string DisplayName);
+
+    public sealed record PrimaryOperatorWorkflowStep(
+        string StepId,
+        string Label,
+        string Detail,
+        string TargetPageTag,
+        string WorkspaceId,
+        string Glyph,
+        bool IsActive)
+    {
+        public string AutomationId => $"PrimaryOperatorFlowStep{StepId}";
+
+        public string StateLabel => IsActive ? "Current" : "Available";
+    }
+
+    private sealed record PrimaryOperatorWorkflowStepDefinition(
+        string StepId,
+        string Label,
+        string Detail,
+        string TargetPageTag,
+        string WorkspaceId,
+        string Glyph);
 
     public sealed class WorkspaceTileItem : BindableBase
     {

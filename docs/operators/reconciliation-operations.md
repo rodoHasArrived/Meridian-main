@@ -56,10 +56,10 @@ curl http://localhost:8080/api/workstation/reconciliation/queue
 - [Operator Preflight Checklist](preflight-checklist.md)
 - [Failover and Recovery](failover-and-recovery.md)
 - [Provider Credential Operations](provider-credentials.md)
-- [Governance operator workflow](../operations/governance-operator-workflow.md) (legacy source)
+- [Fund Ops Persistence Cutover](fund-ops-persistence-cutover.md) for approval ownership,
+  cutover evidence, and recovery rollback gates.
 
 ## Migration source
 
 - Legacy source: [docs/operations/reconciliation-operations.md](../operations/reconciliation-operations.md)  
 - Archive copy: [archive/docs/operations/reconciliation-operations.md](../../archive/docs/operations/reconciliation-operations.md)
-

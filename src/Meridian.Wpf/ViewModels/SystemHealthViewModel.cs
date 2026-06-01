@@ -118,7 +118,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     private string _eventEmptyStateTitle = "Event scan pending";
     public string EventEmptyStateTitle { get => _eventEmptyStateTitle; private set => SetProperty(ref _eventEmptyStateTitle, value); }
 
-    private string _eventEmptyStateDetail = "Refresh health data to confirm whether retained support events are available.";
+    private string _eventEmptyStateDetail = "Refresh health data to confirm whether desktop workstation events are available.";
     public string EventEmptyStateDetail { get => _eventEmptyStateDetail; private set => SetProperty(ref _eventEmptyStateDetail, value); }
 
     // ── Provider section ──────────────────────────────────────────────────────────────
@@ -519,11 +519,11 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     public static SystemHealthEmptyState BuildEventEmptyState(bool hasEventSnapshot) =>
         hasEventSnapshot
             ? new(
-                "No recent events retained",
-                "The latest health window has no retained support events. Continue monitoring or generate diagnostics if symptoms persist.")
+                "No recent desktop events",
+                "The latest health window has no desktop workstation events. Continue monitoring or generate diagnostics if symptoms persist.")
             : new(
                 "Event scan pending",
-                "Refresh health data to confirm whether retained support events are available.");
+                "Refresh health data to confirm whether desktop workstation events are available.");
 
     public static SystemHealthTriageState BuildSystemTriage(
         int providerCount,

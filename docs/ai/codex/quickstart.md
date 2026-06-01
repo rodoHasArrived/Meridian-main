@@ -85,6 +85,7 @@ Load only enough context to route and validate the task.
 | --- | --- | --- |
 | Prompt-routing rules or execution trace | `docs/ai/codex/prompt-execution-trace.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/prompt-route-linter.py --summary`; `python build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary`; `git diff --check -- <paths>` |
 | Prompt-routed handoff packet generation | `docs/ai/agent-handoff-checklist.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`; `python build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary`; `git diff --check -- <paths>` |
+| Scoped repository text rewrite | `docs/ai/codex/quickstart.md`, `src/Meridian.Mcp/README.md` when MCP exposure changes | `python -m unittest build.scripts.ai.tests.test_ai_edit_tool`; `dotnet build src/Meridian.Mcp/Meridian.Mcp.csproj`; `git diff --check -- build/scripts/ai src/Meridian.Mcp docs/ai/codex/quickstart.md` |
 | Codex skill, prompt, checklist, or AI index | `docs/ai/codex/README.md`, `.codex/skills/README.md`, nearest skill or prompt index | `python build/scripts/docs/check-codex-skills.py --summary`; `python build/scripts/docs/check-ai-inventory.py --summary`; `git diff --check -- <paths>` |
 | Shared AI policy | `docs/ai/assistant-workflow-contract.md`, `docs/ai/README.md`, affected host index | `python build/scripts/docs/check-ai-inventory.py --summary`; contract-drift check when policy JSON changes |
 | Repo navigation or MCP routing | `docs/ai/navigation/README.md`, generated navigation inputs | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary`; `python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14` |
@@ -104,6 +105,31 @@ Load only enough context to route and validate the task.
 | `meridian-browser-workstation` | `npm --prefix src/Meridian.Ui/dashboard run test` or targeted Vitest files |
 | `modular-desktop-mvvm` | Focused `dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~<TouchedViewModelOrRoute>" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true` |
 | `meridian-implementation-assurance` | Touched-project build/test plus docs sync; AI/tooling changes also run the AI inventory and skill checks |
+
+## Preview-First Repo Edits
+
+Use `build/scripts/ai/ai-edit-tool.py` for deterministic text edits when the requested change is a
+scoped codemod rather than a semantic refactor. The tool is preview-first:
+
+```bash
+python build/scripts/ai/ai-edit-tool.py plan \
+  --recipe-json "{\"kind\":\"literal_replace\",\"include\":[\"docs/**/*.md\"],\"exclude\":[],\"find\":\"old\",\"replace\":\"new\",\"maxFiles\":3,\"maxEdits\":10}" \
+  --scope-json "{\"paths\":[\"docs/ai\"]}" \
+  --output .codex/tmp/ai-edit-plans/example.json \
+  --summary
+
+python build/scripts/ai/ai-edit-tool.py apply --plan .codex/tmp/ai-edit-plans/example.json --summary
+```
+
+Supported recipes are `literal_replace`, `regex_replace`, `anchored_block_replace`, and
+`identifier_text_rename`. Plans store original SHA-256 hashes per file and `apply` fails if any file
+drifts before mutation. Generated outputs, `bin/`, `obj/`, `node_modules/`, `archive/`, and paths
+outside the repository root are blocked by default. Identifier renames are textual and non-semantic;
+run compiler or type checks for touched languages before claiming they are safe.
+
+MCP clients should use `preview_repo_edit`, `explain_repo_edit_plan`, and `apply_repo_edit` from
+`src/Meridian.Mcp`. Those tools call the same CLI and do not move rewrite behavior into WPF,
+browser workstation, or product UI code.
 
 ## Final Response Checklist
 

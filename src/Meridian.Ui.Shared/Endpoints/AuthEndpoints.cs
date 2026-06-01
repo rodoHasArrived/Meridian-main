@@ -1,3 +1,4 @@
+using Meridian.Application.Auth;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
 using Microsoft.AspNetCore.Builder;
@@ -207,6 +208,135 @@ public static class AuthEndpoints
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
+
+        app.MapGet(
+                UiApiRoutes.AuthApiAccessAssignments,
+                async (
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IScopedAccessAssignmentService scopedAccess,
+                    string? principalId,
+                    AccessScopeKindDto? scopeKind,
+                    Guid? scopeId,
+                    bool? includeRevoked,
+                    CancellationToken ct) =>
+                {
+                    var currentProfile = ResolveCurrentProfile(context, sessionService);
+                    var currentPermissions = currentProfile?.Permissions
+                        ?? (EndpointAuthorization.TryGetPermissions(context, out var contextPermissions)
+                            ? contextPermissions
+                            : UserPermission.None);
+                    if (currentPermissions == UserPermission.None)
+                    {
+                        return Results.Unauthorized();
+                    }
+
+                    if ((currentPermissions & UserPermission.ManageUsers) != UserPermission.ManageUsers)
+                    {
+                        return EndpointHelpers.Forbidden();
+                    }
+
+                    var query = new UserAccessAssignmentQueryDto(
+                        principalId,
+                        scopeKind,
+                        scopeId,
+                        includeRevoked.GetValueOrDefault());
+                    var result = await scopedAccess.QueryAsync(query, ct).ConfigureAwait(false);
+                    return Results.Ok(result);
+                })
+            .WithName("ListScopedAccessAssignments")
+            .WithSummary("Lists governed scoped access assignments for identity and access administration.")
+            .Produces<IReadOnlyList<UserAccessAssignmentDto>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        app.MapPost(
+                UiApiRoutes.AuthApiAccessAssignments,
+                async (
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IScopedAccessAssignmentService scopedAccess,
+                    UserAccessAssignmentCreateRequestDto request,
+                    CancellationToken ct) =>
+                {
+                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    if (auth.StatusCode is not null)
+                    {
+                        return auth.StatusCode.Value switch
+                        {
+                            StatusCodes.Status401Unauthorized => Results.Unauthorized(),
+                            _ => EndpointHelpers.Forbidden()
+                        };
+                    }
+
+                    try
+                    {
+                        var result = await scopedAccess.CreateAsync(request, auth.Actor, ct).ConfigureAwait(false);
+                        return Results.Created(UiApiRoutes.AuthApiAccessAssignments, result);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        return Results.BadRequest(new { error = ex.Message });
+                    }
+                })
+            .WithName("CreateScopedAccessAssignment")
+            .WithSummary("Creates a governed scoped access assignment with audit evidence.")
+            .Produces<UserAccessAssignmentMutationResultDto>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        app.MapPost(
+                UiApiRoutes.AuthApiAccessAssignmentRevoke,
+                async (
+                    Guid assignmentId,
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IScopedAccessAssignmentService scopedAccess,
+                    UserAccessAssignmentRevokeRequestDto request,
+                    CancellationToken ct) =>
+                {
+                    if (assignmentId != request.AssignmentId)
+                    {
+                        return Results.BadRequest(new { error = "Route assignment id must match the request body." });
+                    }
+
+                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    if (auth.StatusCode is not null)
+                    {
+                        return auth.StatusCode.Value switch
+                        {
+                            StatusCodes.Status401Unauthorized => Results.Unauthorized(),
+                            _ => EndpointHelpers.Forbidden()
+                        };
+                    }
+
+                    try
+                    {
+                        var result = await scopedAccess.RevokeAsync(request, auth.Actor, ct).ConfigureAwait(false);
+                        return Results.Ok(result);
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { error = ex.Message });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return Results.Conflict(new { error = ex.Message });
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        return Results.BadRequest(new { error = ex.Message });
+                    }
+                })
+            .WithName("RevokeScopedAccessAssignment")
+            .WithSummary("Revokes a governed scoped access assignment using optimistic concurrency.")
+            .Produces<UserAccessAssignmentMutationResultDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status409Conflict);
     }
 
     private static string BuildLoginRedirect(string? returnUrl, bool error)
@@ -243,6 +373,40 @@ public static class AuthEndpoints
             ctxRole.Value,
             PermissionOverride: ctxPerms);
     }
+
+    private static ManageUsersActor ResolveManageUsersActor(
+        HttpContext context,
+        LoginSessionService sessionService,
+        string requestedBy)
+    {
+        var currentProfile = ResolveCurrentProfile(context, sessionService);
+        UserPermission currentPermissions;
+        var actor = currentProfile?.Username;
+        if (currentProfile is not null)
+        {
+            currentPermissions = currentProfile.Permissions;
+        }
+        else if (EndpointAuthorization.TryGetPermissions(context, out var contextPermissions))
+        {
+            currentPermissions = contextPermissions;
+            actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
+                ? resolvedActor
+                : requestedBy;
+        }
+        else
+        {
+            return new ManageUsersActor(string.Empty, StatusCodes.Status401Unauthorized);
+        }
+
+        if ((currentPermissions & UserPermission.ManageUsers) != UserPermission.ManageUsers)
+        {
+            return new ManageUsersActor(actor ?? requestedBy, StatusCodes.Status403Forbidden);
+        }
+
+        return new ManageUsersActor(actor ?? requestedBy, null);
+    }
+
+    private sealed record ManageUsersActor(string Actor, int? StatusCode);
 }
 
 /// <summary>Login request body for JSON clients.</summary>

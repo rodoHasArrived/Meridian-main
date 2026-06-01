@@ -38,7 +38,7 @@ Shows the runnable projects in the repo and the verified `SharedStartupBootstrap
 
 ![Workstation Delivery](../diagrams/workstation-delivery.svg)
 
-Shows how WPF pages, governance review surfaces, and the desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services.
+Shows how WPF pages, Accounting review surfaces, and the desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services.
 
 ### Security Master Lifecycle
 
@@ -50,7 +50,7 @@ Shows the current Security Master product path across import, ingest status, gro
 
 ![Fund Ops And Reconciliation](../diagrams/fund-ops-reconciliation.svg)
 
-Shows the governance review loop across workstation services, reconciliation projections, the F# reconciliation engine, and persisted run/break state.
+Shows the Accounting review loop across workstation services, reconciliation projections, the F# reconciliation engine, and persisted run/break state.
 
 ## Related Visual References
 

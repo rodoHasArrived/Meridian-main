@@ -7,7 +7,7 @@ namespace Meridian.Wpf.Tests.Shell;
 public sealed class PaneHostViewModelTests
 {
     [Fact]
-    public void AssignPageToPane_CompatibilityAlias_StoresExplicitCanonicalContentState()
+    public void AssignPageToPane_CompatibilityAlias_StoresCanonicalContentState()
     {
         var paneHost = new PaneHostViewModel(new ShellRouteRegistry());
 
@@ -16,9 +16,10 @@ public sealed class PaneHostViewModelTests
         var state = paneHost.GetPaneContentState(0);
         state.Should().NotBeNull();
         state!.PaneIndex.Should().Be(0);
-        state.PageTag.Should().Be("ResearchShell");
+        state.PageTag.Should().Be("StrategyShell");
         state.CanonicalPageTag.Should().Be("StrategyShell");
         state.WorkspaceId.Should().Be("strategy");
+        paneHost.GetAssignedPageTag(0).Should().Be("StrategyShell");
     }
 
     [Fact]
@@ -33,7 +34,7 @@ public sealed class PaneHostViewModelTests
         paneHost.SelectedLayout.PaneCount.Should().Be(2);
         paneHost.ActivePaneIndex.Should().Be(1);
         paneHost.GetAssignedPageTag(0).Should().Be("TradingShell");
-        paneHost.GetAssignedPageTag(1).Should().Be("Blotter");
+        paneHost.GetAssignedPageTag(1).Should().Be("PositionBlotter");
         paneHost.GetPaneContentState(1)!.CanonicalPageTag.Should().Be("PositionBlotter");
     }
 

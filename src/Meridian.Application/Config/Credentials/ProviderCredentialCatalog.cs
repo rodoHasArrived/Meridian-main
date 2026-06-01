@@ -91,6 +91,26 @@ public static class ProviderCredentialCatalog
             AffectedWorkflows: ["Security master resolution", "Reference data"],
             RecommendedActionWhenMissing: "Add the OpenFIGI API key before enabling identifier repair."),
         new(
+            ProviderId: "plaid",
+            DisplayName: "Plaid",
+            Capability: ProviderConnectionCapabilityDto.Data,
+            RequiredFields:
+            [
+                new ProviderCredentialFieldDefinition("ClientId", ["PLAID_CLIENT_ID"]),
+                new ProviderCredentialFieldDefinition("Secret", ["PLAID_SECRET", "PLAID_SANDBOX_SECRET", "PLAID_DEVELOPMENT_SECRET"])
+            ],
+            EnvironmentNames: ["PLAID_ENV", "PLAID_ENVIRONMENT"],
+            DefaultEnvironment: "sandbox",
+            AffectedWorkflows:
+            [
+                "Bank cash reconciliation",
+                "Treasury account verification",
+                "Investment account evidence",
+                "Sandbox transfer authorization"
+            ],
+            RecommendedActionWhenMissing: "Add Plaid client credentials before linking bank accounts or syncing Plaid evidence.",
+            ActionHref: "/settings#plaid-provider-setup"),
+        new(
             ProviderId: "ib",
             DisplayName: "Interactive Brokers",
             Capability: ProviderConnectionCapabilityDto.DataAndBrokerage,
@@ -127,7 +147,8 @@ public static class ProviderCredentialCatalog
         ["nasdaq"] = "nasdaqdatalink",
         ["nasdaq-data-link"] = "nasdaqdatalink",
         ["interactivebrokers"] = "ib",
-        ["interactive-brokers"] = "ib"
+        ["interactive-brokers"] = "ib",
+        ["plaid-api"] = "plaid"
     };
 
     public static IReadOnlyList<ProviderCredentialCatalogEntry> All => Entries;
@@ -161,11 +182,20 @@ public sealed record ProviderCredentialCatalogEntry(
     public string ResolvedActionHref => ActionHref ?? $"/settings#provider-{ProviderId}-connection";
 
     public string NormalizeEnvironment(string? value)
-        => ProviderId.Equals("alpaca", StringComparison.OrdinalIgnoreCase)
-            ? AlpacaCredentialEnvironment.NormalizeTradingEnvironment(value)
-            : string.IsNullOrWhiteSpace(value)
-                ? DefaultEnvironment ?? string.Empty
-                : value.Trim();
+    {
+        if (ProviderId.Equals("alpaca", StringComparison.OrdinalIgnoreCase))
+        {
+            return AlpacaCredentialEnvironment.NormalizeTradingEnvironment(value);
+        }
+
+        if (ProviderId.Equals("plaid", StringComparison.OrdinalIgnoreCase))
+        {
+            var normalized = string.IsNullOrWhiteSpace(value) ? DefaultEnvironment ?? "sandbox" : value.Trim().ToLowerInvariant();
+            return normalized is "production" or "development" or "sandbox" ? normalized : "sandbox";
+        }
+
+        return string.IsNullOrWhiteSpace(value) ? DefaultEnvironment ?? string.Empty : value.Trim();
+    }
 }
 
 public sealed record ProviderCredentialFieldDefinition(

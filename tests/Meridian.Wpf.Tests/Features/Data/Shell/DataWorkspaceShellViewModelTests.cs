@@ -24,7 +24,7 @@ public sealed class DataWorkspaceShellViewModelTests
             PrimaryActionId = "ProviderHealth",
             PrimaryActionLabel = "Open"
         };
-        var presentation = new DataOperationsWorkspacePresentation
+        var presentation = new DataWorkspacePresentation
         {
             Context = new WorkspaceShellContextInput
             {
@@ -32,7 +32,7 @@ public sealed class DataWorkspaceShellViewModelTests
                 WorkspaceTitle = "Data"
             },
             CommandGroup = commandGroup,
-            HeroState = new DataOperationsHeroState
+            HeroState = new DataHeroState
             {
                 FocusText = "Provider posture",
                 SummaryText = "Provider state is ready.",
@@ -42,7 +42,19 @@ public sealed class DataWorkspaceShellViewModelTests
             },
             HeroMetrics =
             [
-                new DataOperationsHeroMetric { Label = "Providers", Value = "1", Detail = "One provider" }
+                new DataHeroMetric { Label = "Providers", Value = "1", Detail = "One provider" }
+            ],
+            IntegrationWorkflowSteps =
+            [
+                new DataIntegrationWorkflowStep
+                {
+                    Id = "connect-source",
+                    Label = "Connect Source",
+                    Description = "Provider ready.",
+                    Status = WorkflowStepStatus.Complete,
+                    StatusLabel = "Connected",
+                    Tone = WorkspaceTone.Success
+                }
             ],
             QueueScopeBadgeText = "Fund A",
             QueueSummaryText = "Provider and storage queues are ready.",
@@ -59,7 +71,7 @@ public sealed class DataWorkspaceShellViewModelTests
                 new WorkspaceRecentItem { Title = "Session", ActionId = "CollectionSessions", ActionLabel = "Open" }
             ]
         };
-        var snapshotService = new StubSnapshotService(new DataOperationsWorkspaceData());
+        var snapshotService = new StubSnapshotService(new DataWorkspaceData());
         var presentationService = new StubPresentationService(presentation);
         var viewModel = new DataWorkspaceShellViewModel(snapshotService, presentationService);
 
@@ -73,6 +85,8 @@ public sealed class DataWorkspaceShellViewModelTests
         viewModel.HeroPrimaryActionVisibility.Should().Be(Visibility.Visible);
         viewModel.HeroSecondaryActionVisibility.Should().Be(Visibility.Collapsed);
         viewModel.HeroMetrics.Should().HaveCount(1);
+        viewModel.IntegrationWorkflowSteps.Should().ContainSingle()
+            .Which.StatusLabel.Should().Be("Connected");
         viewModel.QueueSummaryText.Should().Be("Provider and storage queues are ready.");
         viewModel.ProviderQueueItems.Should().ContainSingle().Which.Should().BeSameAs(providerQueueItem);
         viewModel.ProviderQueueListVisibility.Should().Be(Visibility.Visible);
@@ -96,8 +110,8 @@ public sealed class DataWorkspaceShellViewModelTests
         DataWorkspaceShellActionKind? expectedKind,
         PaneDropAction expectedDockAction)
     {
-        var snapshotService = new StubSnapshotService(new DataOperationsWorkspaceData());
-        var viewModel = new DataWorkspaceShellViewModel(snapshotService, new StubPresentationService(new DataOperationsWorkspacePresentation()));
+        var snapshotService = new StubSnapshotService(new DataWorkspaceData());
+        var viewModel = new DataWorkspaceShellViewModel(snapshotService, new StubPresentationService(new DataWorkspacePresentation()));
         DataWorkspaceShellActionRequestedEventArgs? request = null;
         viewModel.ActionRequested += (_, args) => request = args;
 
@@ -119,7 +133,7 @@ public sealed class DataWorkspaceShellViewModelTests
     [Fact]
     public async Task ExecuteActionAsync_WithNavigationCommand_ShouldRaiseNavigateRequest()
     {
-        var viewModel = new DataWorkspaceShellViewModel(new StubSnapshotService(new DataOperationsWorkspaceData()));
+        var viewModel = new DataWorkspaceShellViewModel(new StubSnapshotService(new DataWorkspaceData()));
         DataWorkspaceShellActionRequestedEventArgs? request = null;
         viewModel.ActionRequested += (_, args) => request = args;
 
@@ -132,16 +146,16 @@ public sealed class DataWorkspaceShellViewModelTests
 
     private sealed class StubSnapshotService : IDataWorkspaceShellSnapshotService
     {
-        private readonly DataOperationsWorkspaceData _data;
+        private readonly DataWorkspaceData _data;
 
-        public StubSnapshotService(DataOperationsWorkspaceData data)
+        public StubSnapshotService(DataWorkspaceData data)
         {
             _data = data;
         }
 
         public int LoadCount { get; private set; }
 
-        public Task<DataOperationsWorkspaceData> LoadAsync(CancellationToken cancellationToken = default)
+        public Task<DataWorkspaceData> LoadAsync(CancellationToken cancellationToken = default)
         {
             LoadCount++;
             return Task.FromResult(_data);
@@ -150,16 +164,16 @@ public sealed class DataWorkspaceShellViewModelTests
 
     private sealed class StubPresentationService : IDataWorkspaceShellPresentationService
     {
-        private readonly DataOperationsWorkspacePresentation _presentation;
+        private readonly DataWorkspacePresentation _presentation;
 
-        public StubPresentationService(DataOperationsWorkspacePresentation presentation)
+        public StubPresentationService(DataWorkspacePresentation presentation)
         {
             _presentation = presentation;
         }
 
-        public DataOperationsWorkspaceData? LastData { get; private set; }
+        public DataWorkspaceData? LastData { get; private set; }
 
-        public DataOperationsWorkspacePresentation Build(DataOperationsWorkspaceData data)
+        public DataWorkspacePresentation Build(DataWorkspaceData data)
         {
             LastData = data;
             return _presentation;

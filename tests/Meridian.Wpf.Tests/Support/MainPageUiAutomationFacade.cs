@@ -147,6 +147,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public Border WorkflowSummaryStrip => GetRequired<Border>("WorkflowSummaryStrip");
 
+    public Border PrimaryOperatorWorkflowStrip => GetRequired<Border>("PrimaryOperatorWorkflowStrip");
+
     public Border SplitPaneLayoutChrome => GetRequired<Border>("SplitPaneLayoutChrome");
 
     public ItemsControl WorkflowSummaryItemsControl => GetRequired<ItemsControl>("WorkflowSummaryItemsControl");

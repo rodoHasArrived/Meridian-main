@@ -7,9 +7,9 @@ import * as api from "@/lib/api";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
-  GovernanceWorkspaceResponse,
+  AccountingWorkspaceResponse,
   PortfolioWorkspaceResponse,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
 
@@ -51,7 +51,7 @@ const trading: TradingWorkspaceResponse = {
   }
 };
 
-const research: ResearchWorkspaceResponse = {
+const strategy: StrategyWorkspaceResponse = {
   metrics: [],
   runs: [
     {
@@ -71,7 +71,7 @@ const research: ResearchWorkspaceResponse = {
   ]
 };
 
-const governance: GovernanceWorkspaceResponse = {
+const accounting: AccountingWorkspaceResponse = {
   metrics: [],
   reconciliationQueue: [],
   breakQueue: [],
@@ -232,7 +232,7 @@ const portfolio: PortfolioWorkspaceResponse = {
     }
   ],
   cashFlow: {
-    ...governance.cashFlow,
+    ...accounting.cashFlow,
     summary: "Portfolio endpoint cash posture."
   }
 };
@@ -243,7 +243,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("renders position table with trading data", () => {
-    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
+    renderWithRouter(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByRole("region", { name: /portfolio workbench context/i })).toBeDefined();
     expect(screen.getByRole("table", { name: /open positions/i })).toBeDefined();
     expect(screen.getByRole("row", { name: /inspect aapl long holding/i })).toHaveAttribute("aria-expanded", "true");
@@ -253,7 +253,7 @@ describe("PortfolioScreen", () => {
 
   it("renders positions and runs from the Portfolio workspace payload when available", () => {
     renderWithRouter(
-      <PortfolioScreen portfolio={portfolio} trading={trading} research={research} governance={governance} />
+      <PortfolioScreen portfolio={portfolio} trading={trading} strategy={strategy} accounting={accounting} />
     );
 
     const positionsTable = screen.getByRole("table", { name: /open positions/i });
@@ -265,7 +265,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("renders a broad Portfolio readiness handoff with direct next routes", () => {
-    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />, {
+    renderWithRouter(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio"]
     });
 
@@ -285,8 +285,8 @@ describe("PortfolioScreen", () => {
     );
   });
 
-  it("renders run-linked equity table with research data", () => {
-    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
+  it("renders run-linked equity table with strategy data", () => {
+    renderWithRouter(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByRole("table", { name: /run-linked equity/i })).toBeDefined();
     expect(screen.getByRole("row", { name: /inspect mean reversion run evidence/i })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("complementary", { name: /mean reversion run detail/i })).toBeDefined();
@@ -294,18 +294,18 @@ describe("PortfolioScreen", () => {
   });
 
   it("shows empty text when trading is null", () => {
-    renderWithRouter(<PortfolioScreen trading={null} research={research} governance={governance} />);
+    renderWithRouter(<PortfolioScreen trading={null} strategy={strategy} accounting={accounting} />);
     expect(screen.getAllByText(/portfolio workspace data unavailable/i)).toHaveLength(2);
     expect(screen.getByText(/no holding selected/i)).toBeDefined();
   });
 
-  it("shows empty text when research is null", () => {
-    renderWithRouter(<PortfolioScreen trading={trading} research={null} governance={governance} />);
+  it("shows empty text when strategy is null", () => {
+    renderWithRouter(<PortfolioScreen trading={trading} strategy={null} accounting={accounting} />);
     expect(screen.getByText(/strategy workspace data unavailable/i)).toBeDefined();
   });
 
-  it("shows cash-flow posture when governance data is available", () => {
-    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
+  it("shows cash-flow posture when accounting data is available", () => {
+    renderWithRouter(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByText(/1 run needs variance review/i)).toBeDefined();
   });
 
@@ -314,8 +314,8 @@ describe("PortfolioScreen", () => {
     renderWithRouter(
       <PortfolioScreen
         trading={trading}
-        research={research}
-        governance={governance}
+        strategy={strategy}
+        accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={brokeragePortfolio}
       />
@@ -357,8 +357,8 @@ describe("PortfolioScreen", () => {
     renderWithRouter(
       <PortfolioScreen
         trading={trading}
-        research={research}
-        governance={governance}
+        strategy={strategy}
+        accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={brokeragePortfolio}
       />
@@ -376,7 +376,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("offers a provider setup handoff when brokerage portfolio sync is unavailable", () => {
-    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
+    renderWithRouter(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
 
     const trustSnapshot = screen.getByRole("region", { name: /alpaca paper brokerage sync snapshot/i });
     expect(within(trustSnapshot).getByText(/provider setup needed/i)).toBeInTheDocument();
@@ -402,8 +402,8 @@ describe("PortfolioScreen", () => {
     renderWithRouter(
       <PortfolioScreen
         trading={trading}
-        research={research}
-        governance={governance}
+        strategy={strategy}
+        accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={warningPortfolio}
       />
@@ -426,8 +426,8 @@ describe("PortfolioScreen", () => {
     renderWithRouter(
       <PortfolioScreen
         trading={trading}
-        research={research}
-        governance={governance}
+        strategy={strategy}
+        accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={brokeragePortfolio}
       />
@@ -474,8 +474,8 @@ describe("PortfolioScreen", () => {
     renderWithRouter(
       <PortfolioScreen
         trading={trading}
-        research={research}
-        governance={governance}
+        strategy={strategy}
+        accounting={accounting}
         brokerageConnection={brokerageConnection}
         brokeragePortfolio={brokeragePortfolio}
       />
@@ -499,7 +499,7 @@ describe("PortfolioScreen", () => {
   });
 
   it("renders a dedicated brokerage-sync workflow panel on the route", () => {
-    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />, {
+    renderWithRouter(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio/brokerage-sync"]
     });
 
@@ -538,7 +538,7 @@ describe("PortfolioScreen", () => {
       ]
     };
 
-    renderWithRouter(<PortfolioScreen trading={tradingWithTwoPositions} research={research} governance={governance} />);
+    renderWithRouter(<PortfolioScreen trading={tradingWithTwoPositions} strategy={strategy} accounting={accounting} />);
 
     const msftRow = screen.getByRole("row", { name: /inspect msft short holding/i });
     expect(msftRow).toHaveAttribute("aria-controls", "portfolio-position-detail");
@@ -553,10 +553,10 @@ describe("PortfolioScreen", () => {
 
   it("updates the run evidence detail panel from the selectable row", async () => {
     const user = userEvent.setup();
-    const researchWithTwoRuns: ResearchWorkspaceResponse = {
-      ...research,
+    const researchWithTwoRuns: StrategyWorkspaceResponse = {
+      ...strategy,
       runs: [
-        research.runs[0],
+        strategy.runs[0],
         {
           id: "run-2",
           strategyName: "Volatility Carry",
@@ -574,7 +574,7 @@ describe("PortfolioScreen", () => {
       ]
     };
 
-    renderWithRouter(<PortfolioScreen trading={trading} research={researchWithTwoRuns} governance={governance} />);
+    renderWithRouter(<PortfolioScreen trading={trading} strategy={researchWithTwoRuns} accounting={accounting} />);
 
     const comparison = screen.getByLabelText("Portfolio run comparison summary");
     expect(comparison).toHaveTextContent("2 strategy runs compared across 2 modes and 2 engines.");
@@ -646,7 +646,7 @@ describe("PortfolioScreen", () => {
     });
     const user = userEvent.setup();
 
-    renderWithRouter(<PortfolioScreen trading={trading} research={research} governance={governance} />);
+    renderWithRouter(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
 
     await user.click(screen.getByRole("button", { name: "Load portfolio drill-in evidence for Mean Reversion" }));
 

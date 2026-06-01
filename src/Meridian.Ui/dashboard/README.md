@@ -82,7 +82,7 @@ command-triggered refresh paths on that lifecycle instead of adding ad-hoc revis
 Shared workflow targets must land on the same operator lane as WPF. `FundTrialBalance` resolves to
 the browser accounting ledger route (`/accounting/ledger`) so Lane B/W3 continuity actions from the
 shared workflow registry do not collapse to the accounting root.
-Browser workflow target routing accepts the retained desktop compatibility page tags
+Browser workflow target routing accepts the desktop compatibility page tags
 `ResearchShell`, `DataOperationsShell`, and `GovernanceShell`, but materializes them as canonical
 browser routes under `/strategy`, `/data`, and `/accounting`.
 Trading readiness work-item actions consume shared route metadata when it is specific enough to
@@ -92,7 +92,7 @@ session replay panel hash target so replay verification remains directly actiona
 Accounting reconciliation break detail preserves shared queue metadata such as exception route,
 tolerance profile, priority, SLA badge label/tone, age band, root cause, resolution code, last
 comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
-source origin/fingerprint, and decision note so browser recovery posture matches the retained WPF
+source origin/fingerprint, and decision note so browser recovery posture matches the WPF desktop
 Fund Ledger detail panel without reimplementing casework rules.
 Accounting reconciliation narratives use canonical Accounting review language while retained
 Governance view-model names remain compatibility seams.
@@ -141,6 +141,32 @@ Strategy wording while retained `Research*` DTO and component names remain compa
 Strategy Builder promotion-review warnings use risk/control wording in the browser view model,
 matching the shared strategy-service validation copy while retained cell kinds remain compatibility
 inputs.
+The browser `DataScreen` owns the canonical Data workspace module under `src/screens/data-screen*`.
+Retained `DataOperations*` DTO, endpoint, and fixture names are compatibility seams only. Data
+workspace navigation and command-palette discovery surface `/data/providers` as the canonical
+provider catalog and onboarding lane, alongside watchlist, quotes, alerts, and backfill queues.
+The provider setup dialog includes Plaid with client-id/secret labels and bank account, identity,
+and investment evidence capabilities. Treat Plaid as a server-owned account-evidence connector from
+the browser: React submits credentials through the shared provider setup API and links operators
+back to `/data/providers` rather than creating browser-local bank-link or market-data routing state.
+Provider setup also projects the design-document Data & Integration flow from its view model:
+`Connect Source`, `Acquire Data`, `Validate Data`, `Normalize Data`, `Store Data`, and `Publish Data`.
+React renders that flow as status copy only; credential validation, routing, storage, and publication
+state remain server/shared-service responsibilities.
+The app shell workflow-continuity dock now also projects the design-document primary operator
+workflow as a browser-wide strip: `Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and
+`Report`. Route-specific trails such as Market Data To Paper or Accounting Closeout remain intact,
+while the primary strip anchors every workspace to the financial-operations flow.
+Accounting Closeout also exposes the design-document Financial Operations lane directly:
+`Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
+The browser `AccountingScreen` renders the same Financial Operations lane in-screen above the
+existing ledger, reconciliation, security coverage, and reporting evidence panels. Retained
+`Governance*` view-model, DTO, endpoint, and test fixture names are compatibility seams only; new
+browser component routing should use Accounting naming.
+Workspace navigation and command-palette root commands canonicalize caller-provided workspace
+metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, `Reporting`,
+`Strategy`, `Data`, and `Settings`. Legacy root labels such as `Research`, `Governance`, and
+`Data Operations` remain route aliases and internal compatibility concepts only.
 
 ## Diagrams
 
@@ -180,7 +206,8 @@ endpoint contracts for behavior also consumed by WPF or host workflows.
 ## Related docs
 
 - `src/Meridian.Ui/README.md`
-- `docs/plans/web-ui-development-pivot.md`
+- `docs/product/meridian-design-document.md`
+- `docs/architecture/desktop-layers.md`
 - `docs/source/generated/source-module-index.md`
 
 Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, bulk triage, and bulk status/result lookup; keep these helpers aligned with `UiApiRoutes` and WPF consumers.

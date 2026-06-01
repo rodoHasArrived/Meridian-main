@@ -10,7 +10,7 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 ## What a Stakeholder Should Read Here
 
 - If you need the current product framing, start with:
-  - [Meridian Design Document (Draft v1.0)](meridian-design-document.md) — imported design baseline for the rebuild
+  - [Meridian Design Document (Version 0.1)](meridian-design-document.md) — design baseline extended with current implementation posture
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
 - If you need evidence-backed examples of current operations, check:
@@ -55,10 +55,10 @@ The operating question remains:
 
 ## Design Charter Integration
 
-- The [Meridian Design Document (Draft v1.0)](meridian-design-document.md) is the active stakeholder-facing product framing source.
+- The [Meridian Design Document (Version 0.1)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Imported Design Baseline: `Meridian Design Document (Draft v1.0)` is the canonical product thesis for this rebuild phase (verbatim import from the latest design draft).
+- Design Baseline: `Meridian Design Document (Version 0.1)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap and source-module evidence.
 
 ## Stakeholder Narrative
 
@@ -124,7 +124,7 @@ Use this matrix to avoid source-of-truth drift:
 
 | Topic | Canonical home | Why |
 | --- | --- | --- |
-| Product design and assumptions | [Meridian Design Document (Draft v1.0)](meridian-design-document.md) | Core design source for stakeholder framing |
+| Product design and assumptions | [Meridian Design Document (Version 0.1)](meridian-design-document.md) | Core design source for stakeholder framing |
 | Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
 | Detailed planning / historical analysis | `docs/plans/`, `docs/evaluations/`, `docs/status/` | Source material only; extract only active facts |
@@ -148,7 +148,7 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 ## High-Value Input Files for Stakeholder Questions
 
-- [Meridian Design Document (Draft v1.0)](meridian-design-document.md)
+- [Meridian Design Document (Version 0.1)](meridian-design-document.md)
 - [Roadmap README](../roadmap/README.md)
 - [Roadmap item list](../roadmap/README.md)
 - [Generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md)

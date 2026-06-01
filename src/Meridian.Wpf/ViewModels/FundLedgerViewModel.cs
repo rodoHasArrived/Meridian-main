@@ -104,7 +104,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _statementReconciliationWorkbenchService = statementReconciliationWorkbenchService ?? new NullStatementReconciliationWorkbenchService();
 
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
-        OpenGovernanceCommand = new RelayCommand(() => _navigationService.NavigateTo("AccountingShell"));
+        OpenAccountingCommand = new RelayCommand(() => _navigationService.NavigateTo("AccountingShell"));
         OpenRunLedgerCommand = new RelayCommand(OpenLatestRunLedger);
         SwitchFundCommand = new RelayCommand(() => _fundContextService.RequestSwitchFund());
         OpenAccountsCommand = new RelayCommand(() => _navigationService.NavigateTo("FundAccounts"));
@@ -190,7 +190,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public IAsyncRelayCommand RefreshCommand { get; }
 
-    public IRelayCommand OpenGovernanceCommand { get; }
+    public IRelayCommand OpenAccountingCommand { get; }
+
+    public IRelayCommand OpenGovernanceCommand => OpenAccountingCommand;
 
     public IRelayCommand OpenRunLedgerCommand { get; }
 

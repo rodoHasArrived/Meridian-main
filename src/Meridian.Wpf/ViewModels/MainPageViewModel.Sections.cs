@@ -43,6 +43,8 @@ internal sealed class MainPageNavigationSectionViewModel
 
 internal sealed class MainPageWorkflowSectionViewModel
 {
+    private readonly ObservableCollection<MainPageViewModel.PrimaryOperatorWorkflowStep> _primaryOperatorWorkflowStepItems = [];
+
     public MainPageWorkflowSectionViewModel(
         CommandPaletteViewModel commandPalette,
         OperatorInboxViewModel operatorInbox,
@@ -51,6 +53,7 @@ internal sealed class MainPageWorkflowSectionViewModel
         CommandPalette = commandPalette;
         OperatorInbox = operatorInbox;
         WorkflowSummaryStrip = workflowSummaryStrip;
+        PrimaryOperatorWorkflowSteps = new ReadOnlyObservableCollection<MainPageViewModel.PrimaryOperatorWorkflowStep>(_primaryOperatorWorkflowStepItems);
     }
 
     public CommandPaletteViewModel CommandPalette { get; }
@@ -60,6 +63,16 @@ internal sealed class MainPageWorkflowSectionViewModel
     public ReadOnlyObservableCollection<ShellCommandPaletteEntry> CommandPalettePages => CommandPalette.Pages;
     public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> WorkflowSummaries => WorkflowSummaryStrip.Summaries;
     public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> SecondaryWorkflowSummaries => WorkflowSummaryStrip.SecondarySummaries;
+    public ReadOnlyObservableCollection<MainPageViewModel.PrimaryOperatorWorkflowStep> PrimaryOperatorWorkflowSteps { get; }
+
+    internal void ReplacePrimaryOperatorWorkflowSteps(IReadOnlyCollection<MainPageViewModel.PrimaryOperatorWorkflowStep> steps)
+    {
+        _primaryOperatorWorkflowStepItems.Clear();
+        foreach (var step in steps)
+        {
+            _primaryOperatorWorkflowStepItems.Add(step);
+        }
+    }
 }
 
 internal sealed class MainPageChromeSectionViewModel : BindableBase

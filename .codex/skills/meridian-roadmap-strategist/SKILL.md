@@ -64,7 +64,7 @@ Non-trigger examples:
 
 - Prefer repository-grounded documents over memory.
 - Treat `docs/status/ROADMAP.md` as the primary active roadmap unless the user asks for a new artifact.
-- Treat `docs/plans/web-ui-development-pivot.md` as the browser-workstation implementation-direction companion to the roadmap.
+- Treat `docs/product/meridian-design-document.md` and `docs/architecture/desktop-layers.md` as the current operator-surface direction companions to the roadmap.
 - Cross-check roadmap claims against nearby status, plan, audit, and architecture documents before marking work complete.
 - Distinguish shipping work from aspirational ideas.
 - Call out dependencies, blockers, and optional items explicitly.

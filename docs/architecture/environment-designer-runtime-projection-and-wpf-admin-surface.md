@@ -7,8 +7,10 @@ fund-structure graph.
 
 The design keeps `Organization` as the umbrella company root, stores environment drafts separately
 from the runtime graph, and publishes a compiled runtime projection that the workstation shell can
-consume without changing the existing `Research`, `Trading`, `Data Operations`, and `Governance`
-workspace IDs.
+consume through the canonical operator workspace IDs: `Trading`, `Portfolio`, `Accounting`,
+`Reporting`, `Strategy`, `Data`, and `Settings`. Legacy `Research`, `Data Operations`, and
+`Governance` lane defaults are accepted at the draft boundary and normalized to `Strategy`, `Data`,
+and `Accounting` before validation or runtime publication.
 
 ## Key Components
 
@@ -56,10 +58,11 @@ state.
 1. Admin creates or edits an `EnvironmentDraftDto`.
 2. Validation checks:
    - orphaned nodes
-   - invalid parent/child combinations
-   - duplicate business/client/fund codes
-   - invalid lane workspace or landing-page defaults
-   - destructive removal of published accounts, portfolios, or ledger groups without remap/approval
+- invalid parent/child combinations
+- duplicate business/client/fund codes
+- invalid lane workspace or landing-page defaults
+- legacy lane workspace/page defaults normalized to canonical operator roots before validation
+- destructive removal of published accounts, portfolios, or ledger groups without remap/approval
 3. Preview produces a publish diff.
 4. Publish compiles the draft into:
    - `OrganizationStructureGraphDto`

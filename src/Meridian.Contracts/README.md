@@ -26,6 +26,7 @@ or provider implementations.
 
 - `Workstation/` - workstation and operator workflow DTOs.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
+- `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
 - Contract DTO files - shared payloads consumed across host, UI services, desktop, and dashboard.
 - Project metadata - serialization and package references for contract consumers.
 
@@ -59,6 +60,12 @@ Ledger draft requests also carry explicit approval and ledger-mapping evidence f
 workflows can block the draft gate before post-time journal-line validation when Security Master
 provenance exists but approved identity or accounting mapping proof is still missing.
 
+Plaid contracts define the shared provider lane for bank account linking, transaction sync,
+balance evidence, investment snapshots, identity verification, webhook retention, and sandbox
+transfer gating. Keep Plaid DTOs contract-owned so Data provider onboarding, Treasury cash
+movement, fund-account reconciliation, browser, WPF, and endpoint services consume the same
+auditable account evidence rather than vendor-shaped payloads.
+
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
 retained manifest path, retained evidence links, report-line provenance, create requests, publish
@@ -90,9 +97,12 @@ broker action before any paper/live movement is routed.
 
 Auth contracts include the role and permission catalog plus custom role-profile upsert payloads.
 `ManageFundStructure` covers governance-impacting ownership lifecycle mutations so ReadOnly and
-analytics-only sessions cannot alter fund-structure relationship records. Keep role-profile
-requests, result envelopes, and audit-event metadata in contracts so browser, desktop, and endpoint
-tests share the same authority-configuration vocabulary.
+analytics-only sessions cannot alter fund-structure relationship records. They also include scoped
+access assignment DTOs that bind a principal to a role or role profile over an organization,
+business, client, fund, portfolio, legal entity, vehicle, sleeve, account, or global scope with
+effective dates, versioning, and audit metadata. Keep role-profile and scoped access requests,
+result envelopes, and audit-event metadata in contracts so browser, desktop, and endpoint tests
+share the same authority-configuration vocabulary.
 
 Operations approval policy contracts include a shared approval policy matrix for close governance,
 governed approval-policy rule upsert requests, result envelopes, and audit-event metadata.
@@ -158,6 +168,10 @@ compare strategy versions and engines without endpoint-local DTOs.
 Strategy promotion readiness contracts also carry retained approval checklist and evidence
 references so paper-to-live promotion gates remain contract-owned and browser/WPF clients can show
 the same human-approved evidence requirements without local promotion-state rules.
+Strategy briefing contracts live in `Workstation/StrategyBriefingDtos.cs` and provide the
+canonical Strategy-named payloads for run drill-ins, saved comparisons, alerts, "what changed"
+items, workspace summary, and the full briefing DTO. Older `ResearchBriefing*` contracts are
+retained as compatibility payloads while WPF and new consumers move to the Strategy names.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve

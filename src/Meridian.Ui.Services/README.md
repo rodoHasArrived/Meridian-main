@@ -43,6 +43,17 @@ renders it as `Strategy` so browser and WPF settings surfaces do not reintroduce
 root workspace label.
 Setup wizard presets follow the same compatibility pattern: the retained `researcher` preset id
 remains available for callers, while the visible preset name is `Strategy Analyst`.
+Command palette workspace entries emit canonical page tags for visible roots; `Open Strategy
+Workspace` uses `StrategyShell`, with legacy words such as `research` retained only as search
+keywords.
+Security Master command-palette entries use the Accounting workspace label while retaining
+reference-data search terms, matching the shared close, reconciliation, and report evidence flows.
+Data and Accounting command-palette keywords avoid legacy `Data Operations` and `Governance`
+workspace vocabulary; use `data`, `quality`, `accounting`, `controls`, and workflow-specific terms
+for discovery.
+Persisted workspace categories use canonical `Strategy`, `Trading`, `Data`, `Accounting`, and
+`Custom` enum members. The older `Research`, `DataOperations`, and `Governance` members remain
+only as numeric compatibility aliases for previously saved workspace state.
 
 ## Diagrams
 

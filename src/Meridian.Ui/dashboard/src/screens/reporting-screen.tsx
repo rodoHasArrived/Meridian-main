@@ -12,10 +12,10 @@ import {
   useReportingScreenViewModel,
   type ReportingProfileRow
 } from "@/screens/reporting-screen.view-model";
-import type { GovernanceWorkspaceResponse } from "@/types";
+import type { AccountingWorkspaceResponse } from "@/types";
 
 interface ReportingScreenProps {
-  data: GovernanceWorkspaceResponse | null;
+  data: AccountingWorkspaceResponse | null;
 }
 
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [

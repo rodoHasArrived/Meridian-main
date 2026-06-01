@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-05-22
 
-Meridian is a modular, event-driven trading platform that is being productized as an evidence-backed investment operations system. The architecture already supports ingestion, storage, replay, backtesting, export, portfolio, ledger, retained desktop workflows, and a browser dashboard. The current roadmap extends that baseline into a connected product where trusted data, research, paper validation, books, reconciliation, approvals, and governed reports share one evidence chain.
+Meridian is a modular, event-driven trading platform that is being productized as an evidence-backed investment operations system. The architecture already supports ingestion, storage, replay, backtesting, export, portfolio, ledger, WPF desktop workflows, and a browser dashboard. The current roadmap extends that baseline into a connected product where trusted data, research, paper validation, books, reconciliation, approvals, and governed reports share one evidence chain.
 
 ## Current Direction
 

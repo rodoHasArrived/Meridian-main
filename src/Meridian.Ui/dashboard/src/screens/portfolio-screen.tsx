@@ -22,17 +22,17 @@ import {
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
-  GovernanceWorkspaceResponse,
+  AccountingWorkspaceResponse,
   PortfolioWorkspaceResponse,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
 
 interface PortfolioScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
-  research: ResearchWorkspaceResponse | null;
-  governance: GovernanceWorkspaceResponse | null;
+  strategy: StrategyWorkspaceResponse | null;
+  accounting: AccountingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
 }
@@ -247,8 +247,8 @@ const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionR
 export function PortfolioScreen({
   portfolio,
   trading,
-  research,
-  governance,
+  strategy,
+  accounting,
   brokerageConnection,
   brokeragePortfolio
 }: PortfolioScreenProps) {
@@ -260,8 +260,8 @@ export function PortfolioScreen({
   const vm = usePortfolioScreenViewModel({
     portfolio,
     trading,
-    research,
-    governance,
+    strategy,
+    accounting,
     brokerageConnection,
     brokeragePortfolio,
     selectedRunDrillIn,

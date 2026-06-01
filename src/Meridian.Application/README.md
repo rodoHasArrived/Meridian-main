@@ -78,6 +78,11 @@ and UI presentation concerns in their owning layers.
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot
   supply the required feed.
+- `Config/Credentials/` - encrypted provider credential catalog and vault behavior. Plaid is a
+  governed provider family with client id/secret fields, sandbox/development/production
+  environment normalization, and browser Data provider setup support. Plaid setup is credential-only
+  in this layer: it stores client credentials in the encrypted vault and does not seed a market-data
+  `DataSourceConfig` or provider-routing binding.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
@@ -98,6 +103,17 @@ and UI presentation concerns in their owning layers.
   links, invalid percentage ownership, sibling percentage over-allocation, and invalid effective
   windows before create, amend, expire, or replacement graph mutations are persisted. Ledger mapping resolution stays server-side and
   reuses fund-structure assignments before falling back to account ledger references.
+- `Auth/` - scoped access assignment orchestration and authorization decisions that bind
+  role/profile permissions to global or fund-structure scopes. The local JSON store persists under
+  `governance/user-access-assignments.json` with atomic writes, while
+  `MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING` enables the Postgres-backed identity access store for
+  shared multi-instance deployments. Governed mutations use versioned assignment records so
+  concurrent Meridian instances fail closed instead of overwriting authority.
+- `EnvironmentDesign/` - local-first organization environment drafts, validation, publishing,
+  rollback, and runtime projection. Lane defaults normalize legacy `Research`, `Data Operations`,
+  and `Governance` workspace/page tags into the canonical operator roots (`Strategy`, `Data`, and
+  `Accounting`) while validation accepts the full design-document root set:
+  `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - `FundAccounts/` - internal account balance snapshots, statement intake, account readiness, and
   provider-link history. Balance snapshots preserve optional realized and unrealized P&L values so
   shared provider-ledger reconciliation can compare broker marks with retained internal book

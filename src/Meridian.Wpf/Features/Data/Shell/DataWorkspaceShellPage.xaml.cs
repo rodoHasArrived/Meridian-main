@@ -7,14 +7,14 @@ using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Features.Data.Shell;
 
-public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBase
+public partial class DataWorkspaceShellPage : DataWorkspaceShellPageBase
 {
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
 
     public DataWorkspaceShellPage(
         NavigationService navigationService,
-        DataOperationsWorkspaceShellStateProvider stateProvider,
+        DataWorkspaceShellStateProvider stateProvider,
         DataWorkspaceShellViewModel viewModel,
         FundContextService fundContextService,
         WorkstationOperatingContextService? operatingContextService = null)
@@ -34,7 +34,7 @@ public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBa
         DataViewModel.Start();
 
         await RefreshShellAsync();
-        await RestoreDockLayoutAsync(DataOperationsDockManager);
+        await RestoreDockLayoutAsync(DataDockManager);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
@@ -42,7 +42,7 @@ public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBa
         DataViewModel.Stop();
         DataViewModel.RefreshRequested -= OnRefreshRequested;
         DataViewModel.ActionRequested -= OnActionRequested;
-        _ = SaveDockLayoutAsync(DataOperationsDockManager);
+        _ = SaveDockLayoutAsync(DataDockManager);
     }
 
     private async Task RefreshShellAsync()
@@ -57,7 +57,7 @@ public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBa
     }
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-        => OpenWorkspacePage(DataOperationsDockManager, e.PageTag, e.Action);
+        => OpenWorkspacePage(DataDockManager, e.PageTag, e.Action);
 
     private async void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
         => await ExecuteActionAsync(e.Command.Id, navigate: true);
@@ -103,7 +103,7 @@ public partial class DataWorkspaceShellPage : DataOperationsWorkspaceShellPageBa
                 NavigationService.NavigateTo(e.ActionId);
                 break;
             case DataWorkspaceShellActionKind.OpenPane:
-                OpenWorkspacePage(DataOperationsDockManager, e.ActionId, e.DockAction);
+                OpenWorkspacePage(DataDockManager, e.ActionId, e.DockAction);
                 break;
         }
     }

@@ -121,6 +121,66 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
+    public async Task ConfigureProvider_WithPlaidCredential_StoresCredentialOnlyWithoutMarketDataRoute()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var credentialStore = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        var configStore = app.Services.GetRequiredService<ApplicationConfigStore>();
+        var clientId = $"plaid-client-{Guid.NewGuid():N}";
+        var secret = $"plaid-secret-{Guid.NewGuid():N}";
+
+        var response = await client.PostAsync(UiApiRoutes.ProviderConfigure, JsonContent(new
+        {
+            kind = "plaid",
+            displayName = "Plaid Sandbox Setup",
+            apiKey = clientId,
+            apiSecret = secret,
+            environment = "sandbox",
+            capabilities = new[] { "banking", "identity", "investments" }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var responseJson = await response.Content.ReadAsStringAsync();
+        responseJson.Should().NotContain(clientId);
+        responseJson.Should().NotContain(secret);
+
+        var result = Deserialize<ProviderSetupResult>(responseJson);
+        result.Success.Should().BeTrue();
+        result.ProviderId.Should().Be("plaid");
+        result.ConnectionId.Should().BeNull();
+        result.BindingIds.Should().BeEmpty();
+        result.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+        result.CredentialSource.Should().Be(ProviderCredentialSourceDto.LocalEncryptedStore);
+        result.CredentialReference.Should().Be("vault:plaid/sandbox");
+        result.Environment.Should().Be("sandbox");
+
+        var stored = await credentialStore.ReadForProviderAsync("plaid");
+        stored.Should().NotBeNull();
+        stored!.Get("ClientId").Should().Be(clientId);
+        stored.Get("Secret").Should().Be(secret);
+
+        var configJson = await File.ReadAllTextAsync(configStore.ConfigPath);
+        configJson.Should().NotContain(clientId);
+        configJson.Should().NotContain(secret);
+        configJson.Should().NotContain("Plaid Sandbox Setup");
+
+        var connectionsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingConnections);
+        connectionsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var connections = await ReadAsync<ProviderConnectionDto[]>(connectionsResponse);
+        connections.Should().NotContain(connection => connection.ProviderFamilyId == "plaid");
+
+        var bindingsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingBindings);
+        bindingsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var bindings = await ReadAsync<ProviderBindingDto[]>(bindingsResponse);
+        bindings.Should().NotContain(binding => binding.ConnectionId == "plaid");
+
+        var vaultJson = await File.ReadAllTextAsync(credentialStore.VaultPath);
+        vaultJson.Should().NotContain(clientId);
+        vaultJson.Should().NotContain(secret);
+    }
+
+    [Fact]
     public async Task ProviderRoutingEndpoints_ReturnConnectionsBindingsAndTrustSnapshotsForSetupConnections()
     {
         await using var app = await CreateAppAsync();

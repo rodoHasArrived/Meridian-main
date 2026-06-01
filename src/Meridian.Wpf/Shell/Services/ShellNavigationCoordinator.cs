@@ -29,7 +29,10 @@ public sealed class ShellNavigationCoordinator : IShellNavigationCoordinator
     public bool IsRouteRegistered(string? pageTag) => RouteRegistry.IsRegistered(pageTag);
 
     public bool NavigateToRoute(string pageTag, object? parameter = null)
-        => RouteRegistry.IsRegistered(pageTag) && _navigationService.NavigateTo(pageTag, parameter);
+    {
+        var route = RouteRegistry.GetRoute(pageTag);
+        return route is not null && _navigationService.NavigateTo(route.PageTag, parameter);
+    }
 
     public PaneDropResult ApplyPaneDrop(
         PaneHostViewModel paneHost,
@@ -48,11 +51,12 @@ public sealed class ShellNavigationCoordinator : IShellNavigationCoordinator
                 action);
         }
 
-        var activePaneIndex = paneHost.ApplyPaneDrop(pageTag, targetPaneIndex, action);
+        var canonicalPageTag = RouteRegistry.GetCanonicalPageTag(pageTag);
+        var activePaneIndex = paneHost.ApplyPaneDrop(canonicalPageTag, targetPaneIndex, action);
         return new PaneDropResult(
             activePaneIndex,
-            pageTag.Trim(),
-            RouteRegistry.GetCanonicalPageTag(pageTag),
+            canonicalPageTag,
+            canonicalPageTag,
             action);
     }
 
@@ -65,7 +69,7 @@ public sealed class ShellNavigationCoordinator : IShellNavigationCoordinator
     public FrameworkElement CreatePaneContent(PaneContentState state)
     {
         ArgumentNullException.ThrowIfNull(state);
-        return _pageContentFactory.CreateContent(state.PageTag, state.Parameter, state.PresentationMode);
+        return _pageContentFactory.CreateContent(state.CanonicalPageTag, state.Parameter, state.PresentationMode);
     }
 
     public void InitializeNavigationFrame(Frame frame)

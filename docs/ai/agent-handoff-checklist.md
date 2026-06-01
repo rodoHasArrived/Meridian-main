@@ -23,6 +23,8 @@ Claude, Copilot, MCP clients, or local maintenance scripts.
 - [ ] For large-repo tasks, do not recurse through the entire tree before task classification.
 - [ ] Re-read only files needed for the current lane.
 - [ ] Preserve reusable context in short handoff packets (required vs optional context), not full log dumps.
+- [ ] Keep a compact evidence budget: summarize command output and include raw logs only when diagnosis requires them.
+- [ ] Mark each shared fact as either validated evidence (with path) or assumption needing follow-up.
 - [ ] Keep one authoritative source list in the handoff packet (agent names, touched files, validation status,
   residual risks).
 
@@ -38,6 +40,8 @@ Each handoff should include:
 - `Next lane`: requested action for the next agent/phase.
 - `Required context`: exact files the next lane should read first.
 - `Optional context`: useful but not required follow-up references.
+- `Validation reuse`: prior validation evidence reused plus rerun triggers if touched files change.
+- `Assumptions`: unresolved assumptions that still need verification.
 
 ## 4) Quality and Safety Gates
 
@@ -52,6 +56,7 @@ Each handoff should include:
 - [ ] Prefer one short, structured handoff packet over large natural-language summaries.
 - [ ] Include only validation evidence relevant to the touched surface.
 - [ ] Keep logs summarized in the handoff packet and avoid full command output unless needed for diagnosis.
+- [ ] Keep handoff file lists minimal: only touched files, files inspected, and next-lane required context.
 
 ## 6) Cross-System Alignment Pointers
 

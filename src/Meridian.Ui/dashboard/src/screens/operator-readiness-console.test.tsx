@@ -147,10 +147,10 @@ describe("OperatorReadinessConsole", () => {
 
     renderWithRouter(
       <OperatorReadinessConsole
-        research={null}
+        strategy={null}
         trading={null}
-        dataOperations={null}
-        governance={null}
+        data={null}
+        accounting={null}
         reporting={null}
       />,
       { initialEntries: ["/trading/readiness"] }
@@ -185,10 +185,10 @@ describe("OperatorReadinessConsole", () => {
 
     renderWithRouter(
       <OperatorReadinessConsole
-        research={null}
+        strategy={null}
         trading={scopedTrading}
-        dataOperations={null}
-        governance={null}
+        data={null}
+        accounting={null}
         reporting={null}
       />,
       { initialEntries: ["/trading/readiness"] }
@@ -213,10 +213,10 @@ describe("OperatorReadinessConsole", () => {
 
     renderWithRouter(
       <OperatorReadinessConsole
-        research={null}
+        strategy={null}
         trading={null}
-        dataOperations={null}
-        governance={null}
+        data={null}
+        accounting={null}
         reporting={null}
       />,
       { initialEntries: ["/trading/readiness"] }
@@ -244,10 +244,10 @@ describe("OperatorReadinessConsole", () => {
 
     renderWithRouter(
       <OperatorReadinessConsole
-        research={null}
+        strategy={null}
         trading={null}
-        dataOperations={null}
-        governance={null}
+        data={null}
+        accounting={null}
         reporting={null}
       />,
       { initialEntries: ["/trading/readiness"] }
@@ -286,10 +286,10 @@ describe("OperatorReadinessConsole", () => {
 
     renderWithRouter(
       <OperatorReadinessConsole
-        research={null}
+        strategy={null}
         trading={null}
-        dataOperations={null}
-        governance={null}
+        data={null}
+        accounting={null}
         reporting={null}
       />,
       { initialEntries: ["/trading/readiness"] }
@@ -316,10 +316,10 @@ describe("OperatorReadinessConsole", () => {
 
     renderWithRouter(
       <OperatorReadinessConsole
-        research={null}
+        strategy={null}
         trading={null}
-        dataOperations={null}
-        governance={null}
+        data={null}
+        accounting={null}
         reporting={null}
       />,
       { initialEntries: ["/trading/readiness"] }

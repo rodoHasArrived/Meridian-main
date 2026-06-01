@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -66,6 +67,28 @@ public sealed class MainShellViewModelTests
             WatchlistService.Instance,
             fixtureModeDetector,
             Substitute.For<IStatusService>());
+    }
+
+    [Fact]
+    public void MainPageViewModel_WorkspaceActivityAliases_ShouldBeHiddenCompatibilityProperties()
+    {
+        typeof(MainPageViewModel)
+            .GetProperty(nameof(MainPageViewModel.IsResearchWorkspaceActive))!
+            .GetCustomAttributes(typeof(EditorBrowsableAttribute), inherit: false)
+            .Should()
+            .ContainSingle(attribute => ((EditorBrowsableAttribute)attribute).State == EditorBrowsableState.Never);
+
+        typeof(MainPageViewModel)
+            .GetProperty(nameof(MainPageViewModel.IsDataOperationsWorkspaceActive))!
+            .GetCustomAttributes(typeof(EditorBrowsableAttribute), inherit: false)
+            .Should()
+            .ContainSingle(attribute => ((EditorBrowsableAttribute)attribute).State == EditorBrowsableState.Never);
+
+        typeof(MainPageViewModel)
+            .GetProperty(nameof(MainPageViewModel.IsGovernanceWorkspaceActive))!
+            .GetCustomAttributes(typeof(EditorBrowsableAttribute), inherit: false)
+            .Should()
+            .ContainSingle(attribute => ((EditorBrowsableAttribute)attribute).State == EditorBrowsableState.Never);
     }
 
     [Fact]
@@ -838,6 +861,40 @@ public sealed class MainShellViewModelTests
             vm.SecondaryWorkflowSummaries.Should().HaveCount(expectedSecondaryCount);
             vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("trading");
             vm.PrimaryWorkflowTargetText.Should().NotBe("Target page: -");
+        });
+    }
+
+    [Fact]
+    public void PrimaryOperatorWorkflowPresentation_ProjectsDesignDocumentFlow()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.PrimaryOperatorWorkflowLabel.Should().Be("Primary operator workflow");
+            vm.PrimaryOperatorWorkflowSummary.Should().Be("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report");
+            vm.PrimaryOperatorWorkflowSteps.Select(step => step.Label)
+                .Should()
+                .Equal("Import", "Validate", "Reconcile", "Investigate", "Approve", "Report");
+            vm.PrimaryOperatorWorkflowSteps.Select(step => step.TargetPageTag)
+                .Should()
+                .Equal("DataShell", "Backfill", "FundReconciliation", "PortfolioShell", "AccountingApprovals", "FundReportPack");
+            vm.PrimaryOperatorWorkflowSteps.Single(step => step.IsActive).StepId.Should().Be("investigate");
+
+            vm.NavigateToPageCommand.Execute("DataShell");
+            vm.PrimaryOperatorWorkflowSteps.Single(step => step.IsActive).StepId.Should().Be("import");
+
+            vm.NavigateToPageCommand.Execute("Backfill");
+            vm.PrimaryOperatorWorkflowSteps.Single(step => step.IsActive).StepId.Should().Be("validate");
+
+            vm.NavigateToPageCommand.Execute("FundReconciliation");
+            vm.PrimaryOperatorWorkflowSteps.Single(step => step.IsActive).StepId.Should().Be("reconcile");
+
+            vm.NavigateToPageCommand.Execute("FundAuditTrail");
+            vm.PrimaryOperatorWorkflowSteps.Single(step => step.IsActive).StepId.Should().Be("approve");
+
+            vm.NavigateToPageCommand.Execute("FundReportPack");
+            vm.PrimaryOperatorWorkflowSteps.Single(step => step.IsActive).StepId.Should().Be("report");
         });
     }
 

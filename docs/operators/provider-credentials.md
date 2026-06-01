@@ -32,6 +32,9 @@ Meridian reads credentials from configuration, with environment variables taking
 - Use provider-specific variables for live data and broker integrations.
 - Avoid storing secrets in repository files, logs, or user shell history.
 - For IBKR simulation builds, use the StockSharp connector surface in config and verify with local replay paths.
+- For Plaid, configure `PLAID_ENV`, `PLAID_CLIENT_ID`, and `PLAID_SECRET`, but keep access tokens
+  and item secrets in the Meridian credential store only. Plaid access tokens must not be written
+  to user environment variables, docs, support bundles, or logs.
 
 See concrete variable names and binding keys in [Environment Variables](../reference/environment-variables.md).
 
@@ -80,6 +83,15 @@ For any credential-impacting change, include:
 - Missing or partial sign-off owners in the DK1 packet if applicable.
 
 Use this in the support/evidence handoff index for promotion decisions.
+
+## Plaid-specific handling
+
+Plaid is a credential-managed provider family for bank, cash, reconciliation, identity/auth,
+investment evidence, and sandbox transfer testing. Operator setup and sync behavior lives in
+[Plaid Provider Operations](./plaid-provider-operations.md).
+
+Production Plaid credentials do not imply live transfer approval. Live transfers require a separate
+readiness flag plus treasury and compliance sign-off before transfer creation is allowed.
 
 ## Legacy links moved into canonical lane
 

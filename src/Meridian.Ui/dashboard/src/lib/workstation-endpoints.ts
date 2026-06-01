@@ -2,6 +2,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   systemStatus: "/api/status",
   session: "/api/workstation/session",
   strategy: "/api/workstation/strategy",
+  strategyBriefing: "/api/workstation/strategy/briefing",
   trading: "/api/workstation/trading",
   tradingReadiness: "/api/workstation/trading/readiness",
   operatorInbox: "/api/workstation/operator/inbox",
@@ -142,6 +143,12 @@ export const PROVIDER_API_ENDPOINTS = {
   configure: "/api/providers/configure",
   status: "/api/providers/status",
   connections: "/api/providers/connections"
+} as const;
+
+export const PLAID_API_ENDPOINTS = {
+  institutionSearch: "/api/plaid/institutions/search",
+  linkToken: "/api/plaid/link-token",
+  publicTokenExchange: "/api/plaid/public-token/exchange"
 } as const;
 
 export const PROVIDER_ROUTING_API_ENDPOINTS = {

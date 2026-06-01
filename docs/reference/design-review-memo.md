@@ -1,7 +1,7 @@
 # Design Review Memo (Institutional Sign-Off) — Source-Material (Legacy)
 
 **Classification:** Source material. This document is preserved for historical context.
-**Canonical replacement:** [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md) is the active product framing source.
+**Canonical replacement:** [Meridian Design Document](../product/meridian-design-document.md) is the active product framing source.
 **Status:** Do not use as source of truth for current planning.
 
 ## Document Control
@@ -48,7 +48,7 @@ The system is suitable for controlled production deployment (data collection + b
 - Guaranteed zero loss under all circumstances (bounded channels may drop under extreme load by design).
 - Exchange-certified market data reconstruction (feed limitations and fallback chains acknowledged).
 - Real-time portfolio optimization or algorithmic order routing.
-- New WPF-first or mobile-specific operator surfaces. WPF remains retained support, and responsive browser validation is allowed only for the workstation route.
+- Mobile-specific operator surfaces, native mobile clients, and mobile-first workflows. WPF and the browser workstation are both active operator surfaces; responsive browser validation is allowed only for the browser workstation route.
 
 ---
 
@@ -69,8 +69,8 @@ The system is suitable for controlled production deployment (data collection + b
 - **Portfolio Tracker** (`Meridian.Strategies`): Multi-run performance analytics, strategy registration and lifecycle management, comparative metrics across backtest/paper/live runs.
 
 **User Interfaces**
-- **Browser Workstation:** Primary operator UI lane under `/workstation/`, implemented in `src/Meridian.Ui/dashboard/` and governed by the Meridian Design System. The workstation uses the canonical `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces with shared route metadata and API-backed workflows.
-- **Retained WPF Desktop App:** Windows-only compatibility/support client for retained workflows, shared-contract regression checks, and desktop-specific support. It does not define new product-surface design while the browser pivot is active.
+- **Browser Workstation:** Active browser operator surface under `/workstation/`, implemented in `src/Meridian.Ui/dashboard/` and governed by the Meridian Design System. The workstation uses the canonical `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` workspaces with shared route metadata and API-backed workflows.
+- **WPF Desktop Workstation:** Active Windows operator surface for desktop workflows, shared-contract regression checks, and desktop-specific support. It shares contracts and read models with the browser workstation instead of defining desktop-only business rules.
 - **Status Endpoints:** JSON API for programmatic integration and monitoring.
 
 ### Reference Workbench Design Contract
@@ -96,7 +96,7 @@ ledger/position evidence screens where dense master-detail review already improv
 Wave 3 can reach Reporting, Strategy, and Trading only where schedule or evidence workflows exist.
 Do not restyle unrelated screens solely for visual uniformity.
 
-The reusable component contract lives in the archived historical note: [`../../archive/docs/ui/README.md`](../../archive/docs/ui/README.md). Product planning for this lane lives in [`../../archive/docs/plans/web-ui-development-pivot.md`](../../archive/docs/plans/web-ui-development-pivot.md).
+The reusable component contract lives in the archived historical note: [`../../archive/docs/ui/README.md`](../../archive/docs/ui/README.md). Current product planning for this lane lives in the [Meridian Design Document](../product/meridian-design-document.md); the old [`web-ui-development-pivot`](../../archive/docs/plans/web-ui-development-pivot.md) plan is historical source material only.
 
 ### Key Control: Unified Event Stream
 All market data outputs normalize to `MarketEvent(Type, Symbol, Timestamp, Payload)` with typed payload records (Trade, L2Snapshot, BboQuote, OrderFlow, IntegrityEvent). This provides:
@@ -182,7 +182,7 @@ This reduces restart risk and prevents partial-write corruption. Changes apply w
   - Add CSRF protections
   - Implement rate limiting for API endpoints
   - Log all administrative actions
-- **Retained WPF Desktop:** Windows-only; relies on OS-level authentication. Accessible only to logged-in user.
+- **WPF Desktop Workstation:** Windows-only; relies on OS-level authentication. Accessible only to logged-in user.
 
 ### Credentials Management
 - **Provider API keys:** Stored in `appsettings.json` (development only). For production:

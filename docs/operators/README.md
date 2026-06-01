@@ -45,6 +45,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 - [Operator Preflight Checklist](./preflight-checklist.md)
 - [Provider Backfill Operations](./provider-backfill-operations.md)
 - [Provider Credentials and Access](./provider-credentials.md)
+- [Plaid Provider Operations](./plaid-provider-operations.md)
 - [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
 - [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
 - [Reconciliation Operations](./reconciliation-operations.md)
@@ -124,6 +125,7 @@ Use this simple status model for operator-facing claims:
 ### Provider operations
 
 - [Provider Credential Operations](./provider-credentials.md)
+- [Plaid Provider Operations](./plaid-provider-operations.md)
 - [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
 - [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
 - [Provider Backfill Operations](./provider-backfill-operations.md)

@@ -133,6 +133,7 @@ public static class UiEndpoints
         app.MapProviderConnectionEndpoints(jsonOptions);
         app.MapProviderCredentialEndpoints(jsonOptions);
         app.MapProviderRoutingEndpoints(jsonOptions);
+        app.MapPlaidEndpoints(jsonOptions);
 
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);

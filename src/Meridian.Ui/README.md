@@ -27,7 +27,18 @@ This folder owns browser workstation packaging and host-served assets. Active so
 ## Important workflows
 
 Use `dashboard/` for source changes and generated `wwwroot/workstation/` assets only when rebuilding the host-served workstation bundle is part of the task.
-Browser workflow target routing keeps retained desktop compatibility page tags aligned to the canonical operator lanes under `dashboard/`.
+Browser workflow target routing keeps desktop compatibility page tags aligned to the canonical operator lanes under `dashboard/`.
+The browser Data workspace exposes provider catalog/onboarding discovery through `/data/providers`
+while keeping generated host assets in `wwwroot/workstation/` as build output.
+The browser app shell projects the design-document primary operator workflow
+(`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`) from dashboard view-model
+state so host-served workstation assets retain the same financial-operations flow after rebuilds.
+The dashboard Accounting Closeout trail also mirrors the design-document Financial Operations flow:
+`Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
+The browser Accounting/Governance screen renders that same lane above its detailed closeout panels.
+Browser navigation and command-palette root commands canonicalize supplied workspace metadata to
+`Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` so legacy
+root names stay compatibility aliases.
 
 ## Diagrams
 
@@ -56,10 +67,11 @@ npm --prefix src/Meridian.Ui/dashboard run build
 
 ## Change rules
 
-Do not create mobile product surfaces here. Keep active operator UI work browser-first under `dashboard/`.
+Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by both active operator surfaces.
 
 ## Related docs
 
 - `src/Meridian.Ui/dashboard/README.md`
-- `docs/plans/web-ui-development-pivot.md`
+- `docs/product/meridian-design-document.md`
+- `docs/architecture/desktop-layers.md`
 - `docs/source/generated/source-module-index.md`

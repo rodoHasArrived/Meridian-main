@@ -1,5 +1,6 @@
 using System.Runtime.ExceptionServices;
 using System.Windows.Controls;
+using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
@@ -362,6 +363,52 @@ public sealed class NavigationServiceTests : IDisposable
         service.IsPageRegistered(alias).Should().BeTrue($"alias '{alias}' should be registered");
         service.GetPageType(alias).Should().Be(service.GetPageType(canonicalPageTag));
         ShellNavigationCatalog.GetCanonicalPageTag(alias).Should().Be(canonicalPageTag);
+    }
+
+    [Theory]
+    [InlineData("ResearchShell", "StrategyShell")]
+    [InlineData("DataOperationsShell", "DataShell")]
+    [InlineData("GovernanceShell", "AccountingShell")]
+    [InlineData("Blotter", "PositionBlotter")]
+    public void NavigateTo_WithAlias_ShouldStoreCanonicalPageTag(string alias, string canonicalPageTag)
+    {
+        RunOnSta(() =>
+        {
+            var service = NavigationService.Instance;
+            var frame = new Frame();
+            service.Initialize(frame);
+            string? navigatedPageTag = null;
+
+            service.Navigated += (_, args) => navigatedPageTag = args.PageTag;
+
+            var result = service.NavigateTo(alias);
+
+            result.Should().BeTrue($"alias '{alias}' should remain routable");
+            navigatedPageTag.Should().Be(canonicalPageTag);
+            service.GetCurrentPageTag().Should().Be(canonicalPageTag);
+            service.GetBreadcrumbs().Should().ContainSingle(entry => entry.PageTag == canonicalPageTag);
+        });
+    }
+
+    [Fact]
+    public void NavigateTo_WithOperationsCloseAlias_ShouldStoreFundLedgerAndKeepReportPackContext()
+    {
+        RunOnSta(() =>
+        {
+            var service = NavigationService.Instance;
+            var frame = new Frame();
+            service.Initialize(frame);
+            object? navigatedParameter = null;
+
+            service.Navigated += (_, args) => navigatedParameter = args.Parameter;
+
+            var result = service.NavigateTo("OperationsClose");
+
+            result.Should().BeTrue("OperationsClose should remain a WPF compatibility alias");
+            service.GetCurrentPageTag().Should().Be("FundLedger");
+            navigatedParameter.Should().BeOfType<FundOperationsNavigationContext>()
+                .Which.Tab.Should().Be(FundOperationsTab.ReportPack);
+        });
     }
 
     [Fact]

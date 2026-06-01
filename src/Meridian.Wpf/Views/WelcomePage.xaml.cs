@@ -44,7 +44,7 @@ public partial class WelcomePage : Page
         _viewModel.NavigateToStorageCommand.Execute(null);
 
     private void StepOperations_CardClick(object sender, MouseButtonEventArgs e) =>
-        _viewModel.NavigateToDataOperationsWorkspaceCommand.Execute(null);
+        _viewModel.NavigateToDataWorkspaceCommand.Execute(null);
 
     private void StepDataQuality_CardClick(object sender, MouseButtonEventArgs e) =>
         _viewModel.NavigateToDataQualityCommand.Execute(null);

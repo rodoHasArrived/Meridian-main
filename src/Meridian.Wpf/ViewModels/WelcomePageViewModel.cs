@@ -71,7 +71,7 @@ public sealed class WelcomePageViewModel : BindableBase
     public IRelayCommand NavigateToProviderCommand { get; }
     public IRelayCommand NavigateToSymbolsCommand { get; }
     public IRelayCommand NavigateToStorageCommand { get; }
-    public IRelayCommand NavigateToDataOperationsWorkspaceCommand { get; }
+    public IRelayCommand NavigateToDataWorkspaceCommand { get; }
     public IRelayCommand NavigateToDataQualityCommand { get; }
     public IRelayCommand OpenDocumentationCommand { get; }
 
@@ -97,7 +97,7 @@ public sealed class WelcomePageViewModel : BindableBase
         NavigateToProviderCommand = new RelayCommand(() => _navigationService.NavigateTo("Provider"));
         NavigateToSymbolsCommand = new RelayCommand(() => _navigationService.NavigateTo("Symbols"));
         NavigateToStorageCommand = new RelayCommand(() => _navigationService.NavigateTo("Storage"));
-        NavigateToDataOperationsWorkspaceCommand = new RelayCommand(() => _navigationService.NavigateTo("DataShell"));
+        NavigateToDataWorkspaceCommand = new RelayCommand(() => _navigationService.NavigateTo("DataShell"));
         NavigateToDataQualityCommand = new RelayCommand(() => _navigationService.NavigateTo("DataQuality"));
         OpenDocumentationCommand = new RelayCommand(OpenDocumentation);
 

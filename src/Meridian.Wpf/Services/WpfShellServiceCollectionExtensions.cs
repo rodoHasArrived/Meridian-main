@@ -67,7 +67,7 @@ public static class WpfShellServiceCollectionExtensions
         services.AddTransient<PaneHostViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<Meridian.Wpf.Views.MainPage>();
-        services.AddWorkspaceScoped<ResearchWorkspaceShellPresentationService>();
+        services.AddWorkspaceScoped<StrategyWorkspaceShellPresentationService>();
         if (configuration is null)
         {
             services.AddMeridianWpfFeatureModules();
@@ -76,9 +76,9 @@ public static class WpfShellServiceCollectionExtensions
         {
             services.AddMeridianWpfFeatureModules(configuration);
         }
-        AddTransientIfMissing(services, typeof(Meridian.Wpf.Services.GovernanceWorkspaceShellStateProvider));
-        AddTransientIfMissing(services, typeof(Meridian.Wpf.ViewModels.GovernanceWorkspaceShellViewModel));
-        AddTransientIfMissing(services, typeof(Meridian.Wpf.Views.GovernanceWorkspaceShellPage));
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.Services.AccountingWorkspaceShellStateProvider));
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.ViewModels.AccountingWorkspaceShellViewModel));
+        AddTransientIfMissing(services, typeof(Meridian.Wpf.Views.AccountingWorkspaceShellPage));
 
         foreach (var pageType in ShellNavigationCatalog.GetRegisteredPageTypes())
         {

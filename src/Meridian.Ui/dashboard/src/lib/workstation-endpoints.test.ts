@@ -137,6 +137,7 @@ describe("workstation API endpoint catalog", () => {
     expect(WORKSTATION_API_ENDPOINTS).toMatchObject({
       session: "/api/workstation/session",
       strategy: "/api/workstation/strategy",
+      strategyBriefing: "/api/workstation/strategy/briefing",
       trading: "/api/workstation/trading",
       tradingReadiness: "/api/workstation/trading/readiness",
       portfolio: "/api/workstation/portfolio",

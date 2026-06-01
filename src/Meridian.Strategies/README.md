@@ -74,7 +74,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integ
 
 ## Change rules
 
-Preserve evidence lineage and avoid breaking promotion compatibility across browser and retained desktop consumers.
+Preserve evidence lineage and avoid breaking promotion compatibility across browser and desktop workstation consumers.
 
 ## Related docs
 

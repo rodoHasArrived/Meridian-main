@@ -32,16 +32,22 @@ public sealed class WorkspaceTemplate
 
 /// <summary>
 /// Persisted workspace category.
-/// Legacy category names are retained for saved workspace compatibility; display
-/// names map to the current operator taxonomy.
+/// Numeric values are stable because saved workspace state may contain them.
+/// Legacy member names remain as aliases for source and persisted-state compatibility.
 /// </summary>
 public enum WorkspaceCategory : byte
 {
-    Research,
+    Strategy = 0,
     Trading,
-    DataOperations,
-    Governance,
-    Custom
+    Data,
+    Accounting,
+    Custom,
+    [Obsolete("Use Strategy. Research is retained only as a compatibility alias.")]
+    Research = Strategy,
+    [Obsolete("Use Data. DataOperations is retained only as a compatibility alias.")]
+    DataOperations = Data,
+    [Obsolete("Use Accounting. Governance is retained only as a compatibility alias.")]
+    Governance = Accounting
 }
 
 public static class WorkspaceCategoryExtensions
@@ -50,10 +56,10 @@ public static class WorkspaceCategoryExtensions
     {
         return category switch
         {
-            WorkspaceCategory.Research => "Strategy",
+            WorkspaceCategory.Strategy => "Strategy",
             WorkspaceCategory.Trading => "Trading",
-            WorkspaceCategory.DataOperations => "Data",
-            WorkspaceCategory.Governance => "Accounting",
+            WorkspaceCategory.Data => "Data",
+            WorkspaceCategory.Accounting => "Accounting",
             _ => "Custom"
         };
     }

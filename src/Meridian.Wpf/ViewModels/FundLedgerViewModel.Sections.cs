@@ -135,7 +135,7 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     private string _blockerReasonText = "No blocker is selected.";
     private string _evidenceLinksText = "Evidence links appear after selecting a break.";
     private string _runsEmptyStateText = "No reconciliation runs are available for this fund.";
-    private WorkstationStateModel _governanceSignifierState = WorkstationStateModel.Empty(
+    private WorkstationStateModel _accountingSignifierState = WorkstationStateModel.Empty(
         "Select reconciliation evidence",
         "Choose a break queue item or reconciliation run to see lifecycle, sign-off, evidence, and recovery posture.",
         "Select a break",
@@ -181,7 +181,8 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     public string BlockerReasonText { get => _blockerReasonText; set => SetProperty(ref _blockerReasonText, value); }
     public string EvidenceLinksText { get => _evidenceLinksText; set => SetProperty(ref _evidenceLinksText, value); }
     public string RunsEmptyStateText { get => _runsEmptyStateText; set => SetProperty(ref _runsEmptyStateText, value); }
-    public WorkstationStateModel GovernanceSignifierState { get => _governanceSignifierState; set => SetProperty(ref _governanceSignifierState, value); }
+    public WorkstationStateModel AccountingSignifierState { get => _accountingSignifierState; set => SetProperty(ref _accountingSignifierState, value); }
+    public WorkstationStateModel GovernanceSignifierState { get => AccountingSignifierState; set => AccountingSignifierState = value; }
     public StatementRunWorkbenchRow? SelectedStatementRun { get => _selectedStatementRun; set => SetProperty(ref _selectedStatementRun, value); }
     public StatementUnresolvedBreakRow? SelectedStatementBreak { get => _selectedStatementBreak; set => SetProperty(ref _selectedStatementBreak, value); }
     public string StatementStatusText { get => _statementStatusText; set => SetProperty(ref _statementStatusText, value); }

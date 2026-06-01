@@ -33,7 +33,7 @@ public sealed class BackfillProviderModel
     public string LastUsedText { get; set; } = string.Empty;
 }
 
-/// <summary>Summary card for the retained desktop provider-management command center.</summary>
+/// <summary>Summary card for the desktop provider-management command center.</summary>
 public sealed class ProviderManagementSummaryCardModel
 {
     public string Label { get; init; } = string.Empty;

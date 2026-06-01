@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.Auth;
 using Meridian.Application.Backtesting;
 using Meridian.Application.Compliance;
 using Meridian.Application.FundStructure;
@@ -11,7 +12,9 @@ using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Contracts.Plaid;
 using Meridian.Contracts.Workstation;
+using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage;
 using Meridian.Storage.Ledger;
@@ -59,6 +62,32 @@ public static class WorkstationServiceCollectionExtensions
         services.AddHttpClient();
         services.AddMemoryCache();
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
+        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
+        {
+            services.TryAddSingleton(new ScopedAccessStoreOptions
+            {
+                ConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
+                Schema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA") ?? "identity_access"
+            });
+            services.TryAddSingleton<IScopedAccessAssignmentStore>(sp =>
+            {
+                var store = new PostgresScopedAccessAssignmentStore(sp.GetRequiredService<ScopedAccessStoreOptions>());
+                store.EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return store;
+            });
+        }
+        else
+        {
+            services.TryAddSingleton<IScopedAccessAssignmentStore>(sp =>
+            {
+                var storageOptions = sp.GetRequiredService<StorageOptions>();
+                var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "user-access-assignments.json");
+                return new FileScopedAccessAssignmentStore(persistencePath);
+            });
+        }
+        services.TryAddSingleton<ScopedAccessService>();
+        services.TryAddSingleton<IScopedAccessAssignmentService>(sp => sp.GetRequiredService<ScopedAccessService>());
+        services.TryAddSingleton<IScopedAuthorizationService>(sp => sp.GetRequiredService<ScopedAccessService>());
         services.TryAddSingleton<UserProfileRegistry>();
         services.TryAddSingleton<LoginSessionService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
@@ -99,6 +128,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
+        services.TryAddSingleton(ResolvePlaidOptions);
+        services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
+            new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp)));
+        services.TryAddSingleton<IPlaidClient>(sp =>
+            new PlaidHttpClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(PlaidHttpClient))));
+        services.TryAddSingleton<PlaidWorkstationService>();
+        services.TryAddSingleton<IPlaidIngestionService>(sp => sp.GetRequiredService<PlaidWorkstationService>());
+        services.TryAddSingleton<IPlaidTransferService>(sp => sp.GetRequiredService<PlaidWorkstationService>());
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
@@ -193,6 +230,54 @@ public static class WorkstationServiceCollectionExtensions
 
         return services;
     }
+
+    private static PlaidOptions ResolvePlaidOptions(IServiceProvider sp)
+    {
+        var configuration = sp.GetService<IConfiguration>();
+        var section = configuration?.GetSection("Plaid");
+        var environment = ParsePlaidEnvironment(
+            section?["Environment"] ??
+            Environment.GetEnvironmentVariable("PLAID_ENV") ??
+            Environment.GetEnvironmentVariable("PLAID_ENVIRONMENT"));
+        var products = ParsePlaidProducts(section?["DefaultProducts"]);
+        return new PlaidOptions(
+            Environment: environment,
+            ClientId: section?["ClientId"] ?? Environment.GetEnvironmentVariable("PLAID_CLIENT_ID"),
+            Secret: section?["Secret"] ?? Environment.GetEnvironmentVariable("PLAID_SECRET"),
+            WebhookBaseUrl: section?["WebhookBaseUrl"] ?? Environment.GetEnvironmentVariable("PLAID_WEBHOOK_BASE_URL"),
+            EnableTransfers: ParseBoolean(section?["EnableTransfers"]) || ParseBoolean(Environment.GetEnvironmentVariable("PLAID_ENABLE_TRANSFERS")),
+            EnableInvestments: !ParseBoolean(section?["DisableInvestments"]) && !ParseBoolean(Environment.GetEnvironmentVariable("PLAID_DISABLE_INVESTMENTS")),
+            DefaultProducts: products.Length == 0 ? PlaidOptions.Default.DefaultProducts : products,
+            EnableLiveTransfers: ParseBoolean(section?["EnableLiveTransfers"]) || ParseBoolean(Environment.GetEnvironmentVariable("PLAID_ENABLE_LIVE_TRANSFERS")));
+    }
+
+    private static PlaidEnvironmentDto ParsePlaidEnvironment(string? value)
+        => value?.Trim().ToLowerInvariant() switch
+        {
+            "production" => PlaidEnvironmentDto.Production,
+            "development" => PlaidEnvironmentDto.Development,
+            _ => PlaidEnvironmentDto.Sandbox
+        };
+
+    private static PlaidProductDto[] ParsePlaidProducts(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return [];
+        }
+
+        return value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(static item => Enum.TryParse<PlaidProductDto>(item, ignoreCase: true, out var parsed)
+                ? parsed
+                : (PlaidProductDto?)null)
+            .Where(static item => item.HasValue)
+            .Select(static item => item!.Value)
+            .Distinct()
+            .ToArray();
+    }
+
+    private static bool ParseBoolean(string? value)
+        => bool.TryParse(value, out var parsed) && parsed;
 
     public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services)
     {

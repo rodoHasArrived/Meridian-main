@@ -1,3 +1,4 @@
+using Meridian.Application.Auth;
 using Meridian.Contracts.Auth;
 using Microsoft.AspNetCore.Http;
 
@@ -105,4 +106,61 @@ public static class EndpointAuthorization
 
             return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
         };
+
+    public static async Task<ScopedAuthorizationDecisionDto> AuthorizeScopedAsync(
+        HttpContext context,
+        UserPermission required,
+        AccessScopeKindDto scopeKind,
+        Guid? scopeId,
+        CancellationToken ct = default)
+    {
+        if (!TryResolveActor(context, out var actor))
+        {
+            return new ScopedAuthorizationDecisionDto(
+                IsAllowed: false,
+                Actor: string.Empty,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: "No authenticated actor was resolved.");
+        }
+
+        if (!TryGetPermissions(context, out var globalPermissions))
+        {
+            return new ScopedAuthorizationDecisionDto(
+                IsAllowed: false,
+                Actor: actor,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: "No role permissions were resolved for the current actor.");
+        }
+
+        var service = context.RequestServices.GetService(typeof(IScopedAuthorizationService)) as IScopedAuthorizationService;
+        if (service is null)
+        {
+            var isGloballyAllowed = (globalPermissions & required) == required;
+            return new ScopedAuthorizationDecisionDto(
+                IsAllowed: isGloballyAllowed,
+                Actor: actor,
+                RequiredPermission: required,
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                Reason: isGloballyAllowed
+                    ? "Scoped authorization service unavailable; global permission fallback granted access."
+                    : "Scoped authorization service unavailable and global permission fallback denied access.");
+        }
+
+        return await service
+            .AuthorizeAsync(actor, required, scopeKind, scopeId, globalPermissions, ct)
+            .ConfigureAwait(false);
+    }
+
+    public static async Task<bool> HasScopedPermissionAsync(
+        HttpContext context,
+        UserPermission required,
+        AccessScopeKindDto scopeKind,
+        Guid? scopeId,
+        CancellationToken ct = default)
+        => (await AuthorizeScopedAsync(context, required, scopeKind, scopeId, ct).ConfigureAwait(false)).IsAllowed;
 }

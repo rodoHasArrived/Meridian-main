@@ -119,7 +119,7 @@
                                         Margin="0,0,8,0" />
                                 <Button Content="Open Data"
                                         Style="{StaticResource GhostButtonStyle}"
-                                        Command="{Binding NavigateToDataOperationsWorkspaceCommand}" />
+                                        Command="{Binding NavigateToDataWorkspaceCommand}" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -266,7 +266,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <TextBlock Text="{StaticResource IconDataOps}"
+                            <TextBlock Text="{StaticResource IconData}"
                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                                        FontSize="18"
                                        Foreground="{StaticResource WarningColorBrush}"
@@ -279,7 +279,7 @@
                         <Button Grid.Column="1"
                                 Content="Open Data Workspace"
                                 Style="{StaticResource SecondaryButtonStyle}"
-                                Command="{Binding NavigateToDataOperationsWorkspaceCommand}" />
+                                Command="{Binding NavigateToDataWorkspaceCommand}" />
                     </Grid>
 
                     <TextBlock Text="Use this route when you are onboarding provider collection, validating symbol coverage, or checking storage and freshness from a clean workstation."
@@ -390,7 +390,7 @@
                                 Cursor="Hand"
                                 MouseLeftButtonUp="StepOperations_CardClick">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="{StaticResource IconDataOps}"
+                                <TextBlock Text="{StaticResource IconData}"
                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
                                            FontSize="24"
                                            Foreground="{StaticResource WarningColorBrush}"
@@ -564,7 +564,7 @@
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 HorizontalAlignment="Left"
                                 Margin="0,16,0,0"
-                                Command="{Binding NavigateToDataOperationsWorkspaceCommand}" />
+                                Command="{Binding NavigateToDataWorkspaceCommand}" />
                     </StackPanel>
                 </Border>
 

@@ -520,7 +520,9 @@ public sealed class WorkspacePageViewModel : BindableBase, IDisposable
         ActiveWorkspacePagesText = active.Pages.Count > 0
             ? $"Pages: {string.Join(", ", active.Pages.Select(page => page.Title))}"
             : string.Empty;
-        ActiveWorkspaceCategoryText = active.Category.ToDisplayName();
+        ActiveWorkspaceCategoryText = active.IsBuiltIn
+            ? active.Name
+            : active.Category.ToDisplayName();
     }
 
     private void RefreshLastSession()
@@ -553,10 +555,10 @@ public sealed class WorkspacePageViewModel : BindableBase, IDisposable
     {
         return categoryIndex switch
         {
-            0 => WorkspaceCategory.Research,
+            0 => WorkspaceCategory.Strategy,
             1 => WorkspaceCategory.Trading,
-            2 => WorkspaceCategory.DataOperations,
-            3 => WorkspaceCategory.Governance,
+            2 => WorkspaceCategory.Data,
+            3 => WorkspaceCategory.Accounting,
             _ => WorkspaceCategory.Custom
         };
     }

@@ -7,10 +7,10 @@ import type {
   BrokerageHouseholdPortfolio,
   BrokerageHouseholdPosition,
   GovernanceCashFlowSummary,
-  GovernanceWorkspaceResponse,
+  AccountingWorkspaceResponse,
   MetricSnapshot,
   PortfolioWorkspaceResponse,
-  ResearchWorkspaceResponse,
+  StrategyWorkspaceResponse,
   RunAttributionSummary,
   RunCashFlowSummary,
   RunFillSummary,
@@ -385,8 +385,8 @@ export interface PortfolioScreenViewModel {
 export function buildPortfolioScreenViewModel({
   portfolio,
   trading,
-  research,
-  governance,
+  strategy,
+  accounting,
   brokerageConnection,
   brokeragePortfolio,
   selectedPositionId = null,
@@ -403,8 +403,8 @@ export function buildPortfolioScreenViewModel({
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
-  research: ResearchWorkspaceResponse | null;
-  governance: GovernanceWorkspaceResponse | null;
+  strategy: StrategyWorkspaceResponse | null;
+  accounting: AccountingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
   selectedPositionId?: string | null;
@@ -422,8 +422,8 @@ export function buildPortfolioScreenViewModel({
   const positions = portfolio?.positions ?? trading?.positions ?? [];
   const runs = portfolio
     ? portfolio.runs.map(toPortfolioRunRecord)
-    : research?.runs ?? [];
-  const cashFlow = portfolio?.cashFlow ?? governance?.cashFlow ?? null;
+    : strategy?.runs ?? [];
+  const cashFlow = portfolio?.cashFlow ?? accounting?.cashFlow ?? null;
   const risk = portfolio?.risk ?? trading?.risk ?? null;
   const brokerage = portfolio?.brokerage ?? trading?.brokerage ?? null;
   const brokerageAccounts = brokeragePortfolio?.accounts ?? [];
@@ -648,7 +648,7 @@ export function buildPortfolioScreenViewModel({
     runDetailId: "portfolio-run-detail",
     selectedRunChip: { label: "Selected run", value: selectedRun?.title ?? "None" },
     runDetailEmptyTitle: "No run selected",
-    runEmptyText: research
+    runEmptyText: strategy
       ? "No runs available. Create a strategy run in the Strategy workspace."
       : portfolio
         ? "No runs available in the Portfolio workspace."
@@ -1106,8 +1106,8 @@ function buildPortfolioHeaderChips({
 export function usePortfolioScreenViewModel({
   portfolio,
   trading,
-  research,
-  governance,
+  strategy,
+  accounting,
   brokerageConnection,
   brokeragePortfolio,
   selectedRunContinuity = null,
@@ -1116,8 +1116,8 @@ export function usePortfolioScreenViewModel({
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
-  research: ResearchWorkspaceResponse | null;
-  governance: GovernanceWorkspaceResponse | null;
+  strategy: StrategyWorkspaceResponse | null;
+  accounting: AccountingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
@@ -1132,8 +1132,8 @@ export function usePortfolioScreenViewModel({
   return buildPortfolioScreenViewModel({
     portfolio,
     trading,
-    research,
-    governance,
+    strategy,
+    accounting,
     brokerageConnection,
     brokeragePortfolio,
     selectedRunContinuity,

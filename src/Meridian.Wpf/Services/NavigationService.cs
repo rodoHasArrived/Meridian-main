@@ -116,11 +116,18 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked,
         IServiceScope? workspaceScope = null)
     {
-        var pageType = GetPageType(pageTag)
+        var requestedPageType = GetPageType(pageTag)
             ?? throw new InvalidOperationException($"Unknown page tag '{pageTag}'.");
+        var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
+        var pageType = GetPageType(canonicalPageTag) ?? requestedPageType;
+        var effectiveParameter = parameter ?? TransformNavigationParameter(pageTag, requestedPageType, null);
 
-        var effectiveParameter = TransformNavigationParameter(pageTag, pageType, parameter);
-        return CreatePageContentCore(pageTag, pageType, effectiveParameter, presentationMode, workspaceScope?.ServiceProvider);
+        return CreatePageContentCore(
+            canonicalPageTag,
+            pageType,
+            effectiveParameter,
+            presentationMode,
+            workspaceScope?.ServiceProvider);
     }
 
     /// <summary>
@@ -132,7 +139,15 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         _navigationScopeProvider.Value = workspaceScope?.ServiceProvider;
         try
         {
-            return base.NavigateTo(pageTag, parameter);
+            var requestedPageType = GetPageType(pageTag);
+            if (requestedPageType is null)
+            {
+                return base.NavigateTo(pageTag, parameter);
+            }
+
+            var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
+            var effectiveParameter = parameter ?? TransformNavigationParameter(pageTag, requestedPageType, null);
+            return base.NavigateTo(canonicalPageTag, effectiveParameter);
         }
         finally
         {

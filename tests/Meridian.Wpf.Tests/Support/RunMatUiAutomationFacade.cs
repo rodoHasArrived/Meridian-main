@@ -285,8 +285,8 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             StrategyRunWorkspaceService.SetInstance(service);
             return service;
         });
-        services.AddSingleton<IWorkstationResearchBriefingApiClient, FakeWorkstationResearchBriefingApiClient>();
-        services.AddSingleton<IResearchBriefingWorkspaceService, ResearchBriefingWorkspaceService>();
+        services.AddSingleton<IWorkstationStrategyBriefingApiClient, FakeWorkstationStrategyBriefingApiClient>();
+        services.AddSingleton<IStrategyBriefingWorkspaceService, StrategyBriefingWorkspaceService>();
         services.AddSingleton<InMemoryFundAccountService>(_ => new InMemoryFundAccountService(Path.Combine(serviceRoot, "fund-accounts.json")));
         services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
         services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(

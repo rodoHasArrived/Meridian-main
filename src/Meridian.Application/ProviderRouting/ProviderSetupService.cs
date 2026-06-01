@@ -32,7 +32,7 @@ public sealed class ProviderSetupService
             return Failure(string.Empty, "Provider display name is required.");
         }
 
-        if (!TryResolveProviderKind(request.Kind, out var sourceKind, out var providerFamilyId, out var providerError))
+        if (!TryResolveProviderKind(request.Kind, out var sourceKind, out var providerFamilyId, out var credentialOnly, out var providerError))
         {
             return Failure(displayName, providerError);
         }
@@ -92,6 +92,28 @@ public sealed class ProviderSetupService
             warnings.Add("Alpaca is configured for a live environment; keep live trading and production routing gated until verification and certification pass.");
         }
 
+        if (credentialOnly)
+        {
+            return new ProviderSetupResult(
+                Success: true,
+                ProviderId: descriptor.ProviderId,
+                ProviderName: displayName,
+                Message: $"{displayName} credentials were configured.",
+                Error: null,
+                ConnectionId: null,
+                BindingIds: Array.Empty<string>(),
+                CredentialState: credentialStatus.CredentialState,
+                CredentialSource: credentialStatus.CredentialSource,
+                CredentialReference: credentialReference,
+                Environment: string.IsNullOrWhiteSpace(credentialStatus.Environment) ? null : credentialStatus.Environment,
+                Warnings: warnings.ToArray());
+        }
+
+        if (sourceKind is null)
+        {
+            return Failure(displayName, $"Provider '{request.Kind}' is not yet supported by the local data-source configuration model.");
+        }
+
         var cfg = _store.Load();
         var dataSources = cfg.DataSources ?? new DataSourcesConfig();
         var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -104,17 +126,17 @@ public sealed class ProviderSetupService
         sources.Add(new DataSourceConfig(
             Id: providerId,
             Name: displayName,
-            Provider: sourceKind,
+            Provider: sourceKind.Value,
             Enabled: true,
             Type: sourceType,
             Priority: sourcePriority,
-            Alpaca: sourceKind == DataSourceKind.Alpaca
+            Alpaca: sourceKind.Value == DataSourceKind.Alpaca
                 ? new AlpacaOptions(UseSandbox: IsSandboxEnvironment(credentialStatus.Environment))
                 : null,
-            Polygon: sourceKind == DataSourceKind.Polygon
+            Polygon: sourceKind.Value == DataSourceKind.Polygon
                 ? new PolygonOptions()
                 : null,
-            IB: sourceKind == DataSourceKind.IB
+            IB: sourceKind.Value == DataSourceKind.IB
                 ? BuildInteractiveBrokersOptions(request.Endpoint)
                 : null,
             Description: $"Configured from the provider setup form for {displayName}.",
@@ -187,20 +209,23 @@ public sealed class ProviderSetupService
 
     private static bool TryResolveProviderKind(
         string? kind,
-        out DataSourceKind sourceKind,
+        out DataSourceKind? sourceKind,
         out string providerFamilyId,
+        out bool credentialOnly,
         out string error)
     {
         var normalizedKind = NormalizeProviderKind(kind);
         error = string.Empty;
-        (sourceKind, providerFamilyId) = normalizedKind switch
+        credentialOnly = false;
+        (sourceKind, providerFamilyId, credentialOnly) = normalizedKind switch
         {
-            "alpaca" => (DataSourceKind.Alpaca, "alpaca"),
-            "polygon" => (DataSourceKind.Polygon, "polygon"),
-            "yahoo" or "yahoofinance" => (DataSourceKind.Yahoo, "yahoo"),
-            "interactivebrokers" or "ib" => (DataSourceKind.IB, "ib"),
-            "synthetic" or "custom" => (DataSourceKind.Synthetic, "synthetic"),
-            _ => (default, string.Empty)
+            "alpaca" => ((DataSourceKind?)DataSourceKind.Alpaca, "alpaca", false),
+            "polygon" => ((DataSourceKind?)DataSourceKind.Polygon, "polygon", false),
+            "yahoo" or "yahoofinance" => ((DataSourceKind?)DataSourceKind.Yahoo, "yahoo", false),
+            "interactivebrokers" or "ib" => ((DataSourceKind?)DataSourceKind.IB, "ib", false),
+            "synthetic" or "custom" => ((DataSourceKind?)DataSourceKind.Synthetic, "synthetic", false),
+            "plaid" or "plaidapi" => ((DataSourceKind?)null, "plaid", true),
+            _ => ((DataSourceKind?)null, string.Empty, false)
         };
 
         if (!string.IsNullOrWhiteSpace(providerFamilyId))

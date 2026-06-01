@@ -38,12 +38,12 @@ public abstract class WorkspaceShellStateProviderBase : IWorkspaceShellStateProv
     protected virtual bool HasPrimaryContext() => true;
 }
 
-public sealed class ResearchWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+public sealed class StrategyWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
 
-    public ResearchWorkspaceShellStateProvider(
+    public StrategyWorkspaceShellStateProvider(
         StrategyRunWorkspaceService runService,
         FundContextService fundContextService,
         WorkstationOperatingContextService? operatingContextService)
@@ -100,37 +100,15 @@ public sealed class TradingWorkspaceShellStateProvider : WorkspaceShellStateProv
     }
 }
 
-public sealed class DataOperationsWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+public sealed class DataWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
-    public DataOperationsWorkspaceShellStateProvider(WorkstationOperatingContextService? operatingContextService)
+    public DataWorkspaceShellStateProvider(WorkstationOperatingContextService? operatingContextService)
         : base(operatingContextService)
     {
     }
 
     public override WorkspaceShellDefinition Definition
         => ShellNavigationCatalog.GetWorkspaceShell("data")!;
-}
-
-public sealed class GovernanceWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
-{
-    private readonly FundContextService _fundContextService;
-
-    public GovernanceWorkspaceShellStateProvider(
-        FundContextService fundContextService,
-        WorkstationOperatingContextService? operatingContextService)
-        : base(operatingContextService)
-    {
-        _fundContextService = fundContextService;
-    }
-
-    public override WorkspaceShellDefinition Definition
-        => ShellNavigationCatalog.GetWorkspaceShell("accounting")!;
-
-    protected override string? GetLayoutScopeKey()
-        => base.GetLayoutScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
-
-    protected override bool HasPrimaryContext()
-        => _fundContextService.CurrentFundProfile is not null;
 }
 
 public sealed class PortfolioWorkspaceShellStateProvider : WorkspaceShellStateProviderBase

@@ -96,6 +96,16 @@ public static class UiApiRoutes
     public const string ProviderRoutingTrustSnapshots = "/api/provider-routing/trust-snapshots";
     public const string ProviderRoutingPreview = "/api/provider-routing/preview";
 
+    // Plaid governed provider endpoints
+    public const string PlaidItems = "/api/plaid/items";
+    public const string PlaidAccounts = "/api/plaid/accounts";
+    public const string PlaidInstitutionSearch = "/api/plaid/institutions/search";
+    public const string PlaidLinkToken = "/api/plaid/link-token";
+    public const string PlaidPublicTokenExchange = "/api/plaid/public-token/exchange";
+    public const string PlaidItemSync = "/api/plaid/items/{itemId}/sync";
+    public const string PlaidWebhook = "/api/plaid/webhook";
+    public const string PlaidSandboxTransfer = "/api/plaid/transfers/sandbox";
+
     /// <summary>
     /// Unified traffic-light health dashboard across all providers.
     /// Returns green/yellow/red overall status with per-provider detail.
@@ -483,6 +493,8 @@ public static class UiApiRoutes
     public const string AuthApiMe = "/api/auth/me";
     public const string AuthApiRoles = "/api/auth/roles";
     public const string AuthApiRoleProfiles = "/api/auth/role-profiles";
+    public const string AuthApiAccessAssignments = "/api/auth/access-assignments";
+    public const string AuthApiAccessAssignmentRevoke = "/api/auth/access-assignments/{assignmentId}/revoke";
 
     // Execution / Paper Trading Cockpit endpoints
     public const string ExecutionAccount = "/api/execution/account";

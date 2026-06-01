@@ -37,8 +37,9 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
     private bool _isMonitoringSignals;
     private WorkspaceShellContext _shellContext = new();
-    private DataOperationsHeroState _heroState = DataOperationsHeroState.Loading();
-    private IReadOnlyList<DataOperationsHeroMetric> _heroMetrics = DataOperationsHeroMetric.LoadingMetrics();
+    private DataHeroState _heroState = DataHeroState.Loading();
+    private IReadOnlyList<DataHeroMetric> _heroMetrics = DataHeroMetric.LoadingMetrics();
+    private IReadOnlyList<DataIntegrationWorkflowStep> _integrationWorkflowSteps = DataIntegrationWorkflowStep.LoadingSteps();
     private string _heroScopeText = "Provider and storage health";
     private string _heroSummaryText = "Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.";
     private string _queueScopeBadgeText = "Provider posture";
@@ -51,11 +52,11 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private WorkspaceQueueRegionState _storageQueueState = WorkspaceQueueRegionState.Loading("Loading storage queue", "Refreshing storage health, export, and capacity signals.");
     private string _operationsSummaryTitleText = "Data";
     private string _operationsSummaryDetailText = "Provider readiness, historical coverage, and storage posture live in the same operator shell.";
-    private string _summaryProvidersText = DataOperationsWorkspacePresentationBuilder.ProvidersUnavailableSummary;
+    private string _summaryProvidersText = DataWorkspacePresentationBuilder.ProvidersUnavailableSummary;
     private string _summaryProvidersTone = WorkspaceTone.Warning;
-    private string _summaryBackfillText = DataOperationsWorkspacePresentationBuilder.BackfillUnavailableSummary;
+    private string _summaryBackfillText = DataWorkspacePresentationBuilder.BackfillUnavailableSummary;
     private string _summaryBackfillTone = WorkspaceTone.Neutral;
-    private string _summaryStorageText = DataOperationsWorkspacePresentationBuilder.StorageUnavailableSummary;
+    private string _summaryStorageText = DataWorkspacePresentationBuilder.StorageUnavailableSummary;
     private string _summaryStorageTone = WorkspaceTone.Success;
     private IReadOnlyList<WorkspaceRecentItem> _recentOperations = Array.Empty<WorkspaceRecentItem>();
 
@@ -79,7 +80,7 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
         private set => SetProperty(ref _shellContext, value);
     }
 
-    public DataOperationsHeroState HeroState
+    public DataHeroState HeroState
     {
         get => _heroState;
         private set
@@ -100,10 +101,16 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
         ? Visibility.Visible
         : Visibility.Collapsed;
 
-    public IReadOnlyList<DataOperationsHeroMetric> HeroMetrics
+    public IReadOnlyList<DataHeroMetric> HeroMetrics
     {
         get => _heroMetrics;
         private set => SetProperty(ref _heroMetrics, value);
+    }
+
+    public IReadOnlyList<DataIntegrationWorkflowStep> IntegrationWorkflowSteps
+    {
+        get => _integrationWorkflowSteps;
+        private set => SetProperty(ref _integrationWorkflowSteps, value);
     }
 
     public string HeroScopeText
@@ -367,11 +374,12 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
         ProviderQueueState = WorkspaceQueueRegionState.Loading("Loading provider queue", "Refreshing provider readiness and connectivity telemetry.");
         BackfillQueueState = WorkspaceQueueRegionState.Loading("Loading backfill queue", "Refreshing backfill checkpoints and execution posture.");
         StorageQueueState = WorkspaceQueueRegionState.Loading("Loading storage queue", "Refreshing storage health, export, and capacity signals.");
-        HeroState = DataOperationsHeroState.Loading();
-        HeroMetrics = DataOperationsHeroMetric.LoadingMetrics();
+        HeroState = DataHeroState.Loading();
+        HeroMetrics = DataHeroMetric.LoadingMetrics();
+        IntegrationWorkflowSteps = DataIntegrationWorkflowStep.LoadingSteps();
     }
 
-    private void ApplyPresentation(DataOperationsWorkspacePresentation presentation, WorkspaceShellContext shellContext)
+    private void ApplyPresentation(DataWorkspacePresentation presentation, WorkspaceShellContext shellContext)
     {
         ArgumentNullException.ThrowIfNull(presentation);
 
@@ -381,6 +389,7 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
         HeroSummaryText = presentation.QueueSummaryText;
         HeroState = presentation.HeroState;
         HeroMetrics = presentation.HeroMetrics;
+        IntegrationWorkflowSteps = presentation.IntegrationWorkflowSteps;
         QueueScopeBadgeText = presentation.QueueScopeBadgeText;
         QueueSummaryText = presentation.QueueSummaryText;
         ProviderQueueItems = presentation.ProviderQueueItems;
@@ -391,11 +400,11 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
         StorageQueueState = presentation.StorageQueueState;
         OperationsSummaryTitleText = presentation.OperationsSummaryTitleText;
         OperationsSummaryDetailText = presentation.OperationsSummaryDetailText;
-        SummaryProvidersText = NormalizeSummaryText(presentation.SummaryProvidersText, DataOperationsWorkspacePresentationBuilder.ProvidersUnavailableSummary);
+        SummaryProvidersText = NormalizeSummaryText(presentation.SummaryProvidersText, DataWorkspacePresentationBuilder.ProvidersUnavailableSummary);
         SummaryProvidersTone = presentation.SummaryProvidersTone;
-        SummaryBackfillText = NormalizeSummaryText(presentation.SummaryBackfillText, DataOperationsWorkspacePresentationBuilder.BackfillUnavailableSummary);
+        SummaryBackfillText = NormalizeSummaryText(presentation.SummaryBackfillText, DataWorkspacePresentationBuilder.BackfillUnavailableSummary);
         SummaryBackfillTone = presentation.SummaryBackfillTone;
-        SummaryStorageText = NormalizeSummaryText(presentation.SummaryStorageText, DataOperationsWorkspacePresentationBuilder.StorageUnavailableSummary);
+        SummaryStorageText = NormalizeSummaryText(presentation.SummaryStorageText, DataWorkspacePresentationBuilder.StorageUnavailableSummary);
         SummaryStorageTone = presentation.SummaryStorageTone;
         RecentOperations = presentation.RecentOperations;
     }
@@ -408,8 +417,9 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
         ProviderQueueState = WorkspaceQueueRegionState.Error("Provider queue degraded", "Provider telemetry is unavailable right now.", "Retry", "Retry", "Open Diagnostics", "Diagnostics");
         BackfillQueueState = WorkspaceQueueRegionState.Error("Backfill queue degraded", "Backfill telemetry could not be refreshed.", "Retry", "Retry", "Open Diagnostics", "Diagnostics");
         StorageQueueState = WorkspaceQueueRegionState.Error("Storage queue degraded", "Storage and export telemetry could not be refreshed.", "Retry", "Retry", "Open Diagnostics", "Diagnostics");
-        HeroState = DataOperationsHeroState.Error();
-        HeroMetrics = DataOperationsHeroMetric.ErrorMetrics();
+        HeroState = DataHeroState.Error();
+        HeroMetrics = DataHeroMetric.ErrorMetrics();
+        IntegrationWorkflowSteps = DataIntegrationWorkflowStep.ErrorSteps();
     }
 
     private static string NormalizeSummaryText(string? value, string fallback)

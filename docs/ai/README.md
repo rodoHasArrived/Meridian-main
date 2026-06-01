@@ -39,6 +39,7 @@ Classify AI/doc changes in this rebuild model:
 | Multi-agent or multi-phase work | [`agent-handoff-checklist.md`](agent-handoff-checklist.md) | Required handoff packet format and token-efficient context boundaries |
 | Parallel multi-lane execution | [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md) | Shared lane-ownership manifest to prevent duplicate discovery and overlapping edits |
 | Context budget sizing | [`work-modes.md`](work-modes.md) | Lightweight/Standard/Deep-review mode selection and escalation rules |
+| Compact context packets | [`agent-handoff-checklist.md`](agent-handoff-checklist.md), [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md), [`work-modes.md`](work-modes.md) | Required vs optional context split, validation-reuse tracking, and summarized evidence budgets |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Source/roadmap documentation sync | [`../source/README.md`](../source/README.md), [`../roadmap/README.md`](../roadmap/README.md) | `build/scripts/docs/validate-source-readmes.py`, `build/scripts/docs/validate-roadmap-registry.py` |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
@@ -86,6 +87,7 @@ Before changing any AI/helping-agent guidance:
 - Do not hand-edit generated AI outputs under `docs/ai/generated/*`; re-run generation command lanes.
 - Update this index when adding/removing AI surfaces, entrypoints, checks, or ownership.
 - For parallel work, initialize a manifest (`parallel-task-manifest-template.md`) and record lane transitions in `agent-handoff-checklist.md`.
+- For lane transitions, include required context, optional context, validation reuse, and unresolved assumptions in the handoff packet.
 - End every AI surface edit with matching validation outputs and a short residual-risk note.
 
 ---
@@ -185,7 +187,7 @@ Located mainly in `docs/ai/claude/`.
 | Model routing policy | [`model-routing-policy.json`](model-routing-policy.json) |
 | Roadmap/source registry sync | [`../roadmap/README.md`](../roadmap/README.md), [`../source/README.md`](../source/README.md) |
 | Prompt and automation guidance | [`prompts/README.md`](prompts/README.md), [`../prompts/README.md`](../prompts/README.md) |
-| Local AI maintenance tooling | `scripts/ai/`, `tools/codex/`, `make/ai.mk` |
+| Local AI maintenance tooling | `scripts/ai/`, `build/scripts/ai/`, `tools/codex/`, `make/ai.mk` |
 
 Model-routing behavior is docs-only controlled by `model-routing-policy.json`; use `routingRules`, `modelClasses`, and `telemetrySignals` as the canonical policy sections. No alternate mirror files, templates, or env-based fallback file paths are used at runtime.
 
@@ -196,6 +198,7 @@ Model-routing behavior is docs-only controlled by `model-routing-policy.json`; u
 - Generated-file handling: this contract plus `validate-docs-structure`, `generate-ai-navigation`, and `check-ai-contract-drift` command lanes
 - Agent orchestration: [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md), [`agent-handoff-checklist.md`](agent-handoff-checklist.md), [check-ai-contract-drift command](assistant-workflow-contract.md)
 - Token/context management: [`work-modes.md`](work-modes.md) and one-lane handoff packets in handoff manifest
+- Compact evidence transfer: require `required context` vs `optional context` separation plus validation-reuse notes in handoff packets
 - Validation procedures: `check-ai-inventory`, `check-codex-skills`, `check-ai-contract-drift`
 - Ownership rules: [`../documentation-ownership.md`](../documentation-ownership.md) and this lane’s `assistant-workflow-contract.md`
 

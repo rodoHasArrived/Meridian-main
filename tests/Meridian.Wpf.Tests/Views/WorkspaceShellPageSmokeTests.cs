@@ -12,13 +12,13 @@ namespace Meridian.Wpf.Tests.Views;
 public sealed class WorkspaceShellPageSmokeTests
 {
     [Theory]
-    [InlineData(typeof(ResearchWorkspaceShellPage))]
+    [InlineData(typeof(StrategyWorkspaceShellPage))]
     [InlineData(typeof(TradingWorkspaceShellPage))]
     [InlineData(typeof(PortfolioWorkspaceShellPage))]
     [InlineData(typeof(ReportingWorkspaceShellPage))]
     [InlineData(typeof(DataWorkspaceShellPage))]
     [InlineData(typeof(SettingsWorkspaceShellPage))]
-    [InlineData(typeof(GovernanceWorkspaceShellPage))]
+    [InlineData(typeof(AccountingWorkspaceShellPage))]
     public void WorkspaceShellPages_ShouldConstructFromDi(Type pageType)
     {
         WpfTestThread.Run(() =>

@@ -22,11 +22,27 @@ This layer should expose AI/tooling access without mixing MCP mechanics into UI 
 ## Key folders and files
 
 - `Meridian.Mcp.csproj` - minimal MCP host project.
+- `Tools/RepoEditTools.cs` - preview/apply wrappers for deterministic scoped repo edits.
 - Tool, resource, and prompt entrypoints for MCP clients.
 
 ## Important workflows
 
 Use this module for MCP host behavior and AI-assisted tool/resource access.
+
+### Preview-first repository edits
+
+The repo edit tools expose a thin MCP wrapper over `build/scripts/ai/ai-edit-tool.py`:
+
+- `preview_repo_edit(recipeJson, scope)` creates a JSON and Markdown plan under
+  `.codex/tmp/ai-edit-plans/` and returns a compact summary.
+- `explain_repo_edit_plan(planPath)` summarizes touched files, edit counts, risk flags, and
+  suggested validation from an existing plan.
+- `apply_repo_edit(planPath)` applies only a saved plan after the Python tool verifies per-file
+  SHA-256 hashes and planned snippets.
+
+The MCP layer validates JSON arguments, resolves plan paths through `RepoPathService`, and keeps all
+rewrite policy in the CLI. It must not bypass the CLI guardrails or write directly to repository
+files.
 
 ## Diagrams
 
@@ -50,6 +66,8 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj -- --help
+dotnet build src/Meridian.Mcp/Meridian.Mcp.csproj
+python -m unittest build.scripts.ai.tests.test_ai_edit_tool
 ```
 
 ## Change rules

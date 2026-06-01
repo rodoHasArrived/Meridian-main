@@ -15,8 +15,8 @@ Each workspace shell follows the same structure:
 
 Only queues, inspectors, and docked surfaces scroll. The page chrome itself remains stable.
 
-This document describes the WPF workstation shell pattern. New operator-facing UI work also lands in the
-browser workstation, using the visible seven-workspace model:
+This document describes the WPF workstation shell pattern. Browser operator UI work uses the same
+visible seven-workspace model:
 
 - `Data`
 - `Strategy`
@@ -26,7 +26,7 @@ browser workstation, using the visible seven-workspace model:
 - `Reporting`
 - `Settings`
 
-The WPF shell uses workspace groupings for desktop support while open workflow work should avoid treating the older `Research`, `Data Operations`, and
+The WPF shell uses workspace groupings for desktop support while workflow work should avoid treating the older `Research`, `Data Operations`, and
 `Governance` labels as the product's visible root taxonomy.
 
 ## Operating Contexts
@@ -58,9 +58,9 @@ The context strip is powered by `WorkspaceShellContextService` and standardizes:
 - unread alert pressure
 - base currency and ledger scope when available
 
-This makes governance, trading, research, and data operations surfaces show the same trust vocabulary even when their working sets differ.
+This makes Accounting, Trading, Strategy, and Data surfaces show the same trust vocabulary even when their working sets differ.
 
-Data Operations provider trust now uses the DK1 rationale vocabulary directly. The workstation API provider rows expose `signalSource`, `reasonCode`, `recommendedAction`, `trustScore`, and `gateImpact`; the WPF provider queue shows the same source, code, and action in the visible provider-health detail when a provider route is degraded or disconnected.
+Data provider trust now uses the DK1 rationale vocabulary directly. The workstation API provider rows expose `signalSource`, `reasonCode`, `recommendedAction`, `trustScore`, and `gateImpact`; the WPF provider queue shows the same source, code, and action in the visible provider-health detail when a provider route is degraded or disconnected.
 
 ## Workflow Summary Guidance
 
@@ -96,27 +96,27 @@ These types are intended for shell composition only. They do not introduce new b
 
 ## Workspace Rollout
 
-### Governance
+### Accounting
 
-Governance is the pilot shell. It uses:
+Accounting is the pilot shell. It uses:
 
 - explicit subareas for `Operations`, `Accounting`, `Reconciliation`, `Reporting`, and `Audit`
 - a locked empty state when no fund-linked operating context is selected
-- a right rail for active governance context, recent governance work, and audit access
+- a right rail for active accounting context, recent accounting work, and audit access
 - operating-context-scoped dock restore and bounded window-mode persistence
 - lane summaries for `Accounting`, `Reconciliation`, `Reporting`, and `Audit` that become distinct as soon as a fund-linked context exists
 - a persistent workbench identity card plus route banners for deep links such as `FundTrialBalance`, `FundReconciliation`, and `FundReportPack`
 - explicit ownership, sign-off, and stale-snapshot copy on reconciliation and report-pack tabs so operators can tell whether they are in overview, accounting, reconciliation, or reporting mode without relying on navigation history
 
-### Research
+### Strategy
 
-Research keeps its dense run-comparison workspace but now uses the shared context strip, command bar, and workflow-handoff card for run scope, promotion posture, accounting impact, reconciliation preview, and workspace actions.
-The research handoff card exposes explicit `Start Backtest`, `Review Run`, and `Send to Trading Review` CTA states, backed by shared evidence badges from run, portfolio, ledger, and promotion seams.
+Strategy keeps its dense run-comparison workspace but now uses the shared context strip, command bar, and workflow-handoff card for run scope, promotion posture, accounting impact, reconciliation preview, and workspace actions.
+The strategy handoff card exposes explicit `Start Backtest`, `Review Run`, and `Send to Trading Review` CTA states, backed by shared evidence badges from run, portfolio, ledger, and promotion seams.
 
 ### Trading
 
 Trading keeps the live-position, blotter, and capital-control surfaces while moving desk actions into the shared command bar, surfacing run or desk posture in the context strip, and exposing accounting and audit drill-ins from the cockpit.
-The cockpit shell now also carries a workflow-status card that replaces generic `Awaiting runs` copy with summary-driven handoff, blocker, and next-action labels. Active positions, risk posture, and the primary desk action now sit above KPI tiles and supporting narrative lanes, which keeps `no context selected`, `candidate awaiting paper review`, `active paper/live cockpit`, and `candidate awaiting governance review` visible without forcing operators to scroll past shell summaries.
+The cockpit shell now also carries a workflow-status card that replaces generic `Awaiting runs` copy with summary-driven handoff, blocker, and next-action labels. Active positions, risk posture, and the primary desk action now sit above KPI tiles and supporting narrative lanes, which keeps `no context selected`, `candidate awaiting paper review`, `active paper/live cockpit`, and `candidate awaiting accounting review` visible without forcing operators to scroll past shell summaries.
 
 ### Data
 
@@ -128,7 +128,7 @@ Docking remains bounded to one workstation shell. The supported modes are:
 
 - `Focused`: docked panes only; floating panes are not restored
 - `Dock + Float`: docked and floating panes restored inside one shell window
-- `Workbench Preset`: dock/floating composition restored from a named preset such as `Research Compare`, `Trading Cockpit`, `Accounting Review`, or `Reconciliation Workbench`
+- `Workbench Preset`: dock/floating composition restored from a named preset such as `Strategy Compare`, `Trading Cockpit`, `Accounting Review`, or `Reconciliation Workbench`
 
 Layouts persist per workspace and per operating context. Floating panes are normalized back to docked/tabbed behavior when the shell is in `Focused` mode.
 

@@ -1055,10 +1055,10 @@ public sealed class WorkspaceServiceTests : IDisposable
     // ── Data Model: WorkspaceCategory Enum ───────────────────────────
 
     [Theory]
-    [InlineData(WorkspaceCategory.Research)]
+    [InlineData(WorkspaceCategory.Strategy)]
     [InlineData(WorkspaceCategory.Trading)]
-    [InlineData(WorkspaceCategory.DataOperations)]
-    [InlineData(WorkspaceCategory.Governance)]
+    [InlineData(WorkspaceCategory.Data)]
+    [InlineData(WorkspaceCategory.Accounting)]
     [InlineData(WorkspaceCategory.Custom)]
     public void WorkspaceCategory_AllValues_ShouldBeDefined(WorkspaceCategory category)
     {

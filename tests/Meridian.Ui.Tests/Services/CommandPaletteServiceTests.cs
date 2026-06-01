@@ -207,10 +207,11 @@ public sealed class CommandPaletteServiceTests
         var service = CommandPaletteService.Instance;
 
         var accountingResults = service.Search("accounting");
-        var aliasResults = service.Search("governance");
+        var dataResults = service.Search("data quality");
 
         accountingResults.Should().Contain(c => c.Id == "nav-run-ledger");
-        aliasResults.Should().Contain(c => c.Id == "nav-data-quality");
+        dataResults.Should().Contain(c => c.Id == "nav-data-quality");
+        service.Search("governance").Should().NotContain(c => c.Id == "nav-data-quality");
     }
 
     [Fact]
@@ -495,6 +496,30 @@ public sealed class CommandPaletteServiceTests
         var command = service.GetAllCommands().First(c => c.Id == "nav-backfill");
 
         command.Description.Should().Contain("Data workspace");
+    }
+
+    [Fact]
+    public void GetAllCommands_StrategyWorkspaceCommand_ShouldUseCanonicalPageTag()
+    {
+        var service = CommandPaletteService.Instance;
+
+        var command = service.GetAllCommands().First(c => c.Id == "nav-strategy-shell");
+
+        command.Title.Should().Be("Open Strategy Workspace");
+        command.ActionId.Should().Be("StrategyShell");
+        command.Description.Should().Contain("Strategy workspace");
+    }
+
+    [Fact]
+    public void GetAllCommands_SecurityMasterCommand_ShouldUseAccountingWorkspaceLabel()
+    {
+        var service = CommandPaletteService.Instance;
+
+        var command = service.GetAllCommands().First(c => c.Id == "nav-security-master");
+
+        command.Title.Should().Be("Open Accounting: Security Master");
+        command.ActionId.Should().Be("SecurityMaster");
+        command.Description.Should().Contain("Accounting workspace");
     }
 
     [Fact]

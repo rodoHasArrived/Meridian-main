@@ -20,6 +20,7 @@ public sealed class RepoPathService
     public string TemplatesPath => Path.Combine(Root, "docs", "examples", "provider-template");
     public string AdaptersPath => Path.Combine(Root, "src", "Meridian.Infrastructure", "Adapters");
     public string AuditScriptPath => Path.Combine(Root, "build", "scripts", "ai-repo-updater.py");
+    public string AiEditToolPath => Path.Combine(Root, "build", "scripts", "ai", "ai-edit-tool.py");
 
     public RepoPathService()
     {
@@ -58,4 +59,20 @@ public sealed class RepoPathService
     public string TestingGuideFile => Path.Combine(AiClaudePath, "CLAUDE.testing.md");
     public string StorageGuideFile => Path.Combine(AiClaudePath, "CLAUDE.storage.md");
     public string FSharpGuideFile => Path.Combine(AiClaudePath, "CLAUDE.fsharp.md");
+
+    public string ResolveInsideRoot(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("Path is required.", nameof(path));
+
+        var fullPath = Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(Root, path));
+        var rootPath = Path.GetFullPath(Root);
+        if (!fullPath.StartsWith(rootPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(fullPath, rootPath, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"Path is outside the Meridian repository root: {path}");
+        }
+
+        return fullPath;
+    }
 }

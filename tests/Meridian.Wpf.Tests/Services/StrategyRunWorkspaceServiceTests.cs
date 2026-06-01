@@ -30,6 +30,15 @@ public sealed class StrategyRunWorkspaceServiceTests
     }
 
     [Fact]
+    public void StrategyRunWorkspaceServiceSource_ShouldUseAccountingValidationHelperName()
+    {
+        var source = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Services\StrategyRunWorkspaceService.cs"));
+
+        source.Should().Contain("BuildAccountingValidationStatus");
+        source.Should().NotContain("BuildGovernanceValidationStatus");
+    }
+
+    [Fact]
     public async Task RecordBacktestRunAsync_ShouldExposeRecordedRunAcrossBrowserAndDrillIns()
     {
         var store = new StrategyRunStore();
@@ -469,6 +478,23 @@ public sealed class StrategyRunWorkspaceServiceTests
             Ledger: ledger,
             ElapsedTime: TimeSpan.FromMinutes(15),
             TotalEventsProcessed: 1_250);
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new FileNotFoundException($"Could not locate repository file '{relativePath}'.");
     }
 
     private sealed class StubSecurityReferenceLookup : Meridian.Strategies.Services.ISecurityReferenceLookup

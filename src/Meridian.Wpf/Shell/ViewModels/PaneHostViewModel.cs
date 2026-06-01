@@ -44,7 +44,7 @@ public partial class PaneHostViewModel : BindableBase
         }
 
         EnsurePaneCapacity(paneIndex + 1);
-        _assignedPageTags[paneIndex] = pageTag.Trim();
+        _assignedPageTags[paneIndex] = NormalizePageTagForStorage(pageTag);
         SetActivePane(paneIndex);
     }
 
@@ -98,10 +98,10 @@ public partial class PaneHostViewModel : BindableBase
 
         return action switch
         {
-            PaneDropAction.SplitLeft => InsertPage(pageTag.Trim(), targetPaneIndex),
-            PaneDropAction.SplitRight => InsertPage(pageTag.Trim(), targetPaneIndex + 1),
-            PaneDropAction.SplitBelow => InsertPage(pageTag.Trim(), targetPaneIndex + 1),
-            _ => ReplacePage(pageTag.Trim(), targetPaneIndex)
+            PaneDropAction.SplitLeft => InsertPage(NormalizePageTagForStorage(pageTag), targetPaneIndex),
+            PaneDropAction.SplitRight => InsertPage(NormalizePageTagForStorage(pageTag), targetPaneIndex + 1),
+            PaneDropAction.SplitBelow => InsertPage(NormalizePageTagForStorage(pageTag), targetPaneIndex + 1),
+            _ => ReplacePage(NormalizePageTagForStorage(pageTag), targetPaneIndex)
         };
     }
 
@@ -162,7 +162,7 @@ public partial class PaneHostViewModel : BindableBase
         var desiredLayout = normalizedPaneCount switch
         {
             <= 1 => PaneLayouts.Single,
-            2 => PaneLayouts.ResearchData,
+            2 => PaneLayouts.StrategyData,
             _ => PaneLayouts.TradingCockpit
         };
 
@@ -191,5 +191,11 @@ public partial class PaneHostViewModel : BindableBase
         {
             SetActivePane(layout.PaneCount - 1);
         }
+    }
+
+    private string NormalizePageTagForStorage(string pageTag)
+    {
+        var trimmed = pageTag.Trim();
+        return _routeRegistry.GetRoute(trimmed)?.PageTag ?? trimmed;
     }
 }

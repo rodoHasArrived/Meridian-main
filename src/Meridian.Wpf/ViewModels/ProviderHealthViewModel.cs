@@ -804,7 +804,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
 
         ProviderManagementStatusText =
             $"{ProviderManagementRows.Count} provider(s) loaded; selected {selected.DisplayName}. " +
-            "Routing and advanced diagnostics are read-only placeholders in the retained desktop MVP.";
+            "Routing and advanced diagnostics are read-only placeholders in the desktop provider workflow.";
         SelectedProviderInspector = BuildProviderInspector(selected);
         SelectedProviderDiagnostics = BuildProviderDiagnosticsChecklist(selected);
         SelectedProviderRoutingMatrix = BuildProviderRoutingMatrix(selected);
@@ -1017,7 +1017,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         {
             Label = "Endpoint reachable",
             StatusText = "Placeholder",
-            Detail = "Provider-specific reachability checks are a follow-up phase in retained desktop.",
+            Detail = "Provider-specific reachability checks are a follow-up phase for the desktop provider workflow.",
             StatusBrush = CreateModelBrush(139, 148, 158)
         };
         yield return new ProviderManagementDiagnosticModel

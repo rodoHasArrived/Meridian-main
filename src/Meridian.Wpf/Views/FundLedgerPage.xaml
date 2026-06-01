@@ -94,7 +94,7 @@
                             </StackPanel>
                         </Border>
                         <WrapPanel Grid.Row="2" Margin="0,16,0,0">
-                            <Button Content="Accounting Home" Command="{Binding OpenGovernanceCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
+                            <Button Content="Accounting Home" Command="{Binding OpenAccountingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Accounts" Command="{Binding OpenAccountsCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Banking" Command="{Binding OpenBankingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Cash &amp; Financing" Command="{Binding OpenCashFinancingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
@@ -143,11 +143,11 @@
                                 Padding="14">
                             <StackPanel>
                                 <TextBlock Text="{Binding CurrentWorkbenchModeText}" Style="{StaticResource MetricLabelStyle}" />
-                                <TextBlock x:Name="GovernanceWorkbenchTitleText"
+                                <TextBlock x:Name="AccountingWorkbenchTitleText"
                                            Text="{Binding CurrentWorkbenchTitleText}"
                                            Style="{StaticResource CardHeaderStyle}"
                                            Margin="0,6,0,0"
-                                           AutomationProperties.AutomationId="GovernanceWorkbenchTitleText" />
+                                           AutomationProperties.AutomationId="AccountingWorkbenchTitleText" />
                                 <TextBlock Text="{Binding CurrentWorkbenchSubtitleText}"
                                            Style="{StaticResource CardDescriptionStyle}"
                                            Margin="0,6,0,0"
@@ -165,13 +165,13 @@
                     BorderBrush="{StaticResource WarningColorBrush}"
                     BorderThickness="1"
                     Visibility="{Binding HasRouteBanner, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    AutomationProperties.AutomationId="GovernanceRouteBanner"
+                    AutomationProperties.AutomationId="AccountingRouteBanner"
                     AutomationProperties.Name="Accounting Route Banner">
                 <StackPanel>
-                    <TextBlock x:Name="GovernanceRouteBannerTitleText"
+                    <TextBlock x:Name="AccountingRouteBannerTitleText"
                                Text="{Binding RouteBannerTitleText}"
                                Style="{StaticResource CardHeaderStyle}"
-                               AutomationProperties.AutomationId="GovernanceRouteBannerTitleText" />
+                               AutomationProperties.AutomationId="AccountingRouteBannerTitleText" />
                     <TextBlock Text="{Binding RouteBannerDetailText}"
                                Style="{StaticResource CardDescriptionStyle}"
                                Margin="0,6,0,0"
@@ -1283,9 +1283,9 @@
                                             <TextBlock Text="{Binding ReconciliationDetailLifecycleText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                             <TextBlock Text="{Binding ReconciliationDetailSignoffText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                             <workstationControls:WorkstationStatePanelControl
-                                                State="{Binding ReconciliationSection.GovernanceSignifierState}"
+                                                State="{Binding ReconciliationSection.AccountingSignifierState}"
                                                 Margin="0,14,0,0"
-                                                AutomationProperties.AutomationId="FundReconciliationGovernanceSignifier" />
+                                                AutomationProperties.AutomationId="FundReconciliationAccountingSignifier" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" HorizontalAlignment="Right">
                                             <TextBlock Text="Last Updated" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Right" />

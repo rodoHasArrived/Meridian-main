@@ -12,13 +12,14 @@ import packageJson from "../package.json";
 import type {
   DataOperationsBackfillRecord,
   DataOperationsProviderRecord,
-  DataOperationsWorkspaceResponse,
-  GovernanceWorkspaceResponse,
+  DataWorkspaceResponse,
+  AccountingWorkspaceResponse,
+  ReportingWorkspaceResponse,
   OperatorWorkItem,
   PortfolioWorkspaceResponse,
   ReconciliationBreakQueueItem,
-  ResearchRunRecord,
-  ResearchWorkspaceResponse,
+  StrategyRunRecord,
+  StrategyWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
   TradingAcceptanceGate,
@@ -96,6 +97,17 @@ export interface AppShellWorkflowContinuityStep {
 
 export type AppShellWorkflowContinuityStatusTone = "ready" | "review" | "blocked" | "pending";
 
+export interface AppShellPrimaryOperatorWorkflowStep {
+  id: "import" | "validate" | "reconcile" | "investigate" | "approve" | "report";
+  label: string;
+  description: string;
+  href: string;
+  active: boolean;
+  statusLabel: string;
+  statusTone: AppShellWorkflowContinuityStatusTone;
+  ariaLabel: string;
+}
+
 export interface AppShellOperatingScopeInput {
   symbol?: string | null;
   fundAccountId?: string | null;
@@ -152,6 +164,10 @@ export interface AppShellDecisionBrief {
 export interface AppShellWorkflowContinuityViewModel {
   title: string;
   summary: string;
+  primaryOperatorFlowLabel: string;
+  primaryOperatorFlowSummary: string;
+  primaryOperatorFlowStepsLabel: string;
+  primaryOperatorFlowSteps: AppShellPrimaryOperatorWorkflowStep[];
   contextLabel: string;
   contextValue: string;
   subjectSymbol: string | null;
@@ -283,12 +299,12 @@ export interface AppShellRouteFocusState {
 export interface AppShellWorkspacePayload {
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
-  research: ResearchWorkspaceResponse | null;
+  strategy: StrategyWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
   portfolio: PortfolioWorkspaceResponse | null;
-  dataOperations: DataOperationsWorkspaceResponse | null;
-  governance: GovernanceWorkspaceResponse | null;
-  reporting: GovernanceWorkspaceResponse | null;
+  data: DataWorkspaceResponse | null;
+  accounting: AccountingWorkspaceResponse | null;
+  reporting: ReportingWorkspaceResponse | null;
 }
 
 export type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
@@ -391,7 +407,7 @@ function buildTrustStripState({
   payload: AppShellWorkspacePayload;
 }): AppShellTrustStripState {
   const session = payload.session;
-  const providerPosture = buildProviderTrustStripItem(payload.dataOperations);
+  const providerPosture = buildProviderTrustStripItem(payload.data);
   const failedWorkspaceCount = Object.keys(workspaceErrors).length;
 
   const environmentValue = loading
@@ -473,8 +489,8 @@ function buildTrustStripState({
   };
 }
 
-function buildProviderTrustStripItem(dataOperations: DataOperationsWorkspaceResponse | null): AppShellTrustStripItem {
-  if (!dataOperations) {
+function buildProviderTrustStripItem(data: DataWorkspaceResponse | null): AppShellTrustStripItem {
+  if (!data) {
     return {
       id: "providers",
       label: "Providers",
@@ -487,7 +503,7 @@ function buildProviderTrustStripItem(dataOperations: DataOperationsWorkspaceResp
     };
   }
 
-  const providers = dataOperations.providers ?? [];
+  const providers = data.providers ?? [];
   if (providers.length === 0) {
     return {
       id: "providers",
@@ -668,6 +684,7 @@ export function buildWorkflowContinuityViewModel(
   const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext, operatingScope);
   const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol, operatingScope);
   const disclosure = buildWorkflowContinuityDisclosureState(statusContext, operatorFocus, evidenceTimeline, linkedContext);
+  const primaryOperatorFlowSteps = buildPrimaryOperatorWorkflowSteps(pathname, operatingScope);
   const contextValue = subjectSymbol
     ? `${activeWorkspace.label} / ${subjectSymbol}`
     : operatingScope.hasScope
@@ -700,6 +717,10 @@ export function buildWorkflowContinuityViewModel(
       subjectSymbol,
       attentionCount
     ),
+    primaryOperatorFlowLabel: "Primary operator workflow",
+    primaryOperatorFlowSummary: "Import -> Validate -> Reconcile -> Investigate -> Approve -> Report",
+    primaryOperatorFlowStepsLabel: "Primary operator workflow steps",
+    primaryOperatorFlowSteps,
     contextLabel: "Operating context",
     contextValue,
     subjectSymbol,
@@ -754,6 +775,107 @@ export function buildWorkflowContinuityViewModel(
       };
     })
   };
+}
+
+function buildPrimaryOperatorWorkflowSteps(
+  pathname: string,
+  operatingScope: AppShellOperatingScopeState
+): AppShellPrimaryOperatorWorkflowStep[] {
+  const activeStepId = resolvePrimaryOperatorWorkflowStepId(pathname);
+  const definitions: Array<Omit<AppShellPrimaryOperatorWorkflowStep, "active" | "statusLabel" | "statusTone" | "ariaLabel">> = [
+    {
+      id: "import",
+      label: "Import",
+      description: "Bring provider, file, and account-source data into the active operating scope.",
+      href: WORKSTATION_ROUTE_CATALOG.dataProviders
+    },
+    {
+      id: "validate",
+      label: "Validate",
+      description: "Check data quality, provider health, and backfill evidence before downstream use.",
+      href: WORKSTATION_ROUTE_CATALOG.dataBackfills
+    },
+    {
+      id: "reconcile",
+      label: "Reconcile",
+      description: "Match source, ledger, cash, security, and position records with explainable breaks.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
+    },
+    {
+      id: "investigate",
+      label: "Investigate",
+      description: "Review portfolio, strategy, and trading evidence behind exceptions or decisions.",
+      href: WORKSTATION_ROUTE_CATALOG.portfolio
+    },
+    {
+      id: "approve",
+      label: "Approve",
+      description: "Capture accounting, control, and operations-continuity approvals with evidence.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
+    },
+    {
+      id: "report",
+      label: "Report",
+      description: "Publish governed report packs, exports, and stakeholder-ready evidence.",
+      href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
+    }
+  ];
+
+  return definitions.map((step) => {
+    const active = step.id === activeStepId;
+    const href = appendOperatingScopeToRoute(step.href, operatingScope);
+    const statusLabel = active ? "Current" : "Available";
+    const statusTone: AppShellWorkflowContinuityStatusTone = active ? "review" : "pending";
+
+    return {
+      ...step,
+      href,
+      active,
+      statusLabel,
+      statusTone,
+      ariaLabel: active
+        ? `${step.label}, current primary operator workflow step, ${statusLabel}`
+        : `Open ${step.label}, primary operator workflow step, ${statusLabel}`
+    };
+  });
+}
+
+function resolvePrimaryOperatorWorkflowStepId(pathname: string): AppShellPrimaryOperatorWorkflowStep["id"] {
+  const route = pathname.toLowerCase();
+
+  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.reporting)) {
+    return "report";
+  }
+
+  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingApprovals)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity)) {
+    return "approve";
+  }
+
+  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingReconciliation)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingLedger)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.accounting)) {
+    return "reconcile";
+  }
+
+  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.dataBackfills)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataQuotes)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataAlerts)) {
+    return "validate";
+  }
+
+  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.data)) {
+    return "import";
+  }
+
+  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.trading)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.portfolio)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.strategy)) {
+    return "investigate";
+  }
+
+  return "import";
 }
 
 function buildShellStatusPanel({
@@ -935,11 +1057,11 @@ const emptyWorkflowContinuityStatusContext: WorkflowContinuityStatusContext = {
   payload: {
     session: null,
     overview: null,
-    research: null,
+    strategy: null,
     trading: null,
     portfolio: null,
-    dataOperations: null,
-    governance: null,
+    data: null,
+    accounting: null,
     reporting: null
   }
 };
@@ -1040,7 +1162,7 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
     ]
   },
   {
-    id: "trading-governance",
+    id: "trading-accounting",
     title: "Trading Controls",
     summary: "Hold execution readiness, cockpit action, portfolio exposure, reconciliation, and report-pack review in one operational path.",
     steps: [
@@ -1084,42 +1206,42 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   {
     id: "accounting-closeout",
     title: "Accounting Closeout",
-    summary: "Move through reference-data coverage, reconciliation, ledger evidence, audit lineage, and report packaging with the close context intact.",
+    summary: "Move through received activity, record matching, exception resolution, approvals, and evidence production with the close context intact.",
     steps: [
       {
-        id: "security-master",
-        label: "Security Master",
-        description: "Review instrument identity, provider aliases, lots, conflicts, and coverage gaps.",
-        href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
-        matchPath: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
-      },
-      {
-        id: "reconciliation",
-        label: "Reconciliation",
-        description: "Inspect run breaks, tolerance profile health, sign-off status, and recovery actions.",
-        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
-        matchPath: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
-      },
-      {
-        id: "ledger",
-        label: "Ledger",
-        description: "Validate trial balance, cash-flow context, account detail, and accounting basis.",
+        id: "receive-activity",
+        label: "Receive Activity",
+        description: "Bring source activity, ledger context, security coverage, and account records into Accounting.",
         href: WORKSTATION_ROUTE_CATALOG.accountingLedger,
         matchPath: WORKSTATION_ROUTE_CATALOG.accountingLedger
       },
       {
-        id: "evidence",
-        label: "Evidence",
-        description: "Trace packet lineage, freshness, completeness, and unresolved evidence warnings.",
-        href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
-        matchPath: WORKSTATION_ROUTE_CATALOG.reportingEvidence
+        id: "match-records",
+        label: "Match Records",
+        description: "Match ledger, cash, security, and position records through reconciliation runs.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
       },
       {
-        id: "report-packs",
-        label: "Report packs",
-        description: "Package close evidence into governed report outputs and approval-ready exports.",
-        href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
-        matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
+        id: "resolve-exceptions",
+        label: "Resolve Exceptions",
+        description: "Review open breaks, coverage issues, comments, evidence, and sign-off blockers.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
+      },
+      {
+        id: "approve-results",
+        label: "Approve Results",
+        description: "Review accounting approvals, close readiness, and retained audit decisions before release.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingApprovals
+      },
+      {
+        id: "produce-evidence",
+        label: "Produce Evidence",
+        description: "Package approved accounting evidence into retained audit packets and report-ready outputs.",
+        href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+        matchPath: WORKSTATION_ROUTE_CATALOG.reportingEvidence
       }
     ]
   }
@@ -1151,7 +1273,7 @@ function selectWorkflowContinuityTrail(pathname: string, hash: string): Workflow
       return workflowContinuityTrails.find((trail) => trail.id === "strategy-to-paper") ?? defaultWorkflowContinuityTrail;
     case "trading":
     case "portfolio":
-      return workflowContinuityTrails.find((trail) => trail.id === "trading-governance") ?? defaultWorkflowContinuityTrail;
+      return workflowContinuityTrails.find((trail) => trail.id === "trading-accounting") ?? defaultWorkflowContinuityTrail;
     case "data":
     case "settings":
     default:
@@ -1173,7 +1295,7 @@ function scoreWorkflowTrailWorkspaceAffinity(trailId: string, workspaceKey: Work
   }
 
   if (workspaceKey === "trading" || workspaceKey === "portfolio") {
-    return trailId === "trading-governance" ? 1 : 0;
+    return trailId === "trading-accounting" ? 1 : 0;
   }
 
   return 0;
@@ -1239,7 +1361,7 @@ function buildWorkflowContinuityStepStatus(
     case "strategy-runs":
     case "quant-lab":
     case "covered-call":
-    case "research":
+    case "strategy":
       return buildResearchContinuityStatus(context);
     case "readiness":
     case "paper-readiness":
@@ -1252,10 +1374,15 @@ function buildWorkflowContinuityStepStatus(
     case "portfolio-exposure":
     case "portfolio-ledger":
       return buildPortfolioLedgerContinuityStatus(context);
+    case "receive-activity":
+    case "match-records":
+    case "resolve-exceptions":
+    case "approve-results":
     case "security-master":
     case "ledger":
     case "reconciliation":
       return buildReconciliationContinuityStatus(context);
+    case "produce-evidence":
     case "evidence":
     case "evidence-review":
     case "report-packs":
@@ -1276,7 +1403,7 @@ const workflowContinuityWorkspaceErrors: Record<string, WorkspaceKey[]> = {
   "strategy-runs": ["strategy"],
   "quant-lab": ["strategy"],
   "covered-call": ["strategy"],
-  research: ["strategy"],
+  strategy: ["strategy"],
   readiness: ["trading"],
   "paper-readiness": ["trading"],
   "trading-readiness": ["trading"],
@@ -1285,9 +1412,14 @@ const workflowContinuityWorkspaceErrors: Record<string, WorkspaceKey[]> = {
   "portfolio-review": ["portfolio"],
   "portfolio-exposure": ["portfolio"],
   "portfolio-ledger": ["portfolio"],
+  "receive-activity": ["accounting"],
+  "match-records": ["accounting"],
+  "resolve-exceptions": ["accounting"],
+  "approve-results": ["accounting"],
   "security-master": ["accounting"],
   ledger: ["accounting"],
   reconciliation: ["accounting"],
+  "produce-evidence": ["reporting"],
   evidence: ["reporting"],
   "evidence-review": ["reporting"],
   "report-packs": ["reporting"],
@@ -1295,7 +1427,7 @@ const workflowContinuityWorkspaceErrors: Record<string, WorkspaceKey[]> = {
 };
 
 function buildTrustedDataContinuityStatus({ payload }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
-  const data = payload.dataOperations;
+  const data = payload.data;
   if (!data) {
     return { label: "Waiting", tone: "pending" };
   }
@@ -1313,22 +1445,22 @@ function buildResearchContinuityStatus({ payload, workflowError }: WorkflowConti
     return { label: "Catalog degraded", tone: "review" };
   }
 
-  const research = payload.research;
-  if (!research) {
+  const strategy = payload.strategy;
+  if (!strategy) {
     return { label: "Waiting", tone: "pending" };
   }
 
-  const reviewCount = (research.runs ?? []).filter((run) => run.status === "Needs Review").length;
+  const reviewCount = (strategy.runs ?? []).filter((run) => run.status === "Needs Review").length;
   if (reviewCount > 0) {
     return { label: `${reviewCount} review`, tone: "review" };
   }
 
-  const activeCount = (research.runs ?? []).filter((run) => run.status === "Running" || run.status === "Queued").length;
+  const activeCount = (strategy.runs ?? []).filter((run) => run.status === "Running" || run.status === "Queued").length;
   if (activeCount > 0) {
     return { label: `${activeCount} active`, tone: "review" };
   }
 
-  return { label: (research.runs ?? []).length > 0 ? `${research.runs.length} runs` : "Ready", tone: "ready" };
+  return { label: (strategy.runs ?? []).length > 0 ? `${strategy.runs.length} runs` : "Ready", tone: "ready" };
 }
 
 function buildPaperReadinessContinuityStatus({ payload }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
@@ -1382,13 +1514,13 @@ function buildPortfolioLedgerContinuityStatus({ payload }: WorkflowContinuitySta
 }
 
 function buildReconciliationContinuityStatus({ payload }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
-  const governance = payload.governance;
-  if (!governance) {
+  const accounting = payload.accounting;
+  if (!accounting) {
     return { label: "Waiting", tone: "pending" };
   }
 
-  const breakCount = (governance.breakQueue ?? []).filter((item) => item.status === "Open" || item.status === "InReview").length;
-  const runBreakCount = (governance.reconciliationQueue ?? []).reduce((total, row) => total + row.openBreakCount, 0);
+  const breakCount = (accounting.breakQueue ?? []).filter((item) => item.status === "Open" || item.status === "InReview").length;
+  const runBreakCount = (accounting.reconciliationQueue ?? []).reduce((total, row) => total + row.openBreakCount, 0);
   const attentionCount = Math.max(breakCount, runBreakCount);
   return attentionCount > 0
     ? { label: `${attentionCount} breaks`, tone: "review" }
@@ -1747,7 +1879,7 @@ function buildTradingFocusItems({ payload }: WorkflowContinuityStatusContext): O
 }
 
 function buildDataFocusItems({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {
-  const data = payload.dataOperations;
+  const data = payload.data;
   if (!data) {
     return [];
   }
@@ -1795,16 +1927,16 @@ function buildPortfolioFocusItems({ payload }: WorkflowContinuityStatusContext):
 }
 
 function buildAccountingFocusItems({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {
-  const governance = payload.governance;
-  if (!governance) {
+  const accounting = payload.accounting;
+  if (!accounting) {
     return [];
   }
 
   return [
-    ...(governance.breakQueue ?? [])
+    ...(accounting.breakQueue ?? [])
       .map((item, index) => buildOperatorFocusCandidateFromBreak(item, index))
       .filter((item): item is OperatorFocusCandidate => Boolean(item)),
-    ...(governance.reconciliationQueue ?? [])
+    ...(accounting.reconciliationQueue ?? [])
       .filter((row) => row.openBreakCount > 0)
       .map((row, index) => buildOperatorFocusCandidate({
         id: `reconciliation-run:${row.runId}`,
@@ -1817,15 +1949,15 @@ function buildAccountingFocusItems({ payload }: WorkflowContinuityStatusContext)
         sourcePriority: 13,
         sourceIndex: index
       })),
-    governance.cashFlow?.tone === "danger" || governance.cashFlow?.tone === "warning"
+    accounting.cashFlow?.tone === "danger" || accounting.cashFlow?.tone === "warning"
       ? buildOperatorFocusCandidate({
           id: "cash-flow-variance",
           label: "Cash-flow variance open",
-          detail: governance.cashFlow.summary,
+          detail: accounting.cashFlow.summary,
           route: WORKSTATION_ROUTE_CATALOG.accounting,
           workspaceLabel: "Accounting",
           actionLabel: "Open ledger",
-          tone: governance.cashFlow.tone === "danger" ? "blocked" : "review",
+          tone: accounting.cashFlow.tone === "danger" ? "blocked" : "review",
           sourcePriority: 14,
           sourceIndex: 0
         })
@@ -1856,12 +1988,12 @@ function buildReportingFocusItems({ payload }: WorkflowContinuityStatusContext):
 }
 
 function buildStrategyFocusItems({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {
-  const research = payload.research;
-  if (!research) {
+  const strategy = payload.strategy;
+  if (!strategy) {
     return [];
   }
 
-  return (research.runs ?? [])
+  return (strategy.runs ?? [])
     .map((run, index) => buildOperatorFocusCandidateFromResearchRun(run, index))
     .filter((item): item is OperatorFocusCandidate => Boolean(item));
 }
@@ -1975,7 +2107,7 @@ function buildOperatorFocusCandidateFromBreak(
 }
 
 function buildOperatorFocusCandidateFromResearchRun(
-  run: ResearchRunRecord,
+  run: StrategyRunRecord,
   index: number
 ): OperatorFocusCandidate | null {
   if (run.status !== "Needs Review") {
@@ -1983,7 +2115,7 @@ function buildOperatorFocusCandidateFromResearchRun(
   }
 
   return buildOperatorFocusCandidate({
-    id: `research-run:${run.id}`,
+    id: `strategy-run:${run.id}`,
     label: `${run.strategyName} run needs review`,
     detail: run.notes || `${run.engine} ${run.mode} run on ${run.dataset}.`,
     route: WORKSTATION_ROUTE_CATALOG.strategy,
@@ -2256,7 +2388,7 @@ function buildDataLinkedContextItem(
   { payload }: WorkflowContinuityStatusContext,
   symbol: string
 ): AppShellLinkedContextItem {
-  const data = payload.dataOperations;
+  const data = payload.data;
   const route = appendSearchValue(WORKSTATION_ROUTE_CATALOG.dataQuotes, "symbol", symbol);
   if (!data) {
     return buildLinkedContextItem({
@@ -2433,9 +2565,9 @@ function buildAccountingLinkedContextItem(
   { payload }: WorkflowContinuityStatusContext,
   symbol: string
 ): AppShellLinkedContextItem {
-  const governance = payload.governance;
+  const accounting = payload.accounting;
   const route = appendSearchValue(WORKSTATION_ROUTE_CATALOG.accountingReconciliation, "symbol", symbol);
-  if (!governance) {
+  if (!accounting) {
     return buildLinkedContextItem({
       id: "accounting-reconciliation",
       label: "Reconciliation",
@@ -2447,8 +2579,8 @@ function buildAccountingLinkedContextItem(
     });
   }
 
-  const breakCount = (governance.breakQueue ?? []).filter((item) => item.status === "Open" || item.status === "InReview").length;
-  const runBreakCount = (governance.reconciliationQueue ?? []).reduce((total, row) => total + row.openBreakCount, 0);
+  const breakCount = (accounting.breakQueue ?? []).filter((item) => item.status === "Open" || item.status === "InReview").length;
+  const runBreakCount = (accounting.reconciliationQueue ?? []).reduce((total, row) => total + row.openBreakCount, 0);
   const attentionCount = Math.max(breakCount, runBreakCount);
   return buildLinkedContextItem({
     id: "accounting-reconciliation",
@@ -2694,7 +2826,7 @@ function buildTradingEvidenceTimelineItems({ payload }: WorkflowContinuityStatus
 }
 
 function buildDataEvidenceTimelineItems({ payload }: WorkflowContinuityStatusContext): EvidenceTimelineCandidate[] {
-  const data = payload.dataOperations;
+  const data = payload.data;
   if (!data) {
     return [];
   }
@@ -2726,7 +2858,7 @@ function buildDataEvidenceTimelineItems({ payload }: WorkflowContinuityStatusCon
 }
 
 function buildStrategyEvidenceTimelineItems({ payload }: WorkflowContinuityStatusContext): EvidenceTimelineCandidate[] {
-  return (payload.research?.runs ?? [])
+  return (payload.strategy?.runs ?? [])
     .map((run, index) => buildEvidenceTimelineCandidate({
       id: `strategy-run:${run.id}`,
       label: `${run.strategyName} ${run.status.toLowerCase()}`,
@@ -2758,13 +2890,13 @@ function buildPortfolioEvidenceTimelineItems({ payload }: WorkflowContinuityStat
 }
 
 function buildAccountingEvidenceTimelineItems({ payload }: WorkflowContinuityStatusContext): EvidenceTimelineCandidate[] {
-  const governance = payload.governance;
-  if (!governance) {
+  const accounting = payload.accounting;
+  if (!accounting) {
     return [];
   }
 
   return [
-    ...(governance.breakQueue ?? []).map((item, index) => buildEvidenceTimelineCandidate({
+    ...(accounting.breakQueue ?? []).map((item, index) => buildEvidenceTimelineCandidate({
       id: `accounting-break:${item.breakId}`,
       label: `${item.category} break ${item.status.toLowerCase()}`,
       detail: item.recommendedAction ?? item.explainabilitySummary ?? item.reason,
@@ -2775,7 +2907,7 @@ function buildAccountingEvidenceTimelineItems({ payload }: WorkflowContinuitySta
       sourcePriority: 10,
       sourceIndex: index
     })),
-    ...(governance.reconciliationQueue ?? []).map((row, index) => buildEvidenceTimelineCandidate({
+    ...(accounting.reconciliationQueue ?? []).map((row, index) => buildEvidenceTimelineCandidate({
       id: `accounting-reconciliation:${row.runId}`,
       label: `${row.strategyName} reconciliation ${row.reconciliationStatus}`,
       detail: `${formatCount(row.openBreakCount, "open break")} across ${formatCount(row.breakCount, "total break")}. Status: ${row.status}.`,
@@ -2906,7 +3038,7 @@ function routeForSystemEvent(source: string): string {
     return WORKSTATION_ROUTE_CATALOG.reportingEvidence;
   }
 
-  if (normalized.includes("strategy") || normalized.includes("research")) {
+  if (normalized.includes("strategy") || normalized.includes("strategy")) {
     return WORKSTATION_ROUTE_CATALOG.strategy;
   }
 
