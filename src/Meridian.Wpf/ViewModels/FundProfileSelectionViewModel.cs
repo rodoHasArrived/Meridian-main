@@ -192,8 +192,8 @@ public sealed class FundProfileSelectionViewModel : BindableBase
             DisplayName: displayName,
             LegalEntityName: string.IsNullOrWhiteSpace(NewLegalEntityName) ? displayName : NewLegalEntityName.Trim(),
             BaseCurrency: string.IsNullOrWhiteSpace(NewBaseCurrency) ? "USD" : NewBaseCurrency.Trim().ToUpperInvariant(),
-            DefaultWorkspaceId: "governance",
-            DefaultLandingPageTag: "GovernanceShell",
+            DefaultWorkspaceId: WorkstationNavigationDefaults.AccountingWorkspaceId,
+            DefaultLandingPageTag: WorkstationNavigationDefaults.AccountingPageTag,
             DefaultLedgerScope: FundLedgerScope.Consolidated,
             IsDefault: _profiles.Count == 0);
 
@@ -232,8 +232,8 @@ public sealed class FundProfileSelectionViewModel : BindableBase
             DisplayName: "Alpha Credit",
             LegalEntityName: "Alpha Credit Master Fund LP",
             BaseCurrency: "USD",
-            DefaultWorkspaceId: "governance",
-            DefaultLandingPageTag: "GovernanceShell",
+            DefaultWorkspaceId: WorkstationNavigationDefaults.AccountingWorkspaceId,
+            DefaultLandingPageTag: WorkstationNavigationDefaults.AccountingPageTag,
             DefaultLedgerScope: FundLedgerScope.Consolidated,
             IsDefault: true));
 

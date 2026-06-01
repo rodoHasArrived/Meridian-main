@@ -81,6 +81,9 @@ command-triggered refresh paths on that lifecycle instead of adding ad-hoc revis
 Shared workflow targets must land on the same operator lane as WPF. `FundTrialBalance` resolves to
 the browser accounting ledger route (`/accounting/ledger`) so Lane B/W3 continuity actions from the
 shared workflow registry do not collapse to the accounting root.
+Browser workflow target routing accepts the retained desktop compatibility page tags
+`ResearchShell`, `DataOperationsShell`, and `GovernanceShell`, but materializes them as canonical
+browser routes under `/strategy`, `/data`, and `/accounting`.
 Trading readiness work-item actions consume shared route metadata when it is specific enough to
 resolve locally. Execution-control and promotion-review items carrying the shared
 `/api/workstation/trading/readiness` route land on `/trading`, while paper-replay items keep the

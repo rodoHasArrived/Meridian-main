@@ -88,6 +88,30 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Theory]
+    [InlineData("research", "strategy")]
+    [InlineData("governance", "accounting")]
+    [InlineData("Data Operations", "data")]
+    [InlineData("portfolio", "portfolio")]
+    public void WorkstationNavigationDefaults_ShouldCanonicalizeLegacyWorkspaceIds(
+        string workspaceId,
+        string expectedWorkspaceId)
+    {
+        WorkstationNavigationDefaults.NormalizeWorkspaceId(workspaceId).Should().Be(expectedWorkspaceId);
+    }
+
+    [Theory]
+    [InlineData("ResearchShell", "StrategyShell")]
+    [InlineData("GovernanceShell", "AccountingShell")]
+    [InlineData("DataOperationsShell", "DataShell")]
+    [InlineData("TradingShell", "TradingShell")]
+    public void WorkstationNavigationDefaults_ShouldCanonicalizeLegacyPageTags(
+        string pageTag,
+        string expectedPageTag)
+    {
+        WorkstationNavigationDefaults.NormalizePageTag(pageTag).Should().Be(expectedPageTag);
+    }
+
+    [Theory]
     [InlineData("trading", ShellPosture.Terminal, "WorkspaceHomeTradingTerminalTemplate")]
     [InlineData("portfolio", ShellPosture.Cockpit, "WorkspaceHomePortfolioCockpitTemplate")]
     [InlineData("accounting", ShellPosture.Cockpit, "WorkspaceHomeAccountingCockpitTemplate")]

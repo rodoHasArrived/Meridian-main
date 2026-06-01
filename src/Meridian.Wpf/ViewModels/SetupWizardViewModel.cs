@@ -287,10 +287,10 @@ public sealed class SetupWizardViewModel : BindableBase
                 return;
             }
 
-            ValidationStatusText = "Configuration saved and backend verified. Opening Research Workspace...";
+            ValidationStatusText = "Configuration saved and backend verified. Opening Strategy Workspace...";
             _notificationSink.NotifySuccess("Setup Wizard", "Setup complete. Welcome!");
 
-            _navigator.NavigateTo("ResearchShell");
+            _navigator.NavigateTo("StrategyShell");
         });
     }
 

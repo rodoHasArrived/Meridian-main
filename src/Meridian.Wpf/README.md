@@ -74,6 +74,9 @@ from reusable WPF primitives: `InstitutionalShellFrameControl`, `ShellRailContro
 is WPF-only and resolved through `ShellNavigationCatalog.GetWorkspaceLayoutDescriptor`: Trading and
 Data use `Terminal`, Portfolio, Accounting, Reporting, and Settings use `Cockpit`, and Strategy uses
 `Workbench`. Legacy workspace names continue to resolve as aliases to the seven canonical roots.
+Desktop launch surfaces, setup completion, environment starter lanes, and operating-context defaults
+emit canonical page tags (`StrategyShell`, `DataShell`, and `AccountingShell`) so new persisted state
+does not reintroduce legacy `Research`, `Data Operations`, or `Governance` root names.
 `WorkspaceCommandSurfaceControl` and `WorkspaceEvidenceStripControl` take explicit automation ID
 properties from the active workspace layout descriptor so shell chrome can be reused without
 depending on ambient `MainPage` bindings.

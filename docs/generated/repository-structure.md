@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-01 07:24:21 UTC. Do not edit manually.
+> Auto-generated on 2026-06-01 07:43:59 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4406,6 +4406,7 @@ Meridian-main
 │   │   │   ├── WorkspaceShellLayoutModels.cs
 │   │   │   ├── WorkspaceShellModels.cs
 │   │   │   ├── WorkspaceStateTokenModels.cs
+│   │   │   ├── WorkstationNavigationDefaults.cs
 │   │   │   └── WorkstationOperatingContextModels.cs
 │   │   ├── Services
 │   │   │   ├── ApiStatusService.cs

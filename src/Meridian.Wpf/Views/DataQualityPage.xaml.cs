@@ -345,7 +345,7 @@ public partial class DataQualityPage : Page
     {
         if (WorkspaceShellChromeState.GetIsHostedInWorkspaceShell(this))
         {
-            _navigationService.NavigateTo("DataOperationsShell");
+            _navigationService.NavigateTo("DataShell");
             return;
         }
 

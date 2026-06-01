@@ -226,13 +226,13 @@ public sealed partial class FundContextService : IFundProfileCatalog
             ? "USD"
             : profile.BaseCurrency.Trim().ToUpperInvariant();
 
-        var defaultWorkspaceId = string.IsNullOrWhiteSpace(profile.DefaultWorkspaceId)
-            ? "governance"
-            : profile.DefaultWorkspaceId.Trim();
+        var defaultWorkspaceId = WorkstationNavigationDefaults.NormalizeWorkspaceId(
+            profile.DefaultWorkspaceId,
+            WorkstationNavigationDefaults.AccountingWorkspaceId);
 
-        var defaultLandingPageTag = string.IsNullOrWhiteSpace(profile.DefaultLandingPageTag)
-            ? "GovernanceShell"
-            : profile.DefaultLandingPageTag.Trim();
+        var defaultLandingPageTag = WorkstationNavigationDefaults.NormalizePageTag(
+            profile.DefaultLandingPageTag,
+            WorkstationNavigationDefaults.AccountingPageTag);
 
         return profile with
         {

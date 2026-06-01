@@ -206,7 +206,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
         return action.TargetPageTag switch
         {
             "StrategyRuns" => new(action.TargetPageTag, "StrategyRuns", PaneDropAction.Replace, null, true, false, null),
-            "GovernanceShell" => new(action.TargetPageTag, "GovernanceShell", PaneDropAction.Replace, null, true, false, null),
+            "GovernanceShell" => new(action.TargetPageTag, "AccountingShell", PaneDropAction.Replace, null, true, false, null),
             "FundTrialBalance" => CreateActionRequest("FundTrialBalance", activeRun),
             "FundReconciliation" => CreateActionRequest("FundReconciliation", activeRun),
             _ => new(action.TargetPageTag, action.TargetPageTag, PaneDropAction.Replace, null, true, false, null)

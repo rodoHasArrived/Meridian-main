@@ -34,10 +34,10 @@ public sealed class JumpListService
             };
 
             jumpList.JumpItems.Add(CreateTask("Start Data Collection", "--start-collector", "Start data collection immediately", exePath));
-            jumpList.JumpItems.Add(CreateTask("Open Strategy Workspace", "--page=ResearchShell", "Open strategy workflows", exePath));
+            jumpList.JumpItems.Add(CreateTask("Open Strategy Workspace", "--page=StrategyShell", "Open strategy workflows", exePath));
             jumpList.JumpItems.Add(CreateTask("Open Trading Workspace", "--page=TradingShell", "Open trading cockpit workflows", exePath));
-            jumpList.JumpItems.Add(CreateTask("Open Data", "--page=DataOperationsShell", "Open provider, backfill, and storage operations", exePath));
-            jumpList.JumpItems.Add(CreateTask("Open Accounting", "--page=GovernanceShell", "Open accounting and audit workflows", exePath));
+            jumpList.JumpItems.Add(CreateTask("Open Data", "--page=DataShell", "Open provider, backfill, and storage operations", exePath));
+            jumpList.JumpItems.Add(CreateTask("Open Accounting", "--page=AccountingShell", "Open accounting and audit workflows", exePath));
 
             JumpList.SetJumpList(System.Windows.Application.Current, jumpList);
 

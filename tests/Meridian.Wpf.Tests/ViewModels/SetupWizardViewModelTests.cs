@@ -81,9 +81,9 @@ public sealed class SetupWizardViewModelTests
         state.SavedStorageLocation.Should().Be("D:\\MeridianData");
         state.SavedNasdaqKey.Should().Be(" nasdaq-key ");
         state.SavedOpenFigiKey.Should().Be("figi-key");
-        navigator.LastPageTag.Should().Be("ResearchShell");
+        navigator.LastPageTag.Should().Be("StrategyShell");
         notification.SuccessMessages.Should().Contain(message => message.Contains("Setup complete"));
-        viewModel.ValidationStatusText.Should().Be("Configuration saved and backend verified. Opening Research Workspace...");
+        viewModel.ValidationStatusText.Should().Be("Configuration saved and backend verified. Opening Strategy Workspace...");
     }
 
     [Fact]

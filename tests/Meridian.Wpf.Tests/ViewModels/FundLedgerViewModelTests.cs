@@ -632,6 +632,15 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
+    public void FundLedgerViewModelSource_ShouldOpenCanonicalAccountingShell()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.cs"));
+
+        source.Should().Contain("OpenGovernanceCommand = new RelayCommand(() => _navigationService.NavigateTo(\"AccountingShell\"))");
+        source.Should().NotContain("_navigationService.NavigateTo(\"GovernanceShell\")");
+    }
+
+    [Fact]
     public void FundLedgerReconciliationSection_ShouldOwnQueueAndDetailCollectionsWithAdapterBindings()
     {
         var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Sections.cs"));
