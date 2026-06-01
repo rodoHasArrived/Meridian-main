@@ -49,20 +49,76 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
-    public async Task SetupDraftCreate_WithValidDraft_CreatesStructureThroughSharedEndpointWorkflow()
+    public async Task SetupDraftCreate_WithValidAccountingSession_CreatesStructureThroughSharedEndpointWorkflow()
     {
-        var draft = CreateSetupDraft();
+        var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
+        Environment.SetEnvironmentVariable(
+            "MDC_USERS",
+            """[{"username":"fund-ops","password":"test-pass","role":"Accounting"}]""");
+
+        try
+        {
+            var draft = CreateSetupDraft();
+            var sessionCookie = await LoginAndGetSessionCookieAsync("fund-ops", "test-pass");
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/fund-structure/setup-drafts/create")
+            {
+                Content = JsonContent.Create(draft)
+            };
+            request.Headers.Add("Cookie", sessionCookie);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            var payload = await response.Content.ReadFromJsonAsync<FundStructureSetupResultDto>();
+            payload.Should().NotBeNull();
+            payload!.Organization.Code.Should().Be("ORG-SETUP");
+            payload.BusinessLane.Code.Should().Be("BUS-SETUP");
+            payload.Fund.Should().NotBeNull();
+            payload.AccountHandoffAssignment.AssignmentType.Should().Be(FundStructureSetupWorkflowService.AccountHandoffAssignmentType);
+            payload.Graph.Nodes.Should().Contain(node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio && node.Code == "PORT-SETUP");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
+        }
+    }
+
+    [Fact]
+    public async Task SetupDraftCreate_WithReadOnlySession_ReturnsForbidden()
+    {
+        var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
+        Environment.SetEnvironmentVariable(
+            "MDC_USERS",
+            """[{"username":"read-only","password":"test-pass","role":"ReadOnly"}]""");
+
+        try
+        {
+            var draft = CreateSetupDraft() with { RequestedBy = "spoofed-admin" };
+            var sessionCookie = await LoginAndGetSessionCookieAsync("read-only", "test-pass");
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/fund-structure/setup-drafts/create")
+            {
+                Content = JsonContent.Create(draft)
+            };
+            request.Headers.Add("Cookie", sessionCookie);
+
+            var response = await _client.SendAsync(request);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", originalUsers);
+        }
+    }
+
+    [Fact]
+    public async Task SetupDraftCreate_WithoutSession_ReturnsUnauthorizedInsteadOfTrustingRequestedBy()
+    {
+        var draft = CreateSetupDraft() with { RequestedBy = "client-supplied-actor" };
 
         var response = await _client.PostAsJsonAsync("/api/fund-structure/setup-drafts/create", draft);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var payload = await response.Content.ReadFromJsonAsync<FundStructureSetupResultDto>();
-        payload.Should().NotBeNull();
-        payload!.Organization.Code.Should().Be("ORG-SETUP");
-        payload.BusinessLane.Code.Should().Be("BUS-SETUP");
-        payload.Fund.Should().NotBeNull();
-        payload.AccountHandoffAssignment.AssignmentType.Should().Be(FundStructureSetupWorkflowService.AccountHandoffAssignmentType);
-        payload.Graph.Nodes.Should().Contain(node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio && node.Code == "PORT-SETUP");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
