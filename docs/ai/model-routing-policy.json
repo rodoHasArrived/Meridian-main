@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "policyScope": "Model routing classes, selection signals, token/cost ceilings, and required telemetry for AI handoff packets.",
   "defaultRouteId": "analysis-economy",
   "modelClasses": [
@@ -43,6 +43,18 @@
   ],
   "evidenceArtifact": "docs/ai/model-routing-telemetry.md",
   "handoffChecklist": "docs/ai/agent-handoff-checklist.md",
+  "contextEfficiency": {
+    "description": "Shared output and context budget defaults so agents do not rediscover token-saving rules on every task.",
+    "summaryLinesMax": 30,
+    "rawLogPolicy": "Summarize command output; attach full logs only when diagnosis needs them.",
+    "reuseValidationWhenUnchanged": true,
+    "preferReferencesOverFullFileDumps": true,
+    "loadContextFirst": [
+      "docs/ai/navigation/README.md",
+      "docs/ai/generated/repo-navigation.md"
+    ],
+    "handoffTemplate": "docs/ai/parallel-task-manifest-template.md"
+  },
   "routingRules": [
     {
       "id": "analysis-economy",

@@ -47,6 +47,18 @@ For any strict model-routing decision handoff, record at least:
 
 The corresponding checklist section is expected in `docs/ai/agent-handoff-checklist.md`.
 
+## Context Efficiency Defaults
+
+The policy `contextEfficiency` block carries shared output and context budget defaults so agents do
+not rediscover token-saving rules on every task:
+
+- `summaryLinesMax` — soft ceiling on handoff summary length before trimming detail.
+- `rawLogPolicy` — summarize command output; attach full logs only when diagnosis needs them.
+- `reuseValidationWhenUnchanged` — reuse prior validation evidence when touched files are unchanged.
+- `preferReferencesOverFullFileDumps` — link required files instead of pasting whole files.
+- `loadContextFirst` — shared navigation files to read before recursive search.
+- `handoffTemplate` — the parallel task manifest template used for lane handoffs.
+
 ## Escalation Signals
 
 Routes may escalate to a higher-cost class when one or more of these are true:
