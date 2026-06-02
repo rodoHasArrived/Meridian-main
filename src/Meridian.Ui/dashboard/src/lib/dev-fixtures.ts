@@ -1436,6 +1436,54 @@ const fixturePortfolioWorkspace: PortfolioWorkspaceResponse = {
   cashFlow: fixtureAccountingWorkspace.cashFlow
 };
 
+const fixturePortfolioMultiAssetCoverage = {
+  fundAccountId: "all",
+  entity: "portfolio",
+  asOfUtc: "2026-06-02T00:00:00.0000000Z",
+  metrics: [
+    { id: "multi-asset-classes", label: "Asset classes", value: "8", delta: "covered", tone: "default" },
+    { id: "multi-asset-ready", label: "Ready", value: "2", delta: "definition + evidence", tone: "default" },
+    { id: "multi-asset-review", label: "Review required", value: "6", delta: "evidence gaps", tone: "warning" },
+    { id: "multi-asset-blocked", label: "Blocked", value: "0", delta: "close gates", tone: "success" }
+  ],
+  assetClasses: [
+    {
+      assetClass: "Equity",
+      displayName: "Equities",
+      status: "Ready",
+      statusLabel: "Ready",
+      summary: "Listed equity positions carry quote, corporate-action, tax-lot, and ledger evidence.",
+      evidenceRequirements: [
+        { requirementId: "Equity:security-master-identifiers", label: "Security Master identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true }
+      ],
+      blockers: [],
+      ledgerClassification: { classification: "Security position / realized and unrealized P&L / dividend income" },
+      reconciliationSignals: { breaks: "quantity, market value, cash, corporate action, tax lot" }
+    },
+    {
+      assetClass: "CustomAsset",
+      displayName: "MBS / ABS / CLO / CMBS / private assets",
+      status: "ReviewRequired",
+      statusLabel: "Review required",
+      summary: "Structured and private assets require governed profiles, factor or NAV evidence, valuation approval, and profile-aware ledger classification.",
+      evidenceRequirements: [
+        { requirementId: "CustomAsset:governed-profile", label: "Approved custom/private asset profile coverage", category: "Governance", status: "Ready", evidenceRoute: "/api/security-master/asset-profiles", required: true },
+        { requirementId: "CustomAsset:provider-evidence", label: "Provider evidence feeds", category: "ProviderEvidence", status: "ReviewRequired", evidenceRoute: "/api/workstation/data-operations", required: true }
+      ],
+      blockers: [
+        { code: "CustomAsset:provider-evidence-review", severity: "Review", message: "Retained provider evidence is required before close readiness can be marked complete.", source: "ProviderEvidence", evidenceRoute: "/api/workstation/portfolio/multi-asset-coverage" }
+      ],
+      ledgerClassification: { classification: "Profile-derived classification / valuation adjustment / income accrual / commitment accounting" },
+      reconciliationSignals: { breaks: "quantity, market value, cash, factor schedule, custom-profile evidence" }
+    }
+  ],
+  drillThroughRoutes: {
+    portfolio: WORKSTATION_API_ENDPOINTS.portfolio,
+    accounting: WORKSTATION_API_ENDPOINTS.accounting,
+    coverage: WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage
+  }
+};
+
 const fixtureQuantTemplates: QuantTemplatesResponse = {
   templates: [
     {
@@ -2451,6 +2499,7 @@ const fixtures = {
   "/api/workstation/research": fixtureStrategyWorkspace,
   [WORKSTATION_API_ENDPOINTS.trading]: fixtureTradingWorkspace,
   [WORKSTATION_API_ENDPOINTS.portfolio]: fixturePortfolioWorkspace,
+  [WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage]: fixturePortfolioMultiAssetCoverage,
   [WORKSTATION_API_ENDPOINTS.tradingReadiness]: fixtureTradingReadiness,
   [WORKSTATION_API_ENDPOINTS.operatorInbox]: fixtureOperatorInbox,
   [WORKSTATION_API_ENDPOINTS.workflowLibrary]: fixtureWorkflowLibrary,

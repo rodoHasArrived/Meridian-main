@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Commands;
 using Meridian.Wpf.Workstation.ViewModels.Base;
@@ -64,6 +65,17 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
             PrimaryActionId = "PortfolioImport",
             PrimaryActionLabel = "Open",
             AutomationName = "Portfolio import exceptions decision"
+        },
+        new()
+        {
+            Title = "Multi-asset coverage",
+            Detail = $"Review asset-class readiness, provider evidence, ledger coverage, reconciliation status, and close blockers from {UiApiRoutes.WorkstationPortfolioMultiAssetCoverage}.",
+            StatusLabel = "Shared endpoint",
+            CountLabel = "Review",
+            Tone = WorkspaceTone.Warning,
+            PrimaryActionId = "MultiAssetCoverage",
+            PrimaryActionLabel = "Open",
+            AutomationName = "Portfolio multi-asset coverage decision"
         },
         new()
         {

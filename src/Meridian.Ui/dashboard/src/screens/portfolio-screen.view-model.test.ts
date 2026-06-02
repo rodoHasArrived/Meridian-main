@@ -11,6 +11,7 @@ import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   AccountingWorkspaceResponse,
+  MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
   StrategyRunContinuityDto,
@@ -95,6 +96,50 @@ const accounting: AccountingWorkspaceResponse = {
     profiles: [],
     reportPackTargets: [],
     summary: ""
+  }
+};
+
+const multiAssetCoverage: MultiAssetCoverageSummary = {
+  fundAccountId: "all",
+  entity: "portfolio",
+  asOfUtc: "2026-06-02T00:00:00Z",
+  metrics: [
+    { id: "multi-asset-classes", label: "Asset classes", value: "2", delta: "covered", tone: "default" },
+    { id: "multi-asset-review", label: "Review required", value: "1", delta: "evidence gaps", tone: "warning" }
+  ],
+  assetClasses: [
+    {
+      assetClass: "Equity",
+      displayName: "Equities",
+      status: "Ready",
+      statusLabel: "Ready",
+      summary: "Listed equity coverage.",
+      evidenceRequirements: [
+        { requirementId: "Equity:security-master-identifiers", label: "Identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true }
+      ],
+      blockers: [],
+      ledgerClassification: { classification: "Security position" },
+      reconciliationSignals: { breaks: "quantity, market value, cash" }
+    },
+    {
+      assetClass: "CustomAsset",
+      displayName: "MBS / ABS / CLO / CMBS / private assets",
+      status: "ReviewRequired",
+      statusLabel: "Review required",
+      summary: "Governed custom asset coverage.",
+      evidenceRequirements: [
+        { requirementId: "CustomAsset:governed-profile", label: "Profile", category: "Governance", status: "Ready", evidenceRoute: "/api/security-master/asset-profiles", required: true },
+        { requirementId: "CustomAsset:provider-evidence", label: "Provider evidence", category: "ProviderEvidence", status: "ReviewRequired", evidenceRoute: "/api/workstation/data-operations", required: true }
+      ],
+      blockers: [
+        { code: "CustomAsset:provider-evidence-review", severity: "Review", message: "Retained provider evidence is required.", source: "ProviderEvidence", evidenceRoute: "/api/workstation/portfolio/multi-asset-coverage" }
+      ],
+      ledgerClassification: { classification: "Profile-derived classification" },
+      reconciliationSignals: { breaks: "custom-profile evidence" }
+    }
+  ],
+  drillThroughRoutes: {
+    coverage: "/api/workstation/portfolio/multi-asset-coverage"
   }
 };
 
@@ -358,6 +403,20 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedRun?.statusDetail).toContain("Running paper run with +4.2% P&L");
     expect(vm.runEvidenceChip).toEqual({ label: "Run evidence", value: "1 linked run" });
     expect(vm.selectedRunChip).toEqual({ label: "Selected run", value: "Mean Reversion" });
+  });
+
+  it("projects multi-asset coverage without recalculating readiness client-side", () => {
+    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting, multiAssetCoverage });
+
+    expect(vm.multiAssetCoveragePanel?.statusLabel).toBe("1 review");
+    expect(vm.multiAssetCoveragePanel?.rows).toHaveLength(2);
+    expect(vm.multiAssetCoveragePanel?.rows[1]).toMatchObject({
+      displayName: "MBS / ABS / CLO / CMBS / private assets",
+      statusLabel: "Review required",
+      evidenceLabel: "1/2 ready",
+      ledgerLabel: "Profile-derived classification"
+    });
+    expect(vm.multiAssetCoveragePanel?.blockerMessages[0]).toContain("Retained provider evidence is required.");
   });
 
   it("surfaces selected-run portfolio and ledger continuity blockers", () => {

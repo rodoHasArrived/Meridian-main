@@ -39,10 +39,11 @@ import type {
   SecuritySearchResultRowViewModel,
   TradingParametersViewState
 } from "@/screens/accounting-screen.view-model";
-import type { AccountingWorkspaceResponse } from "@/types";
+import type { AccountingWorkspaceResponse, MultiAssetCoverageSummary } from "@/types";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
+  multiAssetCoverage?: MultiAssetCoverageSummary | null;
 }
 
 const calibrationProfileColumns: DenseDataTableColumn<CalibrationProfileRowViewModel>[] = [
@@ -372,7 +373,7 @@ const financialOperationsSteps: FinancialOperationsStep[] = [
   }
 ];
 
-export function AccountingScreen({ data }: AccountingScreenProps) {
+export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {
   const { pathname } = useLocation();
   const workstream = resolveAccountingWorkstream(pathname);
   const workspace = workspaceForPath(pathname);
@@ -502,6 +503,9 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
 
   const focus = focusCopy[workstream];
   const activeFinancialOperationsStep = resolveActiveFinancialOperationsStep(pathname);
+  const multiAssetBlockedCount = multiAssetCoverage?.assetClasses.filter((item) => item.status === "Blocked").length ?? 0;
+  const multiAssetReviewCount = multiAssetCoverage?.assetClasses.filter((item) => item.status === "ReviewRequired").length ?? 0;
+  const multiAssetTone = multiAssetBlockedCount > 0 ? "danger" : multiAssetReviewCount > 0 ? "warning" : "success";
 
   return (
     <div className="space-y-8">
@@ -562,6 +566,45 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
           </nav>
         </div>
       </section>
+
+      {multiAssetCoverage ? (
+        <Card className="panel-surface" role="region" aria-label="Multi-asset accounting coverage">
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="eyebrow-label">Multi-asset coverage</div>
+                <CardTitle className="mt-2 text-base">Accounting, reconciliation, and close readiness</CardTitle>
+                <CardDescription>
+                  Asset-class readiness is supplied by the shared portfolio coverage endpoint and rendered without Accounting-local rules.
+                </CardDescription>
+              </div>
+              <Badge variant={multiAssetTone}>{multiAssetBlockedCount > 0 ? `${multiAssetBlockedCount} blocked` : multiAssetReviewCount > 0 ? `${multiAssetReviewCount} review` : "Ready"}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {multiAssetCoverage.metrics.map((metric) => (
+                <AccountingChip key={metric.id} label={metric.label} value={metric.value} />
+              ))}
+            </div>
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+              {multiAssetCoverage.assetClasses.slice(0, 8).map((item) => (
+                <div key={item.assetClass} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-sm font-semibold text-foreground">{item.displayName}</span>
+                    <Badge variant={item.status === "Ready" ? "success" : item.status === "Blocked" ? "danger" : "warning"}>
+                      {item.statusLabel}
+                    </Badge>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    {item.ledgerClassification.classification ?? "Ledger classification retained"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <nav className="operator-mode-toggle" aria-label="Accounting operator modes">
         <a href="#accounting-posture" aria-current="page">Monitor</a>
