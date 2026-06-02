@@ -5,8 +5,9 @@
 ## Overview
 
 The documentation automation system keeps project documentation accurate and up-to-date through
-Python scripts in `build/scripts/docs/`. GitHub Actions no longer regenerates or deploys
-documentation automatically; run the scripts locally when documentation needs to be refreshed.
+Python scripts in `build/scripts/docs/`. The `documentation.yml` workflow now re-runs the tracked
+documentation and diagram refresh path on documentation-facing changes, while local runs remain the
+fastest way to inspect and review generated diffs before you commit them.
 
 ### What It Does
 
@@ -51,8 +52,8 @@ stay synchronized as the implementation evolves.
 ## Running Documentation Automation
 
 Run the relevant documentation script locally and review the diff before committing. The
-`Maintenance` workflow validates workflow hygiene, but it does not rewrite docs or push generated
-content.
+`documentation.yml` workflow verifies the same tracked refresh path in CI, but local runs are still
+the best place to inspect generated changes before they reach a pull request.
 
 ## README Tree Sync
 
@@ -78,40 +79,33 @@ changes before committing them.
 
 ## Manual Dispatch Options
 
-When triggering manually via Actions UI:
+When triggering `documentation.yml` manually from the Actions UI:
 
 | Input | Default | Description |
 | ------- | --------- | ------------- |
-| `regenerate` | false | Force regenerate all docs |
-| `update_all` | false | Update all auto-generated outputs |
-| `dry_run` | true | Show changes without committing |
-| `create_pr` | false | Create PR instead of direct commit |
-| `scan_todos` | true | Run TODO scanning |
-| `create_issues` | false | Create GitHub issues for untracked TODOs |
-| `include_notes` | true | Include NOTE comments in TODO scan |
-| `use_copilot` | true | Use AI for triage recommendations |
-| `run_expansion` | true | Run expansion features |
+| `refresh_all` | false | Run the full documentation and diagram refresh path even if you are only sanity-checking the workflow manually |
 
 ## Job Execution Flow
 
 ```text
-detect-changes (always runs first)
+validate-docs
     |
-    +-- validate-docs      (parallel)
-    +-- regenerate-docs    (parallel)
-    +-- scan-todos         (parallel)
-    +-- validate-examples  (parallel)
-    +-- generate-changelog (parallel)
+    +-- rules engine
+    +-- example validation
+    +-- AI inventory / handoff / contract drift checks
+
+regenerate-docs
     |
-    +-- link-repair        (after regenerate-docs)
-    +-- coverage-report    (after regenerate-docs)
-    |
-    +-- create-todo-issues (after scan-todos, manual only)
-    |
-    +-- report             (final, always runs)
+    +-- docs automation profile (core)
+    +-- Mermaid refresh
+    +-- WPF UI diagram refresh
+    +-- PlantUML render
+    +-- workflow inventory refresh
+    +-- dashboard delta gate
+    +-- git diff / whitespace checks
 ```
 
-Key optimization: `validate-docs`, `regenerate-docs`, and `scan-todos` all run in parallel after change detection completes, reducing total execution time.
+The workflow is intentionally small: one validation job and one regeneration/gating job.
 
 ## Python Scripts
 

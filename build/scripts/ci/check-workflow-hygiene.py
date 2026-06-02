@@ -41,7 +41,6 @@ OLD_WORKFLOW_FILENAMES = {
     "codeql.yml",
     "desktop-builds.yml",
     "docker.yml",
-    "documentation.yml",
     "export-standalone-exe.yml",
     "nightly.yml",
     "pr-checks.yml",
