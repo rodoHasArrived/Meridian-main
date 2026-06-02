@@ -214,11 +214,11 @@ items:
       - Portfolio
       - Data
     owner_lane: Accounting and Ledger
-    status: planned
+    status: done
     health: green
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: v0.15 deepens accounting, reconciliation, and record-keeping functionality by linking retained source records, normalized activity, reconciliation cases, journal and ledger evidence, approval history, document attachments, report packs, exports, and restatement lineage into audit-ready operational records.
+    evidence_posture: complete
+    current_summary: Closed 2026-06-02. Accounting record summaries with all six evidence categories (source data, normalized activity, reconciliation cases, ledger evidence, approvals, report-pack lineage) are wired end-to-end through shared contracts, the shared workspace service, and both browser and WPF surfaces. Transaction Lab endpoint request wiring is complete with dashboard test coverage for success and failure paths. Close-package and provenance fields are shared contracts accessible through the full workflow and governance lifecycle projection.
     exit_criteria:
       - Accounting record summaries show retained source data, normalized transactions or positions, reconciliation case history, ledger evidence, approvals, and report-pack links.
       - Close-package status and audit/provenance timelines are operator-visible through shared read models consumed by browser and WPF surfaces where each surface participates.

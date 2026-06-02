@@ -447,7 +447,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:begin module=SRC-UI-SHARED -->
 | TODO | Title | Status | Priority |
 | --- | --- | --- | --- |
-| `TODO-SRC-UI-SHARED-001` | Complete W5 shared read-model visibility for close-package and provenance timelines | open | high |
+| `TODO-SRC-UI-SHARED-001` | Complete W5 shared read-model visibility for close-package and provenance timelines | done | high |
 <!-- source-todos:end -->
 
 ## Validation

@@ -22,7 +22,7 @@ todos:
   - id: TODO-SRC-CONTRACTS-001
     title: Complete W5 accounting record evidence-chain contract coverage
     module_id: SRC-CONTRACTS
-    status: open
+    status: done
     priority: high
     roadmap_item: W5-ACCT-001
     stage_gate: AccountingRecords
@@ -37,7 +37,7 @@ todos:
   - id: TODO-SRC-UI-SHARED-001
     title: Complete W5 shared read-model visibility for close-package and provenance timelines
     module_id: SRC-UI-SHARED
-    status: open
+    status: done
     priority: high
     roadmap_item: W5-ACCT-001
     stage_gate: AccountingRecords
@@ -52,7 +52,7 @@ todos:
   - id: TODO-SRC-UI-DASHBOARD-002
     title: Wire Accounting Transaction Lab browser endpoint requests to shared API contracts
     module_id: SRC-UI-DASHBOARD
-    status: open
+    status: done
     priority: high
     roadmap_item: W5-ACCT-001
     stage_gate: AccountingRecords

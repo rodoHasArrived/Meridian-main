@@ -318,7 +318,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:begin module=SRC-CONTRACTS -->
 | TODO | Title | Status | Priority |
 | --- | --- | --- | --- |
-| `TODO-SRC-CONTRACTS-001` | Complete W5 accounting record evidence-chain contract coverage | open | high |
+| `TODO-SRC-CONTRACTS-001` | Complete W5 accounting record evidence-chain contract coverage | done | high |
 <!-- source-todos:end -->
 
 ## Validation
