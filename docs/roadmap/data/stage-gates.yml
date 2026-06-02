@@ -48,6 +48,9 @@ stage_gates:
     owner_lane: Accounting and Ledger
     exit_evidence:
       - docs/roadmap/generated/ROADMAP_SUMMARY.md
+      - tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs
+      - tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs
+      - src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx
   - id: BacktestingEvidence
     title: Backtesting evidence
     purpose: Backtest results can be traced to strategy decisions and later paper validation.

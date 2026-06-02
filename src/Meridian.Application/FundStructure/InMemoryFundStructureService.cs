@@ -82,6 +82,86 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         LoadState();
     }
 
+    internal InMemoryFundStructureService(
+        IFundAccountService fundAccountService,
+        IGovernanceSharedDataAccessService? sharedDataAccessService,
+        ISecurityMasterQueryService? securityMasterQueryService,
+        IFundStructurePolicyService policyService,
+        IReadOnlyList<OrganizationSummaryDto> organizations,
+        IReadOnlyList<BusinessSummaryDto> businesses,
+        IReadOnlyList<ClientSummaryDto> clients,
+        IReadOnlyList<FundSummaryDto> funds,
+        IReadOnlyList<SleeveSummaryDto> sleeves,
+        IReadOnlyList<VehicleSummaryDto> vehicles,
+        IReadOnlyList<LegalEntitySummaryDto> entities,
+        IReadOnlyList<InvestmentPortfolioSummaryDto> investmentPortfolios,
+        IReadOnlyList<OwnershipLinkDto> ownershipLinks,
+        IReadOnlyList<FundStructureAssignmentDto> assignments,
+        IReadOnlyList<Guid> linkedAccountIds)
+    {
+        _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
+        _sharedDataAccessService = sharedDataAccessService;
+        _securityMasterQueryService = securityMasterQueryService;
+        _persistenceEnabled = false;
+        _stateStore = new InMemoryFundStructureStateStore();
+        _policyService = policyService ?? throw new ArgumentNullException(nameof(policyService));
+
+        foreach (var organization in organizations)
+        {
+            _organizations[organization.OrganizationId] = organization;
+        }
+
+        foreach (var business in businesses)
+        {
+            _businesses[business.BusinessId] = business;
+        }
+
+        foreach (var client in clients)
+        {
+            _clients[client.ClientId] = client;
+        }
+
+        foreach (var fund in funds)
+        {
+            _funds[fund.FundId] = fund;
+        }
+
+        foreach (var sleeve in sleeves)
+        {
+            _sleeves[sleeve.SleeveId] = sleeve;
+        }
+
+        foreach (var vehicle in vehicles)
+        {
+            _vehicles[vehicle.VehicleId] = vehicle;
+        }
+
+        foreach (var entity in entities)
+        {
+            _entities[entity.EntityId] = entity;
+        }
+
+        foreach (var portfolio in investmentPortfolios)
+        {
+            _investmentPortfolios[portfolio.InvestmentPortfolioId] = portfolio;
+        }
+
+        foreach (var link in ownershipLinks)
+        {
+            _ownershipLinks[link.OwnershipLinkId] = link;
+        }
+
+        foreach (var assignment in assignments)
+        {
+            _assignments[assignment.AssignmentId] = assignment;
+        }
+
+        foreach (var linkedAccountId in linkedAccountIds)
+        {
+            _linkedAccountIds.Add(linkedAccountId);
+        }
+    }
+
     internal sealed record PersistedState(
         int Version,
         List<OrganizationSummaryDto> Organizations,

@@ -133,12 +133,15 @@ import type {
   LedgerMappingAssignmentRequest,
   LedgerMappingAssignmentResult,
   LedgerMappingWorkbench,
+  OperationsApprovalDecisionRequest,
   OperationsApprovalPolicyMatrix,
   OperationsApprovalPolicyRuleUpsertRequest,
   OperationsApprovalPolicyRuleUpsertResult,
   OperationsCloseCalendar,
   OperationsCloseCalendarItemUpsertRequest,
   OperationsCloseCalendarItemUpsertResult,
+  OperationsRejectWorkflowRequest,
+  OperationsTransitionResult,
   PlaidLinkTokenRequest,
   PlaidLinkTokenResponse,
   PlaidPublicTokenExchangeRequest,
@@ -241,6 +244,8 @@ import {
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
   workstationOperatorInboxEndpoint,
+  workstationOperationsContinuityApprovalApproveEndpoint,
+  workstationOperationsContinuityApprovalRejectEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
   workstationOperationsContinuityCloseCalendarEndpoint,
@@ -633,6 +638,30 @@ export function getOperationsContinuityWorkflows(
 
 export function getOperationsContinuityWorkflow(workflowId: string, options: ApiRequestOptions = {}) {
   return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
+}
+
+export function approveOperationsContinuityWorkflow(
+  workflowId: string,
+  request: OperationsApprovalDecisionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityApprovalApproveEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function rejectOperationsContinuityWorkflow(
+  workflowId: string,
+  request: OperationsRejectWorkflowRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityApprovalRejectEndpoint(workflowId),
+    request,
+    options
+  );
 }
 
 export function getOperationsApprovalPolicyMatrix(options: ApiRequestOptions = {}) {

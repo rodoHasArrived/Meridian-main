@@ -748,6 +748,34 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   blockers: OperationsWorkflowBlocker[];
 }
 
+export interface OperationsApprovalDecisionRequest {
+  expectedVersion: number;
+  actor: string;
+  reviewer: string;
+  rationale: string;
+  reportPackId: string;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  checklistControlApprovals?: OperationsChecklistControlApproval[] | null;
+}
+
+export interface OperationsRejectWorkflowRequest {
+  expectedVersion: number;
+  actor: string;
+  reviewer: string;
+  rationale: string;
+  reasonCode: string;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+}
+
+export interface OperationsTransitionResult {
+  success: boolean;
+  workflow: OperationsContinuityWorkflow;
+  blockers: OperationsWorkflowBlocker[];
+  message: string | null;
+}
+
 export interface OperationsCloseChecklistTask {
   taskId: string;
   gate: OperationsGateKey;

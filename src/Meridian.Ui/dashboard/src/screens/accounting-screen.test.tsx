@@ -9,6 +9,8 @@ import type {
   AccountingWorkspaceResponse,
   LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
+  OperationsContinuityWorkflow,
+  OperationsContinuityWorkflowSummary,
   SecurityMasterConflict,
   SecurityMasterTrustSnapshot
 } from "@/types";
@@ -55,6 +57,10 @@ vi.mock("@/lib/api", async () => {
     getLatestAccountingSystemImport: vi.fn().mockResolvedValue(null),
     getLatestAccountingSystemReconciliation: vi.fn().mockResolvedValue(null),
     getCorporateActions: vi.fn().mockResolvedValue([]),
+    getOperationsContinuityWorkflows: vi.fn().mockResolvedValue([]),
+    getOperationsContinuityWorkflow: vi.fn(),
+    approveOperationsContinuityWorkflow: vi.fn(),
+    rejectOperationsContinuityWorkflow: vi.fn(),
     getTradingParameters: vi.fn().mockResolvedValue(null),
     getSecurityTrustSnapshot: vi.fn().mockResolvedValue({
       securityId: "sec-1",
@@ -190,6 +196,110 @@ const calibrationSummary: ReconciliationCalibrationSummary = {
       lastUpdatedAt: "2026-01-01T00:05:00Z"
     }
   ]
+};
+
+const approvalWorkflowSummary: OperationsContinuityWorkflowSummary = {
+  workflowId: "workflow-approval-1",
+  fundAccountId: "fund-alpha",
+  periodId: "2026-05",
+  securityMasterSnapshotId: "sm-snapshot-1",
+  brokerSource: "Northern Trust",
+  status: "ApprovalPending",
+  version: 7,
+  createdAtUtc: "2026-05-31T10:00:00Z",
+  updatedAtUtc: "2026-06-01T12:00:00Z",
+  gates: [
+    {
+      gateKey: "Approval",
+      displayName: "Approval",
+      status: "ReviewRequired",
+      isRequired: true,
+      description: "Controller sign-off is required.",
+      blockers: [],
+      nextActions: [
+        {
+          code: "approve-close",
+          label: "Approve close package",
+          route: "/accounting/approvals?approvalId=approval-close-1",
+          gate: "Approval"
+        }
+      ],
+      completedAtUtc: null,
+      completedBy: null
+    }
+  ],
+  nextActions: [
+    {
+      code: "approve-close",
+      label: "Approve close package",
+      route: "/accounting/approvals?approvalId=approval-close-1",
+      gate: "Approval"
+    }
+  ]
+};
+
+const approvalWorkflowDetail: OperationsContinuityWorkflow = {
+  ...approvalWorkflowSummary,
+  brokerIntakeState: "Complete",
+  securityMasterState: "Complete",
+  ledgerPostingState: "Complete",
+  reconciliationState: "Complete",
+  approvalState: "Submitted",
+  timeline: [
+    {
+      auditId: "audit-approval-1",
+      occurredAtUtc: "2026-06-01T12:00:00Z",
+      workflowId: "workflow-approval-1",
+      fundAccountId: "fund-alpha",
+      periodId: "2026-05",
+      eventType: "approval-submitted",
+      fromState: "ReconciliationActive",
+      toState: "ApprovalPending",
+      gate: "Approval",
+      fromGateStatus: "InProgress",
+      toGateStatus: "ReviewRequired",
+      actor: "ops.controller",
+      rationale: "Submitted for controller sign-off.",
+      correlationId: "corr-approval-1",
+      references: [],
+      previousHash: "prev-hash",
+      currentHash: "current-hash"
+    }
+  ],
+  breakCases: [],
+  ledgerPreview: null,
+  approvals: [
+    {
+      approvalId: "approval-close-1",
+      status: "Submitted",
+      operator: "ops.operator",
+      reviewer: "ops.controller",
+      rationale: "Controller sign-off required before release.",
+      submittedAtUtc: "2026-06-01T12:00:00Z",
+      decidedAtUtc: null,
+      evidenceLinks: [
+        {
+          evidenceId: "evidence-close-1",
+          label: "Close packet",
+          route: "/reporting/evidence?subject=workflow-approval-1",
+          source: "operations-continuity",
+          capturedAtUtc: "2026-06-01T12:00:00Z"
+        }
+      ]
+    }
+  ],
+  reportPackReadiness: {
+    isReady: true,
+    reportPackId: "report-pack-2026-05",
+    blockingReason: null,
+    evidenceLinks: []
+  },
+  closeChecklist: [],
+  closeReadiness: null,
+  closePackage: null,
+  accountingRecordSummary: null,
+  evidenceLinks: [],
+  blockers: []
 };
 
 const securityTrustSnapshot: SecurityMasterTrustSnapshot = {
@@ -437,6 +547,36 @@ describe("AccountingScreen", () => {
     expect(screen.getByLabelText("Cash-flow status Variance review. Net variance $500.")).toHaveTextContent("Variance review");
     expect(screen.getByLabelText("Runs with variance: 1")).toHaveTextContent("1");
     expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
+  });
+
+  it("renders approvals as a dedicated workstream and posts approval decisions", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValue(approvalWorkflowDetail);
+    vi.mocked(api.approveOperationsContinuityWorkflow).mockResolvedValue({
+      success: true,
+      workflow: approvalWorkflowDetail,
+      blockers: [],
+      message: null
+    });
+
+    await renderAccountingScreen(data, "/accounting/approvals?approvalId=approval-close-1");
+
+    expect(await screen.findByRole("heading", { name: "Approval queue and audit gate" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Approval gate", level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole("table", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting approval queue" })).toHaveTextContent("2026-05");
+    expect(screen.getByRole("region", { name: "Selected approval detail" })).toHaveTextContent("approval-close-1");
+    expect(screen.getByRole("region", { name: "Selected approval detail" })).toHaveTextContent("ops.controller");
+    expect(screen.getByRole("region", { name: "Approval audit trail" })).toHaveTextContent("Submitted for controller sign-off.");
+
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+
+    expect(api.approveOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1", expect.objectContaining({
+      expectedVersion: 7,
+      reportPackId: "report-pack-2026-05",
+      rationale: "Approved from Accounting approvals workstream."
+    }));
   });
 
   it("renders reconciliation strong panels with view-model presentation state", async () => {

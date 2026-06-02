@@ -235,6 +235,12 @@ items:
     evidence:
       - type: status
         path: docs/roadmap/generated/ROADMAP_SUMMARY.md
+      - type: test
+        path: tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx
     last_reviewed: 2026-06-02
 
   - id: W5-MASSET-001

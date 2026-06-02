@@ -62,7 +62,7 @@ import type {
   TradingParameters
 } from "@/types";
 
-export type AccountingWorkstream = "ledger" | "configure" | "reconciliation" | "security-master" | "reporting";
+export type AccountingWorkstream = "ledger" | "configure" | "reconciliation" | "security-master" | "approvals" | "reporting";
 export type GovernanceWorkstream = AccountingWorkstream;
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
@@ -2622,6 +2622,10 @@ export function resolveAccountingWorkstream(pathname: string): AccountingWorkstr
     return "security-master";
   }
 
+  if (pathname.includes("/approvals")) {
+    return "approvals";
+  }
+
   return "ledger";
 }
 
@@ -4223,6 +4227,10 @@ function cashFlowContextLabel(workstream: AccountingWorkstream): string {
 
   if (workstream === "security-master") {
     return "Security coverage context";
+  }
+
+  if (workstream === "approvals") {
+    return "Approval context";
   }
 
   return "Ledger context";

@@ -1,6 +1,7 @@
 using Meridian.Application.Composition;
 using Meridian.Application.FundAccounts;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.FundStructure;
 
 namespace Meridian.Application.FundStructure;
@@ -9,13 +10,13 @@ namespace Meridian.Application.FundStructure;
 /// PostgreSQL-backed implementation of <see cref="IFundStructureService"/>.
 /// On each mutation the full snapshot is loaded from the store, updated in-memory,
 /// and the changed rows are written back.
-/// <see cref="GetCashFlowViewAsync"/> returns null (F# interop not supported here).
 /// </summary>
 public sealed class PostgresFundStructureService : IFundStructureService
 {
     private readonly IFundStructureStore _store;
     private readonly IFundAccountService _fundAccountService;
     private readonly IGovernanceSharedDataAccessService? _sharedDataAccessService;
+    private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IFundStructurePolicyService _policy;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
@@ -23,12 +24,14 @@ public sealed class PostgresFundStructureService : IFundStructureService
         IFundStructureStore store,
         IFundAccountService fundAccountService,
         IFundStructurePolicyService policyService,
-        IGovernanceSharedDataAccessService? sharedDataAccessService = null)
+        IGovernanceSharedDataAccessService? sharedDataAccessService = null,
+        ISecurityMasterQueryService? securityMasterQueryService = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _policy = policyService ?? throw new ArgumentNullException(nameof(policyService));
         _sharedDataAccessService = sharedDataAccessService;
+        _securityMasterQueryService = securityMasterQueryService;
     }
 
     // ── Create operations ─────────────────────────────────────────────────────
@@ -885,10 +888,33 @@ public sealed class PostgresFundStructureService : IFundStructureService
             scoped.Assignments);
     }
 
-    public Task<GovernanceCashFlowViewDto?> GetCashFlowViewAsync(
+    public async Task<GovernanceCashFlowViewDto?> GetCashFlowViewAsync(
         GovernanceCashFlowQuery query,
-        CancellationToken ct = default) =>
-        Task.FromResult<GovernanceCashFlowViewDto?>(null);
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        ct.ThrowIfCancellationRequested();
+
+        var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
+        var projector = new InMemoryFundStructureService(
+            _fundAccountService,
+            _sharedDataAccessService,
+            _securityMasterQueryService,
+            _policy,
+            snap.Organizations.Values.ToList(),
+            snap.Businesses.Values.ToList(),
+            snap.Clients.Values.ToList(),
+            snap.Funds.Values.ToList(),
+            snap.Sleeves.Values.ToList(),
+            snap.Vehicles.Values.ToList(),
+            snap.Entities.Values.ToList(),
+            snap.InvestmentPortfolios.Values.ToList(),
+            snap.OwnershipLinks.Values.ToList(),
+            snap.Assignments.Values.ToList(),
+            snap.LinkedAccountIds.ToList());
+
+        return await projector.GetCashFlowViewAsync(query, ct).ConfigureAwait(false);
+    }
 
     // ── Snapshot helpers ──────────────────────────────────────────────────────
 

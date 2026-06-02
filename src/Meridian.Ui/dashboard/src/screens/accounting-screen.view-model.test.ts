@@ -530,6 +530,7 @@ describe("accounting-screen view model", () => {
   it("derives the accounting workstream and selected reconciliation run", () => {
     expect(resolveAccountingWorkstream("/accounting/security-master")).toBe("security-master");
     expect(resolveAccountingWorkstream("/accounting/reconciliation")).toBe("reconciliation");
+    expect(resolveAccountingWorkstream("/accounting/approvals")).toBe("approvals");
     expect(resolveAccountingWorkstream("/accounting")).toBe("ledger");
     expect(resolveAccountingWorkstream("/accounting/ledger")).toBe("ledger");
     expect(resolveAccountingWorkstream("/reporting")).toBe("reporting");

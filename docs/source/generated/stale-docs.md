@@ -8,9 +8,21 @@ do_not_edit: true
 
 This report marks registered source modules whose code or README hashes differ from the reviewed baseline.
 
-- Stale modules: 1
+- Stale modules: 13
 - Removed module hash entries: 0
 
 | Module | Path | README | Reason |
 | --- | --- | --- | --- |
-| `SRC-STORAGE` | `src/Meridian.Storage` | `src/Meridian.Storage/README.md` | `readme_hash_drift` |
+| `SRC-APP` | `src/Meridian.Application` | `src/Meridian.Application/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-CONTRACTS` | `src/Meridian.Contracts` | `src/Meridian.Contracts/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-FSHARP` | `src/Meridian.FSharp` | `src/Meridian.FSharp/README.md` | `source_hash_drift` |
+| `SRC-FSHARP-LEDGER` | `src/Meridian.FSharp.Ledger` | `src/Meridian.FSharp.Ledger/README.md` | `source_hash_drift` |
+| `SRC-HOST` | `src/Meridian` | `src/Meridian/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-INFRASTRUCTURE` | `src/Meridian.Infrastructure` | `src/Meridian.Infrastructure/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-PROVIDER-SDK` | `src/Meridian.ProviderSdk` | `src/Meridian.ProviderSdk/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-STORAGE` | `src/Meridian.Storage` | `src/Meridian.Storage/README.md` | `source_hash_drift` |
+| `SRC-STRATEGIES` | `src/Meridian.Strategies` | `src/Meridian.Strategies/README.md` | `source_hash_drift` |
+| `SRC-UI` | `src/Meridian.Ui` | `src/Meridian.Ui/README.md` | `source_hash_drift` |
+| `SRC-UI-DASHBOARD` | `src/Meridian.Ui/dashboard` | `src/Meridian.Ui/dashboard/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-UI-SHARED` | `src/Meridian.Ui.Shared` | `src/Meridian.Ui.Shared/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-WPF` | `src/Meridian.Wpf` | `src/Meridian.Wpf/README.md` | `source_hash_drift`, `readme_hash_drift` |

@@ -296,6 +296,14 @@ export function workstationOperationsContinuityDetailEndpoint(workflowId: string
   return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}/${pathSegment(workflowId, "workflowId")}`;
 }
 
+export function workstationOperationsContinuityApprovalApproveEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/approval/approve`;
+}
+
+export function workstationOperationsContinuityApprovalRejectEndpoint(workflowId: string): string {
+  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/approval/reject`;
+}
+
 export function workstationOperationsContinuityTimelineEndpoint(workflowId: string): string {
   return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/timeline`;
 }

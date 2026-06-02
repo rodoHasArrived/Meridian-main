@@ -110,6 +110,9 @@ approval counts, expiration dates, and close-readiness blockers, so the browser 
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
 derived from those shared task fields: ready, blocked, acknowledged, approval, evidence-pointer,
 and next-due counts are display projections only and must not become client-local close state.
+The Accounting approvals workstream at `/accounting/approvals` reads the same operations-continuity
+workflow list/detail payload and posts approve/reject decisions through the shared approval
+endpoints, keeping signer, report-pack, blocker, and audit-trail evidence server-owned.
 The close-package panel is likewise a read-only projection of the shared operations-continuity
 publication metadata: signer, sign-off rationale, retained manifest route, evidence hash, report
 pack id, retained evidence links, and checklist control approvals come from the server workflow

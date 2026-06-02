@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
+using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.Logging;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
 using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
@@ -18,80 +20,74 @@ namespace Meridian.Infrastructure.Adapters.Templates;
 /// Steps to implement a new brokerage:
 /// 1. Copy this file to a new folder under Adapters/{BrokerName}/
 /// 2. Rename the class to {BrokerName}BrokerageGateway
-/// 3. Add [DataSource] and [ImplementsAdr] attributes
-/// 4. Implement all TODO methods with broker-specific API calls
+/// 3. Replace the template [DataSource] and [ImplementsAdr] metadata with broker-specific values
+/// 4. Replace scaffold methods with broker-specific API calls
 /// 5. Add JSON DTOs and a JsonSerializerContext for ADR-014 compliance
 /// 6. Register in DI: services.AddBrokerageGateway&lt;{BrokerName}BrokerageGateway&gt;()
 /// 7. Add configuration options record if needed
 /// 8. Add tests under tests/Meridian.Tests/Brokerage/
 /// </summary>
-// TODO(W1-DATA-001): Add attributes:
-// [DataSource("your-broker", "Your Broker Name", DataSourceType.Realtime, DataSourceCategory.Broker,
-//     Priority = 15, Description = "Your broker order execution gateway")]
-// [ImplementsAdr("ADR-001", "Your broker brokerage provider implementation")]
-// [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
-// [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-// [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
+[DataSource("template-brokerage", "Template Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
+    Priority = 99, Description = "Deterministic brokerage gateway scaffold for provider implementations")]
+[ImplementsAdr("ADR-001", "Template brokerage provider scaffold")]
+[ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+[ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [Obsolete("TemplateBrokerageGateway is a scaffold/copy-target and must not be registered or used in production. " +
           "Copy it to Adapters/{BrokerName}/ and implement all TODO items before use.")]
 public sealed class TemplateBrokerageGateway : IBrokerageGateway
 {
-    // TODO(W1-DATA-001): Add your broker's HTTP client factory, config options, etc.
     private readonly ILogger<TemplateBrokerageGateway> _logger;
+    private readonly TemplateBrokerageGatewayOptions _options;
     private readonly Channel<ExecutionReport> _reportChannel;
+    private readonly ConcurrentDictionary<string, BrokerOrder> _openOrders = new(StringComparer.Ordinal);
     private volatile bool _connected;
     private bool _disposed;
 
     // Tracks submitted orders so cancel/modify reports carry the correct symbol and side.
-    // TODO(W1-DATA-001): In a full implementation, prefer querying the broker's API for live order state.
     private readonly ConcurrentDictionary<string, (string Symbol, OrderSide Side, string? ClientOrderId)> _submittedOrders = new();
 
+    public TemplateBrokerageGateway(ILogger<TemplateBrokerageGateway> logger)
+        : this(logger, new TemplateBrokerageGatewayOptions())
+    {
+    }
+
     public TemplateBrokerageGateway(
-        // TODO(W1-DATA-001): Add IHttpClientFactory, options, etc.
-        ILogger<TemplateBrokerageGateway> logger)
+        ILogger<TemplateBrokerageGateway> logger,
+        TemplateBrokerageGatewayOptions options)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
         _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
             singleReader: false, singleWriter: false);
     }
 
-    // TODO(W1-DATA-001): Change to your broker's ID (lowercase, no spaces)
-    public string GatewayId => "template";
+    public string GatewayId => _options.GatewayId;
 
     public bool IsConnected => _connected;
 
-    // TODO(W1-DATA-001): Change to your broker's display name
-    public string BrokerDisplayName => "Template Broker";
+    public string BrokerDisplayName => _options.BrokerDisplayName;
 
-    // TODO(W1-DATA-001): Configure capabilities for your broker
-    public BrokerageCapabilities BrokerageCapabilities { get; } =
-        BrokerageCapabilities.UsEquity(
-            modification: true,
-            partialFills: true,
-            shortSelling: false,
-            fractional: false,
-            extendedHours: false);
+    public BrokerageCapabilities BrokerageCapabilities => _options.Capabilities;
 
     public async Task ConnectAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
         if (_connected)
             return;
 
-        // TODO(W1-DATA-001): Authenticate with your broker's API
-        // - Validate credentials
-        // - Establish WebSocket connection if needed
-        // - Fetch initial account state
-        await Task.CompletedTask.ConfigureAwait(false);
+        ValidateTemplateConnection();
 
         _connected = true;
-        _logger.LogInformation("Template broker connected");
+        _logger.LogInformation("{BrokerDisplayName} connected", BrokerDisplayName);
     }
 
     public Task DisconnectAsync(CancellationToken ct = default)
     {
-        // TODO(W1-DATA-001): Close WebSocket/API connections
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
         _connected = false;
+        _logger.LogInformation("Template broker disconnected");
         return Task.CompletedTask;
     }
 
@@ -99,13 +95,8 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     {
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
         EnsureConnected();
-
-        // TODO(W1-DATA-001): Translate OrderRequest to your broker's order format and submit
-        // Example:
-        //   var brokerOrder = MapToBrokerOrder(request);
-        //   var response = await _httpClient.PostAsJsonAsync("/orders", brokerOrder, ct);
-        //   var brokerResponse = await response.Content.ReadFromJsonAsync<BrokerOrderResponse>(ct);
 
         var orderId = request.ClientOrderId ?? Guid.NewGuid().ToString("N");
 
@@ -124,6 +115,7 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
 
         // Track submitted order so cancel/modify reports carry the correct symbol and side.
         _submittedOrders[orderId] = (request.Symbol, request.Side, request.ClientOrderId);
+        _openOrders[orderId] = CreateOpenOrder(orderId, request, report.Timestamp);
 
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
         return report;
@@ -132,20 +124,21 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     public async Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
         EnsureConnected();
 
-        // TODO(W1-DATA-001): Call your broker's cancel API
-        // TODO(W1-DATA-001): For brokers that return order details on cancel, use the response to populate Symbol/Side.
-
         _submittedOrders.TryRemove(orderId, out var tracked);
+        _openOrders.TryRemove(orderId, out var openOrder);
+        var symbol = openOrder?.Symbol ?? tracked.Symbol ?? string.Empty;
 
         var report = new ExecutionReport
         {
             OrderId = orderId,
-            ClientOrderId = tracked.ClientOrderId,
+            ClientOrderId = openOrder?.ClientOrderId ?? tracked.ClientOrderId,
             ReportType = ExecutionReportType.Cancelled,
-            Symbol = tracked.Symbol ?? string.Empty,
-            Side = tracked.Symbol is not null ? tracked.Side : OrderSide.Buy,
+            Symbol = symbol,
+            Side = openOrder?.Side ?? (tracked.Symbol is not null ? tracked.Side : OrderSide.Buy),
             OrderStatus = OrderStatus.Cancelled,
             GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
@@ -158,12 +151,16 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         string orderId, OrderModification modification, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ct.ThrowIfCancellationRequested();
         EnsureConnected();
 
-        // TODO(W1-DATA-001): Call your broker's modify/amend API
-        // Some brokers require cancel-replace instead of in-place modification
-
         _submittedOrders.TryGetValue(orderId, out var tracked);
+        _openOrders.AddOrUpdate(
+            orderId,
+            static (_, state) => CreateModifiedFallbackOrder(state.OrderId, state.Tracked, state.Modification),
+            static (_, existing, state) => ApplyModification(existing, state.Modification),
+            (OrderId: orderId, Tracked: tracked, Modification: modification));
 
         var report = new ExecutionReport
         {
@@ -192,29 +189,34 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
     public Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default)
     {
         EnsureConnected();
-
-        // TODO(W1-DATA-001): Call your broker's account endpoint
+        ct.ThrowIfCancellationRequested();
         return Task.FromResult(new AccountInfo
         {
-            AccountId = "template-account",
-            Equity = 0m,
-            Cash = 0m,
-            BuyingPower = 0m,
+            AccountId = _options.AccountId,
+            Equity = _options.Equity,
+            Cash = _options.Cash,
+            BuyingPower = _options.BuyingPower,
+            Currency = _options.Currency,
+            Status = _options.AccountStatus,
         });
     }
 
     public Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default)
     {
         EnsureConnected();
-        // TODO(W1-DATA-001): Call your broker's positions endpoint
-        return Task.FromResult<IReadOnlyList<BrokerPosition>>(Array.Empty<BrokerPosition>());
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(_options.Positions);
     }
 
     public Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default)
     {
         EnsureConnected();
-        // TODO(W1-DATA-001): Call your broker's open orders endpoint
-        return Task.FromResult<IReadOnlyList<BrokerOrder>>(Array.Empty<BrokerOrder>());
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult<IReadOnlyList<BrokerOrder>>(
+            _openOrders.Values
+                .OrderBy(order => order.CreatedAt)
+                .ThenBy(order => order.OrderId, StringComparer.Ordinal)
+                .ToArray());
     }
 
     public async Task<BrokerHealthStatus> CheckHealthAsync(CancellationToken ct = default)
@@ -247,4 +249,72 @@ public sealed class TemplateBrokerageGateway : IBrokerageGateway
         if (!_connected)
             throw new InvalidOperationException("Template broker is not connected. Call ConnectAsync first.");
     }
+
+    private void ValidateTemplateConnection()
+    {
+        if (!_options.ConnectionReady)
+            throw new InvalidOperationException(_options.ConnectionFailureMessage);
+    }
+
+    private static BrokerOrder CreateOpenOrder(string orderId, OrderRequest request, DateTimeOffset createdAt) => new()
+    {
+        OrderId = orderId,
+        ClientOrderId = request.ClientOrderId,
+        Symbol = request.Symbol,
+        Side = request.Side,
+        Type = request.Type,
+        Quantity = request.Quantity,
+        FilledQuantity = 0m,
+        LimitPrice = request.LimitPrice,
+        StopPrice = request.StopPrice,
+        Status = OrderStatus.Accepted,
+        CreatedAt = createdAt,
+    };
+
+    private static BrokerOrder CreateModifiedFallbackOrder(
+        string orderId,
+        (string Symbol, OrderSide Side, string? ClientOrderId) tracked,
+        OrderModification modification) => new()
+        {
+            OrderId = orderId,
+            ClientOrderId = tracked.ClientOrderId,
+            Symbol = tracked.Symbol ?? string.Empty,
+            Side = tracked.Symbol is not null ? tracked.Side : OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = modification.NewQuantity ?? 0m,
+            LimitPrice = modification.NewLimitPrice,
+            StopPrice = modification.NewStopPrice,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow,
+        };
+
+    private static BrokerOrder ApplyModification(BrokerOrder existing, OrderModification modification) => existing with
+    {
+        Quantity = modification.NewQuantity ?? existing.Quantity,
+        LimitPrice = modification.NewLimitPrice ?? existing.LimitPrice,
+        StopPrice = modification.NewStopPrice ?? existing.StopPrice,
+        Status = OrderStatus.Accepted,
+    };
+}
+
+public sealed record TemplateBrokerageGatewayOptions
+{
+    public string GatewayId { get; init; } = "template";
+    public string BrokerDisplayName { get; init; } = "Template Broker";
+    public BrokerageCapabilities Capabilities { get; init; } =
+        BrokerageCapabilities.UsEquity(
+            modification: true,
+            partialFills: true,
+            shortSelling: false,
+            fractional: false,
+            extendedHours: false);
+    public bool ConnectionReady { get; init; } = true;
+    public string ConnectionFailureMessage { get; init; } = "Template broker connection is not ready.";
+    public string AccountId { get; init; } = "template-account";
+    public decimal Equity { get; init; }
+    public decimal Cash { get; init; }
+    public decimal BuyingPower { get; init; }
+    public string Currency { get; init; } = "USD";
+    public string AccountStatus { get; init; } = "paper-template";
+    public IReadOnlyList<BrokerPosition> Positions { get; init; } = Array.Empty<BrokerPosition>();
 }

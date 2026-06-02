@@ -2101,7 +2101,81 @@ describe("trading readiness named operator states", () => {
     expect(state.visibleWorkItems[0].action?.href).toBe("/trading#promotion-gate-panel");
   });
 
-  it.todo("live-oversight: ReviewRequired with live-only work item documents expected readiness shape before live flag lands");
+  it("live-oversight: ReviewRequired with live-only work item documents expected readiness shape before live flag lands", () => {
+    const readiness: TradingOperatorReadiness = {
+      ...blockedReadiness,
+      overallStatus: "ReviewRequired",
+      readyForPaperOperation: false,
+      activeSession: baseSession,
+      sessions: [baseSession],
+      replay: consistentReplayReadiness,
+      promotion: {
+        state: "ReviewRequired",
+        reason: "Live action requires paper-first governance sign-off.",
+        requiresReview: true,
+        sourceRunId: "run-paper-001",
+        targetRunId: "run-live-001",
+        suggestedNextMode: "live",
+        auditReference: "audit-live-oversight-1",
+        approvalStatus: "pending",
+        manualOverrideId: null,
+        approvedBy: null,
+        approvalChecklist: [
+          "Paper replay verified",
+          "Provider credentials read-only",
+          "Governance sign-off pending"
+        ],
+        evidenceReferences: [
+          "paper-session:sess-1",
+          "provider-readiness:alpaca",
+          "governance-signoff:live"
+        ]
+      },
+      workItems: [
+        {
+          workItemId: "live-oversight-review-run-paper-001",
+          kind: "PromotionReview",
+          label: "Live oversight review required",
+          detail: "Live action requires paper-first governance sign-off.",
+          tone: "Warning",
+          createdAt: "2026-04-01T00:00:00Z",
+          runId: "run-paper-001",
+          fundAccountId: null,
+          auditReference: "audit-live-oversight-1",
+          workspace: "Trading",
+          targetRoute: "/api/workstation/trading/readiness",
+          targetPageTag: "TradingShell",
+          requiredSignoffRole: "Governance"
+        }
+      ],
+      warnings: ["Live execution remains disabled until governance sign-off is attached."]
+    };
+
+    const state = buildTradingReadinessState({ readiness, refreshing: false, errorText: null });
+
+    expect(state.readiness?.overallStatus).toBe("ReviewRequired");
+    expect(state.readiness?.promotion?.suggestedNextMode).toBe("live");
+    expect(state.readiness?.promotion?.approvalChecklist).toEqual([
+      "Paper replay verified",
+      "Provider credentials read-only",
+      "Governance sign-off pending"
+    ]);
+    expect(state.workItems).toHaveLength(1);
+    expect(state.workItems[0]).toMatchObject({
+      kind: "PromotionReview",
+      requiredSignoffRole: "Governance",
+      auditReference: "audit-live-oversight-1"
+    });
+    expect(state.visibleWorkItems[0].metadataText).toBe("Trading · TradingShell · run-paper-001 · audit-live-oversight-1");
+    expect(state.visibleWorkItems[0].action).toEqual({
+      label: "Open promotion gate",
+      href: "/trading",
+      ariaLabel: "Open promotion gate panel for Live oversight review required",
+      detail: "Complete the promotion approval checklist in the Trading cockpit."
+    });
+    expect(state.visibleWarnings[0].text).toBe("Live execution remains disabled until governance sign-off is attached.");
+    expect(state.statusAnnouncement).toContain("review required");
+  });
 });
 
 // ─── Milestone 2: Work-item action routing for non-brokerage kinds ────────────

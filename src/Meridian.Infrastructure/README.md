@@ -56,6 +56,11 @@ provider credential responses expose masked status only, file-backed vault paylo
 submitted secrets, and read-only brokerage sync adapters may fetch account, portfolio, activity,
 corporate-action, and factor evidence without placing orders. Adapter readiness notes should link
 any write-capable live execution path back to the shared execution governance gates.
+The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
+deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
+connection readiness, option-backed account/position reads, and in-memory open-order tracking let
+copied providers and tests prove lifecycle behavior before replacing the template seams with broker
+APIs.
 
 Streaming failover state is updated from explicit success, failure, and latency signals in addition
 to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider

@@ -3,6 +3,7 @@ using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Storage.FundStructure;
 using Xunit;
 
 namespace Meridian.FundStructure.Tests;
@@ -862,6 +863,166 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task PostgresFundStructureService_GetCashFlowViewAsync_ProjectsCashFlowFromStoredStructure()
+    {
+        var accountService = new InMemoryFundAccountService();
+        var store = new FakeFundStructureStore();
+        var service = new PostgresFundStructureService(
+            store,
+            accountService,
+            new FundStructurePolicyService());
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var asOf = new DateTimeOffset(2026, 04, 07, 12, 0, 0, TimeSpan.Zero);
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var clientId = Guid.NewGuid();
+        var portfolioId = Guid.NewGuid();
+
+        await service.CreateOrganizationAsync(new CreateOrganizationRequest(
+            organizationId,
+            "ORG",
+            "Meridian Platform",
+            "USD",
+            now,
+            "test"));
+        await service.CreateBusinessAsync(new CreateBusinessRequest(
+            businessId,
+            organizationId,
+            BusinessKindDto.FinancialAdvisor,
+            "ADV",
+            "Meridian Advisory",
+            "USD",
+            now,
+            "test"));
+        await service.CreateClientAsync(new CreateClientRequest(
+            clientId,
+            businessId,
+            "CLIENT",
+            "Acme Family Office",
+            "USD",
+            now,
+            "test"));
+        await service.CreateInvestmentPortfolioAsync(new CreateInvestmentPortfolioRequest(
+            portfolioId,
+            businessId,
+            "PORT",
+            "Acme Core Portfolio",
+            "USD",
+            now,
+            "test",
+            ClientId: clientId));
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Brokerage,
+            AccountCode: "ADV-ACCT",
+            DisplayName: "Acme Advisory Custody",
+            BaseCurrency: "USD",
+            EffectiveFrom: now,
+            CreatedBy: "test",
+            PortfolioId: portfolioId.ToString("D"),
+            LedgerReference: "ADVISORY-TB"));
+        await service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+            Guid.NewGuid(),
+            portfolioId,
+            account.AccountId,
+            OwnershipRelationshipTypeDto.Operates,
+            now,
+            "test"));
+        await accountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            account.AccountId,
+            new DateOnly(2026, 04, 01),
+            "USD",
+            100_000m,
+            "bank",
+            "test"));
+        await accountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            account.AccountId,
+            new DateOnly(2026, 04, 07),
+            "USD",
+            112_000m,
+            "bank",
+            "test",
+            AccruedInterest: 250m,
+            PendingSettlement: 1_500m));
+        await accountService.IngestBankStatementAsync(new IngestBankStatementRequest(
+            Guid.NewGuid(),
+            account.AccountId,
+            new DateOnly(2026, 04, 07),
+            "Acme Bank",
+            "advisory-cash.csv",
+            [
+                new BankStatementLineDto(
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    account.AccountId,
+                    new DateOnly(2026, 04, 03),
+                    new DateOnly(2026, 04, 03),
+                    10_000m,
+                    "USD",
+                    "Contribution",
+                    "Capital contribution",
+                    "BANK-001",
+                    110_000m),
+                new BankStatementLineDto(
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    account.AccountId,
+                    new DateOnly(2026, 04, 05),
+                    new DateOnly(2026, 04, 05),
+                    -3_000m,
+                    "USD",
+                    "Fee",
+                    "Advisory fee",
+                    "BANK-002",
+                    107_000m),
+                new BankStatementLineDto(
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    account.AccountId,
+                    new DateOnly(2026, 04, 10),
+                    new DateOnly(2026, 04, 10),
+                    5_000m,
+                    "USD",
+                    "Dividend",
+                    "Upcoming dividend",
+                    "BANK-003",
+                    null),
+                new BankStatementLineDto(
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    account.AccountId,
+                    new DateOnly(2026, 04, 12),
+                    new DateOnly(2026, 04, 12),
+                    -1_200m,
+                    "USD",
+                    "Fee",
+                    "Upcoming advisory fee",
+                    "BANK-004",
+                    null)
+            ],
+            "test"));
+
+        var view = await service.GetCashFlowViewAsync(new GovernanceCashFlowQuery(
+            GovernanceCashFlowScopeKindDto.InvestmentPortfolio,
+            InvestmentPortfolioId: portfolioId,
+            AsOf: asOf,
+            HistoricalDays: 7,
+            ForecastDays: 7,
+            BucketDays: 7));
+
+        Assert.NotNull(view);
+        Assert.Equal(GovernanceCashFlowScopeKindDto.InvestmentPortfolio, view!.Scope.ScopeKind);
+        Assert.Equal(portfolioId, view.Scope.InvestmentPortfolioId);
+        Assert.Equal(1, view.AccountCount);
+        Assert.Equal(112_000m, view.CurrentCashBalance);
+        Assert.Equal(7_000m, view.RealizedLadder.NetPosition);
+        Assert.Equal(5_550m, view.ProjectedLadder.NetPosition);
+        Assert.Equal(-1_450m, view.VarianceSummary.VarianceAmount);
+        Assert.Contains(view.ProjectedEntries, entry => entry.SourceKind == "BalanceSnapshot" && entry.EventKind == "PendingSettlement");
+        Assert.Contains(view.ProjectedEntries, entry => entry.SourceKind == "BankStatement" && entry.Amount == 5_000m);
+    }
+
+    [Fact]
     public async Task GetCashFlowViewAsync_Account_UsesBalanceTrendFallbackWhenProjectedEntriesAreMissing()
     {
         var fixture = await CreateHybridFixtureAsync();
@@ -1647,6 +1808,222 @@ public sealed class InMemoryFundStructureServiceTests
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(_sharedDataAccess);
+        }
+    }
+
+    private sealed class FakeFundStructureStore : IFundStructureStore
+    {
+        private readonly Dictionary<Guid, OrganizationSummaryDto> _organizations = new();
+        private readonly Dictionary<Guid, BusinessSummaryDto> _businesses = new();
+        private readonly Dictionary<Guid, ClientSummaryDto> _clients = new();
+        private readonly Dictionary<Guid, FundSummaryDto> _funds = new();
+        private readonly Dictionary<Guid, SleeveSummaryDto> _sleeves = new();
+        private readonly Dictionary<Guid, VehicleSummaryDto> _vehicles = new();
+        private readonly Dictionary<Guid, LegalEntitySummaryDto> _entities = new();
+        private readonly Dictionary<Guid, InvestmentPortfolioSummaryDto> _investmentPortfolios = new();
+        private readonly Dictionary<Guid, OwnershipLinkDto> _ownershipLinks = new();
+        private readonly Dictionary<Guid, FundStructureAssignmentDto> _assignments = new();
+
+        public Task UpsertOrganizationAsync(OrganizationSummaryDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _organizations[dto.OrganizationId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<OrganizationSummaryDto?> GetOrganizationAsync(Guid organizationId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _organizations.TryGetValue(organizationId, out var organization);
+            return Task.FromResult(organization);
+        }
+
+        public Task<IReadOnlyList<OrganizationSummaryDto>> GetAllOrganizationsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<OrganizationSummaryDto>>(_organizations.Values.ToList());
+        }
+
+        public Task UpsertBusinessAsync(BusinessSummaryDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _businesses[dto.BusinessId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<BusinessSummaryDto?> GetBusinessAsync(Guid businessId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _businesses.TryGetValue(businessId, out var business);
+            return Task.FromResult(business);
+        }
+
+        public Task<IReadOnlyList<BusinessSummaryDto>> GetAllBusinessesAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<BusinessSummaryDto>>(_businesses.Values.ToList());
+        }
+
+        public Task UpsertClientAsync(ClientSummaryDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _clients[dto.ClientId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<ClientSummaryDto?> GetClientAsync(Guid clientId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _clients.TryGetValue(clientId, out var client);
+            return Task.FromResult(client);
+        }
+
+        public Task<IReadOnlyList<ClientSummaryDto>> GetAllClientsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<ClientSummaryDto>>(_clients.Values.ToList());
+        }
+
+        public Task UpsertFundAsync(FundSummaryDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _funds[dto.FundId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<FundSummaryDto?> GetFundAsync(Guid fundId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _funds.TryGetValue(fundId, out var fund);
+            return Task.FromResult(fund);
+        }
+
+        public Task<IReadOnlyList<FundSummaryDto>> GetAllFundsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<FundSummaryDto>>(_funds.Values.ToList());
+        }
+
+        public Task UpsertSleeveAsync(SleeveSummaryDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _sleeves[dto.SleeveId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<SleeveSummaryDto?> GetSleeveAsync(Guid sleeveId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _sleeves.TryGetValue(sleeveId, out var sleeve);
+            return Task.FromResult(sleeve);
+        }
+
+        public Task<IReadOnlyList<SleeveSummaryDto>> GetAllSleevesAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<SleeveSummaryDto>>(_sleeves.Values.ToList());
+        }
+
+        public Task UpsertVehicleAsync(VehicleSummaryDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _vehicles[dto.VehicleId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<VehicleSummaryDto?> GetVehicleAsync(Guid vehicleId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _vehicles.TryGetValue(vehicleId, out var vehicle);
+            return Task.FromResult(vehicle);
+        }
+
+        public Task<IReadOnlyList<VehicleSummaryDto>> GetAllVehiclesAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<VehicleSummaryDto>>(_vehicles.Values.ToList());
+        }
+
+        public Task UpsertLegalEntityAsync(LegalEntitySummaryDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _entities[dto.EntityId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<LegalEntitySummaryDto?> GetLegalEntityAsync(Guid entityId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _entities.TryGetValue(entityId, out var entity);
+            return Task.FromResult(entity);
+        }
+
+        public Task<IReadOnlyList<LegalEntitySummaryDto>> GetAllLegalEntitiesAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LegalEntitySummaryDto>>(_entities.Values.ToList());
+        }
+
+        public Task UpsertInvestmentPortfolioAsync(InvestmentPortfolioSummaryDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _investmentPortfolios[dto.InvestmentPortfolioId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<InvestmentPortfolioSummaryDto?> GetInvestmentPortfolioAsync(Guid portfolioId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _investmentPortfolios.TryGetValue(portfolioId, out var portfolio);
+            return Task.FromResult(portfolio);
+        }
+
+        public Task<IReadOnlyList<InvestmentPortfolioSummaryDto>> GetAllInvestmentPortfoliosAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<InvestmentPortfolioSummaryDto>>(_investmentPortfolios.Values.ToList());
+        }
+
+        public Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _ownershipLinks[dto.OwnershipLinkId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<OwnershipLinkDto>> GetAllOwnershipLinksAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<OwnershipLinkDto>>(_ownershipLinks.Values.ToList());
+        }
+
+        public Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _assignments[dto.AssignmentId] = dto;
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<FundStructureAssignmentDto>> GetAllAssignmentsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<FundStructureAssignmentDto>>(_assignments.Values.ToList());
+        }
+
+        public Task<bool> IsEmptyAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(
+                _organizations.Count == 0
+                && _businesses.Count == 0
+                && _clients.Count == 0
+                && _funds.Count == 0
+                && _sleeves.Count == 0
+                && _vehicles.Count == 0
+                && _entities.Count == 0
+                && _investmentPortfolios.Count == 0
+                && _ownershipLinks.Count == 0
+                && _assignments.Count == 0);
         }
     }
 

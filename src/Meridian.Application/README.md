@@ -112,11 +112,16 @@ and UI presentation concerns in their owning layers.
   reconciliation signals, and close blockers while leaving missing live provider evidence as
   review-required/blocking evidence instead of fabricating completeness.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
-  mapping workbench orchestration. Ownership-link policy validation prevents invalid setup graphs
-  by blocking self-parenting, active cycles, incompatible relationship types, overlapping primary
-  links, invalid percentage ownership, sibling percentage over-allocation, and invalid effective
-  windows before create, amend, expire, or replacement graph mutations are persisted. Ledger mapping resolution stays server-side and
-  reuses fund-structure assignments before falling back to account ledger references.
+  mapping workbench orchestration. The PostgreSQL-backed service now supports the same shared
+  governance cash-flow projection path as the local JSON/in-memory service, using stored
+  structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
+  optional Security Master economic rules for realized/projected cash-flow evidence.
+  Ownership-link policy validation prevents invalid setup graphs by blocking self-parenting,
+  active cycles, incompatible relationship types, overlapping primary links, invalid percentage
+  ownership, sibling percentage over-allocation, and invalid effective windows before create,
+  amend, expire, or replacement graph mutations are persisted. Ledger mapping resolution stays
+  server-side and reuses fund-structure assignments before falling back to account ledger
+  references.
 - `Auth/` - scoped access assignment orchestration and authorization decisions that bind
   role/profile permissions to global or fund-structure scopes. The local JSON store persists under
   `governance/user-access-assignments.json` with atomic writes, while
