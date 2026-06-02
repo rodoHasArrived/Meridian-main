@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-02T01:18:43Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-02T01:45:09Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -46,14 +46,14 @@ WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/plans/trading-workstation-migration-blueprint.md`
 
-### Backtesting and Research
+### Backtesting and Strategy Analytics
 
-Replay engine, backtesting SDK, and quant research workflows.
+Replay engine, backtesting SDK, and strategy analytics workflows.
 
 - Projects: `Meridian.Backtesting`, `Meridian.Backtesting.Sdk`, `Meridian.QuantScript`
 - Entrypoints: `src/Meridian.Backtesting`, `src/Meridian.Backtesting.Sdk`, `src/Meridian.QuantScript`
 - Key contracts: `src/Meridian.Backtesting`, `src/Meridian.Backtesting.Sdk`, `src/Meridian.QuantScript`
-- Common tasks: backtesting bug, simulation, research scripting
+- Common tasks: backtesting bug, simulation, strategy analytics scripting
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`
 
 ### Execution, Risk, and Strategies
@@ -136,16 +136,16 @@ Recent source-file activity from the last 14 days.
 | `src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs` | Desktop and UI Workflows | `52ac3cfc0` (2026-06-01T20:28:53Z) | 3 |
 | `src/Meridian.Application/FundStructure/FundStructurePolicyService.cs` | Host and Composition | `b53ea3b9b` (2026-06-01T20:28:08Z) | 6 |
 | `src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs` | Desktop and UI Workflows | `b53ea3b9b` (2026-06-01T20:28:08Z) | 3 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 54 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 52 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 45 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 31 |
-| `src/Meridian.Contracts/Api/UiApiRoutes.cs` | Host and Composition | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 30 |
-| `src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 30 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 27 |
-| `src/Meridian.Ui/dashboard/src/lib/api.ts` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 21 |
-| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 18 |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 16 |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | Execution, Risk, and Strategies | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 15 |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.ts` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 12 |
+| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `928075869` (2026-06-01T18:33:04-07:00) | 12 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `928075869` (2026-06-01T18:33:04-07:00) | 11 |
+| `src/Meridian.FSharp.Ledger/README.md` | Domain, Ledger, and F# | `928075869` (2026-06-01T18:33:04-07:00) | 6 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | `928075869` (2026-06-01T18:33:04-07:00) | 2 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `80e764f38` (2026-06-01T18:30:02-07:00) | 53 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `80e764f38` (2026-06-01T18:30:02-07:00) | 46 |
+| `src/Meridian.Application/README.md` | Host and Composition | `80e764f38` (2026-06-01T18:30:02-07:00) | 39 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `80e764f38` (2026-06-01T18:30:02-07:00) | 38 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `80e764f38` (2026-06-01T18:30:02-07:00) | 32 |
+| `src/Meridian.Ui.Services/README.md` | Desktop and UI Workflows | `80e764f38` (2026-06-01T18:30:02-07:00) | 16 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `80e764f38` (2026-06-01T18:30:02-07:00) | 13 |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.ts` | Desktop and UI Workflows | `80e764f38` (2026-06-01T18:30:02-07:00) | 13 |
 

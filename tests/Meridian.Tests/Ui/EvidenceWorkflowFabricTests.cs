@@ -164,6 +164,14 @@ public sealed class EvidenceWorkflowFabricTests
         var casework = Node(subject, "casework", "break-queue", EvidenceStatusDto.Ready);
         var approval = Node(subject, "approval", "approval", EvidenceStatusDto.Ready);
         var closeChecklist = Node(subject, "close-checklist", "close-checklist", EvidenceStatusDto.Ready);
+        var accountingRecord = Node(subject, "accounting-record", "accounting-record", EvidenceStatusDto.Ready);
+        var accountingRecordCategory = Node(subject, "accounting-record-report-pack-lineage", "accounting-record-category", EvidenceStatusDto.Ready) with
+        {
+            Freshness = new EvidenceFreshnessDto(
+                DateTimeOffset.UtcNow.AddDays(-2),
+                IsStale: true,
+                Reason: "Accounting-record report-pack lineage evidence is outside the close approval freshness window.")
+        };
         var report = Node(subject, "report", "report-pack", EvidenceStatusDto.Ready) with
         {
             Freshness = new EvidenceFreshnessDto(
@@ -174,9 +182,9 @@ public sealed class EvidenceWorkflowFabricTests
         var service = new EvidencePacketValidationService();
 
         var result = service.Validate(
-            [provider, replay, reconciliation, casework, approval, closeChecklist, report],
+            [provider, replay, reconciliation, casework, approval, closeChecklist, accountingRecord, accountingRecordCategory, report],
             [],
-            new HashSet<string>(["provider", "replay", "reconciliation", "casework", "approval", "close-checklist", "report"], StringComparer.OrdinalIgnoreCase),
+            new HashSet<string>(["provider", "replay", "reconciliation", "casework", "approval", "close-checklist", "accounting-record", "accounting-record-report-pack-lineage", "report"], StringComparer.OrdinalIgnoreCase),
             enforceNoOrphanRule: false);
 
         var policyIds = result.Completeness.SlaPolicies.Select(policy => policy.PolicyId);
@@ -186,6 +194,8 @@ public sealed class EvidenceWorkflowFabricTests
         policyIds.Should().Contain("reconciliation-casework-freshness");
         policyIds.Should().Contain("approval-freshness");
         policyIds.Should().Contain("close-checklist-freshness");
+        policyIds.Should().Contain("accounting-record-freshness");
+        policyIds.Should().Contain("accounting-record-category-freshness");
         policyIds.Should().Contain("report-pack-freshness");
         result.Completeness.SlaAssessments.Should().Contain(assessment =>
             assessment.PolicyId == "reconciliation-casework-freshness" &&
@@ -200,10 +210,23 @@ public sealed class EvidenceWorkflowFabricTests
             assessment.EvidenceId == "report" &&
             assessment.IsBreached &&
             assessment.Severity == EvidenceValidationSeverityDto.Warning);
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "accounting-record-freshness" &&
+            assessment.EvidenceId == "accounting-record" &&
+            !assessment.IsBreached);
+        result.Completeness.SlaAssessments.Should().Contain(assessment =>
+            assessment.PolicyId == "accounting-record-category-freshness" &&
+            assessment.EvidenceId == "accounting-record-report-pack-lineage" &&
+            assessment.IsBreached &&
+            assessment.Severity == EvidenceValidationSeverityDto.Warning);
         result.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "evidence-sla-breached" &&
             issue.EvidenceId == "report" &&
             issue.EvidenceKind == "report-pack");
+        result.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "evidence-sla-breached" &&
+            issue.EvidenceId == "accounting-record-report-pack-lineage" &&
+            issue.EvidenceKind == "accounting-record-category");
         result.Completeness.AssuranceScore.Status.Should().Be(EvidenceStatusDto.Stale);
         result.Completeness.AssuranceScore.Score.Should().BeLessThan(100);
         result.Completeness.AssuranceScore.Components.Should().Contain(component =>
@@ -432,8 +455,93 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Nodes.Should().Contain(node =>
             node.Kind == "report-pack" &&
             node.Status == EvidenceStatusDto.Ready);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "accounting-record" &&
+            node.Status == EvidenceStatusDto.Ready);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "accounting-record-category" &&
+            node.Summary.Contains("export manifest", StringComparison.OrdinalIgnoreCase) &&
+            node.Summary.Contains("restatement lineage", StringComparison.OrdinalIgnoreCase));
         packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
         packet.Completeness.BlockingWorkItemIds.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringAccountingRecordReview_ProjectsAccountingRecordAsFirstClassSubject()
+    {
+        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved);
+        var service = CreateOperationsApprovalGraphService(new StubOperationsContinuityWorkflowService([workflow]));
+
+        var packet = await service.GetPacketAsync(EvidenceSubjectResolver.AccountingRecordKind, workflow.WorkflowId.ToString("D"));
+
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.AccountingRecordKind);
+        packet.Subject.Label.Should().Contain("Accounting record");
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "accounting-record" &&
+            node.Status == EvidenceStatusDto.Ready);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "accounting-record-category" &&
+            node.Summary.Contains("export manifest", StringComparison.OrdinalIgnoreCase) &&
+            node.Summary.Contains("document attachment", StringComparison.OrdinalIgnoreCase));
+        packet.Completeness.SlaPolicies.Select(policy => policy.PolicyId).Should().Contain(
+        [
+            "accounting-record-freshness",
+            "accounting-record-category-freshness"
+        ]);
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+    }
+
+    [Fact]
+    public async Task EvidenceSubjectResolver_DuringOperationsEvidenceReview_ListsAccountingRecordSubjects()
+    {
+        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved);
+        var services = new ServiceCollection()
+            .AddSingleton<IOperationsContinuityWorkflowService>(new StubOperationsContinuityWorkflowService([workflow]))
+            .BuildServiceProvider();
+        var resolver = new EvidenceSubjectResolver(services);
+
+        var subjects = await resolver.ListAsync();
+
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.AccountingRecordKind &&
+            subject.SubjectId == "current" &&
+            subject.Label == "Current accounting record");
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.AccountingRecordKind &&
+            subject.SubjectId == workflow.WorkflowId.ToString("D") &&
+            subject.Label.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase));
+        resolver.IsSupportedKind(EvidenceSubjectResolver.AccountingRecordKind).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringOperationsApprovalReview_FlagsIncompleteAccountingRecordEvidence()
+    {
+        var workflow = CreateOperationsWorkflow(
+            OperationsApprovalStateDto.Approved,
+            accountingRecordAuditReady: false);
+        var service = CreateOperationsApprovalGraphService(new StubOperationsContinuityWorkflowService([workflow]));
+
+        var packet = await service.GetPacketAsync(EvidenceSubjectResolver.ApprovalKind, workflow.WorkflowId.ToString("D"));
+
+        packet.Should().NotBeNull();
+        packet!.Nodes.Should().Contain(node =>
+            node.Kind == "accounting-record" &&
+            node.Status == EvidenceStatusDto.ReviewRequired &&
+            node.RelatedWorkItemIds.Contains($"operations-accounting-record:review:{workflow.WorkflowId:N}"));
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "accounting-record-category" &&
+            node.Status == EvidenceStatusDto.ReviewRequired &&
+            node.RelatedWorkItemIds.Contains($"operations-accounting-record:report-pack-lineage:{workflow.WorkflowId:N}"));
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        packet.Completeness.BlockingWorkItemIds.Should().Contain(
+        [
+            $"operations-accounting-record:review:{workflow.WorkflowId:N}",
+            $"operations-accounting-record:report-pack-lineage:{workflow.WorkflowId:N}"
+        ]);
+        packet.Completeness.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "review-required-evidence" &&
+            issue.EvidenceKind == "accounting-record-category");
     }
 
     [Fact]
@@ -591,6 +699,91 @@ public sealed class EvidenceWorkflowFabricTests
         var malformedExportError = await malformedExportResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
         malformedExportError!.Code.Should().Be("invalid-evidence-export-request");
         malformedExportError.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
+    }
+
+    [Fact]
+    public async Task MapEvidenceEndpoints_DuringAccountingRecordReview_ReturnsPacketValidationAndManifest()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-accounting-record", Guid.NewGuid().ToString("N"));
+        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved);
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            new StubOperationsContinuityWorkflowService([workflow]));
+        var client = app.GetTestClient();
+        var subjectId = workflow.WorkflowId.ToString("D");
+
+        var subjectsResponse = await client.GetAsync("/api/workstation/evidence/subjects");
+        subjectsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var subjects = await subjectsResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceSubjectDto>>(ServerJsonOptions);
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.AccountingRecordKind &&
+            subject.SubjectId == subjectId);
+
+        var packetResponse = await client.GetAsync($"/api/workstation/evidence/subjects/accounting-record/{subjectId}/packet");
+        packetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var packet = await packetResponse.Content.ReadFromJsonAsync<EvidencePacketDto>(ServerJsonOptions);
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.AccountingRecordKind);
+        packet.Nodes.Should().Contain(node => node.Kind == "accounting-record");
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "accounting-record-category" &&
+            node.Summary.Contains("restatement lineage", StringComparison.OrdinalIgnoreCase));
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+
+        var validationResponse = await client.PostAsync(
+            $"/api/workstation/evidence/subjects/accounting-record/{subjectId}/validate",
+            content: null);
+        validationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var completeness = await validationResponse.Content.ReadFromJsonAsync<EvidenceCompletenessDto>(ServerJsonOptions);
+        completeness!.SlaPolicies.Select(policy => policy.PolicyId).Should().Contain(
+        [
+            "accounting-record-freshness",
+            "accounting-record-category-freshness"
+        ]);
+
+        var exportResponse = await client.PostAsJsonAsync(
+            $"/api/workstation/evidence/subjects/accounting-record/{subjectId}/export-manifest",
+            new EvidencePacketExportRequest("controller", "accounting record retention", IncludeWarnings: false),
+            ServerJsonOptions);
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var export = await exportResponse.Content.ReadFromJsonAsync<EvidencePacketExportResponse>(ServerJsonOptions);
+        export.Should().NotBeNull();
+        export!.VaultIdentity.Should().NotBeNull();
+        export.VaultIdentity!.SubjectKind.Should().Be(EvidenceSubjectResolver.AccountingRecordKind);
+        export.VaultIdentity.SubjectId.Should().Be(subjectId);
+
+        var manifestJson = await client.GetStringAsync(export.ManifestRoute);
+        manifestJson.Should().Contain("\"subjectKind\": \"accounting-record\"");
+        manifestJson.Should().Contain("\"requestedBy\": \"controller\"");
+        manifestJson.Should().Contain($"\"evidenceSubject\": \"{EvidenceSubjectResolver.AccountingRecordKind}/{subjectId}\"");
+        manifestJson.Should().Contain($"\"accountingRecordId\": \"{subjectId}\"");
+
+        var vaultSearchResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(
+                $"{EvidenceSubjectResolver.AccountingRecordKind}/{subjectId}",
+                null,
+                null,
+                null,
+                null),
+            ServerJsonOptions);
+        vaultSearchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var vaultMatches = await vaultSearchResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
+        vaultMatches.Should().ContainSingle(match =>
+            match.SubjectKind == EvidenceSubjectResolver.AccountingRecordKind &&
+            match.SubjectId == subjectId &&
+            match.VaultId == export.VaultIdentity.VaultId);
+
+        var accountingRecordSearchResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(null, null, null, null, null, AccountingRecordId: subjectId),
+            ServerJsonOptions);
+        accountingRecordSearchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var accountingRecordMatches = await accountingRecordSearchResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
+        accountingRecordMatches.Should().ContainSingle(match =>
+            match.SubjectKind == EvidenceSubjectResolver.AccountingRecordKind &&
+            match.SubjectId == subjectId &&
+            match.VaultId == export.VaultIdentity.VaultId);
     }
 
     [Fact]
@@ -1110,6 +1303,12 @@ public sealed class EvidenceWorkflowFabricTests
                 Linkage = new EvidenceSubjectLinkageDto("report-pack/current", "run-123", "period-2026-05", "rp-55", "case-77")
             });
         exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var export = await exportResponse.Content.ReadFromJsonAsync<EvidencePacketExportResponse>(ServerJsonOptions);
+        export.Should().NotBeNull();
+        var manifestJson = await client.GetStringAsync(export!.ManifestRoute);
+        manifestJson.Should().Contain("\"evidenceSubject\": \"report-pack/current\"");
+        manifestJson.Should().Contain("\"runId\": \"run-123\"");
+        manifestJson.Should().Contain("\"reportPackId\": \"rp-55\"");
 
         var response = await client.PostAsJsonAsync(
             "/api/workstation/evidence/vault/search",
@@ -1166,7 +1365,8 @@ public sealed class EvidenceWorkflowFabricTests
 
     private static OperationsContinuityWorkflowDto CreateOperationsWorkflow(
         OperationsApprovalStateDto approvalState,
-        DateTimeOffset? updatedAtUtc = null)
+        DateTimeOffset? updatedAtUtc = null,
+        bool accountingRecordAuditReady = true)
     {
         var workflowId = Guid.NewGuid();
         var fundAccountId = Guid.NewGuid();
@@ -1302,10 +1502,63 @@ public sealed class EvidenceWorkflowFabricTests
             ],
             Blockers: [],
             NextActions: [],
-            CloseReadiness: null);
+            CloseReadiness: null,
+            AccountingRecordSummary: BuildAccountingRecordSummary(workflowId, now, accountingRecordAuditReady));
     }
 
-    private static async Task<WebApplication> CreateEvidenceAppAsync(string root)
+    private static OperationsAccountingRecordSummaryDto BuildAccountingRecordSummary(
+        Guid workflowId,
+        DateTimeOffset now,
+        bool isAuditReady)
+    {
+        var readyCategories = new[]
+        {
+            ("source-records", "Source records", "Provider statement, custodian file, and bank record evidence are retained."),
+            ("normalized-activity", "Normalized activity", "Normalized transactions, positions, and balances are retained."),
+            ("reconciliation-case-history", "Reconciliation case history", "Reconciliation run and resolved exception history are retained."),
+            ("ledger-evidence", "Ledger evidence", "Journal preview, posted batch, and trial-balance support are retained."),
+            ("approvals", "Approvals", "Approval submission, reviewer decision, and checklist controls are retained.")
+        };
+
+        var categories = readyCategories
+            .Select(category => new OperationsAccountingRecordEvidenceCategoryDto(
+                category.Item1,
+                category.Item2,
+                true,
+                category.Item3,
+                $"/api/workstation/operations/continuity/{workflowId:D}",
+                [new OperationsEvidenceLinkDto($"{category.Item1}-{workflowId:N}", category.Item2, $"/api/workstation/operations/continuity/{workflowId:D}", "operations-accounting-record", now)],
+                RequiredEvidence: [category.Item2.ToLowerInvariant()]))
+            .ToList();
+
+        categories.Add(new OperationsAccountingRecordEvidenceCategoryDto(
+            "report-pack-lineage",
+            "Report-pack lineage",
+            isAuditReady,
+            isAuditReady
+                ? $"Report pack report-pack-{workflowId:N} is linked with retained manifest, export evidence, document attachments, and restatement lineage."
+                : $"Report pack report-pack-{workflowId:N} still needs export manifest, document attachment, and restatement lineage.",
+            $"/api/workstation/operations/continuity/{workflowId:D}",
+            isAuditReady
+                ? [new OperationsEvidenceLinkDto($"report-pack-lineage-{workflowId:N}", "Report-pack lineage", "/api/fund-structure/report-packs/current", "report-pack", now)]
+                : [],
+            RequiredEvidence: ["report-pack publication", "export manifest", "document attachment", "restatement lineage"]));
+
+        return new OperationsAccountingRecordSummaryDto(
+            $"accounting-record-{workflowId:N}",
+            isAuditReady,
+            categories.Count(static category => category.IsComplete),
+            6,
+            isAuditReady
+                ? "Accounting record evidence is audit ready for approval review."
+                : "Accounting record evidence requires report-pack lineage review before audit readiness.",
+            categories,
+            categories.SelectMany(static category => category.EvidenceLinks).ToArray());
+    }
+
+    private static async Task<WebApplication> CreateEvidenceAppAsync(
+        string root,
+        IOperationsContinuityWorkflowService? operationsWorkflowService = null)
     {
         Directory.CreateDirectory(root);
         var configPath = Path.Combine(root, "appsettings.json");
@@ -1318,6 +1571,11 @@ public sealed class EvidenceWorkflowFabricTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
         builder.Services.AddWorkflowLibrary();
+        if (operationsWorkflowService is not null)
+        {
+            builder.Services.AddSingleton(operationsWorkflowService);
+        }
+
         builder.Services.AddEvidenceWorkflowFabric();
 
         var app = builder.Build();

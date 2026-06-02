@@ -33,7 +33,7 @@ instead of editing generated artifacts when routes, projects, or authoritative d
 | Entrypoints | `src/Meridian.Ui.Shared/Endpoints`, `src/Meridian.Ui/dashboard/src`, `src/Meridian.Wpf/Shell`, `src/Meridian.Wpf/ViewModels` |
 | Validation | Browser: targeted Vitest or `npm --prefix src/Meridian.Ui/dashboard run test`; WPF: focused `tests/Meridian.Wpf.Tests` filter; shared DTOs: endpoint tests plus UI consumer tests |
 
-## Backtesting And Research
+## Backtesting And Strategy Analytics
 
 | Field | Start here |
 | --- | --- |

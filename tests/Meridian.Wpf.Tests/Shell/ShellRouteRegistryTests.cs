@@ -31,6 +31,21 @@ public sealed class ShellRouteRegistryTests
     }
 
     [Fact]
+    public void GetRoute_EvidenceWorkbenchSubjectTarget_ResolvesToAuditTrailRoute()
+    {
+        var registry = new ShellRouteRegistry();
+        var requestedTag = "EvidenceWorkbench:accounting-record/accounting-record-2026-05";
+
+        var route = registry.GetRoute(requestedTag);
+
+        route.Should().NotBeNull();
+        route!.PageTag.Should().Be("FundAuditTrail");
+        route.WorkspaceId.Should().Be("accounting");
+        registry.GetCanonicalPageTag(requestedTag).Should().Be("FundAuditTrail");
+        registry.InferWorkspaceIdForPageTag(requestedTag).Should().Be("accounting");
+    }
+
+    [Fact]
     public void GetRoutesForWorkspace_DataWorkspace_ReturnsCanonicalDataRoutesOnly()
     {
         var registry = new ShellRouteRegistry();

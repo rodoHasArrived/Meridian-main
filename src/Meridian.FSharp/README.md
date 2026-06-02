@@ -5,7 +5,7 @@ doc_schema_version: "1.0.0"
 module_id: SRC-FSHARP
 path: src/Meridian.FSharp
 status: active
-owner_lane: Strategy and Research
+owner_lane: Strategy Analytics
 last_reviewed: 2026-05-20
 ---
 

@@ -30,7 +30,7 @@ public sealed class ShellRouteRegistry : IShellRouteRegistry
             return null;
         }
 
-        return _routesByTag.Value.TryGetValue(pageTag.Trim(), out var route)
+        return _routesByTag.Value.TryGetValue(NormalizeParameterizedPageTag(pageTag), out var route)
             ? route
             : null;
     }
@@ -94,5 +94,20 @@ public sealed class ShellRouteRegistry : IShellRouteRegistry
         }
 
         lookup[tag] = route;
+    }
+
+    private static string NormalizeParameterizedPageTag(string pageTag)
+    {
+        var trimmed = pageTag.Trim();
+        var separatorIndex = trimmed.IndexOf(':', StringComparison.Ordinal);
+        if (separatorIndex <= 0)
+        {
+            return trimmed;
+        }
+
+        var prefix = trimmed[..separatorIndex];
+        return string.Equals(prefix, "EvidenceWorkbench", StringComparison.OrdinalIgnoreCase)
+            ? prefix
+            : trimmed;
     }
 }

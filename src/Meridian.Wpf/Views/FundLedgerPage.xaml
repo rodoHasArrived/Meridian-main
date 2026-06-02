@@ -1579,6 +1579,50 @@
                         <StackPanel Grid.Column="2">
                             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
+                                    <TextBlock Text="Accounting Record Evidence" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding AccountingRecordSummaryText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,6,0,0"
+                                               TextWrapping="Wrap" />
+                                    <workstationControls:WorkstationStatePanelControl
+                                        State="{Binding AccountingRecordReadinessState}"
+                                        Margin="0,14,0,14"
+                                        AutomationProperties.AutomationId="FundAccountingRecordReadinessSignifier" />
+                                    <UniformGrid Columns="2" Margin="0,0,0,12">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Status" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding AccountingRecordStatusText}" Style="{StaticResource MetricValueStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Evidence" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding AccountingRecordEvidenceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                    <DataGrid ItemsSource="{Binding AccountingRecordEvidenceCategories}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              BorderThickness="0"
+                                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                              AutomationProperties.AutomationId="FundAccountingRecordEvidenceGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Category" Binding="{Binding Label}" Width="*" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="118" />
+                                            <DataGridTextColumn Header="Required Evidence" Binding="{Binding RequiredEvidenceLabel}" Width="210" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="130" />
+                                            <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                            <DataGridTextColumn Header="Subject" Binding="{Binding EvidenceSubject}" Width="180" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
                                     <TextBlock Text="Handoff Readiness" Style="{StaticResource CardHeaderStyle}" />
                                     <workstationControls:WorkstationStatePanelControl
                                         State="{Binding ReportPackReadinessState}"

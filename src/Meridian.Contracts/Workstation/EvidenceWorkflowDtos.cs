@@ -141,14 +141,16 @@ public sealed record EvidenceSubjectLinkageDto(
     string? RunId,
     string? PeriodId,
     string? ReportPackId,
-    string? ReconciliationCaseId);
+    string? ReconciliationCaseId,
+    string? AccountingRecordId = null);
 
 public sealed record EvidenceVaultLookupRequestDto(
     string? EvidenceSubject,
     string? RunId,
     string? PeriodId,
     string? ReportPackId,
-    string? ReconciliationCaseId);
+    string? ReconciliationCaseId,
+    string? AccountingRecordId = null);
 
 public sealed record EvidenceEndpointErrorDto(
     string Code,

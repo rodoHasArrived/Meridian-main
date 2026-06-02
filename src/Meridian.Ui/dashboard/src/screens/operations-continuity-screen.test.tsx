@@ -161,6 +161,78 @@ const detail: OperationsContinuityWorkflow = {
       }
     ]
   },
+  accountingRecordSummary: {
+    recordId: "accounting-record-2026-05",
+    isAuditReady: false,
+    completeCategoryCount: 4,
+    requiredCategoryCount: 6,
+    summary: "Accounting record has 4 of 6 required evidence categories complete.",
+    evidenceCategories: [
+      {
+        key: "source-records",
+        label: "Retained source data",
+        isComplete: true,
+        status: "Broker statements and provider files are retained.",
+        routeHint: "/workstation/data/providers",
+        requiredEvidence: ["provider statement", "custodian activity file", "bank or account source record"],
+        evidenceLinks: [
+          {
+            evidenceId: "ev-source-1",
+            label: "Retained broker source packet",
+            route: "/evidence/source-1",
+            source: "operations-continuity",
+            capturedAtUtc: "2026-05-08T14:20:00Z"
+          }
+        ]
+      },
+      {
+        key: "normalized-activity",
+        label: "Normalized transactions and positions",
+        isComplete: true,
+        status: "Normalized transactions and positions are available.",
+        routeHint: "/workstation/accounting",
+        requiredEvidence: ["normalized transactions", "normalized positions", "balance or cash activity projection"],
+        evidenceLinks: []
+      },
+      {
+        key: "reconciliation-case-history",
+        label: "Reconciliation case history",
+        isComplete: false,
+        status: "Ledger posting requires a balanced and validated journal draft.",
+        routeHint: "/workstation/accounting",
+        requiredEvidence: ["reconciliation run", "break-case decision history", "resolved exception evidence"],
+        evidenceLinks: []
+      },
+      {
+        key: "ledger-evidence",
+        label: "Journal and ledger evidence",
+        isComplete: false,
+        status: "Ledger validation is still required.",
+        routeHint: "/workstation/accounting/ledger",
+        requiredEvidence: ["journal preview", "posted ledger batch", "trial-balance support"],
+        evidenceLinks: []
+      },
+      {
+        key: "approvals",
+        label: "Approval history",
+        isComplete: false,
+        status: "Approval is pending.",
+        routeHint: "/workstation/accounting/approvals",
+        requiredEvidence: ["approval submission", "reviewer decision", "checklist control approvals"],
+        evidenceLinks: []
+      },
+      {
+        key: "report-pack-lineage",
+        label: "Report-pack links and restatement lineage",
+        isComplete: false,
+        status: "Close workflow has unresolved ledger blockers.",
+        routeHint: "/workstation/reporting/report-packs",
+        requiredEvidence: ["report-pack publication", "export manifest", "document attachment", "restatement lineage"],
+        evidenceLinks: []
+      }
+    ],
+    evidenceLinks: []
+  },
   evidenceLinks: [],
   blockers: gates[1]!.blockers
 };
@@ -180,7 +252,7 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("id", OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID);
 
     expect(await screen.findByRole("heading", { name: "Gates" })).toBeInTheDocument();
-    expect(screen.getByText("Ledger posting requires a balanced and validated journal draft.")).toBeInTheDocument();
+    expect(screen.getAllByText("Ledger posting requires a balanced and validated journal draft.")).toHaveLength(2);
     const checklist = screen.getByRole("table", { name: "Operations continuity close checklist" });
     const checklistSummary = screen.getByRole("list", { name: "Close checklist control summary" });
     expect(await screen.findByText("1 close task")).toBeInTheDocument();
@@ -195,6 +267,18 @@ describe("OperationsContinuityScreen", () => {
     expect(within(checklist).getByRole("link", { name: "Open remediation for Ledger posting controller check" }))
       .toHaveAttribute("href", "/accounting/ledger");
     expect(await screen.findByText("Ledger Draft Blocked")).toBeInTheDocument();
+    const accountingRecordSummary = screen.getByRole("list", { name: "Accounting record evidence summary" });
+    expect(within(accountingRecordSummary).getByText("accounting-record-2026-05")).toBeInTheDocument();
+    expect(within(accountingRecordSummary).getByText("1 retained evidence link")).toBeInTheDocument();
+    const accountingRecordEvidence = screen.getByRole("table", { name: "Operations continuity accounting record evidence" });
+    expect(within(accountingRecordEvidence).getByText("Retained source data")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getByText("Requires provider statement, custodian activity file, bank or account source record")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getByText("Reconciliation case history")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getByText("Report-pack links and restatement lineage")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getByText("Requires report-pack publication, export manifest, document attachment, restatement lineage")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getAllByText("Review required")).toHaveLength(4);
+    expect(within(accountingRecordEvidence).getByRole("link", { name: "Open accounting-record evidence source: Journal and ledger evidence" }))
+      .toHaveAttribute("href", "/accounting/ledger");
     const closePackage = screen.getByLabelText("Close package publication summary");
     expect(within(closePackage).getByText("close-package-2026-05")).toBeInTheDocument();
     expect(within(closePackage).getByRole("link", { name: "Open retained close package manifest" }))

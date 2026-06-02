@@ -59,6 +59,20 @@ references that do not name the resolved symbol or Security Master id.
 Ledger draft requests also carry explicit approval and ledger-mapping evidence flags so controller
 workflows can block the draft gate before post-time journal-line validation when Security Master
 provenance exists but approved identity or accounting mapping proof is still missing.
+Operations Continuity workflow DTOs also carry an optional accounting-record summary with six
+contract-owned evidence categories: retained source data, normalized transactions and positions,
+reconciliation case history, journal and ledger evidence, approval history, and report-pack
+lineage. Keep these categories shared so browser and WPF accounting-record review surfaces do not
+derive audit readiness or evidence grouping independently. The report-pack lineage category is
+complete only when the workflow carries close-package publication evidence, including retained
+manifest/export/document support and restatement lineage, so clients do not treat a ready report
+pack id as an audit-ready operational record. Each category also carries contract-owned required
+evidence labels so browser and WPF clients can display the source, normalized activity,
+reconciliation, ledger, approval, document, export, and restatement requirements without parsing
+status prose.
+Evidence workflow linkage and vault lookup DTOs include `AccountingRecordId` so retained
+accounting-record manifests can be indexed and queried as first-class audit records, not only by a
+generic evidence subject string.
 
 Plaid contracts define the shared provider lane for bank account linking, transaction sync,
 balance evidence, investment snapshots, identity verification, webhook retention, and sandbox

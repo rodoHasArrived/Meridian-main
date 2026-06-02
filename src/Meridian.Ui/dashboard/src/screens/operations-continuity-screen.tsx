@@ -7,6 +7,7 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import { cn } from "@/lib/utils";
 import {
   useOperationsContinuityScreenViewModel,
+  type OperationsAccountingRecordEvidenceRow,
   type OperationsContinuityBlockerRow,
   type OperationsContinuityChecklistRow,
   type OperationsContinuityGateRow,
@@ -179,6 +180,45 @@ const checklistColumns: DenseDataTableColumn<OperationsContinuityChecklistRow>[]
     id: "acknowledgement",
     label: "Acknowledgement",
     render: (row) => <span className="text-xs leading-5 text-muted-foreground">{row.acknowledgementLabel}</span>
+  }
+];
+
+const accountingRecordColumns: DenseDataTableColumn<OperationsAccountingRecordEvidenceRow>[] = [
+  {
+    id: "category",
+    label: "Evidence category",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => (
+      <span className="block min-w-0 text-xs leading-5 text-muted-foreground">
+        <span className="block">{row.evidenceLabel}</span>
+        <span className="mt-1 block">Requires {row.requiredEvidenceLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "source",
+    label: "Source",
+    render: (row) => row.routeHref ? (
+      <Link to={row.routeHref} aria-label={`Open accounting-record evidence source: ${row.label}`}>
+        {row.routeLabel}
+      </Link>
+    ) : (
+      <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
+    )
   }
 ];
 
@@ -432,6 +472,41 @@ export function OperationsContinuityScreen() {
       </section>
 
       <section className="grid gap-4">
+        <Card className={cn("border", tonePanel[vm.accountingRecordSummary.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.accountingRecordLabel}
+                </CardTitle>
+                <CardDescription>{vm.accountingRecordSummary.summaryLabel}</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.accountingRecordSummary.statusTone]}>
+                {vm.accountingRecordSummary.statusLabel}
+              </Badge>
+            </div>
+            <div
+              role="list"
+              aria-label="Accounting record evidence summary"
+              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2"
+            >
+              <span role="listitem">{vm.accountingRecordSummary.recordIdLabel}</span>
+              <span role="listitem">{vm.accountingRecordSummary.evidenceLabel}</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={accountingRecordColumns}
+              rows={vm.accountingRecordEvidence}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.accountingRecordEmptyText}
+              ariaLabel="Operations continuity accounting record evidence"
+            />
+          </CardContent>
+        </Card>
+
         <Card className={cn("border", tonePanel[vm.closePackage.statusTone])}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">

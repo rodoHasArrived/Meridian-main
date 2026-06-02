@@ -8,6 +8,11 @@ import type {
   BrokerageHouseholdPortfolio,
   CorporateAction,
   DataWorkspaceResponse,
+  EvidenceCompleteness,
+  EvidencePacket,
+  EvidencePacketExportResponse,
+  EvidenceSubject,
+  EvidenceVaultIdentity,
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
   AccountingWorkspaceResponse,
@@ -1843,8 +1848,79 @@ const fixtureSymbolStatistics: SymbolStatistics = {
   totalEventsLast24h: fixtureSymbolRecords.reduce((total, symbol) => total + symbol.eventCount, 0)
 };
 
+const fixtureOperationsWorkflowId = "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6";
+const fixtureAccountingRecordId = "accounting-record-2026-05";
+const fixtureAccountingRecordEvidenceRoute = `/reporting/evidence?subjectKind=accounting-record&subjectId=${fixtureOperationsWorkflowId}`;
+
+const fixtureAccountingRecordEvidenceLinks = [
+  {
+    evidenceId: "devhash-accounting-record-journal",
+    label: "Journal and ledger evidence",
+    route: fixtureAccountingRecordEvidenceRoute,
+    source: "development-fixture",
+    capturedAtUtc: "2026-05-08T15:15:00Z"
+  }
+];
+
+const fixtureAccountingRecordEvidenceCategories = [
+  {
+    key: "source-records",
+    label: "Retained source data",
+    isComplete: true,
+    status: "Complete",
+    routeHint: fixtureAccountingRecordEvidenceRoute,
+    evidenceLinks: fixtureAccountingRecordEvidenceLinks,
+    requiredEvidence: ["provider statement", "custodian activity file", "bank or account source record"]
+  },
+  {
+    key: "normalized-activity",
+    label: "Normalized activity",
+    isComplete: true,
+    status: "Complete",
+    routeHint: fixtureAccountingRecordEvidenceRoute,
+    evidenceLinks: [],
+    requiredEvidence: ["normalized activity projection"]
+  },
+  {
+    key: "reconciliation-case-history",
+    label: "Reconciliation case history",
+    isComplete: false,
+    status: "Review required",
+    routeHint: "/accounting/reconciliation",
+    evidenceLinks: [],
+    requiredEvidence: ["case transition history", "operator decision notes"]
+  },
+  {
+    key: "ledger-evidence",
+    label: "Journal and ledger evidence",
+    isComplete: true,
+    status: "Complete",
+    routeHint: "/accounting/ledger",
+    evidenceLinks: fixtureAccountingRecordEvidenceLinks,
+    requiredEvidence: ["journal preview", "trial balance impact"]
+  },
+  {
+    key: "approvals",
+    label: "Close approvals",
+    isComplete: false,
+    status: "Review required",
+    routeHint: "/accounting/operations-continuity",
+    evidenceLinks: [],
+    requiredEvidence: ["distinct operator approval", "close checklist sign-off"]
+  },
+  {
+    key: "report-pack-lineage",
+    label: "Report-pack links and restatement lineage",
+    isComplete: false,
+    status: "Review required",
+    routeHint: "/reporting/evidence",
+    evidenceLinks: [],
+    requiredEvidence: ["report-pack publication", "export manifest", "document attachment", "restatement lineage"]
+  }
+];
+
 const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
-  workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+  workflowId: fixtureOperationsWorkflowId,
   fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
   periodId: "2026-05",
   securityMasterSnapshotId: "9f2f0d07-f8d3-4d6e-a2f1-3116286de3d4",
@@ -1934,7 +2010,7 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
     {
       auditId: "cdb9449e-7402-48b7-9acf-8568b7363e16",
       occurredAtUtc: "2026-05-08T14:00:00Z",
-      workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      workflowId: fixtureOperationsWorkflowId,
       fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
       periodId: "2026-05",
       eventType: "workflow-started",
@@ -1953,7 +2029,7 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
     {
       auditId: "2fb7a2f4-6301-4958-b3d1-76ca78390ad8",
       occurredAtUtc: "2026-05-08T15:10:00Z",
-      workflowId: "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      workflowId: fixtureOperationsWorkflowId,
       fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
       periodId: "2026-05",
       eventType: "ledger-draft-blocked",
@@ -1984,6 +2060,15 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
     reportPackId: null,
     blockingReason: "Close workflow has unresolved ledger blockers.",
     evidenceLinks: []
+  },
+  accountingRecordSummary: {
+    recordId: fixtureAccountingRecordId,
+    isAuditReady: false,
+    completeCategoryCount: 3,
+    requiredCategoryCount: 6,
+    summary: "Demo accounting record is partially retained; approvals, case history, and report-pack lineage still require review.",
+    evidenceCategories: fixtureAccountingRecordEvidenceCategories,
+    evidenceLinks: fixtureAccountingRecordEvidenceLinks
   },
   closeChecklist: [
     {
@@ -2024,6 +2109,146 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       gate: "LedgerPosting"
     }
   ]
+};
+
+const fixtureAccountingRecordEvidenceSubject: EvidenceSubject = {
+  subjectId: fixtureOperationsWorkflowId,
+  subjectKind: "accounting-record",
+  label: "May 2026 accounting record",
+  workspace: "Accounting",
+  route: fixtureAccountingRecordEvidenceRoute,
+  pageTag: "EvidenceWorkbench"
+};
+
+const fixtureAccountingRecordCompleteness: EvidenceCompleteness = {
+  score: 63,
+  status: "ReviewRequired",
+  requiredIds: fixtureAccountingRecordEvidenceCategories.map((category) => `accounting-record:${category.key}`),
+  readyIds: ["accounting-record:source-records", "accounting-record:normalized-activity", "accounting-record:ledger-evidence"],
+  missingIds: ["accounting-record:reconciliation-case-history", "accounting-record:approvals", "accounting-record:report-pack-lineage"],
+  staleIds: [],
+  blockingWorkItemIds: ["close-gate-approval", "report-pack-lineage"],
+  validationIssues: [
+    {
+      code: "accounting-record-evidence-incomplete",
+      severity: "Warning",
+      message: "Demo accounting record still needs approval and report-pack lineage evidence."
+    }
+  ],
+  blockingIssueCount: 0,
+  warningIssueCount: 1,
+  orphanEvidenceIds: [],
+  slaPolicies: [
+    {
+      policyId: "accounting-record-freshness",
+      evidenceKind: "accounting-record",
+      workflowKind: "operations-continuity",
+      freshnessMinutes: 1440,
+      breachSeverity: "Warning",
+      requiredForAssurance: true,
+      description: "Accounting-record evidence should be regenerated daily while close work is open."
+    }
+  ],
+  slaAssessments: [],
+  assuranceScore: {
+    score: 63,
+    status: "ReviewRequired",
+    components: [
+      {
+        componentId: "accounting-record-lineage",
+        label: "Accounting record lineage",
+        score: 63,
+        status: "ReviewRequired",
+        detail: "Source, normalization, and ledger evidence are retained; approval and report-pack lineage remain open."
+      }
+    ],
+    slaAssessments: []
+  }
+};
+
+const fixtureAccountingRecordEvidencePacket: EvidencePacket = {
+  subject: fixtureAccountingRecordEvidenceSubject,
+  generatedAt: "2026-05-08T15:15:00Z",
+  nodes: fixtureAccountingRecordEvidenceCategories.map((category) => ({
+    evidenceId: `accounting-record:${category.key}`,
+    subject: fixtureAccountingRecordEvidenceSubject,
+    kind: category.key === "source-records" ? "accounting-record" : "accounting-record-category",
+    status: category.isComplete ? "Ready" : "ReviewRequired",
+    freshness: {
+      asOf: category.isComplete ? "2026-05-08T15:15:00Z" : null,
+      isStale: false,
+      reason: null
+    },
+    sourceSystem: "development-fixture",
+    summary: `${category.label}: ${category.requiredEvidence.join(", ")}`,
+    artifactRefs: category.evidenceLinks.map((link, index) => ({
+      artifactId: `${category.key}-artifact-${index + 1}`,
+      kind: category.key,
+      path: `fixtures/evidence/accounting-record/${category.key}.json`,
+      route: link.route,
+      generatedAt: "2026-05-08T15:15:00Z",
+      hash: link.evidenceId,
+      retained: true,
+      canonicalSubjectKind: "accounting-record",
+      canonicalSubjectId: fixtureOperationsWorkflowId
+    })),
+    relatedWorkItemIds: category.isComplete ? [] : [`accounting-record:${category.key}:review`]
+  })),
+  edges: [
+    {
+      fromId: "accounting-record:source-records",
+      toId: "accounting-record:ledger-evidence",
+      relationship: "supports",
+      reason: "Retained source records support the journal and ledger evidence preview."
+    },
+    {
+      fromId: "accounting-record:ledger-evidence",
+      toId: "accounting-record:report-pack-lineage",
+      relationship: "requires",
+      reason: "Report-pack lineage cannot close until ledger evidence is retained."
+    }
+  ],
+  completeness: fixtureAccountingRecordCompleteness,
+  actions: [],
+  warnings: ["Demo accounting record evidence is incomplete until approvals and report-pack lineage are retained."]
+};
+
+const fixtureAccountingRecordVaultIdentity: EvidenceVaultIdentity = {
+  vaultId: "ev-accounting-record-demo",
+  subjectKind: "accounting-record",
+  subjectId: fixtureOperationsWorkflowId,
+  manifestPath: `workstation/evidence/accounting-record/${fixtureOperationsWorkflowId}/manifest.json`,
+  manifestRoute: `/workstation/evidence/accounting-record/${fixtureOperationsWorkflowId}/manifest.json`,
+  retainedAt: "2026-05-08T15:15:00Z",
+  contentHashSha256: "a".repeat(64),
+  schemaVersion: 1,
+  storageKind: "file-bundle",
+  artifacts: [
+    {
+      artifactId: "accounting-record-ledger-artifact",
+      kind: "ledger-evidence",
+      relativePath: "workstation/evidence/_vault/ev-accounting-record-demo/artifacts/ledger-evidence.json",
+      contentHashSha256: "b".repeat(64),
+      sizeBytes: 2048,
+      retainedAt: "2026-05-08T15:15:00Z",
+      sourcePath: null,
+      sourceRoute: "/accounting/ledger",
+      canonicalSubjectKind: "accounting-record",
+      canonicalSubjectId: fixtureOperationsWorkflowId
+    }
+  ]
+};
+
+const fixtureAccountingRecordExportResponse: EvidencePacketExportResponse = {
+  subjectKind: "accounting-record",
+  subjectId: fixtureOperationsWorkflowId,
+  generatedAt: "2026-05-08T15:15:00Z",
+  manifestPath: fixtureAccountingRecordVaultIdentity.manifestPath,
+  manifestRoute: fixtureAccountingRecordVaultIdentity.manifestRoute,
+  evidenceCount: fixtureAccountingRecordEvidencePacket.nodes.length,
+  warningCount: fixtureAccountingRecordEvidencePacket.warnings.length,
+  retained: true,
+  vaultIdentity: fixtureAccountingRecordVaultIdentity
 };
 
 const fixtureOperationsContinuityWorkflows: OperationsContinuityWorkflowSummary[] = [
@@ -2206,6 +2431,8 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.operationsContinuity]: fixtureOperationsContinuityWorkflows,
   [WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix]: fixtureOperationsApprovalPolicyMatrix,
   [WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendar]: fixtureOperationsCloseCalendar,
+  [WORKSTATION_API_ENDPOINTS.evidenceSubjects]: [fixtureAccountingRecordEvidenceSubject],
+  [WORKSTATION_API_ENDPOINTS.evidenceVaultSearch]: [fixtureAccountingRecordVaultIdentity],
   [AUTH_API_ENDPOINTS.roles]: fixtureRolePermissionCatalog,
   [FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench]: fixtureLedgerMappingWorkbench,
   [EXECUTION_API_ENDPOINTS.sessions]: fixturePaperSessionSummaries,
@@ -2314,7 +2541,19 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
   { pattern: apiRoutePattern(STRATEGY_DESIGNER_API_ENDPOINTS.drafts, "/[^/]+"), resolve: () => fixtureStrategyDesignerDocument },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+"), resolve: () => fixturePaperSessionDetail },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification },
-  { pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.operationsContinuity, "/[^/]+"), resolve: () => fixtureOperationsContinuityWorkflow }
+  { pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.operationsContinuity, "/[^/]+"), resolve: () => fixtureOperationsContinuityWorkflow },
+  {
+    pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.evidenceSubjects, "/accounting-record/[^/]+/packet"),
+    resolve: () => fixtureAccountingRecordEvidencePacket
+  },
+  {
+    pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.evidenceSubjects, "/accounting-record/[^/]+/validate"),
+    resolve: () => fixtureAccountingRecordCompleteness
+  },
+  {
+    pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.evidenceSubjects, "/accounting-record/[^/]+/export-manifest"),
+    resolve: () => fixtureAccountingRecordExportResponse
+  }
 ];
 
 export function resolveDevFixture<T>(path: string): T | undefined {

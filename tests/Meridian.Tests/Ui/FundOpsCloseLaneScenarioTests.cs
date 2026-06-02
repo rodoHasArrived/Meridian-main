@@ -183,6 +183,7 @@ public sealed class FundOpsCloseLaneScenarioTests
         closed.Workflow.ClosePackage!.ReportPackId.Should().Be("report-pack-may-2026");
         closed.Workflow.ClosePackage.EvidenceHash.Should().MatchRegex("^[a-f0-9]{64}$");
         closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
+        AssertAccountingRecordAuditReady(closed.Workflow, "report-pack-may-2026");
 
         closed.Workflow.Gates.Should().OnlyContain(
             g => g.Status == OperationsGateStatusDto.Passed,
@@ -552,6 +553,7 @@ public sealed class FundOpsCloseLaneScenarioTests
         closed.Workflow.ClosePackage.EvidenceHash.Should().MatchRegex("^[a-f0-9]{64}$");
         closed.Workflow.ClosePackage.RetainedManifestRoute.Should().Contain("/close-package/");
         closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
+        AssertAccountingRecordAuditReady(closed.Workflow, "report-pack-recovery-2");
 
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timeline.Select(entry => entry.EventType).Should().ContainInOrder(
@@ -591,6 +593,29 @@ public sealed class FundOpsCloseLaneScenarioTests
             component.Score == component.Weight &&
             component.Severity == "Info" &&
             component.BlockingReason == null).Should().BeTrue();
+    }
+
+    private static void AssertAccountingRecordAuditReady(
+        OperationsContinuityWorkflowDto workflow,
+        string reportPackId)
+    {
+        workflow.AccountingRecordSummary.Should().NotBeNull("closed workflows must expose the retained accounting record summary");
+        workflow.AccountingRecordSummary!.IsAuditReady.Should().BeTrue();
+        workflow.AccountingRecordSummary.CompleteCategoryCount.Should().Be(6);
+        workflow.AccountingRecordSummary.RequiredCategoryCount.Should().Be(6);
+
+        var reportPackCategory = workflow.AccountingRecordSummary.EvidenceCategories
+            .Single(category => category.Key == "report-pack-lineage");
+
+        reportPackCategory.IsComplete.Should().BeTrue();
+        reportPackCategory.Status.Should().Contain(reportPackId);
+        reportPackCategory.RequiredEvidence.Should().Contain(
+        [
+            "report-pack publication",
+            "export manifest",
+            "document attachment",
+            "restatement lineage"
+        ]);
     }
 
     private static OperationsContinuityWorkflowService CreateService(

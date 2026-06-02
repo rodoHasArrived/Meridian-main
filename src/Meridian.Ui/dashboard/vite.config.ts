@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 import type { ProxyOptions } from "vite";
 import { resolveDevFixture } from "./src/lib/dev-fixtures";
-import { COVERED_CALL_API_ENDPOINTS, QUANT_API_ENDPOINTS } from "./src/lib/workstation-endpoints";
+import { COVERED_CALL_API_ENDPOINTS, QUANT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "./src/lib/workstation-endpoints";
 
 export const defaultMeridianApiBaseUrl = "http://localhost:8080";
 export const meridianDevFixtureHeader = "x-meridian-dev-fixture";
@@ -124,8 +124,15 @@ function isDevelopmentFixtureRequest(req: IncomingMessage): boolean {
   const cleanPath = req.url?.split("?")[0];
   return req.method === "POST" && (
     cleanPath === QUANT_API_ENDPOINTS.parameters ||
-    cleanPath === COVERED_CALL_API_ENDPOINTS.chainPreview
+    cleanPath === COVERED_CALL_API_ENDPOINTS.chainPreview ||
+    cleanPath === WORKSTATION_API_ENDPOINTS.evidenceVaultSearch ||
+    isEvidenceWorkbenchDemoPost(cleanPath)
   );
+}
+
+function isEvidenceWorkbenchDemoPost(cleanPath?: string): boolean {
+  return cleanPath?.startsWith(`${WORKSTATION_API_ENDPOINTS.evidenceSubjects}/`) === true &&
+    (cleanPath.endsWith("/validate") || cleanPath.endsWith("/export-manifest"));
 }
 
 function writeDevelopmentFixtureResponse(req: IncomingMessage, res: ServerResponse, fixture: unknown) {

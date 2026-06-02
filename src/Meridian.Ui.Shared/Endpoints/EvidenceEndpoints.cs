@@ -195,7 +195,8 @@ public static class EvidenceEndpoints
            || !string.IsNullOrWhiteSpace(request.RunId)
            || !string.IsNullOrWhiteSpace(request.PeriodId)
            || !string.IsNullOrWhiteSpace(request.ReportPackId)
-           || !string.IsNullOrWhiteSpace(request.ReconciliationCaseId);
+           || !string.IsNullOrWhiteSpace(request.ReconciliationCaseId)
+           || !string.IsNullOrWhiteSpace(request.AccountingRecordId);
 
     private static async Task<IResult> ResolvePacketAsync(
         string subjectKind,

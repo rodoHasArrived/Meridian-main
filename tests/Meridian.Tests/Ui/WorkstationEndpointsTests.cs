@@ -381,6 +381,36 @@ public sealed partial class WorkstationEndpointsTests
         workflow.ReportPackReadiness.IsReady.Should().BeFalse();
         workflow.NextActions.Should().NotBeEmpty();
         workflow.Blockers.Should().Contain(blocker => blocker.EvidenceLinks.Any());
+        workflow.AccountingRecordSummary.Should().NotBeNull();
+        workflow.AccountingRecordSummary!.RequiredCategoryCount.Should().Be(6);
+        workflow.AccountingRecordSummary.CompleteCategoryCount.Should().Be(4);
+        workflow.AccountingRecordSummary.IsAuditReady.Should().BeFalse();
+        workflow.AccountingRecordSummary.EvidenceCategories.Select(category => category.Key).Should().BeEquivalentTo(
+        [
+            "source-records",
+            "normalized-activity",
+            "reconciliation-case-history",
+            "ledger-evidence",
+            "approvals",
+            "report-pack-lineage"
+        ]);
+        workflow.AccountingRecordSummary.EvidenceCategories
+            .Should().Contain(category => category.Key == "report-pack-lineage" && !category.IsComplete);
+        workflow.AccountingRecordSummary.EvidenceCategories
+            .Should().Contain(category =>
+                category.Key == "report-pack-lineage" &&
+                category.Status.Contains("close-package publication", StringComparison.OrdinalIgnoreCase) &&
+                category.Status.Contains("export manifest", StringComparison.OrdinalIgnoreCase) &&
+                category.Status.Contains("restatement lineage", StringComparison.OrdinalIgnoreCase));
+        workflow.AccountingRecordSummary.EvidenceCategories
+            .Should().Contain(category =>
+                category.Key == "report-pack-lineage" &&
+                category.RequiredEvidence != null &&
+                category.RequiredEvidence.Contains("export manifest") &&
+                category.RequiredEvidence.Contains("document attachment") &&
+                category.RequiredEvidence.Contains("restatement lineage"));
+        workflow.AccountingRecordSummary.EvidenceCategories
+            .Should().Contain(category => category.Key == "ledger-evidence" && category.IsComplete);
     }
 
     [Fact]
@@ -3090,12 +3120,17 @@ public sealed partial class WorkstationEndpointsTests
         var readiness = await service.GetCurrentAsync();
 
         readiness.OperatorSignoffStatus.Should().Be("signed");
+        readiness.RequiredOwners.Should().BeEquivalentTo(
+            ["Data", "Provider Reliability", "Trading"]);
         readiness.OperatorSignoff.Should().NotBeNull();
+        readiness.OperatorSignoff!.RequiredOwners.Should().BeEquivalentTo(
+            ["Data", "Provider Reliability", "Trading"]);
         readiness.OperatorSignoff!.SignedOwners.Should().BeEquivalentTo(
             ["Data", "Provider Reliability", "Trading"]);
         readiness.OperatorSignoff.MissingOwners.Should().BeEmpty();
         readiness.OperatorSignoff.CompletedAt.Should().Be(new DateTimeOffset(2026, 4, 26, 16, 2, 0, TimeSpan.Zero));
         readiness.Detail.Should().Contain("operator sign-off is complete");
+        readiness.Detail.Should().NotContain("Data Operations");
         readiness.Detail.Should().Contain("explainability validated").And.Contain("calibration validated");
         readiness.Blockers.Should().BeEmpty();
         readiness.TrustRationaleContract.Should().NotBeNull();

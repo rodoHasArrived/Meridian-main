@@ -47,6 +47,16 @@ public sealed class ShellNavigationCatalogTests
     }
 
     [Fact]
+    public void EvidenceWorkbenchTargets_ShouldResolveParameterizedSubjectsToAuditTrail()
+    {
+        var target = "EvidenceWorkbench:accounting-record/accounting-record-2026-05";
+
+        ShellNavigationCatalog.GetPage(target).Should().BeSameAs(ShellNavigationCatalog.GetPage("FundAuditTrail"));
+        ShellNavigationCatalog.GetCanonicalPageTag(target).Should().Be("FundAuditTrail");
+        ShellNavigationCatalog.InferWorkspaceIdForPageTag(target).Should().Be("accounting");
+    }
+
+    [Fact]
     public void WorkspaceShellDefinitions_ShouldOnlyReferenceRegisteredPages()
     {
         foreach (var workspace in ShellNavigationCatalog.Workspaces)

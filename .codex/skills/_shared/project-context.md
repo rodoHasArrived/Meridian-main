@@ -155,7 +155,7 @@ and choose the narrowest lane that matches the user's request:
 - `src/Meridian.Ledger/`, `src/Meridian.FSharp.Ledger/`: ledger and accounting surfaces
 - `src/Meridian.Risk/`: pre-trade risk validation
 - `src/Meridian.Strategies/`: strategy lifecycle, run storage, shared read models
-- `src/Meridian.QuantScript/`: scripting and charting-oriented tooling
+- `src/Meridian.QuantScript/`: strategy analytics scripting and charting-oriented tooling
 - `src/Meridian.Mcp/`, `src/Meridian.McpServer/`: MCP hosts, tools, and resources
 - `tools/chief-of-staff-runtime/`: out-of-process Chief of Staff ADK node pipeline scaffold
 - `src/Meridian.Ui/dashboard/`: active browser-based operator workstation dashboard

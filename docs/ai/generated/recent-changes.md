@@ -1,6 +1,6 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-06-02T01:18:43Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-02T01:45:09Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
@@ -9,41 +9,41 @@ Rolling source-file activity for the last 14 days.
 | `src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs` | Desktop and UI Workflows | 2026-06-01T20:28:53Z | `52ac3cfc0` | Tidy DataBrowser using order | 3 |
 | `src/Meridian.Application/FundStructure/FundStructurePolicyService.cs` | Host and Composition | 2026-06-01T20:28:08Z | `b53ea3b9b` | Fix WPF test regressions and restore desktop guide | 6 |
 | `src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs` | Desktop and UI Workflows | 2026-06-01T20:28:08Z | `b53ea3b9b` | Fix WPF test regressions and restore desktop guide | 3 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 54 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 52 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 45 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 31 |
-| `src/Meridian.Contracts/Api/UiApiRoutes.cs` | Host and Composition | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 30 |
-| `src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 30 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 27 |
-| `src/Meridian.Ui/dashboard/src/lib/api.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 21 |
-| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 18 |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 16 |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | Execution, Risk, and Strategies | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 15 |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 12 |
-| `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 12 |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 11 |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 11 |
-| `src/Meridian.Ui/dashboard/src/lib/workspace.test.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 10 |
-| `src/Meridian.Ui/dashboard/src/lib/workspace.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 10 |
-| `src/Meridian.Ui/dashboard/src/styles/index.css` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 10 |
-| `src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellPage.xaml` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 10 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 9 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/command-palette.view-model.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 8 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.view-model.test.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 8 |
-| `src/Meridian.Wpf/Services/WorkspaceService.cs` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 8 |
-| `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 7 |
-| `src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 7 |
-| `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs` | Host and Composition | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 6 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/command-palette.test.tsx` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 6 |
-| `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 6 |
-| `src/Meridian.Wpf/Features/Data/DataFeatureModule.cs` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 6 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.tsx` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 5 |
-| `src/Meridian.Ui/README.md` | Unmapped | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 4 |
-| `src/Meridian.Ui/dashboard/src/design-system-contract.test.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 4 |
-| `src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.view-model.test.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 4 |
-| `src/Meridian.Ui/dashboard/src/screens/strategy-designer-screen.view-model.ts` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 4 |
-| `src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs` | Desktop and UI Workflows | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 4 |
-| `src/Meridian.Execution/Services/ReplayDriftDetector.cs` | Execution, Risk, and Strategies | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 3 |
-| `src/Meridian.Strategies/Services/StrategyDesignService.cs` | Execution, Risk, and Strategies | 2026-06-01T16:47:33-07:00 | `214ae1bd0` | Refresh desktop workstation evidence and taxonomy | 3 |
+| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | 2026-06-01T18:33:04-07:00 | `928075869` | Change owner lane to Accounting and Ledger | 12 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | 2026-06-01T18:33:04-07:00 | `928075869` | Change owner lane to Accounting and Ledger | 11 |
+| `src/Meridian.FSharp.Ledger/README.md` | Domain, Ledger, and F# | 2026-06-01T18:33:04-07:00 | `928075869` | Change owner lane to Accounting and Ledger | 6 |
+| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | 2026-06-01T18:33:04-07:00 | `928075869` | Change owner lane to Accounting and Ledger | 2 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 53 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 46 |
+| `src/Meridian.Application/README.md` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 39 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 38 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 32 |
+| `src/Meridian.Ui.Services/README.md` | Desktop and UI Workflows | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 16 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 13 |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.ts` | Desktop and UI Workflows | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 13 |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | Desktop and UI Workflows | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 12 |
+| `src/Meridian.Ui/dashboard/src/components/meridian/command-palette.view-model.test.ts` | Desktop and UI Workflows | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 9 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 8 |
+| `src/Meridian/README.md` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 7 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 6 |
+| `src/Meridian.Ui/README.md` | Unmapped | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 5 |
+| `src/Meridian.Core/README.md` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 4 |
+| `src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs` | Desktop and UI Workflows | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 4 |
+| `src/Meridian.Application/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 3 |
+| `src/Meridian.Backtesting.Sdk/README.md` | Backtesting and Strategy Analytics | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 3 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 3 |
+| `src/Meridian.Execution.Sdk/README.md` | Execution, Risk, and Strategies | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 3 |
+| `src/Meridian.FSharp/README.md` | Domain, Ledger, and F# | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 3 |
+| `src/Meridian.Mcp/README.md` | MCP Integration | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 3 |
+| `src/Meridian.ProviderSdk/README.md` | Providers and Storage | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 3 |
+| `src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs` | Desktop and UI Workflows | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 3 |
+| `src/Meridian.Application/Commands/ProviderCalibrationCommand.cs` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 2 |
+| `src/Meridian.QuantScript/README.md` | Backtesting and Strategy Analytics | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 2 |
+| `src/Meridian.Risk/README.md` | Execution, Risk, and Strategies | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 2 |
+| `src/Meridian.Application/Config/ConfigValidationHelper.cs` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 1 |
+| `src/Meridian.Application/ProviderRouting/ProviderRoutingMapper.cs` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 1 |
+| `src/Meridian.Application/Services/AutoConfigurationService.cs` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 1 |
+| `src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 1 |
+| `src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 1 |
+| `src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs` | Host and Composition | 2026-06-01T18:30:02-07:00 | `80e764f38` | Promote Meridian.Mcp as MCP host and refresh docs | 1 |
 

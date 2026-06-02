@@ -31,6 +31,9 @@ import {
   securityMasterCorporateActionsEndpoint,
   securityMasterOperatorOverridesEndpoint,
   securityMasterTradingParametersEndpoint,
+  workstationEvidenceExportManifestEndpoint,
+  workstationEvidencePacketEndpoint,
+  workstationEvidenceValidateEndpoint,
   workstationOperatorInboxEndpoint,
   workstationSecurityMasterIdentityEndpoint,
   workstationSecurityMasterSearchEndpoint
@@ -202,6 +205,64 @@ describe("Vite Meridian API proxy", () => {
         expect.objectContaining({ symbol: "MSFT", lastPrice: 421.15 })
       ]
     });
+  });
+
+  it("serves accounting-record evidence fixtures for no-host Evidence Workbench demos", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const subjectId = "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6";
+    const subjectsResponse = new FakeResponse();
+    const packetResponse = new FakeResponse();
+    const validationResponse = new FakeResponse();
+    const exportResponse = new FakeResponse();
+    const vaultSearchResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: WORKSTATION_API_ENDPOINTS.evidenceSubjects, headers: { accept: "application/json" } } as IncomingMessage,
+      subjectsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: workstationEvidencePacketEndpoint("accounting-record", subjectId), headers: { accept: "application/json" } } as IncomingMessage,
+      packetResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "POST", url: workstationEvidenceValidateEndpoint("accounting-record", subjectId), headers: { accept: "application/json" } } as IncomingMessage,
+      validationResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "POST", url: workstationEvidenceExportManifestEndpoint("accounting-record", subjectId), headers: { accept: "application/json" } } as IncomingMessage,
+      exportResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "POST", url: WORKSTATION_API_ENDPOINTS.evidenceVaultSearch, headers: { accept: "application/json" } } as IncomingMessage,
+      vaultSearchResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    expect(JSON.parse(subjectsResponse.body)).toEqual([
+      expect.objectContaining({ subjectKind: "accounting-record", subjectId, workspace: "Accounting" })
+    ]);
+    expect(JSON.parse(packetResponse.body)).toMatchObject({
+      subject: { subjectKind: "accounting-record", subjectId },
+      completeness: { status: "ReviewRequired", score: 63 }
+    });
+    expect(JSON.parse(validationResponse.body)).toMatchObject({
+      status: "ReviewRequired",
+      missingIds: expect.arrayContaining(["accounting-record:report-pack-lineage"])
+    });
+    expect(JSON.parse(exportResponse.body)).toMatchObject({
+      subjectKind: "accounting-record",
+      vaultIdentity: expect.objectContaining({ subjectId })
+    });
+    expect(JSON.parse(vaultSearchResponse.body)).toEqual([
+      expect.objectContaining({ subjectKind: "accounting-record", subjectId })
+    ]);
+    expect(vaultSearchResponse.headers.get(meridianDevFixtureHeader)).toBe("true");
   });
 
   it("serves Security Master search and drill-in fixtures for no-host preview", async () => {

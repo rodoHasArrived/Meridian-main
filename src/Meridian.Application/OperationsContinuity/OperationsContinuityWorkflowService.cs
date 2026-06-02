@@ -1084,8 +1084,145 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             blockers,
             nextActions,
             EvaluateCloseReadiness(workflow),
-            workflow.ClosePackage);
+            workflow.ClosePackage,
+            BuildAccountingRecordSummary(workflow, timeline, evidenceLinks));
     }
+
+    private static OperationsAccountingRecordSummaryDto BuildAccountingRecordSummary(
+        OperationsContinuityWorkflow workflow,
+        IReadOnlyList<OperationsTimelineEntryDto> timeline,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+    {
+        var categories = new[]
+        {
+            BuildAccountingRecordCategory(
+                "source-records",
+                "Retained source data",
+                workflow.BrokerIngestGate.Status == OperationsGateStatusDto.Passed &&
+                    workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Complete,
+                workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Pending
+                    ? "Broker, custodian, or bank source data has not been imported."
+                    : "Provider and account source data is retained for the close lane.",
+                "/workstation/accounting",
+                EvidenceForGate(timeline, OperationsGateKeyDto.BrokerIngest),
+                ["provider statement", "custodian activity file", "bank or account source record"]),
+            BuildAccountingRecordCategory(
+                "normalized-activity",
+                "Normalized transactions and positions",
+                workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Complete,
+                workflow.BrokerIntakeState is OperationsBrokerIntakeStateDto.Normalized or OperationsBrokerIntakeStateDto.Complete
+                    ? "Imported activity has been normalized for accounting review."
+                    : "Imported activity still needs normalization.",
+                "/workstation/accounting",
+                EvidenceForGate(timeline, OperationsGateKeyDto.BrokerIngest),
+                ["normalized transactions", "normalized positions", "balance or cash activity projection"]),
+            BuildAccountingRecordCategory(
+                "reconciliation-case-history",
+                "Reconciliation case history",
+                workflow.ReconciliationGate.Status == OperationsGateStatusDto.Passed &&
+                    workflow.ReconciliationState == OperationsReconciliationStateDto.Complete,
+                workflow.BreakCases.Count == 0
+                    ? "No unresolved reconciliation casework remains for this record."
+                    : $"{workflow.BreakCases.Count} reconciliation case(s) are linked to this record.",
+                "/workstation/accounting",
+                EvidenceForGate(timeline, OperationsGateKeyDto.Reconciliation)
+                    .Concat(workflow.BreakCases.SelectMany(static breakCase => breakCase.EvidenceLinks))
+                    .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                ["reconciliation run", "break-case decision history", "resolved exception evidence"]),
+            BuildAccountingRecordCategory(
+                "ledger-evidence",
+                "Journal and ledger evidence",
+                workflow.LedgerPostingGate.Status == OperationsGateStatusDto.Passed &&
+                    workflow.LedgerPostingState is OperationsLedgerPostingStateDto.Posted or OperationsLedgerPostingStateDto.Complete,
+                workflow.LedgerPreview is null
+                    ? "Ledger preview or posting evidence has not been linked."
+                    : "Ledger preview and posting evidence are linked.",
+                "/workstation/accounting",
+                EvidenceForGate(timeline, OperationsGateKeyDto.LedgerPosting)
+                    .Concat(workflow.LedgerPreview?.EvidenceLinks ?? [])
+                    .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                ["journal preview", "posted ledger batch", "trial-balance support"]),
+            BuildAccountingRecordCategory(
+                "approvals",
+                "Approval history",
+                workflow.ApprovalGate.Status == OperationsGateStatusDto.Passed &&
+                    workflow.ApprovalState == OperationsApprovalStateDto.Approved,
+                workflow.Approvals.Count == 0
+                    ? "Approval history has not been submitted."
+                    : $"{workflow.Approvals.Count} approval record(s) are linked.",
+                "/workstation/accounting",
+                EvidenceForGate(timeline, OperationsGateKeyDto.Approval)
+                    .Concat(workflow.Approvals.SelectMany(static approval => approval.EvidenceLinks))
+                    .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                ["approval submission", "reviewer decision", "checklist control approvals"]),
+            BuildAccountingRecordCategory(
+                "report-pack-lineage",
+                "Report-pack links and restatement lineage",
+                workflow.ReportPackReadiness.IsReady &&
+                    !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId) &&
+                    workflow.ClosePackage is not null,
+                BuildReportPackLineageStatus(workflow),
+                "/workstation/reporting/report-packs",
+                workflow.ReportPackReadiness.EvidenceLinks
+                    .Concat(workflow.ClosePackage?.EvidenceLinks ?? [])
+                    .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                ["report-pack publication", "export manifest", "document attachment", "restatement lineage"])
+        };
+
+        var completeCount = categories.Count(static category => category.IsComplete);
+        var requiredCount = categories.Length;
+        var recordId = $"accounting-record-{workflow.FundAccountId:N}-{workflow.PeriodId}";
+        var summary = completeCount == requiredCount
+            ? "Accounting record links retained source data, normalized activity, reconciliation case history, ledger evidence, approvals, and report-pack lineage."
+            : $"Accounting record has {completeCount} of {requiredCount} required evidence categories complete.";
+
+        return new OperationsAccountingRecordSummaryDto(
+            recordId,
+            completeCount == requiredCount,
+            completeCount,
+            requiredCount,
+            summary,
+            categories,
+            evidenceLinks);
+    }
+
+    private static OperationsAccountingRecordEvidenceCategoryDto BuildAccountingRecordCategory(
+        string key,
+        string label,
+        bool isComplete,
+        string status,
+        string routeHint,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        IReadOnlyList<string> requiredEvidence) =>
+        new(key, label, isComplete, status, routeHint, evidenceLinks, requiredEvidence);
+
+    private static string BuildReportPackLineageStatus(OperationsContinuityWorkflow workflow)
+    {
+        if (string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId))
+        {
+            return "Report-pack publication, export, retained document, and restatement lineage have not been linked.";
+        }
+
+        if (workflow.ClosePackage is null)
+        {
+            return $"Report pack {workflow.ReportPackReadiness.ReportPackId} is linked; close-package publication, export manifest, retained document evidence, and restatement lineage still need retained evidence.";
+        }
+
+        return $"Report pack {workflow.ClosePackage.ReportPackId} is linked with retained manifest {workflow.ClosePackage.RetainedManifestId}, publication/export evidence hash, retained document evidence, and close-package restatement lineage.";
+    }
+
+    private static IReadOnlyList<OperationsEvidenceLinkDto> EvidenceForGate(
+        IReadOnlyList<OperationsTimelineEntryDto> timeline,
+        OperationsGateKeyDto gate) =>
+        timeline
+            .Where(entry => entry.Gate == gate)
+            .SelectMany(static entry => entry.References)
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     private static IReadOnlyList<OperationsCloseChecklistTaskDto> BuildChecklist(
         OperationsContinuityWorkflow workflow,

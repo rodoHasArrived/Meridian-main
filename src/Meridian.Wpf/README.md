@@ -63,6 +63,9 @@ surface, so the design-document approval step has a route-compatible desktop tar
 history, retained evidence, and accounting audit references.
 Shared evidence workflow target routing is also explicit: `EvidenceWorkbench` resolves to the WPF
 Fund Audit Trail surface while the browser resolves the same shared tag to `/reporting/evidence`.
+Parameterized desktop targets such as `EvidenceWorkbench:accounting-record/{recordId}` preserve the
+canonical evidence subject for row/readiness metadata while resolving to the same Fund Audit Trail
+route.
 The route-registry parity test covers all built-in workflow entry and action target tags so shared
 workflow catalog updates cannot silently become browser-only or desktop-only.
 The WPF workflow library also projects the shared v0.15 `Accounting Records Evidence Review`
@@ -73,6 +76,14 @@ standardize action posture, readiness tone, evidence links, recovery actions, an
 requirements for W4 close/report surfaces. Fund Ledger reconciliation and Report Pack handoff
 surfaces consume these primitives so blocker, evidence, recovery, and sign-off signifiers stay
 visible without creating desktop-only business rules.
+Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
+summary, including retained source records, normalized activity, reconciliation history, ledger
+evidence, approvals, and report-pack lineage. The WPF view model maps contract-owned category
+status, required evidence labels, evidence links, and route hints into desktop rows and readiness
+state instead of deriving audit readiness in XAML or desktop-only services. Each accounting-record
+evidence row now carries both the desktop shell target and canonical `accounting-record/{recordId}`
+subject target so WPF operators can reconcile the row with the same Evidence Workbench subject used
+by the browser and shared evidence endpoints.
 `MainPage` remains the route-compatible desktop shell entry point, but shell chrome is now composed
 from reusable WPF primitives: `InstitutionalShellFrameControl`, `ShellRailControl`,
 `ShellMastheadControl`, `WorkspaceEvidenceStripControl`, `WorkspaceCommandSurfaceControl`,

@@ -69,7 +69,7 @@
       "Status": "done",
       "Health": "green",
       "Priority": "high",
-      "Owner Lane": "Strategy and Research",
+      "Owner Lane": "Strategy Analytics",
       "Evidence Posture": "complete",
       "Evidence": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
       "Last Reviewed": "2026-05-28"
@@ -121,7 +121,7 @@
       "Status": "planned",
       "Health": "green",
       "Priority": "medium",
-      "Owner Lane": "Strategy and Research",
+      "Owner Lane": "Strategy Analytics",
       "Evidence Posture": "planned_evidence",
       "Evidence": "",
       "Last Reviewed": "2026-06-02"

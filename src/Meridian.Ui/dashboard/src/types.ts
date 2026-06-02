@@ -678,6 +678,26 @@ export interface OperationsReportPackReadiness {
   evidenceLinks: OperationsEvidenceLink[];
 }
 
+export interface OperationsAccountingRecordSummary {
+  recordId: string;
+  isAuditReady: boolean;
+  completeCategoryCount: number;
+  requiredCategoryCount: number;
+  summary: string;
+  evidenceCategories: OperationsAccountingRecordEvidenceCategory[];
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface OperationsAccountingRecordEvidenceCategory {
+  key: string;
+  label: string;
+  isComplete: boolean;
+  status: string;
+  routeHint: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+  requiredEvidence?: string[] | null;
+}
+
 export interface OperationsContinuityWorkflow extends OperationsContinuityWorkflowSummary {
   brokerIntakeState: OperationsBrokerIntakeState;
   securityMasterState: OperationsSecurityMasterState;
@@ -692,6 +712,7 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   closeChecklist: OperationsCloseChecklistTask[];
   closeReadiness: OperationsCloseReadiness | null;
   closePackage: OperationsClosePackagePublication | null;
+  accountingRecordSummary?: OperationsAccountingRecordSummary | null;
   evidenceLinks: OperationsEvidenceLink[];
   blockers: OperationsWorkflowBlocker[];
 }
@@ -1010,6 +1031,8 @@ export interface EvidencePacketExportRequest {
   requestedBy?: string | null;
   reason?: string | null;
   includeWarnings?: boolean;
+  lifecycle?: EvidenceLifecycleMetadata | null;
+  linkage?: EvidenceSubjectLinkage | null;
 }
 
 export interface EvidencePacketExportResponse {
@@ -1048,6 +1071,31 @@ export interface EvidenceVaultArtifact {
   sourceRoute: string | null;
   canonicalSubjectKind: string | null;
   canonicalSubjectId: string | null;
+}
+
+export interface EvidenceLifecycleMetadata {
+  retainUntil?: string | null;
+  legalHold: boolean;
+  expiresAt?: string | null;
+  accessPolicyTags: string[];
+}
+
+export interface EvidenceSubjectLinkage {
+  evidenceSubject?: string | null;
+  runId?: string | null;
+  periodId?: string | null;
+  reportPackId?: string | null;
+  reconciliationCaseId?: string | null;
+  accountingRecordId?: string | null;
+}
+
+export interface EvidenceVaultLookupRequest {
+  evidenceSubject?: string | null;
+  runId?: string | null;
+  periodId?: string | null;
+  reportPackId?: string | null;
+  reconciliationCaseId?: string | null;
+  accountingRecordId?: string | null;
 }
 
 export type ChiefOfStaffIntentKind =

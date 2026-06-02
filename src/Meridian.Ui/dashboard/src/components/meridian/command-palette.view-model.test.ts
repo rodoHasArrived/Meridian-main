@@ -767,8 +767,8 @@ describe("command palette view model", () => {
             workspaceTitle: "Accounting",
             entryPageTag: "AccountingShell",
             tone: "Warning",
-            evidenceTags: ["source records", "normalized activity", "reconciliation cases", "ledger evidence", "approvals", "report lineage"],
-            marketPatternTags: ["accounting records", "operational evidence", "restatement lineage"],
+            evidenceTags: ["source records", "normalized activity", "reconciliation cases", "ledger evidence", "approvals", "document attachments", "export manifests", "report lineage"],
+            marketPatternTags: ["accounting records", "operational evidence", "export manifests", "restatement lineage"],
             actions: [
               {
                 actionId: "workflow.accounting-records.review-source-records",
@@ -828,7 +828,7 @@ describe("command palette view model", () => {
               {
                 actionId: "workflow.accounting-records.review-report-lineage",
                 label: "Review Report Lineage",
-                detail: "Review report-pack publication, export, restatement, and retained evidence provenance.",
+                detail: "Review report-pack publication, export manifests, document attachments, restatement lineage, and retained evidence provenance.",
                 targetPageTag: "FundReportPack",
                 tone: "Primary",
                 workItemKind: null,
@@ -852,7 +852,7 @@ describe("command palette view model", () => {
       ["Review Report Lineage", "/reporting/report-packs"]
     ]);
     expect(workflowItems.find((item) => item.label === "Review Report Lineage")).toMatchObject({
-      description: "Accounting Records Evidence Review: Review report-pack publication, export, restatement, and retained evidence provenance.",
+      description: "Accounting Records Evidence Review: Review report-pack publication, export manifests, document attachments, restatement lineage, and retained evidence provenance.",
       ariaLabel: "Review Report Lineage, Accounting Records Evidence Review",
       statusLabel: "Ready",
       statusTone: "ready"

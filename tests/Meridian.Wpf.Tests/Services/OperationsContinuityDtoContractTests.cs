@@ -128,7 +128,25 @@ public sealed class OperationsContinuityDtoContractTests
                         Label: "Unresolved reconciliation breaks still require disposition.",
                         Route: "/workstation/accounting",
                         Gate: OperationsGateKeyDto.Reconciliation)
-                ]));
+                ]),
+            AccountingRecordSummary: new OperationsAccountingRecordSummaryDto(
+                RecordId: "accounting-record-2026-05",
+                IsAuditReady: false,
+                CompleteCategoryCount: 4,
+                RequiredCategoryCount: 6,
+                Summary: "Accounting record has 4 of 6 required evidence categories complete.",
+                EvidenceCategories:
+                [
+                    new OperationsAccountingRecordEvidenceCategoryDto(
+                        Key: "reconciliation-case-history",
+                        Label: "Reconciliation case history",
+                        IsComplete: false,
+                        Status: "Open critical break must be resolved.",
+                        RouteHint: "/workstation/accounting",
+                        EvidenceLinks: [],
+                        RequiredEvidence: ["reconciliation run", "break-case decision history", "resolved exception evidence"])
+                ],
+                EvidenceLinks: []));
 
         var json = JsonSerializer.Serialize(dto, options);
         var actual = JsonSerializer.Deserialize<OperationsContinuityWorkflowDto>(json, options);
@@ -141,7 +159,49 @@ public sealed class OperationsContinuityDtoContractTests
         actual.CloseReadiness.Should().NotBeNull();
         actual.CloseReadiness!.Score.Should().Be(70);
         actual.CloseReadiness.Components.Should().ContainSingle(component => component.Key == "reconciliation");
+        actual.AccountingRecordSummary.Should().NotBeNull();
+        actual.AccountingRecordSummary!.RequiredCategoryCount.Should().Be(6);
+        actual.AccountingRecordSummary.EvidenceCategories.Should().ContainSingle(category => category.Key == "reconciliation-case-history");
+        actual.AccountingRecordSummary.EvidenceCategories.Single().RequiredEvidence.Should().Contain("break-case decision history");
         actual.Blockers.Should().ContainSingle(blocker => blocker.EvidenceLinks.Any(link => link.EvidenceId == "ev-pack-1"));
         actual.NextActions.Should().ContainSingle(action => action.Code == "prepare-report-pack");
+    }
+
+    [Fact]
+    public void EvidenceVaultLookupContracts_ShouldRoundTripAccountingRecordLinkage()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        var linkage = new EvidenceSubjectLinkageDto(
+            EvidenceSubject: "accounting-record/workflow-2026-05",
+            RunId: null,
+            PeriodId: "2026-05",
+            ReportPackId: "report-pack-2026-05",
+            ReconciliationCaseId: "case-77",
+            AccountingRecordId: "workflow-2026-05");
+        var lookup = new EvidenceVaultLookupRequestDto(
+            EvidenceSubject: null,
+            RunId: null,
+            PeriodId: null,
+            ReportPackId: null,
+            ReconciliationCaseId: null,
+            AccountingRecordId: "workflow-2026-05");
+
+        var linkageJson = JsonSerializer.Serialize(linkage, options);
+        var lookupJson = JsonSerializer.Serialize(lookup, options);
+        var actualLinkage = JsonSerializer.Deserialize<EvidenceSubjectLinkageDto>(linkageJson, options);
+        var actualLookup = JsonSerializer.Deserialize<EvidenceVaultLookupRequestDto>(lookupJson, options);
+
+        linkageJson.Should().Contain("\"accountingRecordId\":\"workflow-2026-05\"");
+        lookupJson.Should().Contain("\"accountingRecordId\":\"workflow-2026-05\"");
+        actualLinkage.Should().NotBeNull();
+        actualLinkage!.AccountingRecordId.Should().Be("workflow-2026-05");
+        actualLinkage.EvidenceSubject.Should().Be("accounting-record/workflow-2026-05");
+        actualLookup.Should().NotBeNull();
+        actualLookup!.AccountingRecordId.Should().Be("workflow-2026-05");
     }
 }

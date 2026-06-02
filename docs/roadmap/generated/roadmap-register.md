@@ -112,7 +112,7 @@ Closed in the 2026-05-27 evidence slice through shared readiness/operator-inbox 
 | Status | done |
 | Health | green |
 | Priority | high |
-| Owner lane | Strategy and Research |
+| Owner lane | Strategy Analytics |
 | Evidence posture | complete |
 | Last reviewed | 2026-05-28 |
 
@@ -226,7 +226,7 @@ v0.15 deepens accounting, reconciliation, and record-keeping functionality by li
 | Status | planned |
 | Health | green |
 | Priority | medium |
-| Owner lane | Strategy and Research |
+| Owner lane | Strategy Analytics |
 | Evidence posture | planned_evidence |
 | Last reviewed | 2026-06-02 |
 

@@ -833,7 +833,26 @@ public sealed record OperationsContinuityWorkflowDto(
     IReadOnlyList<OperationsWorkflowBlockerDto> Blockers,
     IReadOnlyList<OperationsNextActionDto> NextActions,
     OperationsCloseReadinessDto? CloseReadiness = null,
-    OperationsClosePackagePublicationDto? ClosePackage = null);
+    OperationsClosePackagePublicationDto? ClosePackage = null,
+    OperationsAccountingRecordSummaryDto? AccountingRecordSummary = null);
+
+public sealed record OperationsAccountingRecordSummaryDto(
+    string RecordId,
+    bool IsAuditReady,
+    int CompleteCategoryCount,
+    int RequiredCategoryCount,
+    string Summary,
+    IReadOnlyList<OperationsAccountingRecordEvidenceCategoryDto> EvidenceCategories,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+
+public sealed record OperationsAccountingRecordEvidenceCategoryDto(
+    string Key,
+    string Label,
+    bool IsComplete,
+    string Status,
+    string? RouteHint,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<string>? RequiredEvidence = null);
 
 public sealed record OperationsCloseChecklistTaskDto(
     string TaskId,

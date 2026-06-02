@@ -203,7 +203,8 @@ public sealed record GovernanceLifecycleProjectionDto(
     int TimelineEventCount = 0,
     int EvidenceReferenceCount = 0,
     IReadOnlyList<string>? EvidenceReferences = null,
-    IReadOnlyList<string>? AuditReferences = null);
+    IReadOnlyList<string>? AuditReferences = null,
+    OperationsAccountingRecordSummaryDto? AccountingRecordSummary = null);
 
 /// <summary>
 /// Reconciliation break-queue projection used by shared operator workflows.

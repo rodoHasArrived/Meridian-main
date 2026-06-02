@@ -15,7 +15,7 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 - an active WPF desktop workstation alongside the browser-based operator workstation,
 - MCP and AI workflow assets for repository navigation and task automation.
 
-## Core Working Rules
+## Critical Rules
 
 1. Make the safest change that satisfies the request.
 2. Preserve behavior unless the user explicitly asks for behavior changes.
@@ -44,7 +44,7 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 - Keep top-level operator navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`,
   `Strategy`, `Data`, and `Settings`.
 
-## Fast Validation Commands
+## Quick Commands
 
 Use the narrowest relevant command:
 
@@ -60,7 +60,7 @@ python3 build/scripts/docs/validate-skill-packages.py
 make test
 ```
 
-## High-Value Paths
+## Repository Layout
 
 - `src/Meridian.Ui/dashboard/` - active browser-based operator workstation
 - `src/Meridian.Ui/wwwroot/workstation/` - built workstation assets served by `Meridian.Ui`

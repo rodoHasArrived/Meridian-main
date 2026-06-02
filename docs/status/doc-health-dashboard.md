@@ -1,17 +1,17 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-05-30T04:12:47.373864+00:00_
+_Generated: 2026-06-02T01:55:15.765443+00:00_
 Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-05-30T04:12:47.345754+00:00
+> Last updated: 2026-06-02T01:55:15.746143+00:00
 
 ## Overall Health Score
 
 ```text
-  [##########################----] 88/100
+  [########################------] 81/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 574 |
-| Total lines | 133,939 |
-| Average file size (lines) | 233.3 |
-| Orphaned files | 101 |
+| Total documentation files | 660 |
+| Total lines | 87,868 |
+| Average file size (lines) | 133.1 |
+| Orphaned files | 290 |
 | Files without headings | 20 |
 | Stale files (>90 days) | 59 |
-| TODO/FIXME markers | 301 |
-| **Health score** | **88/100** |
+| TODO/FIXME markers | 185 |
+| **Health score** | **81/100** |
 
 ### Score Breakdown
 
@@ -65,6 +65,16 @@ These files lack a Markdown heading, making them harder to navigate:
 
 These files are not linked from any other Markdown file in the repository:
 
+- `.agents/skills/meridian-archive-organizer/SKILL.md`
+- `.agents/skills/meridian-blueprint/SKILL.md`
+- `.agents/skills/meridian-brainstorm/SKILL.md`
+- `.agents/skills/meridian-browser-workstation/SKILL.md`
+- `.agents/skills/meridian-implementation-assurance/SKILL.md`
+- `.agents/skills/meridian-provider-builder/SKILL.md`
+- `.agents/skills/meridian-repo-navigation/SKILL.md`
+- `.agents/skills/meridian-roadmap-strategist/SKILL.md`
+- `.agents/skills/meridian-simulated-user-panel/SKILL.md`
+- `.agents/skills/meridian-test-writer/SKILL.md`
 - `.nuget/packages/communitytoolkit.highperformance/8.4.0/License.md`
 - `.nuget/packages/farmer/1.9.26/readme.md`
 - `.nuget/packages/microsoft.aspnetcore.openapi/9.0.15/PACKAGE.md`
@@ -75,17 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.nuget/packages/microsoft.extensions.caching.abstractions/10.0.5/PACKAGE.md`
 - `.nuget/packages/microsoft.extensions.caching.memory/10.0.1/PACKAGE.md`
 - `.nuget/packages/microsoft.extensions.caching.memory/10.0.5/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.configuration.abstractions/10.0.0/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.configuration.abstractions/10.0.7/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.configuration.binder/10.0.7/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.configuration.commandline/10.0.7/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.configuration.environmentvariables/10.0.7/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.configuration.fileextensions/10.0.7/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.configuration.json/10.0.7/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.configuration.usersecrets/10.0.7/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.configuration/10.0.7/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/10.0.7/PACKAGE.md`
-- ... and 81 more
+- ... and 270 more
 
 ### Stale Documentation
 
@@ -119,9 +119,8 @@ These files have not been updated in over 90 days:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-05-30 | 88 | 574 | 101 | 59 |
+| 2026-06-02 | 81 | 660 | 290 | 59 |
 
 ---
 
 _This file is auto-generated. Do not edit manually._
-

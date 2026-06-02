@@ -1704,7 +1704,8 @@ public sealed class FundOperationsWorkspaceReadService
             TimelineEventCount: timeline.Count,
             EvidenceReferenceCount: evidenceReferences.Count,
             EvidenceReferences: evidenceReferences.OrderBy(static value => value, StringComparer.OrdinalIgnoreCase).ToArray(),
-            AuditReferences: traceReferences.OrderBy(static value => value, StringComparer.OrdinalIgnoreCase).ToArray());
+            AuditReferences: traceReferences.OrderBy(static value => value, StringComparer.OrdinalIgnoreCase).ToArray(),
+            AccountingRecordSummary: activeWorkflow?.AccountingRecordSummary);
     }
 
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecurityReferencesAsync(

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Windows.Controls;
 using FluentAssertions;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.OperationsContinuity;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
@@ -766,11 +767,15 @@ public sealed class FundLedgerViewModelTests
         sectionSource.Should().Contain("public string ReconciliationOwnershipText");
         sectionSource.Should().Contain("public string ReportPackOwnershipText");
         sectionSource.Should().Contain("public WorkstationStateModel ReportPackReadinessState");
+        sectionSource.Should().Contain("public ObservableCollection<FundAccountingRecordEvidenceCategoryRow> AccountingRecordEvidenceCategories");
+        sectionSource.Should().Contain("public string AccountingRecordSummaryText");
+        sectionSource.Should().Contain("public WorkstationStateModel AccountingRecordReadinessState");
         sectionSource.Should().Contain("public int SelectedTabIndex");
         viewModelSource.Should().Contain("internal FundLedgerWorkbenchSectionViewModel WorkbenchSection");
         viewModelSource.Should().Contain("get => WorkbenchSection.CurrentWorkbenchModeText");
         viewModelSource.Should().Contain("get => WorkbenchSection.RouteBannerTitleText");
         viewModelSource.Should().Contain("get => WorkbenchSection.ReportPackReadinessState");
+        viewModelSource.Should().Contain("get => WorkbenchSection.AccountingRecordReadinessState");
         viewModelSource.Should().Contain("get => WorkbenchSection.SelectedTabIndex");
         viewModelSource.Should().NotContain("private string _currentWorkbenchModeText");
         viewModelSource.Should().NotContain("private string _routeBannerTitleText");
@@ -778,6 +783,7 @@ public sealed class FundLedgerViewModelTests
         viewModelSource.Should().NotContain("private string _reconciliationOwnershipText");
         viewModelSource.Should().NotContain("private string _reportPackOwnershipText");
         viewModelSource.Should().NotContain("private WorkstationStateModel _reportPackReadinessState");
+        viewModelSource.Should().NotContain("private WorkstationStateModel _accountingRecordReadinessState");
         viewModelSource.Should().NotContain("private int _selectedTabIndex");
     }
     [Fact]
@@ -844,6 +850,27 @@ public sealed class FundLedgerViewModelTests
                     RecordedBy: "test",
                     SecuritiesMarketValue: 250m));
 
+                var operationsContinuityService = CreateOperationsContinuityWorkflowService();
+                var evidence = new OperationsEvidenceLinkDto(
+                    "ev-wpf-accounting-record",
+                    "Retained broker source packet",
+                    "/api/workstation/operations/continuity/evidence/ev-wpf-accounting-record",
+                    "operations-continuity",
+                    new DateTimeOffset(2026, 5, 8, 14, 20, 0, TimeSpan.Zero));
+                var start = await operationsContinuityService.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+                    FundAccountId: accountId,
+                    PeriodId: "2026-05",
+                    SecurityMasterSnapshotId: Guid.NewGuid(),
+                    BrokerSource: "custodian",
+                    Actor: "wpf-test",
+                    EvidenceLinks: [evidence]));
+                var imported = await operationsContinuityService.ImportBrokerDataAsync(
+                    start.Workflow!.WorkflowId,
+                    new OperationsTransitionRequestDto(start.Workflow.Version, "wpf-test", EvidenceLinks: [evidence]));
+                await operationsContinuityService.NormalizeBrokerTransactionsAsync(
+                    start.Workflow.WorkflowId,
+                    new OperationsTransitionRequestDto(imported.Workflow!.Version, "wpf-test", EvidenceLinks: [evidence]));
+
                 var portfolioReadService = new PortfolioReadService();
                 var runReadService = new StrategyRunReadService(store, portfolioReadService, new LedgerReadService());
                 var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
@@ -869,7 +896,8 @@ public sealed class FundLedgerViewModelTests
                     fundAccountService,
                     store,
                     portfolioReadService,
-                    strategyReconciliationService);
+                    strategyReconciliationService,
+                    operationsContinuityService);
 
                 using var viewModel = new FundLedgerViewModel(
                     fundLedgerReadService,
@@ -918,6 +946,30 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackReadinessState.SignoffRequirement!.Role.Should().NotBeNullOrWhiteSpace();
                 viewModel.ReportPackReadinessState.SignoffRequirement.Status.Should().Contain("Close readiness");
                 viewModel.ReportPackReadinessState.SignoffRequirement.Detail.Should().Contain("current preview");
+                viewModel.AccountingRecordEvidenceCategories.Should().HaveCount(6);
+                viewModel.AccountingRecordEvidenceCategories.Should().Contain(row =>
+                    row.Key == "source-records" &&
+                    row.Label == "Retained source data" &&
+                    !row.IsComplete &&
+                    row.SourceTarget == "OperationsContinuity" &&
+                    row.EvidenceSubject.StartsWith("accounting-record/accounting-record-", StringComparison.Ordinal) &&
+                    row.EvidenceSubjectTarget == $"EvidenceWorkbench:{row.EvidenceSubject}");
+                viewModel.AccountingRecordEvidenceCategories.Should().Contain(row =>
+                    row.Key == "report-pack-lineage" &&
+                    row.StatusLabel == "Review required" &&
+                    row.RequiredEvidenceLabel.Contains("export manifest", StringComparison.OrdinalIgnoreCase) &&
+                    row.RequiredEvidenceLabel.Contains("document attachment", StringComparison.OrdinalIgnoreCase) &&
+                    row.RequiredEvidenceLabel.Contains("restatement lineage", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "FundReportPack");
+                viewModel.AccountingRecordStatusText.Should().Be("Review required");
+                viewModel.AccountingRecordEvidenceText.Should().Be("0/6 evidence categories complete");
+                viewModel.AccountingRecordReadinessState.Title.Should().Be("Accounting record review required");
+                viewModel.AccountingRecordReadinessState.TargetText.Should().Be("OperationsContinuity");
+                viewModel.AccountingRecordReadinessState.Detail.Should().Contain("0 of 6 required evidence categories complete");
+                viewModel.AccountingRecordReadinessState.VisibleEvidenceLinks.Should().Contain(link =>
+                    link.Label == "Retained source data" &&
+                    link.Target == "OperationsContinuity" &&
+                    link.Source.StartsWith("accounting-record/accounting-record-", StringComparison.Ordinal));
             }
             finally
             {
@@ -1082,7 +1134,8 @@ public sealed class FundLedgerViewModelTests
         IFundAccountService fundAccountService,
         IStrategyRepository strategyRepository,
         PortfolioReadService portfolioReadService,
-        IReconciliationRunService strategyReconciliationService)
+        IReconciliationRunService strategyReconciliationService,
+        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null)
     {
         var securityMasterQuery = new StubApplicationSecurityMasterQueryService();
         return new FundOperationsWorkspaceReadService(
@@ -1091,7 +1144,17 @@ public sealed class FundLedgerViewModelTests
             portfolioReadService,
             new NavAttributionService(securityMasterQuery),
             new ReportGenerationService(securityMasterQuery),
-            strategyReconciliationService: strategyReconciliationService);
+            strategyReconciliationService: strategyReconciliationService,
+            operationsContinuityWorkflowService: operationsContinuityWorkflowService);
+    }
+
+    private static OperationsContinuityWorkflowService CreateOperationsContinuityWorkflowService()
+    {
+        var derivation = new OperationsStatusDerivationService();
+        return new OperationsContinuityWorkflowService(
+            new InMemoryOperationsContinuityRepository(derivation),
+            new InMemoryOperationsWorkflowAuditStore(),
+            derivation);
     }
 
     private static async Task WaitForConditionAsync(Func<bool> condition, int attempts = 40)

@@ -21,6 +21,7 @@ do_not_edit: true
 | `SRC-APP` | Meridian application layer | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-APP` | Meridian application layer | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-APP` | Meridian application layer | `W3-CONT-001` | Research to paper continuity |
+| `SRC-APP` | Meridian application layer | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-BACKTESTING` | Meridian backtesting | `W3-CONT-001` | Research to paper continuity |
 | `SRC-BACKTESTING` | Meridian backtesting | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 | `SRC-BACKTESTING-SDK` | Backtesting SDK | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |

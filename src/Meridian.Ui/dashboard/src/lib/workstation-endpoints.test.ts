@@ -155,6 +155,7 @@ describe("workstation API endpoint catalog", () => {
       runTimeline: "/api/workstation/runs/timeline",
       runSweeps: "/api/workstation/runs/sweeps",
       evidenceSubjects: "/api/workstation/evidence/subjects",
+      evidenceVaultSearch: "/api/workstation/evidence/vault/search",
       evidenceTemplates: "/api/workstation/evidence/templates"
     });
   });

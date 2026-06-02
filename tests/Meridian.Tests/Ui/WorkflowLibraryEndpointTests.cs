@@ -137,8 +137,12 @@ public sealed class WorkflowLibraryEndpointTests
         accountingRecordsWorkflow.Actions.Select(static action => action.TargetPageTag)
             .Should()
             .Equal("DataShell", "PortfolioShell", "FundReconciliation", "FundTrialBalance", "OperationsContinuity", "FundReportPack");
-        accountingRecordsWorkflow.EvidenceTags.Should().Contain(["source records", "normalized activity", "reconciliation cases", "ledger evidence", "approvals", "report lineage"]);
-        accountingRecordsWorkflow.MarketPatternTags.Should().Contain("restatement lineage");
+        accountingRecordsWorkflow.EvidenceTags.Should().Contain(["source records", "normalized activity", "reconciliation cases", "ledger evidence", "approvals", "document attachments", "export manifests", "report lineage"]);
+        accountingRecordsWorkflow.MarketPatternTags.Should().Contain(["export manifests", "restatement lineage"]);
+        accountingRecordsWorkflow.Actions.Should().Contain(action =>
+            action.ActionId == WorkflowActionIds.AccountingRecordsReviewReportLineage &&
+            action.Detail.Contains("document attachments", StringComparison.OrdinalIgnoreCase) &&
+            action.Detail.Contains("export manifests", StringComparison.OrdinalIgnoreCase));
         library!.Workflows.Should().Contain(workflow => workflow.WorkflowId == "strategy-to-paper-review");
         library.Workflows.Should().Contain(workflow =>
             workflow.WorkflowId == "strategy-to-paper-review" &&

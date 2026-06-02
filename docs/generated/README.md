@@ -6,6 +6,8 @@
 
 This folder contains documentation generated from code, registries, repository structure, or documentation automation. Do not edit generated outputs by hand unless the file explicitly marks an editable block.
 
+Generated pages in this subtree should carry an auto-generated notice when they are emitted by a script.
+
 ## Generated Families
 
 | Family | Source of truth | Output examples | Maintenance rule |

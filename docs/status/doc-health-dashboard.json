@@ -1,13 +1,23 @@
 {
-  "total_files": 574,
-  "total_lines": 133939,
-  "orphaned_count": 101,
+  "total_files": 660,
+  "total_lines": 87868,
+  "orphaned_count": 290,
   "no_heading_count": 20,
   "stale_count": 59,
-  "todo_count": 301,
-  "average_lines": 233.3,
-  "health_score": 88,
+  "todo_count": 185,
+  "average_lines": 133.1,
+  "health_score": 81,
   "orphaned_files": [
+    ".agents/skills/meridian-archive-organizer/SKILL.md",
+    ".agents/skills/meridian-blueprint/SKILL.md",
+    ".agents/skills/meridian-brainstorm/SKILL.md",
+    ".agents/skills/meridian-browser-workstation/SKILL.md",
+    ".agents/skills/meridian-implementation-assurance/SKILL.md",
+    ".agents/skills/meridian-provider-builder/SKILL.md",
+    ".agents/skills/meridian-repo-navigation/SKILL.md",
+    ".agents/skills/meridian-roadmap-strategist/SKILL.md",
+    ".agents/skills/meridian-simulated-user-panel/SKILL.md",
+    ".agents/skills/meridian-test-writer/SKILL.md",
     ".nuget/packages/communitytoolkit.highperformance/8.4.0/License.md",
     ".nuget/packages/farmer/1.9.26/readme.md",
     ".nuget/packages/microsoft.aspnetcore.openapi/9.0.15/PACKAGE.md",
@@ -65,12 +75,14 @@
     ".nuget/packages/system.reactive/6.1.0/readme.md",
     ".nuget/packages/system.runtime.caching/8.0.0/PACKAGE.md",
     ".nuget/packages/system.security.cryptography.protecteddata/9.0.2/PACKAGE.md",
+    "AGENTS.md",
     "Meridian Design System/BRAND_GUIDELINES.md",
     "Meridian Design System/CONTENT_FUNDAMENTALS.md",
     "Meridian Design System/ICONOGRAPHY.md",
     "Meridian Design System/INSPIRATION_BRIEF.md",
     "Meridian Design System/SKILL.md",
     "Meridian Design System/VISUAL_FOUNDATIONS.md",
+    "benchmarks/BOTTLENECK_REPORT.md",
     "benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
     "benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
     "benchmarks/results/20260521_111257/composite/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md",
@@ -90,25 +102,202 @@
     "benchmarks/results/latest-manual/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "docs/ai/claude/CLAUDE.api.md",
+    "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
+    "docs/ai/claude/CLAUDE.structure.md",
+    "docs/ai/copilot/ai-sync-workflow.md",
+    "docs/ai/model-routing-telemetry.md",
     "docs/api/oms-ems-integration.md",
     "docs/architecture/operator-observability-dashboard.md",
     "docs/architecture/runtime-component-state-boundaries.md",
+    "docs/architecture/workstation-continuity-payload-profile.md",
     "docs/architecture/write-path-invariants.md",
-    "docs/operations/environment-and-deployment-standard.md",
-    "docs/operations/failover-and-recovery-runbook.md",
-    "docs/operations/fund-ops-persistence-cutover-runbook.md",
+    "docs/development/fund-account-traversal.md",
+    "docs/development/policies/promotion-policy-matrix.md",
+    "docs/development/score-reason-taxonomy.md",
+    "docs/development/synthetic-provider-test-harness.md",
+    "docs/docfx/api/index.md",
+    "docs/generated/adr-index.md",
+    "docs/generated/configuration-schema.md",
+    "docs/generated/documentation-coverage.md",
+    "docs/generated/interfaces.md",
+    "docs/generated/project-dependencies.md",
+    "docs/generated/provider-registry.md",
+    "docs/generated/workflows-overview.md",
+    "docs/integrations/tastytrade-endpoint-coverage.md",
+    "docs/operations/broker-order-routing-phased-runbook.md",
+    "docs/operations/canonical-buyer-workflow.md",
+    "docs/operations/cleanup-and-maintenance.md",
+    "docs/operations/deployment.md",
+    "docs/operations/disk-space-hygiene.md",
+    "docs/operations/error-budget-policy-runbook.md",
+    "docs/operations/governance-operator-workflow.md",
+    "docs/operations/high-availability.md",
+    "docs/operations/ibkr-promotion-checklist.md",
+    "docs/operations/live-execution-controls.md",
+    "docs/operations/orphaned-doc-triage-index.md",
+    "docs/operations/portable-data-packager.md",
+    "docs/operations/preflight-checklist.md",
+    "docs/operations/provider-degradation-policy.md",
+    "docs/operations/reconciliation-policy-operations.md",
     "docs/operations/reconciliation-resilience-runbook.md",
+    "docs/operations/reconciliation-runbook.md",
+    "docs/operations/service-level-objectives.md",
+    "docs/operations/tradier-provider-endpoint-catalog.md",
+    "docs/operations/workstation-governance-approval-runbook.md",
+    "docs/plans/adapters-completion-plan.md",
+    "docs/plans/approach-b-plus-v2-implementation-plan.md",
+    "docs/plans/assembly-performance-roadmap.md",
+    "docs/plans/backtest-studio-unification-blueprint.md",
+    "docs/plans/backtest-studio-unification-pr-sequenced-roadmap.md",
+    "docs/plans/brokerage-portfolio-sync-blueprint.md",
+    "docs/plans/codebase-audit-cleanup-roadmap.md",
+    "docs/plans/covered-call-writing-slice-1-blueprint.md",
+    "docs/plans/current-direction-and-status.md",
+    "docs/plans/desktop-shell-modularity-roadmap.md",
+    "docs/plans/desktop-workstation-screen-blueprint.md",
+    "docs/plans/entity-aware-workstation-capability-blueprint.md",
+    "docs/plans/evidence-backed-investment-operations-plan.md",
+    "docs/plans/fund-management-module-implementation-backlog.md",
+    "docs/plans/fund-management-pr-sequenced-roadmap.md",
+    "docs/plans/fund-management-product-vision-and-capability-matrix.md",
+    "docs/plans/governance-fund-ops-blueprint.md",
+    "docs/plans/kernel-parity-migration-blueprint.md",
+    "docs/plans/l3-inference-implementation-plan.md",
+    "docs/plans/ledger.md",
+    "docs/plans/meridian-6-week-roadmap.md",
+    "docs/plans/meridian-database-blueprint.md",
+    "docs/plans/meridian-pilot-workflow.md",
+    "docs/plans/options-roadmap.md",
     "docs/plans/performance-todo-2026-05-21.md",
+    "docs/plans/portfolio-level-backtesting-composer-blueprint.md",
+    "docs/plans/quantscript-l3-multiinstance-round2-roadmap.md",
+    "docs/plans/research-backtest-trust-and-velocity-blueprint.md",
+    "docs/plans/runbook-template-registry-modernization-plan.md",
+    "docs/plans/sfo-mvp-implementation-design.md",
+    "docs/plans/trading-workstation-migration-blueprint.md",
+    "docs/plans/ufl-accounting-impact-model.md",
+    "docs/plans/ufl-asset-profile-template.md",
+    "docs/plans/ufl-bond-target-state-v2.md",
+    "docs/plans/ufl-capability-model.md",
+    "docs/plans/ufl-cash-sweep-target-state-v2.md",
+    "docs/plans/ufl-certificate-of-deposit-target-state-v2.md",
+    "docs/plans/ufl-cfd-target-state-v2.md",
+    "docs/plans/ufl-commercial-paper-target-state-v2.md",
+    "docs/plans/ufl-commodity-target-state-v2.md",
+    "docs/plans/ufl-conformance-matrix.md",
+    "docs/plans/ufl-crypto-target-state-v2.md",
+    "docs/plans/ufl-custom-asset-composability.md",
+    "docs/plans/ufl-deposit-target-state-v2.md",
+    "docs/plans/ufl-direct-lending-implementation-roadmap.md",
+    "docs/plans/ufl-direct-lending-target-state-v2.md",
+    "docs/plans/ufl-equity-target-state-v2.md",
+    "docs/plans/ufl-future-target-state-v2.md",
+    "docs/plans/ufl-fx-spot-target-state-v2.md",
+    "docs/plans/ufl-money-market-fund-target-state-v2.md",
+    "docs/plans/ufl-option-target-state-v2.md",
+    "docs/plans/ufl-other-security-target-state-v2.md",
+    "docs/plans/ufl-projection-and-evidence-kernel.md",
+    "docs/plans/ufl-repo-target-state-v2.md",
+    "docs/plans/ufl-supported-assets-index.md",
+    "docs/plans/ufl-swap-target-state-v2.md",
+    "docs/plans/ufl-treasury-bill-target-state-v2.md",
+    "docs/plans/ufl-warrant-target-state-v2.md",
+    "docs/plans/wave-implementation-checklists.md",
+    "docs/plans/web-ui-development-pivot.md",
+    "docs/providers/broker-adapter-template-guide.md",
+    "docs/providers/interactive-brokers-free-equity-reference.md",
+    "docs/providers/provider-confidence-baseline.md",
+    "docs/providers/security-master-guide.md",
+    "docs/providers/stocksharp-connectors.md",
+    "docs/providers/tradestation-endpoint-inventory.md",
+    "docs/reference/governance-report-packs.md",
+    "docs/reference/research-briefing-workflow.md",
+    "docs/roadmap/generated-doc-policy.md",
+    "docs/roadmap/generated/roadmap-register.md",
+    "docs/roadmap/roadmap-governance.md",
+    "docs/roadmap/roadmap-item-template.md",
+    "docs/roadmap/schema-versioning.md",
+    "docs/roadmap/status-taxonomy.md",
     "docs/security/buyer-packet/architecture-summary.md",
     "docs/security/buyer-packet/control-mapping.md",
     "docs/security/buyer-packet/document-index.md",
     "docs/security/buyer-packet/operational-controls.md",
     "docs/security/buyer-packet/threat-model-summary.md",
     "docs/security/buyer-packet/vulnerability-management.md",
+    "docs/security/codex-security-remediation-2026-05-20.md",
     "docs/security/security-remediation-backlog.md",
+    "docs/source/generated/source-module-index.md",
+    "docs/source/generated/source-roadmap-traceability.md",
+    "docs/source/generated/source-todo-checklist.md",
     "docs/source/generated/stale-docs.md",
+    "docs/source/source-diagram-standard.md",
+    "docs/source/source-documentation-standard.md",
+    "docs/source/source-readme-template.md",
+    "docs/source/source-todo-standard.md",
+    "docs/status/EVALUATIONS_AND_AUDITS.md",
+    "docs/status/FEATURE_INVENTORY.md",
+    "docs/status/FULL_IMPLEMENTATION_TODO.md",
+    "docs/status/OPPORTUNITY_SCAN.md",
+    "docs/status/PROGRAM_STATE.md",
+    "docs/status/ROADMAP.md",
+    "docs/status/ROADMAP_COMBINED.md",
+    "docs/status/ROADMAP_SUMMARY.md",
+    "docs/status/TARGET_END_PRODUCT.md",
+    "docs/status/TODO.md",
+    "docs/status/ai-handoff-checklist-report.md",
+    "docs/status/ai-handoff-packet.md",
+    "docs/status/ai-inventory-report.md",
+    "docs/status/api-docs-report.md",
+    "docs/status/badge-sync-report.md",
+    "docs/status/broker-phase-promotion-checklist-template.md",
+    "docs/status/contract-compatibility-matrix.md",
+    "docs/status/coverage-report.md",
+    "docs/status/dead-code-inventory.md",
+    "docs/status/desktop-application-screens.md",
+    "docs/status/doc-health-dashboard.md",
+    "docs/status/docs-automation-summary.md",
+    "docs/status/evidence/dk1-baseline-trust-thresholds.md",
+    "docs/status/evidence/wave2-cockpit-evidence-packet.md",
+    "docs/status/evidence/wave4-evidence-template.md",
+    "docs/status/example-validation.md",
     "docs/status/fund-ops-persistence-cutover-status.md",
-    "docs/status/provider-validation-evidence-schema.md"
+    "docs/status/governance-handoff-evidence-bundle.md",
+    "docs/status/ibkr-provider-inventory.md",
+    "docs/status/kernel-readiness-dashboard.md",
+    "docs/status/link-repair-report.md",
+    "docs/status/metrics-dashboard.md",
+    "docs/status/program-state-summary.md",
+    "docs/status/provider-adapters-closure-summary.md",
+    "docs/status/provider-capability-inventory.md",
+    "docs/status/provider-capability-matrix.md",
+    "docs/status/provider-core-hardening-notes.md",
+    "docs/status/provider-failover-hardening.md",
+    "docs/status/provider-integration-status.md",
+    "docs/status/provider-test-gap-baseline.md",
+    "docs/status/provider-test-minimums.md",
+    "docs/status/readiness-claim-language-policy.md",
+    "docs/status/rules-report.md",
+    "docs/status/workflow-drift-report.md",
+    "docs/status/workstation-cockpit-acceptance-matrix.md",
+    "docs/status/workstation-governance-state-model.md",
+    "docs/testing/wave2-cockpit-reliability-evidence-runbook.md",
+    "docs/ui/components.md",
+    "plugins/frontend-web-dev/agents/electron-angular-native.md",
+    "plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md",
+    "plugins/frontend-web-dev/skills/playwright-explore-website/SKILL.md",
+    "plugins/frontend-web-dev/skills/playwright-generate-test/SKILL.md",
+    "plugins/security-best-practices/skills/ai-prompt-engineering-safety-review/SKILL.md",
+    "plugins/testing-automation/agents/playwright-tester.md",
+    "plugins/testing-automation/agents/tdd-green.md",
+    "plugins/testing-automation/agents/tdd-red.md",
+    "plugins/testing-automation/agents/tdd-refactor.md",
+    "plugins/testing-automation/skills/ai-prompt-engineering-safety-review/SKILL.md",
+    "plugins/testing-automation/skills/csharp-nunit/SKILL.md",
+    "plugins/testing-automation/skills/java-junit/SKILL.md",
+    "plugins/testing-automation/skills/playwright-explore-website/SKILL.md",
+    "plugins/testing-automation/skills/playwright-generate-test/SKILL.md",
+    "tests/setup-script-tests.md"
   ],
   "no_heading_files": [
     ".nuget/packages/newtonsoft.json/13.0.4/LICENSE.md",
@@ -196,26 +385,394 @@
   "all_files": [
     {
       "path": "AGENTS.md",
-      "line_count": 55,
+      "line_count": 61,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T06:14:32.315949+00:00",
+      "last_modified_utc": "2026-05-31T11:44:14.052374+00:00",
       "stale": false
     },
     {
       "path": "CLAUDE.md",
-      "line_count": 166,
+      "line_count": 174,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T16:08:19.777873+00:00",
+      "last_modified_utc": "2026-06-02T01:53:18.931220+00:00",
       "stale": false
     },
     {
       "path": "README.md",
-      "line_count": 304,
+      "line_count": 306,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-30T04:00:51.809043+00:00",
+      "last_modified_utc": "2026-05-31T12:56:46.305943+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-archive-organizer/SKILL.md",
+      "line_count": 177,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:19:18.145919+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/adr/ADR-015-platform-restructuring.md",
+      "line_count": 6,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.968060+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/adr/README.md",
+      "line_count": 3,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.968060+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/generated/repository-structure.md",
+      "line_count": 3,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.968060+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-archive-organizer/references/archive-placement-guide.md",
+      "line_count": 84,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.968060+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-archive-organizer/references/evaluation-harness.md",
+      "line_count": 107,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.968060+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-blueprint/CHANGELOG.md",
+      "line_count": 33,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.978306+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-blueprint/SKILL.md",
+      "line_count": 481,
+      "has_heading": true,
+      "todo_count": 5,
+      "last_modified_utc": "2026-05-22T23:54:14.888504+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-blueprint/references/blueprint-patterns.md",
+      "line_count": 400,
+      "has_heading": true,
+      "todo_count": 7,
+      "last_modified_utc": "2026-05-18T04:10:12.980658+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-blueprint/references/pipeline-position.md",
+      "line_count": 177,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.980658+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-brainstorm/CHANGELOG.md",
+      "line_count": 54,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.980658+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-brainstorm/SKILL.md",
+      "line_count": 273,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-25T01:02:38.521691+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-brainstorm/references/competitive-landscape.md",
+      "line_count": 77,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.983870+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-brainstorm/references/idea-dimensions.md",
+      "line_count": 233,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.983870+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-browser-workstation/SKILL.md",
+      "line_count": 47,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-28T05:40:21.795227+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-code-review/CHANGELOG.md",
+      "line_count": 62,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.983870+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-code-review/SKILL.md",
+      "line_count": 365,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-05-22T23:54:14.891515+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-code-review/agents/grader.md",
+      "line_count": 148,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.983870+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-code-review/references/architecture.md",
+      "line_count": 545,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T23:54:14.892508+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-code-review/references/schemas.md",
+      "line_count": 445,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.994032+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-implementation-assurance/SKILL.md",
+      "line_count": 131,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:19:18.231897+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-implementation-assurance/references/documentation-routing.md",
+      "line_count": 36,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.999911+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-implementation-assurance/references/evaluation-harness.md",
+      "line_count": 121,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.999911+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-provider-builder/CHANGELOG.md",
+      "line_count": 34,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.999911+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-provider-builder/SKILL.md",
+      "line_count": 377,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:19:18.277981+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-provider-builder/references/provider-patterns.md",
+      "line_count": 517,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.999911+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-repo-navigation/SKILL.md",
+      "line_count": 63,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:19:18.320186+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-roadmap-strategist/SKILL.md",
+      "line_count": 104,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:19:18.353666+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-roadmap-strategist/references/roadmap-source-map.md",
+      "line_count": 49,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:12.999911+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/SKILL.md",
+      "line_count": 150,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:19:18.470334+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/agents/grader.md",
+      "line_count": 69,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.015769+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md",
+      "line_count": 86,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.015769+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md",
+      "line_count": 86,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.015769+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md",
+      "line_count": 86,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.015769+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-04-analysis-export-power-user-review.md",
+      "line_count": 86,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.015769+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-05-research-promotion-roadmap-review.md",
+      "line_count": 86,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.015769+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md",
+      "line_count": 87,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.015769+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md",
+      "line_count": 58,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.015769+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/references/personas.md",
+      "line_count": 125,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.015769+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/references/review-contract.md",
+      "line_count": 73,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.031082+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/references/review-modes.md",
+      "line_count": 45,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.031082+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/references/sample-prompts.md",
+      "line_count": 69,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.031082+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-test-writer/CHANGELOG.md",
+      "line_count": 67,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.031082+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-test-writer/SKILL.md",
+      "line_count": 328,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:19:18.502711+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-test-writer/references/test-patterns.md",
+      "line_count": 1232,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-18T04:10:13.031082+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/_shared/project-context.md",
+      "line_count": 156,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-22T23:54:14.887439+00:00",
       "stale": false
     },
     {
@@ -1244,10 +1801,10 @@
     },
     {
       "path": "build/scripts/docs/README.md",
-      "line_count": 574,
+      "line_count": 681,
       "has_heading": true,
       "todo_count": 8,
-      "last_modified_utc": "2026-05-28T05:40:21.867871+00:00",
+      "last_modified_utc": "2026-06-01T07:25:33.295719+00:00",
       "stale": false
     },
     {
@@ -1259,171 +1816,195 @@
       "stale": false
     },
     {
+      "path": "docs/documentation-inventory.md",
+      "line_count": 131,
+      "has_heading": true,
+      "todo_count": 3,
+      "last_modified_utc": "2026-06-01T01:10:59.984780+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/documentation-ownership.md",
+      "line_count": 56,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-05-30T05:26:34.170721+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/HELP.md",
-      "line_count": 222,
+      "line_count": 221,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T22:52:21.365181+00:00",
+      "last_modified_utc": "2026-05-31T12:36:17.832527+00:00",
       "stale": false
     },
     {
       "path": "docs/README.md",
-      "line_count": 191,
+      "line_count": 77,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:06:18.645691+00:00",
+      "last_modified_utc": "2026-06-01T01:10:37.642453+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/001-provider-abstraction.md",
-      "line_count": 160,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.890808+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.548970+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/002-tiered-storage-architecture.md",
-      "line_count": 162,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.890808+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.558618+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/003-microservices-decomposition.md",
-      "line_count": 151,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.890808+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.561999+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/004-async-streaming-patterns.md",
-      "line_count": 213,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.890808+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.566018+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/005-attribute-based-discovery.md",
-      "line_count": 199,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.890808+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.570040+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/006-domain-events-polymorphic-payload.md",
-      "line_count": 227,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.896716+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.575840+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/007-write-ahead-log-durability.md",
-      "line_count": 224,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.896716+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.578840+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/008-multi-format-composite-storage.md",
-      "line_count": 239,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.896716+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.582832+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/009-fsharp-interop.md",
-      "line_count": 283,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.898727+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.587834+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/010-httpclient-factory.md",
-      "line_count": 234,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.898727+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.589933+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/011-centralized-configuration-and-credentials.md",
-      "line_count": 248,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.901132+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.589933+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/012-monitoring-and-alerting-pipeline.md",
-      "line_count": 271,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.901132+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.598861+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/013-bounded-channel-policy.md",
-      "line_count": 248,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.901132+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.613730+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/014-json-source-generators.md",
-      "line_count": 263,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.901132+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.618715+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/015-strategy-execution-contract.md",
-      "line_count": 166,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.903144+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.621715+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/016-custody-cash-reconciliation-break-typing.md",
-      "line_count": 24,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.903144+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.621715+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/016-platform-architecture-migration.md",
-      "line_count": 203,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.903144+00:00",
+      "last_modified_utc": "2026-06-02T01:55:06.631687+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/README.md",
-      "line_count": 81,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.903144+00:00",
+      "last_modified_utc": "2026-05-31T13:03:45.580833+00:00",
       "stale": false
     },
     {
       "path": "docs/adr/_template.md",
-      "line_count": 94,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 4,
-      "last_modified_utc": "2026-05-18T04:10:13.903144+00:00",
+      "todo_count": 1,
+      "last_modified_utc": "2026-05-31T13:04:06.693020+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/agent-handoff-checklist.md",
+      "line_count": 68,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T19:34:54.379876+00:00",
       "stale": false
     },
     {
@@ -1436,34 +2017,58 @@
     },
     {
       "path": "docs/ai/assistant-workflow-contract.md",
-      "line_count": 232,
+      "line_count": 442,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-28T16:07:32.377805+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.383941+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/model-routing-telemetry.md",
+      "line_count": 68,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T10:45:30.204410+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/parallel-task-manifest-template.md",
+      "line_count": 62,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T19:34:54.391043+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/README.md",
-      "line_count": 175,
+      "line_count": 246,
       "has_heading": true,
       "todo_count": 8,
-      "last_modified_utc": "2026-05-28T16:07:45.371438+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.377864+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/work-modes.md",
+      "line_count": 44,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T19:34:54.394590+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/agents/README.md",
-      "line_count": 149,
+      "line_count": 164,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T16:08:10.931154+00:00",
+      "last_modified_utc": "2026-05-31T11:55:53.309998+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.actions.md",
-      "line_count": 70,
+      "line_count": 73,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T07:31:37.083380+00:00",
+      "last_modified_utc": "2026-06-01T12:47:50.619472+00:00",
       "stale": false
     },
     {
@@ -1471,7 +2076,7 @@
       "line_count": 233,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-18T04:10:13.903144+00:00",
+      "last_modified_utc": "2026-05-31T11:22:52.579818+00:00",
       "stale": false
     },
     {
@@ -1479,7 +2084,7 @@
       "line_count": 520,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.918338+00:00",
+      "last_modified_utc": "2026-05-31T11:52:00.588185+00:00",
       "stale": false
     },
     {
@@ -1492,10 +2097,10 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.providers.md",
-      "line_count": 878,
+      "line_count": 877,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:06:18.653179+00:00",
+      "last_modified_utc": "2026-05-31T13:19:42.873597+00:00",
       "stale": false
     },
     {
@@ -1508,10 +2113,10 @@
     },
     {
       "path": "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
-      "line_count": 61,
+      "line_count": 62,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T01:21:33.268226+00:00",
+      "last_modified_utc": "2026-05-31T12:00:05.035189+00:00",
       "stale": false
     },
     {
@@ -1527,7 +2132,7 @@
       "line_count": 1577,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-05-26T23:30:36.899374+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.387984+00:00",
       "stale": false
     },
     {
@@ -1539,43 +2144,51 @@
       "stale": false
     },
     {
-      "path": "docs/ai/codex/quickstart.md",
-      "line_count": 72,
+      "path": "docs/ai/codex/prompt-execution-trace.md",
+      "line_count": 86,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T06:14:32.317960+00:00",
+      "last_modified_utc": "2026-06-01T03:25:11.873390+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/codex/quickstart.md",
+      "line_count": 140,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T19:34:54.387984+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/codex/README.md",
-      "line_count": 186,
+      "line_count": 223,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-28T06:14:32.319968+00:00",
+      "last_modified_utc": "2026-06-01T06:08:54.413023+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/codex/route-cards.md",
-      "line_count": 79,
+      "line_count": 85,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T06:14:32.319968+00:00",
+      "last_modified_utc": "2026-06-02T01:45:04.514979+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/copilot/ai-sync-workflow.md",
-      "line_count": 53,
+      "line_count": 64,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.907306+00:00",
+      "last_modified_utc": "2026-05-31T12:00:06.579861+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/copilot/instructions.md",
-      "line_count": 106,
+      "line_count": 123,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-25T00:59:46.425747+00:00",
+      "last_modified_utc": "2026-05-31T16:06:38.187716+00:00",
       "stale": false
     },
     {
@@ -1583,31 +2196,31 @@
       "line_count": 49,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:12:36.945699+00:00",
+      "last_modified_utc": "2026-06-02T01:45:09.504906+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/generated/repo-navigation.md",
-      "line_count": 150,
+      "line_count": 151,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:12:36.942892+00:00",
+      "last_modified_utc": "2026-06-02T01:45:09.503912+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/instructions/README.md",
-      "line_count": 130,
+      "line_count": 141,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T02:13:39.948885+00:00",
+      "last_modified_utc": "2026-05-31T12:00:09.239650+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/navigation/README.md",
-      "line_count": 96,
+      "line_count": 98,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.911258+00:00",
+      "last_modified_utc": "2026-05-31T11:27:13.145882+00:00",
       "stale": false
     },
     {
@@ -1620,10 +2233,10 @@
     },
     {
       "path": "docs/ai/skills/README.md",
-      "line_count": 133,
+      "line_count": 150,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T16:07:59.488796+00:00",
+      "last_modified_utc": "2026-05-31T12:00:10.735878+00:00",
       "stale": false
     },
     {
@@ -1635,11 +2248,19 @@
       "stale": false
     },
     {
+      "path": "docs/api/README.md",
+      "line_count": 17,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T04:56:50.081226+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/architecture/c4-diagrams.md",
       "line_count": 61,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.075160+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.396581+00:00",
       "stale": false
     },
     {
@@ -1655,7 +2276,7 @@
       "line_count": 152,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.077161+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.397579+00:00",
       "stale": false
     },
     {
@@ -1676,10 +2297,10 @@
     },
     {
       "path": "docs/architecture/environment-designer-runtime-projection-and-wpf-admin-surface.md",
-      "line_count": 152,
+      "line_count": 155,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.944066+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.399581+00:00",
       "stale": false
     },
     {
@@ -1719,7 +2340,7 @@
       "line_count": 62,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.093218+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.400579+00:00",
       "stale": false
     },
     {
@@ -1732,10 +2353,10 @@
     },
     {
       "path": "docs/architecture/overview.md",
-      "line_count": 113,
+      "line_count": 116,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.093218+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.383770+00:00",
       "stale": false
     },
     {
@@ -1759,7 +2380,7 @@
       "line_count": 73,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.072500+00:00",
+      "last_modified_utc": "2026-05-31T12:44:47.464432+00:00",
       "stale": false
     },
     {
@@ -1775,7 +2396,7 @@
       "line_count": 3233,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.612146+00:00",
+      "last_modified_utc": "2026-05-30T04:18:43.291266+00:00",
       "stale": false
     },
     {
@@ -1807,15 +2428,15 @@
       "line_count": 57,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.954212+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.403113+00:00",
       "stale": false
     },
     {
       "path": "docs/architecture/workstation-continuity-payload-profile.md",
-      "line_count": 32,
+      "line_count": 34,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.613153+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.386003+00:00",
       "stale": false
     },
     {
@@ -1831,7 +2452,7 @@
       "line_count": 181,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T20:10:36.746359+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.404108+00:00",
       "stale": false
     },
     {
@@ -1844,98 +2465,66 @@
     },
     {
       "path": "docs/audits/AUDIT_REPORT.md",
-      "line_count": 352,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.956225+00:00",
+      "last_modified_utc": "2026-05-30T05:27:29.960733+00:00",
       "stale": false
     },
     {
       "path": "docs/audits/BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md",
-      "line_count": 253,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.958240+00:00",
+      "last_modified_utc": "2026-05-30T05:36:26.615629+00:00",
       "stale": false
     },
     {
       "path": "docs/audits/CODE_REVIEW_2026-03-16.md",
-      "line_count": 412,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.958240+00:00",
+      "last_modified_utc": "2026-05-30T05:09:50.609222+00:00",
       "stale": false
     },
     {
       "path": "docs/audits/FURTHER_SIMPLIFICATION_OPPORTUNITIES.md",
-      "line_count": 365,
+      "line_count": 17,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.960250+00:00",
+      "last_modified_utc": "2026-05-30T05:29:40.278028+00:00",
       "stale": false
     },
     {
       "path": "docs/audits/README.md",
-      "line_count": 60,
+      "line_count": 55,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.960250+00:00",
+      "last_modified_utc": "2026-05-30T05:36:51.048176+00:00",
       "stale": false
     },
     {
       "path": "docs/audits/workspace-visual-audit-checklist-2026-04-22.md",
-      "line_count": 24,
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.970960+00:00",
+      "last_modified_utc": "2026-05-30T05:28:27.851355+00:00",
       "stale": false
     },
     {
-      "path": "docs/design/design-system-usage.md",
-      "line_count": 41,
+      "path": "docs/design/meridian-design-document.md",
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T22:21:58.667801+00:00",
+      "last_modified_utc": "2026-05-31T13:23:42.919241+00:00",
       "stale": false
     },
     {
       "path": "docs/design/README.md",
-      "line_count": 7,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T12:37:09.811778+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/developer/build-test-run.md",
-      "line_count": 193,
-      "has_heading": true,
-      "todo_count": 6,
-      "last_modified_utc": "2026-05-26T23:30:40.496218+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/developer/publish-standalone-exe.md",
-      "line_count": 65,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.121421+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/developer/README.md",
-      "line_count": 15,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.613153+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/developer/setup.md",
-      "line_count": 64,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-28T22:52:21.368276+00:00",
+      "last_modified_utc": "2026-05-31T13:28:12.828635+00:00",
       "stale": false
     },
     {
@@ -1988,10 +2577,10 @@
     },
     {
       "path": "docs/development/desktop-testing-guide.md",
-      "line_count": 511,
+      "line_count": 46,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T11:01:11.062886+00:00",
+      "last_modified_utc": "2026-06-01T23:52:25.641327+00:00",
       "stale": false
     },
     {
@@ -1999,23 +2588,23 @@
       "line_count": 241,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T22:52:21.369271+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.387014+00:00",
       "stale": false
     },
     {
       "path": "docs/development/documentation-automation.md",
-      "line_count": 535,
+      "line_count": 559,
       "has_heading": true,
       "todo_count": 40,
-      "last_modified_utc": "2026-05-22T23:54:15.124420+00:00",
+      "last_modified_utc": "2026-06-01T07:25:33.293707+00:00",
       "stale": false
     },
     {
       "path": "docs/development/documentation-contribution-guide.md",
-      "line_count": 722,
+      "line_count": 740,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-05-22T23:54:15.126419+00:00",
+      "last_modified_utc": "2026-05-31T12:30:32.223144+00:00",
       "stale": false
     },
     {
@@ -2031,7 +2620,7 @@
       "line_count": 209,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.999548+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.389014+00:00",
       "stale": false
     },
     {
@@ -2100,26 +2689,26 @@
     },
     {
       "path": "docs/development/README.md",
-      "line_count": 119,
+      "line_count": 127,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T06:42:57.140622+00:00",
+      "last_modified_utc": "2026-05-31T13:22:30.117651+00:00",
       "stale": false
     },
     {
       "path": "docs/development/refactor-map.md",
-      "line_count": 286,
+      "line_count": 287,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:14.005575+00:00",
+      "last_modified_utc": "2026-05-31T12:30:36.947364+00:00",
       "stale": false
     },
     {
       "path": "docs/development/repository-organization-guide.md",
-      "line_count": 748,
+      "line_count": 756,
       "has_heading": true,
       "todo_count": 3,
-      "last_modified_utc": "2026-05-18T07:30:59.017408+00:00",
+      "last_modified_utc": "2026-05-31T12:30:36.949364+00:00",
       "stale": false
     },
     {
@@ -2175,7 +2764,7 @@
       "line_count": 100,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.617157+00:00",
+      "last_modified_utc": "2026-05-31T13:22:30.113652+00:00",
       "stale": false
     },
     {
@@ -2196,10 +2785,10 @@
     },
     {
       "path": "docs/development/wpf-implementation-notes.md",
-      "line_count": 574,
+      "line_count": 579,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.921327+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.392809+00:00",
       "stale": false
     },
     {
@@ -2215,7 +2804,7 @@
       "line_count": 49,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:14.005575+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.390801+00:00",
       "stale": false
     },
     {
@@ -2223,7 +2812,7 @@
       "line_count": 546,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-30T04:06:18.663230+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.394849+00:00",
       "stale": false
     },
     {
@@ -2284,138 +2873,146 @@
     },
     {
       "path": "docs/docfx/README.md",
-      "line_count": 110,
+      "line_count": 109,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:06:18.647701+00:00",
+      "last_modified_utc": "2026-06-02T01:18:03.510758+00:00",
       "stale": false
     },
     {
       "path": "docs/docfx/api/index.md",
-      "line_count": 62,
+      "line_count": 61,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:06:18.651169+00:00",
+      "last_modified_utc": "2026-06-02T01:18:03.510758+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/README.md",
+      "line_count": 167,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-01T23:52:27.410556+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/2026-03-brainstorm-next-frontier.md",
-      "line_count": 497,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.548283+00:00",
+      "last_modified_utc": "2026-05-30T06:15:49.490752+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/assembly-performance-opportunities.md",
-      "line_count": 648,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.548283+00:00",
+      "last_modified_utc": "2026-05-30T06:25:18.238310+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/competitive-analysis-2026-03.md",
-      "line_count": 1307,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.554613+00:00",
+      "last_modified_utc": "2026-05-30T06:18:24.987442+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/data-quality-monitoring-evaluation.md",
-      "line_count": 653,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.554613+00:00",
+      "last_modified_utc": "2026-05-30T06:23:08.101504+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/desktop-platform-improvements-implementation-guide.md",
-      "line_count": 656,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.554613+00:00",
+      "last_modified_utc": "2026-05-30T06:23:08.275997+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/high-value-low-cost-improvements-brainstorm.md",
-      "line_count": 1056,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.557423+00:00",
+      "last_modified_utc": "2026-05-30T06:15:49.570583+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/historical-data-providers-evaluation.md",
-      "line_count": 781,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.557423+00:00",
+      "last_modified_utc": "2026-05-30T06:20:33.097067+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/ingestion-orchestration-evaluation.md",
-      "line_count": 291,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.559437+00:00",
+      "last_modified_utc": "2026-05-30T06:23:08.180862+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/nautilus-inspired-restructuring-proposal.md",
-      "line_count": 889,
+      "line_count": 6,
       "has_heading": true,
-      "todo_count": 4,
-      "last_modified_utc": "2026-05-18T04:10:19.559437+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T06:18:25.090139+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/operational-readiness-evaluation.md",
-      "line_count": 216,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.561893+00:00",
+      "last_modified_utc": "2026-05-30T06:20:32.966127+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/quant-script-blueprint-brainstorm.md",
-      "line_count": 778,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.563906+00:00",
+      "last_modified_utc": "2026-05-30T06:15:49.650739+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/README.md",
-      "line_count": 73,
+      "line_count": 82,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-22T23:54:15.128422+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-30T06:25:18.629474+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/realtime-streaming-architecture-evaluation.md",
-      "line_count": 1117,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.565918+00:00",
+      "last_modified_utc": "2026-05-30T06:25:18.051431+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/storage-architecture-evaluation.md",
-      "line_count": 857,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.565918+00:00",
+      "last_modified_utc": "2026-05-30T06:25:18.154073+00:00",
       "stale": false
     },
     {
       "path": "docs/evaluations/windows-desktop-provider-configurability-assessment.md",
-      "line_count": 239,
+      "line_count": 6,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.565918+00:00",
+      "last_modified_utc": "2026-05-30T06:20:33.209024+00:00",
       "stale": false
     },
     {
@@ -2492,18 +3089,18 @@
     },
     {
       "path": "docs/generated/README.md",
-      "line_count": 38,
+      "line_count": 39,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.624155+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-02T01:53:18.935566+00:00",
       "stale": false
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 14043,
+      "line_count": 6116,
       "has_heading": true,
-      "todo_count": 7,
-      "last_modified_utc": "2026-05-30T04:11:10.697480+00:00",
+      "todo_count": 8,
+      "last_modified_utc": "2026-06-01T23:52:27.415242+00:00",
       "stale": false
     },
     {
@@ -2511,7 +3108,7 @@
       "line_count": 117,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T22:52:21.371272+00:00",
+      "last_modified_utc": "2026-05-31T09:53:02.266971+00:00",
       "stale": false
     },
     {
@@ -2520,22 +3117,6 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-18T04:10:19.581687+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/getting-started/pilot-operator-quickstart.md",
-      "line_count": 115,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-22T02:13:38.244415+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/getting-started/README.md",
-      "line_count": 133,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.130421+00:00",
       "stale": false
     },
     {
@@ -2580,754 +3161,858 @@
     },
     {
       "path": "docs/operations/broker-order-routing-phased-runbook.md",
-      "line_count": 93,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T10:42:20.000672+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.585186+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/canonical-buyer-workflow.md",
-      "line_count": 271,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.925988+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.587187+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/cleanup-and-maintenance.md",
-      "line_count": 99,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.137624+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.588299+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/deployment.md",
-      "line_count": 290,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.602398+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.590309+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/disk-space-hygiene.md",
-      "line_count": 49,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T06:33:39.858206+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.592558+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/environment-and-deployment-standard.md",
-      "line_count": 29,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.925988+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.594543+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/error-budget-policy-runbook.md",
-      "line_count": 81,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.927998+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.596541+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/failover-and-recovery-runbook.md",
-      "line_count": 43,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.927998+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.598543+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/fund-ops-persistence-cutover-runbook.md",
-      "line_count": 29,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-25T00:24:24.527143+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.600542+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/governance-operator-workflow.md",
-      "line_count": 79,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T13:08:06.905850+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.602674+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/high-availability.md",
-      "line_count": 240,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.605996+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.604671+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/ibkr-promotion-checklist.md",
-      "line_count": 139,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.168291+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.607885+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/live-execution-controls.md",
-      "line_count": 352,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.168291+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/operations/msix-packaging.md",
-      "line_count": 172,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.927998+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.609887+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/operator-runbook.md",
-      "line_count": 681,
+      "line_count": 18,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.930011+00:00",
+      "last_modified_utc": "2026-06-02T01:53:18.935566+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/orphaned-doc-triage-index.md",
-      "line_count": 121,
+      "line_count": 13,
       "has_heading": true,
-      "todo_count": 4,
-      "last_modified_utc": "2026-05-28T05:40:21.932023+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:04:45.617081+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/performance-tuning.md",
-      "line_count": 195,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.611074+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.620084+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/portable-data-packager.md",
-      "line_count": 353,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T09:52:01.629209+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.622224+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/preflight-checklist.md",
-      "line_count": 29,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.932023+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/operations/provider-credential-management.md",
-      "line_count": 96,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-19T12:53:59.768920+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.624227+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/provider-degradation-calibration.md",
-      "line_count": 122,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.168291+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.646868+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/provider-degradation-policy.md",
-      "line_count": 94,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.637154+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.649110+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/README.md",
-      "line_count": 38,
+      "line_count": 20,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.925988+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.669703+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/reconciliation-operations.md",
-      "line_count": 33,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T09:52:10.404597+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.651293+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/reconciliation-policy-operations.md",
-      "line_count": 31,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T16:21:54.379225+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.653292+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/reconciliation-resilience-runbook.md",
-      "line_count": 98,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.932023+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.656296+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/reconciliation-runbook.md",
-      "line_count": 23,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.611074+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.658294+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/service-level-objectives.md",
-      "line_count": 271,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.934033+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.660294+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/slo-review-template.md",
-      "line_count": 71,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.934033+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.662540+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/tradier-provider-endpoint-catalog.md",
-      "line_count": 83,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T05:55:58.141502+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/operations/web-workstation-installer.md",
-      "line_count": 127,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-21T01:01:18.834718+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.664541+00:00",
       "stale": false
     },
     {
       "path": "docs/operations/workstation-governance-approval-runbook.md",
-      "line_count": 54,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.168291+00:00",
+      "last_modified_utc": "2026-05-31T13:04:45.668703+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/browser-workstation-installer.md",
+      "line_count": 38,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:18:51.807809+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/deployment-packaging.md",
+      "line_count": 38,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:18:53.443991+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/failover-and-recovery.md",
+      "line_count": 62,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:12:14.385295+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/fund-ops-persistence-cutover.md",
+      "line_count": 75,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:20:44.207935+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/plaid-provider-operations.md",
+      "line_count": 122,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T19:34:54.412142+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/preflight-checklist.md",
+      "line_count": 65,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:06:19.734027+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/provider-backfill-operations.md",
+      "line_count": 107,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:29:08.299753+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/provider-credentials.md",
+      "line_count": 100,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T19:34:54.414156+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/provider-onboarding-alpaca.md",
+      "line_count": 81,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T02:58:56.599547+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/provider-onboarding-interactive-brokers.md",
+      "line_count": 79,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T02:58:52.850427+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/README.md",
+      "line_count": 174,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-02T01:42:12.436763+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/reconciliation-operations.md",
+      "line_count": 65,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T19:34:54.415167+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/adapters-completion-plan.md",
-      "line_count": 181,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.645153+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.055952+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/approach-b-plus-v2-implementation-plan.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.059941+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/assembly-performance-roadmap.md",
-      "line_count": 369,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.653154+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.062123+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/backtest-studio-unification-blueprint.md",
-      "line_count": 509,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.655154+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.063128+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/backtest-studio-unification-pr-sequenced-roadmap.md",
-      "line_count": 393,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-22T23:54:15.139622+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.065135+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/brokerage-portfolio-sync-blueprint.md",
-      "line_count": 452,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-22T02:13:39.950894+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.068331+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/codebase-audit-cleanup-roadmap.md",
-      "line_count": 183,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-22T23:54:15.141626+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.070332+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/plans/covered-call-writing-slice-1-blueprint.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.072486+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/current-direction-and-status.md",
-      "line_count": 216,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-30T03:33:00.088905+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.074484+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/desktop-shell-modularity-roadmap.md",
-      "line_count": 383,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 7,
-      "last_modified_utc": "2026-05-22T05:42:39.055030+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.076487+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/desktop-ui-workflow-acceptance-matrix.md",
-      "line_count": 145,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 4,
-      "last_modified_utc": "2026-05-30T03:33:00.090918+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.079486+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/desktop-workstation-screen-blueprint.md",
-      "line_count": 1069,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.097523+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.081709+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/entity-aware-workstation-capability-blueprint.md",
-      "line_count": 1023,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.099535+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.083703+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/evidence-backed-investment-operations-plan.md",
-      "line_count": 138,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T18:28:48.957297+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.086704+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/fund-management-module-implementation-backlog.md",
-      "line_count": 806,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:10:19.691845+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.088872+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/fund-management-pr-sequenced-roadmap.md",
-      "line_count": 586,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:10:19.689835+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.090867+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/fund-management-product-vision-and-capability-matrix.md",
-      "line_count": 323,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T09:28:13.513666+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.094000+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/governance-fund-ops-blueprint.md",
-      "line_count": 674,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:10:19.697833+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.096000+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/kernel-parity-migration-blueprint.md",
-      "line_count": 129,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-22T23:54:15.142625+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.098000+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/l3-inference-implementation-plan.md",
-      "line_count": 1103,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-28T21:56:08.371924+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.101237+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ledger.md",
-      "line_count": 501,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T09:51:06.627792+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.103238+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/meridian-6-week-roadmap.md",
-      "line_count": 330,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T09:35:01.109902+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.106238+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/meridian-database-blueprint.md",
-      "line_count": 793,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.710151+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.121670+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/meridian-pilot-workflow.md",
-      "line_count": 210,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T18:29:04.811648+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.123667+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/options-roadmap.md",
-      "line_count": 244,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-21T00:55:34.712150+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.124669+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/paper-trading-cockpit-reliability-sprint.md",
-      "line_count": 534,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-28T05:40:21.947111+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.126667+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/performance-todo-2026-05-21.md",
-      "line_count": 115,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-25T00:24:24.528144+00:00",
+      "todo_count": 3,
+      "last_modified_utc": "2026-05-31T12:51:40.129668+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/portfolio-level-backtesting-composer-blueprint.md",
-      "line_count": 201,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.715149+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.131840+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/quantscript-l3-multiinstance-round2-roadmap.md",
-      "line_count": 2255,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.717150+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.133841+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/README.md",
-      "line_count": 159,
+      "line_count": 39,
       "has_heading": true,
-      "todo_count": 6,
-      "last_modified_utc": "2026-05-30T03:33:00.088905+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:55.235254+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/research-backtest-trust-and-velocity-blueprint.md",
-      "line_count": 674,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-22T02:13:39.962287+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.138844+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/runbook-template-registry-modernization-plan.md",
-      "line_count": 73,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-21T00:55:34.720148+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.140846+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/sfo-mvp-implementation-design.md",
-      "line_count": 111,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.101546+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.143843+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/trading-workstation-migration-blueprint.md",
-      "line_count": 510,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T09:32:52.083638+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.145842+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-accounting-impact-model.md",
-      "line_count": 80,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T05:13:42.507956+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.147972+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-asset-profile-template.md",
-      "line_count": 88,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T05:13:42.505941+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.150972+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-bond-target-state-v2.md",
-      "line_count": 100,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T05:08:43.506546+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.154141+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-capability-model.md",
-      "line_count": 125,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T05:12:57.483591+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.156142+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-cash-sweep-target-state-v2.md",
-      "line_count": 416,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.523786+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.159148+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-certificate-of-deposit-target-state-v2.md",
-      "line_count": 419,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.514309+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.161302+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-cfd-target-state-v2.md",
-      "line_count": 213,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:05:05.199877+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.163299+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-commercial-paper-target-state-v2.md",
-      "line_count": 415,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.521775+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.165300+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-commodity-target-state-v2.md",
-      "line_count": 212,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:03:22.241239+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.167552+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-conformance-matrix.md",
-      "line_count": 53,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T05:13:42.507956+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.170554+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-crypto-target-state-v2.md",
-      "line_count": 209,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:04:19.276110+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.172765+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-custom-asset-composability.md",
-      "line_count": 190,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T09:21:07.886869+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.175762+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-deposit-target-state-v2.md",
-      "line_count": 421,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.508559+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.177763+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-direct-lending-implementation-roadmap.md",
-      "line_count": 502,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:55.199744+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.179764+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-direct-lending-target-state-v2.md",
-      "line_count": 1198,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:06:31.531699+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.181940+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-equity-target-state-v2.md",
-      "line_count": 97,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T05:08:43.502525+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.183944+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-future-target-state-v2.md",
-      "line_count": 426,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.500508+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.185943+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-fx-spot-target-state-v2.md",
-      "line_count": 419,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.498139+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.192212+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-money-market-fund-target-state-v2.md",
-      "line_count": 417,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.492535+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.195215+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-option-target-state-v2.md",
-      "line_count": 99,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T05:08:43.504535+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.197214+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-other-security-target-state-v2.md",
-      "line_count": 420,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.504535+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.199217+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-projection-and-evidence-kernel.md",
-      "line_count": 101,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T05:13:42.514532+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.201354+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-repo-target-state-v2.md",
-      "line_count": 420,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.515747+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.203354+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-supported-assets-index.md",
-      "line_count": 106,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:16:30.190862+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.205354+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-swap-target-state-v2.md",
-      "line_count": 430,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:08:43.515747+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.207468+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-treasury-bill-target-state-v2.md",
-      "line_count": 96,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T05:08:43.482474+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.209471+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/ufl-warrant-target-state-v2.md",
-      "line_count": 242,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:05:05.201891+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.211605+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/wave-implementation-checklists.md",
-      "line_count": 304,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-30T03:33:00.101546+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.213604+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/waves-2-4-operator-readiness-addendum.md",
-      "line_count": 450,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:51:27.311875+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.216604+00:00",
       "stale": false
     },
     {
       "path": "docs/plans/web-ui-development-pivot.md",
-      "line_count": 291,
+      "line_count": 16,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-29T09:27:37.001860+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.218604+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/meridian-design-document.md",
+      "line_count": 2011,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-02T01:13:36.999554+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/README.md",
+      "line_count": 180,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-02T00:53:13.389410+00:00",
       "stale": false
     },
     {
@@ -3348,10 +4033,10 @@
     },
     {
       "path": "docs/prompts/repo-maintenance-prompts.md",
-      "line_count": 40,
+      "line_count": 44,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.953148+00:00",
+      "last_modified_utc": "2026-05-31T13:22:05.991095+00:00",
       "stale": false
     },
     {
@@ -3364,106 +4049,114 @@
     },
     {
       "path": "docs/providers/alpaca-setup.md",
-      "line_count": 459,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.719115+00:00",
+      "last_modified_utc": "2026-06-02T01:53:18.935566+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/backfill-guide.md",
-      "line_count": 608,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.722936+00:00",
+      "last_modified_utc": "2026-05-31T12:53:42.629748+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/broker-adapter-template-guide.md",
-      "line_count": 29,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
+      "last_modified_utc": "2026-05-31T12:53:42.623556+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/data-sources.md",
-      "line_count": 109,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.790034+00:00",
+      "last_modified_utc": "2026-05-31T12:53:42.624562+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/interactive-brokers-free-equity-reference.md",
-      "line_count": 408,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.790034+00:00",
+      "last_modified_utc": "2026-05-31T12:53:42.620402+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/interactive-brokers-setup.md",
-      "line_count": 250,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.798274+00:00",
+      "last_modified_utc": "2026-06-02T01:53:18.939707+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/provider-comparison.md",
-      "line_count": 275,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.799380+00:00",
+      "last_modified_utc": "2026-05-31T12:53:42.627748+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/provider-confidence-baseline.md",
-      "line_count": 117,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.757148+00:00",
+      "last_modified_utc": "2026-05-31T12:53:42.631878+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/README.md",
-      "line_count": 86,
+      "line_count": 29,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T09:42:37.419263+00:00",
+      "last_modified_utc": "2026-05-31T13:06:55.889733+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/security-master-guide.md",
-      "line_count": 296,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T08:58:12.945924+00:00",
+      "last_modified_utc": "2026-05-31T12:53:42.630748+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/stocksharp-connectors.md",
-      "line_count": 29,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.801303+00:00",
+      "last_modified_utc": "2026-05-31T12:53:42.626553+00:00",
       "stale": false
     },
     {
       "path": "docs/providers/tradestation-endpoint-inventory.md",
-      "line_count": 175,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
+      "last_modified_utc": "2026-05-31T12:53:42.625555+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/accounting-report-packs.md",
+      "line_count": 154,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T23:52:27.420026+00:00",
       "stale": false
     },
     {
       "path": "docs/reference/api-reference.md",
-      "line_count": 611,
+      "line_count": 615,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
+      "last_modified_utc": "2026-06-02T01:42:12.435756+00:00",
       "stale": false
     },
     {
@@ -3480,6 +4173,14 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-18T04:10:19.806135+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/contract-compatibility-matrix.md",
+      "line_count": 192,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T11:04:58.035084+00:00",
       "stale": false
     },
     {
@@ -3500,10 +4201,10 @@
     },
     {
       "path": "docs/reference/design-review-memo.md",
-      "line_count": 378,
+      "line_count": 383,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.170134+00:00",
+      "last_modified_utc": "2026-06-01T19:34:54.419915+00:00",
       "stale": false
     },
     {
@@ -3532,10 +4233,10 @@
     },
     {
       "path": "docs/reference/governance-report-packs.md",
-      "line_count": 154,
+      "line_count": 7,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.815422+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.424766+00:00",
       "stale": false
     },
     {
@@ -3563,11 +4264,43 @@
       "stale": false
     },
     {
-      "path": "docs/reference/README.md",
-      "line_count": 65,
+      "path": "docs/reference/provider-capability-matrix.md",
+      "line_count": 57,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T22:52:21.374273+00:00",
+      "last_modified_utc": "2026-05-31T11:04:48.531712+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/provider-integration-status.md",
+      "line_count": 62,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T23:54:50.007702+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/provider-validation-evidence-schema.md",
+      "line_count": 56,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T23:53:19.464166+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/provider-validation-matrix.md",
+      "line_count": 171,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:27:11.320191+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/README.md",
+      "line_count": 133,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-01T23:52:27.420026+00:00",
       "stale": false
     },
     {
@@ -3580,10 +4313,18 @@
     },
     {
       "path": "docs/reference/research-briefing-workflow.md",
-      "line_count": 71,
+      "line_count": 7,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.817043+00:00",
+      "last_modified_utc": "2026-06-01T23:53:19.463173+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/strategy-briefing-workflow.md",
+      "line_count": 70,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T23:52:27.429329+00:00",
       "stale": false
     },
     {
@@ -3592,6 +4333,30 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-29T07:38:32.842391+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/ufl-capability-model.md",
+      "line_count": 126,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-02T01:16:30.074987+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/ufl-conformance-matrix.md",
+      "line_count": 54,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:45:14.903540+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/ufl-supported-assets-index.md",
+      "line_count": 107,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-02T01:16:09.940187+00:00",
       "stale": false
     },
     {
@@ -3644,18 +4409,18 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 244,
+      "line_count": 274,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.111583+00:00",
+      "last_modified_utc": "2026-06-02T01:50:52.303946+00:00",
       "stale": false
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 32,
+      "line_count": 33,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.109632+00:00",
+      "last_modified_utc": "2026-06-02T01:50:52.300946+00:00",
       "stale": false
     },
     {
@@ -3671,7 +4436,7 @@
       "line_count": 101,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.116785+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.431015+00:00",
       "stale": false
     },
     {
@@ -3679,7 +4444,7 @@
       "line_count": 280,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T12:58:48.773506+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.969457+00:00",
       "stale": false
     },
     {
@@ -3727,7 +4492,7 @@
       "line_count": 36,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:22.454646+00:00",
+      "last_modified_utc": "2026-05-31T11:34:42.651481+00:00",
       "stale": false
     },
     {
@@ -3767,7 +4532,7 @@
       "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:22.461321+00:00",
+      "last_modified_utc": "2026-05-31T12:34:08.809629+00:00",
       "stale": false
     },
     {
@@ -3788,10 +4553,10 @@
     },
     {
       "path": "docs/security/compliance/soc2-scope.md",
-      "line_count": 85,
+      "line_count": 86,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:22.467358+00:00",
+      "last_modified_utc": "2026-05-31T12:33:42.715308+00:00",
       "stale": false
     },
     {
@@ -3839,15 +4604,15 @@
       "line_count": 47,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:10:04.160866+00:00",
+      "last_modified_utc": "2026-06-02T01:50:52.330943+00:00",
       "stale": false
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "line_count": 88,
+      "line_count": 94,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:10:04.180788+00:00",
+      "last_modified_utc": "2026-06-02T01:26:36.216739+00:00",
       "stale": false
     },
     {
@@ -3860,106 +4625,154 @@
     },
     {
       "path": "docs/source/generated/stale-docs.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-02T01:25:03.259186+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/start/README.md",
+      "line_count": 110,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T16:06:09.037627+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/ai-handoff-checklist-report.md",
+      "line_count": 5,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T16:06:46.199328+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/ai-handoff-packet.md",
+      "line_count": 53,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-01T06:11:44.569946+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/ai-inventory-report.md",
       "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:10:41.637259+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.263216+00:00",
       "stale": false
     },
     {
       "path": "docs/status/api-docs-report.md",
-      "line_count": 225,
+      "line_count": 226,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.942739+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.228756+00:00",
       "stale": false
     },
     {
       "path": "docs/status/badge-sync-report.md",
-      "line_count": 8,
+      "line_count": 9,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.947281+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.230757+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/broker-phase-promotion-checklist-template.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.266214+00:00",
       "stale": false
     },
     {
       "path": "docs/status/CHANGELOG.md",
-      "line_count": 84,
+      "line_count": 85,
       "has_heading": true,
       "todo_count": 5,
-      "last_modified_utc": "2026-05-18T04:10:19.874718+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.234756+00:00",
       "stale": false
     },
     {
       "path": "docs/status/contract-compatibility-matrix.md",
-      "line_count": 188,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T22:52:21.385151+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.268217+00:00",
       "stale": false
     },
     {
       "path": "docs/status/coverage-report.md",
-      "line_count": 202,
+      "line_count": 203,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.947281+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.250081+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/dead-code-inventory.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.270216+00:00",
       "stale": false
     },
     {
       "path": "docs/status/desktop-application-screens.md",
-      "line_count": 178,
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.138832+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.272220+00:00",
       "stale": false
     },
     {
       "path": "docs/status/doc-health-dashboard.md",
-      "line_count": 79,
+      "line_count": 126,
       "has_heading": true,
       "todo_count": 5,
-      "last_modified_utc": "2026-05-21T03:18:07.775008+00:00",
+      "last_modified_utc": "2026-06-02T01:53:28.512570+00:00",
       "stale": false
     },
     {
       "path": "docs/status/docs-automation-summary.md",
-      "line_count": 20,
+      "line_count": 10,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-18T04:10:19.951841+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T12:51:40.259231+00:00",
       "stale": false
     },
     {
       "path": "docs/status/EVALUATIONS_AND_AUDITS.md",
-      "line_count": 884,
+      "line_count": 10,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-22T23:54:15.209319+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.275218+00:00",
       "stale": false
     },
     {
       "path": "docs/status/example-validation.md",
-      "line_count": 163,
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.953850+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.277220+00:00",
       "stale": false
     },
     {
       "path": "docs/status/FEATURE_INVENTORY.md",
-      "line_count": 864,
+      "line_count": 15,
       "has_heading": true,
-      "todo_count": 13,
-      "last_modified_utc": "2026-05-30T04:06:18.659209+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.279217+00:00",
       "stale": false
     },
     {
       "path": "docs/status/FULL_IMPLEMENTATION_TODO.md",
-      "line_count": 358,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.124826+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.282217+00:00",
       "stale": false
     },
     {
@@ -3967,191 +4780,255 @@
       "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-25T00:24:24.534143+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.284218+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/governance-handoff-evidence-bundle.md",
+      "line_count": 14,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.287217+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/ibkr-provider-inventory.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.290355+00:00",
       "stale": false
     },
     {
       "path": "docs/status/IMPROVEMENTS.md",
-      "line_count": 1606,
+      "line_count": 15,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-30T03:33:00.128772+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.292355+00:00",
       "stale": false
     },
     {
       "path": "docs/status/kernel-readiness-dashboard.md",
-      "line_count": 129,
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T07:59:51.799927+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.295355+00:00",
       "stale": false
     },
     {
       "path": "docs/status/link-repair-report.md",
-      "line_count": 25,
+      "line_count": 26,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.955862+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.280851+00:00",
       "stale": false
     },
     {
       "path": "docs/status/metrics-dashboard.md",
-      "line_count": 67,
+      "line_count": 68,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.955862+00:00",
+      "last_modified_utc": "2026-05-31T12:51:40.281852+00:00",
       "stale": false
     },
     {
       "path": "docs/status/OPPORTUNITY_SCAN.md",
-      "line_count": 243,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.130785+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.299354+00:00",
       "stale": false
     },
     {
       "path": "docs/status/production-status.md",
-      "line_count": 269,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.138832+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.301527+00:00",
       "stale": false
     },
     {
       "path": "docs/status/program-state-summary.md",
-      "line_count": 18,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.141406+00:00",
+      "last_modified_utc": "2026-06-02T01:51:39.449440+00:00",
       "stale": false
     },
     {
       "path": "docs/status/PROGRAM_STATE.md",
-      "line_count": 24,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.132796+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.315829+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/provider-adapters-closure-summary.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.317806+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/provider-capability-inventory.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.319812+00:00",
       "stale": false
     },
     {
       "path": "docs/status/provider-capability-matrix.md",
-      "line_count": 53,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T18:05:08.222104+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.320808+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/provider-core-hardening-notes.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.322810+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/provider-failover-hardening.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.324808+00:00",
       "stale": false
     },
     {
       "path": "docs/status/provider-integration-status.md",
-      "line_count": 58,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.798145+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.325810+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/provider-test-gap-baseline.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.327808+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/status/provider-test-minimums.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.330163+00:00",
       "stale": false
     },
     {
       "path": "docs/status/provider-validation-evidence-schema.md",
-      "line_count": 52,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.799146+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.331162+00:00",
       "stale": false
     },
     {
       "path": "docs/status/provider-validation-matrix.md",
-      "line_count": 167,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.261657+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.333605+00:00",
       "stale": false
     },
     {
       "path": "docs/status/readiness-claim-language-policy.md",
-      "line_count": 36,
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T22:41:13.868445+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.335605+00:00",
       "stale": false
     },
     {
       "path": "docs/status/README.md",
-      "line_count": 162,
+      "line_count": 67,
       "has_heading": true,
-      "todo_count": 6,
-      "last_modified_utc": "2026-05-29T06:03:24.440963+00:00",
+      "todo_count": 2,
+      "last_modified_utc": "2026-05-31T13:35:49.972288+00:00",
       "stale": false
     },
     {
       "path": "docs/status/ROADMAP.md",
-      "line_count": 589,
+      "line_count": 15,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-30T03:33:00.134807+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.341728+00:00",
       "stale": false
     },
     {
       "path": "docs/status/ROADMAP_COMBINED.md",
-      "line_count": 285,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.136820+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.338610+00:00",
       "stale": false
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
-      "line_count": 32,
+      "line_count": 33,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.136820+00:00",
+      "last_modified_utc": "2026-06-02T01:50:52.307947+00:00",
       "stale": false
     },
     {
       "path": "docs/status/rules-report.md",
-      "line_count": 648,
+      "line_count": 952,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-18T04:10:19.968529+00:00",
+      "todo_count": 8,
+      "last_modified_utc": "2026-06-02T01:55:14.930539+00:00",
       "stale": false
     },
     {
       "path": "docs/status/TARGET_END_PRODUCT.md",
-      "line_count": 210,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T09:20:57.405974+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.343733+00:00",
       "stale": false
     },
     {
       "path": "docs/status/TODO.md",
-      "line_count": 24,
+      "line_count": 10,
       "has_heading": true,
-      "todo_count": 42,
-      "last_modified_utc": "2026-05-21T01:49:15.241758+00:00",
+      "todo_count": 5,
+      "last_modified_utc": "2026-05-31T13:35:36.346730+00:00",
       "stale": false
     },
     {
       "path": "docs/status/workflow-drift-report.md",
-      "line_count": 75,
+      "line_count": 14,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-05-28T05:40:22.532167+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-05-31T13:35:36.347928+00:00",
       "stale": false
     },
     {
       "path": "docs/status/workstation-cockpit-acceptance-matrix.md",
-      "line_count": 44,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T22:52:21.388153+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.350922+00:00",
       "stale": false
     },
     {
       "path": "docs/status/workstation-governance-state-model.md",
-      "line_count": 46,
+      "line_count": 15,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
+      "last_modified_utc": "2026-05-31T13:35:36.353093+00:00",
       "stale": false
     },
     {
@@ -4159,7 +5036,7 @@
       "line_count": 70,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.254903+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.980989+00:00",
       "stale": false
     },
     {
@@ -4167,7 +5044,7 @@
       "line_count": 175,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.256117+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.983499+00:00",
       "stale": false
     },
     {
@@ -4175,7 +5052,7 @@
       "line_count": 52,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.257645+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.984510+00:00",
       "stale": false
     },
     {
@@ -4183,7 +5060,7 @@
       "line_count": 134,
       "has_heading": true,
       "todo_count": 3,
-      "last_modified_utc": "2026-05-22T23:54:15.258659+00:00",
+      "last_modified_utc": "2026-06-01T23:52:27.985374+00:00",
       "stale": false
     },
     {
@@ -4191,7 +5068,7 @@
       "line_count": 86,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:15.258659+00:00",
+      "last_modified_utc": "2026-06-02T01:33:32.501724+00:00",
       "stale": false
     },
     {
@@ -4207,7 +5084,7 @@
       "line_count": 11,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T06:28:39.830848+00:00",
+      "last_modified_utc": "2026-05-31T13:22:30.121649+00:00",
       "stale": false
     },
     {
@@ -4215,15 +5092,15 @@
       "line_count": 56,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-19T23:50:51.173731+00:00",
+      "last_modified_utc": "2026-05-31T13:22:05.993096+00:00",
       "stale": false
     },
     {
       "path": "docs/testing/WAVE2_ACCEPTANCE_GATE_CHECKLIST.md",
-      "line_count": 322,
+      "line_count": 323,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.974397+00:00",
+      "last_modified_utc": "2026-05-31T12:30:36.939949+00:00",
       "stale": false
     },
     {
@@ -4231,23 +5108,23 @@
       "line_count": 274,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.974397+00:00",
+      "last_modified_utc": "2026-05-31T12:30:13.840857+00:00",
       "stale": false
     },
     {
       "path": "docs/ui/components.md",
-      "line_count": 708,
+      "line_count": 12,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T12:36:29.700768+00:00",
+      "last_modified_utc": "2026-05-31T13:01:32.472813+00:00",
       "stale": false
     },
     {
       "path": "docs/ui/README.md",
-      "line_count": 14,
+      "line_count": 10,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T18:21:17.564054+00:00",
+      "last_modified_utc": "2026-05-31T12:00:17.256911+00:00",
       "stale": false
     },
     {
@@ -4487,7 +5364,7 @@
       "line_count": 81,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-29T07:15:22.622849+00:00",
+      "last_modified_utc": "2026-06-02T00:55:20.609637+00:00",
       "stale": false
     },
     {
@@ -4500,10 +5377,10 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 149,
+      "line_count": 175,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-30T03:33:00.158253+00:00",
+      "last_modified_utc": "2026-06-01T23:57:55.992558+00:00",
       "stale": false
     },
     {
@@ -4511,7 +5388,7 @@
       "line_count": 87,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-28T21:47:10.030022+00:00",
+      "last_modified_utc": "2026-06-02T01:50:42.975363+00:00",
       "stale": false
     },
     {
@@ -4519,15 +5396,15 @@
       "line_count": 76,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-28T21:43:12.099668+00:00",
+      "last_modified_utc": "2026-06-02T01:50:42.977362+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 293,
+      "line_count": 320,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-30T03:33:00.171970+00:00",
+      "last_modified_utc": "2026-06-02T01:13:45.778249+00:00",
       "stale": false
     },
     {
@@ -4535,7 +5412,7 @@
       "line_count": 73,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-29T08:23:32.860713+00:00",
+      "last_modified_utc": "2026-06-02T00:55:20.616175+00:00",
       "stale": false
     },
     {
@@ -4551,7 +5428,7 @@
       "line_count": 82,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-29T09:45:43.508908+00:00",
+      "last_modified_utc": "2026-06-02T00:55:20.634247+00:00",
       "stale": false
     },
     {
@@ -4559,7 +5436,7 @@
       "line_count": 68,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-28T19:38:59.526068+00:00",
+      "last_modified_utc": "2026-06-02T00:55:20.640254+00:00",
       "stale": false
     },
     {
@@ -4567,7 +5444,7 @@
       "line_count": 73,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-28T11:43:47.131889+00:00",
+      "last_modified_utc": "2026-06-02T01:50:42.977362+00:00",
       "stale": false
     },
     {
@@ -4575,7 +5452,7 @@
       "line_count": 63,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.656055+00:00",
+      "last_modified_utc": "2026-06-02T01:31:03.372044+00:00",
       "stale": false
     },
     {
@@ -4583,7 +5460,7 @@
       "line_count": 73,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-29T05:37:24.326047+00:00",
+      "last_modified_utc": "2026-06-02T01:31:03.373052+00:00",
       "stale": false
     },
     {
@@ -4604,10 +5481,10 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 94,
+      "line_count": 98,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-28T22:52:21.454239+00:00",
+      "last_modified_utc": "2026-06-02T00:55:20.629725+00:00",
       "stale": false
     },
     {
@@ -4615,15 +5492,15 @@
       "line_count": 114,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-29T09:50:43.854325+00:00",
+      "last_modified_utc": "2026-06-02T01:31:03.371035+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Mcp/README.md",
-      "line_count": 62,
+      "line_count": 80,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.668321+00:00",
+      "last_modified_utc": "2026-06-02T00:55:20.679009+00:00",
       "stale": false
     },
     {
@@ -4631,7 +5508,7 @@
       "line_count": 67,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-28T20:07:27.698554+00:00",
+      "last_modified_utc": "2026-06-02T00:55:20.626725+00:00",
       "stale": false
     },
     {
@@ -4639,7 +5516,7 @@
       "line_count": 63,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.664930+00:00",
+      "last_modified_utc": "2026-06-02T01:50:42.978468+00:00",
       "stale": false
     },
     {
@@ -4647,71 +5524,71 @@
       "line_count": 63,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.632448+00:00",
+      "last_modified_utc": "2026-06-02T00:55:20.643772+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 95,
+      "line_count": 104,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-29T08:01:38.145078+00:00",
+      "last_modified_utc": "2026-06-02T01:31:03.369986+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Strategies/README.md",
-      "line_count": 80,
+      "line_count": 82,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-29T07:38:24.860062+00:00",
+      "last_modified_utc": "2026-06-02T01:50:42.979488+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui/README.md",
-      "line_count": 64,
+      "line_count": 78,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.675810+00:00",
+      "last_modified_utc": "2026-06-02T00:30:01.094404+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 166,
+      "line_count": 219,
       "has_heading": true,
       "todo_count": 3,
-      "last_modified_utc": "2026-05-30T03:33:00.209556+00:00",
+      "last_modified_utc": "2026-06-02T01:13:45.810021+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui.Services/README.md",
-      "line_count": 83,
+      "line_count": 100,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-29T04:57:40.228139+00:00",
+      "last_modified_utc": "2026-06-02T01:13:45.801861+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 391,
+      "line_count": 442,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-30T03:33:00.188065+00:00",
+      "last_modified_utc": "2026-06-02T01:11:36.131644+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 146,
+      "line_count": 233,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-30T03:33:00.240880+00:00",
+      "last_modified_utc": "2026-06-02T01:11:36.133644+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Wpf/Assets/Icons/README.md",
-      "line_count": 109,
+      "line_count": 113,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:24.011553+00:00",
+      "last_modified_utc": "2026-06-01T10:04:07.136351+00:00",
       "stale": false
     },
     {
@@ -4787,6 +5664,6 @@
       "stale": false
     }
   ],
-  "scan_time": "2026-05-30T04:12:47.345754+00:00",
+  "scan_time": "2026-06-02T01:55:15.746143+00:00",
   "root_dir": "D:\\Meridian-main"
 }

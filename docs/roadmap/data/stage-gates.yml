@@ -24,7 +24,7 @@ stage_gates:
   - id: ResearchContinuity
     title: Research continuity
     purpose: Strategy research outputs remain traceable through paper validation.
-    owner_lane: Strategy and Research
+    owner_lane: Strategy Analytics
     exit_evidence: []
   - id: PortfolioLedgerReview
     title: Portfolio ledger review
@@ -51,7 +51,7 @@ stage_gates:
   - id: BacktestingEvidence
     title: Backtesting evidence
     purpose: Backtest results can be traced to strategy decisions and later paper validation.
-    owner_lane: Strategy and Research
+    owner_lane: Strategy Analytics
     exit_evidence: []
   - id: LiveReadiness
     title: Live readiness

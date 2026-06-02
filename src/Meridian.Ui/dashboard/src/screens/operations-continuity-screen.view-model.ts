@@ -9,6 +9,8 @@ import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
 import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  OperationsAccountingRecordEvidenceCategory,
+  OperationsAccountingRecordSummary,
   OperationsCloseChecklistTask,
   OperationsClosePackagePublication,
   OperationsGate,
@@ -120,6 +122,28 @@ export interface OperationsContinuityClosePackageViewModel {
   approvalLabel: string;
 }
 
+export interface OperationsAccountingRecordEvidenceRow {
+  id: string;
+  label: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  detail: string;
+  requiredEvidenceLabel: string;
+  evidenceLabel: string;
+  routeHref: string | null;
+  routeLabel: string;
+  ariaLabel: string;
+}
+
+export interface OperationsAccountingRecordSummaryViewModel {
+  title: string;
+  summaryLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  recordIdLabel: string;
+  evidenceLabel: string;
+}
+
 export interface OperationsContinuityNextActionViewModel {
   title: string;
   detail: string;
@@ -174,6 +198,10 @@ export interface OperationsContinuityScreenViewModel {
   checklistEmptyText: string;
   checklist: OperationsContinuityChecklistRow[];
   closePackage: OperationsContinuityClosePackageViewModel;
+  accountingRecordLabel: string;
+  accountingRecordSummary: OperationsAccountingRecordSummaryViewModel;
+  accountingRecordEmptyText: string;
+  accountingRecordEvidence: OperationsAccountingRecordEvidenceRow[];
   timelineLabel: string;
   timelineEmptyText: string;
   timeline: OperationsContinuityTimelineRow[];
@@ -369,6 +397,11 @@ export function buildOperationsContinuityScreenViewModel({
   const blockers = buildBlockerRows(effectiveDetail?.blockers ?? collectGateBlockers(gateSource));
   const checklistSource = effectiveDetail?.closeChecklist ?? [];
   const checklist = buildChecklistRows(checklistSource);
+  const accountingRecordSummary = buildAccountingRecordSummaryViewModel(
+    effectiveDetail?.accountingRecordSummary ?? null,
+    detailLoading
+  );
+  const accountingRecordEvidence = buildAccountingRecordEvidenceRows(effectiveDetail?.accountingRecordSummary ?? null);
   const timeline = buildTimelineRows(effectiveDetail?.timeline ?? []);
   const gates = gateSource.map(mapGateRow);
   const rows = workflows.map((workflow) => mapWorkflowRow(workflow, selectedSummary?.workflowId ?? null));
@@ -412,6 +445,12 @@ export function buildOperationsContinuityScreenViewModel({
     checklistEmptyText: detailLoading ? "Loading selected workflow checklist..." : "No close checklist tasks are available for the selected workflow.",
     checklist,
     closePackage: buildClosePackageViewModel(effectiveDetail?.closePackage ?? null, detailLoading),
+    accountingRecordLabel: "Accounting record evidence",
+    accountingRecordSummary,
+    accountingRecordEmptyText: detailLoading
+      ? "Loading selected workflow accounting-record evidence..."
+      : "No accounting-record evidence categories are available for the selected workflow.",
+    accountingRecordEvidence,
     timelineLabel: "Timeline",
     timelineEmptyText: detailLoading ? "Loading workflow timeline." : "Open workflow detail to inspect the hash-chained timeline.",
     timeline,
@@ -729,6 +768,69 @@ function buildClosePackageViewModel(
     approvalLabel: approvalCount === 0
       ? "No checklist control approvals"
       : `${approvalCount} checklist control approval${approvalCount === 1 ? "" : "s"}`
+  };
+}
+
+function buildAccountingRecordSummaryViewModel(
+  summary: OperationsAccountingRecordSummary | null,
+  loading: boolean
+): OperationsAccountingRecordSummaryViewModel {
+  if (!summary) {
+    return {
+      title: "Accounting record",
+      summaryLabel: loading ? "Accounting-record evidence is loading." : "Accounting-record evidence is not available.",
+      statusLabel: loading ? "Loading" : "Not available",
+      statusTone: "neutral",
+      recordIdLabel: loading ? "Record pending" : "No accounting record selected",
+      evidenceLabel: "No retained evidence links"
+    };
+  }
+
+  const evidenceCount = summary.evidenceLinks.length
+    + summary.evidenceCategories.reduce((total, category) => total + category.evidenceLinks.length, 0);
+
+  return {
+    title: "Accounting record",
+    summaryLabel: summary.summary?.trim()
+      || `${summary.completeCategoryCount}/${summary.requiredCategoryCount} evidence categories complete.`,
+    statusLabel: summary.isAuditReady ? "Audit ready" : "Review required",
+    statusTone: summary.isAuditReady ? "ready" : "review",
+    recordIdLabel: summary.recordId || "Record id pending",
+    evidenceLabel: evidenceCount === 0
+      ? "No retained evidence links"
+      : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`
+  };
+}
+
+function buildAccountingRecordEvidenceRows(
+  summary: OperationsAccountingRecordSummary | null
+): OperationsAccountingRecordEvidenceRow[] {
+  return (summary?.evidenceCategories ?? []).map(mapAccountingRecordEvidenceRow);
+}
+
+function mapAccountingRecordEvidenceRow(
+  category: OperationsAccountingRecordEvidenceCategory
+): OperationsAccountingRecordEvidenceRow {
+  const href = normalizeLocalWorkstationRoute(category.routeHint) ?? null;
+  const statusLabelText = category.isComplete ? "Complete" : "Review required";
+  const requiredEvidence = (category.requiredEvidence ?? [])
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return {
+    id: category.key,
+    label: category.label || splitEnumLabel(category.key),
+    statusLabel: statusLabelText,
+    statusTone: category.isComplete ? "ready" : "review",
+    detail: category.status?.trim() || (category.isComplete ? "Evidence category is complete." : "Evidence category still needs review."),
+    requiredEvidenceLabel: requiredEvidence.length === 0
+      ? "Required evidence not specified"
+      : requiredEvidence.join(", "),
+    evidenceLabel: category.evidenceLinks.length === 0
+      ? "No linked evidence"
+      : `${category.evidenceLinks.length} evidence link${category.evidenceLinks.length === 1 ? "" : "s"}`,
+    routeHref: href,
+    routeLabel: href ? "Open source" : "No source route",
+    ariaLabel: `${category.label || category.key}, ${statusLabelText}, ${category.evidenceLinks.length} evidence links`
   };
 }
 

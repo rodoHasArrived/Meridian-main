@@ -106,12 +106,12 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                     Action(
                         WorkflowActionIds.AccountingRecordsReviewReportLineage,
                         "Review Report Lineage",
-                        "Review report-pack publication, export, restatement, and retained evidence provenance.",
+                        "Review report-pack publication, export manifests, document attachments, restatement lineage, and retained evidence provenance.",
                         "FundReportPack",
                         "Primary")
                 ],
-                EvidenceTags: ["source records", "normalized activity", "reconciliation cases", "ledger evidence", "approvals", "report lineage"],
-                MarketPatternTags: ["accounting records", "operational evidence", "close package", "restatement lineage"]),
+                EvidenceTags: ["source records", "normalized activity", "reconciliation cases", "ledger evidence", "approvals", "document attachments", "export manifests", "report lineage"],
+                MarketPatternTags: ["accounting records", "operational evidence", "close package", "export manifests", "restatement lineage"]),
 
             new WorkflowDefinitionDto(
                 WorkflowId: "strategy-to-paper-review",

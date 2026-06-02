@@ -392,6 +392,13 @@ public sealed class OperationsContinuityWorkflowServiceTests
             ReportPackReady: true,
             ReportPackId: "report-pack-1",
             Rationale: "Report pack is ready"));
+        posture.Workflow!.AccountingRecordSummary.Should().NotBeNull();
+        posture.Workflow.AccountingRecordSummary!.CompleteCategoryCount.Should().Be(4);
+        posture.Workflow.AccountingRecordSummary.IsAuditReady.Should().BeFalse();
+        posture.Workflow.AccountingRecordSummary.EvidenceCategories.Should().Contain(category =>
+            category.Key == "report-pack-lineage" &&
+            !category.IsComplete &&
+            category.Status.Contains("close-package publication", StringComparison.OrdinalIgnoreCase));
         var submitted = await service.SubmitForApprovalAsync(workflowId, new OperationsSubmitApprovalRequestDto(
             posture.Workflow!.Version,
             "ops-user",
@@ -445,6 +452,13 @@ public sealed class OperationsContinuityWorkflowServiceTests
         closed.Workflow.ClosePackage.SignOffRationale.Should().Be("Close accounting period");
         closed.Workflow.ClosePackage.EvidenceLinks.Should().Contain(link => link.EvidenceId == "report-pack-1");
         closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
+        closed.Workflow.AccountingRecordSummary.Should().NotBeNull();
+        closed.Workflow.AccountingRecordSummary!.IsAuditReady.Should().BeTrue();
+        closed.Workflow.AccountingRecordSummary.CompleteCategoryCount.Should().Be(6);
+        closed.Workflow.AccountingRecordSummary.EvidenceCategories.Should().Contain(category =>
+            category.Key == "report-pack-lineage" &&
+            category.IsComplete &&
+            category.Status.Contains("publication/export evidence hash", StringComparison.OrdinalIgnoreCase));
 
         var timeline = await auditStore.GetTimelineAsync(workflowId);
         timeline.Select(entry => entry.EventType).Should().ContainInOrder(

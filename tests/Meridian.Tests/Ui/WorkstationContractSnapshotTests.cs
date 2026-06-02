@@ -34,6 +34,8 @@ public sealed class WorkstationContractSnapshotTests
         var context = WorkstationOperationsJsonContext.Default;
 
         Assert.Same(typeof(OperationsContinuityWorkflowDto), context.OperationsContinuityWorkflowDto.Type);
+        Assert.Same(typeof(OperationsAccountingRecordSummaryDto), context.OperationsAccountingRecordSummaryDto.Type);
+        Assert.Same(typeof(OperationsAccountingRecordEvidenceCategoryDto), context.OperationsAccountingRecordEvidenceCategoryDto.Type);
         Assert.Same(typeof(OperationsTransitionResultDto), context.OperationsTransitionResultDto.Type);
         Assert.Same(typeof(OperationsLedgerPostRequestDto), context.OperationsLedgerPostRequestDto.Type);
         Assert.Same(typeof(IReadOnlyList<OperationsTimelineEntryDto>), context.IReadOnlyListOperationsTimelineEntryDto.Type);

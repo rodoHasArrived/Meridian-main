@@ -11,3 +11,11 @@ This legacy provider page is archived at:
 Canonical guidance is now maintained in:
 
 - [../operators/provider-onboarding-alpaca.md](../operators/provider-onboarding-alpaca.md)
+
+## Prerequisites
+
+Use the canonical operator onboarding page linked above for active prerequisites.
+
+## Configuration
+
+Use the canonical operator onboarding page linked above for active configuration steps.

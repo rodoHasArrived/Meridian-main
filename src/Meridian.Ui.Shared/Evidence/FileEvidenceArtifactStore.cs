@@ -66,7 +66,8 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         EvidenceSubjectResolver.ProviderTrustKind,
         EvidenceSubjectResolver.AnalysisExportKind,
         EvidenceSubjectResolver.SecurityMasterConflictKind,
-        EvidenceSubjectResolver.ApprovalKind
+        EvidenceSubjectResolver.ApprovalKind,
+        EvidenceSubjectResolver.AccountingRecordKind
     };
 
     private readonly string _rootDirectory;
@@ -115,7 +116,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Warnings: request.IncludeWarnings ? packet.Warnings : [],
             VaultIdentity: null,
             Lifecycle: request.Lifecycle,
-            Linkage: request.Linkage);
+            Linkage: ResolveManifestLinkage(packet, request));
         ValidateRetainedArtifactReferences(packet);
         var retainedExportJson = JsonSerializer.Serialize(manifest, _jsonOptions);
         var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(retainedExportJson))).ToLowerInvariant();
@@ -262,8 +263,11 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 
     private static bool MatchesLookup(EvidenceVaultLookupRequestDto request, EvidenceSubjectLinkageDto? linkage, EvidenceVaultIdentityDto identity)
     {
-        if (!string.IsNullOrWhiteSpace(request.EvidenceSubject) && !string.Equals(request.EvidenceSubject, linkage?.EvidenceSubject, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(request.EvidenceSubject) && !EvidenceSubjectMatches(request.EvidenceSubject, linkage, identity))
+        {
             return false;
+        }
+
         if (!string.IsNullOrWhiteSpace(request.RunId) && !string.Equals(request.RunId, linkage?.RunId, StringComparison.OrdinalIgnoreCase))
             return false;
         if (!string.IsNullOrWhiteSpace(request.PeriodId) && !string.Equals(request.PeriodId, linkage?.PeriodId, StringComparison.OrdinalIgnoreCase))
@@ -272,8 +276,42 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             return false;
         if (!string.IsNullOrWhiteSpace(request.ReconciliationCaseId) && !string.Equals(request.ReconciliationCaseId, linkage?.ReconciliationCaseId, StringComparison.OrdinalIgnoreCase))
             return false;
+        if (!string.IsNullOrWhiteSpace(request.AccountingRecordId) && !AccountingRecordIdMatches(request.AccountingRecordId, linkage, identity))
+        {
+            return false;
+        }
+
         return true;
     }
+
+    private static bool EvidenceSubjectMatches(
+        string evidenceSubject,
+        EvidenceSubjectLinkageDto? linkage,
+        EvidenceVaultIdentityDto identity)
+        => string.Equals(evidenceSubject, linkage?.EvidenceSubject, StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(evidenceSubject, $"{identity.SubjectKind}/{identity.SubjectId}", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(evidenceSubject, identity.SubjectId, StringComparison.OrdinalIgnoreCase);
+
+    private static bool AccountingRecordIdMatches(
+        string accountingRecordId,
+        EvidenceSubjectLinkageDto? linkage,
+        EvidenceVaultIdentityDto identity)
+        => string.Equals(accountingRecordId, linkage?.AccountingRecordId, StringComparison.OrdinalIgnoreCase) ||
+           (string.Equals(identity.SubjectKind, EvidenceSubjectResolver.AccountingRecordKind, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(accountingRecordId, identity.SubjectId, StringComparison.OrdinalIgnoreCase));
+
+    private static EvidenceSubjectLinkageDto ResolveManifestLinkage(
+        EvidencePacketDto packet,
+        EvidencePacketExportRequest request)
+        => request.Linkage ?? new EvidenceSubjectLinkageDto(
+            $"{packet.Subject.SubjectKind}/{packet.Subject.SubjectId}",
+            null,
+            null,
+            null,
+            null,
+            string.Equals(packet.Subject.SubjectKind, EvidenceSubjectResolver.AccountingRecordKind, StringComparison.OrdinalIgnoreCase)
+                ? packet.Subject.SubjectId
+                : null);
 
     private async Task<EvidenceSubjectLinkageDto?> TryReadLinkageAsync(string manifestPath, CancellationToken ct)
     {

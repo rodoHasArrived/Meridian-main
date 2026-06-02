@@ -62,8 +62,11 @@ public sealed class WorkflowLibraryViewModelTests
             workflow.WorkspaceTitle.Should().Be("Accounting");
             workflow.EntryPageTag.Should().Be("AccountingShell");
             workflow.EvidenceText.Should().Contain("source records");
+            workflow.EvidenceText.Should().Contain("document attachments");
+            workflow.EvidenceText.Should().Contain("export manifests");
             workflow.EvidenceText.Should().Contain("report lineage");
             workflow.MarketPatternText.Should().Contain("close package");
+            workflow.MarketPatternText.Should().Contain("export manifests");
             workflow.Actions.Select(action => action.Label).Should().Equal(
                 "Review Source Records",
                 "Review Normalized Activity",

@@ -29,6 +29,8 @@ import type {
   EvidencePacketExportResponse,
   EvidenceSubject,
   EvidenceTemplate,
+  EvidenceVaultIdentity,
+  EvidenceVaultLookupRequest,
   ExportAnalysisResult,
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
@@ -690,6 +692,10 @@ export function exportEvidenceManifest(
   options: ApiRequestOptions = {}
 ) {
   return postJson<EvidencePacketExportResponse>(workstationEvidenceExportManifestEndpoint(subjectKind, subjectId), request, options);
+}
+
+export function searchEvidenceVault(request: EvidenceVaultLookupRequest, options: ApiRequestOptions = {}) {
+  return postJson<EvidenceVaultIdentity[]>(WORKSTATION_API_ENDPOINTS.evidenceVaultSearch, request, options);
 }
 
 export function getEvidenceTemplates(options: ApiRequestOptions = {}) {

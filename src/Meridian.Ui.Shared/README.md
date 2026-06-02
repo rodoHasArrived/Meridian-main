@@ -67,8 +67,12 @@ The same shared library also exposes the design-document `Primary Operator Workf
 client shells do not maintain separate primary workflow catalogs.
 The built-in `accounting-records-evidence-review` workflow owns the v0.15 accounting-records
 review path across retained source records, normalized activity, reconciliation cases, ledger
-evidence, approvals, and report-pack lineage. Browser and WPF command surfaces should consume that
-shared workflow instead of creating separate accounting-record launch lists.
+evidence, approvals, document attachments, export manifests, and report-pack/restatement lineage.
+Browser and WPF command surfaces should consume that shared workflow instead of creating separate
+accounting-record launch lists.
+`WorkstationOperationsJsonContext` includes the accounting-record summary and evidence-category
+DTOs so shared workstation endpoints can serialize the same accounting-record review payload that
+desktop clients round-trip from `Meridian.Contracts.Workstation`.
 The built-in `strategy-to-paper-review` workflow keeps its compatibility identifier while presenting
 the design-document `Research to Paper Review` label and research-to-backtest market pattern, so
 browser and WPF command surfaces share the same research-to-paper continuity language.
@@ -114,6 +118,12 @@ rules. The shared W4 acceptance filter keeps governed report-pack acceptance evi
 evidence-vault manifest/export support so pilot readiness cannot mark W4 done from support
 artifacts alone, and pilot artifacts should pass through that filter before serialization so the
 `GovernedReportPack` stage gate reflects the shared acceptance/support split. The shared
+fund-operations workspace read service carries the active Operations Continuity accounting-record
+summary on the governance lifecycle projection so Fund Ledger report-pack handoff can render the
+same evidence categories, readiness count, and route hints as the browser continuity detail without
+recomputing close evidence locally. The category rows include required evidence labels, so browser
+and WPF clients render document, export, restatement, approval, ledger, reconciliation, normalized
+activity, and source-record requirements from shared contracts. The shared
 fund-structure endpoints expose report-pack workflow creation,
 validation, submission, approval, review rejection, publication, restatement, history, and archival
 routes backed by shared contracts; review rejection is valid from `InReview`, records the reason,
@@ -303,8 +313,22 @@ separate case model.
 Evidence Workflow Fabric also exposes operations close approvals as the canonical `approval`
 subject. The packet contributor reads `IOperationsContinuityWorkflowService`, resolves `current` to
 the latest close workflow, and projects approval state, retained approval audit events, close
-checklist control posture, report-pack readiness, and route-only approval/rejection links so browser
-and WPF clients do not duplicate close sign-off evidence logic.
+checklist control posture, report-pack readiness, accounting-record evidence categories, and
+route-only approval/rejection links so browser and WPF clients do not duplicate close sign-off or
+v0.15 audit-record evidence logic.
+Accounting records are also first-class Evidence Workflow Fabric subjects under
+`accounting-record`, mapped to the shared `accounting-records-evidence-review` workflow, so
+operators and evidence-vault exports can address retained audit records directly instead of only
+through an approval packet. The standard evidence endpoints serve packet, graph, validation, and
+manifest export requests for `accounting-record/{workflowId}`, preserving the same vault identity
+and retention path semantics as report-pack evidence. Vault search can rediscover retained
+accounting-record manifests by their canonical `accounting-record/{workflowId}` subject even when
+callers did not provide extra linkage metadata during export because manifest export defaults the
+linkage `evidenceSubject` to the packet subject and stamps `accountingRecordId` for accounting
+record packets.
+The evidence packet validator applies assurance freshness policies to both the accounting-record
+root and category nodes, so stale source-record, reconciliation, ledger, approval, document, export,
+or restatement evidence lowers shared assurance before close approval or publication.
 Statement reconciliation mutation endpoints trust the authenticated workstation session actor for
 statement-run intake and reconcile commands. Client-supplied `ImportedBy` or reconcile actor values
 are treated as untrusted payload hints and are replaced at the shared endpoint boundary before the

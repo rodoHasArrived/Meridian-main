@@ -16,6 +16,7 @@ public sealed class EvidenceSubjectResolver
     public const string AnalysisExportKind = "analysis-export";
     public const string SecurityMasterConflictKind = "security-master-conflict";
     public const string ApprovalKind = "approval";
+    public const string AccountingRecordKind = "accounting-record";
     public const string EvidenceVaultKind = "evidence-vault";
 
     private static readonly HashSet<string> SupportedKinds = new(StringComparer.OrdinalIgnoreCase)
@@ -29,6 +30,7 @@ public sealed class EvidenceSubjectResolver
         AnalysisExportKind,
         SecurityMasterConflictKind,
         ApprovalKind,
+        AccountingRecordKind,
         EvidenceVaultKind
     };
 
@@ -82,6 +84,13 @@ public sealed class EvidenceSubjectResolver
                 Route: "/accounting",
                 PageTag: "OperationsContinuity"),
             new(
+                SubjectId: "current",
+                SubjectKind: AccountingRecordKind,
+                Label: "Current accounting record",
+                Workspace: "Accounting",
+                Route: "/accounting",
+                PageTag: "OperationsContinuity"),
+            new(
                 SubjectId: "lookup",
                 SubjectKind: EvidenceVaultKind,
                 Label: "Retained evidence vault lookup",
@@ -110,13 +119,23 @@ public sealed class EvidenceSubjectResolver
             subjects.AddRange(workflows
                 .OrderByDescending(static workflow => workflow.UpdatedAtUtc)
                 .Take(25)
-                .Select(static workflow => new EvidenceSubjectDto(
-                    SubjectId: workflow.WorkflowId.ToString("D"),
-                    SubjectKind: ApprovalKind,
-                    Label: $"Operations approval {workflow.PeriodId}",
-                    Workspace: "Accounting",
-                    Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
-                    PageTag: "OperationsContinuity")));
+                .SelectMany(static workflow => new[]
+                {
+                    new EvidenceSubjectDto(
+                        SubjectId: workflow.WorkflowId.ToString("D"),
+                        SubjectKind: ApprovalKind,
+                        Label: $"Operations approval {workflow.PeriodId}",
+                        Workspace: "Accounting",
+                        Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
+                        PageTag: "OperationsContinuity"),
+                    new EvidenceSubjectDto(
+                        SubjectId: workflow.WorkflowId.ToString("D"),
+                        SubjectKind: AccountingRecordKind,
+                        Label: $"Accounting record {workflow.PeriodId}",
+                        Workspace: "Accounting",
+                        Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
+                        PageTag: "OperationsContinuity")
+                }));
         }
 
         return subjects
@@ -209,6 +228,7 @@ public sealed class EvidenceSubjectResolver
                 Route: "/data/security-master?view=conflicts",
                 PageTag: "SecurityMaster"),
             ApprovalKind => await ResolveApprovalSubjectAsync(subjectId, ct).ConfigureAwait(false),
+            AccountingRecordKind => await ResolveAccountingRecordSubjectAsync(subjectId, ct).ConfigureAwait(false),
             EvidenceVaultKind => new EvidenceSubjectDto(
                 SubjectId: subjectId,
                 SubjectKind: EvidenceVaultKind,
@@ -248,6 +268,37 @@ public sealed class EvidenceSubjectResolver
             Label: string.Equals(subjectId, "current", StringComparison.OrdinalIgnoreCase)
                 ? "Current operations approval"
                 : $"Operations approval {subjectId}",
+            Workspace: "Accounting",
+            Route: "/accounting",
+            PageTag: "OperationsContinuity");
+    }
+
+    private async Task<EvidenceSubjectDto?> ResolveAccountingRecordSubjectAsync(string subjectId, CancellationToken ct)
+    {
+        var service = _services.GetService<IOperationsContinuityWorkflowService>();
+        if (service is not null && Guid.TryParse(subjectId, out var workflowId))
+        {
+            var workflow = await service.GetAsync(workflowId, ct).ConfigureAwait(false);
+            if (workflow is null)
+            {
+                return null;
+            }
+
+            return new EvidenceSubjectDto(
+                SubjectId: workflow.WorkflowId.ToString("D"),
+                SubjectKind: AccountingRecordKind,
+                Label: $"Accounting record {workflow.PeriodId}",
+                Workspace: "Accounting",
+                Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
+                PageTag: "OperationsContinuity");
+        }
+
+        return new EvidenceSubjectDto(
+            SubjectId: subjectId,
+            SubjectKind: AccountingRecordKind,
+            Label: string.Equals(subjectId, "current", StringComparison.OrdinalIgnoreCase)
+                ? "Current accounting record"
+                : $"Accounting record {subjectId}",
             Workspace: "Accounting",
             Route: "/accounting",
             PageTag: "OperationsContinuity");

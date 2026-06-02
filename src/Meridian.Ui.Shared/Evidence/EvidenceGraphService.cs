@@ -183,6 +183,7 @@ public sealed class EvidenceGraphService
             EvidenceSubjectResolver.ProviderTrustKind => "paper-trading-readiness",
             EvidenceSubjectResolver.SecurityMasterConflictKind => "security-master-conflict-review",
             EvidenceSubjectResolver.ApprovalKind => "operations-approval-review",
+            EvidenceSubjectResolver.AccountingRecordKind => "accounting-records-evidence-review",
             _ => string.Empty
         };
 

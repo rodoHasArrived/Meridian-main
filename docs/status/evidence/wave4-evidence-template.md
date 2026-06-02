@@ -1,6 +1,6 @@
 # Wave 4 Evidence Template
 
-**Owner:** Governance and Ledger
+**Owner:** Accounting and Ledger
 **Last Updated:** 2026-04-21  
 **Status:** Active
 
@@ -53,7 +53,7 @@ Copy this block for each Wave 4 scenario:
   - `Accounting > Reconciliation > Identifier Conflicts` queue shows one fewer pending conflict and displays canonical identifier in history row.
   - Conflict detail drawer shows immutable source identifiers, chosen canonical ID, resolver, and resolution timestamp.
 - **Produced artifact location:** `artifacts/wave4/evidence/wave4-governance-identifier-conflict-resolution-v1/`
-- **Regression owner:** `Governance and Ledger / Reconciliation On-Call`
+- **Regression owner:** `Accounting and Ledger / Reconciliation On-Call`
 
 ### Scenario: wave4-governance-corporate-action-propagation-impact-v1
 
@@ -68,7 +68,7 @@ Copy this block for each Wave 4 scenario:
   - `Accounting > Fund Operations` impact panel surfaces action lineage and before/after portfolio posture for each affected sleeve.
   - `Reporting > Reports` preview shows propagated corporate-action footnotes with matching reconciliation references.
 - **Produced artifact location:** `artifacts/wave4/evidence/wave4-governance-corporate-action-propagation-impact-v1/`
-- **Regression owner:** `Governance and Ledger / Fund Ops Productization`
+- **Regression owner:** `Accounting and Ledger / Fund Ops Productization`
 
 ### Scenario: wave4-governance-multi-ledger-reconciliation-break-classification-v1
 
@@ -83,4 +83,4 @@ Copy this block for each Wave 4 scenario:
   - `Accounting > Reconciliation` board groups breaks by classification with counts matching API summary.
   - `Notification Center` inbox entries for unresolved high-severity breaks include playbook deep links and assigned owner.
 - **Produced artifact location:** `artifacts/wave4/evidence/wave4-governance-multi-ledger-reconciliation-break-classification-v1/`
-- **Regression owner:** `Governance and Ledger / Ledger Integrity Rotation`
+- **Regression owner:** `Accounting and Ledger / Ledger Integrity Rotation`

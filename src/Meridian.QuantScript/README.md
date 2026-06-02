@@ -5,7 +5,7 @@ doc_schema_version: "1.0.0"
 module_id: SRC-QUANTSCRIPT
 path: src/Meridian.QuantScript
 status: active
-owner_lane: Strategy and Research
+owner_lane: Strategy Analytics
 last_reviewed: 2026-05-20
 ---
 
@@ -13,20 +13,20 @@ last_reviewed: 2026-05-20
 
 ## Purpose
 
-QuantScript provides scripting and research tooling for strategy development, analysis, and operator-facing strategy workflows.
+QuantScript provides scripting and strategy analytics tooling for strategy development, analysis, and operator-facing strategy workflows.
 
 ## Layer responsibility
 
-This layer should support research workflows without bypassing strategy lineage, validation, or promotion evidence.
+This layer should support strategy research workflows without bypassing strategy lineage, validation, or promotion evidence.
 
 ## Key folders and files
 
 - `Meridian.QuantScript.csproj` - QuantScript project boundary.
-- Script runtime, command, and research support files.
+- Script runtime, command, and strategy analytics support files.
 
 ## Important workflows
 
-Use this module for QuantScript execution, research scripting, and strategy analysis support.
+Use this module for QuantScript execution, strategy scripting, and strategy analysis support.
 
 ## Diagrams
 
@@ -55,7 +55,7 @@ dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj -
 
 ## Change rules
 
-Keep script execution evidence-linked and avoid unvalidated promotion from research output to paper or live readiness.
+Keep script execution evidence-linked and avoid unvalidated promotion from strategy output to paper or live readiness.
 
 ## Related docs
 

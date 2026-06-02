@@ -168,6 +168,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections => _collectionsSection.ReportPackAssetSections;
 
+    public ObservableCollection<FundAccountingRecordEvidenceCategoryRow> AccountingRecordEvidenceCategories => _collectionsSection.AccountingRecordEvidenceCategories;
+
     internal FundLedgerCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
     internal FundLedgerWorkbenchSectionViewModel WorkbenchSection => _workbenchSection;
@@ -546,10 +548,34 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         private set => SetFundLedgerSectionProperty(WorkbenchSection.ReportPackSnapshotWarningText, text => WorkbenchSection.ReportPackSnapshotWarningText = text, value);
     }
 
+    public string AccountingRecordStatusText
+    {
+        get => WorkbenchSection.AccountingRecordStatusText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.AccountingRecordStatusText, text => WorkbenchSection.AccountingRecordStatusText = text, value);
+    }
+
+    public string AccountingRecordSummaryText
+    {
+        get => WorkbenchSection.AccountingRecordSummaryText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.AccountingRecordSummaryText, text => WorkbenchSection.AccountingRecordSummaryText = text, value);
+    }
+
+    public string AccountingRecordEvidenceText
+    {
+        get => WorkbenchSection.AccountingRecordEvidenceText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.AccountingRecordEvidenceText, text => WorkbenchSection.AccountingRecordEvidenceText = text, value);
+    }
+
     public WorkstationStateModel ReportPackReadinessState
     {
         get => WorkbenchSection.ReportPackReadinessState;
         private set => SetFundLedgerSectionProperty(WorkbenchSection.ReportPackReadinessState, state => WorkbenchSection.ReportPackReadinessState = state, value);
+    }
+
+    public WorkstationStateModel AccountingRecordReadinessState
+    {
+        get => WorkbenchSection.AccountingRecordReadinessState;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.AccountingRecordReadinessState, state => WorkbenchSection.AccountingRecordReadinessState = state, value);
     }
 
     public bool IsReportPackLoading
@@ -744,6 +770,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
                 await RefreshReportPackPreviewAsync(ct);
                 UpdateReconciliationWorkbenchPresentation();
+                UpdateAccountingRecordWorkbenchPresentation();
                 UpdateReportPackWorkbenchPresentation();
             });
         }
@@ -766,6 +793,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
             await RefreshReportPackPreviewAsync(ct);
             UpdateReconciliationWorkbenchPresentation();
+            UpdateAccountingRecordWorkbenchPresentation();
             UpdateReportPackWorkbenchPresentation();
         }
     }
@@ -851,8 +879,17 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CashFinancingHighlights.Clear();
         AuditTrail.Clear();
         ReportPackAssetSections.Clear();
+        AccountingRecordEvidenceCategories.Clear();
         _reportPackPreview = null;
         _accountingLifecycle = null;
+        AccountingRecordStatusText = "Accounting-record evidence is waiting for fund context.";
+        AccountingRecordSummaryText = "Load Operations Continuity detail to inspect retained source records, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage.";
+        AccountingRecordEvidenceText = "0/6 evidence categories complete";
+        AccountingRecordReadinessState = WorkstationStateModel.Empty(
+            "Accounting record waiting for fund context",
+            "Select a fund profile to inspect retained source, normalized activity, reconciliation, ledger, approval, and report-pack evidence.",
+            "Open Operations Continuity",
+            "OperationsContinuity");
         ReportPackStatusText = "Accounting report-pack preview is waiting for a fund context.";
         ReportPackReadinessState = WorkstationStateModel.Empty(
             "Report pack waiting for fund context",
@@ -1602,6 +1639,146 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 : $"{traceability} Refresh the preview before distributing reporting artifacts.");
         ReportPackReadinessState = BuildReportPackReadinessState(reportOwner, readiness, traceability);
     }
+
+    private void UpdateAccountingRecordWorkbenchPresentation()
+    {
+        var summary = _accountingLifecycle?.AccountingRecordSummary;
+        AccountingRecordEvidenceCategories.Clear();
+
+        if (summary is null)
+        {
+            AccountingRecordStatusText = "Accounting-record evidence is not available for the active fund workflow.";
+            AccountingRecordSummaryText = "Operations Continuity has not returned a shared accounting-record summary for this fund context.";
+            AccountingRecordEvidenceText = "0/6 evidence categories complete";
+            AccountingRecordReadinessState = WorkstationStateModel.Empty(
+                "Accounting record evidence pending",
+                AccountingRecordSummaryText,
+                "Open Operations Continuity",
+                "OperationsContinuity");
+            return;
+        }
+
+        foreach (var category in summary.EvidenceCategories)
+        {
+            AccountingRecordEvidenceCategories.Add(new FundAccountingRecordEvidenceCategoryRow(
+                Key: category.Key,
+                Label: string.IsNullOrWhiteSpace(category.Label) ? category.Key : category.Label,
+                StatusLabel: category.IsComplete ? "Complete" : "Review required",
+                StatusDetail: string.IsNullOrWhiteSpace(category.Status)
+                    ? category.IsComplete ? "Evidence category is complete." : "Evidence category still needs review."
+                    : category.Status,
+                RequiredEvidenceLabel: category.RequiredEvidence is { Count: > 0 }
+                    ? string.Join(", ", category.RequiredEvidence.Where(static item => !string.IsNullOrWhiteSpace(item)))
+                    : "Required evidence not specified",
+                EvidenceLabel: category.EvidenceLinks.Count == 0
+                    ? "No linked evidence"
+                    : $"{category.EvidenceLinks.Count} evidence link{(category.EvidenceLinks.Count == 1 ? string.Empty : "s")}",
+                SourceTarget: MapAccountingRecordRouteTarget(category.RouteHint),
+                EvidenceSubject: BuildAccountingRecordEvidenceSubject(summary.RecordId),
+                EvidenceSubjectTarget: BuildAccountingRecordEvidenceSubjectTarget(summary.RecordId),
+                IsComplete: category.IsComplete));
+        }
+
+        AccountingRecordStatusText = summary.IsAuditReady ? "Audit ready" : "Review required";
+        AccountingRecordSummaryText = string.IsNullOrWhiteSpace(summary.Summary)
+            ? $"{summary.CompleteCategoryCount}/{summary.RequiredCategoryCount} required accounting-record evidence categories are complete."
+            : summary.Summary;
+        AccountingRecordEvidenceText = $"{summary.CompleteCategoryCount}/{summary.RequiredCategoryCount} evidence categories complete";
+        AccountingRecordReadinessState = BuildAccountingRecordReadinessState(summary);
+    }
+
+    private static WorkstationStateModel BuildAccountingRecordReadinessState(OperationsAccountingRecordSummaryDto summary)
+    {
+        var evidenceCount = summary.EvidenceLinks.Count +
+            summary.EvidenceCategories.Sum(static category => category.EvidenceLinks.Count);
+        var actionPosture = new WorkstationActionPostureModel(
+            summary.IsAuditReady ? "Review evidence" : "Resolve evidence gaps",
+            "Open the shared Operations Continuity workbench to inspect account-period source, ledger, reconciliation, approval, and report-pack evidence.",
+            "OperationsContinuity",
+            "Accounting operator",
+            summary.IsAuditReady ? WorkstationReadinessTone.EvidenceLinked : WorkstationReadinessTone.SignoffRequired,
+            summary.IsAuditReady ? WorkspaceTone.Success : WorkspaceTone.Warning);
+        var evidenceLinks = summary.EvidenceCategories
+            .Where(static category => category.EvidenceLinks.Count > 0)
+            .Select(category => new WorkstationEvidenceLinkModel(
+                string.IsNullOrWhiteSpace(category.Label) ? category.Key : category.Label,
+                MapAccountingRecordRouteTarget(category.RouteHint),
+                BuildAccountingRecordEvidenceSubject(summary.RecordId),
+                $"{category.EvidenceLinks.Count} retained evidence link{(category.EvidenceLinks.Count == 1 ? string.Empty : "s")}"))
+            .ToArray();
+
+        return new WorkstationStateModel(
+            summary.IsAuditReady ? WorkstationStateKind.Ready : WorkstationStateKind.Blocked,
+            summary.IsAuditReady ? "Accounting record audit ready" : "Accounting record review required",
+            string.IsNullOrWhiteSpace(summary.Summary)
+                ? $"{summary.CompleteCategoryCount}/{summary.RequiredCategoryCount} required accounting-record evidence categories are complete."
+                : summary.Summary,
+            actionPosture.Label,
+            actionPosture.Target,
+            evidenceCount == 0 ? "No retained evidence links" : $"{evidenceCount} retained evidence link{(evidenceCount == 1 ? string.Empty : "s")}",
+            "\uE9D9",
+            summary.IsAuditReady ? WorkspaceTone.Success : WorkspaceTone.Warning,
+            summary.IsAuditReady ? WorkstationReadinessTone.EvidenceLinked : WorkstationReadinessTone.SignoffRequired,
+            actionPosture,
+            evidenceLinks,
+            RecoveryActions:
+            [
+                new WorkstationRecoveryActionModel(
+                    "Review accounting record",
+                    "Use Operations Continuity to resolve incomplete source, normalization, reconciliation, ledger, approval, or report-pack evidence.",
+                    "OperationsContinuity")
+            ],
+            SignoffRequirement: new WorkstationSignoffRequirementModel(
+                "Accounting operator",
+                summary.IsAuditReady ? "Evidence ready for sign-off" : "Evidence categories require review",
+                "Sign-off should reference retained source data, normalized activity, reconciliation history, ledger evidence, approvals, and report-pack lineage."));
+    }
+
+    private static string MapAccountingRecordRouteTarget(string? routeHint)
+    {
+        if (string.IsNullOrWhiteSpace(routeHint))
+        {
+            return "OperationsContinuity";
+        }
+
+        var normalized = routeHint.Trim();
+        if (normalized.Contains("report", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FundReportPack";
+        }
+
+        if (normalized.Contains("ledger", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FundLedger";
+        }
+
+        if (normalized.Contains("reconciliation", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FundReconciliation";
+        }
+
+        if (normalized.Contains("approval", StringComparison.OrdinalIgnoreCase))
+        {
+            return "AccountingApprovals";
+        }
+
+        if (normalized.Contains("data", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Contains("provider", StringComparison.OrdinalIgnoreCase))
+        {
+            return "DataShell";
+        }
+
+        return "OperationsContinuity";
+    }
+
+    private static string BuildAccountingRecordEvidenceSubject(string? recordId)
+    {
+        var id = string.IsNullOrWhiteSpace(recordId) ? "current" : recordId.Trim();
+        return $"accounting-record/{id}";
+    }
+
+    private static string BuildAccountingRecordEvidenceSubjectTarget(string? recordId)
+        => $"EvidenceWorkbench:{BuildAccountingRecordEvidenceSubject(recordId)}";
 
     private WorkstationStateModel BuildReportPackReadinessState(
         string reportOwner,

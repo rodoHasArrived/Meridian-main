@@ -39,10 +39,12 @@ modules:
       - W2-TRD-001
       - W2-PROMO-001
       - W3-CONT-001
+      - W5-ACCT-001
     stage_gates:
       - PaperSession
       - PromotionReview
       - ResearchContinuity
+      - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
@@ -266,7 +268,7 @@ modules:
     name: Meridian strategies
     layer: Strategies
     status: active
-    owner_lane: Strategy and Research
+    owner_lane: Strategy Analytics
     purpose: Strategy lifecycle, run storage, promotion records, and strategy read services.
     readme: src/Meridian.Strategies/README.md
     roadmap_items:
@@ -289,7 +291,7 @@ modules:
     name: Meridian backtesting
     layer: Backtesting
     status: active
-    owner_lane: Strategy and Research
+    owner_lane: Strategy Analytics
     purpose: Backtesting runtime and replay support for historical strategy simulation.
     readme: src/Meridian.Backtesting/README.md
     roadmap_items:
@@ -310,7 +312,7 @@ modules:
     name: Backtesting SDK
     layer: Backtesting SDK
     status: active
-    owner_lane: Strategy and Research
+    owner_lane: Strategy Analytics
     purpose: SDK surface for backtesting and simulation integrations.
     readme: src/Meridian.Backtesting.Sdk/README.md
     roadmap_items:
@@ -350,7 +352,7 @@ modules:
     name: Meridian FSharp
     layer: FSharp
     status: active
-    owner_lane: Strategy and Research
+    owner_lane: Strategy Analytics
     purpose: F# domain models, calculations, and functional workflow support.
     readme: src/Meridian.FSharp/README.md
     roadmap_items:
@@ -432,10 +434,10 @@ modules:
   - id: SRC-QUANTSCRIPT
     path: src/Meridian.QuantScript
     name: QuantScript
-    layer: Research
+    layer: Strategy Analytics
     status: active
-    owner_lane: Strategy and Research
-    purpose: QuantScript scripting and research tooling for strategy development and analysis.
+    owner_lane: Strategy Analytics
+    purpose: QuantScript scripting and strategy analytics tooling for strategy development and analysis.
     readme: src/Meridian.QuantScript/README.md
     roadmap_items:
       - W3-CONT-001

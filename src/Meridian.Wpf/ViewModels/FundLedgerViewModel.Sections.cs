@@ -24,6 +24,7 @@ internal sealed class FundLedgerCollectionsSectionViewModel
     public ObservableCollection<string> CashFinancingHighlights { get; } = [];
     public ObservableCollection<FundAuditEntry> AuditTrail { get; } = [];
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; } = [];
+    public ObservableCollection<FundAccountingRecordEvidenceCategoryRow> AccountingRecordEvidenceCategories { get; } = [];
 }
 
 internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
@@ -38,11 +39,19 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     private string _reconciliationSnapshotWarningText = "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.";
     private string _reportPackOwnershipText = "Accounting operator sign-off is pending.";
     private string _reportPackSnapshotWarningText = "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.";
+    private string _accountingRecordStatusText = "Accounting-record evidence is waiting for fund context.";
+    private string _accountingRecordSummaryText = "Load Operations Continuity detail to inspect retained source records, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage.";
+    private string _accountingRecordEvidenceText = "0/6 evidence categories complete";
     private WorkstationStateModel _reportPackReadinessState = WorkstationStateModel.Empty(
         "Report pack waiting for fund context",
         "Select a fund profile and refresh the preview before distributing reporting artifacts.",
         "Refresh Preview",
         "Report Pack");
+    private WorkstationStateModel _accountingRecordReadinessState = WorkstationStateModel.Empty(
+        "Accounting record waiting for fund context",
+        "Select a fund profile to inspect retained source, normalized activity, reconciliation, ledger, approval, and report-pack evidence.",
+        "Open Operations Continuity",
+        "OperationsContinuity");
     private bool _isReportPackLoading;
     private int _selectedTabIndex;
 
@@ -56,7 +65,11 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     public string ReconciliationSnapshotWarningText { get => _reconciliationSnapshotWarningText; set => SetProperty(ref _reconciliationSnapshotWarningText, value); }
     public string ReportPackOwnershipText { get => _reportPackOwnershipText; set => SetProperty(ref _reportPackOwnershipText, value); }
     public string ReportPackSnapshotWarningText { get => _reportPackSnapshotWarningText; set => SetProperty(ref _reportPackSnapshotWarningText, value); }
+    public string AccountingRecordStatusText { get => _accountingRecordStatusText; set => SetProperty(ref _accountingRecordStatusText, value); }
+    public string AccountingRecordSummaryText { get => _accountingRecordSummaryText; set => SetProperty(ref _accountingRecordSummaryText, value); }
+    public string AccountingRecordEvidenceText { get => _accountingRecordEvidenceText; set => SetProperty(ref _accountingRecordEvidenceText, value); }
     public WorkstationStateModel ReportPackReadinessState { get => _reportPackReadinessState; set => SetProperty(ref _reportPackReadinessState, value); }
+    public WorkstationStateModel AccountingRecordReadinessState { get => _accountingRecordReadinessState; set => SetProperty(ref _accountingRecordReadinessState, value); }
     public bool IsReportPackLoading { get => _isReportPackLoading; set => SetProperty(ref _isReportPackLoading, value); }
     public int SelectedTabIndex { get => _selectedTabIndex; set => SetProperty(ref _selectedTabIndex, value); }
 }

@@ -65,6 +65,7 @@ import {
   resumeReplay,
   revokeAlpacaConnection,
   saveWorkflowPreset,
+  searchEvidenceVault,
   searchSecurities,
   seekReplay,
   setReplaySpeed,
@@ -574,6 +575,32 @@ describe("trading endpoint wiring", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/aggregate", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/exposure", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/portfolio/symbols/AAPL/exposure", expect.anything());
+  });
+
+  it("wires evidence vault search by accounting record linkage", async () => {
+    await searchEvidenceVault({
+      evidenceSubject: "accounting-record/workflow-2026-05",
+      runId: null,
+      periodId: "2026-05",
+      reportPackId: "report-pack-2026-05",
+      reconciliationCaseId: null,
+      accountingRecordId: "workflow-2026-05"
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/evidence/vault/search",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          evidenceSubject: "accounting-record/workflow-2026-05",
+          runId: null,
+          periodId: "2026-05",
+          reportPackId: "report-pack-2026-05",
+          reconciliationCaseId: null,
+          accountingRecordId: "workflow-2026-05"
+        })
+      })
+    );
   });
 
   it("wires Chief of Staff workstation API client calls", async () => {

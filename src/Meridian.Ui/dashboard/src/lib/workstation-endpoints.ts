@@ -25,6 +25,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
   evidenceSubjects: "/api/workstation/evidence/subjects",
+  evidenceVaultSearch: "/api/workstation/evidence/vault/search",
   evidenceTemplates: "/api/workstation/evidence/templates"
 } as const;
 

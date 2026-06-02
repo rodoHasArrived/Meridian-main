@@ -86,7 +86,7 @@ The table below tracks active legacy/high-traffic routes and their replacements 
 | `docs/operations/portable-data-packager.md` | [README.md](./README.md) | Canonical | portability and packaging evidence remains source-only |
 | `docs/operations/performance-tuning.md` | [README.md](./README.md) | Canonical | operations performance tuning preserved as historical context |
 | `docs/operations/tradier-provider-endpoint-catalog.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | catalog content mapped as source for provider onboarding references |
-| `docs/operations/workstation-governance-approval-runbook.md` | [fund-ops-persistence-cutover.md](./fund-ops-persistence-cutover.md) | Canonical | governance approval gates mapped to operator cutover lane |
+| `docs/operations/workstation-governance-approval-runbook.md` | [fund-ops-persistence-cutover.md](./fund-ops-persistence-cutover.md) | Canonical | accounting-control approval gates mapped to operator cutover lane |
 | `docs/operations/orphaned-doc-triage-index.md` | [README.md](./README.md) | Canonical | migration inventory remains here |
 | `docs/providers/alpaca-setup.md` | [provider-onboarding-alpaca.md](./provider-onboarding-alpaca.md) | Canonical | provider onboarding canonicalized |
 | `docs/providers/interactive-brokers-setup.md` | [provider-onboarding-interactive-brokers.md](./provider-onboarding-interactive-brokers.md) | Canonical | provider onboarding canonicalized |

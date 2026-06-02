@@ -711,7 +711,8 @@ public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
     public string ContributorId => "approval";
 
     public bool Supports(EvidenceSubjectDto subject)
-        => string.Equals(subject.SubjectKind, EvidenceSubjectResolver.ApprovalKind, StringComparison.OrdinalIgnoreCase);
+        => string.Equals(subject.SubjectKind, EvidenceSubjectResolver.ApprovalKind, StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(subject.SubjectKind, EvidenceSubjectResolver.AccountingRecordKind, StringComparison.OrdinalIgnoreCase);
 
     public async Task<EvidenceContribution> ContributeAsync(EvidenceContributionContext context)
     {
@@ -731,6 +732,7 @@ public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
         var generatedAt = DateTimeOffset.UtcNow;
         var nodes = new List<EvidenceNodeDto>();
         var edges = new List<EvidenceEdgeDto>();
+        var requiredEvidenceIds = new List<string>();
         var approvalId = NodeId(context.Subject, "approval");
         var workItemIds = BuildApprovalWorkItemIds(workflow);
         nodes.Add(Node(
@@ -759,6 +761,7 @@ public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
                     generatedAt)
             ],
             workItemIds: workItemIds));
+        requiredEvidenceIds.Add(approvalId);
 
         if (workflow.Timeline.Count > 0)
         {
@@ -834,7 +837,86 @@ public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
             edges.Add(new EvidenceEdgeDto(approvalId, reportPackId, "requires", "Approval requires the governed report pack readiness evidence."));
         }
 
-        return new EvidenceContribution(nodes, edges, [], [approvalId], []);
+        AddAccountingRecordEvidence(context.Subject, workflow, generatedAt, approvalId, nodes, edges, requiredEvidenceIds);
+
+        return new EvidenceContribution(nodes, edges, [], requiredEvidenceIds, []);
+    }
+
+    private static void AddAccountingRecordEvidence(
+        EvidenceSubjectDto subject,
+        OperationsContinuityWorkflowDto workflow,
+        DateTimeOffset generatedAt,
+        string approvalId,
+        List<EvidenceNodeDto> nodes,
+        List<EvidenceEdgeDto> edges,
+        List<string> requiredEvidenceIds)
+    {
+        var summary = workflow.AccountingRecordSummary;
+        if (summary is null)
+        {
+            return;
+        }
+
+        var recordId = NodeId(subject, "accounting-record");
+        nodes.Add(Node(
+            subject,
+            recordId,
+            "accounting-record",
+            summary.IsAuditReady ? EvidenceStatusDto.Ready : EvidenceStatusDto.ReviewRequired,
+            summary.Summary,
+            "OperationsContinuityWorkflowService",
+            workflow.UpdatedAtUtc,
+            artifacts:
+            [
+                RouteArtifact(
+                    $"{recordId}:workflow-route",
+                    "operations-accounting-record-route",
+                    UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityById, "workflowId", workflow.WorkflowId.ToString("D")),
+                    generatedAt)
+            ],
+            workItemIds: summary.IsAuditReady
+                ? Array.Empty<string>()
+                : [$"operations-accounting-record:review:{workflow.WorkflowId:N}"]));
+        edges.Add(new EvidenceEdgeDto(approvalId, recordId, "requires", "Approval requires the audit-ready accounting record evidence package."));
+        requiredEvidenceIds.Add(recordId);
+
+        foreach (var category in summary.EvidenceCategories.OrderBy(static category => category.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var categoryId = NodeId(subject, $"accounting-record-{category.Key}");
+            var workItemIds = category.IsComplete
+                ? Array.Empty<string>()
+                : [$"operations-accounting-record:{category.Key}:{workflow.WorkflowId:N}"];
+            nodes.Add(Node(
+                subject,
+                categoryId,
+                "accounting-record-category",
+                category.IsComplete ? EvidenceStatusDto.Ready : EvidenceStatusDto.ReviewRequired,
+                BuildAccountingRecordCategorySummary(category),
+                "OperationsContinuityWorkflowService",
+                workflow.UpdatedAtUtc,
+                artifacts: category.EvidenceLinks
+                    .Select(link => RouteArtifact(
+                        $"{categoryId}:{SanitizeArtifactPart(link.EvidenceId)}",
+                        string.IsNullOrWhiteSpace(link.Source) ? "operations-accounting-record-evidence-route" : link.Source!,
+                        string.IsNullOrWhiteSpace(link.Route) ? category.RouteHint : link.Route,
+                        link.CapturedAtUtc ?? generatedAt))
+                    .ToArray(),
+                workItemIds: workItemIds));
+            edges.Add(new EvidenceEdgeDto(recordId, categoryId, "requires", $"Accounting record requires {category.Label} evidence."));
+
+            if (!category.IsComplete)
+            {
+                requiredEvidenceIds.Add(categoryId);
+            }
+        }
+    }
+
+    private static string BuildAccountingRecordCategorySummary(OperationsAccountingRecordEvidenceCategoryDto category)
+    {
+        var requiredEvidence = category.RequiredEvidence is { Count: > 0 }
+            ? string.Join(", ", category.RequiredEvidence.Where(static item => !string.IsNullOrWhiteSpace(item)))
+            : "required evidence not specified";
+        return $"{category.Label}: {category.Status} Required evidence: {requiredEvidence}.";
     }
 
     private static async Task<OperationsContinuityWorkflowDto?> ResolveWorkflowAsync(

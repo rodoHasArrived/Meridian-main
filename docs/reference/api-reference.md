@@ -552,16 +552,17 @@ flows. Legacy governance/data-operations aliases remain compatibility routes for
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| GET | `/api/workstation/accounting` | Accounting workspace payload for ledger, reconciliation, approvals, and governance-control posture. |
+| GET | `/api/workstation/accounting` | Accounting workspace payload for ledger, reconciliation, approvals, and accounting-control posture. |
 | GET | `/api/workstation/data` | Data workspace payload for provider posture, backfill, storage, and quality handoffs. |
-| GET | `/api/workstation/trading/readiness` | Trading readiness projection with governance work-item posture. |
+| GET | `/api/workstation/trading/readiness` | Trading readiness projection with operator sign-off and accounting-control work-item posture. |
 | GET | `/api/workstation/operator/inbox` | Account-scoped operator queue for readiness + reconciliation work. |
 | GET | `/api/workstation/trading` | Trading shell payload that embeds readiness state. |
 | GET | `/api/execution/sessions/{sessionId}/replay` | Replay explainability payload used for readiness verification evidence. |
 
-See [Workstation Governance State Model](../status/workstation-governance-state-model.md) and
-[Workstation Governance Approval Runbook](../operations/workstation-governance-approval-runbook.md)
-for transition rules, required metadata, and rejection/reopen governance guidance.
+See [Reconciliation Operations](../operators/reconciliation-operations.md),
+[Fund Operations Persistence Cutover](../operators/fund-ops-persistence-cutover.md), and
+[Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) for transition rules, required
+metadata, approval gates, and rejection/reopen guidance.
 
 ### Health (`/healthz`, `/api/*`)
 

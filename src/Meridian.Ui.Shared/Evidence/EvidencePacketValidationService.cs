@@ -84,6 +84,22 @@ public sealed class EvidencePacketValidationService
             RequiredForAssurance: true,
             Description: "Report-pack evidence should be refreshed at least daily."),
         new(
+            PolicyId: "accounting-record-freshness",
+            EvidenceKind: "accounting-record",
+            WorkflowKind: "approval",
+            FreshnessMinutes: 24 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Accounting-record evidence should be refreshed before approval or close-package publication."),
+        new(
+            PolicyId: "accounting-record-category-freshness",
+            EvidenceKind: "accounting-record-category",
+            WorkflowKind: "approval",
+            FreshnessMinutes: 24 * 60,
+            BreachSeverity: EvidenceValidationSeverityDto.Warning,
+            RequiredForAssurance: true,
+            Description: "Accounting-record category evidence should be refreshed before audit-ready approval review."),
+        new(
             PolicyId: "report-export-freshness",
             EvidenceKind: "analysis-export",
             WorkflowKind: "reporting",

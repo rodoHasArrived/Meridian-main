@@ -112,6 +112,17 @@ The close-package panel is likewise a read-only projection of the shared operati
 publication metadata: signer, sign-off rationale, retained manifest route, evidence hash, report
 pack id, retained evidence links, and checklist control approvals come from the server workflow
 payload rather than browser-local publication state.
+The Operations Continuity detail view also renders the shared accounting-record summary from the
+workflow payload. Retained source records, normalized activity, reconciliation case history, ledger
+evidence, approvals, and report-pack lineage are displayed as server-owned evidence categories, not
+browser-local audit-readiness rules. Each row also displays the contract-owned required evidence
+labels, including document attachments, export manifests, and restatement lineage for report-pack
+evidence. Browser evidence clients also carry the shared vault lookup and export linkage contract,
+including `accountingRecordId`, so retained accounting-record manifests can be rediscovered through
+the same API shape used by WPF and host endpoints.
+No-host browser previews include the same accounting-record evidence subject, packet, validation,
+manifest export, and vault-search fixture path so operators can inspect the evidence workbench demo
+without a live Meridian API host.
 Operator readiness console API source identifiers use the canonical workspace roots
 `strategy`, `data`, `accounting`, and `reporting`; legacy payload type names and retained
 compatibility routes must not reintroduce visible `Research`, `Data Operations`, or `Governance`
