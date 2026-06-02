@@ -52,6 +52,7 @@ import type {
   SecurityMasterEntry,
   SecurityIdentityDrillIn,
   SecurityMasterTrustSnapshot,
+  InvestmentAccountingTransactionLabPreview,
   TradingParameters
 } from "@/types";
 
@@ -918,7 +919,8 @@ describe("accounting-screen view model", () => {
         .mockReturnValueOnce(firstLoad)
         .mockResolvedValueOnce(retrySummary),
       getStatementRuns: vi.fn().mockResolvedValue([]),
-      getStatementRun: vi.fn()
+      getStatementRun: vi.fn(),
+      previewTransactionLab: vi.fn()
     };
     const bootstrapData = {
       metrics: [],
@@ -944,6 +946,170 @@ describe("accounting-screen view model", () => {
 
     await waitFor(() => expect(result.current.calibrationView.selectedProfileId).toBe("retry-profile"));
     expect(result.current.calibrationView.selectedProfile?.title).toContain("retry-profile");
+  });
+
+  it("wires Transaction Lab preview requests and renders shared response values", async () => {
+    const preview: InvestmentAccountingTransactionLabPreview = {
+      previewId: "txn-lab:run-42",
+      kind: "BrokerReconciliation",
+      fundAccountId: "fund-account-ops",
+      symbol: "BOOKS",
+      eventDate: "2026-06-02",
+      currency: "USD",
+      journalPreview: {
+        journalPreviewId: "txn-lab:run-42",
+        expectedEventId: "event-run-42",
+        description: "Preview",
+        eventDate: "2026-06-02",
+        isBalanced: true,
+        requiresOperatorApproval: true,
+        idempotencyKey: "idempotency-run-42",
+        lines: [
+          { accountName: "Reconciliation Suspense", accountType: "Asset", symbol: "BOOKS", debit: 100, credit: 0 },
+          { accountName: "Broker Statement Variance", accountType: "Liability", symbol: "BOOKS", debit: 0, credit: 100 }
+        ]
+      },
+      ledgerImpact: {
+        draftEntryCount: 1,
+        netDebitEffect: 100,
+        netCreditEffect: 100,
+        netBalanceDelta: 0,
+        hasValidationWarnings: false,
+        validationFlags: []
+      },
+      trialBalanceImpact: [
+        { accountName: "Reconciliation Suspense", accountType: "Asset", symbol: "BOOKS", balanceDelta: 100, explanation: "delta +" },
+        { accountName: "Broker Statement Variance", accountType: "Liability", symbol: "BOOKS", balanceDelta: -100, explanation: "delta -" }
+      ],
+      reconciliationExpectation: {
+        expectedState: "ReadyForReconciliation",
+        expectedBreakType: "broker-statement-break",
+        detail: "ready",
+        evidenceIds: ["reconciliation-run:run-42", "statement-line:1"],
+        brokerStatementId: "statement-run-42",
+        reconciliationCaseId: "case-run-42"
+      },
+      evidenceIds: ["reconciliation-run:run-42", "statement-line:1"],
+      sourceRunId: "run-42",
+      sourceSessionId: null,
+      booksBeforeBroker: {
+        isBooksBeforeBrokerMode: true,
+        canStageBrokerAction: true,
+        expectedBrokerAction: "NoBrokerOrder-ReconciliationCase",
+        brokerInstructionSummary: "Ready",
+        requiredApprovals: ["operator-accounting-approval"],
+        blockers: [],
+        evidenceIds: ["reconciliation-run:run-42", "statement-line:1"]
+      }
+    };
+
+    const services: AccountingReconciliationServices = {
+      getBreakQueue: vi.fn().mockResolvedValue([]),
+      reviewBreak: vi.fn(),
+      resolveBreak: vi.fn(),
+      getTrialBalance: vi.fn().mockResolvedValue([]),
+      getCalibrationSummary: vi.fn().mockResolvedValue({
+        status: "Ready",
+        summary: "Ready",
+        asOf: "2026-05-09T16:00:00Z",
+        totalBreakCount: 0,
+        activeBreakCount: 0,
+        openBreakCount: 0,
+        inReviewBreakCount: 0,
+        resolvedBreakCount: 0,
+        dismissedBreakCount: 0,
+        criticalOpenBreakCount: 0,
+        pendingSignoffCount: 0,
+        signedOffCount: 0,
+        missingCalibrationMetadataCount: 0,
+        profiles: []
+      }),
+      getStatementRuns: vi.fn().mockResolvedValue([]),
+      getStatementRun: vi.fn(),
+      previewTransactionLab: vi.fn().mockResolvedValue(preview)
+    };
+    const bootstrapData = {
+      metrics: [],
+      reconciliationQueue,
+      breakQueue: [],
+      cashFlow: null,
+      reporting: null
+    } as unknown as AccountingWorkspaceResponse;
+
+    const { result } = renderHook(() => useAccountingReconciliationViewModel({
+      ...bootstrapData
+    }, "reconciliation", services));
+
+    await waitFor(() => expect(result.current.transactionLabView.canPreview).toBe(true));
+
+    await act(async () => {
+      await result.current.runTransactionLabPreview();
+    });
+
+    expect(services.previewTransactionLab).toHaveBeenCalledWith(expect.objectContaining({
+      kind: "BrokerReconciliation",
+      sourceRunId: "run-42",
+      previewMode: "BooksBeforeBroker"
+    }));
+    expect(result.current.transactionLabView.requestSummaryLabel).toBe("Preview ready");
+    expect(result.current.transactionLabView.journalLineCountLabel).toBe("2 lines");
+    expect(result.current.transactionLabView.ledgerImpactLabel).toBe("$0");
+    expect(result.current.transactionLabView.reconciliationLabel).toBe("ReadyForReconciliation");
+    expect(result.current.transactionLabView.evidenceLabel).toBe("2 evidence items");
+    expect(result.current.transactionLabView.impactRows).toEqual([
+      expect.objectContaining({ label: "Reconciliation Suspense", value: "+$100.00", tone: "success" }),
+      expect.objectContaining({ label: "Broker Statement Variance", value: "-$100.00", tone: "danger" })
+    ]);
+  });
+
+  it("surfaces Transaction Lab preview failures from the shared endpoint", async () => {
+    const services: AccountingReconciliationServices = {
+      getBreakQueue: vi.fn().mockResolvedValue([]),
+      reviewBreak: vi.fn(),
+      resolveBreak: vi.fn(),
+      getTrialBalance: vi.fn().mockResolvedValue([]),
+      getCalibrationSummary: vi.fn().mockResolvedValue({
+        status: "Ready",
+        summary: "Ready",
+        asOf: "2026-05-09T16:00:00Z",
+        totalBreakCount: 0,
+        activeBreakCount: 0,
+        openBreakCount: 0,
+        inReviewBreakCount: 0,
+        resolvedBreakCount: 0,
+        dismissedBreakCount: 0,
+        criticalOpenBreakCount: 0,
+        pendingSignoffCount: 0,
+        signedOffCount: 0,
+        missingCalibrationMetadataCount: 0,
+        profiles: []
+      }),
+      getStatementRuns: vi.fn().mockResolvedValue([]),
+      getStatementRun: vi.fn(),
+      previewTransactionLab: vi.fn().mockRejectedValue(new Error("upstream unavailable"))
+    };
+    const bootstrapData = {
+      metrics: [],
+      reconciliationQueue,
+      breakQueue: [],
+      cashFlow: null,
+      reporting: null
+    } as unknown as AccountingWorkspaceResponse;
+
+    const { result } = renderHook(() => useAccountingReconciliationViewModel({
+      ...bootstrapData
+    }, "reconciliation", services));
+
+    await waitFor(() => expect(result.current.transactionLabView.canPreview).toBe(true));
+    await act(async () => {
+      await result.current.runTransactionLabPreview();
+    });
+
+    await waitFor(() => expect(result.current.transactionLabView.requestSummaryLabel).toBe("Request failed"));
+    expect(result.current.transactionLabView.statusRole).toBe("alert");
+    expect(result.current.transactionLabView.statusTone).toBe("danger");
+    expect(result.current.transactionLabView.statusText).toContain("upstream unavailable");
+    expect(result.current.transactionLabView.canPreview).toBe(true);
   });
 
   it("derives trial-balance table rows, labels, and status announcements", () => {

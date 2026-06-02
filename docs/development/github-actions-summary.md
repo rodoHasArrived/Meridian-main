@@ -3,20 +3,13 @@
 **Status:** Active
 **Reviewed:** 2026-05-18
 
-The Meridian Actions surface is documented from the generated workflow inventory
-artifacts instead of hand-maintained counts. Use the generated command and
-validation outputs as the source of truth:
+The Meridian Actions inventory is generated from `.github/workflows/*.yml` files instead of hand-maintained counts or tables. Use [`docs/generated/workflows-overview.md`](../generated/workflows-overview.md) as the workflow list source of truth.
 
-- `docs/status/workflow-manifest.json` (canonical workflow manifest)
-- `docs/generated/workflow-command-reference.md` (generated workflow list + commands)
-- `docs/status/workflow-validation-summary.json` (machine-readable inventory summary)
+Related generated command and validation artifacts:
 
-| Workflow | File | Trigger | Purpose |
-| --- | --- | --- | --- |
-| CI | `.github/workflows/ci.yml` | Pull requests, pushes to `main`, manual | Restore solution, format check, warning-suppression inventory validation, focused web-workstation Release build with warning-count reporting, non-integration .NET tests, dashboard tests, dashboard build |
-| Windows Desktop Build | `.github/workflows/windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Full Windows WPF build, WPF tests, desktop publish smoke |
-| Publish Smoke | `.github/workflows/publish-smoke.yml` | Manual | Standalone Windows publish artifact for `collector`, `desktop`, or `web-workstation` |
-| Maintenance | `.github/workflows/maintenance.yml` | Workflow/docs/tooling changes, weekly, manual | Workflow hygiene checks and Action YAML linting |
+- `docs/status/workflow-manifest.json` (canonical command manifest)
+- `docs/generated/workflow-command-reference.md` (generated workflow commands)
+- `docs/status/workflow-validation-summary.json` (machine-readable command validation summary)
 
 ## Local Command Map
 
@@ -53,5 +46,5 @@ pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstat
 The previous workflow set included overlapping PR, test-matrix, quality, nightly,
 release, documentation, Docker, benchmark, issue-management, AI, and generated-artifact
 workflows. Useful build/test/publish logic was merged into the current generated
-workflow inventory described by the canonical manifest and generated outputs above.
+workflow inventory in `docs/generated/workflows-overview.md`.
 Externally deploying or mutating jobs were removed from the active workflow surface.

@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-29
+last_reviewed: 2026-06-02
 ---
 
 # src/Meridian.Application
@@ -142,6 +142,11 @@ application service contracts consumed by host and UI surfaces.
 
 The interactive configuration wizard presents historical analysis and backtesting as the canonical
 `Strategy` use case while retaining the older `Research` enum member only as a compatibility alias.
+Backtest Studio run orchestration records accepted and terminal runs through the shared
+`StrategyRunEntry` lineage model: `StrategyId`, `StrategyName`, run id, engine, dataset/feed
+references, parameter set, sweep id, and canonical sweep-definition hash stay with the run evidence.
+Keep W6-BTSTUDIO-001 acceptance criteria in roadmap exit criteria and verify this lane with
+`BacktestStudioRunOrchestratorTests` when changing backtesting evidence behavior.
 
 ## API contract notes
 
@@ -169,7 +174,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-APP -->
-- No registry-backed TODOs are open for this module.
+| TODO | Title | Status | Priority |
+| --- | --- | --- | --- |
+| `TODO-SRC-APP-001` | Complete W6 backtesting evidence loop linkage to strategy lineage | done | medium |
 <!-- source-todos:end -->
 
 ## Validation

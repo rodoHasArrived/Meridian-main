@@ -6,7 +6,7 @@ module_id: SRC-HOST
 path: src/Meridian
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-05-28
+last_reviewed: 2026-06-02
 ---
 
 # src/Meridian
@@ -40,7 +40,10 @@ declared gateway id, runtime-key match status, account/portfolio/activity sync s
 order-modification and partial-fill capability, supported asset classes, validation issues, and
 missing-runtime notes. This is offline DI/runtime surface validation; it does not connect to live
 broker APIs or prove credentialed trading readiness. Do not add placeholder StockSharp services
-when the connector package is absent.
+when the connector package is absent. Host order routing remains paper-first by default: brokerage
+execution resolves to paper gateways unless live execution is explicitly enabled, and Paper -> Live
+promotion claims must be tied to execution-governance audit or manual-override evidence before they
+are presented as readiness evidence.
 
 ## Diagrams
 
@@ -59,7 +62,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-HOST -->
-- No registry-backed TODOs are open for this module.
+| TODO | Title | Status | Priority |
+| --- | --- | --- | --- |
+| `TODO-SRC-HOST-001` | Complete W7 live-readiness paper-first guard enforcement | done | medium |
 <!-- source-todos:end -->
 
 ## Validation

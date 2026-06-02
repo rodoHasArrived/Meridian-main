@@ -193,16 +193,16 @@ Closed in the 2026-05-29 W4 evidence slice through governed report-pack workflow
 | Field | Value |
 | --- | --- |
 | Wave | W5 |
-| Status | planned |
+| Status | done |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
+| Evidence posture | complete |
 | Last reviewed | 2026-06-02 |
 
 ### Current Summary
 
-v0.15 deepens accounting, reconciliation, and record-keeping functionality by linking retained source records, normalized activity, reconciliation cases, journal and ledger evidence, approval history, document attachments, report packs, exports, and restatement lineage into audit-ready operational records.
+Closed 2026-06-02. Accounting record summaries with all six evidence categories (source data, normalized activity, reconciliation cases, ledger evidence, approvals, report-pack lineage) are wired end-to-end through shared contracts, the shared workspace service, and both browser and WPF surfaces. Transaction Lab endpoint request wiring is complete with dashboard test coverage for success and failure paths. Close-package and provenance fields are shared contracts accessible through the full workflow and governance lifecycle projection.
 
 ### Exit Criteria
 

@@ -27,6 +27,11 @@ public static class ConfigEndpoints
         var group = app.MapGroup("").WithTags("Configuration");
         var requireModifyConfig = EndpointAuthorization.Require(UserPermission.ModifyConfig);
 
+        // SEC-001: configuration reads expose masked secrets and provider wiring, so every route in
+        // this group requires at least a configuration-read permission. Mutation routes additionally
+        // require ModifyConfig below. Either ViewConfig or ModifyConfig satisfies the read gate.
+        group.RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig);
+
         // Get full configuration
         group.MapGet(UiApiRoutes.Config, (ConfigStore store) =>
         {
@@ -125,9 +130,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpdateDataSource")
         .WithDescription("Updates the active streaming data source (e.g., IB, Alpaca, Polygon).")
-        .Produces(200).Produces(400)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(requireModifyConfig);
+        .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
 
         // Update Alpaca settings
         group.MapPost(UiApiRoutes.ConfigAlpaca, async (ConfigStore store, AlpacaOptionsDto alpaca) =>
@@ -138,9 +143,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpdateAlpaca")
         .WithDescription("Updates Alpaca provider connection settings.")
-        .Produces(200)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(requireModifyConfig);
+        .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
 
         // Update storage settings
         group.MapPost(UiApiRoutes.ConfigStorage, async (ConfigStore store, StorageSettingsRequest req) =>
@@ -167,9 +172,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpdateStorage")
         .WithDescription("Updates storage settings including root path, naming convention, and compression.")
-        .Produces(200).Produces(400)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(requireModifyConfig);
+        .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
 
         // Add or update symbol
         group.MapPost(UiApiRoutes.ConfigSymbols, async (ConfigStore store, SymbolConfig symbol) =>
@@ -192,9 +197,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpsertSymbol")
         .WithDescription("Adds or updates a symbol in the monitoring configuration.")
-        .Produces(200).Produces(400)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(requireModifyConfig);
+        .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
 
         // Delete symbol
         group.MapDelete(UiApiRoutes.ConfigSymbols + "/{symbol}", async (ConfigStore store, string symbol) =>
@@ -207,9 +212,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("DeleteConfigSymbol")
         .WithDescription("Removes a symbol from the monitoring configuration.")
-        .Produces(200)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(requireModifyConfig);
+        .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
 
         // Get derivatives configuration
         group.MapGet(UiApiRoutes.ConfigDerivatives, (ConfigStore store) =>
@@ -229,9 +234,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpdateDerivatives")
         .WithDescription("Updates the derivatives trading configuration.")
-        .Produces(200)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .AddEndpointFilter(requireModifyConfig);
+        .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
     }
 
     private static object BuildEntry(

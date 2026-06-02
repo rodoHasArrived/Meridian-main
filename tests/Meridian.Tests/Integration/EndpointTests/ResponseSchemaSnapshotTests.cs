@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -16,15 +17,21 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ResponseSchemaSnapshotTests
+public sealed class ResponseSchemaSnapshotTests : IDisposable
 {
     private readonly HttpClient _client;
+    // SEC-001: /api/config reads now require a configuration permission. Route config schema reads
+    // through an authorized client so the snapshot assertions keep exercising the real payload.
+    private readonly HttpClient _configClient;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public ResponseSchemaSnapshotTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
+        _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
     }
+
+    public void Dispose() => _configClient.Dispose();
 
     #region /api/status
 
@@ -388,7 +395,9 @@ public sealed class ResponseSchemaSnapshotTests
 
     private async Task<Dictionary<string, JsonElement>> GetJsonObjectAsync(string url)
     {
-        var response = await _client.GetAsync(url);
+        // SEC-001: configuration reads require ViewConfig/ModifyConfig — use the authorized client.
+        var client = url.StartsWith("/api/config", StringComparison.OrdinalIgnoreCase) ? _configClient : _client;
+        var response = await client.GetAsync(url);
         response.StatusCode.Should().Be(HttpStatusCode.OK, $"GET {url} should return 200 OK");
         return await DeserializeObjectAsync(response);
     }

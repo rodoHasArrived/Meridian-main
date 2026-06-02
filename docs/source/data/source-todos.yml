@@ -14,10 +14,98 @@ todos:
     owner_lane: Workstation Shell and UX
     source_paths:
       - src/Meridian.Ui/dashboard/README.md
-      - docs/source/data/diagram-index.yml
-      - docs/architecture/diagrams/meridian-browser-workstation-route-map.mmd
     checklist:
       - Register the route-level browser workstation diagram.
       - Link trading readiness route behavior to the PaperSession stage gate.
       - Keep dashboard validation commands in the source README.
+    last_reviewed: 2026-06-02
+  - id: TODO-SRC-CONTRACTS-001
+    title: Complete W5 accounting record evidence-chain contract coverage
+    module_id: SRC-CONTRACTS
+    status: done
+    priority: high
+    roadmap_item: W5-ACCT-001
+    stage_gate: AccountingRecords
+    owner_lane: Contract Compatibility
+    source_paths:
+      - src/Meridian.Contracts/README.md
+    checklist:
+      - Ensure accounting record summaries expose source data, normalized activity, reconciliation history, ledger evidence, approvals, and report-pack links.
+      - Verify close-package and provenance timeline fields remain shared contracts for both browser and WPF consumers.
+      - Keep report-pack export and restatement provenance contract requirements explicit in module docs and validation notes.
+    last_reviewed: 2026-06-02
+  - id: TODO-SRC-UI-SHARED-001
+    title: Complete W5 shared read-model visibility for close-package and provenance timelines
+    module_id: SRC-UI-SHARED
+    status: done
+    priority: high
+    roadmap_item: W5-ACCT-001
+    stage_gate: AccountingRecords
+    owner_lane: Workstation Shell and UX
+    source_paths:
+      - src/Meridian.Ui.Shared/README.md
+    checklist:
+      - Keep accounting-record summary rows fully linked to source, normalized, reconciliation, ledger, approval, and report-pack evidence.
+      - Expose close-package status and audit/provenance timeline read-model fields for both workstation surfaces.
+      - Preserve report-pack export and restatement provenance checks in shared service/read-model guidance.
+    last_reviewed: 2026-06-02
+  - id: TODO-SRC-UI-DASHBOARD-002
+    title: Wire Accounting Transaction Lab browser endpoint requests to shared API contracts
+    module_id: SRC-UI-DASHBOARD
+    status: done
+    priority: high
+    roadmap_item: W5-ACCT-001
+    stage_gate: AccountingRecords
+    owner_lane: Workstation Shell and UX
+    source_paths:
+      - src/Meridian.Ui/dashboard/README.md
+    checklist:
+      - Replace view-model-only placeholder flow with shared transaction-lab endpoint request wiring.
+      - Keep browser behavior as a thin projection of shared DTO validation and server-owned calculations.
+      - Cover wired request/response behavior with dashboard tests.
+    last_reviewed: 2026-06-02
+  - id: TODO-SRC-APP-001
+    title: Complete W6 backtesting evidence loop linkage to strategy lineage
+    module_id: SRC-APP
+    status: done
+    priority: medium
+    roadmap_item: W6-BTSTUDIO-001
+    stage_gate: BacktestingEvidence
+    owner_lane: Strategy Analytics
+    source_paths:
+      - src/Meridian.Application/README.md
+    checklist:
+      - Ensure backtest result evidence resolves to strategy lineage identifiers in shared workflows.
+      - Keep operator-facing acceptance criteria checklist-backed in source and roadmap documentation.
+      - Confirm owning module README scope and test-lane guidance remains complete for backtesting evidence changes.
+    last_reviewed: 2026-06-02
+  - id: TODO-SRC-HOST-001
+    title: Complete W7 live-readiness paper-first guard enforcement
+    module_id: SRC-HOST
+    status: done
+    priority: medium
+    roadmap_item: W7-LIVE-001
+    stage_gate: LiveReadiness
+    owner_lane: Runtime Host
+    source_paths:
+      - src/Meridian/README.md
+    checklist:
+      - Keep live action surfaces and launch paths paper-first until all acceptance gates are green.
+      - Verify credential and provider checks remain secret-safe and default to read-only behavior.
+      - Require governance sign-off linkage before any live-readiness readiness claim is surfaced.
+    last_reviewed: 2026-06-02
+  - id: TODO-SRC-INFRASTRUCTURE-001
+    title: Complete W7 provider credential safety and read-only default checks
+    module_id: SRC-INFRASTRUCTURE
+    status: done
+    priority: medium
+    roadmap_item: W7-LIVE-001
+    stage_gate: LiveReadiness
+    owner_lane: Data Confidence and Validation
+    source_paths:
+      - src/Meridian.Infrastructure/README.md
+    checklist:
+      - Confirm provider credential validation flows never expose secrets in logs or payload echoes.
+      - Keep provider/live connectivity checks read-only by default unless explicit approval gates are met.
+      - Align adapter-level readiness behavior with shared live-readiness governance requirements.
     last_reviewed: 2026-06-02

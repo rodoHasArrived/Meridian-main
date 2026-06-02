@@ -21,20 +21,17 @@ This module owns the browser UI source for operator workflows. Keep shared contr
 logic in `src/Meridian.Ui.Shared` or `src/Meridian.Ui.Services` when the same behavior is consumed
 by desktop or host surfaces.
 
-The browser workstation visual system is light-first with a compact black masthead, slim
-context-aware rail, bordered workstation regions, dense Addepar-style tables, and fixed utility
-inspectors. Keep visual changes on the shared tokens and primitives in `src/styles/index.css`,
-`src/components/ui/`, and `src/components/meridian/` instead of introducing one-off screen styling.
-Legacy dark token aliases remain mapped during the migration so older pages continue to render while
-screens move toward the shared workstation primitives.
+The browser workstation visual system is dark-first with a compact ledger-grid treatment inspired
+by the internal `cash-flow-factor-sch` reference: hard-offset shadows, sharp bordered surfaces,
+dense data tables, sticky workstation chrome, and bright but semantic state accents. Keep visual
+changes on the shared tokens and primitives in `src/styles/index.css` and `src/components/ui/`
+instead of introducing one-off screen styling.
 
 ## Key folders and files
 
 - `src/` - React/TypeScript workstation source.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
-- `src/components/meridian/workspace-primitives.tsx` - shared filter bars, tab strips,
-  inspector hosts, and document canvas surfaces for migrated workstation layouts.
 
 
 ## Dense row detail accessibility contract
@@ -91,7 +88,9 @@ browser routes under `/strategy`, `/data`, and `/accounting`.
 Trading readiness work-item actions consume shared route metadata when it is specific enough to
 resolve locally. Execution-control and promotion-review items carrying the shared
 `/api/workstation/trading/readiness` route land on `/trading`, while paper-replay items keep the
-session replay panel hash target so replay verification remains directly actionable.
+session replay panel hash target so replay verification remains directly actionable. This is the
+browser PaperSession route handoff covered by `DIA-BROWSER-WORKSTATION` and
+`DIA-PAPER-SESSION-REPLAY`; keep route changes aligned with those diagram records.
 Accounting reconciliation break detail preserves shared queue metadata such as exception route,
 tolerance profile, priority, SLA badge label/tone, age band, root cause, resolution code, last
 comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
@@ -103,10 +102,6 @@ Accounting reconciliation statement runs now use the shared statement-run endpoi
 broker or custodian, account, period, status, validation, match, break, case, and import timing
 read models; React components only render these values and do not reimplement matching, tolerance,
 validation, or case-state rules.
-The Portfolio and Accounting screens consume `MultiAssetCoverageSummary` from
-`/api/workstation/portfolio/multi-asset-coverage` through `useWorkstationData`. Browser code renders
-server-supplied asset-class readiness, evidence requirements, ledger classification, reconciliation
-signals, and close blockers only; it must not infer multi-asset readiness from local portfolio rows.
 The Accounting screen also carries a stable Investment Accounting Transaction Lab panel view model
 so the browser renders the Books Before Broker preview entry point without crashing while endpoint
 request wiring remains a follow-on workflow.
@@ -121,14 +116,12 @@ pack id, retained evidence links, and checklist control approvals come from the 
 payload rather than browser-local publication state.
 The Operations Continuity detail view also renders the shared accounting-record summary from the
 workflow payload. Retained source records, normalized activity, reconciliation case history, ledger
-evidence, approvals, report-pack lineage, export evidence, and restatement lineage are displayed as
-server-owned evidence categories, not browser-local audit-readiness rules. The browser also renders
-the shared audit-pack readiness label, measured generation time, 60-second target status, warnings,
-and missing categories when the payload provides them. Each row also displays the contract-owned
-required evidence labels, including document attachments, export manifests, and restatement lineage
-for report-pack evidence. Browser evidence clients also carry the shared vault lookup and export
-linkage contract, including `accountingRecordId`, so retained accounting-record manifests can be
-rediscovered through the same API shape used by WPF and host endpoints.
+evidence, approvals, and report-pack lineage are displayed as server-owned evidence categories, not
+browser-local audit-readiness rules. Each row also displays the contract-owned required evidence
+labels, including document attachments, export manifests, and restatement lineage for report-pack
+evidence. Browser evidence clients also carry the shared vault lookup and export linkage contract,
+including `accountingRecordId`, so retained accounting-record manifests can be rediscovered through
+the same API shape used by WPF and host endpoints.
 No-host browser previews include the same accounting-record evidence subject, packet, validation,
 manifest export, and vault-search fixture path so operators can inspect the evidence workbench demo
 without a live Meridian API host.
@@ -198,9 +191,8 @@ event labels also normalize retained source names before entering the visible ev
 
 ## Diagrams
 
-See `DIA-BROWSER-WORKSTATION`, `DIA-PAPER-SESSION-REPLAY`, and
-`DIA-BROWSER-WORKSTATION-ROUTES` in `docs/source/data/diagram-index.yml`. The route map links
-trading readiness route behavior and replay hash targets to the `PaperSession` stage gate.
+See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
+`docs/source/data/diagram-index.yml`.
 
 ## Roadmap traceability
 
@@ -219,6 +211,7 @@ trading readiness route behavior and replay hash targets to the `PaperSession` s
 | TODO | Title | Status | Priority |
 | --- | --- | --- | --- |
 | `TODO-SRC-UI-DASHBOARD-001` | Add browser workstation route diagram coverage for paper readiness | done | medium |
+| `TODO-SRC-UI-DASHBOARD-002` | Wire Accounting Transaction Lab browser endpoint requests to shared API contracts | done | high |
 <!-- source-todos:end -->
 
 ## Validation

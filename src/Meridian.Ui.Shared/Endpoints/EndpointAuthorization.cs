@@ -1,8 +1,33 @@
 using Meridian.Application.Auth;
 using Meridian.Contracts.Auth;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
+
+/// <summary>
+/// Marker metadata recorded on endpoints that attach a permission gate through
+/// <see cref="EndpointAuthorization.RequirePermission{TBuilder}"/> or
+/// <see cref="EndpointAuthorization.RequireAnyPermission{TBuilder}"/>. Coverage tests inspect this
+/// metadata to prove every mapped route declares an explicit authorization requirement.
+/// </summary>
+public sealed class EndpointAuthorizationMetadata
+{
+    public EndpointAuthorizationMetadata(IReadOnlyList<UserPermission> permissions, bool requireAll)
+    {
+        Permissions = permissions;
+        RequireAll = requireAll;
+    }
+
+    /// <summary>The permission flags evaluated by the attached authorization filter.</summary>
+    public IReadOnlyList<UserPermission> Permissions { get; }
+
+    /// <summary>
+    /// <see langword="true"/> when every permission in <see cref="Permissions"/> is required;
+    /// <see langword="false"/> when any single permission grants access.
+    /// </summary>
+    public bool RequireAll { get; }
+}
 
 /// <summary>
 /// Centralized authorization helpers for workstation endpoints that rely on
@@ -106,6 +131,32 @@ public static class EndpointAuthorization
 
             return ValueTask.FromResult<object?>(EndpointHelpers.Forbidden());
         };
+
+    /// <summary>
+    /// Attaches a single-permission authorization filter to the route (or group) and records
+    /// <see cref="EndpointAuthorizationMetadata"/> so the requirement is discoverable in endpoint metadata.
+    /// This is the canonical way to gate a mutation or sensitive read route.
+    /// </summary>
+    public static TBuilder RequirePermission<TBuilder>(this TBuilder builder, UserPermission permission)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.AddEndpointFilter(Require(permission));
+        builder.WithMetadata(new EndpointAuthorizationMetadata(new[] { permission }, requireAll: true));
+        return builder;
+    }
+
+    /// <summary>
+    /// Attaches an any-of-permissions authorization filter to the route (or group) and records
+    /// <see cref="EndpointAuthorizationMetadata"/> so the requirement is discoverable in endpoint metadata.
+    /// Use for read routes that should accept either a view or a manage permission.
+    /// </summary>
+    public static TBuilder RequireAnyPermission<TBuilder>(this TBuilder builder, params UserPermission[] permissions)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.AddEndpointFilter(RequireAny(permissions));
+        builder.WithMetadata(new EndpointAuthorizationMetadata(permissions, requireAll: false));
+        return builder;
+    }
 
     public static async Task<ScopedAuthorizationDecisionDto> AuthorizeScopedAsync(
         HttpContext context,

@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -14,15 +15,22 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class NegativePathEndpointTests
+public sealed class NegativePathEndpointTests : IDisposable
 {
     private readonly HttpClient _client;
+    // SEC-001: configuration routes now require ViewConfig/ModifyConfig. Config-specific negative
+    // paths use an authorized client so the handler (not the authorization gate) produces the
+    // asserted 400/200 responses.
+    private readonly HttpClient _configClient;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public NegativePathEndpointTests(EndpointTestFixture fixture)
     {
         _client = fixture.Client;
+        _configClient = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
     }
+
+    public void Dispose() => _configClient.Dispose();
 
     // ================================================================
     // Health / Status negative paths
@@ -165,7 +173,7 @@ public sealed class NegativePathEndpointTests
     public async Task UpdateDataSource_WithEmptyBody_ReturnsBadRequest()
     {
         var content = new StringContent("{}", Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/config/datasource", content);
+        var response = await _configClient.PostAsync("/api/config/datasource", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -174,7 +182,7 @@ public sealed class NegativePathEndpointTests
     {
         var payload = new { DataSource = (string?)null };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/config/datasource", content);
+        var response = await _configClient.PostAsync("/api/config/datasource", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -182,7 +190,7 @@ public sealed class NegativePathEndpointTests
     public async Task AddSymbol_WithNullBody_ReturnsBadRequest()
     {
         var content = new StringContent("null", Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/config/symbols", content);
+        var response = await _configClient.PostAsync("/api/config/symbols", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -191,7 +199,7 @@ public sealed class NegativePathEndpointTests
     {
         var payload = new { Symbol = "   ", SubscribeTrades = true };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/config/symbols", content);
+        var response = await _configClient.PostAsync("/api/config/symbols", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -199,7 +207,7 @@ public sealed class NegativePathEndpointTests
     public async Task DeleteSymbol_NonExistentSymbol_ReturnsOk()
     {
         // Deleting a non-existent symbol is idempotent — returns OK
-        var response = await _client.DeleteAsync("/api/config/symbols/NONEXISTENT_SYMBOL_ZZZ");
+        var response = await _configClient.DeleteAsync("/api/config/symbols/NONEXISTENT_SYMBOL_ZZZ");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -209,9 +217,9 @@ public sealed class NegativePathEndpointTests
         // Add a symbol, retrieve config, verify presence
         var payload = new { Symbol = "TEST_NEG_PATH", SubscribeTrades = false, SubscribeDepth = false, DepthLevels = 5, SecurityType = "STK", Exchange = "SMART", Currency = "USD" };
         var addContent = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        await _client.PostAsync("/api/config/symbols", addContent);
+        await _configClient.PostAsync("/api/config/symbols", addContent);
 
-        var configResponse = await _client.GetAsync("/api/config");
+        var configResponse = await _configClient.GetAsync("/api/config");
         configResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(configResponse);
         var symbols = json["symbols"].EnumerateArray()
@@ -220,7 +228,7 @@ public sealed class NegativePathEndpointTests
         symbols.Should().Contain("TEST_NEG_PATH");
 
         // Clean up
-        await _client.DeleteAsync("/api/config/symbols/TEST_NEG_PATH");
+        await _configClient.DeleteAsync("/api/config/symbols/TEST_NEG_PATH");
     }
 
     [Fact]
@@ -228,7 +236,7 @@ public sealed class NegativePathEndpointTests
     {
         var payload = new { DataRoot = "../../../etc", NamingConvention = "BySymbol", DatePartition = "Daily", IncludeProvider = false, Compress = false };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/config/storage", content);
+        var response = await _configClient.PostAsync("/api/config/storage", content);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -469,7 +477,7 @@ public sealed class NegativePathEndpointTests
     [InlineData("/api/config/data-sources")]
     public async Task ConfigGetEndpoints_ReturnJson(string endpoint)
     {
-        var response = await _client.GetAsync(endpoint);
+        var response = await _configClient.GetAsync(endpoint);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
     }

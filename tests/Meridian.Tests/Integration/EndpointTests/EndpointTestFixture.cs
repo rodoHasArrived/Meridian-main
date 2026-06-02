@@ -7,11 +7,13 @@ using Meridian.Application.FundStructure;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -41,6 +43,25 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     public HttpClient Client { get; private set; } = null!;
     public string DataRoot { get; private set; } = null!;
     public IServiceProvider Services => _app!.Services;
+
+    /// <summary>
+    /// Header understood only by the in-memory test host (see <see cref="InitializeAsync"/>) that grants
+    /// the listed <see cref="UserPermission"/> flag names to the current request.
+    /// </summary>
+    public const string TestPermissionsHeader = "X-Test-Permissions";
+
+    /// <summary>
+    /// Creates a non-redirecting client whose requests are pre-authorized with the supplied permissions
+    /// via <see cref="TestPermissionsHeader"/>. The caller is responsible for disposing the client.
+    /// </summary>
+    public HttpClient CreatePermittedClient(params UserPermission[] permissions)
+    {
+        var client = CreateNoRedirectClient();
+        client.DefaultRequestHeaders.Add(
+            TestPermissionsHeader,
+            string.Join(',', permissions.Select(permission => permission.ToString())));
+        return client;
+    }
 
     /// <summary>
     /// Creates an <see cref="HttpClient"/> backed by the in-memory TestServer that does NOT
@@ -124,6 +145,29 @@ public sealed class EndpointTestFixture : IAsyncLifetime
             }
 
             await next(context);
+        });
+
+        // Test-only affordance: lets endpoint tests exercise permission-gated routes on the shared
+        // host without a full login round-trip by declaring the caller's permissions through the
+        // X-Test-Permissions header (comma-separated UserPermission flag names). This middleware is
+        // wired ONLY into the in-memory test host; the production UiServer pipeline never includes it,
+        // so it cannot be used to bypass authorization in a real deployment. Mirrors the
+        // context.Items[CurrentUserPermissionsKey] injection used by ReferenceDataEndpointAuthorizationTests.
+        _app.Use(async (HttpContext context, Func<Task> next) =>
+        {
+            if (context.Request.Headers.TryGetValue(TestPermissionsHeader, out var rawPermissions))
+            {
+                RolePermissions.TryParsePermissionNames(
+                    rawPermissions.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                    out var permissions,
+                    out _);
+                if (permissions != UserPermission.None)
+                {
+                    context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+                }
+            }
+
+            await next();
         });
 
         var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();

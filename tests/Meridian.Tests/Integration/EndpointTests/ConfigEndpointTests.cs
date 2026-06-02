@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -13,15 +14,19 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// </summary>
 [Trait("Category", "Integration")]
 [Collection("Endpoint")]
-public sealed class ConfigEndpointTests
+public sealed class ConfigEndpointTests : IDisposable
 {
     private readonly HttpClient _client;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     public ConfigEndpointTests(EndpointTestFixture fixture)
     {
-        _client = fixture.Client;
+        // SEC-001: configuration routes now require ViewConfig/ModifyConfig. Authorize this suite's
+        // client so the existing functional assertions continue to exercise the handlers.
+        _client = fixture.CreatePermittedClient(UserPermission.ViewConfig, UserPermission.ModifyConfig);
     }
+
+    public void Dispose() => _client.Dispose();
 
     #region GET /api/config
 
