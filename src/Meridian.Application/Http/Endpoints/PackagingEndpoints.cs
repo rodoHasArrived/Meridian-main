@@ -22,7 +22,9 @@ public static class PackagingEndpoints
     /// </summary>
     public static void MapPackagingEndpoints(this IEndpointRouteBuilder app, string dataRoot)
     {
-        var packager = new PortableDataPackager(dataRoot);
+        var resolvedDataRoot = Path.GetFullPath(dataRoot);
+        var packagesRoot = Path.GetFullPath(Path.Combine(resolvedDataRoot, "..", "packages"));
+        var packager = new PortableDataPackager(resolvedDataRoot);
 
         // ==================== PACKAGE CREATION ====================
 
@@ -36,7 +38,7 @@ public static class PackagingEndpoints
                 {
                     Name = request.Name ?? $"market-data-{DateTime.UtcNow:yyyyMMdd}",
                     Description = request.Description,
-                    OutputDirectory = request.OutputDirectory ?? "packages",
+                    OutputDirectory = packagesRoot,
                     Symbols = request.Symbols,
                     EventTypes = request.EventTypes,
                     StartDate = request.StartDate,
@@ -50,6 +52,16 @@ public static class PackagingEndpoints
                     Tags = request.Tags,
                     CustomMetadata = request.CustomMetadata
                 };
+
+                if (!string.IsNullOrWhiteSpace(request.OutputDirectory))
+                {
+                    if (!TryResolvePathWithinBase(request.OutputDirectory, packagesRoot, out var resolvedOutputDirectory))
+                    {
+                        return Results.BadRequest(new { error = "Invalid OutputDirectory: path must stay within the packages root." });
+                    }
+
+                    options.OutputDirectory = resolvedOutputDirectory;
+                }
 
                 var result = await packager.CreatePackageAsync(options, ct);
 
@@ -80,20 +92,23 @@ public static class PackagingEndpoints
                     return Results.BadRequest(new { error = "PackagePath is required" });
                 }
 
-                if (request.PackagePath.Contains("..") || request.PackagePath.Contains('\0'))
+                if (!TryResolvePathWithinBase(request.PackagePath, packagesRoot, out var packagePath))
                 {
-                    return Results.BadRequest(new { error = "Invalid PackagePath: traversal sequences not allowed" });
+                    return Results.BadRequest(new { error = "Invalid PackagePath: path must stay within the packages root." });
                 }
 
-                if (request.DestinationDirectory is not null &&
-                    (request.DestinationDirectory.Contains("..") || request.DestinationDirectory.Contains('\0')))
+                string? resolvedDestinationDirectory = null;
+                if (!string.IsNullOrWhiteSpace(request.DestinationDirectory) &&
+                    !TryResolvePathWithinBase(request.DestinationDirectory, resolvedDataRoot, out resolvedDestinationDirectory))
                 {
-                    return Results.BadRequest(new { error = "Invalid DestinationDirectory: traversal sequences not allowed" });
+                    return Results.BadRequest(new { error = "Invalid DestinationDirectory: path must stay within the storage root." });
                 }
 
                 var result = await packager.ImportPackageAsync(
-                    request.PackagePath,
-                    request.DestinationDirectory ?? dataRoot,
+                    packagePath,
+                    string.IsNullOrWhiteSpace(request.DestinationDirectory)
+                        ? resolvedDataRoot
+                        : resolvedDestinationDirectory!,
                     request.ValidateChecksums ?? true,
                     request.MergeWithExisting ?? false,
                     ct);
@@ -125,17 +140,17 @@ public static class PackagingEndpoints
                     return Results.BadRequest(new { error = "PackagePath is required" });
                 }
 
-                if (request.PackagePath.Contains("..") || request.PackagePath.Contains('\0'))
+                if (!TryResolvePathWithinBase(request.PackagePath, packagesRoot, out var packagePath))
                 {
-                    return Results.BadRequest(new { error = "Invalid PackagePath: traversal sequences not allowed" });
+                    return Results.BadRequest(new { error = "Invalid PackagePath: path must stay within the packages root." });
                 }
 
-                var result = await packager.ValidatePackageAsync(request.PackagePath, ct);
+                var result = await packager.ValidatePackageAsync(packagePath, ct);
 
                 return Results.Json(new
                 {
                     isValid = result.IsValid,
-                    packagePath = request.PackagePath,
+                    packagePath,
                     manifest = result.Manifest,
                     issues = result.Issues,
                     missingFiles = result.MissingFiles,
@@ -161,13 +176,12 @@ public static class PackagingEndpoints
                     return Results.BadRequest(new { error = "Path query parameter is required" });
                 }
 
-                // Validate path stays within the data root
-                if (path.Contains("..") || path.Contains('\0'))
+                if (!TryResolvePathWithinBase(path, packagesRoot, out var packagePath))
                 {
-                    return Results.BadRequest(new { error = "Invalid path: traversal sequences not allowed" });
+                    return Results.BadRequest(new { error = "Invalid path: path must stay within the packages root." });
                 }
 
-                var contents = await packager.ListPackageContentsAsync(path, ct);
+                var contents = await packager.ListPackageContentsAsync(packagePath, ct);
 
                 return Results.Json(contents, s_jsonOptions);
             }
@@ -193,21 +207,15 @@ public static class PackagingEndpoints
         {
             try
             {
-                var defaultPackagesDir = Path.GetFullPath(Path.Combine(dataRoot, "..", "packages"));
-                string packagesDir;
-
-                if (directory is not null)
+                var packagesDir = packagesRoot;
+                if (!string.IsNullOrWhiteSpace(directory))
                 {
-                    // Validate user-supplied directory stays within the project boundary
-                    if (directory.Contains("..") || directory.Contains('\0'))
+                    if (!TryResolvePathWithinBase(directory, packagesRoot, out var resolvedPackagesDirectory))
                     {
-                        return Results.BadRequest(new { error = "Invalid directory: traversal sequences not allowed" });
+                        return Results.BadRequest(new { error = "Invalid directory: path must stay within the packages root." });
                     }
-                    packagesDir = Path.GetFullPath(directory);
-                }
-                else
-                {
-                    packagesDir = defaultPackagesDir;
+
+                    packagesDir = resolvedPackagesDirectory;
                 }
 
                 if (!Directory.Exists(packagesDir))
@@ -245,23 +253,26 @@ public static class PackagingEndpoints
         {
             try
             {
-                var packagesDir = Path.GetFullPath(Path.Combine(dataRoot, "..", "packages"));
+                if (fileName.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
+                {
+                    return Results.BadRequest(new { error = "Invalid file name." });
+                }
+
+                var packagesDir = packagesRoot;
+                if (!string.IsNullOrWhiteSpace(directory))
+                {
+                    if (!TryResolvePathWithinBase(directory, packagesRoot, out var resolvedPackagesDirectory))
+                    {
+                        return Results.BadRequest(new { error = "Invalid directory: path must stay within the packages root." });
+                    }
+
+                    packagesDir = resolvedPackagesDirectory;
+                }
+
                 var packagePath = Path.Combine(packagesDir, fileName);
-
-                // Security: ensure the path is within the packages directory
                 var fullPath = Path.GetFullPath(packagePath);
-                var fullPackagesDir = packagesDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                    + Path.DirectorySeparatorChar;
-
-                if (!fullPath.StartsWith(fullPackagesDir, StringComparison.OrdinalIgnoreCase))
-                {
-                    return Results.BadRequest(new { error = "Invalid file path" });
-                }
-
                 if (!File.Exists(fullPath))
-                {
                     return Results.NotFound(new { error = $"Package not found: {fileName}" });
-                }
 
                 File.Delete(fullPath);
 
@@ -282,19 +293,23 @@ public static class PackagingEndpoints
         {
             try
             {
-                var packagesDir = Path.GetFullPath(Path.Combine(dataRoot, "..", "packages"));
-                var packagePath = Path.Combine(packagesDir, fileName);
-
-                // Security: ensure the path is within the packages directory
-                var fullPath = Path.GetFullPath(packagePath);
-                var fullPackagesDir = packagesDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                    + Path.DirectorySeparatorChar;
-
-                if (!fullPath.StartsWith(fullPackagesDir, StringComparison.OrdinalIgnoreCase))
+                if (fileName.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
                 {
-                    return Results.BadRequest("Invalid file path");
+                    return Results.BadRequest("Invalid file name.");
                 }
 
+                var packagesDir = packagesRoot;
+                if (!string.IsNullOrWhiteSpace(directory))
+                {
+                    if (!TryResolvePathWithinBase(directory, packagesRoot, out var resolvedPackagesDirectory))
+                    {
+                        return Results.BadRequest("Invalid directory path.");
+                    }
+
+                    packagesDir = resolvedPackagesDirectory;
+                }
+
+                var fullPath = Path.GetFullPath(Path.Combine(packagesDir, fileName));
                 if (!File.Exists(fullPath))
                 {
                     return Results.NotFound($"Package not found: {fileName}");
@@ -336,6 +351,34 @@ public static class PackagingEndpoints
             "maximum" or "max" => PackageCompressionLevel.Maximum,
             _ => PackageCompressionLevel.Balanced
         };
+    }
+
+    private static bool TryResolvePathWithinBase(string candidatePath, string basePath, out string resolvedPath)
+    {
+        resolvedPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(candidatePath))
+            return false;
+
+        try
+        {
+            var fullBasePath = Path.GetFullPath(basePath);
+            var fullCandidatePath = Path.IsPathRooted(candidatePath)
+                ? Path.GetFullPath(candidatePath)
+                : Path.GetFullPath(Path.Combine(fullBasePath, candidatePath));
+            var basePrefix = fullBasePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (!fullCandidatePath.Equals(fullBasePath, StringComparison.OrdinalIgnoreCase) &&
+                !fullCandidatePath.StartsWith(basePrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            resolvedPath = fullCandidatePath;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 

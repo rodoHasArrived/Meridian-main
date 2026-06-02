@@ -1,3 +1,11 @@
+---
+title: Environment Variable Reference
+status: active
+owner: core-team
+reviewed: 2026-06-02
+audience: developers-and-operators
+---
+
 # Environment Variable Reference
 
 All configuration can be set via environment variables, following the [12-factor app](https://12factor.net/config) methodology. Environment variables **take precedence** over `appsettings.json` values.
@@ -7,6 +15,21 @@ All configuration can be set via environment variables, following the [12-factor
 - Variables prefixed with `MDC_` are the canonical form
 - Legacy variables (without prefix) are also supported for backwards compatibility
 - Use double underscore (`__`) for .NET configuration binding: `ALPACA__KEYID` maps to `Alpaca:KeyId`
+
+## High-Risk Runtime and Security Controls (`MDC_*`)
+
+These variables control auth, mutation safety, runtime mode, and diagnostics behavior. Treat them as operator-only controls.
+
+| Variable | Config Path | Description | Risk if misconfigured |
+|----------|-------------|-------------|-----------------------|
+| `MDC_API_KEY` | Runtime auth middleware | Enables API-key enforcement for `/api/*` routes. | Leaving unset in shared/non-local environments can expose mutation endpoints. |
+| `MDC_AUTH_MODE` | Runtime auth middleware | Auth mode selector for UI/API auth pipeline. | Incorrect mode can disable expected permission checks. |
+| `MDC_DISABLE_RATE_LIMIT` | Runtime rate-limiter toggle | Disables mutation/global API throttles. | Can allow unsafe burst traffic against execution and lending mutations. |
+| `MDC_FIXTURE_MODE` | Host/runtime mode | Enables fixture/test behavior in workstation flows. | Running fixture mode in production-like environments can bypass normal gates. |
+| `MDC_SYNTHETIC_MODE` | `DataSource` convenience toggle | Forces synthetic/offline provider posture. | Can hide live-provider failures if accidentally left enabled. |
+| `MDC_DEBUG` | `Serilog:MinimumLevel` override path | Raises logging verbosity for troubleshooting. | Can increase sensitive log exposure and operational noise. |
+| `MDC_LOG_LEVEL` | `Serilog:MinimumLevel:Default` | Explicit minimum log level override. | Overly verbose output can leak operational details and overwhelm alerting. |
+| `MDC_SHUTDOWN_TOKEN` | Host shutdown guard | Token required by guarded shutdown flows. | Missing/weak token weakens operational shutdown controls. |
 
 ## Core Configuration
 
@@ -78,6 +101,21 @@ IB credentials are managed via TWS/Gateway, not environment variables. However, 
 | `MDC_BACKFILL_SYMBOLS` | `Backfill:Symbols` | Comma-separated symbol list | No | — |
 | `MDC_BACKFILL_FROM` | `Backfill:From` | Backfill start date (YYYY-MM-DD) | No | — |
 | `MDC_BACKFILL_TO` | `Backfill:To` | Backfill end date (YYYY-MM-DD) | No | — |
+
+## Appsettings Schema Mapping (Quick Index)
+
+Use this together with:
+
+- [`config/appsettings.sample.json`](../../config/appsettings.sample.json)
+- [`config/appsettings.schema.json`](../../config/appsettings.schema.json)
+
+| Schema section (`appsettings`) | Common `MDC_*` environment overrides | Notes |
+|---|---|---|
+| `DataRoot`, `Compress`, `DataSource` | `MDC_DATA_ROOT`, `MDC_COMPRESS`, `MDC_DATASOURCE` | Core runtime mode and storage root. |
+| `Backfill:*` | `MDC_BACKFILL_ENABLED`, `MDC_BACKFILL_PROVIDER`, `MDC_BACKFILL_SYMBOLS`, `MDC_BACKFILL_FROM`, `MDC_BACKFILL_TO` | Backfill execution posture and scope. |
+| `Storage:*` | `MDC_STORAGE_NAMING`, `MDC_STORAGE_PARTITION`, `MDC_STORAGE_RETENTION_DAYS`, `MDC_STORAGE_MAX_MB` | Retention and file-layout controls. |
+| `StockSharp:*` | `MDC_STOCKSHARP_*` | Connector mode and adapter credential wiring. |
+| `Alpaca:*` | `MDC_ALPACA_*` | Alpaca feed + credential override path. |
 
 ## StockSharp Connector Configuration
 

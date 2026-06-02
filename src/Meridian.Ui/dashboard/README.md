@@ -198,8 +198,9 @@ event labels also normalize retained source names before entering the visible ev
 
 ## Diagrams
 
-See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
-`docs/source/data/diagram-index.yml`.
+See `DIA-BROWSER-WORKSTATION`, `DIA-PAPER-SESSION-REPLAY`, and
+`DIA-BROWSER-WORKSTATION-ROUTES` in `docs/source/data/diagram-index.yml`. The route map links
+trading readiness route behavior and replay hash targets to the `PaperSession` stage gate.
 
 ## Roadmap traceability
 
@@ -217,7 +218,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-todos:begin module=SRC-UI-DASHBOARD -->
 | TODO | Title | Status | Priority |
 | --- | --- | --- | --- |
-| `TODO-SRC-UI-DASHBOARD-001` | Add browser workstation route diagram coverage for paper readiness | open | medium |
+| `TODO-SRC-UI-DASHBOARD-001` | Add browser workstation route diagram coverage for paper readiness | done | medium |
 <!-- source-todos:end -->
 
 ## Validation

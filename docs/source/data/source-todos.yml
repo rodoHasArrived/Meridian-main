@@ -7,15 +7,17 @@ todos:
   - id: TODO-SRC-UI-DASHBOARD-001
     title: Add browser workstation route diagram coverage for paper readiness
     module_id: SRC-UI-DASHBOARD
-    status: open
+    status: done
     priority: medium
     roadmap_item: W2-TRD-001
     stage_gate: PaperSession
     owner_lane: Workstation Shell and UX
     source_paths:
       - src/Meridian.Ui/dashboard/README.md
+      - docs/source/data/diagram-index.yml
+      - docs/architecture/diagrams/meridian-browser-workstation-route-map.mmd
     checklist:
       - Register the route-level browser workstation diagram.
       - Link trading readiness route behavior to the PaperSession stage gate.
       - Keep dashboard validation commands in the source README.
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-02

@@ -18,4 +18,4 @@ do_not_edit: true
 
 | ID | Title | Module | Status | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
-| `TODO-SRC-UI-DASHBOARD-001` | Add browser workstation route diagram coverage for paper readiness | `SRC-UI-DASHBOARD` | open | medium | Workstation Shell and UX |
+| `TODO-SRC-UI-DASHBOARD-001` | Add browser workstation route diagram coverage for paper readiness | `SRC-UI-DASHBOARD` | done | medium | Workstation Shell and UX |

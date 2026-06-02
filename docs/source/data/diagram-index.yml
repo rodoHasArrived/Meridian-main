@@ -51,3 +51,20 @@ diagrams:
       - Paper session persistence changes.
       - Replay diagnostics change.
       - Trading readiness route changes.
+  - id: DIA-BROWSER-WORKSTATION-ROUTES
+    title: Browser workstation route map
+    source: docs/architecture/diagrams/meridian-browser-workstation-route-map.mmd
+    output: docs/architecture/assets/meridian-browser-workstation-route-map.svg
+    type: mermaid
+    modules:
+      - SRC-UI-SERVICES
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+    roadmap_items:
+      - W2-TRD-001
+      - W2-PROMO-001
+    stage_gates:
+      - PaperSession
+    update_when:
+      - Browser workstation route catalog, command palette, or local route resolution changes.
+      - Trading readiness actions or PaperSession acceptance routing changes.

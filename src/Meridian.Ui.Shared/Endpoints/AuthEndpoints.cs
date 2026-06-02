@@ -89,6 +89,8 @@ public static class AuthEndpoints
                 return Results.Redirect(errorRedirect);
             }
 
+            var secureCookies = CookieCsrfProtection.ShouldUseSecureCookies(context);
+
             context.Response.Cookies.Append(
                 LoginSessionMiddleware.SessionCookieName,
                 token,
@@ -96,9 +98,11 @@ public static class AuthEndpoints
                 {
                     HttpOnly = true,
                     SameSite = SameSiteMode.Strict,
+                    Secure = secureCookies,
                     Path = "/",
                     Expires = DateTimeOffset.UtcNow + LoginSessionService.SessionDuration
                 });
+            CookieCsrfProtection.IssueCsrfCookie(context, secureCookies, LoginSessionService.SessionDuration);
 
             if (context.Request.HasJsonContentType())
             {
@@ -127,7 +131,16 @@ public static class AuthEndpoints
             if (!string.IsNullOrWhiteSpace(token))
                 sessionService.RemoveSession(token);
 
-            context.Response.Cookies.Delete(LoginSessionMiddleware.SessionCookieName);
+            var secureCookies = CookieCsrfProtection.ShouldUseSecureCookies(context);
+            context.Response.Cookies.Delete(
+                LoginSessionMiddleware.SessionCookieName,
+                new CookieOptions
+                {
+                    Path = "/",
+                    SameSite = SameSiteMode.Strict,
+                    Secure = secureCookies
+                });
+            CookieCsrfProtection.DeleteCsrfCookie(context, secureCookies);
             return Results.Redirect(UiApiRoutes.AuthLoginPage);
         }).ExcludeFromDescription();
 

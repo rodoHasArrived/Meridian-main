@@ -337,6 +337,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                 sp.GetService<HistoricalDataQueryService>(),
                 sp.GetService<BackfillCoordinator>()));
+        services.TryAddSingleton<IFundStructurePolicyService, FundStructurePolicyService>();
         if (FundStructureStartup.IsConfigured())
         {
             FundStructureStartup.EnsureEnvironmentDefaults();
