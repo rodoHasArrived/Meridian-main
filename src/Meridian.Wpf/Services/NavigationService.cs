@@ -257,7 +257,18 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// <inheritdoc />
     protected override void ClearHistoryCore()
     {
-        while (_frame?.CanGoBack ?? false)
+        if (_frame is null)
+        {
+            return;
+        }
+
+        if (!_frame.Dispatcher.CheckAccess())
+        {
+            _frame.Dispatcher.Invoke(ClearHistoryCore);
+            return;
+        }
+
+        while (_frame.CanGoBack)
         {
             _frame.RemoveBackEntry();
         }

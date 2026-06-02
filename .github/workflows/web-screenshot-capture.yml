@@ -103,21 +103,21 @@ jobs:
 
           export REQUESTED_OUTPUT_DIR="$requested"
           resolved="$(python - <<'PYTHON'
-import os
-from pathlib import Path
+          import os
+          from pathlib import Path
 
-repo_root = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
-base_dir = (repo_root / "docs/screenshots/web").resolve()
-candidate = (repo_root / os.environ["REQUESTED_OUTPUT_DIR"]).resolve()
+          repo_root = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+          base_dir = (repo_root / "docs/screenshots/web").resolve()
+          candidate = (repo_root / os.environ["REQUESTED_OUTPUT_DIR"]).resolve()
 
-try:
-    candidate.relative_to(base_dir)
-except ValueError:
-    raise SystemExit(f"::error::output_dir must stay within 'docs/screenshots/web'. Received '{os.environ['REQUESTED_OUTPUT_DIR']}'.")
+          try:
+              candidate.relative_to(base_dir)
+          except ValueError:
+              raise SystemExit(f"::error::output_dir must stay within 'docs/screenshots/web'. Received '{os.environ['REQUESTED_OUTPUT_DIR']}'.")
 
-print(candidate.relative_to(repo_root).as_posix())
-PYTHON
-)"
+          print(candidate.relative_to(repo_root).as_posix())
+          PYTHON
+          )"
 
           echo "safe_output_dir=$resolved" >> "$GITHUB_OUTPUT"
       - name: Capture web screenshots

@@ -1,4 +1,5 @@
 using System.Runtime.ExceptionServices;
+using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -55,10 +56,11 @@ internal static class WpfTestThread
 
             _thread = new Thread(() =>
             {
-                _ = new System.Windows.Application
+                var app = new System.Windows.Application
                 {
                     ShutdownMode = ShutdownMode.OnExplicitShutdown
                 };
+                EnsureSharedResources(app);
                 _dispatcher = Dispatcher.CurrentDispatcher;
                 Ready.Set();
                 Dispatcher.Run();
@@ -68,6 +70,33 @@ internal static class WpfTestThread
             _thread.IsBackground = true;
             _thread.Start();
             Ready.Wait();
+        }
+    }
+
+    private static void EnsureSharedResources(System.Windows.Application app)
+    {
+        var resources = app.Resources.MergedDictionaries;
+        var expectedDictionaries = new[]
+        {
+            "pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml",
+            "pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml",
+            "pack://application:,,,/Meridian.Desktop;component/Styles/ThemeTokens.xaml",
+            "pack://application:,,,/Meridian.Desktop;component/Styles/AppStyles.xaml",
+            "pack://application:,,,/Meridian.Desktop;component/Styles/ThemeTypography.xaml",
+            "pack://application:,,,/Meridian.Desktop;component/Styles/ThemeSurfaces.xaml",
+            "pack://application:,,,/Meridian.Desktop;component/Styles/ThemeControls.xaml",
+            "pack://application:,,,/Meridian.Desktop;component/Styles/IconResources.xaml",
+            "pack://application:,,,/Meridian.Desktop;component/Styles/Animations.xaml"
+        };
+
+        foreach (var source in expectedDictionaries)
+        {
+            if (resources.Any(existing => string.Equals(existing.Source?.OriginalString, source, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            resources.Add(new ResourceDictionary { Source = new Uri(source, UriKind.RelativeOrAbsolute) });
         }
     }
 
