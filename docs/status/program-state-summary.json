@@ -82,7 +82,7 @@
       "Status": "done",
       "Health": "green",
       "Priority": "high",
-      "Owner Lane": "Governance and Ledger",
+      "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "complete",
       "Evidence": "docs/roadmap/generated/ROADMAP_SUMMARY.md; tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs; tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
       "Last Reviewed": "2026-05-29"
@@ -95,7 +95,7 @@
       "Status": "done",
       "Health": "green",
       "Priority": "high",
-      "Owner Lane": "Governance and Ledger",
+      "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "complete",
       "Evidence": "docs/roadmap/generated/ROADMAP_SUMMARY.md; tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs; tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs",
       "Last Reviewed": "2026-05-29"
@@ -108,7 +108,7 @@
       "Status": "planned",
       "Health": "green",
       "Priority": "high",
-      "Owner Lane": "Governance and Ledger",
+      "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "planned_evidence",
       "Evidence": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
       "Last Reviewed": "2026-06-02"
@@ -134,7 +134,7 @@
       "Status": "planned",
       "Health": "green",
       "Priority": "medium",
-      "Owner Lane": "Governance and Ledger",
+      "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "planned_evidence",
       "Evidence": "",
       "Last Reviewed": "2026-06-02"

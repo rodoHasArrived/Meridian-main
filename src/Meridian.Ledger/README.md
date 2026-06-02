@@ -5,7 +5,7 @@ doc_schema_version: "1.0.0"
 module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
-owner_lane: Governance and Ledger
+owner_lane: Accounting and Ledger
 last_reviewed: 2026-05-20
 ---
 
