@@ -8,6 +8,8 @@
 #   ./build/scripts/install/install.sh --docker   Docker-based installation
 #   ./build/scripts/install/install.sh --native   Native .NET installation
 #   ./build/scripts/install/install.sh --check    Check prerequisites only
+#   ./build/scripts/install/install.sh --agent-tools  Install cloud-agent toolchain
+#   ./build/scripts/install/install.sh --help     Show help
 #
 # =============================================================================
 
@@ -20,7 +22,7 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-MODE="${1:-}"
+MODE=""
 
 # Move to repo root so all repo-relative paths (config/, data/, Meridian.sln,
 # deploy/) resolve correctly regardless of where the script is invoked from.
@@ -35,6 +37,119 @@ info()    { echo -e "${BLUE}$*${NC}"; }
 success() { echo -e "${GREEN}$*${NC}"; }
 warn()    { echo -e "${YELLOW}WARNING: $*${NC}"; }
 error()   { echo -e "${RED}ERROR: $*${NC}" >&2; exit 1; }
+
+print_help() {
+    cat <<'EOF'
+Usage:
+  ./build/scripts/install/install.sh
+  ./build/scripts/install/install.sh --docker
+  ./build/scripts/install/install.sh --native
+  ./build/scripts/install/install.sh --check
+  ./build/scripts/install/install.sh --agent-tools
+  ./build/scripts/install/install.sh --help
+EOF
+}
+
+run_as_root() {
+    if [ "$(id -u)" -eq 0 ]; then
+        "$@"
+    elif command -v sudo >/dev/null 2>&1; then
+        sudo "$@"
+    else
+        error "This step requires root privileges; install sudo or run as root."
+    fi
+}
+
+dotnet_major_version() {
+    local ver
+    ver=$(dotnet --version)
+    echo "${ver%%.*}"
+}
+
+install_dotnet_sdk_10() {
+    if command -v dotnet >/dev/null 2>&1 && [ "$(dotnet_major_version)" -ge 10 ]; then
+        info "  .NET SDK $(dotnet --version) already available"
+        return
+    fi
+
+    info "  Installing .NET SDK channel 10.0..."
+    local install_dir="${HOME}/.dotnet"
+    mkdir -p "$install_dir"
+    local installer
+    installer="$(mktemp)"
+    curl -fsSL https://dot.net/v1/dotnet-install.sh -o "$installer"
+    bash "$installer" --channel 10.0 --install-dir "$install_dir"
+    rm -f "$installer"
+    export DOTNET_ROOT="$install_dir"
+    export PATH="$install_dir:$PATH"
+    success "  .NET SDK $(dotnet --version) ready"
+}
+
+install_nodejs_20() {
+    if command -v node >/dev/null 2>&1 && [ "$(node -v | sed 's/^v//' | cut -d. -f1)" -ge 20 ]; then
+        info "  Node.js $(node -v) already available"
+        return
+    fi
+
+    info "  Installing Node.js 20 LTS..."
+    run_as_root apt-get update
+    run_as_root apt-get install -y ca-certificates curl gnupg
+    curl -fsSL https://deb.nodesource.com/setup_20.x | run_as_root bash -
+    run_as_root apt-get install -y nodejs
+    success "  Node.js $(node -v) ready"
+}
+
+install_python_312() {
+    local python_minor=""
+    if command -v python3 >/dev/null 2>&1; then
+        python_minor="$(python3 -c 'import sys; print(f"{sys.version_info[0]}.{sys.version_info[1]}")')"
+    fi
+
+    if [ "$python_minor" = "3.12" ]; then
+        info "  Python $(python3 --version 2>&1) already available"
+    else
+        info "  Installing Python 3.12..."
+        run_as_root apt-get update
+        run_as_root apt-get install -y python3.12 python3.12-venv python3-pip
+        if ! command -v python3 >/dev/null 2>&1 && command -v python3.12 >/dev/null 2>&1; then
+            run_as_root ln -sf "$(command -v python3.12)" /usr/local/bin/python3
+        fi
+        success "  Python $(python3 --version 2>&1) ready"
+    fi
+
+    if [ -f requirements.txt ]; then
+        info "  Installing Python requirements.txt dependencies..."
+        python3 -m pip install --upgrade pip
+        python3 -m pip install -r requirements.txt
+        success "  Python dependencies installed"
+    else
+        info "  requirements.txt not found; skipping Python dependency install"
+    fi
+}
+
+install_powershell_7() {
+    if command -v pwsh >/dev/null 2>&1; then
+        info "  PowerShell $(pwsh --version) already available"
+        return
+    fi
+
+    info "  Installing PowerShell 7..."
+    run_as_root apt-get update
+    run_as_root apt-get install -y wget apt-transport-https software-properties-common
+    local os_version
+    os_version="$(. /etc/os-release && echo "$VERSION_ID")"
+    wget -q "https://packages.microsoft.com/config/ubuntu/${os_version}/packages-microsoft-prod.deb" -O /tmp/packages-microsoft-prod.deb
+    run_as_root dpkg -i /tmp/packages-microsoft-prod.deb
+    run_as_root apt-get update
+    run_as_root apt-get install -y powershell
+    success "  PowerShell $(pwsh --version) ready"
+}
+
+warm_meridian_restore() {
+    info "  Running solution restore to warm NuGet cache..."
+    dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+    success "  NuGet restore cache warmed"
+}
 
 check_dotnet() {
     if ! command -v dotnet >/dev/null 2>&1; then
@@ -169,6 +284,25 @@ check_prerequisites() {
     fi
 }
 
+install_agent_toolchain() {
+    info ""
+    info "=== Agent Toolchain Installation ==="
+    info ""
+
+    install_dotnet_sdk_10
+    install_nodejs_20
+    install_python_312
+    install_powershell_7
+    warm_meridian_restore
+
+    info ""
+    success "Agent toolchain setup complete."
+    info "  dotnet:  $(dotnet --version)"
+    info "  node:    $(node --version)"
+    info "  python3: $(python3 --version 2>&1)"
+    info "  pwsh:    $(pwsh --version)"
+}
+
 interactive() {
     info ""
     info "╔══════════════════════════════════════════════╗"
@@ -193,10 +327,27 @@ interactive() {
 }
 
 # --- main --------------------------------------------------------------------
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --docker|--native|--check|--agent-tools|--help|-h)
+            if [ -n "$MODE" ]; then
+                error "Only one mode can be specified"
+            fi
+            MODE="$1"
+            shift
+            ;;
+        *)
+            error "Unknown option: $1"
+            ;;
+    esac
+done
+
 case "$MODE" in
-    --docker)  install_docker ;;
-    --native)  install_native ;;
-    --check)   check_prerequisites ;;
-    "")        interactive ;;
-    *)         error "Unknown option: $MODE" ;;
+    --docker)       install_docker ;;
+    --native)       install_native ;;
+    --check)        check_prerequisites ;;
+    --agent-tools)  install_agent_toolchain ;;
+    --help|-h)      print_help ;;
+    "")             interactive ;;
+    *)              error "Unknown option: $MODE" ;;
 esac
