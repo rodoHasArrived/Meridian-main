@@ -24,6 +24,19 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task AccountingConfigurationEndpoints_WithoutLedgerPermission_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(UiApiRoutes.LedgerAccountingConfiguration);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task AccountingConfigurationEndpoints_GoldenPath_PreviewsActivatesAndListsAudit()
     {
         await using var app = await CreateAppAsync(

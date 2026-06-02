@@ -962,7 +962,7 @@ public sealed class FundLedgerViewModelTests
                     row.SourceTarget == "FundReportPack");
                 viewModel.AccountingRecordStatusText.Should().Be("Review required");
                 viewModel.AccountingRecordEvidenceText.Should().Contain("0/8 evidence categories complete");
-                viewModel.AccountingRecordEvidenceText.Should().Contain("60 sec target");
+                viewModel.AccountingRecordEvidenceText.Should().Contain("60s target");
                 viewModel.AccountingRecordReadinessState.Title.Should().Be("Accounting record review required");
                 viewModel.AccountingRecordReadinessState.TargetText.Should().Be("OperationsContinuity");
                 viewModel.AccountingRecordReadinessState.Detail.Should().Contain("0 of 8 required evidence categories complete");

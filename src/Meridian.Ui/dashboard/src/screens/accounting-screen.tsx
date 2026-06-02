@@ -2335,6 +2335,16 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
             Refresh
           </Button>
+          <Button
+            size="sm"
+            disabled={!view.canActivate}
+            disabledReason={view.activateDisabledReason}
+            busy={view.activateBusy}
+            busyLabel={view.activateButtonLabel}
+            onClick={() => void view.activate()}
+          >
+            {view.activateButtonLabel}
+          </Button>
         </div>
       </div>
 

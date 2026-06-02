@@ -5,23 +5,6 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
 
-public interface IAccountingConfigurationStore
-{
-    Task<AccountingConfigurationWorkspaceDto?> GetAsync(string fundProfileId, CancellationToken ct = default);
-
-    Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);
-}
-
-public interface IAccountingActionAuditStore
-{
-    Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);
-
-    Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
-        string? fundProfileId = null,
-        Guid? ledgerBookId = null,
-        CancellationToken ct = default);
-}
-
 public sealed class InMemoryAccountingConfigurationStore : IAccountingConfigurationStore
 {
     private readonly Dictionary<string, AccountingConfigurationWorkspaceDto> _workspaces = new(StringComparer.OrdinalIgnoreCase);

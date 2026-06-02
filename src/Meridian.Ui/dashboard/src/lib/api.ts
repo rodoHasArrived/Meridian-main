@@ -745,6 +745,34 @@ export function previewAccountingConfigurationTemplate(
   return postJson<import("@/types").AccountingJournalTemplatePreview>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPreview, request, options);
 }
 
+export function upsertAccountingConfigurationChartNode(
+  request: import("@/types").UpsertChartOfAccountsNodeRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationChart, request, options);
+}
+
+export function upsertAccountingConfigurationTemplate(
+  request: import("@/types").UpsertJournalEntryTemplateRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationTemplates, request, options);
+}
+
+export function upsertAccountingConfigurationPostingRule(
+  request: import("@/types").UpsertPostingRuleRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRules, request, options);
+}
+
+export function activateAccountingConfiguration(
+  request: import("@/types").ActivateAccountingConfigurationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationActivate, request, options);
+}
+
 export function getGovernanceWorkspace(options: ApiRequestOptions = {}) {
   return getAccountingWorkspace(options);
 }

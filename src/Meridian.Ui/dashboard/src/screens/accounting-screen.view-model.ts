@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
+  activateAccountingConfiguration,
   getAccountingConfiguration,
   getCorporateActions,
   getReconciliationBreakQueue,
@@ -43,6 +44,7 @@ import type {
   ReconciliationCalibrationStatus,
   ResolveConflictRequest,
   PreviewJournalTemplateRequest,
+  ActivateAccountingConfigurationRequest,
   ResolveReconciliationBreakRequest,
   ReviewReconciliationBreakRequest,
   SecurityIdentityDrillIn,
@@ -87,6 +89,7 @@ export interface AccountingReportingServices {
 export interface AccountingConfigurationServices {
   getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
   previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
+  activate: (request: ActivateAccountingConfigurationRequest) => Promise<AccountingConfigurationWorkspace>;
 }
 
 export type GovernanceReconciliationServices = AccountingReconciliationServices;
@@ -155,6 +158,11 @@ export interface AccountingConfigurationViewModel {
   previewDisabledReason: string | null;
   previewBusy: boolean;
   canPreview: boolean;
+  activateButtonLabel: string;
+  activateDisabledReason: string | null;
+  activateBusy: boolean;
+  canActivate: boolean;
+  activate: () => Promise<void>;
   emptyText: string;
   refresh: () => Promise<void>;
   previewFirstTemplate: () => Promise<void>;
@@ -1074,7 +1082,8 @@ const defaultAccountingReportingServices: AccountingReportingServices = {
 
 const defaultAccountingConfigurationServices: AccountingConfigurationServices = {
   getConfiguration: () => getAccountingConfiguration(),
-  previewTemplate: (request) => previewAccountingConfigurationTemplate(request)
+  previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
+  activate: (request) => activateAccountingConfiguration(request)
 };
 
 const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
@@ -1298,6 +1307,8 @@ export function useAccountingConfigurationViewModel(
   const [preview, setPreview] = useState<AccountingJournalTemplatePreview | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState<ApiErrorDisplay | null>(null);
+  const [activateBusy, setActivateBusy] = useState(false);
+  const [activateError, setActivateError] = useState<ApiErrorDisplay | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -1340,6 +1351,29 @@ export function useAccountingConfigurationViewModel(
     }
   }, [previewBusy, services, workspace]);
 
+  const activate = useCallback(async () => {
+    if (!workspace || activateBusy) {
+      return;
+    }
+
+    setActivateBusy(true);
+    setActivateError(null);
+    try {
+      const activated = await services.activate({
+        fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
+        actor: "browser-accounting-operator",
+        correlationId: `browser-accounting-config-activate-${Date.now()}`,
+        evidenceLinks: ["browser://accounting/configure"]
+      });
+      setWorkspace(activated);
+    } catch (err) {
+      setActivateError(describeApiError(err, "Accounting configuration activation failed."));
+    } finally {
+      setActivateBusy(false);
+    }
+  }, [activateBusy, services, workspace]);
+
   return useMemo(() => {
     const issueCount = workspace?.validationIssues.length ?? 0;
     const criticalIssueCount = workspace?.validationIssues.filter((issue) => issue.severity === "Critical").length ?? 0;
@@ -1347,6 +1381,8 @@ export function useAccountingConfigurationViewModel(
     const activeRuleCount = workspace?.postingRules.filter((item) => !item.isArchived).length ?? 0;
     const activeChartNodeCount = workspace?.chartOfAccounts.filter((item) => !item.isArchived).length ?? 0;
     const hasTemplate = activeTemplateCount > 0;
+    const hasChart = activeChartNodeCount > 0;
+    const hasRule = activeRuleCount > 0;
     const previewDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -1354,6 +1390,21 @@ export function useAccountingConfigurationViewModel(
         : !hasTemplate
           ? "Create at least one active journal template before preview."
           : null;
+    const activateDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before activation."
+        : workspace.status === "Active"
+          ? "Accounting configuration is already active."
+          : criticalIssueCount > 0
+            ? "Resolve critical validation issues before activation."
+            : !hasChart
+              ? "Create at least one active chart account before activation."
+              : !hasTemplate
+                ? "Create at least one active journal template before activation."
+                : !hasRule
+                  ? "Create at least one active posting rule before activation."
+                  : null;
     const statusTone: AccountingConfigurationViewModel["statusTone"] = !workspace
       ? "default"
       : criticalIssueCount > 0
@@ -1458,11 +1509,16 @@ export function useAccountingConfigurationViewModel(
       previewDisabledReason,
       previewBusy,
       canPreview: previewDisabledReason === null && !previewBusy,
+      activateButtonLabel: activateBusy ? "Activating" : "Activate configuration",
+      activateDisabledReason: activateError?.summary ?? activateDisabledReason,
+      activateBusy,
+      canActivate: activateDisabledReason === null && !activateBusy,
+      activate,
       emptyText: loading ? "Loading accounting configuration." : "No accounting configuration records are available yet.",
       refresh,
       previewFirstTemplate
     };
-  }, [error, loading, preview, previewBusy, previewError, refresh, previewFirstTemplate, workspace]);
+  }, [activate, activateBusy, activateError, error, loading, preview, previewBusy, previewError, refresh, previewFirstTemplate, workspace]);
 }
 
 export function useGovernanceReportingViewModel(
