@@ -76,7 +76,7 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <!-- Sidebar button template: deep navy surfaces, refined hover palette -->
+    <!-- Sidebar button template: light rail surfaces, refined hover palette -->
     <ControlTemplate x:Key="SidebarButtonTemplate" TargetType="Button">
         <Border x:Name="border"
                 Background="{TemplateBinding Background}"
@@ -133,12 +133,12 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <!-- Primary: solid signal cyan, one per screen. -->
+    <!-- Primary: solid institutional action, one per screen. -->
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource PrimaryButtonTemplate}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleAccentBlueBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Foreground" Value="#05101B" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="Padding" Value="16,9" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="SemiBold" />
@@ -149,7 +149,7 @@
         <Setter Property="Padding" Value="22,9" />
     </Style>
 
-    <!-- Ghost: dark panel background with refined border, secondary action -->
+    <!-- Ghost: paper panel background with refined border, secondary action -->
     <Style x:Key="GhostButtonStyle" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource RoundedButtonTemplate}" />
         <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />

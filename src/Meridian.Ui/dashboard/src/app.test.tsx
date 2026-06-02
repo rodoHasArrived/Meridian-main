@@ -51,6 +51,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     strategy: null,
     trading: null,
     portfolio: null,
+    portfolioMultiAssetCoverage: null,
     data: null,
     accounting: null,
     reporting: null,

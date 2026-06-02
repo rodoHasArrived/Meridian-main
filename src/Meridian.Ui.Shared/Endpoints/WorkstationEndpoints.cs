@@ -398,6 +398,14 @@ public static partial class WorkstationEndpoints
         .WithName("GetWorkstationPortfolioSummary")
         .Produces<WorkstationPortfolioSummaryPayload>(200);
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolioMultiAssetCoverage), async (string? fundAccountId, string? entity, string? assetClass, HttpContext context) =>
+        {
+            var payload = await BuildMultiAssetCoveragePayloadAsync(context, fundAccountId, entity, assetClass).ConfigureAwait(false);
+            return Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetWorkstationPortfolioMultiAssetCoverage")
+        .Produces<MultiAssetCoverageSummaryDto>(200);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
             Guid? fundAccountId,
             string? periodId,
@@ -4151,6 +4159,7 @@ public static partial class WorkstationEndpoints
             {
                 ProviderConnectionCapabilityDto.DataAndBrokerage => "Data + Brokerage",
                 ProviderConnectionCapabilityDto.Brokerage => "Brokerage",
+                ProviderConnectionCapabilityDto.AccountingSystem => "Accounting System",
                 _ => "Data"
             };
         }
@@ -4633,6 +4642,23 @@ public static partial class WorkstationEndpoints
                 ["positions"] = $"/portfolio/positions?fundAccountId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(fundAccountId) ? "all" : fundAccountId!)}&strategyId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(strategyId) ? "all" : strategyId!)}&entity={Uri.EscapeDataString(string.IsNullOrWhiteSpace(entity) ? "portfolio" : entity!)}",
                 ["trades"] = $"/trading?fundAccountId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(fundAccountId) ? "all" : fundAccountId!)}&strategyId={Uri.EscapeDataString(string.IsNullOrWhiteSpace(strategyId) ? "all" : strategyId!)}"
             });
+    }
+
+    private static async Task<MultiAssetCoverageSummaryDto> BuildMultiAssetCoveragePayloadAsync(
+        HttpContext context,
+        string? fundAccountId,
+        string? entity,
+        string? assetClass)
+    {
+        var service = context.RequestServices.GetService<IMultiAssetCoverageReadService>();
+        if (service is null)
+        {
+            service = new MultiAssetCoverageReadService(new SecurityMasterOperationalReadinessService());
+        }
+
+        return await service
+            .GetCoverageAsync(fundAccountId, entity, assetClass, context.RequestAborted)
+            .ConfigureAwait(false);
     }
 
     private static async Task<WorkstationAccountingPayload> BuildAccountingPayloadAsync(HttpContext context)

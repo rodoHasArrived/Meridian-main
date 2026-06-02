@@ -358,6 +358,67 @@ public sealed record WorkstationPortfolioSummaryPayload(
     WorkstationPortfolioSummaryTelemetry Telemetry,
     IReadOnlyDictionary<string, string> DrillThroughRoutes);
 
+/// <summary>
+/// Asset-class-specific evidence requirement rendered by Portfolio, Accounting, and desktop workstations.
+/// </summary>
+public sealed record MultiAssetEvidenceRequirementDto(
+    string RequirementId,
+    string Label,
+    string Category,
+    string Status,
+    string EvidenceRoute,
+    bool Required);
+
+/// <summary>
+/// Readiness blocker for a single asset class.
+/// </summary>
+public sealed record MultiAssetReadinessBlockerDto(
+    string Code,
+    string Severity,
+    string Message,
+    string Source,
+    string? EvidenceRoute);
+
+/// <summary>
+/// Shared drill-through target for one asset-class coverage row.
+/// </summary>
+public sealed record MultiAssetDrillThroughTargetDto(
+    string TargetId,
+    string TargetType,
+    string Label,
+    string Route,
+    string? EvidenceLink,
+    string Status,
+    string Source);
+
+/// <summary>
+/// Operational coverage row for one asset class across Security Master, provider evidence,
+/// ledger, reconciliation, and close readiness.
+/// </summary>
+public sealed record MultiAssetClassCoverageDto(
+    string AssetClass,
+    string DisplayName,
+    string Status,
+    string StatusLabel,
+    string Summary,
+    IReadOnlyList<MultiAssetEvidenceRequirementDto> EvidenceRequirements,
+    IReadOnlyList<MultiAssetReadinessBlockerDto> Blockers,
+    IReadOnlyList<MultiAssetDrillThroughTargetDto> DrillThroughTargets,
+    IReadOnlyDictionary<string, string> LedgerClassification,
+    IReadOnlyDictionary<string, string> ReconciliationSignals);
+
+/// <summary>
+/// Shared multi-asset operational coverage payload returned by
+/// <c>GET /api/workstation/portfolio/multi-asset-coverage</c>.
+/// </summary>
+public sealed record MultiAssetCoverageSummaryDto(
+    string FundAccountId,
+    string Entity,
+    string AsOfUtc,
+    IReadOnlyList<WorkstationMetricCard> Metrics,
+    IReadOnlyList<MultiAssetClassCoverageDto> AssetClasses,
+    IReadOnlyDictionary<string, string> DrillThroughRoutes);
+
 // ---------------------------------------------------------------------------
 // /api/workstation/data and /api/workstation/data-operations
 // ---------------------------------------------------------------------------

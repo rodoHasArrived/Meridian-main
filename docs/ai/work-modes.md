@@ -11,6 +11,18 @@ Pair mode selection with the active entry in `docs/ai/model-routing-policy.json`
 | Standard | Most AI-system maintenance tasks that touch multiple docs/instructions | Shared contract + affected provider surfaces + nearest index docs | Targeted functional checks plus drift/alignment checks |
 | Deep Review | Cross-provider policy updates, orchestration changes, broad validation failures, or safety-sensitive flows | Build targeted context map across shared + provider-specific surfaces and related scripts | Expanded validation across impacted systems, with explicit risk log |
 
+## Task-Start Recipe
+
+Before editing, record:
+
+- the chosen mode,
+- the coordinator or final integration owner,
+- the smallest initial file set,
+- the validation owner for the lane,
+- the first proof command.
+
+If the lane needs a script/validator choice, load `docs/ai/tooling/README.md` before widening repo context.
+
 ## Non-Negotiables
 
 - Never use a lower mode to skip required safety checks, architecture constraints, or relevant validation.
@@ -30,6 +42,15 @@ Use these defaults unless risk requires more context:
 
 If the context needed exceeds the mode guidance, escalate mode before implementation.
 
+## Escalation Triggers
+
+Escalate one level when any of these becomes true:
+
+- another lane needs the same files and ownership is no longer disjoint,
+- the validation floor expands beyond the lane's planned proof command,
+- shared policy, handoff guidance, or generated artifacts also need to change,
+- the lane can no longer summarize inspected evidence compactly without dropping required facts.
+
 ## Mode Handoff Snippet
 
 Use this compact snippet in handoff packets:
@@ -39,6 +60,8 @@ Mode: <Lightweight|Standard|Deep Review>
 Reason: <why this mode is sufficient>
 Required context: <must-read files>
 Optional context: <nice-to-read files>
+Inspected files: <what this lane already read>
+Validation owner: <who reruns checks after integration>
 Validation floor: <minimum commands that must pass>
 Escalate if: <conditions requiring higher mode>
 ```

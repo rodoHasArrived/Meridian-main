@@ -1,9 +1,8 @@
-namespace Meridian.FSharp.Tests
+module Meridian.FSharp.Tests.DeterministicInvariantTests
 
 open System
-open FsCheck
-open FsCheck.Xunit
 open Xunit
+open FsCheck
 open FsUnit.Xunit
 open Meridian.FSharp.Ledger
 open Meridian.FSharp.Domain
@@ -103,8 +102,11 @@ let ``Deterministic accounting close guard blocks hard close before prior period
             OpenedAt = asOf
             ClosedAt = None
         }
-    PeriodManagement.validateCloseTransition second HardClosed [ first; second ]
-    |> should equal (Error "Cannot hard-close 2026-P02 before prior period 2026-P01 is hard-closed.")
+    match PeriodManagement.validateCloseTransition second HardClosed [ first; second ] with
+    | Error message ->
+        message |> should equal "Cannot close period 2026-P02 because prior period 2026-P01 is not hard-closed. Cannot hard-close 2026-P02 before prior period 2026-P01 is hard-closed."
+    | Ok () ->
+        failwith "Expected hard close to be blocked until the prior period is hard-closed."
 
 [<Fact>]
 let ``Deterministic reconciliation materiality thresholds are consistent for candidate profiles`` () =
@@ -118,7 +120,7 @@ let ``Deterministic reconciliation materiality thresholds are consistent for can
 let ``ReconciliationRules classifyBreaks keeps non-matches deterministic`` () =
     let rule = MatchingRule.strict
     let candidate = mkCandidate 1000m 1005m
-    let breaks = ReconciliationRules.classifyBreaks Guid.NewGuid() rule [ candidate ]
+    let breaks = ReconciliationRules.classifyBreaks (Guid.NewGuid()) rule [ candidate ]
     breaks.Length |> should equal 1
     breaks[0].Classification |> should equal "AmountBreak"
 
@@ -126,7 +128,7 @@ let ``ReconciliationRules classifyBreaks keeps non-matches deterministic`` () =
 let ``ReconciliationRules materiality-adjusted classification emits materiality marker`` () =
     let profile = MatchingThresholdProfile.conservative
     let candidate = mkCandidate 10000m 12000m
-    let breaks = ReconciliationRules.materialityAdjustedClassifyBreaks profile Guid.NewGuid() MatchingRule.strict [ candidate ]
+    let breaks = ReconciliationRules.materialityAdjustedClassifyBreaks profile (Guid.NewGuid()) MatchingRule.strict [ candidate ]
     breaks.Length |> should equal 1
     breaks[0] |> snd |> should equal true
 
@@ -185,63 +187,69 @@ let ``Security term validation blocks incomplete private-asset modules`` () =
             Version = 1L
             EffectiveFrom = asOf
             EffectiveTo = None
-            Provenance = { SourceSystem = "unit-test"; SourceRecordId = "src"; AsOf = asOf; UpdatedBy = "builder"; Reason = "unit" }
+            Provenance = { SourceSystem = "unit-test"; SourceRecordId = Some "src"; AsOf = asOf; UpdatedBy = "builder"; Reason = Some "unit" }
         }
 
     let result = SecurityTermValidation.validate definition
     result.IsValid |> should equal false
     result.Errors.Length |> should equal 4
 
-[<Property>]
-let ``Cash-flow settled invariant under exact matches`` (amount: int, days: int) =
-    let expected = decimal amount + 1m
-    let due = asOf.AddDays(float (abs days % 30))
-    let projected = mkProjectedFlow expected "USD" due
-    let actual =
-        {
-            FlowId = projected.FlowId
-            SecurityId = projected.SecurityId
-            Amount = expected
-            Currency = "USD"
-            PostedAt = due
-            SourceSystem = "test"
-            Notes = None
-        }
-
-    let securityId = let (SecurityId value) = projected.SecurityId in value
-    let states = CashFlowRules.classifyStates MatchToleranceDefaults.strict [ projected ] (Map.ofList [ (securityId, projected.FlowId), actual ])
-    states |> List.exactlyOne |> function
-        | Settled (_, _) -> true
-        | _ -> false
-
-[<Property>]
-let ``Approval workflow rejects illegal transitions deterministically`` (seed: int) =
-    let states = [| "Open"; "Submitted"; "UnderReview"; "Approved"; "Rejected"; "Executed" |]
-    let actions = [| "Submit"; "Review"; "Approve"; "Reject"; "Execute"; "Reopen"; "Archive"; "Cancel" |]
-    let state = states[(abs seed) % states.Length]
-    let action = actions[(abs (seed / states.Length)) % actions.Length]
-
-    let result =
-        ApprovalWorkflowRules.evaluate
+[<Fact>]
+let ``Cash-flow settled invariant under exact matches`` () =
+    let property (amount: int) (days: int) =
+        let expected = decimal amount + 1m
+        let due = asOf.AddDays(float (abs days % 30))
+        let projected = mkProjectedFlow expected "USD" due
+        let actual =
             {
-                LifecycleState = state
-                Action = action
-                Actor = "alice"
-                EvidenceCount = 2
-                ApprovedBy = "bob"
-                Reason = "test approval"
+                FlowId = projected.FlowId
+                SecurityId = projected.SecurityId
+                Amount = expected
+                Currency = "USD"
+                PostedAt = due
+                SourceSystem = "test"
+                Notes = None
             }
 
-    let isLegal =
-        (state = "Open" && action = "Submit")
-        || (state = "Open" && action = "Cancel")
-        || (state = "Submitted" && action = "Review")
-        || (state = "UnderReview" && (action = "Reject" || action = "Approve"))
-        || (state = "Approved" && action = "Execute")
-        || (state = "Rejected" && action = "Reopen")
-        || (state = "Executed" && action = "Archive")
+        let securityId = let (SecurityId value) = projected.SecurityId in value
+        let states = CashFlowRules.classifyStates MatchToleranceDefaults.strict [ projected ] (Map.ofList [ (securityId, projected.FlowId), actual ])
+        states |> List.exactlyOne |> function
+            | Settled (_, _) -> true
+            | _ -> false
 
-    if isLegal then
-        result.IsValid |> should equal true
-    else
-        result.ErrorCode |> should equal "IllegalTransition"
+    Check.One(config, property)
+
+[<Fact>]
+let ``Approval workflow rejects illegal transitions deterministically`` () =
+    let property (seed: int) =
+        let states = [| "Open"; "Submitted"; "UnderReview"; "Approved"; "Rejected"; "Executed" |]
+        let actions = [| "Submit"; "Review"; "Approve"; "Reject"; "Execute"; "Reopen"; "Archive"; "Cancel" |]
+        let state = states[(abs seed) % states.Length]
+        let action = actions[(abs (seed / states.Length)) % actions.Length]
+
+        let result =
+            ApprovalWorkflowRules.evaluate
+                {
+                    LifecycleState = state
+                    Action = action
+                    Actor = "alice"
+                    EvidenceCount = 2
+                    ApprovedBy = "bob"
+                    Reason = "test approval"
+                }
+
+        let isLegal =
+            (state = "Open" && action = "Submit")
+            || (state = "Open" && action = "Cancel")
+            || (state = "Submitted" && action = "Review")
+            || (state = "UnderReview" && (action = "Reject" || action = "Approve"))
+            || (state = "Approved" && action = "Execute")
+            || (state = "Rejected" && action = "Reopen")
+            || (state = "Executed" && action = "Archive")
+
+        if isLegal then
+            result.IsValid |> should equal true
+        else
+            result.ErrorCode |> should equal "IllegalTransition"
+
+    Check.One(config, property)

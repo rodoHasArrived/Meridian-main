@@ -28,6 +28,10 @@ namespace Meridian.Backtesting.Tests;
 [Trait("Category", "Integration")]
 public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
 {
+    private static readonly Lazy<Task<bool>> YahooAvailable =
+        new(() => new YahooFinanceHistoricalDataProvider().IsAvailableAsync(),
+            System.Threading.LazyThreadSafetyMode.PublicationOnly);
+
     private readonly ITestOutputHelper _output;
     private readonly string _dataRoot;
     private readonly YahooFinanceHistoricalDataProvider _provider;
@@ -58,6 +62,9 @@ public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
     [Fact]
     public async Task Yahoo_SpyBuyAndHold_BacktestReturnsPositiveEquityOnUptrendMonth()
     {
+        if (!await IsYahooOnlineAsync())
+            return;
+
         // Arrange: January 2024 was a broadly positive month for SPY.
         var from = new DateOnly(2024, 1, 2);
         var to = new DateOnly(2024, 1, 31);
@@ -92,6 +99,9 @@ public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
     [Fact]
     public async Task Yahoo_MultiSymbol_BacktestDiscoversBothSymbols()
     {
+        if (!await IsYahooOnlineAsync())
+            return;
+
         // Arrange: seed two symbols over the same short window.
         var from = new DateOnly(2024, 2, 1);
         var to = new DateOnly(2024, 2, 29);
@@ -126,6 +136,9 @@ public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
     [Fact]
     public async Task Yahoo_BarsAreInChronologicalOrder_AfterRoundTrip()
     {
+        if (!await IsYahooOnlineAsync())
+            return;
+
         // Arrange: a longer window to make ordering more meaningful.
         var from = new DateOnly(2023, 10, 1);
         var to = new DateOnly(2023, 12, 29);
@@ -152,9 +165,10 @@ public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
     [Fact]
     public async Task Yahoo_Provider_IsAvailable_ReturnsTrue()
     {
-        // Verify the Yahoo Finance API is reachable before running the heavier tests.
-        var available = await _provider.IsAvailableAsync();
+        if (!await IsYahooOnlineAsync())
+            return;
 
+        var available = await _provider.IsAvailableAsync();
         _output.WriteLine($"Yahoo Finance available: {available}");
         available.Should().BeTrue("Yahoo Finance API should be reachable in the integration environment");
     }
@@ -162,6 +176,15 @@ public sealed class YahooFinanceBacktestIntegrationTests : IDisposable
     // ------------------------------------------------------------------ //
     //  Helpers                                                             //
     // ------------------------------------------------------------------ //
+
+    private async Task<bool> IsYahooOnlineAsync()
+    {
+        if (await YahooAvailable.Value.ConfigureAwait(false))
+            return true;
+
+        _output.WriteLine("Yahoo Finance API is not reachable in this environment. Run with live network access to execute this integration test.");
+        return false;
+    }
 
     /// <summary>
     /// Returns <c>true</c> when there is data to process. Logs a notice and

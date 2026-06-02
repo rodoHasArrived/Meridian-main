@@ -35,6 +35,7 @@ public static class WorkflowActionIds
     public const string PortfolioImportSnapshots = "workflow.portfolio.import-snapshots";
 
     public const string AccountingChooseContext = "workflow.accounting.choose-context";
+    public const string AccountingConfigure = "workflow.accounting.configure";
     public const string AccountingReviewLiveHandoff = "workflow.accounting.review-live-handoff";
     public const string AccountingReviewReconciliation = "workflow.accounting.review-reconciliation-breaks";
     public const string AccountingReviewLedgerContinuity = "workflow.accounting.review-ledger-continuity";

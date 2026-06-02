@@ -1,3 +1,5 @@
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
 
@@ -12,16 +14,98 @@ public sealed class WorkspaceCockpitShellViewModelTests
 
         viewModel.CockpitDecisionItems.Select(static item => item.PrimaryActionId)
             .Should()
-            .Equal("AccountPortfolio", "FundAccounts", "PortfolioImport", "DirectLending");
+            .Equal(
+                "AccountPortfolio",
+                "FundAccounts",
+                "PortfolioImport",
+                "FundPortfolio",
+                "PortfolioImport",
+                "FundReconciliation",
+                "OperationsClose",
+                "DirectLending");
 
         viewModel.CockpitDecisionItems.Select(static item => item.Tone)
             .Should()
-            .Equal(WorkspaceTone.Info, WorkspaceTone.Success, WorkspaceTone.Warning, WorkspaceTone.Neutral);
+            .Equal(
+                WorkspaceTone.Info,
+                WorkspaceTone.Success,
+                WorkspaceTone.Warning,
+                WorkspaceTone.Info,
+                WorkspaceTone.Warning,
+                WorkspaceTone.Warning,
+                WorkspaceTone.Danger,
+                WorkspaceTone.Neutral);
+
+        viewModel.CockpitDecisionItems
+            .Where(static item => item.Title.StartsWith("Multi-asset", StringComparison.Ordinal) ||
+                                  item.Title.Contains("degradation", StringComparison.OrdinalIgnoreCase) ||
+                                  item.Title.Contains("coverage", StringComparison.OrdinalIgnoreCase) ||
+                                  item.Title.Contains("blockers", StringComparison.OrdinalIgnoreCase))
+            .Should()
+            .OnlyContain(static item => item.Detail.Contains(UiApiRoutes.WorkstationPortfolioMultiAssetCoverage, StringComparison.Ordinal));
 
         viewModel.CockpitDecisionItems.Should().OnlyContain(static item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
             !string.IsNullOrWhiteSpace(item.StatusLabel) &&
             !string.IsNullOrWhiteSpace(item.AutomationName));
+    }
+
+    [Fact]
+    public void PortfolioCockpitDecisionItems_ShouldGroupMultiAssetReadinessFromSharedReadModelReferences()
+    {
+        var viewModel = new PortfolioWorkspaceShellViewModel();
+
+        var multiAssetItems = viewModel.CockpitDecisionItems
+            .Where(static item => item.Detail.Contains(UiApiRoutes.WorkstationPortfolioMultiAssetCoverage, StringComparison.Ordinal))
+            .ToArray();
+
+        multiAssetItems.Select(static item => item.Title)
+            .Should()
+            .Equal(
+                "Multi-asset readiness groups",
+                "Provider evidence degradation",
+                "Ledger and reconciliation coverage",
+                "Close readiness blockers");
+
+        multiAssetItems.Select(static item => item.StatusLabel)
+            .Should()
+            .Equal("Asset class readiness", "Provider degraded", "Coverage drift", "Close readiness");
+
+        multiAssetItems.Select(static item => item.Tone)
+            .Should()
+            .Equal(WorkspaceTone.Info, WorkspaceTone.Warning, WorkspaceTone.Warning, WorkspaceTone.Danger);
+
+        multiAssetItems.Single(static item => item.Title == "Close readiness blockers")
+            .IsBlocked.Should().BeTrue();
+
+        multiAssetItems[0].Detail.Should().Contain(nameof(MultiAssetCoverageSummaryDto.AssetClasses))
+            .And.Contain(nameof(MultiAssetClassCoverageDto.Status))
+            .And.Contain(nameof(MultiAssetClassCoverageDto.Blockers))
+            .And.Contain(nameof(MultiAssetClassCoverageDto.DrillThroughTargets));
+
+        multiAssetItems[1].Detail.Should().Contain(nameof(MultiAssetClassCoverageDto.EvidenceRequirements))
+            .And.Contain(nameof(MultiAssetEvidenceRequirementDto.EvidenceRoute))
+            .And.Contain(nameof(MultiAssetDrillThroughTargetDto.TargetType));
+
+        multiAssetItems[2].Detail.Should().Contain(nameof(MultiAssetClassCoverageDto.LedgerClassification))
+            .And.Contain(nameof(MultiAssetClassCoverageDto.ReconciliationSignals))
+            .And.Contain(nameof(MultiAssetDrillThroughTargetDto.Route));
+
+        multiAssetItems[3].Detail.Should().Contain(nameof(MultiAssetReadinessBlockerDto.EvidenceRoute))
+            .And.Contain(nameof(MultiAssetDrillThroughTargetDto.EvidenceLink))
+            .And.Contain(nameof(MultiAssetCoverageSummaryDto.DrillThroughRoutes));
+    }
+
+    [Fact]
+    public void PortfolioCockpitDecisionItems_ShouldUseRegisteredDrillThroughTargets()
+    {
+        var viewModel = new PortfolioWorkspaceShellViewModel();
+
+        var actionIds = viewModel.CockpitDecisionItems
+            .SelectMany(static item => new[] { item.PrimaryActionId, item.SecondaryActionId })
+            .Where(static actionId => !string.IsNullOrWhiteSpace(actionId));
+
+        actionIds.Should().OnlyContain(static actionId => ShellNavigationCatalog.GetPage(actionId) != null);
     }
 
     [Fact]

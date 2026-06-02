@@ -157,7 +157,18 @@ public sealed class FundStructureSetupWorkflowService
             ct).ConfigureAwait(false);
 
         var portfolio = await _fundStructureService.CreateInvestmentPortfolioAsync(
-            new CreateInvestmentPortfolioRequest(ids.InvestmentPortfolioId, business.BusinessId, Clean(draft.InvestmentPortfolio.Code), Clean(draft.InvestmentPortfolio.Name), CleanCurrency(draft.InvestmentPortfolio.BaseCurrency), effectiveFrom, auditActor, client?.ClientId, fund?.FundId, null, null, legalEntity.EntityId, CleanOptional(draft.InvestmentPortfolio.Description)),
+            new CreateInvestmentPortfolioRequest(
+                ids.InvestmentPortfolioId,
+                business.BusinessId,
+                Clean(draft.InvestmentPortfolio.Code),
+                Clean(draft.InvestmentPortfolio.Name),
+                CleanCurrency(draft.InvestmentPortfolio.BaseCurrency),
+                effectiveFrom,
+                auditActor,
+                ClientId: client?.ClientId,
+                FundId: fund?.FundId,
+                EntityId: legalEntity.EntityId,
+                Description: CleanOptional(draft.InvestmentPortfolio.Description)),
             ct).ConfigureAwait(false);
 
         var links = new List<OwnershipLinkDto>();

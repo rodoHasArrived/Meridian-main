@@ -19,6 +19,9 @@ public static class LedgerStoreExtensions
         services.AddSingleton<PostgresLedgerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<PostgresAccountingConfigurationStore>();
+        services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
+        services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
         services.AddSingleton<LedgerMigrationRunner>();
         services.AddSingleton<ILedgerBookService>(sp =>
             new PostgresLedgerBookService(

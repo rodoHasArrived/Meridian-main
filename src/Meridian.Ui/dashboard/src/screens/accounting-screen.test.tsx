@@ -50,6 +50,10 @@ vi.mock("@/lib/api", async () => {
     reviewReconciliationBreak: vi.fn(),
     runAnalysisExport: vi.fn(),
     getRunTrialBalance: vi.fn().mockResolvedValue([]),
+    getAccountingSystemProviders: vi.fn().mockResolvedValue([]),
+    previewAccountingSystemImport: vi.fn(),
+    getLatestAccountingSystemImport: vi.fn().mockResolvedValue(null),
+    getLatestAccountingSystemReconciliation: vi.fn().mockResolvedValue(null),
     getCorporateActions: vi.fn().mockResolvedValue([]),
     getTradingParameters: vi.fn().mockResolvedValue(null),
     getSecurityTrustSnapshot: vi.fn().mockResolvedValue({

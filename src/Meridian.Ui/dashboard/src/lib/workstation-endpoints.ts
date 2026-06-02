@@ -8,6 +8,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   operatorInbox: "/api/workstation/operator/inbox",
   portfolio: "/api/workstation/portfolio",
   portfolioSummary: "/api/workstation/portfolio/summary",
+  portfolioMultiAssetCoverage: "/api/workstation/portfolio/multi-asset-coverage",
   data: "/api/workstation/data",
   accounting: "/api/workstation/accounting",
   accountingConfiguration: "/api/ledger/accounting-configuration",
@@ -151,6 +152,13 @@ export const PROVIDER_API_ENDPOINTS = {
   configure: "/api/providers/configure",
   status: "/api/providers/status",
   connections: "/api/providers/connections"
+} as const;
+
+export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
+  providers: "/api/accounting-system/providers",
+  importPreview: "/api/accounting-system/import/preview",
+  importLatest: "/api/accounting-system/import/latest",
+  reconciliationLatest: "/api/accounting-system/reconciliation/latest"
 } as const;
 
 export const PLAID_API_ENDPOINTS = {

@@ -585,6 +585,82 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
+                                <TextBlock Text="Accounting Configuration"
+                                           Style="{StaticResource CardHeaderStyle}" />
+                                <Button Grid.Column="1"
+                                        Content="Configure"
+                                        Tag="FundAccountingConfigure"
+                                        Click="OnInspectorActionClick"
+                                        Style="{StaticResource LinkButtonStyle}" />
+                            </Grid>
+                            <TextBlock x:Name="AccountingConfigurationStatusText"
+                                       Margin="0,6,0,0"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       Text="Not loaded" />
+                            <TextBlock x:Name="AccountingConfigurationDetailText"
+                                       Margin="0,6,0,0"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Text="Configuration readiness loads from the shared accounting configuration service." />
+                            <UniformGrid Columns="3" Margin="0,12,0,0">
+                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Chart"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBlock x:Name="AccountingConfigurationChartCountText"
+                                                   Margin="0,6,0,0"
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   Text="-" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Templates"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBlock x:Name="AccountingConfigurationTemplateCountText"
+                                                   Margin="0,6,0,0"
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   Text="-" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Rules"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBlock x:Name="AccountingConfigurationRuleCountText"
+                                                   Margin="0,6,0,0"
+                                                   FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   Text="-" />
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+                            <TextBlock x:Name="AccountingConfigurationAuditText"
+                                       Margin="0,10,0,0"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Text="No configuration audit events loaded." />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
                                 <TextBlock Text="Recent Accounting Work"
                                            Style="{StaticResource CardHeaderStyle}" />
                                 <Button Grid.Column="1"

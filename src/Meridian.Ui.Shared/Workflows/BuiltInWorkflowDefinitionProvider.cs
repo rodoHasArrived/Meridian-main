@@ -306,6 +306,12 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         "AccountingShell",
                         "Primary"),
                     Action(
+                        WorkflowActionIds.AccountingConfigure,
+                        "Configure Accounting",
+                        "Open books, chart, journal templates, posting rules, validation, and configuration audit trail.",
+                        "FundAccountingConfigure",
+                        "Primary"),
+                    Action(
                         WorkflowActionIds.AccountingReviewReconciliation,
                         "Review Reconciliation Breaks",
                         "Open the reconciliation lane and work the break queue.",

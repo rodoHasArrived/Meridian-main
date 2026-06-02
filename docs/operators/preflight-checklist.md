@@ -1,8 +1,12 @@
-# Operator Preflight Checklist
+---
+title: Operator Preflight Checklist
+status: active
+owner: core-team
+reviewed: 2026-06-02
+audience: operators
+---
 
-**Status:** active  
-**Owner:** core-team  
-**Reviewed:** 2026-05-31
+# Operator Preflight Checklist
 
 Use this checklist before operator rollout, paper workflow exposure, or support handoff.
 
@@ -16,6 +20,7 @@ This lane captures the minimum reproducible checks that keep Meridian in a contr
 | --- | --- | --- |
 | Runtime boot | Start host in intended mode and confirm no startup-blocking errors. | Logs + API startup return path |
 | Config posture | Confirm credential and workspace settings via effective config endpoint. | `GET /api/config/effective` output |
+| Mutation guardrails | Confirm API auth and mutation-rate-limit controls are enabled for execution/direct-lending/security-master routes. | `MDC_API_KEY` + `MDC_DISABLE_RATE_LIMIT` posture evidence |
 | Provider readiness | Verify provider rows and blockers in readiness/validation outputs. | `docs/reference/provider-validation-matrix.md` + latest wave packet |
 | Reconciliation posture | Confirm there is no blocking reconciliation debt entering rollout windows. | Reconciliation policy + operator incident queue |
 | Data integrity | Confirm checkpoint and backfill behavior for changed symbol/provider sets. | Backfill status outputs + checkpoint evidence |
@@ -38,6 +43,12 @@ curl http://localhost:8080/api/config/effective
 curl http://localhost:8080/api/workstation/trading/readiness
 curl http://localhost:8080/api/workstation/operator/inbox
 ```
+
+For high-risk mutation surfaces, also confirm `401/403` behavior for unauthorized calls to:
+
+- `/api/execution/orders/submit`
+- `/api/security-master/ingest/edgar`
+- `/api/loans/rebuild-all`
 
 ## Readiness gate criteria
 

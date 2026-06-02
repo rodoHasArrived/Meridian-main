@@ -33,6 +33,7 @@ The current repository evidence supports these AI surfaces:
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/`, `.claude/plugins/` | Claude agent definitions, portable skill packages, checked-in plugin packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
+| AI automation workflows | `.github/workflows/documentation.yml`, `.github/workflows/README.md`, archived workflow names `prompt-generation.yml`, `reusable-ai-analysis.yml`, `skill-evals.yml` | Checked-in automation lanes for documentation validation plus documented historical AI workflow names that now route to active local scripts or archive notes |
 | Workflow guidance | `.github/workflows/README.md`, `docs/engineering/README.md`, `make/ai.mk` | Current build, test, publish, and maintenance workflow guidance |
 | Reusable prompt templates | `.github/prompts/`, `docs/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, automation runs, and manual assistant sessions |
 | Local AI maintenance tooling | `scripts/ai/`, `build/scripts/ai/`, `tools/codex/`, `make/ai.mk` | Provider-agnostic maintenance lanes, local AI setup/cleanup helpers, scoped deterministic edit tooling, and Codex-specific quality scans |
@@ -85,6 +86,7 @@ Before behavior changes, run this sequence:
 Start from lane entrypoints and expand only after ownership boundaries are confirmed.
 Keep each pass scoped to one active concern and one proof lane.
 For mixed, multi-system work, switch modes with `work-modes.md` before widening context.
+Use `tooling/README.md` when the next question is "which script or validator should prove this?"
 
 #### Token/Context Budget Contract
 
@@ -92,7 +94,8 @@ For mixed, multi-system work, switch modes with `work-modes.md` before widening 
 - Keep exploratory context to what directly proves the request; defer historical proof until registry-driven lanes require it.
 - Use `Standard` mode for routine refactors and AI-index edits; use `Deep-review` mode only when touching cross-lane workflows or generator contracts.
 - If a single pass is expected to require more than one generated surface or more than one registry/doc-source domain, start with a short handoff packet and explicit manifest.
-- On long sessions, every additional batch must include a handoff note with current objective, inspected scope, changed files, and the next narrow proof command.
+- On long sessions, every additional batch must include a handoff note with current objective, inspected scope, changed files, validation owner, and the next narrow proof command.
+- Record inspected files per lane before widening scope so another agent does not repeat the same discovery pass without need.
 - Every lane handoff must separate `required context` from `optional context` and record whether validation evidence was reused or rerun.
 - Treat assumptions as first-class handoff data: list open assumptions explicitly so downstream lanes do not mistake them for validated facts.
 
@@ -106,18 +109,20 @@ Use this lane-specific order for AI-lane or cross-lane work:
    - `python build/scripts/docs/validate-docs-structure.py --summary` (to catch folder drift)
 2. If task changes any AI mirror policy or shared contract files:
    - `python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json`
-3. If task changes source-aware engineering or roadmap references:
+3. If task changes handoff, parallel-lane, or work-mode guidance:
+   - `python build/scripts/docs/check-ai-handoff.py --strict`
+4. If task changes source-aware engineering or roadmap references:
    - `python build/scripts/docs/validate-roadmap-registry.py --summary`
    - `python build/scripts/docs/validate-source-readmes.py --summary`
    - `python build/scripts/docs/validate-doc-hashes.py --summary`
-4. After any doc edits:
+5. After any doc edits:
    - `python build/scripts/docs/repair-links.py --summary`
    - `git diff --check`
-5. For generated-file handoffs:
+6. For generated-file handoffs:
    - Update generator inputs first.
    - Re-run generation lane only for changed generator-owned outputs.
    - Record generated outputs as generated-only in the handoff packet.
-6. For Codex route/handoff changes:
+7. For Codex route/handoff changes:
    - `python build/scripts/docs/prompt-route-linter.py --summary`
    - `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`
    - `python build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary`
@@ -133,10 +138,13 @@ When launching parallel AI work:
 - Assign one coordinator artifact per lane (`assistant-workflow-contract`, `docs/ai/README`, one
   or two canonical lane READMEs).
 - Keep each lane scoped to one canonical source surface unless the manifest explicitly approves cross-lane coupling.
+- Record lane-owned inspected files and the validation owner before implementation starts.
 - Require a short handoff note at each lane transition using:
   - scope
+  - inspected files
   - edited files
   - decisions made
+  - validation owner
   - validation run + outcome
   - validation reuse decision + rerun triggers
   - required context vs optional context
@@ -287,8 +295,9 @@ When editing `src/**`, assistants must:
 | Provider-agnostic prompt docs | `docs/prompts/automation-prompts.md`, `docs/prompts/repo-maintenance-prompts.md`, `docs/prompts/roadmap-source-docs-implementation-prompt.md` | `docs/prompts/README.md`, `docs/ai/prompts/README.md`, automation prompts, repo-maintenance prompts, and source-doc update prompts |
 | MCP tools, prompts, and resources | `src/Meridian.Mcp/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
 | AI prompt generation and evaluation | `build/scripts/docs/generate-prompts.py`, skill `evals/` folders, `.codex/skills/*/scripts/run_evals.py` | CI-derived prompt files, local eval reports, and archived workflow notes |
-| Local AI maintenance scripts and Codex tools | `scripts/ai/*.sh`, `build/scripts/ai/*.py`, `tools/codex/*.ps1`, `make/ai.mk` | `make ai-maintenance-*`, `make ai-audit*`, Codex desktop quality reports, scoped edit planning/apply lanes, and local AI setup/cleanup lanes |
+| Local AI maintenance scripts and Codex tools | `docs/ai/tooling/README.md`, `scripts/ai/*.sh`, `build/scripts/ai/*.py`, `tools/codex/*.ps1`, `make/ai.mk` | `make ai-maintenance-*`, `make ai-audit*`, Codex desktop quality reports, scoped edit planning/apply lanes, and local AI setup/cleanup lanes |
 | Assistant entrypoints and provider config | `AGENTS.md`, `CLAUDE.md`, `.codex/config.toml`, `.codex/environments/`, `.claude/settings.json`, `.claude/settings.local.json`, `.github/copilot-instructions.md` | AI inventory drift checker, root shims, provider-specific startup/config flows |
+| AI automation workflows | `.github/workflows/documentation.yml`, `.github/workflows/README.md`, archived workflow names `prompt-generation.yml`, `reusable-ai-analysis.yml`, `skill-evals.yml` | Shared CI automation surface plus documented historical workflow names that now route to active local scripts or archive notes |
 | Optional IDE/provider assistant entrypoints | `build/scripts/docs/check-ai-inventory.py`, this contract, `docs/ai/README.md` | Cursor, Windsurf, Continue, Cline, Roo, or Gemini files only when a real repo usage path is added |
 
 ---
@@ -311,6 +320,8 @@ Use this checklist when changing any AI-related asset:
 - [ ] Choose a work mode from [`work-modes.md`](work-modes.md) before implementation and document any mode escalation.
 - [ ] For parallel lanes, initialize [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md)
       and track lane ownership, inspected files, validation plans, and merge risks.
+- [ ] Update [`tooling/README.md`](tooling/README.md) when AI script discovery, validation lanes,
+      or safe-usage guidance changes.
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and
       WPF desktop both consume shared contracts, and visible root workspaces remain limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.

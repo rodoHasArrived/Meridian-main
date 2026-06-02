@@ -778,12 +778,12 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 => Invalid(item, "Assignee is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
             ReconciliationCaseworkAction.TransitionStatus when command.Status is null
                 => Invalid(item, "Target lifecycle status is required.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
-            ReconciliationCaseworkAction.TransitionStatus when !IsLegalLifecycleTransition(item.LifecycleState, command.Status.Value)
-                => Invalid(item, $"Cannot transition case from {item.LifecycleState} to {command.Status}.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Investigating && string.IsNullOrWhiteSpace(item.AssignedTo) && string.IsNullOrWhiteSpace(command.Assignee)
                 => Invalid(item, "Assignment is required before investigation.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.AwaitingEvidence && string.IsNullOrWhiteSpace(command.Note)
                 => Invalid(item, "Evidence request note is required before awaiting evidence.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence),
+            ReconciliationCaseworkAction.TransitionStatus when !IsLegalLifecycleTransition(item.LifecycleState, command.Status.Value)
+                => Invalid(item, $"Cannot transition case from {item.LifecycleState} to {command.Status}.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && string.IsNullOrWhiteSpace(item.RootCauseCode) && string.IsNullOrWhiteSpace(command.RootCauseCode)
                 => Invalid(item, "Root cause code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingRootCause),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && string.IsNullOrWhiteSpace(item.ResolutionCode) && string.IsNullOrWhiteSpace(command.ResolutionCode)

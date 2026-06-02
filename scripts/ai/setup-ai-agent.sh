@@ -17,6 +17,30 @@ have() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Derive the .NET install channel (major.minor) from global.json so this script
+# always matches the SDK the repository actually requires. Falls back to "10.0".
+dotnet_channel_from_global_json() {
+    local global_json="$ROOT_DIR/global.json"
+    local channel=""
+    if have python3 && [[ -f "$global_json" ]]; then
+        channel="$(python3 - "$global_json" <<'PY' 2>/dev/null || true
+import json
+import sys
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as fh:
+        data = json.loads(fh.read())
+    version = data["sdk"]["version"]
+    major, minor = version.split(".")[:2]
+    print(f"{major}.{minor}")
+except Exception:
+    pass
+PY
+)"
+    fi
+    printf '%s\n' "${channel:-10.0}"
+}
+
 ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$ROOT_DIR"
 
@@ -46,9 +70,11 @@ install_dotnet_if_missing() {
         exit 1
     fi
 
-    log "Installing .NET SDK 9"
+    local channel
+    channel="$(dotnet_channel_from_global_json)"
+    log "Installing .NET SDK ${channel}"
     curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
-    bash /tmp/dotnet-install.sh --channel 9.0 --install-dir "$HOME/.dotnet"
+    bash /tmp/dotnet-install.sh --channel "$channel" --install-dir "$HOME/.dotnet"
 
     export DOTNET_ROOT="$HOME/.dotnet"
     export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"

@@ -1,8 +1,12 @@
-# Provider Credential Operations
+---
+title: Provider Credential Operations
+status: active
+owner: core-team
+reviewed: 2026-06-02
+audience: operators
+---
 
-**Status:** active  
-**Owner:** core-team  
-**Reviewed:** 2026-05-31
+# Provider Credential Operations
 
 This canonical operator guide covers credential entry, rotation, verification, and repair behavior for supported providers.
 
@@ -37,6 +41,18 @@ Meridian reads credentials from configuration, with environment variables taking
   to user environment variables, docs, support bundles, or logs.
 
 See concrete variable names and binding keys in [Environment Variables](../reference/environment-variables.md).
+
+## Canonical credential mutation routes
+
+Use canonical provider-scoped routes for new tooling and operator automation:
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/api/providers/{providerId}/credentials` | `PUT` | Upsert provider credentials. |
+| `/api/providers/{providerId}/credentials` | `DELETE` | Remove provider credentials. |
+| `/api/providers/{providerId}/verify` | `POST` | Verify provider connectivity with current credentials. |
+
+Compatibility routes for legacy clients remain supported under `/api/credentials/*`, but should not be used for new automation.
 
 ## Quick credential validation checklist
 

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { approveSecurityAssetProfile, assignLedgerMapping, createRolePermissionProfile, createSecurityMasterEntry, deleteProviderCredentials, draftSecurityAssetProfile, getSecurityAssetProfileLineage, putProviderCredentials, rollbackSecurityAssetProfile, testProviderConnection, upsertOperationsApprovalPolicyRule, upsertOperationsCloseCalendarItem, verifyProviderConnection } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
@@ -311,6 +312,72 @@ const recentEventColumns: DenseDataTableColumn<SettingsRecentEventTableRow>[] = 
   }
 ];
 
+type SettingsTaskViewId =
+  | "overview"
+  | "operations"
+  | "asset-profiles"
+  | "providers"
+  | "brokerage"
+  | "diagnostics"
+  | "runtime";
+
+interface SettingsTaskView {
+  id: SettingsTaskViewId;
+  label: string;
+  href: string;
+  sectionId: string;
+}
+
+const settingsTaskViews: SettingsTaskView[] = [
+  {
+    id: "overview",
+    label: "Overview",
+    href: "#settings-overview",
+    sectionId: "settings-overview"
+  },
+  {
+    id: "operations",
+    label: "Operations",
+    href: "#fund-operations-control-center",
+    sectionId: "fund-operations-control-center"
+  },
+  {
+    id: "asset-profiles",
+    label: "Asset Profiles",
+    href: "#asset-profile-accounting",
+    sectionId: "asset-profile-accounting"
+  },
+  {
+    id: "providers",
+    label: "Provider Connections",
+    href: "#provider-connection-center",
+    sectionId: "provider-connection-center"
+  },
+  {
+    id: "brokerage",
+    label: "Brokerage Setup",
+    href: "#alpaca-provider-setup",
+    sectionId: "alpaca-provider-setup"
+  },
+  {
+    id: "diagnostics",
+    label: "Diagnostics",
+    href: "#diagnostic-endpoints",
+    sectionId: "diagnostic-endpoints"
+  },
+  {
+    id: "runtime",
+    label: "Runtime Controls",
+    href: "#runtime-feature-capabilities",
+    sectionId: "runtime-feature-capabilities"
+  }
+];
+
+function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
+  const normalizedHash = hash.replace(/^#/, "");
+  return settingsTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
+}
+
 export function SettingsScreen({
   session,
   overview,
@@ -369,8 +436,11 @@ export function SettingsScreen({
     canClear: vm.alpacaConnectionPanel.canClear
   });
   const recentEventsVm = useSettingsRecentEventsSelectionViewModel(vm.recentEventsSection);
+  const [activeTaskView, setActiveTaskView] = useState<SettingsTaskViewId>(() => (
+    typeof window === "undefined" ? "overview" : resolveSettingsTaskViewId(window.location.hash)
+  ));
   const [providerSearch, setProviderSearch] = useState("");
-  const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data">("all");
+  const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data" | "accounting">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
   const [providerVerificationFilter, setProviderVerificationFilter] = useState<"all" | "verified" | "unverified">("all");
   const [providerSort, setProviderSort] = useState<"risk" | "name">("risk");
@@ -494,6 +564,29 @@ export function SettingsScreen({
     () => Object.fromEntries(allProviderRows.map((row) => [row.providerId, providerRiskScore(row)])),
     [allProviderRows]
   );
+  const settingsTaskTabItems = settingsTaskViews.map((view) => ({
+    id: view.id,
+    label: view.label,
+    selected: activeTaskView === view.id,
+    panelId: view.sectionId,
+    href: view.href
+  }));
+  const settingsTaskFields = [
+    { id: "providers", label: "Providers", value: String(allProviderRows.length) },
+    { id: "operations", label: "Operations", value: vm.operationsControlCenter.loadedCountLabel },
+    { id: "profiles", label: "Profiles", value: vm.assetProfileGovernancePanel.approvedCountLabel },
+    { id: "diagnostics", label: "Diagnostics", value: vm.diagnosticCounts.loadedLabel }
+  ];
+
+  useEffect(() => {
+    const updateActiveTaskView = () => {
+      setActiveTaskView(resolveSettingsTaskViewId(window.location.hash));
+    };
+
+    updateActiveTaskView();
+    window.addEventListener("hashchange", updateActiveTaskView);
+    return () => window.removeEventListener("hashchange", updateActiveTaskView);
+  }, []);
 
   useEffect(() => {
     setLedgerMappingAssignment((current) => ({
@@ -1519,6 +1612,7 @@ export function SettingsScreen({
   return (
     <div className="space-y-8">
       <section
+        id="settings-overview"
         role="region"
         aria-label="Settings workbench context"
         className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
@@ -1539,6 +1633,19 @@ export function SettingsScreen({
           ))}
         </div>
       </section>
+
+      <WorkspaceFilterBar
+        label="Settings task navigator"
+        searchLabel="Settings tasks"
+        searchValue={settingsTaskViews.find((view) => view.id === activeTaskView)?.label ?? "Overview"}
+        fields={settingsTaskFields}
+        actions={
+          <WorkspaceTabStrip
+            label="Settings sub-task screens"
+            tabs={settingsTaskTabItems}
+          />
+        }
+      />
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <Card
@@ -2581,7 +2688,8 @@ export function SettingsScreen({
                 options={[
                   { value: "all", label: "All" },
                   { value: "brokerage", label: "Brokerage" },
-                  { value: "data", label: "Data" }
+                  { value: "data", label: "Data" },
+                  { value: "accounting", label: "Accounting" }
                 ]}
               />
               <FilterSelect
@@ -3992,6 +4100,32 @@ function buildProviderFieldDefinitions(row: { providerId: string; displayName: s
   ));
   const fields: ProviderInlineFieldDefinition[] = [];
 
+  if (normalizedId === "quickbooks-fixture") {
+    return [
+      {
+        field: "apiKey",
+        label: "Fixture mode",
+        type: "password",
+        placeholder: "No credentials required",
+        helpText: "The fixture provider imports deterministic read-only GL evidence.",
+        required: false
+      }
+    ];
+  }
+
+  if (normalizedId === "quickbooks") {
+    return [
+      {
+        field: "apiKey",
+        label: "OAuth placeholder",
+        type: "password",
+        placeholder: "OAuth adapter planned",
+        helpText: "QuickBooks Online OAuth is planned; use the fixture provider for this slice.",
+        required: false
+      }
+    ];
+  }
+
   if (fromCatalog?.needsApiKey !== false) {
     fields.push({
       field: "apiKey",
@@ -4038,9 +4172,9 @@ function buildProviderFieldDefinitions(row: { providerId: string; displayName: s
 }
 
 function filterProviderRow(
-  row: { displayName: string; recommendedAction: string; affectedWorkflowsLabel: string; capabilityGroup: "brokerage" | "data"; healthTone: string; verificationStatus: "verified" | "pending" | "failed" },
+  row: { displayName: string; recommendedAction: string; affectedWorkflowsLabel: string; capabilityGroup: "brokerage" | "data" | "accounting"; healthTone: string; verificationStatus: "verified" | "pending" | "failed" },
   search: string,
-  capabilityFilter: "all" | "brokerage" | "data",
+  capabilityFilter: "all" | "brokerage" | "data" | "accounting",
   healthFilter: "all" | "healthy" | "warning" | "blocked",
   verificationFilter: "all" | "verified" | "unverified"
 ): boolean {
@@ -4055,6 +4189,9 @@ function filterProviderRow(
     return false;
   }
   if (capabilityFilter === "data" && row.capabilityGroup !== "data") {
+    return false;
+  }
+  if (capabilityFilter === "accounting" && row.capabilityGroup !== "accounting") {
     return false;
   }
 

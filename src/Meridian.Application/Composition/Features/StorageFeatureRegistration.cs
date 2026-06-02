@@ -169,6 +169,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<PostgresAccountingConfigurationStore>();
+            services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
+            services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
             services.AddSingleton<LedgerMigrationRunner>();
             services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
             services.AddSingleton<PostgresOperationsContinuityStore>();
@@ -334,6 +337,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                 sp.GetService<HistoricalDataQueryService>(),
                 sp.GetService<BackfillCoordinator>()));
+        services.TryAddSingleton<IFundStructurePolicyService, FundStructurePolicyService>();
         if (FundStructureStartup.IsConfigured())
         {
             FundStructureStartup.EnsureEnvironmentDefaults();

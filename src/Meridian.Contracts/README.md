@@ -59,17 +59,17 @@ references that do not name the resolved symbol or Security Master id.
 Ledger draft requests also carry explicit approval and ledger-mapping evidence flags so controller
 workflows can block the draft gate before post-time journal-line validation when Security Master
 provenance exists but approved identity or accounting mapping proof is still missing.
-Operations Continuity workflow DTOs also carry an optional accounting-record summary with six
+Operations Continuity workflow DTOs also carry an optional accounting-record summary with eight
 contract-owned evidence categories: retained source data, normalized transactions and positions,
-reconciliation case history, journal and ledger evidence, approval history, and report-pack
-lineage. Keep these categories shared so browser and WPF accounting-record review surfaces do not
-derive audit readiness or evidence grouping independently. The report-pack lineage category is
-complete only when the workflow carries close-package publication evidence, including retained
-manifest/export/document support and restatement lineage, so clients do not treat a ready report
-pack id as an audit-ready operational record. Each category also carries contract-owned required
-evidence labels so browser and WPF clients can display the source, normalized activity,
-reconciliation, ledger, approval, document, export, and restatement requirements without parsing
-status prose.
+reconciliation case history, journal and ledger evidence, approval history, report-pack lineage,
+export evidence, and restatement lineage. Keep these categories shared so browser and WPF
+accounting-record review surfaces do not derive audit readiness or evidence grouping independently.
+The shared audit-pack readiness model exposes completeness, missing category keys, warnings,
+evidence-category summaries, measured generation seconds, a 60-second SLA target, and SLA pass/fail
+posture. Older report-pack manifests may omit readiness; clients must treat that as unknown or
+incomplete rather than invalid. Each category also carries contract-owned required evidence labels
+so browser and WPF clients can display the source, normalized activity, reconciliation, ledger,
+approval, document, export, and restatement requirements without parsing status prose.
 Evidence workflow linkage and vault lookup DTOs include `AccountingRecordId` so retained
 accounting-record manifests can be indexed and queried as first-class audit records, not only by a
 generic evidence subject string.
@@ -82,6 +82,11 @@ balance evidence, investment snapshots, identity verification, webhook retention
 transfer gating. Keep Plaid DTOs contract-owned so Data provider onboarding, Treasury cash
 movement, fund-account reconciliation, browser, WPF, and endpoint services consume the same
 auditable account evidence rather than vendor-shaped payloads.
+Accounting-system contracts define the shared GL provider lane for external chart-of-accounts,
+journal-entry, trial-balance, import-summary, and reconciliation-preview evidence. Keep these DTOs
+provider-neutral so QuickBooks-like adapters, shared endpoints, browser Accounting, Settings, and
+future WPF surfaces consume the same read-only import and reconciliation vocabulary before any
+posting/export workflow is enabled.
 
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
@@ -192,6 +197,14 @@ retained as compatibility payloads while WPF and new consumers move to the Strat
 The workstation bootstrap contract in `Workstation/WorkstationBootstrapDtos.cs` now exposes
 `WorkstationStrategyPayload` as the canonical payload for `/api/workstation/strategy`;
 `/api/workstation/research` remains a compatibility alias for existing clients.
+The same workstation contract file owns the multi-asset operational coverage DTOs returned by
+`/api/workstation/portfolio/multi-asset-coverage`: `MultiAssetCoverageSummaryDto`,
+`MultiAssetClassCoverageDto`, `MultiAssetEvidenceRequirementDto`, and
+`MultiAssetReadinessBlockerDto`. Each asset-class row also carries
+`MultiAssetDrillThroughTargetDto` entries for Security Master passport/profile, provider evidence,
+reconciliation casework, ledger mapping/evidence, and close readiness. Browser, WPF, and shared
+endpoint clients should render those rows as supplied instead of recalculating asset-class
+readiness, ledger coverage, reconciliation status, or close blockers locally.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve

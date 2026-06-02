@@ -144,11 +144,15 @@
       "docLabel": "Accounting \u2014 Ledger",
       "waitForText": "Accounting lane",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
         "Open Breaks",
-        "Intraday Vol Carry"
+        "Intraday Vol Carry",
+        "QuickBooks fixture evidence"
       ]
     },
     {
@@ -158,11 +162,15 @@
       "docLabel": "Accounting \u2014 Reconciliation",
       "waitForText": "Accounting lane",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
         "Open Breaks",
-        "Intraday Vol Carry"
+        "Intraday Vol Carry",
+        "QuickBooks fixture evidence"
       ]
     },
     {
@@ -172,11 +180,15 @@
       "docLabel": "Accounting \u2014 Security Master",
       "waitForText": "Accounting lane",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
         "Open Breaks",
-        "Intraday Vol Carry"
+        "Intraday Vol Carry",
+        "QuickBooks fixture evidence"
       ]
     },
     {
@@ -186,11 +198,33 @@
       "docLabel": "Accounting \u2014 Approvals",
       "waitForText": "Accounting lane",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
         "Open Breaks",
-        "Intraday Vol Carry"
+        "Intraday Vol Carry",
+        "QuickBooks fixture evidence"
+      ]
+    },
+    {
+      "id": "W03D",
+      "name": "web-accounting-external-gl-reconciliation",
+      "path": "/accounting/reconciliation",
+      "docLabel": "Accounting \u2014 External GL Reconciliation",
+      "waitForText": "External GL reconciliation",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest"
+      ],
+      "waitForTexts": [
+        "QuickBooks fixture evidence",
+        "Posting/export",
+        "quickbooks-fixture:trial-balance"
       ]
     },
     {
@@ -232,7 +266,7 @@
       ],
       "waitForTexts": [
         "Evidence Workbench",
-        "Evidence workbench failed to load."
+        "Choose a workflow subject"
       ]
     },
     {

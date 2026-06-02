@@ -173,10 +173,9 @@ export default defineConfig({
     setupFiles: "./src/test/setup.ts",
     css: true,
     pool: "forks",
+    maxWorkers: 2,
     poolOptions: {
       forks: {
-        minForks: 1,
-        maxForks: 2,
         execArgv: ["--max-old-space-size=4096"]
       }
     },

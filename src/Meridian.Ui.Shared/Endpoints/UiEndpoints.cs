@@ -134,6 +134,7 @@ public static class UiEndpoints
         app.MapProviderCredentialEndpoints(jsonOptions);
         app.MapProviderRoutingEndpoints(jsonOptions);
         app.MapPlaidEndpoints(jsonOptions);
+        app.MapAccountingSystemEndpoints(jsonOptions);
 
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);
@@ -288,7 +289,7 @@ public static class UiEndpoints
     /// limiting entirely (intended for test environments where all requests share the
     /// same loopback address and a 10/min limit would be exhausted immediately).
     /// </summary>
-    private static IServiceCollection AddMutationRateLimiter(this IServiceCollection services)
+    public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services)
     {
         // Allow tests (and dev environments) to opt out of rate limiting via env var.
         // In production this variable is absent, so the guard never triggers.

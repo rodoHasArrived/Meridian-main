@@ -1,0 +1,16 @@
+flowchart LR
+  AppShell["Browser app shell"]
+  RouteCatalog["Route catalog and command palette"]
+  TradingRoute["/trading"]
+  ReadinessApi["/api/workstation/trading/readiness"]
+  PaperSessionGate["PaperSession stage gate"]
+  ReplayPanel["Session replay panel hash"]
+  Operator["Operator readiness action"]
+
+  AppShell --> RouteCatalog
+  RouteCatalog --> TradingRoute
+  TradingRoute --> ReadinessApi
+  ReadinessApi --> PaperSessionGate
+  PaperSessionGate --> Operator
+  RouteCatalog --> ReplayPanel
+  ReplayPanel --> PaperSessionGate

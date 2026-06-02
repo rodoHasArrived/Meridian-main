@@ -1,5 +1,8 @@
+using System;
 using System.Text.Json;
+using Meridian.Application.DirectLending;
 using Meridian.Application.FundAccounts;
+using Meridian.Contracts.Auth;
 using Meridian.Application.FundStructure;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
@@ -33,6 +36,9 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     private string? _originalPassword;
     private string? _originalUsers;
     private string? _originalDisableRateLimit;
+    private string? _originalUseInMemoryGovernance;
+    private string? _originalDotnetEnvironment;
+    private string? _originalAspNetCoreEnvironment;
 
     public HttpClient Client { get; private set; } = null!;
     public string DataRoot { get; private set; } = null!;
@@ -76,14 +82,20 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         _originalPassword = Environment.GetEnvironmentVariable("MDC_PASSWORD");
         _originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         _originalDisableRateLimit = Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT");
+        _originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
+        _originalDotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        _originalAspNetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
         Environment.SetEnvironmentVariable("MDC_API_KEY", null);
         Environment.SetEnvironmentVariable("MDC_USERNAME", null);
         Environment.SetEnvironmentVariable("MDC_PASSWORD", null);
         Environment.SetEnvironmentVariable("MDC_USERS", null);
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
         // All TestServer requests share a null RemoteIpAddress which maps to the "unknown"
         // partition key; 10 requests would exhaust the production limit immediately.
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", "true");
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
 
         _tempConfigDir = Path.Combine(Path.GetTempPath(), $"mdc-endpoint-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempConfigDir);
@@ -103,6 +115,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // The core ConfigStore (Application.UI.ConfigStore) is registered separately by AddMarketDataServices.
         builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
         builder.Services.AddUiSharedServices(statusHandlers, configPath);
+        builder.Services.RemoveAll<IDirectLendingService>();
+        builder.Services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
         builder.Services.RemoveAll<IFundStructureService>();
         builder.Services.AddSingleton<IFundStructureService>(sp =>
             new InMemoryFundStructureService(
@@ -112,6 +126,26 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         _app = builder.Build();
         _app.UseApiKeyAuthentication();
         _app.UseLoginSessionAuthentication();
+        _app.UseCookieCsrfProtection();
+        _app.Use(next => async context =>
+        {
+            if (context.Request.Headers.TryGetValue("X-Test-Auth", out var mode) &&
+                StringComparer.Ordinal.Equals(mode.ToString(), "directlending-admin"))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "endpoint-test";
+                context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Admin;
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Admin);
+            }
+            else if (context.Request.Headers.TryGetValue("X-Test-Auth", out mode) &&
+                     StringComparer.Ordinal.Equals(mode.ToString(), "fund-accounting"))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-ops";
+                context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Accounting;
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Accounting);
+            }
+
+            await next(context);
+        });
 
         // Test-only affordance: lets endpoint tests exercise permission-gated routes on the shared
         // host without a full login round-trip by declaring the caller's permissions through the
@@ -156,6 +190,9 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         Environment.SetEnvironmentVariable("MDC_PASSWORD", _originalPassword);
         Environment.SetEnvironmentVariable("MDC_USERS", _originalUsers);
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", _originalDisableRateLimit);
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", _originalUseInMemoryGovernance);
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", _originalDotnetEnvironment);
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", _originalAspNetCoreEnvironment);
         if (_tempConfigDir != null && Directory.Exists(_tempConfigDir))
         {
             try

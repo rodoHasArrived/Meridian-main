@@ -70,12 +70,12 @@ and UI presentation concerns in their owning layers.
   id instead of using a generic account mapping token.
 - Operations Continuity workflow DTO projection also derives the shared accounting-record summary
   from server-owned workflow state. The summary covers retained source records, normalized
-  activity, reconciliation history, ledger evidence, approvals, and report-pack lineage so browser
-  and WPF clients do not calculate accounting-record audit readiness locally. Report-pack lineage
-  is complete only after close-package publication evidence exists, so a ready report-pack id alone
-  does not imply retained export, document, manifest, or restatement provenance. The projection
-  emits required-evidence labels for each category, including export manifests, document
-  attachments, and restatement lineage for the report-pack row.
+  activity, reconciliation history, ledger evidence, approvals, report-pack lineage, export
+  evidence, and restatement lineage so browser and WPF clients do not calculate accounting-record
+  audit readiness locally. It also attaches the shared audit-pack readiness posture with measured
+  timing, a 60-second target, missing evidence category keys, and warnings. Report-pack readiness is
+  complete only after close-package publication evidence exists, so a ready report-pack id alone
+  does not imply retained export, document, manifest, or restatement provenance.
 - `Reconciliation/` - statement reconciliation orchestration and broker/custodian intake that
   validates canonical external statement files, creates durable reconciliation cases for unresolved
   cash/activity rows, requires row currency equality before broker/custodian auto-match, appends
@@ -105,6 +105,12 @@ and UI presentation concerns in their owning layers.
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
   Security Master validation messages use operator-review wording for override audit remediation so
   application-layer guidance does not expose legacy Governance workspace language.
+  `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
+  asset-class catalog, validator registry, and governed profile catalog for equities, options,
+  futures, FX, fixed income, direct loans, structured/private `CustomAsset`, and `OtherSecurity`
+  records. It declares required identifiers, economics, provider evidence, ledger classification,
+  reconciliation signals, and close blockers while leaving missing live provider evidence as
+  review-required/blocking evidence instead of fabricating completeness.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. Ownership-link policy validation prevents invalid setup graphs
   by blocking self-parenting, active cycles, incompatible relationship types, overlapping primary

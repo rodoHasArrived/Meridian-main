@@ -138,6 +138,38 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         body.Should().Contain("error");
     }
 
+    [Fact]
+    public async Task LoginJson_WithValidCredentials_IssuesSessionAndCsrfCookies_WithDevCookiePolicy()
+    {
+        var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
+        var originalPassword = Environment.GetEnvironmentVariable("MDC_PASSWORD");
+        Environment.SetEnvironmentVariable("MDC_USERNAME", "test-admin");
+        Environment.SetEnvironmentVariable("MDC_PASSWORD", "test-password");
+
+        try
+        {
+            var payload = new { Username = "test-admin", Password = "test-password" };
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var response = await Client.PostAsync("/api/auth/login", content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var setCookies = response.Headers
+                .Where(h => h.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(h => h.Value)
+                .ToList();
+
+            setCookies.Should().Contain(cookie => cookie.Contains("mdc-session=", StringComparison.OrdinalIgnoreCase));
+            setCookies.Should().Contain(cookie => cookie.Contains("mdc-csrf=", StringComparison.OrdinalIgnoreCase));
+            setCookies.Should().Contain(cookie => cookie.Contains("SameSite=Strict", StringComparison.OrdinalIgnoreCase));
+            setCookies.Should().NotContain(cookie => cookie.Contains("Secure", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERNAME", originalUsername);
+            Environment.SetEnvironmentVariable("MDC_PASSWORD", originalPassword);
+        }
+    }
+
     // ================================================================
     // POST /api/auth/login  (form content type)
     // ================================================================

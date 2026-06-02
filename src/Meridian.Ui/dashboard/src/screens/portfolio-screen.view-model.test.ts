@@ -11,6 +11,7 @@ import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   AccountingWorkspaceResponse,
+  MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
   StrategyRunContinuityDto,
@@ -95,6 +96,85 @@ const accounting: AccountingWorkspaceResponse = {
     profiles: [],
     reportPackTargets: [],
     summary: ""
+  }
+};
+
+const multiAssetCoverage: MultiAssetCoverageSummary = {
+  fundAccountId: "all",
+  entity: "portfolio",
+  asOfUtc: "2026-06-02T00:00:00Z",
+  metrics: [
+    { id: "multi-asset-classes", label: "Asset classes", value: "3", delta: "covered", tone: "default" },
+    { id: "multi-asset-review", label: "Review required", value: "2", delta: "evidence gaps", tone: "warning" }
+  ],
+  assetClasses: [
+    {
+      assetClass: "Equity",
+      displayName: "Equities",
+      status: "Ready",
+      statusLabel: "Ready",
+      summary: "Listed equity coverage.",
+      evidenceRequirements: [
+        { requirementId: "Equity:security-master-identifiers", label: "Identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true }
+      ],
+      blockers: [],
+      drillThroughTargets: [
+        { targetId: "Equity:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/workstation/security-master/securities", evidenceLink: null, status: "Ready", source: "SecurityMaster" },
+        { targetId: "Equity:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://equity/aapl", status: "Ready", source: "ProviderLedgerReconciliation" },
+        { targetId: "Equity:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: null, status: "Ready", source: "ProviderLedgerReconciliation" },
+        { targetId: "Equity:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "Equity:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: null, status: "Ready", source: "FundAccountCloseReadinessService" }
+      ],
+      ledgerClassification: { classification: "Security position" },
+      reconciliationSignals: { breaks: "quantity, market value, cash" }
+    },
+    {
+      assetClass: "FixedIncome",
+      displayName: "Corporate bonds",
+      status: "Degraded",
+      statusLabel: "Degraded",
+      summary: "Bond coverage is usable with stale provider evidence.",
+      evidenceRequirements: [
+        { requirementId: "FixedIncome:security-master-identifiers", label: "Identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true },
+        { requirementId: "FixedIncome:price-evidence", label: "Price evidence", category: "ProviderEvidence", status: "Degraded", evidenceRoute: "/api/workstation/data-operations", required: true }
+      ],
+      blockers: [],
+      drillThroughTargets: [
+        { targetId: "FixedIncome:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/workstation/security-master/securities", evidenceLink: null, status: "Ready", source: "SecurityMaster" },
+        { targetId: "FixedIncome:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://bond/factor", status: "Degraded", source: "ProviderLedgerReconciliation" },
+        { targetId: "FixedIncome:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: "case://factor-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "FixedIncome:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "FixedIncome:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: null, status: "ReviewRequired", source: "FundAccountCloseReadinessService" }
+      ],
+      ledgerClassification: { classification: "Amortized-cost security position" },
+      reconciliationSignals: { breaks: "principal, accrued interest, market value" }
+    },
+    {
+      assetClass: "CustomAsset",
+      displayName: "MBS / ABS / CLO / CMBS / private assets",
+      status: "ReviewRequired",
+      statusLabel: "Review required",
+      summary: "Governed custom asset coverage.",
+      evidenceRequirements: [
+        { requirementId: "CustomAsset:governed-profile", label: "Profile", category: "Governance", status: "Ready", evidenceRoute: "/api/security-master/asset-profiles", required: true },
+        { requirementId: "CustomAsset:provider-evidence", label: "Provider evidence", category: "ProviderEvidence", status: "ReviewRequired", evidenceRoute: "/api/workstation/data-operations", required: true }
+      ],
+      blockers: [
+        { code: "CustomAsset:provider-evidence-review", severity: "Review", message: "Retained provider evidence is required.", source: "ProviderEvidence", evidenceRoute: "/api/workstation/portfolio/multi-asset-coverage" }
+      ],
+      drillThroughTargets: [
+        { targetId: "CustomAsset:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/security-master/asset-profiles", evidenceLink: "profile://custom/private-credit", status: "Ready", source: "SecurityMaster" },
+        { targetId: "CustomAsset:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://custom/profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: "case://custom-profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "CustomAsset:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", evidenceLink: "close://custom-profile", status: "ReviewRequired", source: "FundAccountCloseReadinessService" }
+      ],
+      ledgerClassification: { classification: "Profile-derived classification" },
+      reconciliationSignals: { breaks: "custom-profile evidence" }
+    }
+  ],
+  drillThroughRoutes: {
+    coverage: "/api/workstation/portfolio/multi-asset-coverage"
   }
 };
 
@@ -358,6 +438,78 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedRun?.statusDetail).toContain("Running paper run with +4.2% P&L");
     expect(vm.runEvidenceChip).toEqual({ label: "Run evidence", value: "1 linked run" });
     expect(vm.selectedRunChip).toEqual({ label: "Selected run", value: "Mean Reversion" });
+  });
+
+  it("projects multi-asset coverage without recalculating readiness client-side", () => {
+    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting, multiAssetCoverage });
+    const customAssetRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "CustomAsset");
+    const fixedIncomeRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "FixedIncome");
+
+    expect(vm.multiAssetCoveragePanel?.statusLabel).toBe("2 review");
+    expect(vm.multiAssetCoveragePanel?.rows).toHaveLength(3);
+    expect(vm.multiAssetCoveragePanel?.groups.map((group) => ({
+      id: group.id,
+      label: group.label,
+      summary: group.summary
+    }))).toEqual([
+      { id: "review", label: "Review required", summary: "2 asset classes" },
+      { id: "ready", label: "Ready", summary: "1 asset class" }
+    ]);
+    expect(fixedIncomeRow).toMatchObject({
+      displayName: "Corporate bonds",
+      statusLabel: "Degraded",
+      statusTone: "warning",
+      readinessGroupId: "review",
+      readinessDetail: "Degraded: 1/2 evidence targets ready with no blockers.",
+      primaryEvidenceRoute: "/api/workstation/data-operations"
+    });
+    expect(customAssetRow).toMatchObject({
+      displayName: "MBS / ABS / CLO / CMBS / private assets",
+      statusLabel: "Review required",
+      evidenceLabel: "1/2 ready",
+      ledgerLabel: "Profile-derived classification",
+      readinessGroupId: "review",
+      readinessDetail: "Review required: 1/2 evidence targets ready with 1 blocker.",
+      primaryEvidenceRoute: "/api/workstation/data-operations"
+    });
+    expect(customAssetRow?.evidenceTargets).toEqual([
+      expect.objectContaining({
+        id: "CustomAsset:governed-profile",
+        statusLabel: "Ready",
+        statusTone: "success",
+        href: "/api/security-master/asset-profiles",
+        requiredLabel: "Required"
+      }),
+      expect.objectContaining({
+        id: "CustomAsset:provider-evidence",
+        statusLabel: "Review required",
+        statusTone: "warning",
+        href: "/api/workstation/data-operations",
+        ariaLabel: "Open MBS / ABS / CLO / CMBS / private assets Provider evidence target"
+      })
+    ]);
+    expect(customAssetRow?.blockerTargets).toEqual([
+      expect.objectContaining({
+        id: "CustomAsset:provider-evidence-review",
+        label: "Review",
+        source: "ProviderEvidence",
+        href: "/api/workstation/portfolio/multi-asset-coverage"
+      })
+    ]);
+    expect(customAssetRow?.drillThroughTargets.map((target) => ({
+      type: target.type,
+      href: target.href,
+      statusLabel: target.statusLabel
+    }))).toEqual([
+      { type: "SecurityMasterPassport", href: "/api/security-master/asset-profiles", statusLabel: "Ready" },
+      { type: "ProviderEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required" },
+      { type: "ReconciliationCase", href: "/api/reconciliation/runs", statusLabel: "Review required" },
+      { type: "LedgerMapping", href: "/api/fund-structure/ledger-mapping-assignments", statusLabel: "Ready" },
+      { type: "CloseReadiness", href: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", statusLabel: "Review required" }
+    ]);
+    expect(vm.multiAssetCoveragePanel?.evidenceRouteLabel).toBe("GET /api/workstation/portfolio/multi-asset-coverage");
+    expect(vm.multiAssetCoveragePanel?.asOfLabel).toBe("As of 2026-06-02T00:00:00Z");
+    expect(vm.multiAssetCoveragePanel?.blockerMessages[0]).toContain("Retained provider evidence is required.");
   });
 
   it("surfaces selected-run portfolio and ledger continuity blockers", () => {

@@ -52,6 +52,10 @@ public sealed class AccountingWorkspaceShellSmokeTests
         xaml.Should().Contain("Accounting is locked until a fund-linked context is selected.");
         xaml.Should().Contain("Text=\"Active Accounting Context\"");
         xaml.Should().Contain("Text=\"Recent Accounting Work\"");
+        xaml.Should().Contain("Text=\"Accounting Configuration\"");
+        xaml.Should().Contain("AccountingConfigurationStatusText");
+        xaml.Should().Contain("AccountingConfigurationAuditText");
+        xaml.Should().Contain("Tag=\"FundAccountingConfigure\"");
         xaml.Should().Contain("AutomationProperties.Name=\"Accounting Dock Manager\"");
         xaml.Should().Contain("Keep the selected Accounting lane visible before moving into the queue wall.");
         xaml.Should().Contain("Switch to a fund-linked context to unlock Accounting review.");
@@ -92,6 +96,9 @@ public sealed class AccountingWorkspaceShellSmokeTests
         code.Should().NotContain("Switch context to unlock governance queues");
         code.Should().NotContain("Governance Scope");
         code.Should().Contain("private void OnAccountingDecisionInvoked");
+        code.Should().Contain("RefreshAccountingConfigurationAsync");
+        code.Should().Contain("ApplyAccountingConfigurationWorkspace");
+        code.Should().Contain("IAccountingConfigurationService?");
         code.Should().Contain("WorkspaceDecisionInvokedEventArgs e");
         code.Should().NotContain("OnQueuePrimaryActionClick");
         code.Should().NotContain("OnQueueSecondaryActionClick");

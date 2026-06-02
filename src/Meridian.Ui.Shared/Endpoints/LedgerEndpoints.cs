@@ -582,7 +582,22 @@ public static class LedgerEndpoints
         => context.RequestServices.GetService<ILedgerBookService>();
 
     private static IAccountingConfigurationService? ResolveAccountingConfigurationService(HttpContext context)
-        => context.RequestServices.GetService<IAccountingConfigurationService>();
+    {
+        var service = context.RequestServices.GetService<IAccountingConfigurationService>();
+        if (service is not null)
+        {
+            return service;
+        }
+
+        var store = context.RequestServices.GetService<IAccountingConfigurationStore>();
+        var auditStore = context.RequestServices.GetService<IAccountingActionAuditStore>();
+        return store is null || auditStore is null
+            ? null
+            : new AccountingConfigurationService(
+                store,
+                auditStore,
+                context.RequestServices.GetService<ILedgerBookService>());
+    }
 
     private static IResult ServiceUnavailable()
         => Results.Problem("Ledger book service is not registered.", statusCode: StatusCodes.Status501NotImplemented);

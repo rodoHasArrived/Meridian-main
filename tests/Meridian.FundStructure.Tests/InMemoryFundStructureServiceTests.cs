@@ -367,7 +367,7 @@ public sealed class InMemoryFundStructureServiceTests
             var fixture = await CreateHybridFixtureAsync(accountPersistencePath, structurePersistencePath);
             await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
                 linkId,
-                fixture.DirectFundPortfolioId,
+                fixture.FundId,
                 fixture.FundAccountId,
                 OwnershipRelationshipTypeDto.Operates,
                 now,
@@ -419,7 +419,7 @@ public sealed class InMemoryFundStructureServiceTests
 
         await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
             originalLinkId,
-            fixture.DirectFundPortfolioId,
+            fixture.FundId,
             fixture.FundAccountId,
             OwnershipRelationshipTypeDto.Operates,
             now,
@@ -428,7 +428,7 @@ public sealed class InMemoryFundStructureServiceTests
         var replacement = await fixture.StructureService.ReplaceOwnershipLinkAsync(new ReplaceOwnershipLinkRequest(
             originalLinkId,
             replacementLinkId,
-            fixture.SleevePortfolioId,
+            fixture.SleeveId,
             fixture.FundAccountId,
             OwnershipRelationshipTypeDto.Operates,
             now.AddDays(1),
@@ -442,31 +442,25 @@ public sealed class InMemoryFundStructureServiceTests
             new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: false, AsOf: now.AddDays(2)));
 
         Assert.Equal(replacementLinkId, replacement.OwnershipLinkId);
-        Assert.Equal(fixture.SleevePortfolioId, replacement.ParentNodeId);
+        Assert.Equal(fixture.SleeveId, replacement.ParentNodeId);
         Assert.DoesNotContain(activeGraph.OwnershipLinks, link => link.OwnershipLinkId == originalLinkId);
         Assert.Contains(activeGraph.OwnershipLinks, link => link.OwnershipLinkId == replacementLinkId);
         Assert.Equal(now.AddDays(1), allLinksGraph.OwnershipLinks.Single(link => link.OwnershipLinkId == originalLinkId).EffectiveTo);
     }
 
     [Fact]
-    public async Task ValidateOwnershipGraphAsync_CycleReportsValidationIssues()
+    public async Task LinkNodesAsync_WhenCycleWouldBeCreated_ThrowsInvalidOperation()
     {
         var fixture = await CreateHybridFixtureAsync();
         var now = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero);
 
-        await fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.StructureService.LinkNodesAsync(new LinkFundStructureNodesRequest(
             Guid.NewGuid(),
             fixture.DirectFundPortfolioId,
             fixture.FundId,
             OwnershipRelationshipTypeDto.Owns,
             now,
-            "test"));
-
-        var result = await fixture.StructureService.ValidateOwnershipGraphAsync(
-            new ValidateOwnershipGraphRequest(AsOf: now.AddDays(1)));
-
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Issues, issue => issue.Code == "ownership.cycle");
+            "test")));
     }
 
     [Fact]
@@ -1519,6 +1513,7 @@ public sealed class InMemoryFundStructureServiceTests
             advisoryBusinessId,
             fundBusinessId,
             fundId,
+            sleeveId,
             advisoryPortfolioId,
             directFundPortfolioId,
             sleevePortfolioId,
@@ -1536,6 +1531,7 @@ public sealed class InMemoryFundStructureServiceTests
         Guid AdvisoryBusinessId,
         Guid FundBusinessId,
         Guid FundId,
+        Guid SleeveId,
         Guid AdvisoryPortfolioId,
         Guid DirectFundPortfolioId,
         Guid SleevePortfolioId,

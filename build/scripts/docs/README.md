@@ -523,18 +523,13 @@ All scripts support these common flags:
 
 These scripts are integrated into the `.github/workflows/documentation.yml` workflow:
 
-1. **validate-docs** job - Runs rules-engine.py
-2. **regenerate-docs** job - Runs generate-structure-docs.py and update-claude-md.py
-3. **scan-todos** job - Runs scan-todos.py
-4. **link-repair** job - Runs repair-links.py
-5. **coverage-report** job - Runs generate-coverage.py
-6. **validate-examples** job - Runs validate-examples.py
-7. **generate-changelog** job - Runs generate-changelog.py
-8. **AI policy checks** - Runs `check-ai-inventory.py`, `check-ai-handoff.py`, and
-   `check-ai-contract-drift.py` through the local runner profiles
-9. **Readiness dashboards** - `run-docs-automation.py --profile core` and `--profile full`
-   include the pilot readiness, paper replay reliability, evidence continuity, governance
-   readiness, and API contract coverage dashboards.
+1. **validate-docs** job - Runs `rules-engine.py`, `validate-examples.py`,
+   `check-ai-inventory.py`, `check-ai-handoff.py`, and `check-ai-contract-drift.py`
+2. **regenerate-docs** job - Runs `run-docs-automation.py --profile core`,
+   refreshes Mermaid diagram sources, regenerates WPF UI diagrams, renders PlantUML artifacts,
+   and refreshes workflow inventory outputs
+3. **Dashboard diff gate** - Compares the current documentation health dashboard against the
+   previous committed baseline and only blocks severe regressions when a baseline is available
 
 New scripts can be added by following the patterns in the workflow file.
 
@@ -612,7 +607,7 @@ cat /tmp/test.md
 
 1. Add script to `build/scripts/docs/`
 2. Test locally with `--help` and `--summary`
-3. Add job to `.github/workflows/documentation.yml`
+3. Add or update the relevant step in `.github/workflows/documentation.yml`
 4. Update `docs/guides/documentation-automation.md`
 5. Update this README
 

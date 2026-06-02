@@ -26,6 +26,20 @@ public sealed class AccountingWorkspaceShellPageTests
     }
 
     [Fact]
+    public void BuildAccountingQueue_IncludesConfigureActionBeforeTrialBalanceReview()
+    {
+        var profile = CreateFundProfile();
+        var workspace = CreateFundOperationsWorkspace(profile);
+
+        var queue = AccountingWorkspacePresentationService.BuildAccountingQueue(profile, workspace);
+
+        queue.Should().Contain(item =>
+            item.PrimaryActionId == "FundAccountingConfigure" &&
+            item.Title == "Accounting configuration" &&
+            item.Detail.Contains("shared accounting configuration service", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void BuildLaneHeroState_WithoutFundContext_UsesSwitchContextForSelectedLane()
     {
         var workflow = new WorkspaceWorkflowSummary(
@@ -356,6 +370,82 @@ public sealed class AccountingWorkspaceShellPageTests
 
         source.Should().Contain("accountingLifecycle = workspace.Governance");
         source.Should().NotContain("var governance = workspace.Governance");
+    }
+
+    private static FundProfileDetail CreateFundProfile() => new(
+        FundProfileId: "fund-001",
+        DisplayName: "Atlas Opportunities",
+        LegalEntityName: "Atlas Opportunities LP",
+        BaseCurrency: "USD",
+        DefaultWorkspaceId: "accounting",
+        DefaultLandingPageTag: "AccountingShell",
+        DefaultLedgerScope: FundLedgerScope.Consolidated);
+
+    private static FundOperationsWorkspaceDto CreateFundOperationsWorkspace(FundProfileDetail profile)
+    {
+        var asOf = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+        var ledger = new FundLedgerSummary(
+            FundProfileId: profile.FundProfileId,
+            FundDisplayName: profile.DisplayName,
+            ScopeKind: FundLedgerScope.Consolidated,
+            ScopeId: null,
+            AsOf: asOf,
+            JournalEntryCount: 1,
+            LedgerEntryCount: 2,
+            AssetBalance: 100m,
+            LiabilityBalance: 0m,
+            EquityBalance: 100m,
+            RevenueBalance: 0m,
+            ExpenseBalance: 0m,
+            TrialBalance: [new FundTrialBalanceLine("Cash", "Asset", "USD", "fa-1", 100m, 1)],
+            Journal: [new FundJournalLine(Guid.NewGuid(), asOf, "Daily close", 100m, 100m, 2)],
+            EntityCount: 1,
+            SleeveCount: 0,
+            VehicleCount: 0);
+
+        return new FundOperationsWorkspaceDto(
+            FundProfileId: profile.FundProfileId,
+            DisplayName: profile.DisplayName,
+            BaseCurrency: profile.BaseCurrency,
+            AsOf: asOf,
+            RecordedRunCount: 1,
+            RelatedRunIds: [],
+            Workspace: new FundWorkspaceSummary(
+                profile.FundProfileId,
+                profile.DisplayName,
+                profile.BaseCurrency,
+                asOf,
+                TotalAccounts: 1,
+                BankAccountCount: 1,
+                BrokerageAccountCount: 0,
+                CustodyAccountCount: 0,
+                TotalCash: 100m,
+                GrossExposure: 100m,
+                NetExposure: 100m,
+                TotalEquity: 100m,
+                FinancingCost: 0m,
+                PendingSettlement: 0m,
+                OpenReconciliationBreaks: 0,
+                ReconciliationRuns: 1,
+                JournalEntryCount: 1,
+                TrialBalanceLineCount: 1,
+                SecurityResolvedCount: 1,
+                SecurityMissingCount: 0,
+                SecurityCoverageIssues: 0),
+            Ledger: ledger,
+            LedgerReconciliationSnapshot: new FundLedgerReconciliationSnapshot(
+                profile.FundProfileId,
+                asOf,
+                new FundLedgerDimensionSnapshot(asOf, 1, 2, []),
+                new Dictionary<string, FundLedgerDimensionSnapshot>(),
+                new Dictionary<string, FundLedgerDimensionSnapshot>(),
+                new Dictionary<string, FundLedgerDimensionSnapshot>()),
+            Accounts: [],
+            BankSnapshots: [],
+            CashFinancing: new CashFinancingSummary("USD", 100m, 0m, 0m, 0m, 0m, 0m, 100m, 0m, 100m, 100m, 100m, []),
+            Reconciliation: new ReconciliationSummary(1, 0, 0m, []),
+            Nav: new FundNavAttributionSummaryDto("USD", 100m, 1, 1, 0, 0, []),
+            Reporting: new FundReportingSummaryDto(1, ["board"], ["Board Pack"], [], "ready"));
     }
 
     private static string GetRepositoryFilePath(string relativePath)

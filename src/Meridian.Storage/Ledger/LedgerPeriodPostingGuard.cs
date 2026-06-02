@@ -259,9 +259,18 @@ public static class LedgerPeriodPostingGuard
         var normalizedSymbol = symbol?.Trim();
         foreach (var entry in ExtractLineageEntries(lineage))
         {
-            if ((!string.IsNullOrWhiteSpace(normalizedSymbol) &&
-                    string.Equals(entry.Symbol, normalizedSymbol, StringComparison.OrdinalIgnoreCase)) ||
-                ReferencesSecurityId(entry.SecurityIdToken, securityId))
+            if (!string.IsNullOrWhiteSpace(normalizedSymbol))
+            {
+                if (string.Equals(entry.Symbol, normalizedSymbol, StringComparison.OrdinalIgnoreCase) &&
+                    ReferencesSecurityId(entry.SecurityIdToken, securityId))
+                {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (ReferencesSecurityId(entry.SecurityIdToken, securityId))
             {
                 return true;
             }
@@ -291,12 +300,31 @@ public static class LedgerPeriodPostingGuard
         foreach (var token in ExtractLedgerMappingTokens(lineage))
         {
             if ((!string.IsNullOrWhiteSpace(normalizedSymbol) &&
-                    token.Contains(normalizedSymbol, StringComparison.OrdinalIgnoreCase)) ||
+                    ContainsDelimitedToken(token, normalizedSymbol)) ||
                 token.Contains(securityId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
                 token.Contains(securityId.ToString("N"), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsDelimitedToken(string value, string token)
+    {
+        var index = value.IndexOf(token, StringComparison.OrdinalIgnoreCase);
+        while (index >= 0)
+        {
+            var before = index == 0 ? '\0' : value[index - 1];
+            var afterIndex = index + token.Length;
+            var after = afterIndex >= value.Length ? '\0' : value[afterIndex];
+            if (!char.IsLetterOrDigit(before) && !char.IsLetterOrDigit(after))
+            {
+                return true;
+            }
+
+            index = value.IndexOf(token, index + 1, StringComparison.OrdinalIgnoreCase);
         }
 
         return false;

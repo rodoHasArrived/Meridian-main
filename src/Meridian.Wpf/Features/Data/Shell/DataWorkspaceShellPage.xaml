@@ -216,7 +216,8 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Margin="20"
+    <Grid Margin="0"
+          Background="{StaticResource ConsoleBackgroundDarkBrush}"
           AutomationProperties.AutomationId="WorkspaceHomeDataTerminalTemplate">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -227,70 +228,57 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
-                Style="{StaticResource SectionCardStyle}"
-                Margin="0,0,0,16"
+                Style="{StaticResource WorkstationPageBandStyle}"
                 AutomationProperties.AutomationId="WorkspaceEvidenceStripData">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.6*" />
-                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Width="44"
-                                Height="44"
-                                CornerRadius="14"
-                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                BorderBrush="{StaticResource InfoColorBrush}"
-                                BorderThickness="1">
-                            <TextBlock Text="&#xEE94;"
-                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="24"
-                                       Foreground="{StaticResource InfoColorBrush}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                        </Border>
-                        <StackPanel Margin="12,0,0,0">
-                            <TextBlock Text="Data"
-                                       Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Provider readiness, queue pressure, storage posture, and export delivery from one operator shell."
-                                       Style="{StaticResource CardDescriptionStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
-                    </StackPanel>
-
-                    <Border Margin="0,18,0,0"
-                            Padding="14,12"
-                            CornerRadius="12"
-                            Background="#10263A"
-                            BorderBrush="#22486B"
-                            BorderThickness="1">
-                        <StackPanel>
-                            <TextBlock Text="Active Scope"
+                    <TextBlock Text="Data"
+                               FontFamily="{StaticResource MeridianDisplayFontFamily}"
+                               FontSize="22"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                    <TextBlock Text="Provider readiness, queue pressure, storage posture, and export delivery from one operator shell."
+                               Margin="0,4,0,0"
+                               FontSize="12"
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                               TextWrapping="Wrap" />
+                    <WrapPanel Margin="0,10,0,0">
+                        <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                            <TextBlock x:Name="OperationsHeroScopeText"
                                        FontSize="11"
                                        FontWeight="SemiBold"
-                                       Foreground="#7EA3C5" />
-                            <TextBlock x:Name="OperationsHeroScopeText"
-                                       Margin="0,6,0,0"
-                                       FontSize="18"
-                                       FontWeight="SemiBold"
-                                       Foreground="White"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        Text="{Binding HeroScopeText}" />
-                            <TextBlock x:Name="OperationsHeroSummaryText"
-                                       Margin="0,4,0,0"
-                                       FontSize="12"
-                                       Foreground="#A8BED7"
-                                       TextWrapping="Wrap"
-                                       Text="{Binding HeroSummaryText}" />
-                        </StackPanel>
-                    </Border>
+                        </Border>
+                        <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                            <TextBlock Text="{Binding QueueScopeBadgeText}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                        </Border>
+                        <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                            <TextBlock Text="{Binding OperationsSummaryTitleText}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                        </Border>
+                    </WrapPanel>
+                    <TextBlock x:Name="OperationsHeroSummaryText"
+                               Margin="0,8,40,0"
+                               FontSize="12"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               TextWrapping="Wrap"
+                               Text="{Binding HeroSummaryText}" />
                 </StackPanel>
 
                 <Border Grid.Column="1"
-                        Margin="16,0,0,0"
-                        Padding="16,14"
-                        CornerRadius="12"
+                        Width="420"
+                        Margin="18,0,0,0"
+                        Padding="14,10"
+                        CornerRadius="6"
                         Background="{StaticResource ConsoleBackgroundMediumBrush}"
                         BorderBrush="{StaticResource ConsoleBorderBrush}"
                         BorderThickness="1">
@@ -312,8 +300,8 @@
                             </Border>
                         </DockPanel>
                         <TextBlock x:Name="OperationsHeroFocusText"
-                                   Margin="0,10,0,0"
-                                   FontSize="16"
+                                   Margin="0,8,0,0"
+                                   FontSize="13"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                    Text="{Binding HeroState.FocusText}"
@@ -326,7 +314,7 @@
                                    Text="{Binding HeroState.SummaryText}"
                                    AutomationProperties.AutomationId="OperationsHeroActionSummaryText" />
                         <ItemsControl x:Name="OperationsHeroMetricsList"
-                                      Margin="0,12,0,0"
+                                      Margin="0,10,0,0"
                                       ItemsSource="{Binding HeroMetrics}"
                                       ItemTemplate="{StaticResource HeroMetricTemplate}"
                                       AutomationProperties.AutomationId="OperationsHeroMetricsList">
@@ -337,8 +325,8 @@
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
                         <TextBlock x:Name="OperationsHeroHandoffTitleText"
-                                   Margin="0,12,0,0"
-                                   FontSize="14"
+                                   Margin="0,10,0,0"
+                                   FontSize="12"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                    Text="{Binding HeroState.HandoffTitleText}"
@@ -379,117 +367,168 @@
             </Grid>
         </Border>
 
-        <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
-                                                 Grid.Row="1"
-                                                 Margin="0,0,0,16"
-                                                 ShellContext="{Binding ShellContext}" />
+        <Border Grid.Row="1"
+                Style="{StaticResource WorkstationFilterBarStyle}"
+                AutomationProperties.AutomationId="DataWorkspaceFilterBar"
+                AutomationProperties.Name="Data Workspace Filter Bar">
+            <DockPanel LastChildFill="False">
+                <WrapPanel VerticalAlignment="Center">
+                    <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                        <TextBlock Text="Providers"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                    </Border>
+                    <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                        <TextBlock Text="Backfill"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                    </Border>
+                    <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                        <TextBlock Text="Storage"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                    </Border>
+                    <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                        <TextBlock Text="Collection status"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                    </Border>
+                    <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                        <TextBlock Text="File last added"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                    </Border>
+                </WrapPanel>
+
+                <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
+                                                         DockPanel.Dock="Right"
+                                                         Width="420"
+                                                         Margin="12,0,0,0"
+                                                         Visibility="Collapsed"
+                                                         ShellContext="{Binding ShellContext}" />
+            </DockPanel>
+        </Border>
 
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
                                           Grid.Row="2"
                                           CommandGroup="{Binding CommandGroup}"
                                           CommandInvoked="OnCommandBarCommandInvoked"
+                                          Margin="16,10,16,10"
                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceData" />
 
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="3"
+              Margin="16,0,16,10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2.15*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="2.25*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="0.95*" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Style="{StaticResource WorkspaceWorkbenchCardStyle}">
+            <Border Grid.Column="0"
+                    Style="{StaticResource WorkstationTablePanelStyle}"
+                    AutomationProperties.AutomationId="DataWorkspaceQueuePanel"
+                    AutomationProperties.Name="Data Workspace Queue Panel">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Style="{StaticResource WorkspaceCardHeaderGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="Operational Queues"
-                                       Style="{StaticResource CardHeaderStyle}" />
-                            <TextBlock x:Name="QueueSummaryText"
-                                       Margin="0,6,0,0"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="{Binding QueueSummaryText}" />
-                        </StackPanel>
-                        <Border Grid.Column="1"
-                                Style="{StaticResource NeutralBadgeStyle}"
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Top">
-                            <TextBlock x:Name="QueueScopeBadgeText"
-                                       FontSize="11"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="{Binding QueueScopeBadgeText}" />
-                        </Border>
-                    </Grid>
+                    <Border Grid.Row="0" Style="{StaticResource WorkstationPanelHeaderStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Operational Queues"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock x:Name="QueueSummaryText"
+                                           Margin="0,4,0,0"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           Text="{Binding QueueSummaryText}" />
+                            </StackPanel>
+                            <Border Grid.Column="1"
+                                    Style="{StaticResource WorkstationFilterChipStyle}"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Top">
+                                <TextBlock x:Name="QueueScopeBadgeText"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           Text="{Binding QueueScopeBadgeText}" />
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <ScrollViewer Grid.Row="1"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel>
-                            <TextBlock Text="Providers"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
-                                       Margin="0,0,0,8" />
-                            <Grid>
-                                <views:WorkspaceDecisionQueueControl x:Name="ProviderQueueList"
-                                                                     Columns="1"
-                                                                     ItemsSource="{Binding ProviderQueueItems}"
-                                                                     Visibility="{Binding ProviderQueueListVisibility}"
-                                                                     QueueAutomationId="DataProviderDecisionQueue"
-                                                                     DecisionInvoked="OnDataDecisionInvoked" />
-                                <ContentControl x:Name="ProviderQueueStateContainer"
-                                                Content="{Binding ProviderQueueState}"
-                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
-                                                Visibility="{Binding ProviderQueueStateVisibility}" />
-                            </Grid>
+                    <Border Grid.Row="1" Style="{StaticResource WorkstationPanelBodyStyle}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+                                <TextBlock Text="Providers"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="0,0,0,8" />
+                                <Grid>
+                                    <views:WorkspaceDecisionQueueControl x:Name="ProviderQueueList"
+                                                                         Columns="1"
+                                                                         ItemsSource="{Binding ProviderQueueItems}"
+                                                                         Visibility="{Binding ProviderQueueListVisibility}"
+                                                                         QueueAutomationId="DataProviderDecisionQueue"
+                                                                         DecisionInvoked="OnDataDecisionInvoked" />
+                                    <ContentControl x:Name="ProviderQueueStateContainer"
+                                                    Content="{Binding ProviderQueueState}"
+                                                    ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                    Visibility="{Binding ProviderQueueStateVisibility}" />
+                                </Grid>
 
-                            <TextBlock Text="Backfill"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
-                                       Margin="0,12,0,8" />
-                            <Grid>
-                                <views:WorkspaceDecisionQueueControl x:Name="BackfillQueueList"
-                                                                     Columns="1"
-                                                                     ItemsSource="{Binding BackfillQueueItems}"
-                                                                     Visibility="{Binding BackfillQueueListVisibility}"
-                                                                     QueueAutomationId="DataBackfillDecisionQueue"
-                                                                     DecisionInvoked="OnDataDecisionInvoked" />
-                                <ContentControl x:Name="BackfillQueueStateContainer"
-                                                Content="{Binding BackfillQueueState}"
-                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
-                                                Visibility="{Binding BackfillQueueStateVisibility}" />
-                            </Grid>
+                                <TextBlock Text="Backfill"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="0,12,0,8" />
+                                <Grid>
+                                    <views:WorkspaceDecisionQueueControl x:Name="BackfillQueueList"
+                                                                         Columns="1"
+                                                                         ItemsSource="{Binding BackfillQueueItems}"
+                                                                         Visibility="{Binding BackfillQueueListVisibility}"
+                                                                         QueueAutomationId="DataBackfillDecisionQueue"
+                                                                         DecisionInvoked="OnDataDecisionInvoked" />
+                                    <ContentControl x:Name="BackfillQueueStateContainer"
+                                                    Content="{Binding BackfillQueueState}"
+                                                    ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                    Visibility="{Binding BackfillQueueStateVisibility}" />
+                                </Grid>
 
-                            <TextBlock Text="Storage"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
-                                       Margin="0,12,0,8" />
-                            <Grid>
-                                <views:WorkspaceDecisionQueueControl x:Name="StorageQueueList"
-                                                                     Columns="1"
-                                                                     ItemsSource="{Binding StorageQueueItems}"
-                                                                     Visibility="{Binding StorageQueueListVisibility}"
-                                                                     QueueAutomationId="DataStorageDecisionQueue"
-                                                                     DecisionInvoked="OnDataDecisionInvoked" />
-                                <ContentControl x:Name="StorageQueueStateContainer"
-                                                Content="{Binding StorageQueueState}"
-                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
-                                                Visibility="{Binding StorageQueueStateVisibility}" />
-                            </Grid>
-                        </StackPanel>
-                    </ScrollViewer>
+                                <TextBlock Text="Storage"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="0,12,0,8" />
+                                <Grid>
+                                    <views:WorkspaceDecisionQueueControl x:Name="StorageQueueList"
+                                                                         Columns="1"
+                                                                         ItemsSource="{Binding StorageQueueItems}"
+                                                                         Visibility="{Binding StorageQueueListVisibility}"
+                                                                         QueueAutomationId="DataStorageDecisionQueue"
+                                                                         DecisionInvoked="OnDataDecisionInvoked" />
+                                    <ContentControl x:Name="StorageQueueStateContainer"
+                                                    Content="{Binding StorageQueueState}"
+                                                    ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                    Visibility="{Binding StorageQueueStateVisibility}" />
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
                 </Grid>
             </Border>
 
-            <ScrollViewer Grid.Column="2"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled"
-                          AutomationProperties.AutomationId="WorkspaceInspectorHostData">
-                <StackPanel>
+            <Border Grid.Column="2"
+                    Style="{StaticResource WorkstationInspectorRailStyle}"
+                    AutomationProperties.AutomationId="WorkspaceInspectorHostData"
+                    AutomationProperties.Name="Data Workspace Inspector Rail">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Padding="10">
+                    <StackPanel>
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
                             <TextBlock Text="Operations Summary"
@@ -626,22 +665,31 @@
                             </WrapPanel>
                         </StackPanel>
                     </Border>
-                </StackPanel>
-            </ScrollViewer>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
         </Grid>
 
         <Border Grid.Row="4"
-                Margin="0,12,0,0"
-                Style="{StaticResource WorkspaceDockHostStyle}">
-            <StackPanel>
+                Style="{StaticResource WorkstationDockStripStyle}"
+                AutomationProperties.AutomationId="DataWorkspaceDockStrip"
+                AutomationProperties.Name="Data Workspace Dock Strip">
+            <DockPanel LastChildFill="True">
                 <TextBlock Text="Operations Dock"
-                           Style="{StaticResource CardHeaderStyle}"
-                           Margin="4,0,0,10" />
+                           DockPanel.Dock="Left"
+                           Width="150"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                           VerticalAlignment="Top"
+                           Margin="0,2,14,0" />
                 <views:MeridianDockingManager x:Name="DataDockManager"
-                                              Height="320"
+                                              MinHeight="176"
+                                              MaxHeight="240"
+                                              Height="196"
                                               PaneDropRequested="OnPaneDropRequested"
                                               AutomationProperties.Name="Data Dock Manager" />
-            </StackPanel>
+            </DockPanel>
         </Border>
     </Grid>
 </views:DataWorkspaceShellPageBase>

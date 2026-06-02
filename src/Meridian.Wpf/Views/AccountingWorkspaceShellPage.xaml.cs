@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
@@ -21,6 +22,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
     private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly Meridian.Wpf.Services.NotificationService _notificationService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private readonly IAccountingConfigurationService? _accountingConfigurationService;
     private AccountingSubarea _selectedSubarea = AccountingSubarea.Operations;
     private FundProfileDetail? _lastProfile;
     private FundOperationsWorkspaceDto? _lastWorkspace;
@@ -40,7 +42,8 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         WorkspaceShellContextService shellContextService,
         FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
         Meridian.Wpf.Services.NotificationService notificationService,
-        WorkstationWorkflowSummaryService? workflowSummaryService = null)
+        WorkstationWorkflowSummaryService? workflowSummaryService = null,
+        IAccountingConfigurationService? accountingConfigurationService = null)
         : base(navigationService, stateProvider, viewModel)
     {
         InitializeComponent();
@@ -50,6 +53,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService;
         _notificationService = notificationService;
         _workflowSummaryService = workflowSummaryService;
+        _accountingConfigurationService = accountingConfigurationService;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -137,6 +141,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
 
                 PopulateQueues([], [], [], [], []);
                 PopulateInspector(operatingContext, null, null, null, null, notifications);
+                ApplyAccountingConfigurationWorkspace(null, "Select a fund-linked context before configuration readiness can be loaded.");
                 return;
             }
 
@@ -198,6 +203,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
             UpdateAccountingHero();
 
             PopulateInspector(operatingContext, profile, ledger, reconciliation, cash, notifications);
+            await RefreshAccountingConfigurationAsync(profile).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -244,6 +250,13 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
     private void OpenDataQuality_Click(object sender, RoutedEventArgs e) => ExecuteAction("DataQuality", navigate: false);
     private void OpenSystemHealth_Click(object sender, RoutedEventArgs e) => ExecuteAction("SystemHealth", navigate: false);
     private void OpenNotifications_Click(object sender, RoutedEventArgs e) => ExecuteAction("NotificationCenter", navigate: false);
+    private void OnInspectorActionClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string actionId })
+        {
+            ExecuteAction(actionId, navigate: false);
+        }
+    }
     private void OnAccountingHeroPrimaryActionClick(object sender, RoutedEventArgs e) => ExecuteAction(_heroPrimaryActionId, navigate: false);
     private void OnAccountingHeroSecondaryActionClick(object sender, RoutedEventArgs e) => ExecuteAction(_heroSecondaryActionId, navigate: false);
     private void OpenOperationsLane_Click(object sender, RoutedEventArgs e) => SelectSubarea(AccountingSubarea.Operations);
@@ -372,6 +385,56 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         RecentWorkList.ItemsSource = notifications.Count > 0
             ? notifications.Take(3).Select(notification => new WorkspaceRecentItem { Title = notification.Title, Detail = notification.Message, Meta = $"{notification.Timestamp:g} · {notification.Type}", Tone = notification.IsRead ? WorkspaceTone.Neutral : WorkspaceTone.Warning, ActionId = "NotificationCenter", ActionLabel = "Open Alerts" }).ToArray()
             : new[] { new WorkspaceRecentItem { Title = profile is null ? "Select the active context" : "Audit trail ready", Detail = profile is null ? "A fund-linked operating context is the main trust signal for accounting review. Choose the context before working breaks or approvals." : "Open the audit trail to inspect recent accounting activity and sign-off context.", Meta = profile is null ? "Locked shell" : "No recent notifications", Tone = profile is null ? WorkspaceTone.Warning : WorkspaceTone.Info, ActionId = profile is null ? "SwitchContext" : "FundAuditTrail", ActionLabel = profile is null ? "Switch Context" : "Open Audit Trail" } };
+    }
+
+    private async Task RefreshAccountingConfigurationAsync(FundProfileDetail profile)
+    {
+        if (_accountingConfigurationService is null)
+        {
+            ApplyAccountingConfigurationWorkspace(null, "Accounting configuration service is not registered for this desktop session.");
+            return;
+        }
+
+        try
+        {
+            var workspace = await _accountingConfigurationService
+                .GetWorkspaceAsync(profile.FundProfileId)
+                .ConfigureAwait(true);
+            ApplyAccountingConfigurationWorkspace(workspace, null);
+        }
+        catch (Exception ex)
+        {
+            ApplyAccountingConfigurationWorkspace(null, $"Accounting configuration could not be loaded: {ex.Message}");
+        }
+    }
+
+    private void ApplyAccountingConfigurationWorkspace(AccountingConfigurationWorkspaceDto? workspace, string? fallbackDetail)
+    {
+        if (workspace is null)
+        {
+            AccountingConfigurationStatusText.Text = "Not available";
+            AccountingConfigurationDetailText.Text = fallbackDetail ?? "Accounting configuration readiness has not loaded.";
+            AccountingConfigurationChartCountText.Text = "-";
+            AccountingConfigurationTemplateCountText.Text = "-";
+            AccountingConfigurationRuleCountText.Text = "-";
+            AccountingConfigurationAuditText.Text = "No configuration audit events loaded.";
+            return;
+        }
+
+        var criticalIssues = workspace.ValidationIssues.Count(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        var activeChart = workspace.ChartOfAccounts.Count(node => !node.IsArchived);
+        var activeTemplates = workspace.JournalTemplates.Count(template => !template.IsArchived);
+        var activeRules = workspace.PostingRules.Count(rule => !rule.IsArchived);
+        AccountingConfigurationStatusText.Text = $"{workspace.Status} {workspace.ConfigurationVersion}";
+        AccountingConfigurationDetailText.Text = criticalIssues > 0
+            ? $"{criticalIssues} critical validation issue(s) block activation. Review the browser Configure workflow for remediation."
+            : "Configuration readiness is sourced from shared DTOs; WPF does not fork accounting rules or validation logic.";
+        AccountingConfigurationChartCountText.Text = activeChart.ToString();
+        AccountingConfigurationTemplateCountText.Text = activeTemplates.ToString();
+        AccountingConfigurationRuleCountText.Text = activeRules.ToString();
+        AccountingConfigurationAuditText.Text = workspace.AuditTrail.Count == 0
+            ? "No configuration audit events recorded yet."
+            : $"{workspace.AuditTrail.Count} audit event(s); latest {workspace.AuditTrail[0].Action} by {workspace.AuditTrail[0].Actor}.";
     }
 
     private void UpdateAccountingHero()

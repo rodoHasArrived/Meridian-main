@@ -25,6 +25,7 @@ public static class ConfigEndpoints
     public static void MapConfigEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Configuration");
+        var requireModifyConfig = EndpointAuthorization.Require(UserPermission.ModifyConfig);
 
         // SEC-001: configuration reads expose masked secrets and provider wiring, so every route in
         // this group requires at least a configuration-read permission. Mutation routes additionally
@@ -130,6 +131,7 @@ public static class ConfigEndpoints
         }).WithName("UpdateDataSource")
         .WithDescription("Updates the active streaming data source (e.g., IB, Alpaca, Polygon).")
         .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
 
         // Update Alpaca settings
@@ -142,6 +144,7 @@ public static class ConfigEndpoints
         }).WithName("UpdateAlpaca")
         .WithDescription("Updates Alpaca provider connection settings.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
 
         // Update storage settings
@@ -170,6 +173,7 @@ public static class ConfigEndpoints
         }).WithName("UpdateStorage")
         .WithDescription("Updates storage settings including root path, naming convention, and compression.")
         .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
 
         // Add or update symbol
@@ -194,6 +198,7 @@ public static class ConfigEndpoints
         }).WithName("UpsertSymbol")
         .WithDescription("Adds or updates a symbol in the monitoring configuration.")
         .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
 
         // Delete symbol
@@ -208,6 +213,7 @@ public static class ConfigEndpoints
         }).WithName("DeleteConfigSymbol")
         .WithDescription("Removes a symbol from the monitoring configuration.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
 
         // Get derivatives configuration
@@ -229,6 +235,7 @@ public static class ConfigEndpoints
         }).WithName("UpdateDerivatives")
         .WithDescription("Updates the derivatives trading configuration.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
     }
 

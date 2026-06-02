@@ -177,3 +177,20 @@ public interface IAccountingConfigurationService
         Guid? ledgerBookId = null,
         CancellationToken ct = default);
 }
+
+public interface IAccountingConfigurationStore
+{
+    Task<AccountingConfigurationWorkspaceDto?> GetAsync(string fundProfileId, CancellationToken ct = default);
+
+    Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);
+}
+
+public interface IAccountingActionAuditStore
+{
+    Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);
+
+    Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
+        string? fundProfileId = null,
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default);
+}

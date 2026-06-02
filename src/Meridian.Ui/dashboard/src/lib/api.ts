@@ -3,6 +3,10 @@ import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
+  AccountingSystemImportDetail,
+  AccountingSystemImportRequest,
+  AccountingSystemProvider,
+  AccountingSystemReconciliationSummary,
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   CellExecuteRequest,
@@ -43,6 +47,7 @@ import type {
   LedgerSummary,
   LedgerTrialBalanceLine,
   MetricSnapshot,
+  MultiAssetCoverageSummary,
   NetSymbolPosition,
   OperatorInbox,
   OperationsContinuityWorkflow,
@@ -145,6 +150,7 @@ import type {
 } from "@/types";
 import {
   AUTH_API_ENDPOINTS,
+  ACCOUNTING_SYSTEM_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   EXPORT_API_ENDPOINTS,
@@ -275,6 +281,8 @@ import {
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
+const csrfCookieName = "mdc-csrf";
+const csrfHeaderName = "X-CSRF-Token";
 
 export interface ApiRequestOptions {
   signal?: AbortSignal;
@@ -334,10 +342,7 @@ async function postJson<T>(path: string, body?: unknown, options: ApiRequestOpti
   const response = await fetch(path, {
     method: "POST",
     signal: options.signal,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
+    headers: buildMutationHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -360,10 +365,7 @@ async function putJson<T>(path: string, body?: unknown, options: ApiRequestOptio
   const response = await fetch(path, {
     method: "PUT",
     signal: options.signal,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
+    headers: buildMutationHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -378,10 +380,7 @@ async function patchJson<T>(path: string, body?: unknown, options: ApiRequestOpt
   const response = await fetch(path, {
     method: "PATCH",
     signal: options.signal,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
+    headers: buildMutationHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -396,10 +395,7 @@ async function deleteJson<T>(path: string, options: ApiRequestOptions = {}, body
   const response = await fetch(path, {
     method: "DELETE",
     signal: options.signal,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
+    headers: buildMutationHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -408,6 +404,37 @@ async function deleteJson<T>(path: string, options: ApiRequestOptions = {}, body
   }
 
   return readJsonResponse<T>(path, response);
+}
+
+function buildMutationHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": "application/json"
+  };
+
+  const csrfToken = readCookie(csrfCookieName);
+  if (csrfToken) {
+    headers[csrfHeaderName] = csrfToken;
+  }
+
+  return headers;
+}
+
+function readCookie(name: string): string | undefined {
+  if (typeof document === "undefined" || !document.cookie) {
+    return undefined;
+  }
+
+  const prefix = `${name}=`;
+  const cookie = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix));
+  if (!cookie) {
+    return undefined;
+  }
+
+  return decodeURIComponent(cookie.slice(prefix.length));
 }
 
 async function readJsonResponse<T>(path: string, response: Response): Promise<T> {
@@ -738,11 +765,58 @@ export function getAccountingConfiguration(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfiguration, options);
 }
 
+export function getAccountingSystemProviders(options: ApiRequestOptions = {}) {
+  return getJson<AccountingSystemProvider[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.providers, options);
+}
+
+export function previewAccountingSystemImport(
+  request: AccountingSystemImportRequest = { providerId: "quickbooks-fixture", persistPreview: true },
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingSystemImportDetail>(ACCOUNTING_SYSTEM_API_ENDPOINTS.importPreview, request, options);
+}
+
+export function getLatestAccountingSystemImport(options: ApiRequestOptions = {}) {
+  return getJson<AccountingSystemImportDetail>(ACCOUNTING_SYSTEM_API_ENDPOINTS.importLatest, options);
+}
+
+export function getLatestAccountingSystemReconciliation(options: ApiRequestOptions = {}) {
+  return getJson<AccountingSystemReconciliationSummary>(ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest, options);
+}
+
 export function previewAccountingConfigurationTemplate(
   request: import("@/types").PreviewJournalTemplateRequest,
   options: ApiRequestOptions = {}
 ) {
   return postJson<import("@/types").AccountingJournalTemplatePreview>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPreview, request, options);
+}
+
+export function upsertAccountingConfigurationChartNode(
+  request: import("@/types").UpsertChartOfAccountsNodeRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationChart, request, options);
+}
+
+export function upsertAccountingConfigurationTemplate(
+  request: import("@/types").UpsertJournalEntryTemplateRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationTemplates, request, options);
+}
+
+export function upsertAccountingConfigurationPostingRule(
+  request: import("@/types").UpsertPostingRuleRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRules, request, options);
+}
+
+export function activateAccountingConfiguration(
+  request: import("@/types").ActivateAccountingConfigurationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationActivate, request, options);
 }
 
 export function getGovernanceWorkspace(options: ApiRequestOptions = {}) {
@@ -1533,6 +1607,10 @@ export function revokeRobinhoodConnection() {
 
 export function getPortfolioWorkspace(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").PortfolioWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.portfolio, options);
+}
+
+export function getPortfolioMultiAssetCoverage(options: ApiRequestOptions = {}) {
+  return getJson<MultiAssetCoverageSummary>(WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage, options);
 }
 
 export function getAlpacaConnectionStatus(options: ApiRequestOptions = {}) {

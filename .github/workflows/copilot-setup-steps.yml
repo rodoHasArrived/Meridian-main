@@ -1,0 +1,70 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install .NET 10 SDK (official installer)
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+          bash /tmp/dotnet-install.sh --channel 10.0 --install-dir "$HOME/.dotnet"
+          echo "$HOME/.dotnet" >> "$GITHUB_PATH"
+          echo "DOTNET_ROOT=$HOME/.dotnet" >> "$GITHUB_ENV"
+          dotnet --version
+
+      - name: Set up Node.js 20 LTS
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: "20"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --upgrade pip
+          if [[ -f requirements.txt ]]; then
+            python3 -m pip install -r requirements.txt
+          else
+            echo "requirements.txt not found; skipping dependency install."
+          fi
+
+      - name: Install PowerShell 7
+        shell: bash
+        run: |
+          set -euo pipefail
+          if command -v pwsh >/dev/null 2>&1; then
+            pwsh --version
+            exit 0
+          fi
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https software-properties-common
+          wget -q "https://packages.microsoft.com/config/ubuntu/$(. /etc/os-release && echo "$VERSION_ID")/packages-microsoft-prod.deb" -O /tmp/packages-microsoft-prod.deb
+          sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo apt-get install -y powershell
+          pwsh --version
+
+      - name: Warm NuGet restore cache
+        shell: bash
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal

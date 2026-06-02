@@ -191,8 +191,10 @@ public sealed class DirectLendingEndpointsTests
         // standalone host has no LoginSessionMiddleware, so seed the manage permission directly into
         // the request context (the same context.Items injection used by the production middleware)
         // to keep these lifecycle tests exercising the handlers.
-        app.Use(async (HttpContext context, Func<Task> next) =>
+        app.Use(async (context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "integration-user";
+            context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Admin;
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] =
                 UserPermission.ViewDirectLending | UserPermission.ManageDirectLending;
             await next();

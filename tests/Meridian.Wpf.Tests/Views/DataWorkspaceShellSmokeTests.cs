@@ -32,7 +32,7 @@ public sealed class DataWorkspaceShellSmokeTests
     }
 
     [Fact]
-    public void DataWorkspaceShellSource_ShouldExposeBriefingHeaderAheadOfOperationalQueues()
+    public void DataWorkspaceShellSource_ShouldExposeCompactWorkstationLayoutAheadOfOperationalQueues()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellPage.xaml"));
         var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellPage.xaml.cs"));
@@ -46,6 +46,17 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceShellPage\"");
         xaml.Should().NotContain("DataOperationsWorkspaceShellPageBase");
         xaml.Should().NotContain("AutomationProperties.AutomationId=\"DataOperationsWorkspaceShellPage\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationPageBandStyle}\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceFilterBar\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationFilterBarStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationFilterChipStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationTablePanelStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationPanelHeaderStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationPanelBodyStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationInspectorRailStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationDockStripStyle}\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceQueuePanel\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceDockStrip\"");
         xaml.Should().Contain("WorkspaceShellContextStripControl");
         xaml.Should().Contain("Next Handoff");
         xaml.Should().Contain("OperationsHeroScopeText");
@@ -58,7 +69,12 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().Contain("OperationsHeroPrimaryActionButton");
         xaml.Should().Contain("OperationsHeroSecondaryActionButton");
         xaml.Should().Contain("OperationsHeroTargetText");
-        xaml.IndexOf("OperationsHeroSummaryText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Operational Queues", StringComparison.Ordinal));
+        xaml.IndexOf("DataWorkspaceFilterBar", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Operational Queues", StringComparison.Ordinal));
+        xaml.IndexOf("OperationsHeroSummaryText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("DataWorkspaceFilterBar", StringComparison.Ordinal));
+        xaml.IndexOf("DataWorkspaceQueuePanel", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("WorkspaceInspectorHostData", StringComparison.Ordinal));
+        xaml.Should().Contain("MinHeight=\"176\"");
+        xaml.Should().Contain("MaxHeight=\"240\"");
+        xaml.Should().Contain("Height=\"196\"");
 
         xaml.Should().Contain("Text=\"{Binding HeroScopeText}\"");
         xaml.Should().Contain("Text=\"{Binding HeroSummaryText}\"");

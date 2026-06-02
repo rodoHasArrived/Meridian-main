@@ -210,7 +210,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         edited.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         edited.Item!.Comments![0].PreviousTextHash.Should().NotBeNullOrWhiteSpace();
 
-        var deletedWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(edited.Item, ReconciliationCaseworkAction.DeleteComment) with { CommentId = "comment-1" });
+        var deletedWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(edited.Item, ReconciliationCaseworkAction.DeleteComment) with { CommentId = "comment-1", Reason = " " });
         deletedWithoutReason.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingReason);
 
         var deleted = await repo.ApplyCaseworkCommandAsync(Command(edited.Item, ReconciliationCaseworkAction.DeleteComment) with { CommentId = "comment-1", Reason = "Duplicate request." });
@@ -299,7 +299,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         signoff.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
         (await repo.GetAuditHistoryAsync(item.BreakId)).Should().Contain(e => e.EventType == "SignedOff");
 
-        var reopenWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(signoff.Item, ReconciliationCaseworkAction.Reopen) with { Actor = "controller-manager", Privileged = true });
+        var reopenWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(signoff.Item, ReconciliationCaseworkAction.Reopen) with { Actor = "controller-manager", Privileged = true, Reason = " " });
         reopenWithoutReason.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingReason);
 
         var reopened = await repo.ApplyCaseworkCommandAsync(Command(signoff.Item, ReconciliationCaseworkAction.Reopen) with { Actor = "controller-manager", Privileged = true, Reason = "Late broker correction." });

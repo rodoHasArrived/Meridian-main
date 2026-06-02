@@ -1,15 +1,13 @@
 # GitHub Workflows
 
 Meridian keeps the Actions surface intentionally small. The active workflows validate the
-current .NET 10 solution, the browser workstation, the retained Windows desktop shell, and
-safe publish output. Older automation for AI review, public release creation, documentation
-deployment, Docker publishing, stale issue handling, and broad scheduled jobs was removed
-because it either duplicated CI, depended on obsolete project assumptions, or performed
-automation outside the current build/test/publish scope.
+current .NET 10 solution, the browser workstation, the retained Windows desktop shell, safe
+publish output, and documentation/diagram refreshes. Older automation for AI review, public
+release creation, Docker publishing, stale issue handling, and broad scheduled jobs was
+removed because it either duplicated CI, depended on obsolete project assumptions, or performed
+automation outside the current build/test/publish/docs scope.
 
-## Active workflow inventory
-
-Use [`docs/generated/workflows-overview.md`](../../docs/generated/workflows-overview.md) for the generated workflow inventory. It is built from the workflow files on disk, so this README does not repeat a manually maintained workflow list.
+## Active Workflows
 
 ## Canonical lane mapping
 
@@ -21,6 +19,16 @@ Use [`docs/generated/workflows-overview.md`](../../docs/generated/workflows-over
 | `verify-docs` | `CI` source-doc determinism job plus local docs checks. |
 | `verify-desktop` | `Windows Desktop Build` (`windows-desktop-build.yml`). |
 | `verify-release` | `Publish Smoke` (`publish-smoke.yml`) and `Desktop Installer Packaging` (`desktop-installer-packaging.yml`). |
+
+| Workflow | File | Trigger | Purpose | Artifacts |
+| --- | --- | --- | --- | --- |
+| CI | `ci.yml` | Pull requests, pushes to `main`, manual | Restores `Meridian.sln`, verifies formatting, validates warning-suppression inventory, builds the focused `Meridian.WebWorkstation.slnf` lane, reports build warning counts, runs non-integration .NET tests, then tests and builds `src/Meridian.Ui/dashboard`. | .NET TRX results on failure |
+| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Blocks pilot acceptance on browser `test:w4` parity and Windows `Category=W4Acceptance` desktop coverage before running `PilotAcceptanceHarnessTests`, writing `pilot-readiness.json` plus `pilot-readiness.md`, validating the pilot readiness dashboard renderer, generating `artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md`, and uploading the evidence bundles. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
+| Windows Desktop Build | `windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Builds the real WPF app on Windows, runs WPF tests, and smoke-publishes the desktop executable. | WPF TRX results on failure |
+| Documentation Automation | `documentation.yml` | Documentation, docs-script, workflow, WPF navigation, or diagram changes; manual | Runs docs automation checks, regenerates tracked documentation outputs, refreshes Mermaid/UML/UI diagrams, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
+| Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime and uploads the generated standalone output. | Publish output |
+| Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual | Builds signed (or temporary-cert) MSIX installer packages for `win-x64` and `win-arm64`, uploads them as workflow artifacts, and attaches package assets to GitHub releases for tag runs. | Desktop installer packages (`.msix`, `.msixbundle`, `.appinstaller`) |
+| Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Runs repository workflow hygiene checks and validates workflow syntax with `actionlint`. | None |
 
 ## Local Equivalents
 
@@ -72,6 +80,18 @@ Workflow hygiene:
 
 ```powershell
 python build/scripts/ci/check-workflow-hygiene.py
+```
+
+Documentation automation:
+
+```powershell
+python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json
+python3 build/scripts/docs/render-roadmap-diagrams.py --summary
+python3 build/scripts/docs/render-source-diagrams.py --summary
+npm install
+npm run generate-diagrams
+python3 build/scripts/docs/generate-structure-docs.py --workflows-only --output docs/generated/workflows-overview.md
+python3 build/scripts/docs/generate-workflow-manifest.py
 ```
 
 ## Standards

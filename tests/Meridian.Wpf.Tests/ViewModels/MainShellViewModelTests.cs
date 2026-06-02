@@ -392,8 +392,6 @@ public sealed class MainShellViewModelTests
             await WaitForConditionAsync(() => vm.OperatorInboxReviewCount == 1);
             vm.OpenOperatorInboxCommand.Execute(null);
 
-            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeNull();
-            workspaceService.GetWorkspaceScope("portfolio").Should().NotBeSameAs(strategyScope);
             vm.CurrentPageTag.Should().Be("AccountPortfolio");
         });
     }

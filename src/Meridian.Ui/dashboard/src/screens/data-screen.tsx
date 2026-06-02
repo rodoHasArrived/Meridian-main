@@ -18,6 +18,11 @@ import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import {
+  WorkspaceFilterBar,
+  WorkspaceInspectorHost,
+  WorkspaceTabStrip
+} from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -240,9 +245,21 @@ export function DataScreen({
   }
 
   return (
-    <div className="space-y-8">
-      <section className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-2">
+    <div className="workspace-screen data-workspace-screen">
+      <WorkspaceFilterBar
+        label="Data workspace filters"
+        searchValue={`Provider: ${vm.providerSection.selectedDetail?.title ?? "All providers"}`}
+        options={[
+          { id: "providers", label: "Providers", count: String(vm.providerSection.rows.length), active: true },
+          { id: "backfills", label: "Backfills", count: String(vm.backfillSection.rows.length) },
+          { id: "exports", label: "Exports", count: String(vm.exportSection.rows.length) }
+        ]}
+        fields={[
+          { id: "sync", label: "Sync", value: vm.providerSection.statusLabel },
+          { id: "route", label: "Route", value: workspace.label }
+        ]}
+        actions={(
+          <>
           <Button asChild variant="outline" size="sm">
             <Link to="/data/quotes" aria-label="Open live quotes and order book viewer">
               <RadioTower className="h-4 w-4" aria-hidden="true" />
@@ -255,15 +272,30 @@ export function DataScreen({
               <span className="ml-1.5">Watchlist</span>
             </Link>
           </Button>
-        </div>
-      </section>
+          <Button type="button" size="sm" onClick={vm.openProviderSetup} aria-label="Import a data source">
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            <span className="ml-1.5">Import source</span>
+          </Button>
+          </>
+        )}
+      />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="workspace-metric-strip">
         {data.metrics.map((metric) => <MetricCard key={metric.id} {...metric} />)}
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card>
+      <section className="data-management-frame">
+        <nav className="workspace-directory-rail" aria-label="Data folders">
+          <div className="operator-rail-section">Data folders</div>
+          <a href="#data-provider-health-title" aria-current="page">Provider catalog</a>
+          <a href="#data-backfill-queue-title">Backfill queue</a>
+          <a href="#data-recent-exports-title">Export packages</a>
+          <Link to="/data/watchlist">Watchlist</Link>
+          <Link to="/data/quotes">Live quotes</Link>
+        </nav>
+
+        <div className="data-management-main">
+        <section className="workspace-region workspace-region-compact">
           <CardHeader>
             <div className="eyebrow-label">{workspace.label} Lane</div>
             <CardTitle className="flex items-center gap-2">
@@ -292,15 +324,13 @@ export function DataScreen({
               description="Keep generated packages and report handoff cues tied to the provider and backfill state that produced them."
             />
           </CardContent>
-        </Card>
+        </section>
 
         <RouteFocusCard
           state={vm.routeFocusCard}
         />
-      </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)]">
-        <Card aria-labelledby="data-provider-health-title" className="xl:col-span-2">
+        <section aria-labelledby="data-provider-health-title" className="workspace-region data-provider-region">
           <CardHeader>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
@@ -355,28 +385,28 @@ export function DataScreen({
           <CardContent className="space-y-3">
             {vm.providerSection.hasRows ? (
               <>
-                <label htmlFor="configured-provider-selector" className="grid gap-1 text-sm font-medium text-muted-foreground">
-                  Configured Provider
-                  <select
-                    id="configured-provider-selector"
-                    className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    value={vm.providerSection.selectedRowId ?? ""}
-                    onChange={(event) => vm.selectProvider(event.target.value)}
-                    aria-label="Configured Provider"
-                  >
-                    {vm.providerSection.providerOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
                   {vm.providerSection.summaryCards.map((card) => (
                     <ProviderSummaryCard key={card.id} card={card} />
                   ))}
                 </div>
-              <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.46fr)]">
+              <div className="workspace-table-inspector-layout">
+                <div className="workspace-table-stack">
+                  <label htmlFor="configured-provider-selector" className="workspace-inline-select">
+                    <span>Configured Provider</span>
+                    <select
+                      id="configured-provider-selector"
+                      value={vm.providerSection.selectedRowId ?? ""}
+                      onChange={(event) => vm.selectProvider(event.target.value)}
+                      aria-label="Configured Provider"
+                    >
+                      {vm.providerSection.providerOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 <DenseDataTable
                   columns={providerHealthColumns}
                   rows={vm.providerSection.rows}
@@ -392,6 +422,7 @@ export function DataScreen({
                   ariaLabel={vm.providerSection.tableLabel}
                   caption={vm.providerSection.description}
                 />
+                </div>
                 <ProviderDetailPanel
                   detail={vm.providerSection.selectedDetail}
                   emptyState={vm.providerSection.detailEmptyState}
@@ -405,9 +436,9 @@ export function DataScreen({
               <ProviderEmptyState state={vm.providerSection.emptyState} onSetup={vm.openProviderSetup} />
             )}
           </CardContent>
-        </Card>
+        </section>
 
-        <Card aria-labelledby="data-backfill-queue-title">
+        <section aria-labelledby="data-backfill-queue-title" className="workspace-region">
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -446,9 +477,9 @@ export function DataScreen({
               />
             </div>
           </CardContent>
-        </Card>
+        </section>
 
-        <Card aria-labelledby="data-recent-exports-title">
+        <section aria-labelledby="data-recent-exports-title" className="workspace-region">
           <CardHeader>
             <CardTitle id="data-recent-exports-title">Recent exports</CardTitle>
             <CardDescription>Latest package and reporting outputs tied to Data workspace evidence.</CardDescription>
@@ -480,7 +511,8 @@ export function DataScreen({
               />
             </div>
           </CardContent>
-        </Card>
+        </section>
+        </div>
       </section>
 
       <ProviderSetupDialog vm={vm} />
@@ -607,67 +639,50 @@ function ProviderDetailPanel({
 }) {
   if (!detail) {
     return (
-      <aside
+      <WorkspaceInspectorHost
         id={DATA_PROVIDER_DETAIL_PANEL_ID}
-        role="status"
-        aria-label="Provider detail empty state"
-        className="row-detail-panel h-fit min-w-0"
+        label="Provider detail empty state"
+        title={emptyState?.title ?? "No provider selected"}
+        subtitle="Provider Detail"
+        className="h-fit min-w-0"
       >
-        <div className="eyebrow-label">Provider Detail</div>
-        <h3 className="mt-2 text-sm font-semibold text-foreground">
-          {emptyState?.title ?? "No provider selected"}
-        </h3>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {emptyState?.description ?? "Select a provider row to inspect trust evidence and recovery guidance."}
         </p>
-      </aside>
+      </WorkspaceInspectorHost>
     );
   }
 
   return (
-    <aside
+    <WorkspaceInspectorHost
       id={detail.id}
-      role="region"
-      aria-label={detail.ariaLabel}
-      aria-live="polite"
-      className="row-detail-panel h-fit min-w-0"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="eyebrow-label">Provider Detail</div>
-          <h3 className="mt-2 truncate text-sm font-semibold text-foreground">{detail.title}</h3>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.subtitle}</p>
-        </div>
+      label={detail.ariaLabel}
+      title={detail.title}
+      subtitle={detail.subtitle}
+      status={(
         <Badge
           variant={detail.statusTone === "danger" ? "danger" : detail.statusTone === "warning" ? "warning" : "success"}
           dot
         >
           {detail.status}
         </Badge>
-      </div>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">{detail.description}</p>
-      <div className="mt-3 flex flex-wrap gap-1" role="tablist" aria-label={`${detail.title} provider detail tabs`}>
-        {detail.tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={tab.selected}
-            aria-controls={tab.ariaControls}
-            className={cn(
-              "rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
-              tab.selected
-                ? "border-primary/40 bg-primary/[0.08] text-foreground"
-                : "border-border/70 bg-secondary/20 text-muted-foreground hover:bg-secondary/35"
-            )}
-            onClick={() => onTabSelect(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      )}
+      className="h-fit min-w-0"
+    >
+      <p className="text-sm leading-6 text-muted-foreground">{detail.description}</p>
+      <WorkspaceTabStrip
+        label={`${detail.title} provider detail tabs`}
+        tabs={detail.tabs.map((tab) => ({
+          id: tab.id,
+          label: tab.label,
+          selected: tab.selected,
+          panelId: tab.ariaControls
+        }))}
+        onSelect={(tab) => onTabSelect(tab as DataOperationsProviderDetailState["activeTab"])}
+        className="mt-3"
+      />
       <ProviderDetailTabPanel detail={detail} activeTab={activeTab} onVerify={onVerify} />
-    </aside>
+    </WorkspaceInspectorHost>
   );
 }
 

@@ -34,4 +34,15 @@ describe("WorkspaceNav", () => {
       "/data/quotes?symbol=AAPL&provider=alpaca"
     );
   });
+
+  it("shows context-aware routes in compact rail mode", () => {
+    renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/data/providers"] });
+
+    expect(screen.getByRole("navigation", { name: "Workspaces" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Data folders" })).toHaveTextContent(
+      "Provider, watchlist, quote, alert, and backfill folders."
+    );
+    expect(screen.getByLabelText("Providers, current page")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByLabelText("Open Backfill queues")).toHaveAttribute("href", "/data/backfills");
+  });
 });

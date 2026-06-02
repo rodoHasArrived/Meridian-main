@@ -1,27 +1,33 @@
 import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, WalletCards } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
+import { getAccountingSystemProviders, getLatestAccountingSystemImport, getLatestAccountingSystemReconciliation, previewAccountingSystemImport } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import {
   buildAccountingLoadingViewState,
   resolveAccountingWorkstream,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
+  useAccountingConfigurationViewModel,
   useAccountingCashFlowViewModel,
   useAccountingReconciliationViewModel,
   useAccountingReportingViewModel,
   useReconciliationResolveDialogViewModel,
   useSecurityMasterViewModel
 } from "@/screens/accounting-screen.view-model";
+import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-model";
 import type {
   CalibrationProfileRowViewModel,
   CalibrationSummaryViewModel,
+  AccountingWorkstream,
+  AccountingConfigurationViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
@@ -37,10 +43,11 @@ import type {
   SecuritySearchResultRowViewModel,
   TradingParametersViewState
 } from "@/screens/accounting-screen.view-model";
-import type { AccountingWorkspaceResponse } from "@/types";
+import type { AccountingSystemImportDetail, AccountingSystemProvider, AccountingSystemReconciliationSummary, AccountingWorkspaceResponse, MultiAssetCoverageSummary } from "@/types";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
+  multiAssetCoverage?: MultiAssetCoverageSummary | null;
 }
 
 const calibrationProfileColumns: DenseDataTableColumn<CalibrationProfileRowViewModel>[] = [
@@ -305,6 +312,10 @@ const focusCopy: Record<string, { title: string; description: string }> = {
     title: "Ledger overview",
     description: "Cash, ledger coverage, and audit-facing balances remain visible from the workstation shell."
   },
+  configure: {
+    title: "Configurable accounting setup",
+    description: "Books, chart accounts, journal templates, posting rules, validation, and action audit evidence are prepared before activation."
+  },
   reconciliation: {
     title: "Reconciliation queue",
     description: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting."
@@ -366,7 +377,129 @@ const financialOperationsSteps: FinancialOperationsStep[] = [
   }
 ];
 
-export function AccountingScreen({ data }: AccountingScreenProps) {
+const accountingSystemStatusVariant = {
+  Matched: "success",
+  Variance: "warning",
+  MissingExternal: "warning",
+  MissingMeridian: "danger",
+  ReviewRequired: "warning"
+} as const;
+
+function AccountingSystemReconciliationPanel({
+  providers,
+  importDetail,
+  reconciliation,
+  loading,
+  error,
+  onRefresh
+}: {
+  providers: AccountingSystemProvider[];
+  importDetail: AccountingSystemImportDetail | null;
+  reconciliation: AccountingSystemReconciliationSummary | null;
+  loading: boolean;
+  error: string | null;
+  onRefresh: () => void;
+}) {
+  const activeProvider = providers.find((provider) => provider.providerId === "quickbooks-fixture") ?? providers[0] ?? null;
+  const plannedProvider = providers.find((provider) => provider.providerId === "quickbooks");
+  const rows = reconciliation?.rows.slice(0, 5) ?? [];
+
+  return (
+    <Card className="panel-surface" role="region" aria-label="External GL reconciliation">
+      <CardHeader>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="eyebrow-label">External GL reconciliation</div>
+            <CardTitle className="mt-2 flex items-center gap-2 text-base">
+              <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+              QuickBooks fixture evidence
+            </CardTitle>
+            <CardDescription className="mt-2">
+              External accounting-system records are imported as evidence for comparison with Meridian ledger records; posting remains disabled.
+            </CardDescription>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {activeProvider ? <Badge variant="success">{activeProvider.statusLabel}</Badge> : null}
+            {plannedProvider ? <Badge variant="outline">{plannedProvider.statusLabel}</Badge> : null}
+            <Button size="sm" variant="outline" onClick={onRefresh} disabled={loading} busy={loading} busyLabel="Refreshing GL evidence">
+              <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
+              Refresh
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error ? (
+          <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+            {error}
+          </div>
+        ) : null}
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <AccountingValue label="Import state" value={importDetail?.summary.state ?? (loading ? "Loading" : "Not loaded")} />
+          <AccountingValue label="Trial balance lines" value={String(importDetail?.summary.trialBalanceLineCount ?? 0)} />
+          <AccountingValue label="Matched rows" value={String(reconciliation?.matchedCount ?? 0)} />
+          <AccountingValue label="Break rows" value={String(reconciliation?.breakCount ?? 0)} />
+        </div>
+        {reconciliation ? (
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]">
+            <div className="overflow-hidden rounded-md border border-border/70">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 font-medium">Account</th>
+                    <th className="px-3 py-2 text-right font-medium">External</th>
+                    <th className="px-3 py-2 text-right font-medium">Meridian</th>
+                    <th className="px-3 py-2 text-right font-medium">Variance</th>
+                    <th className="px-3 py-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={row.rowId} className="border-t border-border/60">
+                      <td className="px-3 py-2">
+                        <span className="block font-semibold text-foreground">{row.accountName}</span>
+                        <span className="block font-mono text-[11px] text-muted-foreground">{row.accountCode}</span>
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono">{formatGlAmount(row.externalDebit - row.externalCredit, row.currency)}</td>
+                      <td className="px-3 py-2 text-right font-mono">{formatGlAmount(row.meridianDebit - row.meridianCredit, row.currency)}</td>
+                      <td className="px-3 py-2 text-right font-mono">{formatGlAmount(row.variance, row.currency)}</td>
+                      <td className="px-3 py-2">
+                        <Badge variant={accountingSystemStatusVariant[row.status]}>{row.status}</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-sm">
+              <div className="font-semibold text-foreground">Posting/export</div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">{reconciliation.postingDisabledReason}</p>
+              <div className="mt-3 space-y-1">
+                {reconciliation.evidenceReferences.map((evidence) => (
+                  <div key={evidence} className="truncate font-mono text-[11px] text-muted-foreground">{evidence}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
+            External GL reconciliation has not been loaded yet.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function formatGlAmount(value: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency || "USD",
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
+export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {
   const { pathname } = useLocation();
   const workstream = resolveAccountingWorkstream(pathname);
   const workspace = workspaceForPath(pathname);
@@ -376,7 +509,16 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
   const selectedReconciliationDetail = reconciliation.detailView;
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
+  const configuration = useAccountingConfigurationViewModel();
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
+  const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);
+  const [accountingSystemImport, setAccountingSystemImport] = useState<AccountingSystemImportDetail | null>(null);
+  const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
+  const [accountingSystemLoading, setAccountingSystemLoading] = useState(false);
+  const [accountingSystemError, setAccountingSystemError] = useState<string | null>(null);
+  const [activeTaskView, setActiveTaskView] = useState<AccountingTaskViewId>(() => (
+    typeof window === "undefined" ? "overview" : resolveAccountingTaskViewId(window.location.hash)
+  ));
   const identity = securityMaster.identityView;
   const selectedSecurityEntry = securityMaster.selectedSecurityId
     ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
@@ -475,6 +617,40 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
     }
   ];
 
+  useEffect(() => {
+    const updateActiveTaskView = () => {
+      setActiveTaskView(resolveAccountingTaskViewId(window.location.hash));
+    };
+
+    updateActiveTaskView();
+    window.addEventListener("hashchange", updateActiveTaskView);
+    return () => window.removeEventListener("hashchange", updateActiveTaskView);
+  }, []);
+
+  const refreshAccountingSystem = async (persistPreview = false) => {
+    setAccountingSystemLoading(true);
+    setAccountingSystemError(null);
+    try {
+      const providers = await getAccountingSystemProviders();
+      const importDetail = persistPreview
+        ? await previewAccountingSystemImport({ providerId: "quickbooks-fixture", persistPreview: true })
+        : await getLatestAccountingSystemImport();
+      const reconciliationDetail = await getLatestAccountingSystemReconciliation();
+      setAccountingSystemProviders(providers);
+      setAccountingSystemImport(importDetail);
+      setAccountingSystemReconciliation(reconciliationDetail);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to load external GL reconciliation.";
+      setAccountingSystemError(message);
+    } finally {
+      setAccountingSystemLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshAccountingSystem(false);
+  }, []);
+
   if (!data) {
     const loading = buildAccountingLoadingViewState(pathname);
     return (
@@ -495,10 +671,34 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
 
   const focus = focusCopy[workstream];
   const activeFinancialOperationsStep = resolveActiveFinancialOperationsStep(pathname);
+  const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
+  const accountingTaskFields = [
+    { id: "workstream", label: "Workstream", value: workstream },
+    { id: "queue", label: "Queue", value: String(data.reconciliationQueue.length) },
+    { id: "breaks", label: "Breaks", value: String(data.breakQueue.length) },
+    { id: "profiles", label: "Profiles", value: String(data.reporting.profileCount) }
+  ];
+  const visibleAccountingTaskViews = getAccountingTaskViewsForWorkstream(workstream);
+  const accountingTaskTabs = visibleAccountingTaskViews.map((view) => ({
+    id: view.id,
+    label: view.label,
+    selected: activeTaskView === view.id,
+    panelId: view.sectionId,
+    href: view.href
+  }));
+  const accountingTaskMapCards = buildAccountingTaskMapCards({
+    workstream,
+    breakCount: data.breakQueue.length,
+    runCount: data.reconciliationQueue.length,
+    profileCount: data.reporting.profileCount,
+    hasSelectedReconciliation: Boolean(selectedReconciliation),
+    configurationStatusLabel: configuration.statusLabel
+  });
 
   return (
     <div className="space-y-8">
       <section
+        id="accounting-overview"
         role="region"
         aria-label={`${workspace.label} workbench context`}
         className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
@@ -556,11 +756,99 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
         </div>
       </section>
 
-      <nav className="operator-mode-toggle" aria-label="Accounting operator modes">
-        <a href="#accounting-posture" aria-current="page">Monitor</a>
-        <a href="#accounting-exceptions">Investigate</a>
-        <a href="#accounting-actions">Act</a>
-      </nav>
+      {multiAssetCoveragePanel ? (
+        <Card className="panel-surface" role="region" aria-label="Multi-asset accounting coverage">
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="eyebrow-label">Multi-asset coverage</div>
+                <CardTitle className="mt-2 text-base">Accounting, reconciliation, and close readiness</CardTitle>
+                <CardDescription>
+                  Asset-class readiness is supplied by the shared portfolio coverage endpoint and rendered without Accounting-local rules.
+                </CardDescription>
+              </div>
+              <Badge variant={multiAssetCoveragePanel.statusTone === "default" ? "outline" : multiAssetCoveragePanel.statusTone}>
+                {multiAssetCoveragePanel.statusLabel}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {multiAssetCoveragePanel.chips.map((chip) => (
+                <AccountingChip key={chip.label} label={chip.label} value={chip.value} />
+              ))}
+            </div>
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+              {multiAssetCoveragePanel.rows.slice(0, 8).map((item) => (
+                <div key={item.assetClass} className={cn("rounded-md border bg-secondary/20 px-3 py-2", item.statusTone === "danger" ? "border-danger/30" : item.statusTone === "warning" ? "border-warning/30" : "border-border/70")}>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-sm font-semibold text-foreground">{item.displayName}</span>
+                    <Badge variant={item.statusTone === "default" ? "outline" : item.statusTone}>
+                      {item.statusLabel}
+                    </Badge>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    {item.readinessDetail}
+                  </p>
+                  <a href={item.primaryEvidenceRoute} className="mt-2 block truncate text-xs font-medium text-primary hover:underline">
+                    {item.evidenceLabel}
+                  </a>
+                  {item.drillThroughTargets.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {item.drillThroughTargets.slice(0, 3).map((target) => (
+                        <a
+                          key={target.id}
+                          href={target.href}
+                          aria-label={target.ariaLabel}
+                          className="rounded-sm border border-border/60 px-1.5 py-0.5 text-[11px] text-primary hover:border-primary/50 hover:bg-primary/10"
+                        >
+                          {target.label}
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {item.ledgerLabel}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <a href={multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
+              {multiAssetCoveragePanel.evidenceRouteLabel}
+            </a>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <AccountingSystemReconciliationPanel
+        providers={accountingSystemProviders}
+        importDetail={accountingSystemImport}
+        reconciliation={accountingSystemReconciliation}
+        loading={accountingSystemLoading}
+        error={accountingSystemError}
+        onRefresh={() => void refreshAccountingSystem(true)}
+      />
+
+      <WorkspaceFilterBar
+        label="Accounting task navigator"
+        searchLabel="Accounting tasks"
+        searchValue={accountingTaskViews.find((view) => view.id === activeTaskView)?.label ?? "Overview"}
+        fields={accountingTaskFields}
+        actions={
+          <WorkspaceTabStrip
+            label="Accounting sub-task screens"
+            tabs={accountingTaskTabs}
+          />
+        }
+      />
+      <AccountingTaskMap
+        label="Accounting page organization"
+        cards={accountingTaskMapCards}
+      />
+
+      {workstream === "configure" ? (
+        <AccountingConfigurationPanel view={configuration} />
+      ) : null}
 
       <section id="accounting-posture" className="workspace-section-band" aria-labelledby="accounting-posture-heading">
         <div className="workspace-section-subheader">
@@ -1178,7 +1466,7 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
         </section>
       ) : null}
 
-      <section className={cn("grid gap-4", workstream === "reconciliation" ? "xl:grid-cols-1" : "xl:grid-cols-[1.15fr_0.85fr]")}>
+      <section id="accounting-reporting" className={cn("grid gap-4", workstream === "reconciliation" ? "xl:grid-cols-1" : "xl:grid-cols-[1.15fr_0.85fr]")}>
         {workstream !== "reconciliation" ? (
           <ReconciliationQueueSummaryCard view={reconciliation.queuePanelView} />
         ) : null}
@@ -2298,6 +2586,353 @@ function AccountingHighlight({
       <div className="font-semibold text-foreground">{title}</div>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
+  );
+}
+
+type AccountingTaskViewId =
+  | "overview"
+  | "posture"
+  | "exceptions"
+  | "ledger"
+  | "reporting"
+  | "security-master"
+  | "actions"
+  | "history"
+  | "configure";
+
+interface AccountingTaskView {
+  id: AccountingTaskViewId;
+  label: string;
+  href: string;
+  sectionId: string;
+}
+
+type AccountingTaskMapTone = "primary" | "supporting" | "muted";
+
+interface AccountingTaskMapCard {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  href: string;
+  tone: AccountingTaskMapTone;
+}
+
+const accountingTaskViews: AccountingTaskView[] = [
+  { id: "overview", label: "Overview", href: "#accounting-overview", sectionId: "accounting-overview" },
+  { id: "posture", label: "Close Posture", href: "#accounting-posture", sectionId: "accounting-posture" },
+  { id: "exceptions", label: "Exceptions", href: "#accounting-exceptions", sectionId: "accounting-exceptions" },
+  { id: "ledger", label: "Ledger Review", href: "#trial-balance-title", sectionId: "trial-balance-title" },
+  { id: "reporting", label: "Reports", href: "#accounting-reporting", sectionId: "accounting-reporting" },
+  { id: "security-master", label: "Security Master", href: "#security-master-search", sectionId: "security-master-search" },
+  { id: "actions", label: "Actions", href: "#accounting-actions", sectionId: "accounting-actions" },
+  { id: "history", label: "History", href: "#accounting-history", sectionId: "accounting-history" },
+  { id: "configure", label: "Configure", href: "#accounting-configure-heading", sectionId: "accounting-configure-heading" }
+];
+
+const accountingTaskViewsByWorkstream: Record<AccountingWorkstream, AccountingTaskViewId[]> = {
+  ledger: ["overview", "posture", "ledger", "reporting", "history"],
+  reconciliation: ["overview", "posture", "exceptions", "actions", "history", "reporting"],
+  reporting: ["overview", "reporting", "posture", "ledger"],
+  "security-master": ["overview", "security-master", "posture", "reporting"],
+  configure: ["overview", "configure", "posture", "reporting"]
+};
+
+function resolveAccountingTaskViewId(hash: string): AccountingTaskViewId {
+  const normalizedHash = hash.replace(/^#/, "");
+  return accountingTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
+}
+
+function getAccountingTaskViewsForWorkstream(workstream: AccountingWorkstream): AccountingTaskView[] {
+  const ids = accountingTaskViewsByWorkstream[workstream];
+  return ids
+    .map((id) => accountingTaskViews.find((view) => view.id === id))
+    .filter((view): view is AccountingTaskView => Boolean(view));
+}
+
+function buildAccountingTaskMapCards({
+  workstream,
+  breakCount,
+  runCount,
+  profileCount,
+  hasSelectedReconciliation,
+  configurationStatusLabel
+}: {
+  workstream: AccountingWorkstream;
+  breakCount: number;
+  runCount: number;
+  profileCount: number;
+  hasSelectedReconciliation: boolean;
+  configurationStatusLabel: string;
+}): AccountingTaskMapCard[] {
+  return [
+    {
+      id: "close",
+      label: "Close Posture",
+      value: `${runCount} runs`,
+      detail: "Metrics, cash-flow evidence, and operations control center.",
+      href: "#accounting-posture",
+      tone: workstream === "ledger" || workstream === "reporting" ? "primary" : "supporting"
+    },
+    {
+      id: "exceptions",
+      label: "Exceptions",
+      value: `${breakCount} breaks`,
+      detail: "Statement runs, open breaks, detail evidence, and resolution queue.",
+      href: workstream === "reconciliation" ? "#accounting-exceptions" : WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+      tone: workstream === "reconciliation" ? "primary" : "supporting"
+    },
+    {
+      id: "ledger",
+      label: "Ledger Review",
+      value: hasSelectedReconciliation ? "Selected run" : "No run",
+      detail: "Trial balance, basis bridge, transaction preview, and ledger impact.",
+      href: workstream === "ledger" ? "#trial-balance-title" : WORKSTATION_ROUTE_CATALOG.accountingLedger,
+      tone: workstream === "ledger" ? "primary" : "supporting"
+    },
+    {
+      id: "reports",
+      label: "Reports",
+      value: `${profileCount} profiles`,
+      detail: "Report profiles, export readiness, and retained evidence handoff.",
+      href: "#accounting-reporting",
+      tone: workstream === "reporting" ? "primary" : "supporting"
+    },
+    {
+      id: "security-master",
+      label: "Security Master",
+      value: workstream === "security-master" ? "Active" : "Available",
+      detail: "Search, identity, conflicts, schedules, lots, and trading parameters.",
+      href: workstream === "security-master" ? "#security-master-search" : WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
+      tone: workstream === "security-master" ? "primary" : "supporting"
+    },
+    {
+      id: "configure",
+      label: "Configure",
+      value: configurationStatusLabel,
+      detail: "Basis, mapping, validation, and audit readiness before activation.",
+      href: workstream === "configure" ? "#accounting-configure-heading" : WORKSTATION_ROUTE_CATALOG.accountingConfigure,
+      tone: workstream === "configure" ? "primary" : "muted"
+    }
+  ];
+}
+
+function AccountingTaskMap({ label, cards }: { label: string; cards: AccountingTaskMapCard[] }) {
+  return (
+    <section aria-label={label} className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {cards.map((card) => {
+        const content = (
+          <>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-foreground">{card.label}</div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{card.detail}</p>
+              </div>
+              <span
+                className={cn(
+                  "shrink-0 rounded-sm border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em]",
+                  card.tone === "primary" ? "border-primary/35 bg-primary/10 text-primary" : "",
+                  card.tone === "supporting" ? "border-border/70 bg-secondary/30 text-muted-foreground" : "",
+                  card.tone === "muted" ? "border-border/60 bg-background text-muted-foreground" : ""
+                )}
+              >
+                {card.value}
+              </span>
+            </div>
+          </>
+        );
+        const className = cn(
+          "block rounded-lg border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          card.tone === "primary" ? "border-primary/40 bg-primary/10 hover:bg-primary/15" : "",
+          card.tone === "supporting" ? "border-border/70 bg-secondary/25 hover:bg-secondary/40" : "",
+          card.tone === "muted" ? "border-border/60 bg-background/70 hover:bg-secondary/20" : ""
+        );
+
+        if (card.href.startsWith("#")) {
+          return (
+            <a key={card.id} href={card.href} className={className}>
+              {content}
+            </a>
+          );
+        }
+
+        return (
+          <Link key={card.id} to={card.href} className={className}>
+            {content}
+          </Link>
+        );
+      })}
+    </section>
+  );
+}
+
+function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {
+  return (
+    <section className="workspace-section-band" aria-labelledby="accounting-configure-heading">
+      <div className="workspace-section-subheader">
+        <div className="min-w-0">
+          <p className="eyebrow-label">Configure</p>
+          <h3 id="accounting-configure-heading" className="workspace-section-title">{view.title}</h3>
+          <p className="workspace-section-summary">{view.description}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={view.statusTone === "success" ? "success" : view.statusTone === "danger" ? "danger" : view.statusTone === "warning" ? "warning" : "outline"} dot>
+            {view.statusLabel}
+          </Badge>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={view.loading}
+            disabledReason={view.loading ? "Configuration refresh is already in progress." : null}
+            onClick={() => void view.refresh()}
+          >
+            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            Refresh
+          </Button>
+          <Button
+            size="sm"
+            disabled={!view.canActivate}
+            disabledReason={view.activateDisabledReason}
+            busy={view.activateBusy}
+            busyLabel={view.activateButtonLabel}
+            onClick={() => void view.activate()}
+          >
+            {view.activateButtonLabel}
+          </Button>
+        </div>
+      </div>
+
+      {view.errorText ? (
+        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+          <div className="font-semibold">{view.errorText}</div>
+          {view.errorDetails.length > 0 ? (
+            <ul className="mt-2 list-disc pl-4">
+              {view.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        {view.metricRows.map((metric) => (
+          <div key={metric.id} className="panel-surface px-4 py-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
+            <div className={cn("mt-2 font-mono text-xl font-semibold", cashFlowTextClass(metric.tone))}>{metric.value}</div>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Network className="h-5 w-5 text-primary" />
+              Journal templates and preview
+            </CardTitle>
+            <CardDescription>Preview uses shared accounting configuration endpoints and does not persist journal entries.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                disabled={!view.canPreview}
+                disabledReason={view.previewDisabledReason}
+                busy={view.previewBusy}
+                busyLabel={view.previewButtonLabel}
+                onClick={() => void view.previewFirstTemplate()}
+              >
+                {view.previewButtonLabel}
+              </Button>
+              {view.previewStatusText ? <span className="text-sm text-muted-foreground">{view.previewStatusText}</span> : null}
+            </div>
+
+            <div className="space-y-2">
+              {view.templates.length > 0 ? view.templates.map((template) => (
+                <div key={template.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-foreground">{template.title}</div>
+                      <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{template.subtitle}</div>
+                    </div>
+                    <Badge variant={template.statusLabel === "Balanced" ? "success" : template.statusLabel === "Archived" ? "outline" : "warning"}>
+                      {template.statusLabel}
+                    </Badge>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span>{template.lineCountLabel}</span>
+                    <span>{template.balanceLabel}</span>
+                  </div>
+                </div>
+              )) : (
+                <p role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
+              )}
+            </div>
+
+            {view.preview ? (
+              <div className="rounded-lg border border-border/70 bg-background/35 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="font-semibold text-foreground">{view.preview.title}</div>
+                    <div className="mt-1 font-mono text-xs text-muted-foreground">{view.preview.balanceLabel}</div>
+                  </div>
+                  <Badge variant={view.preview.statusLabel.startsWith("Balanced") ? "success" : "warning"}>{view.preview.statusLabel}</Badge>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {view.preview.lineRows.map((line) => (
+                    <div key={line.id} className="grid gap-2 rounded border border-border/60 px-2 py-2 text-xs sm:grid-cols-[1fr_auto_auto]">
+                      <span className="min-w-0 break-words font-mono text-foreground">{line.account}</span>
+                      <span className="font-mono text-muted-foreground">{line.side}</span>
+                      <span className="font-mono text-foreground">{line.amount}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle>Validation and audit trail</CardTitle>
+            <CardDescription>Configuration readiness and append-only mutation evidence stay visible before activation.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              {view.validationIssues.length > 0 ? view.validationIssues.map((issue) => (
+                <div key={issue.id} className={cn(
+                  "rounded-lg border px-3 py-2 text-sm",
+                  issue.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : "",
+                  issue.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "",
+                  issue.tone === "default" ? "border-border/70 bg-secondary/25 text-muted-foreground" : ""
+                )}>
+                  <div className="font-semibold">{issue.label}</div>
+                  <div className="mt-1">{issue.message}</div>
+                  <div className="mt-1 font-mono text-xs">{issue.detail}</div>
+                </div>
+              )) : (
+                <div className="rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                  No critical configuration validation issues.
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="eyebrow-label">Recent audit events</div>
+              {view.auditTrail.length > 0 ? view.auditTrail.map((event) => (
+                <div key={event.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-sm">
+                  <div className="font-semibold text-foreground">{event.title}</div>
+                  <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{event.subtitle}</div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">{event.hashLabel}</div>
+                </div>
+              )) : (
+                <p className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
   );
 }
 

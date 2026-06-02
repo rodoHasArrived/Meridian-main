@@ -1236,12 +1236,13 @@ internal sealed class CorruptLedgerReplayStore : IPaperSessionStore
             string accountName,
             decimal debit,
             decimal credit,
-            string description)
+            string description,
+            string? accountSymbol = "AAPL")
             => new(
                 EntryId: entryId,
                 JournalEntryId: journalId,
                 Timestamp: timestamp,
-                Account: new PersistedLedgerAccountDto(accountName, "Asset", "AAPL", null),
+                Account: new PersistedLedgerAccountDto(accountName, "Asset", accountSymbol, null),
                 Debit: debit,
                 Credit: credit,
                 Description: description);
@@ -1251,8 +1252,8 @@ internal sealed class CorruptLedgerReplayStore : IPaperSessionStore
             "buy entry",
             now.AddMinutes(-19),
             [
-                BuildLine(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"), journalOkId, now.AddMinutes(-19), "Cash", 0m, 1000m, "credit cash"),
-                BuildLine(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"), journalOkId, now.AddMinutes(-19), "Position", 1000m, 0m, "debit pos")
+                BuildLine(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"), journalOkId, now.AddMinutes(-19), "Cash", 0m, 1000m, "buy entry", accountSymbol: null),
+                BuildLine(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"), journalOkId, now.AddMinutes(-19), "Position", 1000m, 0m, "buy entry")
             ]);
 
         // Intentionally corrupt: line references a different JournalEntryId than parent.
@@ -1268,7 +1269,8 @@ internal sealed class CorruptLedgerReplayStore : IPaperSessionStore
                     "Cash",
                     100m,
                     0m,
-                    "bad")
+                    "corrupt entry",
+                    accountSymbol: null)
             ]);
 
         return Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([validEntry, corruptEntry]);

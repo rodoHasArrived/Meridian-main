@@ -237,6 +237,46 @@ items:
         path: docs/roadmap/generated/ROADMAP_SUMMARY.md
     last_reviewed: 2026-06-02
 
+  - id: W5-MASSET-001
+    title: Multi-asset operational coverage proof lane
+    wave: W5
+    stage_gates:
+      - AccountingRecords
+      - PortfolioLedgerReview
+    workspace:
+      - Portfolio
+      - Accounting
+      - Data
+      - Settings
+    owner_lane: Accounting and Ledger
+    status: done
+    health: green
+    priority: high
+    evidence_posture: complete
+    current_summary: Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model.
+    exit_criteria:
+      - Equities, options, futures, FX, fixed income, loans, structured/private `CustomAsset`, and `OtherSecurity` rows declare identifiers, economics, provider evidence, ledger classification, reconciliation signals, and close blockers.
+      - Missing retained provider data remains review-required or blocked evidence rather than fake completeness.
+      - Browser and WPF surfaces consume the shared DTO without client-local readiness rules.
+    source_modules:
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: test
+        path: tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs
+      - type: test
+        path: tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts
+    last_reviewed: 2026-06-02
+
   - id: W6-BTSTUDIO-001
     title: Backtesting studio evidence loop
     wave: W6

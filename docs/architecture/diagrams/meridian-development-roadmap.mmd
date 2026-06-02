@@ -10,9 +10,11 @@ flowchart LR
   W3_CONT_001 --> W4_RECON_001
   W4_RPT_001["W4-RPT-001\nW4 - done / green"]
   W4_RECON_001 --> W4_RPT_001
-  W5_ACCT_001["W5-ACCT-001\nW5 - planned / green"]
+  W5_ACCT_001["W5-ACCT-001\nW5 - done / green"]
   W4_RPT_001 --> W5_ACCT_001
+  W5_MASSET_001["W5-MASSET-001\nW5 - done / green"]
+  W5_ACCT_001 --> W5_MASSET_001
   W6_BTSTUDIO_001["W6-BTSTUDIO-001\nW6 - planned / green"]
-  W5_ACCT_001 --> W6_BTSTUDIO_001
+  W5_MASSET_001 --> W6_BTSTUDIO_001
   W7_LIVE_001["W7-LIVE-001\nW7 - planned / green"]
   W6_BTSTUDIO_001 --> W7_LIVE_001

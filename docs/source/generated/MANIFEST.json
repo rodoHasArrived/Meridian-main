@@ -6,11 +6,11 @@
   "inputs": [
     {
       "path": "docs/source/data/diagram-index.yml",
-      "sha256": "ddd1a118b402f72c6e03419e0967649263c65614d288f9ab0734734eb81c28a6"
+      "sha256": "4b63d364134e8d75cd503f0c0e6de481419d2bf945d229beb8c9f0c1772bc59d"
     },
     {
       "path": "docs/source/data/source-modules.yml",
-      "sha256": "f3f81c0a3ec0aa4e2939cac2b3166cb298bd8070289dbdcbfc84cea410ccccac"
+      "sha256": "2cc6c3dbff7d5f72e32b2249535cb21dd317f147a310560487f1e22177e53fbb"
     },
     {
       "path": "docs/source/data/source-readme-coverage.yml",

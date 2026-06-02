@@ -301,9 +301,12 @@ describe("OperationsContinuityScreen", () => {
     expect(within(accountingRecordEvidence).getByText("Retained source data")).toBeInTheDocument();
     expect(within(accountingRecordEvidence).getByText("Requires provider statement, custodian activity file, bank or account source record")).toBeInTheDocument();
     expect(within(accountingRecordEvidence).getByText("Reconciliation case history")).toBeInTheDocument();
-    expect(within(accountingRecordEvidence).getByText("Report-pack links and restatement lineage")).toBeInTheDocument();
-    expect(within(accountingRecordEvidence).getByText("Requires report-pack publication, export manifest, document attachment, restatement lineage")).toBeInTheDocument();
-    expect(within(accountingRecordEvidence).getAllByText("Review required")).toHaveLength(4);
+    expect(within(accountingRecordEvidence).getByText("Report pack")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getByText("Requires report-pack manifest, report-pack provenance, report-pack validation")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getByText("Exports and retained evidence")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getByText("Requires export manifest, retained evidence hash, close-package publication")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getByText("Restatement lineage")).toBeInTheDocument();
+    expect(within(accountingRecordEvidence).getAllByText("Review required")).toHaveLength(6);
     expect(within(accountingRecordEvidence).getByRole("link", { name: "Open accounting-record evidence source: Journal and ledger evidence" }))
       .toHaveAttribute("href", "/accounting/ledger");
     const closePackage = screen.getByLabelText("Close package publication summary");

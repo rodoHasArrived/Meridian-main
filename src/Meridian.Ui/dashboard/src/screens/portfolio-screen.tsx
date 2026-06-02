@@ -23,6 +23,7 @@ import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   AccountingWorkspaceResponse,
+  MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
   TradingWorkspaceResponse
@@ -35,6 +36,7 @@ interface PortfolioScreenProps {
   accounting: AccountingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
+  multiAssetCoverage?: MultiAssetCoverageSummary | null;
 }
 
 const pnlToneClass = {
@@ -250,7 +252,8 @@ export function PortfolioScreen({
   strategy,
   accounting,
   brokerageConnection,
-  brokeragePortfolio
+  brokeragePortfolio,
+  multiAssetCoverage
 }: PortfolioScreenProps) {
   const location = useLocation();
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -264,6 +267,7 @@ export function PortfolioScreen({
     accounting,
     brokerageConnection,
     brokeragePortfolio,
+    multiAssetCoverage,
     selectedRunDrillIn,
     pathname: location.pathname
   });
@@ -430,6 +434,157 @@ export function PortfolioScreen({
             </div>
           </div>
         </section>
+      ) : null}
+
+      {vm.multiAssetCoveragePanel ? (
+        <Card className={cn("panel-surface border", cashFlowBorderClass[vm.multiAssetCoveragePanel.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="eyebrow-label">Coverage</div>
+                <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                  <Network className="h-4 w-4 text-primary" />
+                  {vm.multiAssetCoveragePanel.title}
+                </CardTitle>
+                <CardDescription>{vm.multiAssetCoveragePanel.description}</CardDescription>
+              </div>
+              <Badge variant={workflowStatusVariant(vm.multiAssetCoveragePanel.statusTone)}>
+                {vm.multiAssetCoveragePanel.statusLabel}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {vm.multiAssetCoveragePanel.chips.map((chip) => (
+                <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
+              ))}
+            </div>
+            <div className="grid gap-3">
+              {vm.multiAssetCoveragePanel.groups.map((group) => (
+                <section
+                  key={group.id}
+                  role="group"
+                  aria-label={`${group.label} multi-asset coverage`}
+                  className={cn("rounded-lg border bg-background/20 p-3", cashFlowBorderClass[group.statusTone])}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-foreground">{group.label}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{group.summary}</div>
+                    </div>
+                    <Badge variant={workflowStatusVariant(group.statusTone)}>{group.label}</Badge>
+                  </div>
+                  <div className="mt-3 grid gap-3">
+                    {group.rows.map((row) => (
+                      <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-3 py-3">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="font-semibold text-foreground">{row.displayName}</div>
+                            <div className="mt-1 text-xs leading-5 text-muted-foreground">{row.summary}</div>
+                          </div>
+                          <Badge variant={workflowStatusVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                        </div>
+                        <div className="mt-3 grid gap-2 md:grid-cols-3">
+                          <div className="rounded-md border border-border/60 bg-background/30 px-3 py-2">
+                            <div className="text-[11px] uppercase text-muted-foreground">Readiness</div>
+                            <div className="mt-1 text-xs text-foreground">{row.readinessDetail}</div>
+                          </div>
+                          <div className="rounded-md border border-border/60 bg-background/30 px-3 py-2">
+                            <div className="text-[11px] uppercase text-muted-foreground">Ledger</div>
+                            <div className="mt-1 text-xs text-foreground">{row.ledgerLabel}</div>
+                          </div>
+                          <div className="rounded-md border border-border/60 bg-background/30 px-3 py-2">
+                            <div className="text-[11px] uppercase text-muted-foreground">Reconciliation</div>
+                            <div className="mt-1 text-xs text-foreground">{row.reconciliationLabel}</div>
+                          </div>
+                        </div>
+                        <div className="mt-3 grid gap-3 xl:grid-cols-[1fr_0.9fr]">
+                          <div>
+                            <div className="text-[11px] uppercase text-muted-foreground">Evidence targets</div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {row.evidenceTargets.map((target) => (
+                                <a
+                                  key={target.id}
+                                  href={target.href}
+                                  aria-label={target.ariaLabel}
+                                  className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-background/40 px-2 py-1 text-xs hover:border-primary/50 hover:bg-primary/10"
+                                >
+                                  <Badge variant={workflowStatusVariant(target.statusTone)}>{target.statusLabel}</Badge>
+                                  <span className="font-medium text-foreground">{target.label}</span>
+                                  <span className="text-muted-foreground">{target.category}</span>
+                                  <span className="font-mono text-muted-foreground">{target.requiredLabel}</span>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[11px] uppercase text-muted-foreground">Review targets</div>
+                            <div className="mt-2 grid gap-2">
+                              {row.blockerTargets.length > 0 ? row.blockerTargets.map((target) => (
+                                target.href ? (
+                                  <a
+                                    key={target.id}
+                                    href={target.href}
+                                    aria-label={target.ariaLabel}
+                                    className="rounded-md border border-warning/30 bg-warning/10 px-2 py-1 text-xs text-warning hover:border-warning/60"
+                                  >
+                                    <span className="font-semibold">{target.label}</span>
+                                    <span className="ml-2">{target.source}</span>
+                                    <span className="ml-2">{target.detail}</span>
+                                  </a>
+                                ) : (
+                                  <div key={target.id} aria-label={target.ariaLabel} className="rounded-md border border-warning/30 bg-warning/10 px-2 py-1 text-xs text-warning">
+                                    <span className="font-semibold">{target.label}</span>
+                                    <span className="ml-2">{target.source}</span>
+                                    <span className="ml-2">{target.detail}</span>
+                                  </div>
+                                )
+                              )) : (
+                                <div className="rounded-md border border-border/60 bg-background/30 px-2 py-1 text-xs text-muted-foreground">
+                                  {row.blockerLabel}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        {row.drillThroughTargets.length > 0 ? (
+                          <div className="mt-3">
+                            <div className="text-[11px] uppercase text-muted-foreground">Drill-through targets</div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {row.drillThroughTargets.map((target) => (
+                                <a
+                                  key={target.id}
+                                  href={target.href}
+                                  aria-label={target.ariaLabel}
+                                  className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-background/40 px-2 py-1 text-xs hover:border-primary/50 hover:bg-primary/10"
+                                >
+                                  <Badge variant={workflowStatusVariant(target.statusTone)}>{target.statusLabel}</Badge>
+                                  <span className="font-medium text-foreground">{target.label}</span>
+                                  <span className="text-muted-foreground">{target.type}</span>
+                                  <span className="font-mono text-muted-foreground">{target.source}</span>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+            {vm.multiAssetCoveragePanel.blockerMessages.length > 0 ? (
+              <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                {vm.multiAssetCoveragePanel.blockerMessages.map((message) => (
+                  <div key={message}>{message}</div>
+                ))}
+              </div>
+            ) : null}
+            <a href={vm.multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
+              Open coverage endpoint: {vm.multiAssetCoveragePanel.evidenceRouteLabel}
+            </a>
+          </CardContent>
+        </Card>
       ) : null}
 
       <Card className={cn("panel-surface border", cashFlowBorderClass[vm.brokerageConnectionTone])}>
