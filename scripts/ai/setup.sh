@@ -227,6 +227,11 @@ Read first:
 - CLAUDE.md
 - docs/ai/ai-known-errors.md
 
+Token and handoff efficiency:
+- docs/ai/agent-handoff-checklist.md
+- docs/ai/parallel-task-manifest-template.md
+- docs/ai/model-routing-policy.json (see contextEfficiency defaults)
+
 Suggested commands:
 - bash scripts/ai/setup.sh
 - bash scripts/ai/maintenance.sh --light
