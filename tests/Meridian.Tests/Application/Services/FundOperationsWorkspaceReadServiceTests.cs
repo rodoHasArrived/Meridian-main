@@ -531,6 +531,23 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "asset-class-sections" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "workbook" && artifact.Format == GovernanceReportArtifactFormatDto.Xlsx);
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "provenance" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
+            snapshot.AuditPackReadiness.Should().NotBeNull();
+            snapshot.AuditPackReadiness!.SlaTargetSeconds.Should().Be(60);
+            snapshot.AuditPackReadiness.GeneratedInSeconds.Should().BeGreaterThanOrEqualTo(0);
+            snapshot.AuditPackReadiness.SlaMet.Should().BeTrue();
+            snapshot.AuditPackReadiness.IsComplete.Should().BeFalse("generated packs still require approval or publication before audit completion");
+            snapshot.AuditPackReadiness.MissingEvidenceCategories.Should().Contain(FundAuditEvidenceCategoryKeyDto.Approvals);
+            snapshot.AuditPackReadiness.EvidenceCategorySummaries
+                .Select(static category => category.Key)
+                .Should().BeEquivalentTo(Enum.GetValues<FundAuditEvidenceCategoryKeyDto>());
+            snapshot.AuditPackReadiness.EvidenceCategorySummaries.Should().Contain(category =>
+                category.Key == FundAuditEvidenceCategoryKeyDto.LedgerEvidence &&
+                category.IsComplete &&
+                category.EvidenceCount > 0);
+            snapshot.AuditPackReadiness.EvidenceCategorySummaries.Should().Contain(category =>
+                category.Key == FundAuditEvidenceCategoryKeyDto.Exports &&
+                category.IsComplete &&
+                category.EvidenceCount == 5);
 
             foreach (var artifact in snapshot.Artifacts)
             {
@@ -552,6 +569,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             File.ReadAllText(manifestPath).Should().Contain("\"schemaVersion\": 2");
             File.ReadAllText(manifestPath).Should().Contain("\"contractName\": \"governance-report-pack\"");
             File.ReadAllText(manifestPath).Should().Contain("\"status\": \"ReviewRequired\"");
+            File.ReadAllText(manifestPath).Should().Contain("\"auditPackReadiness\"");
 
             var trialBalanceCsv = snapshot.Artifacts.Single(artifact =>
                 artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
@@ -756,10 +774,12 @@ public sealed class FundOperationsWorkspaceReadServiceTests
                 item.SchemaVersion == GovernanceReportPackContract.MinimumReadableSchemaVersion &&
                 item.Status == GovernanceReportPackStatusDto.Unknown &&
                 item.ValidationIssueCount == 0 &&
-                item.LifecycleEventCount == 0);
+                item.LifecycleEventCount == 0 &&
+                item.AuditPackReadiness == null);
             legacyDetail.Should().NotBeNull();
             legacyDetail!.SchemaVersion.Should().Be(GovernanceReportPackContract.MinimumReadableSchemaVersion);
             legacyDetail.Status.Should().Be(GovernanceReportPackStatusDto.Unknown);
+            legacyDetail.AuditPackReadiness.Should().BeNull();
         }
         finally
         {

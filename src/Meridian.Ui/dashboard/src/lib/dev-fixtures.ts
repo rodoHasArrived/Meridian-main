@@ -2152,14 +2152,14 @@ const fixtureAccountingRecordCompleteness: EvidenceCompleteness = {
   status: "ReviewRequired",
   requiredIds: fixtureAccountingRecordEvidenceCategories.map((category) => `accounting-record:${category.key}`),
   readyIds: ["accounting-record:source-records", "accounting-record:normalized-activity", "accounting-record:ledger-evidence"],
-  missingIds: ["accounting-record:reconciliation-case-history", "accounting-record:approvals", "accounting-record:report-pack-lineage"],
+  missingIds: ["accounting-record:reconciliation-case-history", "accounting-record:approvals", "accounting-record:report-pack", "accounting-record:exports", "accounting-record:restatement-lineage"],
   staleIds: [],
-  blockingWorkItemIds: ["close-gate-approval", "report-pack-lineage"],
+  blockingWorkItemIds: ["close-gate-approval", "exports"],
   validationIssues: [
     {
       code: "accounting-record-evidence-incomplete",
       severity: "Warning",
-      message: "Demo accounting record still needs approval and report-pack lineage evidence."
+      message: "Demo accounting record still needs approval, report-pack, export, and restatement evidence."
     }
   ],
   blockingIssueCount: 0,
@@ -2186,7 +2186,7 @@ const fixtureAccountingRecordCompleteness: EvidenceCompleteness = {
         label: "Accounting record lineage",
         score: 63,
         status: "ReviewRequired",
-        detail: "Source, normalization, and ledger evidence are retained; approval and report-pack lineage remain open."
+        detail: "Source, normalization, and ledger evidence are retained; approval, report-pack, export, and restatement evidence remain open."
       }
     ],
     slaAssessments: []

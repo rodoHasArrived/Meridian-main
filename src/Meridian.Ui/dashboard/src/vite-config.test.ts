@@ -253,7 +253,7 @@ describe("Vite Meridian API proxy", () => {
     });
     expect(JSON.parse(validationResponse.body)).toMatchObject({
       status: "ReviewRequired",
-      missingIds: expect.arrayContaining(["accounting-record:report-pack-lineage"])
+      missingIds: expect.arrayContaining(["accounting-record:exports"])
     });
     expect(JSON.parse(exportResponse.body)).toMatchObject({
       subjectKind: "accounting-record",

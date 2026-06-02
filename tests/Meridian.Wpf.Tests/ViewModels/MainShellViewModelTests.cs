@@ -394,7 +394,7 @@ public sealed class MainShellViewModelTests
 
             workspaceService.GetWorkspaceScope("portfolio").Should().NotBeNull();
             workspaceService.GetWorkspaceScope("portfolio").Should().NotBeSameAs(strategyScope);
-            NavigationService.Instance.GetCurrentPageTag().Should().Be("AccountPortfolio");
+            vm.CurrentPageTag.Should().Be("AccountPortfolio");
         });
     }
 

@@ -75,6 +75,14 @@ public sealed class LedgerAmountProvenanceServiceTests
             detail.Evidence.Should().Contain(item =>
                 item.EvidenceType == "run" &&
                 item.EvidenceId == "run-report-001");
+            detail.Evidence.Should().Contain(item =>
+                item.EvidenceType == "report-pack-artifact" &&
+                item.EvidenceId == "fund-ops/report-id/manifest.json" &&
+                item.RelatedEvidenceIds!.Single() == new string('b', 64));
+            detail.Evidence.Should().Contain(item =>
+                item.EvidenceType == "audit-pack-readiness" &&
+                item.EvidenceId == nameof(FundAuditEvidenceCategoryKeyDto.Exports) &&
+                item.EvidenceCount == 1);
             detail.StrategyRuns.Should().NotBeNull();
             var runLink = detail.StrategyRuns!.Should().ContainSingle(item => item.RunId == "run-report-001").Subject;
             runLink.DisplayLabel.Should().Be("Report Strategy (run-report-001)");
@@ -531,7 +539,15 @@ public sealed class LedgerAmountProvenanceServiceTests
                 SecurityMissingCount: 0,
                 LineagePointers: lineagePointers,
                 SourceSnapshotHash: new string('a', 64)),
-            Artifacts: [],
+            Artifacts:
+            [
+                new FundReportPackArtifactDto(
+                    "manifest",
+                    GovernanceReportArtifactFormatDto.Json,
+                    "fund-ops/report-id/manifest.json",
+                    512,
+                    new string('b', 64))
+            ],
             Warnings: [])
         {
             Status = GovernanceReportPackStatusDto.Approved,
@@ -544,7 +560,25 @@ public sealed class LedgerAmountProvenanceServiceTests
                     "controller",
                     "approved for close",
                     "corr-ledger-provenance")
-            ]
+            ],
+            AuditPackReadiness = new FundAuditPackReadinessDto(
+                IsComplete: true,
+                GeneratedInSeconds: 1.25,
+                SlaTargetSeconds: 60,
+                SlaMet: true,
+                MissingEvidenceCategories: [],
+                Warnings: [],
+                EvidenceCategorySummaries:
+                [
+                    new FundAuditEvidenceCategorySummaryDto(
+                        FundAuditEvidenceCategoryKeyDto.Exports,
+                        "Exports",
+                        true,
+                        "Export artifact retained.",
+                        1,
+                        ["fund-ops/report-id/manifest.json"],
+                        "/api/fund-structure/report-packs")
+                ])
         };
     }
 
