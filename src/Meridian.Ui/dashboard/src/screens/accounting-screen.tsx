@@ -13,6 +13,7 @@ import {
   buildAccountingLoadingViewState,
   resolveAccountingWorkstream,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
+  useAccountingConfigurationViewModel,
   useAccountingCashFlowViewModel,
   useAccountingReconciliationViewModel,
   useAccountingReportingViewModel,
@@ -22,6 +23,7 @@ import {
 import type {
   CalibrationProfileRowViewModel,
   CalibrationSummaryViewModel,
+  AccountingConfigurationViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
@@ -305,6 +307,10 @@ const focusCopy: Record<string, { title: string; description: string }> = {
     title: "Ledger overview",
     description: "Cash, ledger coverage, and audit-facing balances remain visible from the workstation shell."
   },
+  configure: {
+    title: "Configurable accounting setup",
+    description: "Books, chart accounts, journal templates, posting rules, validation, and action audit evidence are prepared before activation."
+  },
   reconciliation: {
     title: "Reconciliation queue",
     description: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting."
@@ -376,6 +382,7 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
   const selectedReconciliationDetail = reconciliation.detailView;
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
+  const configuration = useAccountingConfigurationViewModel();
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const identity = securityMaster.identityView;
   const selectedSecurityEntry = securityMaster.selectedSecurityId
@@ -561,6 +568,10 @@ export function AccountingScreen({ data }: AccountingScreenProps) {
         <a href="#accounting-exceptions">Investigate</a>
         <a href="#accounting-actions">Act</a>
       </nav>
+
+      {workstream === "configure" ? (
+        <AccountingConfigurationPanel view={configuration} />
+      ) : null}
 
       <section id="accounting-posture" className="workspace-section-band" aria-labelledby="accounting-posture-heading">
         <div className="workspace-section-subheader">

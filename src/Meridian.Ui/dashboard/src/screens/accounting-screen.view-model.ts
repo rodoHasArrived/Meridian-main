@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
+  getAccountingConfiguration,
   getCorporateActions,
   getReconciliationBreakQueue,
   getReconciliationCalibrationSummary,
@@ -13,6 +14,7 @@ import {
   getSecurityTrustSnapshot,
   getTradingParameters,
   runAnalysisExport,
+  previewAccountingConfigurationTemplate,
   resolveReconciliationBreak,
   resolveSecurityConflict,
   reviewReconciliationBreak,
@@ -27,6 +29,8 @@ import {
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
   AccountingBasisKind,
+  AccountingConfigurationWorkspace,
+  AccountingJournalTemplatePreview,
   CorporateAction,
   ExportAnalysisResult,
   AccountingCashFlowSummary,
@@ -38,6 +42,7 @@ import type {
   ReconciliationCalibrationSummary,
   ReconciliationCalibrationStatus,
   ResolveConflictRequest,
+  PreviewJournalTemplateRequest,
   ResolveReconciliationBreakRequest,
   ReviewReconciliationBreakRequest,
   SecurityIdentityDrillIn,
@@ -52,7 +57,7 @@ import type {
   TradingParameters
 } from "@/types";
 
-export type AccountingWorkstream = "ledger" | "reconciliation" | "security-master" | "reporting";
+export type AccountingWorkstream = "ledger" | "configure" | "reconciliation" | "security-master" | "reporting";
 export type GovernanceWorkstream = AccountingWorkstream;
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
@@ -79,8 +84,81 @@ export interface AccountingReportingServices {
   runAnalysisExport: (profileId: string) => Promise<ExportAnalysisResult>;
 }
 
+export interface AccountingConfigurationServices {
+  getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
+  previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
+}
+
 export type GovernanceReconciliationServices = AccountingReconciliationServices;
 export type GovernanceReportingServices = AccountingReportingServices;
+
+export interface AccountingConfigurationMetricViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
+export interface AccountingConfigurationTemplateViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  lineCountLabel: string;
+  balanceLabel: string;
+  statusLabel: string;
+}
+
+export interface AccountingConfigurationIssueViewModel {
+  id: string;
+  label: string;
+  message: string;
+  detail: string;
+  tone: "default" | "warning" | "danger";
+}
+
+export interface AccountingConfigurationAuditViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  hashLabel: string;
+}
+
+export interface AccountingConfigurationPreviewViewModel {
+  title: string;
+  balanceLabel: string;
+  statusLabel: string;
+  lineRows: Array<{
+    id: string;
+    account: string;
+    side: string;
+    amount: string;
+    description: string;
+  }>;
+}
+
+export interface AccountingConfigurationViewModel {
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  loading: boolean;
+  errorText: string | null;
+  errorDetails: string[];
+  metricRows: AccountingConfigurationMetricViewModel[];
+  templates: AccountingConfigurationTemplateViewModel[];
+  validationIssues: AccountingConfigurationIssueViewModel[];
+  auditTrail: AccountingConfigurationAuditViewModel[];
+  preview: AccountingConfigurationPreviewViewModel | null;
+  previewStatusText: string | null;
+  previewButtonLabel: string;
+  previewDisabledReason: string | null;
+  previewBusy: boolean;
+  canPreview: boolean;
+  emptyText: string;
+  refresh: () => Promise<void>;
+  previewFirstTemplate: () => Promise<void>;
+}
 
 export type CalibrationStatusTone = "success" | "warning" | "danger";
 export type CalibrationStatusIcon = "check" | "alert";
@@ -994,6 +1072,11 @@ const defaultAccountingReportingServices: AccountingReportingServices = {
   runAnalysisExport: (profileId) => runAnalysisExport(profileId)
 };
 
+const defaultAccountingConfigurationServices: AccountingConfigurationServices = {
+  getConfiguration: () => getAccountingConfiguration(),
+  previewTemplate: (request) => previewAccountingConfigurationTemplate(request)
+};
+
 const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
   getCorporateActions: (securityId) => getCorporateActions(securityId),
   getTradingParameters: (securityId) => getTradingParameters(securityId),
@@ -1204,6 +1287,182 @@ export function useAccountingReportingViewModel(
     selectProfile,
     runExport
   };
+}
+
+export function useAccountingConfigurationViewModel(
+  services: AccountingConfigurationServices = defaultAccountingConfigurationServices
+): AccountingConfigurationViewModel {
+  const [workspace, setWorkspace] = useState<AccountingConfigurationWorkspace | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<ApiErrorDisplay | null>(null);
+  const [preview, setPreview] = useState<AccountingJournalTemplatePreview | null>(null);
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [previewError, setPreviewError] = useState<ApiErrorDisplay | null>(null);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const next = await services.getConfiguration();
+      setWorkspace(next);
+    } catch (err) {
+      setError(describeApiError(err, "Accounting configuration is unavailable."));
+    } finally {
+      setLoading(false);
+    }
+  }, [services]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const previewFirstTemplate = useCallback(async () => {
+    const template = workspace?.journalTemplates.find((item) => !item.isArchived) ?? null;
+    if (!workspace || !template || previewBusy) {
+      return;
+    }
+
+    setPreviewBusy(true);
+    setPreviewError(null);
+    try {
+      const result = await services.previewTemplate({
+        fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
+        templateId: template.templateId,
+        actor: "browser-accounting-operator",
+        correlationId: `browser-accounting-config-preview-${Date.now()}`
+      });
+      setPreview(result);
+    } catch (err) {
+      setPreviewError(describeApiError(err, "Template preview failed."));
+    } finally {
+      setPreviewBusy(false);
+    }
+  }, [previewBusy, services, workspace]);
+
+  return useMemo(() => {
+    const issueCount = workspace?.validationIssues.length ?? 0;
+    const criticalIssueCount = workspace?.validationIssues.filter((issue) => issue.severity === "Critical").length ?? 0;
+    const activeTemplateCount = workspace?.journalTemplates.filter((item) => !item.isArchived).length ?? 0;
+    const activeRuleCount = workspace?.postingRules.filter((item) => !item.isArchived).length ?? 0;
+    const activeChartNodeCount = workspace?.chartOfAccounts.filter((item) => !item.isArchived).length ?? 0;
+    const hasTemplate = activeTemplateCount > 0;
+    const previewDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before previewing a template."
+        : !hasTemplate
+          ? "Create at least one active journal template before preview."
+          : null;
+    const statusTone: AccountingConfigurationViewModel["statusTone"] = !workspace
+      ? "default"
+      : criticalIssueCount > 0
+        ? "danger"
+        : issueCount > 0 || workspace.status === "Draft"
+          ? "warning"
+          : workspace.status === "Active"
+            ? "success"
+            : "default";
+    const metricRows: AccountingConfigurationMetricViewModel[] = [
+      {
+        id: "books",
+        label: "Books",
+        value: String(workspace?.ledgerBooks.length ?? 0),
+        detail: "Reuses registered ledger books and basis policies.",
+        tone: (workspace?.ledgerBooks.length ?? 0) > 0 ? "success" : "warning"
+      },
+      {
+        id: "chart",
+        label: "Chart accounts",
+        value: String(activeChartNodeCount),
+        detail: "Hierarchical account paths available to templates.",
+        tone: activeChartNodeCount > 0 ? "success" : "warning"
+      },
+      {
+        id: "templates",
+        label: "Templates",
+        value: String(activeTemplateCount),
+        detail: "Balanced journal templates eligible for preview.",
+        tone: activeTemplateCount > 0 ? "success" : "warning"
+      },
+      {
+        id: "rules",
+        label: "Posting rules",
+        value: String(activeRuleCount),
+        detail: "Source events mapped to non-posting previews.",
+        tone: activeRuleCount > 0 ? "success" : "warning"
+      },
+      {
+        id: "audit",
+        label: "Audit events",
+        value: String(workspace?.auditTrail.length ?? 0),
+        detail: "Append-only action evidence for configuration changes.",
+        tone: (workspace?.auditTrail.length ?? 0) > 0 ? "success" : "warning"
+      }
+    ];
+    const templates = (workspace?.journalTemplates ?? []).map<AccountingConfigurationTemplateViewModel>((template) => {
+      const debitTotal = template.lines.filter((line) => line.side === "Debit").reduce((sum, line) => sum + line.amount, 0);
+      const creditTotal = template.lines.filter((line) => line.side === "Credit").reduce((sum, line) => sum + line.amount, 0);
+      return {
+        id: template.templateId,
+        title: template.displayName,
+        subtitle: `${template.version} | ${template.description || "No description supplied."}`,
+        lineCountLabel: `${template.lines.length} line${template.lines.length === 1 ? "" : "s"}`,
+        balanceLabel: `${formatCurrency(debitTotal)} debit / ${formatCurrency(creditTotal)} credit`,
+        statusLabel: template.isArchived ? "Archived" : debitTotal === creditTotal ? "Balanced" : "Unbalanced"
+      };
+    });
+    const validationIssues = (workspace?.validationIssues ?? []).map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+      id: `${issue.code}-${issue.targetId ?? index}`,
+      label: `${issue.severity} | ${issue.code}`,
+      message: issue.message,
+      detail: issue.suggestedAction ?? issue.targetId ?? "No additional action supplied.",
+      tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
+    }));
+    const auditTrail = (workspace?.auditTrail ?? []).slice(0, 8).map<AccountingConfigurationAuditViewModel>((event) => ({
+      id: event.auditEventId,
+      title: `${event.action} by ${event.actor}`,
+      subtitle: `${event.recordedAtUtc} | ${event.correlationId ?? "no correlation id"}`,
+      hashLabel: `${event.beforeHash.slice(0, 8)} -> ${event.afterHash.slice(0, 8)}`
+    }));
+    const previewView = preview
+      ? {
+          title: preview.displayName,
+          balanceLabel: `${formatCurrency(preview.totalDebits)} debit / ${formatCurrency(preview.totalCredits)} credit`,
+          statusLabel: preview.isBalanced ? "Balanced non-posting preview" : "Unbalanced preview",
+          lineRows: preview.lines.map((line, index) => ({
+            id: `${line.accountPath}-${line.side}-${index}`,
+            account: `${line.accountPath} | ${line.accountName}`,
+            side: line.side,
+            amount: `${formatCurrency(line.amount)} ${line.currency}`,
+            description: line.description ?? "Template line"
+          }))
+        }
+      : null;
+
+    return {
+      title: "Configure accounting",
+      description: "Set up books, chart accounts, journal templates, posting rules, validation, and audit evidence before accounting actions are activated.",
+      statusLabel: workspace ? `${workspace.status} ${workspace.configurationVersion}` : "Not loaded",
+      statusTone,
+      loading,
+      errorText: error?.summary ?? null,
+      errorDetails: error?.details ?? [],
+      metricRows,
+      templates,
+      validationIssues,
+      auditTrail,
+      preview: previewView,
+      previewStatusText: previewError?.summary ?? (preview ? previewView?.statusLabel ?? null : null),
+      previewButtonLabel: previewBusy ? "Previewing" : "Preview first template",
+      previewDisabledReason,
+      previewBusy,
+      canPreview: previewDisabledReason === null && !previewBusy,
+      emptyText: loading ? "Loading accounting configuration." : "No accounting configuration records are available yet.",
+      refresh,
+      previewFirstTemplate
+    };
+  }, [error, loading, preview, previewBusy, previewError, refresh, previewFirstTemplate, workspace]);
 }
 
 export function useGovernanceReportingViewModel(
@@ -2215,6 +2474,10 @@ export function useReconciliationResolveDialogViewModel(
 export function resolveAccountingWorkstream(pathname: string): AccountingWorkstream {
   if (pathname.startsWith(WORKSTATION_ROUTE_CATALOG.reporting)) {
     return "reporting";
+  }
+
+  if (pathname.includes("/configure")) {
+    return "configure";
   }
 
   if (pathname.includes("/reconciliation")) {

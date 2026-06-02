@@ -141,7 +141,8 @@ Security Master search evidence so report consumers can drill into accounting su
 client-local route inference. The shared ledger amount provenance service exposes those retained
 lineage pointers as a click-through drilldown for a report-pack ledger amount, combining the ledger
 line, strategy/run evidence, Security Master pointer, reconciliation summary, durable case ids,
-related case status/owner/sign-off posture, approval state, and report usage. When a retained report
+related case status/owner/sign-off posture, approval state, report usage, retained report-pack
+artifacts, audit-pack readiness category evidence, export evidence, and restatement lineage. When a retained report
 line carries a retained Security Master id, the drilldown uses that id to pull in open Security
 Master exception cases for the same instrument. When a retained report line does not carry a direct
 provider-event pointer, related provider-ledger cases can contribute provider-event evidence from

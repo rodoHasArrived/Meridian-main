@@ -70,12 +70,12 @@ and UI presentation concerns in their owning layers.
   id instead of using a generic account mapping token.
 - Operations Continuity workflow DTO projection also derives the shared accounting-record summary
   from server-owned workflow state. The summary covers retained source records, normalized
-  activity, reconciliation history, ledger evidence, approvals, and report-pack lineage so browser
-  and WPF clients do not calculate accounting-record audit readiness locally. Report-pack lineage
-  is complete only after close-package publication evidence exists, so a ready report-pack id alone
-  does not imply retained export, document, manifest, or restatement provenance. The projection
-  emits required-evidence labels for each category, including export manifests, document
-  attachments, and restatement lineage for the report-pack row.
+  activity, reconciliation history, ledger evidence, approvals, report-pack lineage, export
+  evidence, and restatement lineage so browser and WPF clients do not calculate accounting-record
+  audit readiness locally. It also attaches the shared audit-pack readiness posture with measured
+  timing, a 60-second target, missing evidence category keys, and warnings. Report-pack readiness is
+  complete only after close-package publication evidence exists, so a ready report-pack id alone
+  does not imply retained export, document, manifest, or restatement provenance.
 - `Reconciliation/` - statement reconciliation orchestration and broker/custodian intake that
   validates canonical external statement files, creates durable reconciliation cases for unresolved
   cash/activity rows, requires row currency equality before broker/custodian auto-match, appends
