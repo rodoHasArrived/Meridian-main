@@ -97,7 +97,7 @@ export function DenseDataTable<T>({
   const [selectionAnnouncement, setSelectionAnnouncement] = useState("");
 
   return (
-    <div className="dense-data-table-wrap">
+    <div className="dense-data-table-wrap" data-empty={rows.length === 0 ? "true" : undefined}>
       {selectableRows ? (
         <p id={keyboardInstructionsId} className="sr-only">
           {DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS}
@@ -141,7 +141,7 @@ export function DenseDataTable<T>({
                     >
                       <span>{column.label}</span>
                       <span className="dense-data-table-sort-indicator" aria-hidden="true">
-                        {sorted ? sort.direction === "asc" ? "^" : "v" : "-"}
+                        {sorted ? sort.direction === "asc" ? "↑" : "↓" : "↕"}
                       </span>
                     </button>
                   ) : column.label}

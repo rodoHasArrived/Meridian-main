@@ -118,6 +118,29 @@ export function WorkspaceNav({
           );
         })}
       </nav>
+      {compact && viewModel.contextItems.length > 0 ? (
+        <nav className="operator-rail-context" aria-label={viewModel.contextEyebrow}>
+          <div className="operator-rail-section">{viewModel.contextEyebrow}</div>
+          <p className="operator-rail-context-copy">{viewModel.contextDescription}</p>
+          <div className="operator-nav-subitems operator-nav-subitems-compact">
+            {viewModel.contextItems.map((sub) => (
+              <Link
+                key={sub.route}
+                to={sub.route}
+                aria-current={sub.ariaCurrent}
+                aria-label={sub.ariaLabel}
+                className={cn(
+                  "operator-nav-subitem focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  sub.active && "active"
+                )}
+                onClick={onNavigate}
+              >
+                <span className="truncate">{sub.label}</span>
+              </Link>
+            ))}
+          </div>
+        </nav>
+      ) : null}
     </aside>
   );
 }

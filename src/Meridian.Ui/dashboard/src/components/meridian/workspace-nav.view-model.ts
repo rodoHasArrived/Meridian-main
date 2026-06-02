@@ -47,6 +47,9 @@ export interface WorkspaceNavViewModel {
   operatingScopeLabel: string | null;
   operatingScopeAriaLabel: string | null;
   navEyebrow: string;
+  contextEyebrow: string;
+  contextDescription: string;
+  contextItems: WorkspaceNavSubItemViewModel[];
   deliveryEyebrow: string;
   deliveryTitle: string;
   deliveryDescription: string;
@@ -154,6 +157,8 @@ export function buildWorkspaceNavViewModel(
   });
   const currentRoute = appendOperatingScopeToRoute(workspacePath(currentWorkspace.key), operatingScope);
 
+  const contextItems = buildContextItems(pathname, currentWorkspace.key, operatingScope);
+
   return {
     brandTitle: "Meridian",
     brandSubtitle: "Operator Workstation",
@@ -172,6 +177,9 @@ export function buildWorkspaceNavViewModel(
     operatingScopeLabel: operatingScope.hasScope ? operatingScope.summary : null,
     operatingScopeAriaLabel: operatingScope.hasScope ? `Navigation preserves operating scope: ${operatingScope.summary}` : null,
     navEyebrow: "Workspaces",
+    contextEyebrow: workspaceContextEyebrow(currentWorkspace.key),
+    contextDescription: workspaceContextDescription(currentWorkspace.key),
+    contextItems,
     deliveryEyebrow: "Shell controls",
     deliveryTitle: "Palette-first routing",
     deliveryDescription:
@@ -180,6 +188,69 @@ export function buildWorkspaceNavViewModel(
     deliveryShortcutAriaLabel: "Open command palette with Control K",
     items
   };
+}
+
+function buildContextItems(
+  pathname: string,
+  workspaceKey: WorkspaceKey,
+  operatingScope: ReturnType<typeof buildOperatingScopeFromSearch>
+): WorkspaceNavSubItemViewModel[] {
+  return (WORKSPACE_SUBROUTES[workspaceKey] ?? []).map((sub) => {
+    const active = isSubRouteActive(pathname, sub.route);
+    const route = appendOperatingScopeToRoute(sub.route, operatingScope);
+    const scopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
+    return {
+      label: sub.label,
+      route,
+      active,
+      ariaCurrent: active ? "page" : undefined,
+      ariaLabel: active
+        ? `${sub.label}, current page${formatPreservedScopeAriaSuffix(scopeSummary)}`
+        : `Open ${sub.label}${formatPreservedScopeAriaSuffix(scopeSummary)}`
+    };
+  });
+}
+
+function workspaceContextEyebrow(workspaceKey: WorkspaceKey): string {
+  switch (workspaceKey) {
+    case "portfolio":
+      return "Clients and funds";
+    case "reporting":
+      return "Report pages";
+    case "data":
+      return "Data folders";
+    case "strategy":
+      return "Strategy views";
+    case "accounting":
+      return "Close queues";
+    case "trading":
+      return "Trading surfaces";
+    case "settings":
+      return "Admin";
+    default:
+      return "Workspace";
+  }
+}
+
+function workspaceContextDescription(workspaceKey: WorkspaceKey): string {
+  switch (workspaceKey) {
+    case "portfolio":
+      return "Client, fund, attribution, and sync contexts.";
+    case "reporting":
+      return "Report pack, evidence, and export canvases.";
+    case "data":
+      return "Provider, watchlist, quote, alert, and backfill folders.";
+    case "strategy":
+      return "Designer, lab, promotion, and projection contexts.";
+    case "accounting":
+      return "Ledger, reconciliation, approvals, and evidence queues.";
+    case "trading":
+      return "Orders, positions, risk, and readiness controls.";
+    case "settings":
+      return "Preferences, integrations, and backend coverage.";
+    default:
+      return "Workspace routes.";
+  }
 }
 
 function isSubRouteActive(pathname: string, route: string): boolean {
