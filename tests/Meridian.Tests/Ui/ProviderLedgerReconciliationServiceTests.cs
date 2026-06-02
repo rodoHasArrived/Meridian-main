@@ -566,6 +566,124 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_FlagsOptionAndFutureContractMetadataGaps()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: false,
+                internalSecuritiesMarketValue: 12_000m,
+                internalUnrealizedPnl: 0m,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
+                portfolioAdapter: new DerivativeContractPortfolioAdapter(),
+                securityValidationGate: new SymbolIssueSecurityValidationGate(
+                    new SymbolValidationIssue(
+                        "AAPL260619C00190000",
+                        "SM_OPTION_CONTRACT_METADATA_MISSING",
+                        "Option contract metadata missing",
+                        "Option contract is missing expiry, strike, put/call, multiplier, and underlying evidence.",
+                        "contract.expiry",
+                        "contract.strike",
+                        "contract.optionType",
+                        "contract.multiplier",
+                        "contract.underlying"),
+                    new SymbolValidationIssue(
+                        "ESM6",
+                        "SM_FUTURE_CONTRACT_METADATA_MISSING",
+                        "Future contract metadata missing",
+                        "Future contract is missing contract month, exchange, tick size, multiplier, and settlement calendar evidence.",
+                        "contract.month",
+                        "contract.exchange",
+                        "contract.tickSize",
+                        "contract.multiplier",
+                        "settlement.calendar")));
+
+            var detail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
+            detail.Summary.SecurityIssueCount.Should().Be(2);
+            detail.Breaks.Should().Contain(breakRow =>
+                breakRow.Code == "SM_OPTION_CONTRACT_METADATA_MISSING" &&
+                breakRow.Symbol == "AAPL260619C00190000" &&
+                breakRow.Category == ReconciliationBreakCategory.ClassificationGap &&
+                breakRow.Severity == ReconciliationBreakSeverity.High);
+            detail.Breaks.Should().Contain(breakRow =>
+                breakRow.Code == "SM_FUTURE_CONTRACT_METADATA_MISSING" &&
+                breakRow.Symbol == "ESM6" &&
+                breakRow.Category == ReconciliationBreakCategory.ClassificationGap &&
+                breakRow.Severity == ReconciliationBreakSeverity.High);
+            detail.Checks.Should().Contain(check =>
+                check.CheckId == "provider-capability:AccountPositions:option" &&
+                check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+            detail.Checks.Should().Contain(check =>
+                check.CheckId == "provider-capability:AccountPositions:future" &&
+                check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched);
+            detail.SecurityMasterPassports.Should().Contain(passport =>
+                passport.Symbol == "AAPL260619C00190000" &&
+                passport.Status == ProviderSecurityMasterPassportStatusDto.Blocked &&
+                passport.ResolutionSource == "security-validation-gate" &&
+                passport.ValidationIssueCodes.Contains("SM_OPTION_CONTRACT_METADATA_MISSING"));
+            detail.SecurityMasterPassports.Should().Contain(passport =>
+                passport.Symbol == "ESM6" &&
+                passport.Status == ProviderSecurityMasterPassportStatusDto.Blocked &&
+                passport.ResolutionSource == "security-validation-gate" &&
+                passport.ValidationIssueCodes.Contains("SM_FUTURE_CONTRACT_METADATA_MISSING"));
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_FlagsFxCashSettlementGap()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                internalPendingSettlement: 250m,
+                activityAdapter: new FxSettlementActivityAdapter());
+
+            var detail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
+            detail.Breaks.Should().ContainSingle(breakRow =>
+                breakRow.Code == "TOTAL_EQUITY_MISMATCH" &&
+                breakRow.CheckId == "total-equity" &&
+                breakRow.Category == ReconciliationBreakCategory.AmountMismatch &&
+                breakRow.ExpectedAmount == 69_000m &&
+                breakRow.ActualAmount == 68_750m &&
+                breakRow.Variance == -250m);
+            detail.ShadowBookComparison.Should().NotBeNull();
+            detail.ShadowBookComparison!.Lines.Should().Contain(line =>
+                line.Dimension == "total-equity" &&
+                line.Status == ProviderLedgerReconciliationCheckStatusDto.Break &&
+                line.InternalAmount == 69_000m &&
+                line.ProviderAmount == 68_750m &&
+                line.Variance == -250m);
+            detail.ShadowBookComparison.Lines.Should().Contain(line =>
+                line.Dimension == "pending-settlement" &&
+                line.Status == ProviderLedgerReconciliationCheckStatusDto.Blocked &&
+                line.InternalAmount == 250m &&
+                line.ProviderAmount == null &&
+                line.Reason.Contains("pending-settlement exposure", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_ProviderLedgerReconciliation_SurfacesFactorScheduleCandidatesForFixedIncomePositions()
     {
         var root = CreateTempRoot();
@@ -653,6 +771,125 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Break &&
                 candidate.RequiredFeed == "factor-schedule,coupon-schedule" &&
                 candidate.Reason.Contains("factor-schedule capability is not routable", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_SeedsFactorScheduleGapCasework()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                includeBreakQueue: true,
+                internalSecuritiesMarketValue: 9_900m,
+                internalUnrealizedPnl: -100m,
+                capabilityRouter: new SelectiveCapabilityRouter(ProviderCapabilityKind.FactorSchedule),
+                portfolioAdapter: new FixedIncomePortfolioAdapter());
+
+            var detail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
+            detail.Breaks.Should().ContainSingle(breakRow =>
+                breakRow.Code == "PROVIDER_FACTOR_SCHEDULE_CAPABILITY_MISSING" &&
+                breakRow.CheckId == "provider-capability:FactorSchedule" &&
+                breakRow.Category == ReconciliationBreakCategory.MissingPortfolioCoverage &&
+                breakRow.Severity == ReconciliationBreakSeverity.Medium);
+            detail.CorporateActionReadiness.Should().NotBeNull();
+            detail.CorporateActionReadiness!.Status.Should().Be(ProviderLedgerReconciliationCheckStatusDto.Break);
+            detail.CorporateActionReadiness.MissingFeeds.Should().Contain("factor-schedule");
+            var candidate = detail.CorporateActionReadiness.EvidenceCandidates.Should().ContainSingle(item =>
+                item.CandidateType == "FactorScheduleCandidate" &&
+                item.Symbol == "UST10Y").Subject;
+            candidate.Status.Should().Be(ProviderLedgerReconciliationCheckStatusDto.Break);
+            candidate.RequiredFeed.Should().Be("factor-schedule,coupon-schedule");
+            candidate.Reason.Should().Contain("factor-schedule capability is not routable");
+            detail.CorporateActionReadiness.SecurityMasterScheduleFeeds.Should().Contain(feed =>
+                feed.CandidateId == candidate.CandidateId &&
+                feed.FeedKind == "SecurityMasterFactorCoverageRequirement" &&
+                feed.Status == ProviderLedgerReconciliationCheckStatusDto.Break &&
+                !feed.CanUpdateSecurityMaster &&
+                !feed.CanSupportLedgerValuation);
+
+            var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+            var cases = await repository.GetAllAsync();
+            var candidateCase = cases.Should().ContainSingle(item =>
+                item.StrategyName == "Provider corporate-action evidence" &&
+                item.RoutingDetail == candidate.CandidateId).Subject;
+            candidateCase.Category.Should().Be(ReconciliationBreakCategory.MissingPortfolioCoverage);
+            candidateCase.ExplainabilitySummary.Should().Contain("candidate=FactorScheduleCandidate");
+            candidateCase.ExplainabilitySummary.Should().Contain("requiredFeed=factor-schedule,coupon-schedule");
+            candidateCase.ExplainabilitySummary.Should().Contain("ledgerEffect=FactorScheduleCoverageCandidate");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_SeedsLoanScheduleGapCasework()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                includeBreakQueue: true,
+                internalSecuritiesMarketValue: 9_900m,
+                internalUnrealizedPnl: -100m,
+                capabilityRouter: new SelectiveCapabilityRouter(ProviderCapabilityKind.FactorSchedule),
+                portfolioAdapter: new FixedIncomePortfolioAdapter(),
+                activityAdapter: new LoanScheduleActivityAdapter());
+
+            var detail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
+            detail.Breaks.Should().ContainSingle(breakRow =>
+                breakRow.Code == "PROVIDER_FACTOR_SCHEDULE_CAPABILITY_MISSING" &&
+                breakRow.CheckId == "provider-capability:FactorSchedule");
+            detail.CorporateActionReadiness.Should().NotBeNull();
+            detail.CorporateActionReadiness!.LoanScheduleEventCount.Should().Be(1);
+            detail.CorporateActionReadiness.MissingFeeds.Should().Contain("factor-schedule");
+            var candidate = detail.CorporateActionReadiness.EvidenceCandidates.Should().ContainSingle(item =>
+                item.CandidateType == "LoanScheduleEvent" &&
+                item.ProviderEventId == "loan-schedule-ust10y-20260501").Subject;
+            candidate.Status.Should().Be(ProviderLedgerReconciliationCheckStatusDto.Break);
+            candidate.RequiredFeed.Should().Be("loan-schedule,factor-schedule");
+            candidate.Reason.Should().Contain("factor-schedule capability is not routable");
+            detail.CorporateActionReadiness.LedgerEffects.Should().Contain(effect =>
+                effect.CandidateId == candidate.CandidateId &&
+                effect.LedgerEffectKind == "LoanScheduleValuationInput" &&
+                effect.Status == ProviderLedgerReconciliationCheckStatusDto.Break &&
+                effect.CashAmount == 250m &&
+                effect.Factor == 0.9825m);
+            detail.CorporateActionReadiness.SecurityMasterScheduleFeeds.Should().Contain(feed =>
+                feed.CandidateId == candidate.CandidateId &&
+                feed.FeedKind == "SecurityMasterLoanSchedule" &&
+                feed.Status == ProviderLedgerReconciliationCheckStatusDto.Break &&
+                !feed.CanUpdateSecurityMaster &&
+                !feed.CanSupportLedgerValuation);
+
+            var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+            var cases = await repository.GetAllAsync();
+            var candidateCase = cases.Should().ContainSingle(item =>
+                item.StrategyName == "Provider corporate-action evidence" &&
+                item.RoutingDetail == candidate.CandidateId).Subject;
+            candidateCase.ExplainabilitySummary.Should().Contain("candidate=LoanScheduleEvent");
+            candidateCase.ExplainabilitySummary.Should().Contain("providerEventId=loan-schedule-ust10y-20260501");
+            candidateCase.ExplainabilitySummary.Should().Contain("ledgerEffect=LoanScheduleValuationInput");
+            candidateCase.ExplainabilitySummary.Should().Contain("principalAmount=250");
         }
         finally
         {
@@ -1440,6 +1677,72 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_FlagsCustomPrivateProfileEvidenceGap()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: false,
+                includeBreakQueue: true,
+                internalSecuritiesMarketValue: 7_500m,
+                internalUnrealizedPnl: 0m,
+                capabilityRouter: new FixedCapabilityRouter(IsRoutable: true),
+                portfolioAdapter: new CustomPrivateProfilePortfolioAdapter(),
+                securityValidationGate: new SymbolIssueSecurityValidationGate(
+                    new SymbolValidationIssue(
+                        "PRIVLOAN",
+                        "SM_CUSTOM_PRIVATE_PROFILE_EVIDENCE_MISSING",
+                        "Custom private profile evidence missing",
+                        "Private credit profile is missing valuation policy, borrower identity, covenant, and source-document evidence.",
+                        "profile.valuationPolicy",
+                        "profile.borrower",
+                        "profile.covenants",
+                        "profile.evidence")));
+
+            var detail = await fixture.Reconciliation.RunAsync(
+                fixture.AccountId,
+                new ProviderLedgerReconciliationRequestDto(RequestedBy: "ops-user"));
+
+            detail.Summary.Status.Should().Be(ProviderLedgerReconciliationStatusDto.Breaks);
+            var securityBreak = detail.Breaks.Should().ContainSingle(breakRow =>
+                breakRow.Code == "SM_CUSTOM_PRIVATE_PROFILE_EVIDENCE_MISSING" &&
+                breakRow.Symbol == "PRIVLOAN" &&
+                breakRow.Category == ReconciliationBreakCategory.ClassificationGap &&
+                breakRow.Severity == ReconciliationBreakSeverity.High).Subject;
+            securityBreak.EvidenceLink.Should().Be("/workstation/data/security-master");
+            var passport = detail.SecurityMasterPassports.Should().ContainSingle(item => item.Symbol == "PRIVLOAN").Subject;
+            passport.Status.Should().Be(ProviderSecurityMasterPassportStatusDto.Blocked);
+            passport.AssetClass.Should().Be("Private Credit Loan");
+            passport.ValidationIssueCodes.Should().Contain("SM_CUSTOM_PRIVATE_PROFILE_EVIDENCE_MISSING");
+            passport.Reason.Should().Contain("valuation policy");
+            detail.CorporateActionReadiness.Should().NotBeNull();
+            detail.CorporateActionReadiness!.Status.Should().Be(ProviderLedgerReconciliationCheckStatusDto.Break);
+            detail.CorporateActionReadiness.MissingFeeds.Should().Contain("security-master-identities");
+            detail.CorporateActionReadiness.EvidenceCandidates.Should().Contain(candidate =>
+                candidate.CandidateType == "FactorScheduleCandidate" &&
+                candidate.Symbol == "PRIVLOAN" &&
+                candidate.Status == ProviderLedgerReconciliationCheckStatusDto.Break &&
+                candidate.Reason.Contains("Security Master identity attribution", StringComparison.OrdinalIgnoreCase));
+
+            var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+            var cases = await repository.GetAllAsync();
+            var securityCase = cases.Should().ContainSingle(item =>
+                item.StrategyName == "Provider ledger reconciliation" &&
+                item.RoutingDetail == securityBreak.CheckId).Subject;
+            securityCase.Category.Should().Be(ReconciliationBreakCategory.ClassificationGap);
+            securityCase.ToleranceProfileId.Should().Be("security-master-identity");
+            securityCase.ExplainabilitySummary.Should().Contain("code=SM_CUSTOM_PRIVATE_PROFILE_EVIDENCE_MISSING");
+            securityCase.ExplainabilitySummary.Should().Contain("validationIssues=SM_CUSTOM_PRIVATE_PROFILE_EVIDENCE_MISSING");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_ProviderLedgerReconciliation_BlocksInactiveSecurityMasterReferenceForLedgerClose()
     {
         var root = CreateTempRoot();
@@ -2111,6 +2414,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
         IBrokerageActivitySync? activityAdapter = null,
         IOperatorOverridesStore? operatorOverridesStore = null,
         ISecurityMasterConflictService? securityMasterConflictService = null,
+        ISecurityValidationGateService? securityValidationGate = null,
         bool recordCustodianPosition = false,
         decimal custodianPositionQuantity = 100m,
         decimal custodianPositionMarketValue = 18_750m,
@@ -2151,6 +2455,10 @@ public sealed class ProviderLedgerReconciliationServiceTests
         if (securityMasterConflictService is not null)
         {
             services.AddSingleton(securityMasterConflictService);
+        }
+        if (securityValidationGate is not null)
+        {
+            services.AddSingleton(securityValidationGate);
         }
 
         services.AddSingleton<BrokeragePortfolioSyncService>();
@@ -2423,6 +2731,77 @@ public sealed class ProviderLedgerReconciliationServiceTests
         }
     }
 
+    private sealed class DerivativeContractPortfolioAdapter : IBrokeragePortfolioSync
+    {
+        public string ProviderId => "alpaca";
+
+        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(
+            string externalAccountId,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var retrievedAt = DateTimeOffset.UtcNow;
+            return Task.FromResult(new BrokeragePortfolioSnapshotDto(
+                new BrokerageExternalAccountDto("alpaca", externalAccountId, "Provider Ledger Account", "active", "USD", retrievedAt),
+                new BrokerageBalanceSnapshotDto(50_000m, 62_000m, 62_000m, "USD"),
+                [
+                    new BrokeragePositionSnapshotDto(
+                        "AAPL260619C00190000",
+                        2m,
+                        35m,
+                        40m,
+                        8_000m,
+                        0m,
+                        "Option",
+                        "AAPL Jun 2026 190 Call",
+                        "pos-aapl-option",
+                        "USD"),
+                    new BrokeragePositionSnapshotDto(
+                        "ESM6",
+                        1m,
+                        4_000m,
+                        4_000m,
+                        4_000m,
+                        0m,
+                        "Future",
+                        "E-mini S&P 500 Jun 2026",
+                        "pos-esm6",
+                        "USD")
+                ],
+                retrievedAt));
+        }
+    }
+
+    private sealed class CustomPrivateProfilePortfolioAdapter : IBrokeragePortfolioSync
+    {
+        public string ProviderId => "alpaca";
+
+        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(
+            string externalAccountId,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var retrievedAt = DateTimeOffset.UtcNow;
+            return Task.FromResult(new BrokeragePortfolioSnapshotDto(
+                new BrokerageExternalAccountDto("alpaca", externalAccountId, "Provider Ledger Account", "active", "USD", retrievedAt),
+                new BrokerageBalanceSnapshotDto(50_000m, 57_500m, 57_500m, "USD"),
+                [
+                    new BrokeragePositionSnapshotDto(
+                        "PRIVLOAN",
+                        1m,
+                        7_500m,
+                        7_500m,
+                        7_500m,
+                        0m,
+                        "Private Credit Loan",
+                        "Private direct-lending profile",
+                        "pos-private-loan",
+                        "USD")
+                ],
+                retrievedAt));
+        }
+    }
+
     private sealed class EmptyActivityAdapter : IBrokerageActivitySync
     {
         public string ProviderId => "alpaca";
@@ -2440,6 +2819,37 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 Orders: [],
                 Fills: [],
                 CashTransactions: []));
+        }
+    }
+
+    private sealed class FxSettlementActivityAdapter : IBrokerageActivitySync
+    {
+        public string ProviderId => "alpaca";
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var retrievedAt = DateTimeOffset.UtcNow;
+            return Task.FromResult(new BrokerageActivitySnapshotDto(
+                "alpaca",
+                externalAccountId,
+                retrievedAt,
+                Orders: [],
+                Fills: [],
+                CashTransactions:
+                [
+                    new BrokerageCashTransactionDto(
+                        "fx-settlement-eurusd",
+                        "FX_SETTLEMENT",
+                        250m,
+                        "USD",
+                        retrievedAt.AddDays(-1),
+                        "EURUSD",
+                        "EUR/USD cash settlement pending ledger confirmation")
+                ]));
         }
     }
 
@@ -2733,6 +3143,80 @@ public sealed class ProviderLedgerReconciliationServiceTests
 
         public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =>
             Task.CompletedTask;
+    }
+
+    private sealed record SymbolValidationIssue(
+        string Symbol,
+        string Code,
+        string Title,
+        string Message,
+        params string[] AffectedFields);
+
+    private sealed class SymbolIssueSecurityValidationGate(params SymbolValidationIssue[] issues) : ISecurityValidationGateService
+    {
+        private readonly Dictionary<string, SymbolValidationIssue> _issues = issues.ToDictionary(
+            static issue => issue.Symbol.Trim().ToUpperInvariant(),
+            StringComparer.OrdinalIgnoreCase);
+
+        public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var normalized = symbol.Trim().ToUpperInvariant();
+            var issue = _issues.TryGetValue(normalized, out var configured)
+                ? configured
+                : new SymbolValidationIssue(
+                    normalized,
+                    "SM_PROVIDER_POSITION_SECURITY_UNRESOLVED",
+                    "Security Master identity unresolved",
+                    $"Provider symbol {normalized} could not be resolved.",
+                    "symbol");
+            var validationIssue = new SecurityValidationIssueDto(
+                SecurityValidationSeverityDto.Error,
+                issue.Code,
+                issue.Title,
+                issue.Message,
+                issue.AffectedFields,
+                "Attach the missing Security Master evidence and rerun provider-ledger reconciliation.",
+                [
+                    new SecurityEvidenceLinkDto(
+                        "ProviderPosition",
+                        normalized,
+                        "/workstation/data/security-master",
+                        issue.Title)
+                ]);
+            var report = new SecurityValidationReportDto(
+                null,
+                normalized,
+                DateTimeOffset.UtcNow,
+                HasBlockingIssues: true,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: 1,
+                [validationIssue]);
+            return Task.FromResult(new SecurityValidationGateResultDto(
+                workflow,
+                normalized,
+                SecurityId: null,
+                IsResolved: false,
+                IsBlocked: true,
+                report,
+                Snapshot: null));
+        }
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid securityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
     }
 
     private sealed record FixedCapabilityRouter(bool IsRoutable) : ICapabilityRouter

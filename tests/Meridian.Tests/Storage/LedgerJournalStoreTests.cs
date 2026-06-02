@@ -205,6 +205,114 @@ public sealed class LedgerJournalStoreTests
         act.Should().NotThrow();
     }
 
+    [Theory]
+    [MemberData(nameof(MultiAssetInstrumentGuardCases))]
+    public void PostingGuard_MultiAssetInstrumentEntry_AllowsApprovedMappedSecurityMasterLineage(InstrumentLedgerGuardCase asset)
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(period.PeriodId, asset);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow();
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiAssetInstrumentGuardCases))]
+    public void PostingGuard_MultiAssetInstrumentEntry_RequiresSecurityMasterProvenance(InstrumentLedgerGuardCase asset)
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            asset,
+            includeSecurityMasterProvenance: false);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage($"*without Security Master provenance for security '{asset.SecurityId}'*");
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiAssetInstrumentGuardCases))]
+    public void PostingGuard_MultiAssetInstrumentEntry_RejectsMismatchedSecurityMasterIdentity(InstrumentLedgerGuardCase asset)
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            asset,
+            provenanceSecurityId: Guid.Parse("FD064111-2940-4FF8-B4E7-48C053F97F40"));
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage($"*without Security Master provenance for security '{asset.SecurityId}'*");
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiAssetInstrumentGuardCases))]
+    public void PostingGuard_MultiAssetInstrumentEntry_RequiresApprovedSecurityMasterEvidence(InstrumentLedgerGuardCase asset)
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            asset,
+            includeApprovalEvidence: false);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without approved Security Master evidence*");
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiAssetInstrumentGuardCases))]
+    public void PostingGuard_MultiAssetInstrumentEntry_RequiresActiveSecurityMasterStatus(InstrumentLedgerGuardCase asset)
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            asset,
+            includeActiveSecurityMasterStatus: false);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without active Security Master status evidence*");
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiAssetInstrumentGuardCases))]
+    public void PostingGuard_MultiAssetInstrumentEntry_RequiresLedgerMappingEvidence(InstrumentLedgerGuardCase asset)
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            asset,
+            includeLedgerMapping: false);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*without a Security Master ledger mapping reference*");
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiAssetInstrumentGuardCases))]
+    public void PostingGuard_MultiAssetInstrumentEntry_RejectsLedgerMappingForDifferentInstrument(InstrumentLedgerGuardCase asset)
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildInstrumentJournalWrite(
+            period.PeriodId,
+            asset,
+            ledgerMappingReference: "ledger-map:unrelated-security-gaap");
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage($"*{asset.Symbol}*without a Security Master ledger mapping tied to the resolved symbol or security id*");
+    }
+
     [Fact]
     public void PostingGuard_InstrumentEntry_RequiresSecurityMasterProvenance()
     {
@@ -651,6 +759,165 @@ public sealed class LedgerJournalStoreTests
             SourceEventId: Guid.NewGuid(),
             PostingKind: LedgerPostingKindDto.Originating);
     }
+
+    private static LedgerJournalEntryWrite BuildInstrumentJournalWrite(
+        Guid periodId,
+        InstrumentLedgerGuardCase asset,
+        bool includeSecurityMasterProvenance = true,
+        bool includeApprovalEvidence = true,
+        bool includeActiveSecurityMasterStatus = true,
+        bool includeLedgerMapping = true,
+        string? ledgerMappingReference = null,
+        Guid? provenanceSecurityId = null)
+    {
+        var journalEntryId = Guid.NewGuid();
+        var occurredAt = DateTimeOffset.Parse("2026-01-31T21:00:00Z");
+        var description = $"Approved Security Master {asset.AssetClass} posting";
+        var mapping = includeLedgerMapping
+            ? ledgerMappingReference ?? asset.LedgerMappingReference
+            : "missing";
+        var approval = includeApprovalEvidence
+            ? $"sm-approval:{asset.AssetClass.ToLowerInvariant()}-controller"
+            : "missing";
+        var activeStatus = includeActiveSecurityMasterStatus ? "security-status:active" : "missing";
+        var provenanceId = provenanceSecurityId ?? asset.SecurityId;
+        var provenance = includeApprovalEvidence
+            ? $"security-master:{provenanceId:N};asset-class:{asset.AssetClass};snapshot:{asset.AssetClass.ToLowerInvariant()}-source-hash;approved:true"
+            : $"security-master:{provenanceId:N};asset-class:{asset.AssetClass};snapshot:{asset.AssetClass.ToLowerInvariant()}-source-hash";
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["securityMasterLineage"] = $"{asset.Symbol}:{asset.SecurityId:N}:asset-class:{asset.AssetClass}:{mapping}:{approval}:{activeStatus}:{provenance}",
+            ["assetClass"] = asset.AssetClass
+        };
+        if (includeSecurityMasterProvenance)
+        {
+            tags["securityMasterProvenance"] = provenance;
+        }
+
+        return new LedgerJournalEntryWrite(
+            new JournalEntry(
+                journalEntryId,
+                occurredAt,
+                description,
+                [
+                    new LedgerEntry(
+                        Guid.NewGuid(),
+                        journalEntryId,
+                        occurredAt,
+                        new LedgerAccount(asset.AccountName, LedgerAccountType.Asset, asset.Symbol),
+                        debit: asset.Debit,
+                        credit: 0m,
+                        description),
+                    new LedgerEntry(
+                        Guid.NewGuid(),
+                        journalEntryId,
+                        occurredAt,
+                        new LedgerAccount(asset.OffsetAccountName, LedgerAccountType.Asset),
+                        debit: 0m,
+                        credit: asset.Debit,
+                        description)
+                ],
+                new JournalEntryMetadata(
+                    ActivityType: "multi-asset-ledger-proof",
+                    Symbol: asset.Symbol,
+                    SecurityId: asset.SecurityId,
+                    LedgerBook: "fund-close",
+                    Tags: tags)),
+            AggregateId: Guid.NewGuid(),
+            PeriodId: periodId,
+            CommandId: Guid.NewGuid(),
+            AccountingPolicyId: "legacy-v1",
+            AccountingPolicyVersion: "legacy-v1",
+            RuleId: $"multi-asset-{asset.AssetClass.ToLowerInvariant()}-posting",
+            RuleVersion: "v1",
+            SourceEventId: Guid.NewGuid(),
+            PostingKind: LedgerPostingKindDto.Originating);
+    }
+
+    public static IEnumerable<object[]> MultiAssetInstrumentGuardCases()
+    {
+        foreach (var asset in InstrumentLedgerGuardCases)
+        {
+            yield return [asset];
+        }
+    }
+
+    private static readonly IReadOnlyList<InstrumentLedgerGuardCase> InstrumentLedgerGuardCases =
+    [
+        new(
+            AssetClass: "Equity",
+            Symbol: "AAPL",
+            SecurityId: Guid.Parse("A1111111-1111-4111-8111-111111111111"),
+            AccountName: "Securities",
+            OffsetAccountName: "Cash",
+            LedgerMappingReference: "ledger-map:aapl-equity-gaap",
+            Debit: 100m),
+        new(
+            AssetClass: "Option",
+            Symbol: "AAPL260117C00150000",
+            SecurityId: Guid.Parse("A2222222-2222-4222-8222-222222222222"),
+            AccountName: "Option Premium Asset",
+            OffsetAccountName: "Cash",
+            LedgerMappingReference: "ledger-map:aapl260117c00150000-option-gaap",
+            Debit: 12.50m),
+        new(
+            AssetClass: "Future",
+            Symbol: "ESZ6",
+            SecurityId: Guid.Parse("A3333333-3333-4333-8333-333333333333"),
+            AccountName: "Futures MTM Settlement",
+            OffsetAccountName: "Variation Margin",
+            LedgerMappingReference: "ledger-map:esz6-future-gaap",
+            Debit: 25m),
+        new(
+            AssetClass: "FxSpot",
+            Symbol: "EURUSD",
+            SecurityId: Guid.Parse("A4444444-4444-4444-8444-444444444444"),
+            AccountName: "FxSpot Position",
+            OffsetAccountName: "Cash",
+            LedgerMappingReference: "ledger-map:eurusd-fxspot-gaap",
+            Debit: 75m),
+        new(
+            AssetClass: "Bond",
+            Symbol: "US91282CJT89",
+            SecurityId: Guid.Parse("A5555555-5555-4555-8555-555555555555"),
+            AccountName: "Accrued Interest Receivable",
+            OffsetAccountName: "Interest Income",
+            LedgerMappingReference: "ledger-map:us91282cjt89-bond-gaap",
+            Debit: 9.25m),
+        new(
+            AssetClass: "DirectLoan",
+            Symbol: "DL-ACME-2026",
+            SecurityId: Guid.Parse("A6666666-6666-4666-8666-666666666666"),
+            AccountName: "LoanPrincipal",
+            OffsetAccountName: "Cash",
+            LedgerMappingReference: "ledger-map:dl-acme-2026-directloan-gaap",
+            Debit: 250m),
+        new(
+            AssetClass: "CustomAsset",
+            Symbol: "CA-WIND-01",
+            SecurityId: Guid.Parse("A7777777-7777-4777-8777-777777777777"),
+            AccountName: "Securities",
+            OffsetAccountName: "Cash",
+            LedgerMappingReference: "ledger-map:ca-wind-01-customasset-gaap",
+            Debit: 150m),
+        new(
+            AssetClass: "OtherSecurity",
+            Symbol: "OS-SIDEPOCKET-01",
+            SecurityId: Guid.Parse("A8888888-8888-4888-8888-888888888888"),
+            AccountName: "Securities",
+            OffsetAccountName: "Cash",
+            LedgerMappingReference: "ledger-map:os-sidepocket-01-othersecurity-gaap",
+            Debit: 60m)
+    ];
+
+    public sealed record InstrumentLedgerGuardCase(
+        string AssetClass,
+        string Symbol,
+        Guid SecurityId,
+        string AccountName,
+        string OffsetAccountName,
+        string LedgerMappingReference,
+        decimal Debit);
 
     private static LedgerAccountingPeriod BuildAccountingPeriod(string status) =>
         new(

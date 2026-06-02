@@ -17,13 +17,16 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
 {
     private readonly ISecurityMasterOperationalReadinessService _readinessService;
     private readonly ProviderLedgerReconciliationService? _providerLedgerReconciliation;
+    private readonly FundAccountCloseReadinessService? _closeReadiness;
 
     public MultiAssetCoverageReadService(
         ISecurityMasterOperationalReadinessService readinessService,
-        ProviderLedgerReconciliationService? providerLedgerReconciliation = null)
+        ProviderLedgerReconciliationService? providerLedgerReconciliation = null,
+        FundAccountCloseReadinessService? closeReadiness = null)
     {
         _readinessService = readinessService;
         _providerLedgerReconciliation = providerLedgerReconciliation;
+        _closeReadiness = closeReadiness;
     }
 
     public async Task<MultiAssetCoverageSummaryDto> GetCoverageAsync(
@@ -43,150 +46,190 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
         string? fundAccountId,
         CancellationToken ct)
     {
-        if (_providerLedgerReconciliation is null ||
-            !Guid.TryParse(fundAccountId, out var accountId))
-        {
-            return null;
-        }
-
-        var latest = await _providerLedgerReconciliation.GetLatestAsync(accountId, ct).ConfigureAwait(false);
-        if (latest is null)
+        if (!Guid.TryParse(fundAccountId, out var accountId))
         {
             return null;
         }
 
         var evidence = new List<SecurityMasterOperationalEvidenceItem>();
         var route = BuildRoute(UiApiRoutes.FundAccountBrokerageSyncReconciliationLatest, accountId);
+        var latest = _providerLedgerReconciliation is null
+            ? null
+            : await _providerLedgerReconciliation.GetLatestAsync(accountId, ct).ConfigureAwait(false);
 
-        foreach (var check in latest.Checks)
+        if (latest is not null)
         {
-            evidence.Add(new SecurityMasterOperationalEvidenceItem(
-                EvidenceId: $"check:{check.CheckId}",
-                Category: "Reconciliation",
-                EvidenceKind: EvidenceKindFromCheck(check),
-                Status: check.Status.ToString(),
-                Source: $"{check.ExpectedSource}/{check.ActualSource}",
-                Label: check.Label,
-                EvidenceRoute: route,
-                EvidenceLink: latest.Summary.DetailPath,
-                Reason: check.Reason));
+            foreach (var check in latest.Checks)
+            {
+                evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                    EvidenceId: $"check:{check.CheckId}",
+                    Category: "Reconciliation",
+                    EvidenceKind: EvidenceKindFromCheck(check),
+                    Status: check.Status.ToString(),
+                    Source: $"{check.ExpectedSource}/{check.ActualSource}",
+                    Label: check.Label,
+                    EvidenceRoute: route,
+                    EvidenceLink: latest.Summary.DetailPath,
+                    Reason: check.Reason));
+            }
+
+            foreach (var breakRow in latest.Breaks)
+            {
+                evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                    EvidenceId: $"break:{breakRow.BreakId}",
+                    Category: "Reconciliation",
+                    EvidenceKind: EvidenceKindFromBreak(breakRow),
+                    Status: breakRow.SignOffState == ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff
+                        ? "Ready"
+                        : breakRow.Severity is ReconciliationBreakSeverity.Critical or ReconciliationBreakSeverity.High
+                            ? "Blocked"
+                            : "ReviewRequired",
+                    Source: $"{breakRow.ExpectedSource}/{breakRow.ActualSource}",
+                    Label: breakRow.CheckId,
+                    EvidenceRoute: breakRow.EvidenceLink ?? route,
+                    EvidenceLink: breakRow.EvidenceLink ?? latest.Summary.DetailPath,
+                    Reason: breakRow.Reason));
+            }
+
+            foreach (var passport in latest.SecurityMasterPassports ?? [])
+            {
+                evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                    EvidenceId: $"security-master-passport:{passport.Symbol}",
+                    Category: "SecurityMaster",
+                    EvidenceKind: "underlying security position identity provider evidence",
+                    Status: passport.Status.ToString(),
+                    Source: passport.ResolutionSource,
+                    AssetClass: passport.AssetClass,
+                    Label: passport.Symbol,
+                    EvidenceRoute: UiApiRoutes.WorkstationSecurityMasterSearch,
+                    EvidenceLink: latest.Summary.DetailPath,
+                    Reason: passport.Reason));
+            }
+
+            if (latest.ShadowBookComparison is not null)
+            {
+                foreach (var line in latest.ShadowBookComparison.Lines)
+                {
+                    evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                        EvidenceId: $"shadow-book:{line.Dimension}",
+                        Category: "ShadowBook",
+                        EvidenceKind: EvidenceKindFromShadowBookLine(line),
+                        Status: line.Status.ToString(),
+                        Source: $"{line.InternalSource}/{line.ProviderSource}",
+                        Label: line.Label,
+                        EvidenceRoute: route,
+                        EvidenceLink: latest.Summary.DetailPath,
+                        Reason: line.Reason));
+                }
+            }
+
+            if (latest.CorporateActionReadiness is not null)
+            {
+                foreach (var line in latest.CorporateActionReadiness.Lines)
+                {
+                    evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                        EvidenceId: $"corporate-action-line:{line.Dimension}",
+                        Category: "ProviderEvidence",
+                        EvidenceKind: $"{line.Dimension} {line.RequiredFeed}",
+                        Status: line.Status.ToString(),
+                        Source: line.EvidenceSource,
+                        Label: line.Label,
+                        EvidenceRoute: route,
+                        EvidenceLink: latest.Summary.DetailPath,
+                        Reason: line.Reason));
+                }
+
+                foreach (var candidate in latest.CorporateActionReadiness.EvidenceCandidates)
+                {
+                    evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                        EvidenceId: $"corporate-action-candidate:{candidate.CandidateId}",
+                        Category: "ProviderEvidence",
+                        EvidenceKind: $"{candidate.CandidateType} {candidate.RequiredFeed}",
+                        Status: candidate.Status.ToString(),
+                        Source: candidate.EvidenceSource,
+                        AssetClass: CandidateAssetClass(candidate),
+                        Label: candidate.Symbol ?? candidate.CandidateType,
+                        EvidenceRoute: route,
+                        EvidenceLink: latest.Summary.DetailPath,
+                        Reason: candidate.Reason));
+                }
+
+                foreach (var feed in latest.CorporateActionReadiness.SecurityMasterScheduleFeeds)
+                {
+                    evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                        EvidenceId: $"security-master-schedule:{feed.FeedId}",
+                        Category: "ProviderEvidence",
+                        EvidenceKind: $"{feed.FeedKind} {feed.RequiredFeed}",
+                        Status: feed.Status.ToString(),
+                        Source: feed.EvidenceSource,
+                        AssetClass: ScheduleAssetClass(feed),
+                        Label: feed.Symbol ?? feed.FeedKind,
+                        EvidenceRoute: route,
+                        EvidenceLink: latest.Summary.DetailPath,
+                        Reason: feed.Reason));
+                }
+            }
+
+            foreach (var link in latest.EvidenceLinks)
+            {
+                evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                    EvidenceId: $"evidence-link:{link}",
+                    Category: "ProviderEvidence",
+                    EvidenceKind: "provider projection raw retained evidence",
+                    Status: "Ready",
+                    Source: "provider-sync",
+                    EvidenceRoute: route,
+                    EvidenceLink: link,
+                    Reason: "Retained provider projection evidence is linked to the latest reconciliation detail."));
+            }
         }
 
-        foreach (var breakRow in latest.Breaks)
+        var closeReadiness = _closeReadiness is null
+            ? null
+            : await _closeReadiness.GetAsync(accountId, ct).ConfigureAwait(false);
+        if (closeReadiness is not null)
         {
-            evidence.Add(new SecurityMasterOperationalEvidenceItem(
-                EvidenceId: $"break:{breakRow.BreakId}",
-                Category: "Reconciliation",
-                EvidenceKind: EvidenceKindFromBreak(breakRow),
-                Status: breakRow.SignOffState == ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff
-                    ? "Ready"
-                    : breakRow.Severity is ReconciliationBreakSeverity.Critical or ReconciliationBreakSeverity.High
+            foreach (var component in closeReadiness.Components)
+            {
+                evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                    EvidenceId: $"close-component:{component.Key}",
+                    Category: "CloseReadiness",
+                    EvidenceKind: $"close readiness {component.Key} {component.Label}",
+                    Status: component.Status.ToString(),
+                    Source: "FundAccountCloseReadinessService",
+                    Label: component.Label,
+                    EvidenceRoute: component.RouteHint,
+                    EvidenceLink: component.EvidenceLink,
+                    Reason: component.Reason));
+            }
+
+            foreach (var blocker in closeReadiness.Blockers)
+            {
+                evidence.Add(new SecurityMasterOperationalEvidenceItem(
+                    EvidenceId: $"close-blocker:{blocker.Code}",
+                    Category: "CloseReadiness",
+                    EvidenceKind: $"close readiness blocker {blocker.Category} {blocker.Code}",
+                    Status: string.Equals(blocker.Severity, "Critical", StringComparison.OrdinalIgnoreCase)
                         ? "Blocked"
                         : "ReviewRequired",
-                Source: $"{breakRow.ExpectedSource}/{breakRow.ActualSource}",
-                Label: breakRow.CheckId,
-                EvidenceRoute: breakRow.EvidenceLink ?? route,
-                EvidenceLink: breakRow.EvidenceLink ?? latest.Summary.DetailPath,
-                Reason: breakRow.Reason));
-        }
-
-        foreach (var passport in latest.SecurityMasterPassports ?? [])
-        {
-            evidence.Add(new SecurityMasterOperationalEvidenceItem(
-                EvidenceId: $"security-master-passport:{passport.Symbol}",
-                Category: "SecurityMaster",
-                EvidenceKind: "underlying security position identity provider evidence",
-                Status: passport.Status.ToString(),
-                Source: passport.ResolutionSource,
-                AssetClass: passport.AssetClass,
-                Label: passport.Symbol,
-                EvidenceRoute: UiApiRoutes.WorkstationSecurityMasterSearch,
-                EvidenceLink: latest.Summary.DetailPath,
-                Reason: passport.Reason));
-        }
-
-        if (latest.ShadowBookComparison is not null)
-        {
-            foreach (var line in latest.ShadowBookComparison.Lines)
-            {
-                evidence.Add(new SecurityMasterOperationalEvidenceItem(
-                    EvidenceId: $"shadow-book:{line.Dimension}",
-                    Category: "ShadowBook",
-                    EvidenceKind: EvidenceKindFromShadowBookLine(line),
-                    Status: line.Status.ToString(),
-                    Source: $"{line.InternalSource}/{line.ProviderSource}",
-                    Label: line.Label,
-                    EvidenceRoute: route,
-                    EvidenceLink: latest.Summary.DetailPath,
-                    Reason: line.Reason));
+                    Source: "FundAccountCloseReadinessService",
+                    Label: blocker.Code,
+                    EvidenceRoute: blocker.RouteHint,
+                    EvidenceLink: blocker.EvidenceLink,
+                    Reason: blocker.Message));
             }
         }
 
-        if (latest.CorporateActionReadiness is not null)
+        if (latest is null && closeReadiness is null)
         {
-            foreach (var line in latest.CorporateActionReadiness.Lines)
-            {
-                evidence.Add(new SecurityMasterOperationalEvidenceItem(
-                    EvidenceId: $"corporate-action-line:{line.Dimension}",
-                    Category: "ProviderEvidence",
-                    EvidenceKind: $"{line.Dimension} {line.RequiredFeed}",
-                    Status: line.Status.ToString(),
-                    Source: line.EvidenceSource,
-                    Label: line.Label,
-                    EvidenceRoute: route,
-                    EvidenceLink: latest.Summary.DetailPath,
-                    Reason: line.Reason));
-            }
-
-            foreach (var candidate in latest.CorporateActionReadiness.EvidenceCandidates)
-            {
-                evidence.Add(new SecurityMasterOperationalEvidenceItem(
-                    EvidenceId: $"corporate-action-candidate:{candidate.CandidateId}",
-                    Category: "ProviderEvidence",
-                    EvidenceKind: $"{candidate.CandidateType} {candidate.RequiredFeed}",
-                    Status: candidate.Status.ToString(),
-                    Source: candidate.EvidenceSource,
-                    AssetClass: CandidateAssetClass(candidate),
-                    Label: candidate.Symbol ?? candidate.CandidateType,
-                    EvidenceRoute: route,
-                    EvidenceLink: latest.Summary.DetailPath,
-                    Reason: candidate.Reason));
-            }
-
-            foreach (var feed in latest.CorporateActionReadiness.SecurityMasterScheduleFeeds)
-            {
-                evidence.Add(new SecurityMasterOperationalEvidenceItem(
-                    EvidenceId: $"security-master-schedule:{feed.FeedId}",
-                    Category: "ProviderEvidence",
-                    EvidenceKind: $"{feed.FeedKind} {feed.RequiredFeed}",
-                    Status: feed.Status.ToString(),
-                    Source: feed.EvidenceSource,
-                    AssetClass: ScheduleAssetClass(feed),
-                    Label: feed.Symbol ?? feed.FeedKind,
-                    EvidenceRoute: route,
-                    EvidenceLink: latest.Summary.DetailPath,
-                    Reason: feed.Reason));
-            }
-        }
-
-        foreach (var link in latest.EvidenceLinks)
-        {
-            evidence.Add(new SecurityMasterOperationalEvidenceItem(
-                EvidenceId: $"evidence-link:{link}",
-                Category: "ProviderEvidence",
-                EvidenceKind: "provider projection raw retained evidence",
-                Status: "Ready",
-                Source: "provider-sync",
-                EvidenceRoute: route,
-                EvidenceLink: link,
-                Reason: "Retained provider projection evidence is linked to the latest reconciliation detail."));
+            return null;
         }
 
         return new SecurityMasterOperationalEvidenceSnapshot(
-            latest.Summary.ProviderId,
-            latest.Summary.ExternalAccountId,
-            latest.Summary.Status.ToString(),
-            latest.Summary.DetailPath,
+            latest?.Summary.ProviderId,
+            latest?.Summary.ExternalAccountId,
+            latest?.Summary.Status.ToString() ?? closeReadiness?.Status.ToString(),
+            latest?.Summary.DetailPath,
             evidence);
     }
 

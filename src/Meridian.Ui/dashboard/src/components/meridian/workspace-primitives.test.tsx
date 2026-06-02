@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
   WorkspaceDocumentCanvas,
@@ -24,7 +24,11 @@ describe("workspace primitives", () => {
 
     expect(screen.getByRole("region", { name: "Data filters" })).toBeInTheDocument();
     expect(screen.getByRole("search", { name: "Search" })).toHaveTextContent("provider: polygon");
-    expect(screen.getByText("All").closest('[role="listitem"]')).toHaveAttribute("aria-current", "true");
+    const filterSegments = screen.getByRole("list", { name: "Data filters filters" });
+    expect(within(filterSegments).getByText("All").closest('[role="listitem"]')).toHaveAttribute(
+      "aria-current",
+      "true"
+    );
     expect(screen.getByText("Sync").closest("dl")).toHaveTextContent("Healthy");
     expect(screen.getByRole("button", { name: "Import" })).toBeInTheDocument();
   });

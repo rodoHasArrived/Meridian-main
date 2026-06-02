@@ -235,20 +235,29 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot,
         IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence)
     {
+        var evidenceExcludingCloseReadiness = evidence
+            .Where(static item => !string.Equals(item.Category, "CloseReadiness", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var providerEvidence = evidenceExcludingCloseReadiness
+            .Where(static item =>
+                string.Equals(item.Category, "ProviderEvidence", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.Category, "Reconciliation", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.Category, "ShadowBook", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
         var providerStatus = EvaluateEvidenceStatus(
             spec.ProviderFeeds,
-            evidence,
+            providerEvidence,
             evidenceSnapshot,
             defaultWhenNoSnapshot: spec.HardBlocker ? "ReviewRequired" : "Ready");
         var ledgerStatus = EvaluateEvidenceStatus(
             [spec.LedgerClassification, .. spec.ReconciliationSignals],
-            evidence.Where(static item =>
+            evidenceExcludingCloseReadiness.Where(static item =>
                     string.Equals(item.Category, "Ledger", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(item.Category, "ShadowBook", StringComparison.OrdinalIgnoreCase))
                 .ToArray(),
             evidenceSnapshot,
             defaultWhenNoSnapshot: "Ready");
-        var reconciliationStatus = EvaluateReconciliationStatus(spec, evidenceSnapshot, evidence);
+        var reconciliationStatus = EvaluateReconciliationStatus(spec, evidenceSnapshot, evidenceExcludingCloseReadiness);
 
         var requirements = new List<MultiAssetEvidenceRequirementDto>
         {
@@ -388,7 +397,8 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                            (MatchesAny(item, spec.ProviderFeeds) ||
                             MatchesAny(item, spec.ReconciliationSignals) ||
                             MatchesText(item, spec.LedgerClassification) ||
-                            string.Equals(item.Category, "Reconciliation", StringComparison.OrdinalIgnoreCase)))
+                            string.Equals(item.Category, "Reconciliation", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(item.Category, "CloseReadiness", StringComparison.OrdinalIgnoreCase)))
             .GroupBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .ToArray();

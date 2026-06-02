@@ -108,6 +108,38 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             blocker.Message.Contains("Factor schedule evidence is missing", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task GetReadinessAsync_WithCloseReadinessBlocker_ShouldAttachDrillThroughBlocker()
+    {
+        var service = new SecurityMasterOperationalReadinessService();
+        var snapshot = new SecurityMasterOperationalEvidenceSnapshot(
+            ProviderId: "custodian",
+            ExternalAccountId: "PA-CLOSE",
+            ReconciliationStatus: "Matched",
+            ReconciliationDetailPath: "evidence/provider-ledger/latest.json",
+            EvidenceItems:
+            [
+                Evidence("custom-provider", "ProviderEvidence", "Custom profile Factor schedule Dealer pricing NAV Cash Collateral quantity market value cash factor schedule custom-profile evidence", "Ready", assetClass: "CustomAsset"),
+                Evidence("custom-ledger", "Ledger", "Profile-derived classification valuation adjustment income accrual commitment accounting", "Ready", assetClass: "CustomAsset"),
+                Evidence("custom-recon", "Reconciliation", "quantity market value cash factor schedule custom-profile evidence", "Ready", assetClass: "CustomAsset"),
+                Evidence("close-blocker", "CloseReadiness", "close readiness blocker valuation approval", "Blocked", assetClass: "CustomAsset", reason: "Close readiness is blocked until valuation approval evidence is signed off.")
+            ]);
+
+        var result = await service.GetReadinessAsync(
+            new SecurityMasterOperationalReadinessRequest(AssetClass: "CustomAsset", EvidenceSnapshot: snapshot));
+
+        var row = result.AssetClasses.Should().ContainSingle().Subject;
+        row.Status.Should().Be("Blocked");
+        row.Blockers.Should().Contain(blocker =>
+            blocker.Source == "CloseReadiness" &&
+            blocker.Severity == "Blocker" &&
+            blocker.EvidenceRoute == "/evidence" &&
+            blocker.Message.Contains("valuation approval", StringComparison.OrdinalIgnoreCase));
+        row.EvidenceRequirements.Should().Contain(requirement =>
+            requirement.Category == "ProviderEvidence" &&
+            requirement.Status == "Ready");
+    }
+
     private static SecurityMasterOperationalEvidenceItem Evidence(
         string id,
         string category,
