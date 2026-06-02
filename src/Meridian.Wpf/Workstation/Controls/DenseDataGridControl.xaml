@@ -4,21 +4,25 @@
              x:Name="Root">
     <UserControl.Resources>
         <Style x:Key="DenseGridColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
-            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="Padding" Value="8,5" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="Background" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontSize" Value="10" />
             <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
         </Style>
 
         <Style x:Key="DenseGridRowItemStyle" TargetType="{x:Type ListViewItem}">
-            <Setter Property="MinHeight" Value="30" />
-            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="Padding" Value="4,1" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
             <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -41,6 +45,7 @@
                   ItemsSource="{Binding ElementName=Root, Path=Table.Rows}"
                   SelectedItem="{Binding ElementName=Root, Path=SelectedItem, Mode=TwoWay}"
                   MinHeight="220"
+                  FontSize="11"
                   BorderThickness="1"
                   BorderBrush="{StaticResource ConsoleBorderBrush}"
                   Background="{StaticResource ConsoleBackgroundLightBrush}"

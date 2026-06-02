@@ -226,6 +226,12 @@ rollback actions under `/api/security-master/asset-profiles/*`. These routes req
 `AdminMaintenance` and server-resolved actor metadata, returning audit events with rationale,
 correlation id, profile version, status, and approval reference so clients do not maintain local
 profile governance state.
+Portfolio multi-asset coverage is exposed through the shared workstation route
+`/api/workstation/portfolio/multi-asset-coverage` and the `IMultiAssetCoverageReadService`
+projection. It joins Security Master validation/profile posture, required provider evidence,
+ledger classification, reconciliation evidence categories, and close-readiness blockers into a
+single read model for browser and WPF clients. Missing retained provider inputs remain
+review-required or blocked rows; clients must not mark asset classes ready with UI-local checks.
 Provider-ledger reconciliation is shared service/API behavior: it reads the latest brokerage sync
 projection, compares it with the internal fund-account balance snapshot, validates Security Master
 coverage, and retains the latest detail under workstation data for browser and WPF clients to

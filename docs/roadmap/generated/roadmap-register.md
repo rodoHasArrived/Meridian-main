@@ -219,6 +219,35 @@ v0.15 deepens accounting, reconciliation, and record-keeping functionality by li
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
 
+## W5-MASSET-001 - Multi-asset operational coverage proof lane
+| Field | Value |
+| --- | --- |
+| Wave | W5 |
+| Status | done |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | complete |
+| Last reviewed | 2026-06-02 |
+
+### Current Summary
+
+Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model.
+
+### Exit Criteria
+
+- Equities, options, futures, FX, fixed income, loans, structured/private `CustomAsset`, and `OtherSecurity` rows declare identifiers, economics, provider evidence, ledger classification, reconciliation signals, and close blockers.
+- Missing retained provider data remains review-required or blocked evidence rather than fake completeness.
+- Browser and WPF surfaces consume the shared DTO without client-local readiness rules.
+
+### Source Modules
+
+- `SRC-APP`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
 ## W6-BTSTUDIO-001 - Backtesting studio evidence loop
 | Field | Value |
 | --- | --- |

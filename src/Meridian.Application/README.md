@@ -105,6 +105,12 @@ and UI presentation concerns in their owning layers.
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
   Security Master validation messages use operator-review wording for override audit remediation so
   application-layer guidance does not expose legacy Governance workspace language.
+  `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
+  asset-class catalog, validator registry, and governed profile catalog for equities, options,
+  futures, FX, fixed income, direct loans, structured/private `CustomAsset`, and `OtherSecurity`
+  records. It declares required identifiers, economics, provider evidence, ledger classification,
+  reconciliation signals, and close blockers while leaving missing live provider evidence as
+  review-required/blocking evidence instead of fabricating completeness.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. Ownership-link policy validation prevents invalid setup graphs
   by blocking self-parenting, active cycles, incompatible relationship types, overlapping primary

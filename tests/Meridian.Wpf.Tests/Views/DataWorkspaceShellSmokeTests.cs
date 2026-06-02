@@ -32,7 +32,7 @@ public sealed class DataWorkspaceShellSmokeTests
     }
 
     [Fact]
-    public void DataWorkspaceShellSource_ShouldExposeBriefingHeaderAheadOfOperationalQueues()
+    public void DataWorkspaceShellSource_ShouldExposeCompactWorkstationLayoutAheadOfOperationalQueues()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellPage.xaml"));
         var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellPage.xaml.cs"));
@@ -46,6 +46,10 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceShellPage\"");
         xaml.Should().NotContain("DataOperationsWorkspaceShellPageBase");
         xaml.Should().NotContain("AutomationProperties.AutomationId=\"DataOperationsWorkspaceShellPage\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationPageBandStyle}\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceFilterBar\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationFilterBarStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationFilterChipStyle}\"");
         xaml.Should().Contain("WorkspaceShellContextStripControl");
         xaml.Should().Contain("Next Handoff");
         xaml.Should().Contain("OperationsHeroScopeText");
@@ -58,7 +62,8 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().Contain("OperationsHeroPrimaryActionButton");
         xaml.Should().Contain("OperationsHeroSecondaryActionButton");
         xaml.Should().Contain("OperationsHeroTargetText");
-        xaml.IndexOf("OperationsHeroSummaryText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Operational Queues", StringComparison.Ordinal));
+        xaml.IndexOf("DataWorkspaceFilterBar", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Operational Queues", StringComparison.Ordinal));
+        xaml.IndexOf("OperationsHeroSummaryText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("DataWorkspaceFilterBar", StringComparison.Ordinal));
 
         xaml.Should().Contain("Text=\"{Binding HeroScopeText}\"");
         xaml.Should().Contain("Text=\"{Binding HeroSummaryText}\"");

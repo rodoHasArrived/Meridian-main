@@ -4,86 +4,86 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:views="clr-namespace:Meridian.Wpf.Views">
 
-    <!-- Institutional Ops palette: quiet dark workstation aligned with shared Meridian design-system tokens. -->
+    <!-- Institutional Ops palette: light workstation canvas with a black global app bar. -->
 
-    <!-- Backgrounds: layered navy canvas, panel, hover, and active states -->
-    <Color x:Key="ConsoleBackgroundDark">#08101A</Color>
-    <Color x:Key="ConsoleBackgroundMedium">#0B1520</Color>
-    <Color x:Key="ConsoleBackgroundLight">#0D1722</Color>
-    <Color x:Key="ConsoleBackgroundHover">#162334</Color>
-    <Color x:Key="ConsoleBackgroundActive">#1B2A3C</Color>
-    <!-- Elevated card surface: blue-black tint for dense market workbenches -->
-    <Color x:Key="ConsoleCardSurface">#0D1722</Color>
-    <Color x:Key="ConsoleCardSurfaceRaised">#101C2B</Color>
+    <!-- Backgrounds: paper canvas, panel, hover, and active states -->
+    <Color x:Key="ConsoleBackgroundDark">#ECEFF3</Color>
+    <Color x:Key="ConsoleBackgroundMedium">#F5F7FA</Color>
+    <Color x:Key="ConsoleBackgroundLight">#FFFFFF</Color>
+    <Color x:Key="ConsoleBackgroundHover">#F1F4F7</Color>
+    <Color x:Key="ConsoleBackgroundActive">#E6EEF5</Color>
+    <!-- Elevated card surface: white paper for dense tables and inspector panels -->
+    <Color x:Key="ConsoleCardSurface">#FFFFFF</Color>
+    <Color x:Key="ConsoleCardSurfaceRaised">#FAFBFC</Color>
 
     <!-- Borders: refined hairline separators -->
-    <Color x:Key="ConsoleBorderColor">#1F344C</Color>
-    <Color x:Key="ConsoleBorderHover">#2A4566</Color>
-    <Color x:Key="ConsoleBorderFocus">#20D3F7</Color>
-    <Color x:Key="ConsoleBorderStrong">#2A4566</Color>
+    <Color x:Key="ConsoleBorderColor">#D7DCE2</Color>
+    <Color x:Key="ConsoleBorderHover">#B8C2CC</Color>
+    <Color x:Key="ConsoleBorderFocus">#2F6F8F</Color>
+    <Color x:Key="ConsoleBorderStrong">#AAB4BF</Color>
 
     <!-- Text: high-contrast primary, balanced secondaries -->
-    <Color x:Key="ConsoleTextPrimary">#DEE6EF</Color>
-    <Color x:Key="ConsoleTextSecondary">#A8B5C4</Color>
-    <Color x:Key="ConsoleTextMuted">#7C8A9B</Color>
-    <Color x:Key="ConsoleTextDisabled">#4F6277</Color>
+    <Color x:Key="ConsoleTextPrimary">#22272E</Color>
+    <Color x:Key="ConsoleTextSecondary">#4D5967</Color>
+    <Color x:Key="ConsoleTextMuted">#6E7781</Color>
+    <Color x:Key="ConsoleTextDisabled">#9AA4AF</Color>
 
     <!-- Accents: premium institutional palette -->
-    <Color x:Key="ConsoleAccentGreen">#26BF86</Color>
-    <Color x:Key="ConsoleAccentGreenDim">#1F9A6D</Color>
-    <Color x:Key="ConsoleAccentGreenLight">#43D9A2</Color>
-    <Color x:Key="ConsoleAccentBlue">#2AB2D4</Color>
-    <Color x:Key="ConsoleAccentBlueDim">#2D9CDB</Color>
-    <Color x:Key="ConsoleAccentBlueVibrant">#20D3F7</Color>
-    <Color x:Key="ConsoleAccentPurple">#A78BFA</Color>
-    <Color x:Key="ConsoleAccentPurpleDim">#7C66D9</Color>
-    <Color x:Key="ConsoleAccentRed">#DE5878</Color>
-    <Color x:Key="ConsoleAccentRedDim">#C74764</Color>
-    <Color x:Key="ConsoleAccentOrange">#D69E38</Color>
-    <Color x:Key="ConsoleAccentOrangeDim">#B8832E</Color>
-    <Color x:Key="ConsoleAccentCyan">#2AB2D4</Color>
-    <Color x:Key="ConsoleAccentCyanDim">#1396BC</Color>
-    <Color x:Key="ConsoleAccentPink">#EC6DAE</Color>
-    <Color x:Key="ConsoleAccentYellow">#F5D45A</Color>
+    <Color x:Key="ConsoleAccentGreen">#16885F</Color>
+    <Color x:Key="ConsoleAccentGreenDim">#126C4D</Color>
+    <Color x:Key="ConsoleAccentGreenLight">#2FA377</Color>
+    <Color x:Key="ConsoleAccentBlue">#2F6F8F</Color>
+    <Color x:Key="ConsoleAccentBlueDim">#255B75</Color>
+    <Color x:Key="ConsoleAccentBlueVibrant">#3B82A6</Color>
+    <Color x:Key="ConsoleAccentPurple">#6F5BA7</Color>
+    <Color x:Key="ConsoleAccentPurpleDim">#58478A</Color>
+    <Color x:Key="ConsoleAccentRed">#BA3F55</Color>
+    <Color x:Key="ConsoleAccentRedDim">#983244</Color>
+    <Color x:Key="ConsoleAccentOrange">#B7791F</Color>
+    <Color x:Key="ConsoleAccentOrangeDim">#946216</Color>
+    <Color x:Key="ConsoleAccentCyan">#2F6F8F</Color>
+    <Color x:Key="ConsoleAccentCyanDim">#255B75</Color>
+    <Color x:Key="ConsoleAccentPink">#B84883</Color>
+    <Color x:Key="ConsoleAccentYellow">#D6A84A</Color>
 
     <!-- Alpha overlays for active/badge backgrounds -->
-    <Color x:Key="ConsoleAccentGreenAlpha10">#1A26BF86</Color>
-    <Color x:Key="ConsoleAccentGreenAlpha20">#3326BF86</Color>
-    <Color x:Key="ConsoleAccentBlueAlpha10">#1A2AB2D4</Color>
-    <Color x:Key="ConsoleAccentBlueAlpha20">#332AB2D4</Color>
-    <Color x:Key="ConsoleAccentRedAlpha10">#1ADE5878</Color>
-    <Color x:Key="ConsoleAccentRedAlpha20">#33DE5878</Color>
-    <Color x:Key="ConsoleAccentOrangeAlpha10">#1AD69E38</Color>
-    <Color x:Key="ConsoleAccentOrangeAlpha20">#33D69E38</Color>
-    <Color x:Key="ConsoleAccentPurpleAlpha10">#1AA78BFA</Color>
+    <Color x:Key="ConsoleAccentGreenAlpha10">#1A16885F</Color>
+    <Color x:Key="ConsoleAccentGreenAlpha20">#3316885F</Color>
+    <Color x:Key="ConsoleAccentBlueAlpha10">#1A2F6F8F</Color>
+    <Color x:Key="ConsoleAccentBlueAlpha20">#332F6F8F</Color>
+    <Color x:Key="ConsoleAccentRedAlpha10">#1ABA3F55</Color>
+    <Color x:Key="ConsoleAccentRedAlpha20">#33BA3F55</Color>
+    <Color x:Key="ConsoleAccentOrangeAlpha10">#1AB7791F</Color>
+    <Color x:Key="ConsoleAccentOrangeAlpha20">#33B7791F</Color>
+    <Color x:Key="ConsoleAccentPurpleAlpha10">#1A6F5BA7</Color>
 
     <!-- Chart preview tokens from the Meridian design-system bundle -->
-    <Color x:Key="ChartSurfaceColor">#0B1520</Color>
-    <Color x:Key="ChartPlotAreaColor">#08101A</Color>
-    <Color x:Key="ChartGridLineColor">#1A2D44</Color>
-    <Color x:Key="ChartAxisLabelColor">#A8B5C4</Color>
-    <Color x:Key="ChartBorderColor">#2A4566</Color>
-    <Color x:Key="ChartCrosshairColor">#2AB2D4</Color>
-    <Color x:Key="ChartPrimaryLineColor">#2AB2D4</Color>
-    <Color x:Key="ChartSecondaryLineColor">#60A5FA</Color>
-    <Color x:Key="ChartEquityColor">#26BF86</Color>
-    <Color x:Key="ChartEquityAlpha20Color">#3326BF86</Color>
-    <Color x:Key="ChartDrawdownColor">#DE5878</Color>
-    <Color x:Key="ChartDrawdownAlpha20Color">#33DE5878</Color>
-    <Color x:Key="ChartWarningLineColor">#D69E38</Color>
+    <Color x:Key="ChartSurfaceColor">#FFFFFF</Color>
+    <Color x:Key="ChartPlotAreaColor">#FBFCFD</Color>
+    <Color x:Key="ChartGridLineColor">#DDE3EA</Color>
+    <Color x:Key="ChartAxisLabelColor">#6E7781</Color>
+    <Color x:Key="ChartBorderColor">#CBD3DC</Color>
+    <Color x:Key="ChartCrosshairColor">#2F6F8F</Color>
+    <Color x:Key="ChartPrimaryLineColor">#2F6F8F</Color>
+    <Color x:Key="ChartSecondaryLineColor">#7A9DB3</Color>
+    <Color x:Key="ChartEquityColor">#16885F</Color>
+    <Color x:Key="ChartEquityAlpha20Color">#3316885F</Color>
+    <Color x:Key="ChartDrawdownColor">#BA3F55</Color>
+    <Color x:Key="ChartDrawdownAlpha20Color">#33BA3F55</Color>
+    <Color x:Key="ChartWarningLineColor">#B7791F</Color>
 
     <!-- Mode indicator colors -->
-    <Color x:Key="ModeLiveColor">#E84545</Color>
-    <Color x:Key="ModePaperColor">#60A5FA</Color>
-    <Color x:Key="ModeFixtureColor">#D97706</Color>
-    <Color x:Key="ModeHealthyColor">#26BF86</Color>
-    <Color x:Key="ModeCriticalColor">#DE5878</Color>
+    <Color x:Key="ModeLiveColor">#BA3F55</Color>
+    <Color x:Key="ModePaperColor">#2F6F8F</Color>
+    <Color x:Key="ModeFixtureColor">#B7791F</Color>
+    <Color x:Key="ModeHealthyColor">#16885F</Color>
+    <Color x:Key="ModeCriticalColor">#BA3F55</Color>
 
-    <!-- Top bar colors: premium deep navy brand bar -->
-    <Color x:Key="TopBarBackground">#05101B</Color>
-    <Color x:Key="TopBarText">#DEE6EF</Color>
-    <Color x:Key="TopBarBorder">#1F344C</Color>
-    <Color x:Key="TopBarIconAccent">#2AB2D4</Color>
+    <!-- Top bar colors: near-black brand bar -->
+    <Color x:Key="TopBarBackground">#171A1F</Color>
+    <Color x:Key="TopBarText">#F4F6F8</Color>
+    <Color x:Key="TopBarBorder">#262B31</Color>
+    <Color x:Key="TopBarIconAccent">#E8ECEF</Color>
 
     <!-- ── Solid brushes ── -->
     <SolidColorBrush x:Key="ConsoleBackgroundDarkBrush"    Color="{StaticResource ConsoleBackgroundDark}" />
@@ -107,7 +107,7 @@
     <SolidColorBrush x:Key="ConsoleBackgroundBrush"        Color="{StaticResource ConsoleBackgroundLight}" />
     <SolidColorBrush x:Key="ConsoleWindowBackgroundBrush"  Color="{StaticResource ConsoleBackgroundDark}" />
     <SolidColorBrush x:Key="ConsoleWindowBorderBrush"      Color="{StaticResource ConsoleBorderColor}" />
-    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha80Brush" Color="#CC2D9CDB" />
+    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha80Brush" Color="#CC2F6F8F" />
     <SolidColorBrush x:Key="SuccessColorBrush"             Color="{StaticResource ConsoleAccentGreen}" />
     <SolidColorBrush x:Key="WarningColorBrush"             Color="{StaticResource ConsoleAccentOrange}" />
     <SolidColorBrush x:Key="ErrorColorBrush"               Color="{StaticResource ConsoleAccentRed}" />
@@ -207,12 +207,12 @@
 
     <!-- Compatibility brush retained; sidebar depth comes from borders, not gradients. -->
     <LinearGradientBrush x:Key="SidebarGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#08131F" Offset="0" />
-        <GradientStop Color="#08131F" Offset="1" />
+        <GradientStop Color="#F4F6F8" Offset="0" />
+        <GradientStop Color="#F4F6F8" Offset="1" />
     </LinearGradientBrush>
 
     <!-- Sidebar background is needed by shell surface brushes below, so declare it before use. -->
-    <Color x:Key="SidebarBackground">#08131F</Color>
+    <Color x:Key="SidebarBackground">#F4F6F8</Color>
 
     <!-- Shell surfaces: clean, elevated canvas -->
     <SolidColorBrush x:Key="ShellWindowBackgroundBrush" Color="{StaticResource ConsoleBackgroundDark}" />
@@ -227,7 +227,7 @@
     <!-- HeaderBandBackgroundBrush retained for compatibility; maps to top bar gradient -->
     <SolidColorBrush x:Key="HeaderBandBackgroundBrush"  Color="{StaticResource TopBarBackground}" />
 
-    <!-- PremiumPanelBrush: primary dark panel surface -->
+    <!-- PremiumPanelBrush: primary paper panel surface -->
     <SolidColorBrush x:Key="PremiumPanelBrush"          Color="{StaticResource ConsoleBackgroundLight}" />
 
     <SolidColorBrush x:Key="ProgressSuccessBrush"       Color="{StaticResource ConsoleAccentGreen}" />
@@ -246,22 +246,21 @@
     <SolidColorBrush x:Key="OnSurfaceVariantBrush" Color="{StaticResource ConsoleTextSecondary}" />
     <SolidColorBrush x:Key="OutlineDimBrush"       Color="{StaticResource ConsoleBorderColor}" />
 
-    <!-- Nav active state: updated for dark sidebar -->
-    <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="#142232" />
+    <!-- Nav active state: light sidebar selection -->
+    <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="#E6EEF5" />
     <SolidColorBrush x:Key="NavActiveBorderBrush"       Color="{StaticResource ConsoleAccentBlue}" />
 
-    <!-- ── Marquee dark sidebar palette ── -->
-    <!-- Deep navy sidebar for the shared workstation shell. -->
-    <Color x:Key="SidebarBorderColor">#1F344C</Color>
-    <Color x:Key="SidebarHoverColor">#162334</Color>
-    <Color x:Key="SidebarActiveColor">#142232</Color>
-    <Color x:Key="SidebarActiveIndicatorColor">#2AB2D4</Color>
-    <Color x:Key="SidebarTileColor">#0B1520</Color>
-    <Color x:Key="SidebarTileHoverColor">#162334</Color>
-    <Color x:Key="NavItemText">#A8B5C4</Color>
-    <Color x:Key="NavItemTextHover">#DEE6EF</Color>
-    <Color x:Key="NavItemTextActive">#FFFFFF</Color>
-    <Color x:Key="NavSectionLabel">#7C8A9B</Color>
+    <!-- ── Light institutional sidebar palette ── -->
+    <Color x:Key="SidebarBorderColor">#D7DCE2</Color>
+    <Color x:Key="SidebarHoverColor">#E9EEF3</Color>
+    <Color x:Key="SidebarActiveColor">#E1EAF2</Color>
+    <Color x:Key="SidebarActiveIndicatorColor">#2F6F8F</Color>
+    <Color x:Key="SidebarTileColor">#FFFFFF</Color>
+    <Color x:Key="SidebarTileHoverColor">#E9EEF3</Color>
+    <Color x:Key="NavItemText">#4D5967</Color>
+    <Color x:Key="NavItemTextHover">#22272E</Color>
+    <Color x:Key="NavItemTextActive">#1F2933</Color>
+    <Color x:Key="NavSectionLabel">#6E7781</Color>
 
     <SolidColorBrush x:Key="SidebarBackgroundBrush"          Color="{StaticResource SidebarBackground}" />
     <SolidColorBrush x:Key="SidebarBorderBrush"              Color="{StaticResource SidebarBorderColor}" />
@@ -275,10 +274,10 @@
     <SolidColorBrush x:Key="NavItemForegroundActiveBrush"    Color="{StaticResource NavItemTextActive}" />
     <SolidColorBrush x:Key="NavSectionLabelBrush"            Color="{StaticResource NavSectionLabel}" />
 
-    <!-- ── Dark terminal status bar palette ── -->
-    <Color x:Key="StatusBarBackground">#05101B</Color>
-    <Color x:Key="StatusBarTextColor">#7C8A9B</Color>
-    <Color x:Key="StatusBarBorderColor">#1F344C</Color>
+    <!-- ── Workstation status bar palette ── -->
+    <Color x:Key="StatusBarBackground">#171A1F</Color>
+    <Color x:Key="StatusBarTextColor">#D7DCE2</Color>
+    <Color x:Key="StatusBarBorderColor">#262B31</Color>
 
     <SolidColorBrush x:Key="StatusBarBackgroundBrush"  Color="{StaticResource StatusBarBackground}" />
     <SolidColorBrush x:Key="StatusBarTextBrush"        Color="{StaticResource StatusBarTextColor}" />

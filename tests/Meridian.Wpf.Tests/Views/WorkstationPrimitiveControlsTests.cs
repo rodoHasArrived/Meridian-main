@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -134,6 +135,20 @@ public sealed class WorkstationPrimitiveControlsTests
                 window.Close();
             }
         });
+    }
+
+    [Fact]
+    public void DenseDataGridSource_ShouldUseCompactInstitutionalTableChrome()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Workstation\Controls\DenseDataGridControl.xaml"));
+
+        xaml.Should().Contain("DenseGridColumnHeaderStyle");
+        xaml.Should().Contain("<Setter Property=\"FontSize\" Value=\"10\" />");
+        xaml.Should().Contain("<Setter Property=\"MinHeight\" Value=\"26\" />");
+        xaml.Should().Contain("FontSize=\"11\"");
+        xaml.Should().Contain("VirtualizingPanel.VirtualizationMode=\"Recycling\"");
+        xaml.Should().Contain("VirtualizingPanel.ScrollUnit=\"Item\"");
     }
 
     private sealed record RowFixture(string Name, string Status);

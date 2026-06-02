@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-28
+last_reviewed: 2026-06-02
 ---
 
 # src/Meridian.Wpf
@@ -84,6 +84,10 @@ standardize action posture, readiness tone, evidence links, recovery actions, an
 requirements for W4 close/report surfaces. Fund Ledger reconciliation and Report Pack handoff
 surfaces consume these primitives so blocker, evidence, recovery, and sign-off signifiers stay
 visible without creating desktop-only business rules.
+Portfolio cockpit decision items include the shared multi-asset coverage route
+`/api/workstation/portfolio/multi-asset-coverage` so desktop operators can review asset-class
+readiness, provider evidence, ledger coverage, reconciliation posture, and close blockers through
+the same read model used by the browser Portfolio and Accounting screens.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
 summary, including retained source records, normalized activity, reconciliation history, ledger
 evidence, approvals, report-pack lineage, export evidence, restatement lineage, measured
@@ -163,6 +167,11 @@ High-value workbench pages should migrate through the shared workstation control
 page sweeps; Strategy Runs now uses `DenseDataGridControl` plus tabbed inspector panes for run,
 evidence, comparison, and artifact context while preserving existing page tags and navigation
 commands.
+The desktop shell visual system now targets a light institutional workstation frame with a
+near-black global app bar, paper page bands, compact filter bars, and dense table chrome. New
+workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
+`WorkstationFilterChipStyle`, `DenseDataGridControl`, and inspector host primitives before adding
+page-local cards or dark terminal styling.
 Settings/Admin cockpit work uses `WorkstationStatePanelControl` for schedule and cleanup readiness
 state so maintenance blockers, confirmation posture, and evidence summaries reuse the same
 `WorkspaceTone` semantics as other operational pages.

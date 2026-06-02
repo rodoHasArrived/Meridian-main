@@ -213,10 +213,10 @@ Settings
 | Financial Operations | Implemented evidence | Reconciliation, casework, accounting close, evidence routing, and W4 ledger review flows. |
 | Treasury & Payments | Supported foundation | Cash-flow views, payment-oriented workflow design, and account/ledger seams exist; full payment execution remains later productization. |
 | Portfolio & Investment Operations | Implemented evidence | Portfolio, fund-structure, brokerage sync, fund accounts, positions, paper-session, and ledger-backed workflows. |
-| Reference Data | Supported foundation | Security Master contracts, provider-to-security mapping, asset profiles, and trust/conflict summaries. |
-| Instrument, Contract & Obligation Management | Supported foundation | Security Master, direct-lending/F# rule kernels, factor/corporate-action evidence, and obligation-oriented ledger support. |
+| Reference Data | Implemented evidence | Security Master contracts, provider-to-security mapping, asset profiles, trust/conflict summaries, and shared multi-asset readiness coverage. |
+| Instrument, Contract & Obligation Management | Implemented evidence | Security Master, direct-lending/F# rule kernels, factor/corporate-action evidence, obligation-oriented ledger support, and multi-asset operational blockers. |
 | Entity & Relationship Management | Supported foundation | Fund-structure setup, ownership graph, legal-entity, vehicle, account-handoff, and assignment workflows. |
-| Alternative Asset Management | Supported foundation | Private-credit/direct-lending model support and custom asset profile seams exist; broad alternative-asset operations remain expansion work. |
+| Alternative Asset Management | Supported foundation | Private-credit/direct-lending models, governed custom asset profiles, and structured/private asset coverage rows exist; new live provider adapters and full alternative-asset operations remain expansion work. |
 | Financing & Capital Structure Analysis | Design-led foundation | Capital-structure analysis remains a product design target with partial support through fund, vehicle, account, and ledger models. |
 | Planning, Forecasting & Decision Support | Design-led foundation | Strategy, run comparison, and reporting evidence exist; full planning and forecasting engines remain future work. |
 | Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, backtesting runtime, research continuity, and promotion evidence exist; W6 Backtesting Studio expansion is planned. |

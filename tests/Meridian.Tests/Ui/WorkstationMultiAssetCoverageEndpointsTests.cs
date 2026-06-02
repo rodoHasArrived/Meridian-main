@@ -11,12 +11,12 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_MultiAssetCoverage_ShouldReturnSharedReadinessRows()
     {
-        await using var app = await CreateAppAsync().ConfigureAwait(false);
+        await using var app = await CreateAppAsync();
         using var client = app.GetTestClient();
 
         var payload = await client.GetFromJsonAsync<MultiAssetCoverageSummaryDto>(
             $"{UiApiRoutes.WorkstationPortfolioMultiAssetCoverage}?fundAccountId=fund-ops&entity=master-fund",
-            ServerJsonOptions).ConfigureAwait(false);
+            ServerJsonOptions);
 
         payload.Should().NotBeNull();
         payload!.FundAccountId.Should().Be("fund-ops");

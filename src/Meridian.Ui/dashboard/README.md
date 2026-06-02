@@ -100,6 +100,10 @@ Accounting reconciliation statement runs now use the shared statement-run endpoi
 broker or custodian, account, period, status, validation, match, break, case, and import timing
 read models; React components only render these values and do not reimplement matching, tolerance,
 validation, or case-state rules.
+The Portfolio and Accounting screens consume `MultiAssetCoverageSummary` from
+`/api/workstation/portfolio/multi-asset-coverage` through `useWorkstationData`. Browser code renders
+server-supplied asset-class readiness, evidence requirements, ledger classification, reconciliation
+signals, and close blockers only; it must not infer multi-asset readiness from local portfolio rows.
 The Accounting screen also carries a stable Investment Accounting Transaction Lab panel view model
 so the browser renders the Books Before Broker preview entry point without crashing while endpoint
 request wiring remains a follow-on workflow.

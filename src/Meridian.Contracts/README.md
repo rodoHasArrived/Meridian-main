@@ -192,6 +192,12 @@ retained as compatibility payloads while WPF and new consumers move to the Strat
 The workstation bootstrap contract in `Workstation/WorkstationBootstrapDtos.cs` now exposes
 `WorkstationStrategyPayload` as the canonical payload for `/api/workstation/strategy`;
 `/api/workstation/research` remains a compatibility alias for existing clients.
+The same workstation contract file owns the multi-asset operational coverage DTOs returned by
+`/api/workstation/portfolio/multi-asset-coverage`: `MultiAssetCoverageSummaryDto`,
+`MultiAssetClassCoverageDto`, `MultiAssetEvidenceRequirementDto`, and
+`MultiAssetReadinessBlockerDto`. Browser, WPF, and shared endpoint clients should render those rows
+as supplied instead of recalculating asset-class readiness, ledger coverage, reconciliation status,
+or close blockers locally.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve
