@@ -103,6 +103,10 @@ public sealed class LoginSessionMiddleware
                 context.Items[CurrentUserKey] = profile.Username;
                 context.Items[CurrentUserRoleKey] = profile.Role;
                 context.Items[CurrentUserPermissionsKey] = profile.Permissions;
+                CookieCsrfProtection.EnsureCsrfCookie(
+                    context,
+                    CookieCsrfProtection.ShouldUseSecureCookies(context),
+                    LoginSessionService.SessionDuration);
                 await _next(context);
                 return;
             }

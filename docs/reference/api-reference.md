@@ -1,3 +1,11 @@
+---
+title: API Reference
+status: active
+owner: core-team
+reviewed: 2026-06-02
+audience: developers-and-operators
+---
+
 # API Reference
 
 This section describes how API documentation is generated, where to find the key namespaces, and how to keep the published API surface up to date.
@@ -250,6 +258,29 @@ All endpoints return errors in a consistent format:
 | Storage Quality | 9 | Data quality scores, alerts, trends, anomalies |
 | Quality Drops | 2 | Pipeline dropped event audit statistics |
 | Health | 12 | System health, Kubernetes probes, Prometheus metrics, SSE |
+
+### High-Risk Operational and Security Surfaces
+
+These routes are prioritized for operator hardening, permission checks, and mutation-rate-limit monitoring.
+
+#### Path-First Validation Index (Area 5 Priority)
+
+This table is intentionally **path-first** to support API documentation validation tooling.
+
+| Path | Method | Surface | Operational/Security Notes |
+|---|---|---|---|
+| `/api/projections/{projectionRunId:guid}/flows` | GET | Direct Lending | Returns projection cash-flow detail for a projection run. |
+| `/api/journals/{journalEntryId:guid}/post` | POST | Direct Lending | Posts pending journal entries to direct-lending ledger surfaces. |
+| `/api/reconciliation/{runId:guid}/results` | GET | Direct Lending | Returns reconciliation run results for operator review. |
+| `/api/reconciliation/exceptions` | GET | Direct Lending | Lists unresolved reconciliation exceptions requiring action. |
+| `/api/reconciliation/exceptions/{exceptionId:guid}/resolve` | POST | Direct Lending | Resolves reconciliation exceptions (governed mutation route). |
+| `/api/servicer-reports` | POST | Direct Lending | Creates servicer report batch import records. |
+| `/api/servicer-reports/{batchId:guid}` | GET | Direct Lending | Returns servicer report batch summary/status. |
+| `/api/servicer-reports/{batchId:guid}/position-lines` | GET | Direct Lending | Returns imported position-line records for a batch. |
+| `/api/servicer-reports/{batchId:guid}/transaction-lines` | GET | Direct Lending | Returns imported transaction-line records for a batch. |
+| `/api/loans/rebuild-all` | POST | Direct Lending | Triggers portfolio-wide loan snapshot rebuild. |
+| `/api/loans/rebuild-checkpoints` | GET | Direct Lending | Reads rebuild checkpoint posture before triggering rebuild mutation. |
+| `/api/loans/portfolio` | GET | Direct Lending | Reads aggregated direct-lending portfolio posture. |
 
 ### Symbols (`/api/symbols/*`)
 
@@ -596,8 +627,8 @@ When adding or changing public APIs:
 
 ---
 
-**Version:** 1.6.2
-**Last Updated:** 2026-04-07
+**Version:** 1.6.3
+**Last Updated:** 2026-06-02
 **Audience:** Contributors maintaining the HTTP API surface and AI assistants working on endpoint documentation.
 
 

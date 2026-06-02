@@ -65,17 +65,17 @@ public static class ReplayEndpoints
         .Produces(200);
 
         // Start replay - creates a replay session backed by JsonlReplayer
-        group.MapPost(UiApiRoutes.ReplayStart, (ReplayStartRequest req) =>
+        group.MapPost(UiApiRoutes.ReplayStart, (ReplayStartRequest req, [FromServices] StorageOptions? storageOptions) =>
         {
             if (string.IsNullOrWhiteSpace(req.FilePath))
                 return Results.BadRequest(new { error = "File path is required" });
 
-            if (!File.Exists(req.FilePath))
-                return Results.BadRequest(new { error = $"File not found: {req.FilePath}" });
+            var rootPath = Path.GetFullPath(storageOptions?.RootPath ?? "data");
+            if (!TryResolvePathWithinRoot(req.FilePath, rootPath, out var resolvedFilePath))
+                return Results.BadRequest(new { error = "Invalid file path." });
 
             var sessionId = Guid.NewGuid().ToString("N")[..12];
-            var fileDir = Path.GetDirectoryName(req.FilePath) ?? ".";
-            var session = new ReplaySession(sessionId, req.FilePath, req.SpeedMultiplier ?? 1.0, fileDir);
+            var session = new ReplaySession(sessionId, resolvedFilePath, req.SpeedMultiplier ?? 1.0);
 
             // Start background event counting
             session.StartEventCounting();
@@ -85,7 +85,7 @@ public static class ReplayEndpoints
             return Results.Json(new
             {
                 sessionId,
-                filePath = req.FilePath,
+                filePath = resolvedFilePath,
                 status = "started",
                 speedMultiplier = session.Speed,
                 timestamp = DateTimeOffset.UtcNow
@@ -200,6 +200,7 @@ public static class ReplayEndpoints
             DateTimeOffset? to,
             int? limit,
             [FromServices] IMarketDataStore? store,
+            [FromServices] StorageOptions? storageOptions,
             CancellationToken ct) =>
         {
             var events = new List<object>();
@@ -235,13 +236,16 @@ public static class ReplayEndpoints
             }
 
             // Fallback: single-file preview via path (legacy behaviour)
-            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            if (string.IsNullOrWhiteSpace(filePath))
                 return Results.Json(new { events = Array.Empty<object>(), total = 0, error = "File not found or path not provided" }, jsonOptions);
+
+            var rootPath = Path.GetFullPath(storageOptions?.RootPath ?? "data");
+            if (!TryResolvePathWithinRoot(filePath, rootPath, out var resolvedFilePath))
+                return Results.Json(new { events = Array.Empty<object>(), total = 0, error = "Invalid file path" }, jsonOptions);
 
             try
             {
-                var fileDir = Path.GetDirectoryName(filePath) ?? ".";
-                var replayer = new JsonlReplayer(fileDir);
+                var replayer = new JsonlReplayer(resolvedFilePath);
                 var count = 0;
 
                 await foreach (var evt in replayer.ReadEventsAsync(ct))
@@ -263,7 +267,7 @@ public static class ReplayEndpoints
             catch (OperationCanceledException) { /* request cancelled */ }
             catch (JsonException) { /* malformed data */ }
 
-            return Results.Json(new { events, total = events.Count, filePath }, jsonOptions);
+            return Results.Json(new { events, total = events.Count, filePath = resolvedFilePath }, jsonOptions);
         })
         .WithName("PreviewReplayEvents")
         .Produces(200);
@@ -337,17 +341,15 @@ public static class ReplayEndpoints
     {
         private readonly CancellationTokenSource _cts = new();
 
-        public ReplaySession(string sessionId, string filePath, double speed, string fileDirectory)
+        public ReplaySession(string sessionId, string filePath, double speed)
         {
             SessionId = sessionId;
             FilePath = filePath;
             Speed = speed;
-            FileDirectory = fileDirectory;
         }
 
         public string SessionId { get; }
         public string FilePath { get; }
-        public string FileDirectory { get; }
         public string Status { get; set; } = "running";
         public double Speed { get; set; }
         public DateTimeOffset StartedAt { get; } = DateTimeOffset.UtcNow;
@@ -374,7 +376,7 @@ public static class ReplayEndpoints
         {
             try
             {
-                var replayer = new JsonlReplayer(FileDirectory);
+                var replayer = new JsonlReplayer(FilePath);
                 long count = 0;
                 await foreach (var _ in replayer.ReadEventsAsync(_cts.Token))
                 {
@@ -399,4 +401,30 @@ public static class ReplayEndpoints
     private sealed record ReplayStartRequest(string? FilePath, double? SpeedMultiplier);
     private sealed record SeekRequest(long PositionMs);
     private sealed record SpeedRequest(double SpeedMultiplier);
+
+    private static bool TryResolvePathWithinRoot(string candidatePath, string rootPath, out string resolvedPath)
+    {
+        resolvedPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(candidatePath))
+            return false;
+
+        try
+        {
+            var fullRootPath = Path.GetFullPath(rootPath);
+            var fullCandidatePath = Path.GetFullPath(candidatePath);
+            if (!File.Exists(fullCandidatePath))
+                return false;
+
+            var rootPrefix = fullRootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (!fullCandidatePath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            resolvedPath = fullCandidatePath;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

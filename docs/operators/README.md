@@ -1,8 +1,12 @@
-# Operator Documentation
+---
+title: Operator Documentation
+status: active
+owner: core-team
+reviewed: 2026-06-02
+audience: operators
+---
 
-**Status:** active
-**Owner:** core-team
-**Reviewed:** 2026-05-31
+# Operator Documentation
 
 This is the canonical operator procedure lane for Meridian setup, provider workflows, launch/deployment, runbooks, troubleshooting, and support evidence.
 

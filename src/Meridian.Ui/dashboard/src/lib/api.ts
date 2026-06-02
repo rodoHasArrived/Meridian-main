@@ -276,6 +276,8 @@ import {
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
+const csrfCookieName = "mdc-csrf";
+const csrfHeaderName = "X-CSRF-Token";
 
 export interface ApiRequestOptions {
   signal?: AbortSignal;
@@ -335,10 +337,7 @@ async function postJson<T>(path: string, body?: unknown, options: ApiRequestOpti
   const response = await fetch(path, {
     method: "POST",
     signal: options.signal,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
+    headers: buildMutationHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -361,10 +360,7 @@ async function putJson<T>(path: string, body?: unknown, options: ApiRequestOptio
   const response = await fetch(path, {
     method: "PUT",
     signal: options.signal,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
+    headers: buildMutationHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -379,10 +375,7 @@ async function patchJson<T>(path: string, body?: unknown, options: ApiRequestOpt
   const response = await fetch(path, {
     method: "PATCH",
     signal: options.signal,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
+    headers: buildMutationHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -397,10 +390,7 @@ async function deleteJson<T>(path: string, options: ApiRequestOptions = {}, body
   const response = await fetch(path, {
     method: "DELETE",
     signal: options.signal,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
+    headers: buildMutationHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -409,6 +399,37 @@ async function deleteJson<T>(path: string, options: ApiRequestOptions = {}, body
   }
 
   return readJsonResponse<T>(path, response);
+}
+
+function buildMutationHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Content-Type": "application/json"
+  };
+
+  const csrfToken = readCookie(csrfCookieName);
+  if (csrfToken) {
+    headers[csrfHeaderName] = csrfToken;
+  }
+
+  return headers;
+}
+
+function readCookie(name: string): string | undefined {
+  if (typeof document === "undefined" || !document.cookie) {
+    return undefined;
+  }
+
+  const prefix = `${name}=`;
+  const cookie = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix));
+  if (!cookie) {
+    return undefined;
+  }
+
+  return decodeURIComponent(cookie.slice(prefix.length));
 }
 
 async function readJsonResponse<T>(path: string, response: Response): Promise<T> {

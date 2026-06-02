@@ -34,6 +34,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 
@@ -245,6 +246,8 @@ public sealed class UiServer : IAsyncDisposable
                 return ["General"];
             });
         });
+
+        ValidateAuthenticationTransportSecurity(builder.Environment, builder.WebHost.GetSetting(WebHostDefaults.ServerUrlsKey));
         serviceRegistrationStopwatch.Stop();
 
         var appBuildStopwatch = Stopwatch.StartNew();
@@ -272,6 +275,8 @@ public sealed class UiServer : IAsyncDisposable
 
         // Enable session-based authentication middleware (optional in Development/Test, required elsewhere by default)
         _app.UseLoginSessionAuthentication();
+        _app.UseCookieCsrfProtection();
+        _app.UseRateLimiter();
 
         // Enable Swagger middleware
         _app.UseSwagger();
@@ -397,6 +402,53 @@ public sealed class UiServer : IAsyncDisposable
     {
         var remoteIp = context.Connection.RemoteIpAddress;
         return remoteIp is null || IPAddress.IsLoopback(remoteIp);
+    }
+
+    private static void ValidateAuthenticationTransportSecurity(IWebHostEnvironment environment, string? configuredUrls)
+    {
+        if (environment.IsDevelopment() || environment.IsEnvironment("Test"))
+            return;
+
+        if (!IsAuthenticationRequired(environment))
+            return;
+
+        if (HasHttpsBinding(configuredUrls))
+            return;
+
+        throw new InvalidOperationException(
+            "Authentication is required in production posture, but no HTTPS binding is configured. " +
+            "Configure HTTPS URLs (ASPNETCORE_URLS or host settings) before startup.");
+    }
+
+    private static bool IsAuthenticationRequired(IHostEnvironment environment)
+    {
+        var mode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
+        if (!string.IsNullOrWhiteSpace(mode))
+        {
+            return mode.Trim().Equals("required", StringComparison.OrdinalIgnoreCase) ||
+                   mode.Trim().Equals("auto", StringComparison.OrdinalIgnoreCase) &&
+                   !(environment.IsDevelopment() || environment.IsEnvironment("Test"));
+        }
+
+        return !(environment.IsDevelopment() || environment.IsEnvironment("Test"));
+    }
+
+    private static bool HasHttpsBinding(string? configuredUrls)
+    {
+        if (string.IsNullOrWhiteSpace(configuredUrls))
+            return false;
+
+        var urls = configuredUrls.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var url in urls)
+        {
+            if (Uri.TryCreate(url, UriKind.Absolute, out var parsed) &&
+                parsed.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal static string ResolvePersistentDataRoot(string configPath)

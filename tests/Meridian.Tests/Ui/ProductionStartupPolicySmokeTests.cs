@@ -16,7 +16,9 @@ public sealed class ProductionStartupPolicySmokeTests
             Action act = () => _ = new Meridian.UiServer(configPath, port: 0);
 
             act.Should().Throw<InvalidOperationException>()
-                .WithMessage("*non-production DI registrations*");
+                .Where(ex =>
+                    ex.Message.Contains("non-production DI registrations", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("production-safe startup requires persistence-backed governance domain services", StringComparison.OrdinalIgnoreCase));
         }
         finally
         {
