@@ -9,6 +9,7 @@ import type {
   BrokerageHouseholdPortfolio,
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
+  MultiAssetCoverageSummary,
   ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
@@ -39,6 +40,7 @@ vi.mock("@/lib/api", () => ({
   getOperationsApprovalPolicyMatrix: vi.fn(),
   getOperationsCloseCalendar: vi.fn(),
   hasDevelopmentFixtureUsage: vi.fn(() => false),
+  getPortfolioMultiAssetCoverage: vi.fn(),
   getPortfolioWorkspace: vi.fn(),
   getReportingWorkspace: vi.fn(),
   resetDevelopmentFixtureUsage: vi.fn(),
@@ -65,6 +67,7 @@ const requests: Record<string, Deferred<unknown>[]> = {
   accounting: [],
   overview: [],
   portfolio: [],
+  portfolioMultiAssetCoverage: [],
   providerConnections: [],
   providerRoutingBindings: [],
   providerRoutingConnections: [],
@@ -94,6 +97,7 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getStrategyWorkspace).mockImplementation(() => track<StrategyWorkspaceResponse>("strategy"));
     vi.mocked(api.getTradingWorkspace).mockImplementation(() => track<TradingWorkspaceResponse>("trading"));
     vi.mocked(api.getPortfolioWorkspace).mockImplementation(() => track<PortfolioWorkspaceResponse>("portfolio"));
+    vi.mocked(api.getPortfolioMultiAssetCoverage).mockImplementation(() => track<MultiAssetCoverageSummary>("portfolioMultiAssetCoverage"));
     vi.mocked(api.getDataWorkspace).mockImplementation(() => track<DataWorkspaceResponse>("data"));
     vi.mocked(api.getAccountingWorkspace).mockImplementation(() => track<AccountingWorkspaceResponse>("accounting"));
     vi.mocked(api.getReportingWorkspace).mockImplementation(() => track<ReportingWorkspaceResponse>("reporting"));
@@ -199,6 +203,11 @@ describe("useWorkstationData", () => {
       resolveRequest<StrategyWorkspaceResponse>("strategy", 0, { marker: "strategy" } as unknown as StrategyWorkspaceResponse);
       resolveRequest<TradingWorkspaceResponse>("trading", 0, { marker: "trading" } as unknown as TradingWorkspaceResponse);
       resolveRequest<PortfolioWorkspaceResponse>("portfolio", 0, { marker: "portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<MultiAssetCoverageSummary>(
+        "portfolioMultiAssetCoverage",
+        0,
+        { marker: "portfolio coverage" } as unknown as MultiAssetCoverageSummary
+      );
       resolveRequest<DataWorkspaceResponse>("data", 0, { marker: "data" } as unknown as DataWorkspaceResponse);
       resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "accounting" } as unknown as AccountingWorkspaceResponse);
       resolveRequest<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
@@ -672,6 +681,11 @@ function resolveRefreshBatchWithIndexes({
   resolveRequest<StrategyWorkspaceResponse>("strategy", defaultIndex, { marker: `${marker} strategy` } as unknown as StrategyWorkspaceResponse);
   resolveRequest<TradingWorkspaceResponse>("trading", tradingIndex, { marker: `${marker} trading` } as unknown as TradingWorkspaceResponse);
   resolveRequest<PortfolioWorkspaceResponse>("portfolio", defaultIndex, { marker: `${marker} portfolio` } as unknown as PortfolioWorkspaceResponse);
+  resolveRequest<MultiAssetCoverageSummary>(
+    "portfolioMultiAssetCoverage",
+    defaultIndex,
+    { marker: `${marker} portfolio coverage` } as unknown as MultiAssetCoverageSummary
+  );
   resolveRequest<DataWorkspaceResponse>("data", defaultIndex, { marker: `${marker} data` } as unknown as DataWorkspaceResponse);
   resolveRequest<AccountingWorkspaceResponse>("accounting", defaultIndex, { marker: `${marker} accounting` } as unknown as AccountingWorkspaceResponse);
   resolveRequest<ReportingWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);

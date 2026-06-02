@@ -577,7 +577,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   Asset-class readiness is supplied by the shared portfolio coverage endpoint and rendered without Accounting-local rules.
                 </CardDescription>
               </div>
-              <Badge variant={multiAssetCoveragePanel.statusTone}>{multiAssetCoveragePanel.statusLabel}</Badge>
+              <Badge variant={multiAssetCoveragePanel.statusTone === "default" ? "outline" : multiAssetCoveragePanel.statusTone}>
+                {multiAssetCoveragePanel.statusLabel}
+              </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
