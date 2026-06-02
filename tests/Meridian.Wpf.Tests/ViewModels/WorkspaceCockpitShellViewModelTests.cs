@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.ViewModels;
 
@@ -12,11 +13,14 @@ public sealed class WorkspaceCockpitShellViewModelTests
 
         viewModel.CockpitDecisionItems.Select(static item => item.PrimaryActionId)
             .Should()
-            .Equal("AccountPortfolio", "FundAccounts", "PortfolioImport", "DirectLending");
+            .Equal("AccountPortfolio", "FundAccounts", "PortfolioImport", "MultiAssetCoverage", "DirectLending");
 
         viewModel.CockpitDecisionItems.Select(static item => item.Tone)
             .Should()
-            .Equal(WorkspaceTone.Info, WorkspaceTone.Success, WorkspaceTone.Warning, WorkspaceTone.Neutral);
+            .Equal(WorkspaceTone.Info, WorkspaceTone.Success, WorkspaceTone.Warning, WorkspaceTone.Warning, WorkspaceTone.Neutral);
+
+        viewModel.CockpitDecisionItems.Single(static item => item.PrimaryActionId == "MultiAssetCoverage")
+            .Detail.Should().Contain(UiApiRoutes.WorkstationPortfolioMultiAssetCoverage);
 
         viewModel.CockpitDecisionItems.Should().OnlyContain(static item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
