@@ -180,8 +180,8 @@ public sealed class AutoConfigurationService
         // Configure storage using profiles based on use case
         var storageProfile = options.UseCase switch
         {
-            UseCase.Development => StorageProfilePresets.DefaultProfile, // Research for dev
-            UseCase.Research => StorageProfilePresets.DefaultProfile, // Research
+            UseCase.Development => StorageProfilePresets.DefaultProfile,
+            UseCase.Strategy => StorageProfilePresets.DefaultProfile,
             UseCase.RealTimeTrading => "LowLatency", // Low latency for trading
             UseCase.Production => "Archival", // Archival for production
             _ => StorageProfilePresets.DefaultProfile
@@ -447,7 +447,7 @@ public sealed class AutoConfigurationService
             _log.Debug(ex, "Could not auto-detect storage space");
         }
 
-        // Use default profile (Research) instead of scattered individual defaults
+        // Use the default strategy profile instead of scattered individual defaults.
         config = config with
         {
             Storage = new StorageConfig(
@@ -776,7 +776,7 @@ public sealed class AutoConfigurationService
         new ConfigPresetInfo(ConfigPreset.Researcher, "Researcher",
             "Historical analysis, daily bars. Uses free backfill providers (Stooq/Yahoo), " +
             "BySymbol storage with Parquet export, no real-time streaming.",
-            new[] { "Stooq + Yahoo backfill", "BySymbol storage", "Research storage profile", "Parquet export enabled", "No real-time streaming" }),
+            new[] { "Stooq + Yahoo backfill", "BySymbol storage", "Default storage profile", "Parquet export enabled", "No real-time streaming" }),
         new ConfigPresetInfo(ConfigPreset.DayTrader, "Day Trader",
             "Real-time streaming with L2 depth data. Uses Alpaca streaming, " +
             "10 depth levels, JSONL hot storage, low-latency profile.",
@@ -987,7 +987,9 @@ public sealed record FirstTimeConfigOptions(
 public enum UseCase : byte
 {
     Development,
-    Research,
+    Strategy,
+    [Obsolete("Use Strategy. Research is retained only as a compatibility alias.")]
+    Research = Strategy,
     RealTimeTrading,
     BackfillOnly,
     Production

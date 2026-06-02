@@ -33,6 +33,14 @@ This layer persists durable state and evidence. It should expose storage seams w
 
 Use this module for persistence, replay evidence, storage maintenance, package import/export, and durable operator evidence.
 
+Storage profile presets preserve existing persisted identifiers. The default profile ID remains
+`Research` for compatibility, while APIs and operator surfaces display that preset as `Strategy`
+for historical analysis, backtesting, and paper-validation preparation.
+Policy-driven lifecycle management is active through `StorageOptions.Tiering`,
+`StoragePolicyConfig`, `LifecyclePolicyEngine`, `TierMigrationService`, and scheduled maintenance.
+The `Archival` preset configures the hot, warm, cold, and archive tier pipeline for long-retention
+evidence while preserving compatibility with existing storage profile identifiers.
+
 Ledger journal appends are fail-closed for instrument-bearing postings. Any journal line that
 targets securities, dividends, accrued interest, corporate actions, options, futures MTM, short
 securities, or a symbol-scoped ledger account must carry Security Master provenance plus approved
@@ -70,6 +78,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
+| `W5-ACCT-001` | Accounting records and operational evidence |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

@@ -37,8 +37,8 @@ UFL should be read as a shared capability and conformance framework first. Indiv
 | L1 | Canonical Terms | `SecurityKind`, terms, mapping, and validation exist. |
 | L2 | Reference Read | Stable DTOs or endpoints expose canonical reference data. |
 | L3 | Projection Safe | Rebuildable projections, checkpoints, lineage, and replay tests exist. |
-| L4 | Operational Workflow | Operator actions, approval/review, correction, and audit trail exist. |
-| L5 | Accounting/Reconciliation Integrated | Journals, period controls, reconciliation, and reporting evidence exist. |
+| L4 | Operational Workflow | operator actions, approval/review, correction, and audit trail exist |
+| L5 | Accounting/Reconciliation Integrated | journals, period controls, reconciliation, and reporting evidence exist |
 
 Use the [UFL Conformance Matrix](ufl-conformance-matrix.md) to track current and next maturity by asset. Use `partial` instead of rounding up when evidence is mixed.
 

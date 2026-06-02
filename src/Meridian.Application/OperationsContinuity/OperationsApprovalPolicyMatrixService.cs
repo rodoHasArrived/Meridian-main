@@ -200,7 +200,7 @@ public sealed class OperationsApprovalPolicyMatrixService : IOperationsApprovalP
                     "Closed workflow requires incident, justification, approval reference, and impact summary.",
                     nameof(UserPermission.AdminMaintenance),
                     "Governed administrator",
-                    "Governance approver",
+                    "Accounting control approver",
                     requiredDistinctApprovals: 1,
                     requiresIndependentReviewer: true,
                     requiresReportPack: false,

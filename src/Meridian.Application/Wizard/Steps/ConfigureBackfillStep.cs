@@ -68,7 +68,7 @@ public sealed class ConfigureBackfillStep : IWizardStep
             "\nEnable automatic provider rotation on rate limits", defaultValue: true, ct: ct);
 
         context.Backfill = new BackfillConfig(
-            Enabled: useCase is UseCase.BackfillOnly or UseCase.Research,
+            Enabled: useCase is UseCase.BackfillOnly or UseCase.Strategy,
             Provider: "composite",
             EnableFallback: true,
             EnableRateLimitRotation: enableRotation,

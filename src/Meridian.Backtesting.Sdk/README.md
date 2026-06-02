@@ -51,7 +51,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-BACKTESTING-SDK -->
 | Roadmap item | Title |
 | --- | --- |
-| `W5-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

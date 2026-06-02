@@ -24,8 +24,7 @@ The Meridian platform is organized into focused assemblies. Browse the namespace
 | **Meridian.Ledger** | Double-entry ledger: accounts, journal entries, and snapshots |
 | **Meridian.Ui.Services** | Shared UI service abstractions and base classes |
 | **Meridian.Ui.Shared** | HTTP endpoint registration helpers and shared UI services |
-| **Meridian.Mcp** | MCP server tools, resources, and prompts for AI tooling integration |
-| **Meridian.McpServer** | Standalone MCP server for market data, backfill, and symbol tools |
+| **Meridian.Mcp** | Stdio MCP host with tools, resources, and prompts for AI tooling integration |
 
 ## Key Extension Points
 

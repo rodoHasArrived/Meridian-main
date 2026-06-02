@@ -14,6 +14,7 @@ documents:
       - W2-TRD-001
       - W3-CONT-001
       - W4-RPT-001
+      - W5-ACCT-001
   - id: DOC-CURRENT-DIRECTION
     path: docs/product/README.md
     title: Current direction and status
@@ -23,6 +24,7 @@ documents:
       - W2-TRD-001
       - W4-RECON-001
       - W4-RPT-001
+      - W5-ACCT-001
   - id: DOC-AI-CONTRACT
     path: docs/ai/assistant-workflow-contract.md
     title: Assistant workflow contract
@@ -30,4 +32,4 @@ documents:
     owner_lane: Docs and Automation
     roadmap_items:
       - W2-TRD-001
-      - W6-LIVE-001
+      - W7-LIVE-001

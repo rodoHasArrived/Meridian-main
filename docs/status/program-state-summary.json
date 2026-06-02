@@ -2,7 +2,7 @@
   "schemaVersion": "program-state-summary/v2",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-05-20",
+  "snapshotDate": "2026-06-02",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
@@ -12,6 +12,8 @@
       "Trusted data",
       "Paper validation",
       "Books and reconciliation",
+      "Accounting records",
+      "Operational record keeping",
       "Approvals",
       "Governed reports"
     ],
@@ -99,8 +101,21 @@
       "Last Reviewed": "2026-05-29"
     },
     {
-      "ID": "W5-BTSTUDIO-001",
+      "ID": "W5-ACCT-001",
       "Wave": "W5",
+      "Title": "Accounting records and operational evidence",
+      "Workspaces": "Accounting; Reporting; Portfolio; Data",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Governance and Ledger",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
+      "Last Reviewed": "2026-06-02"
+    },
+    {
+      "ID": "W6-BTSTUDIO-001",
+      "Wave": "W6",
       "Title": "Backtesting studio evidence loop",
       "Workspaces": "Strategy",
       "Status": "planned",
@@ -109,11 +124,11 @@
       "Owner Lane": "Strategy and Research",
       "Evidence Posture": "planned_evidence",
       "Evidence": "",
-      "Last Reviewed": "2026-05-20"
+      "Last Reviewed": "2026-06-02"
     },
     {
-      "ID": "W6-LIVE-001",
-      "Wave": "W6",
+      "ID": "W7-LIVE-001",
+      "Wave": "W7",
       "Title": "Live-readiness governance",
       "Workspaces": "Trading; Settings",
       "Status": "planned",
@@ -122,7 +137,7 @@
       "Owner Lane": "Governance and Ledger",
       "Evidence Posture": "planned_evidence",
       "Evidence": "",
-      "Last Reviewed": "2026-05-20"
+      "Last Reviewed": "2026-06-02"
     }
   ]
 }

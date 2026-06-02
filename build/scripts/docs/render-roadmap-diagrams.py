@@ -15,7 +15,7 @@ def main() -> int:
     previous = None
     for item in sorted(items, key=lambda entry: entry.get("id", "")):
         node = item.get("id", "").replace("-", "_")
-        label = f"{item.get('id')}\\n{item.get('status')} / {item.get('health')}"
+        label = f"{item.get('id')}\\n{item.get('wave')} - {item.get('status')} / {item.get('health')}"
         lines.append(f'  {node}["{label}"]')
         if previous:
             lines.append(f"  {previous} --> {node}")

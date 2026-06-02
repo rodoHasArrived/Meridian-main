@@ -297,8 +297,8 @@ internal static class ProviderRoutingConfigExtensions
     [
         new ProviderPresetConfig(
             PresetId: "research-sandbox",
-            Name: "Research Sandbox",
-            Description: "Biases routing toward shared data vendors and safe failover for research workflows.",
+            Name: "Strategy Sandbox",
+            Description: "Biases routing toward shared data vendors and safe failover for strategy workflows.",
             Highlights: ["Shared market-data routing", "Health-aware failover", "Low operational risk"],
             IsBuiltIn: true),
         new ProviderPresetConfig(
@@ -311,7 +311,7 @@ internal static class ProviderRoutingConfigExtensions
             PresetId: "multi-broker-fund-ops",
             Name: "Multi-Broker Fund Ops",
             Description: "Strict account-bound routing for funds operating across many brokers and banks.",
-            Highlights: ["Account-scoped bindings", "Same-institution failover", "Governance-first posture"],
+            Highlights: ["Account-scoped bindings", "Same-institution failover", "Control-first posture"],
             IsBuiltIn: true)
     ];
 }

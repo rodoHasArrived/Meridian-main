@@ -21,7 +21,6 @@
             "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
             "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
             "src/Meridian.Mcp/Meridian.Mcp.csproj",
-            "src/Meridian.McpServer/Meridian.McpServer.csproj",
             "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
             "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj"
           ]

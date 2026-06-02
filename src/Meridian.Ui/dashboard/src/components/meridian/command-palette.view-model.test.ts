@@ -612,7 +612,7 @@ describe("command palette view model", () => {
         workflows: [
           {
             workflowId: "strategy-to-paper-review",
-            title: "Strategy to Paper Review",
+            title: "Research to Paper Review",
             summary: "Review strategy evidence before promotion.",
             workspaceId: "strategy",
             workspaceTitle: "Strategy",
@@ -640,8 +640,222 @@ describe("command palette view model", () => {
 
     expect(model.items.find((item) => item.id === "workflow:strategy-to-paper-review:workflow.evidence.open-packet")).toMatchObject({
       kind: "workflow",
+      description: "Research to Paper Review: Open the reusable evidence packet.",
+      ariaLabel: "Open Evidence Packet, Research to Paper Review",
       route: "/reporting/evidence",
       routeLabel: "/reporting/evidence"
+    });
+  });
+
+  it("routes the shared primary operator workflow sequence to canonical workstation surfaces", () => {
+    const model = buildCommandPaletteViewModel("/data", undefined, {
+      workflowLibrary: {
+        generatedAt: "2026-01-01T00:00:00Z",
+        actions: [],
+        workflows: [
+          {
+            workflowId: "primary-operator-workflow",
+            title: "Primary Operator Workflow",
+            summary: "Follow the design-document operating sequence from import through certified reporting.",
+            workspaceId: "data",
+            workspaceTitle: "Data",
+            entryPageTag: "DataShell",
+            tone: "Primary",
+            evidenceTags: ["source evidence"],
+            marketPatternTags: ["import validate reconcile"],
+            actions: [
+              {
+                actionId: "workflow.primary-operator.import",
+                label: "Import",
+                detail: "Bring provider, file, and account-source data into the active operating scope.",
+                targetPageTag: "DataShell",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.primary-operator.validate",
+                label: "Validate",
+                detail: "Check data quality, provider health, and backfill evidence before downstream use.",
+                targetPageTag: "Backfill",
+                tone: "Warning",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.primary-operator.reconcile",
+                label: "Reconcile",
+                detail: "Match source, ledger, cash, security, and position records with explainable breaks.",
+                targetPageTag: "FundReconciliation",
+                tone: "Warning",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.primary-operator.investigate",
+                label: "Investigate",
+                detail: "Review portfolio, strategy, and trading evidence behind exceptions or decisions.",
+                targetPageTag: "PortfolioShell",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.primary-operator.approve",
+                label: "Approve",
+                detail: "Capture accounting, control, and operations-continuity approvals with evidence.",
+                targetPageTag: "OperationsContinuity",
+                tone: "Warning",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.primary-operator.report",
+                label: "Report",
+                detail: "Publish governed report packs, exports, and stakeholder-ready evidence.",
+                targetPageTag: "FundReportPack",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    const workflowItems = model.items.filter((item) => item.id.startsWith("workflow:primary-operator-workflow:"));
+    expect(workflowItems.map((item) => [item.label, item.route])).toEqual([
+      ["Import", "/data"],
+      ["Validate", "/data/backfills"],
+      ["Reconcile", "/accounting/reconciliation"],
+      ["Investigate", "/portfolio"],
+      ["Approve", "/accounting/operations-continuity"],
+      ["Report", "/reporting/report-packs"]
+    ]);
+    expect(workflowItems.find((item) => item.label === "Reconcile")).toMatchObject({
+      description: "Primary Operator Workflow: Match source, ledger, cash, security, and position records with explainable breaks.",
+      ariaLabel: "Reconcile, Primary Operator Workflow",
+      statusLabel: "Review",
+      statusTone: "review"
+    });
+  });
+
+  it("routes the v0.15 accounting records workflow through shared canonical targets", () => {
+    const model = buildCommandPaletteViewModel("/accounting", undefined, {
+      workflowLibrary: {
+        generatedAt: "2026-01-01T00:00:00Z",
+        actions: [],
+        workflows: [
+          {
+            workflowId: "accounting-records-evidence-review",
+            title: "Accounting Records Evidence Review",
+            summary: "Review the v0.15 operational record from source data through report-pack lineage.",
+            workspaceId: "accounting",
+            workspaceTitle: "Accounting",
+            entryPageTag: "AccountingShell",
+            tone: "Warning",
+            evidenceTags: ["source records", "normalized activity", "reconciliation cases", "ledger evidence", "approvals", "report lineage"],
+            marketPatternTags: ["accounting records", "operational evidence", "restatement lineage"],
+            actions: [
+              {
+                actionId: "workflow.accounting-records.review-source-records",
+                label: "Review Source Records",
+                detail: "Inspect retained provider, file, and account-source records before accounting use.",
+                targetPageTag: "DataShell",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.accounting-records.review-normalized-activity",
+                label: "Review Normalized Activity",
+                detail: "Review normalized transactions, positions, balances, and activity for the active scope.",
+                targetPageTag: "PortfolioShell",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.accounting-records.review-reconciliation-cases",
+                label: "Review Reconciliation Cases",
+                detail: "Work retained reconciliation case history and explainable break evidence.",
+                targetPageTag: "FundReconciliation",
+                tone: "Warning",
+                workItemKind: "ReconciliationBreak",
+                routePrefixes: ["/api/reconciliation/break-queue"],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.accounting-records.review-ledger-evidence",
+                label: "Review Ledger Evidence",
+                detail: "Inspect journal, ledger, and trial-balance evidence linked to the accounting record.",
+                targetPageTag: "FundTrialBalance",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.accounting-records.review-approvals",
+                label: "Review Approval History",
+                detail: "Inspect close-package status, approval history, checklist controls, and retained evidence.",
+                targetPageTag: "OperationsContinuity",
+                tone: "Warning",
+                workItemKind: null,
+                routePrefixes: ["/api/workstation/operations/continuity"],
+                routeContains: [],
+                aliases: []
+              },
+              {
+                actionId: "workflow.accounting-records.review-report-lineage",
+                label: "Review Report Lineage",
+                detail: "Review report-pack publication, export, restatement, and retained evidence provenance.",
+                targetPageTag: "FundReportPack",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: [],
+                routeContains: [],
+                aliases: []
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    const workflowItems = model.items.filter((item) => item.id.startsWith("workflow:accounting-records-evidence-review:"));
+    expect(workflowItems.map((item) => [item.label, item.route])).toEqual([
+      ["Review Source Records", "/data"],
+      ["Review Normalized Activity", "/portfolio"],
+      ["Review Reconciliation Cases", "/accounting/reconciliation"],
+      ["Review Ledger Evidence", "/accounting/ledger"],
+      ["Review Approval History", "/accounting/operations-continuity"],
+      ["Review Report Lineage", "/reporting/report-packs"]
+    ]);
+    expect(workflowItems.find((item) => item.label === "Review Report Lineage")).toMatchObject({
+      description: "Accounting Records Evidence Review: Review report-pack publication, export, restatement, and retained evidence provenance.",
+      ariaLabel: "Review Report Lineage, Accounting Records Evidence Review",
+      statusLabel: "Ready",
+      statusTone: "ready"
     });
   });
 

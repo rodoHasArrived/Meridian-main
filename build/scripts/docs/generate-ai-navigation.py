@@ -300,21 +300,11 @@ PROJECT_SEEDS: dict[str, ProjectSeed] = {
     "Meridian.Mcp": ProjectSeed(
         "Meridian.Mcp",
         "mcp-integration",
-        "mcp-client",
-        "MCP client/host surface for interacting with Meridian capabilities.",
-        ("mcp client", "tooling surface", "prompt routing"),
-        ("mcp", "tools", "client"),
+        "mcp-host",
+        "Stdio MCP host exposing Meridian tools, prompts, and resources for AI tooling.",
+        ("mcp host", "new tool", "resource surface", "prompt integration"),
+        ("mcp", "stdio", "tools", "resources", "prompts"),
         ("src/Meridian.Mcp/Program.cs",),
-        ("Program.cs",),
-    ),
-    "Meridian.McpServer": ProjectSeed(
-        "Meridian.McpServer",
-        "mcp-integration",
-        "mcp-server",
-        "Attribute-driven MCP server exposing tools, prompts, and resources over stdio.",
-        ("mcp server", "new tool", "resource surface", "prompt integration"),
-        ("mcp", "server", "tools", "resources", "prompts"),
-        ("src/Meridian.McpServer/Program.cs",),
         ("Program.cs", "Tools", "Resources", "Prompts"),
     ),
 }
@@ -528,10 +518,10 @@ SYMBOL_CATALOG: list[dict[str, Any]] = [
     {
         "name": "Program",
         "kind": "mcp-entrypoint",
-        "path": "src/Meridian.McpServer/Program.cs",
-        "project": "Meridian.McpServer",
+        "path": "src/Meridian.Mcp/Program.cs",
+        "project": "Meridian.Mcp",
         "reason": "Registration point for MCP tools, resources, and prompts.",
-        "keywords": ["mcp", "server", "registration"],
+        "keywords": ["mcp", "stdio", "registration"],
     },
 ]
 
@@ -600,10 +590,10 @@ TASK_ROUTE_SEEDS: list[dict[str, Any]] = [
     {
         "id": "mcp-surface",
         "title": "MCP tools, prompts, and resources",
-        "description": "Use when adding or debugging MCP server behavior, prompt registration, or stdio tool/resource exposure.",
+        "description": "Use when adding or debugging MCP host behavior, prompt registration, or stdio tool/resource exposure.",
         "keywords": ["mcp", "tool", "resource", "prompt", "server"],
         "subsystems": ["mcp-integration"],
-        "startProjects": ["Meridian.McpServer", "Meridian.Mcp"],
+        "startProjects": ["Meridian.Mcp"],
         "startSymbols": ["Program"],
         "docs": [
             "docs/ai/navigation/README.md",

@@ -11,7 +11,8 @@ risks:
     owner_lane: Docs and Automation
     mitigation: Renderers write deterministic outputs and CI checks git diff after generation.
     related_roadmap_items:
-      - W6-LIVE-001
+      - W5-ACCT-001
+      - W7-LIVE-001
   - id: RISK-AI-DOC-SKIP-001
     title: AI agents change source without updating local README context
     status: open

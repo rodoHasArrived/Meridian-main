@@ -6,41 +6,41 @@
   "inputs": [
     {
       "path": "docs/roadmap/data/decision-log.yml",
-      "sha256": "63fcadc7409d1c9e136ff448d0316b18faccafb030d5e9f38b23bf2aaae1926e"
+      "sha256": "f292ce5a725950a2b2dd10c187cc34ea5e9992041a23bb943929ec2d89be97d0"
     },
     {
       "path": "docs/roadmap/data/document-index.yml",
-      "sha256": "9238cb8cb72b35beefd672042eaca4f3d2f4c75a42cf57fbf4bd5f87e1372ed8"
+      "sha256": "c362b26fc95d591a8b3eb9046858eb37e8ef7d093f25c06d04dd747cd956f77f"
     },
     {
       "path": "docs/roadmap/data/program-state.yml",
-      "sha256": "ffae4e7799209cc517ce5cbe42f3339aad1da16165099a7cbfa1bbdd8df3057e"
+      "sha256": "636fe7a62d888d3a4dfb8840ede418ad543a299b6faa85469f95d5b0bb081c29"
     },
     {
       "path": "docs/roadmap/data/risk-register.yml",
-      "sha256": "a00f5bfd99bd2023f959b17fb5a06247b33a147cc51142c21ea4f6579ec13a40"
+      "sha256": "094a87a2ab04ddaa00f7d44480a08f43f42ca6d2d5d6158ac30298b7a36972eb"
     },
     {
       "path": "docs/roadmap/data/roadmap-items.yml",
-      "sha256": "ac7b8739f7281d0dc57e9cf8762755b117b9521a7c080f964363a1152dc88f84"
+      "sha256": "35042bd85d82e06bb344bf5208eb2b526f8187c9573579188132a3de1927a777"
     },
     {
       "path": "docs/roadmap/data/stage-gates.yml",
-      "sha256": "4cfc8275be222621cc2b7f7c0c48fff3a9d87d72de0f33febdf925b03f37516a"
+      "sha256": "4febc1df41acc9119078539abb2837d175d86e964f705e4ad7bc336c36da2c36"
     }
   ],
   "outputs": [
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "sha256": "bab14d68ae71104aa3116c22569f5df3c61117ee03f98a28cb1edf052280c60b"
+      "sha256": "f6e6b8d4f8cda23a85a1b57e457f6ef9023f623f4ad83d7b2168aa8ad5a74cf8"
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "sha256": "b51fde928c638db5d8fbe947d81aff667decb7d74ccdb58a42598f45d140e347"
+      "sha256": "96749b660992c147d838dc415d8b1b579230ece66422f803f6737b668950c5c2"
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
-      "sha256": "2235f441be48f4758ee1a771f3e6479099c46f6e5ddc73eff1bce7ba9c70bf63"
+      "sha256": "96749b660992c147d838dc415d8b1b579230ece66422f803f6737b668950c5c2"
     }
   ],
   "schema": {

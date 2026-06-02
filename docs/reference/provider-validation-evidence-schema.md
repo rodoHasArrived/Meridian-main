@@ -49,7 +49,7 @@ This document defines the fixed automation artifact contract emitted under:
 
 Promotion beyond DK1 requires valid sign-off entries in `dk1-operator-signoff.json` for:
 
-- Data Operations
+- Data
 - Provider Reliability
 - Trading
 

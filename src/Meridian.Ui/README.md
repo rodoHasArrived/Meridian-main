@@ -38,7 +38,8 @@ The dashboard Accounting Closeout trail also mirrors the design-document Financi
 The browser Accounting screen renders that same lane above its detailed closeout panels.
 Browser navigation and command-palette root commands canonicalize supplied workspace metadata to
 `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` so legacy
-root names stay compatibility aliases.
+root names stay compatibility aliases. App-shell evidence timeline labels follow the same rule when
+overview events arrive with retained source names.
 
 ## Diagrams
 

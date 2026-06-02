@@ -22,6 +22,23 @@ public sealed class ProviderRoutingServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ProviderPresetService_GetPresetsAsync_UsesCanonicalVisibleLabelsForBuiltInAliases()
+    {
+        var service = new ProviderPresetService(new ConfigStore(_configPath));
+
+        var presets = await service.GetPresetsAsync();
+
+        var strategySandbox = presets.Should().ContainSingle(preset => preset.PresetId == "research-sandbox").Subject;
+        strategySandbox.Name.Should().Be("Strategy Sandbox");
+        strategySandbox.Description.Should().Contain("strategy workflows");
+        strategySandbox.Description.Should().NotContain("research workflows");
+
+        var fundOps = presets.Should().ContainSingle(preset => preset.PresetId == "multi-broker-fund-ops").Subject;
+        fundOps.Highlights.Should().Contain("Control-first posture");
+        fundOps.Highlights.Should().NotContain("Governance-first posture");
+    }
+
+    [Fact]
     public async Task RouteAsync_PrefersAccountBindingOverWorkspaceAndGlobal()
     {
         var accountId = Guid.NewGuid();

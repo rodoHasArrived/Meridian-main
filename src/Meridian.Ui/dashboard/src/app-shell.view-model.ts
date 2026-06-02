@@ -1114,7 +1114,7 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   },
   {
     id: "strategy-to-paper",
-    title: "Strategy To Paper",
+    title: "Research To Paper",
     summary: "Keep Strategy comparison, strategy design, backtest evidence, paper-session readiness, portfolio impact, and audit packet review connected.",
     steps: [
       {
@@ -2710,9 +2710,10 @@ function buildOverviewEvidenceTimelineItems({ payload }: WorkflowContinuityStatu
   return (payload.overview?.recentEvents ?? [])
     .map((event, index) => {
       const route = routeForSystemEvent(event.source);
+      const sourceLabel = labelForSystemEventSource(event.source);
       return buildEvidenceTimelineCandidate({
         id: `overview-event:${event.id}`,
-        label: `${event.source} ${event.type}`,
+        label: `${sourceLabel} ${event.type}`,
         detail: event.message,
         route,
         workspaceLabel: workspaceLabelForRoute(route),
@@ -3047,6 +3048,23 @@ function routeForSystemEvent(source: string): string {
   }
 
   return WORKSTATION_ROUTE_CATALOG.settingsBackendCapabilityCoverage;
+}
+
+function labelForSystemEventSource(source: string): string {
+  const normalized = source.trim().toLowerCase();
+  if (normalized === "research") {
+    return "Strategy";
+  }
+
+  if (normalized === "data operations") {
+    return "Data";
+  }
+
+  if (normalized === "governance") {
+    return "Accounting";
+  }
+
+  return source;
 }
 
 function dedupeEvidenceTimelineCandidates(candidates: EvidenceTimelineCandidate[]): EvidenceTimelineCandidate[] {

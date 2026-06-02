@@ -27,7 +27,7 @@ public sealed class SelectUseCaseStep : IWizardStep
         _output.WriteLine("----------------------------------------");
         _output.WriteLine("\nHow will you use Meridian?\n");
         _output.WriteLine("  1. Development/Testing - Local development with sample data");
-        _output.WriteLine("  2. Research - Historical data analysis and backtesting");
+        _output.WriteLine("  2. Strategy - Historical analysis, backtesting, and paper-validation preparation");
         _output.WriteLine("  3. Real-Time Trading - Live market data streaming");
         _output.WriteLine("  4. Backfill Only - Historical data collection only");
         _output.WriteLine("  5. Production - Full production deployment");
@@ -37,7 +37,7 @@ public sealed class SelectUseCaseStep : IWizardStep
         context.SelectedUseCase = choice switch
         {
             1 => UseCase.Development,
-            2 => UseCase.Research,
+            2 => UseCase.Strategy,
             3 => UseCase.RealTimeTrading,
             4 => UseCase.BackfillOnly,
             5 => UseCase.Production,

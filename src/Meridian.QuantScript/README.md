@@ -38,7 +38,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | Roadmap item | Title |
 | --- | --- |
 | `W3-CONT-001` | Research to paper continuity |
-| `W5-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

@@ -7,12 +7,14 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-05-20
+  snapshot_date: 2026-06-02
   status: active
   current_focus:
     - Trusted data
     - Paper validation
     - Books and reconciliation
+    - Accounting records
+    - Operational record keeping
     - Approvals
     - Governed reports
   active_ui_lane: browser_workstation

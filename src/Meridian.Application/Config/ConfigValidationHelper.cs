@@ -216,7 +216,7 @@ public sealed class StorageConfigValidator : AbstractValidator<StorageConfig>
         {
             RuleFor(x => x.Profile!)
                 .Must(BeValidProfile)
-                .WithMessage("Profile must be one of: Research, LowLatency, Archival");
+                .WithMessage("Profile must be one of: Strategy (stored id Research), LowLatency, Archival");
         });
     }
 

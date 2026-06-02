@@ -1,16 +1,18 @@
 flowchart LR
-  W1_DATA_001["W1-DATA-001\ndone / green"]
-  W2_PROMO_001["W2-PROMO-001\ndone / green"]
+  W1_DATA_001["W1-DATA-001\nW1 - done / green"]
+  W2_PROMO_001["W2-PROMO-001\nW2 - done / green"]
   W1_DATA_001 --> W2_PROMO_001
-  W2_TRD_001["W2-TRD-001\ndone / green"]
+  W2_TRD_001["W2-TRD-001\nW2 - done / green"]
   W2_PROMO_001 --> W2_TRD_001
-  W3_CONT_001["W3-CONT-001\ndone / green"]
+  W3_CONT_001["W3-CONT-001\nW3 - done / green"]
   W2_TRD_001 --> W3_CONT_001
-  W4_RECON_001["W4-RECON-001\ndone / green"]
+  W4_RECON_001["W4-RECON-001\nW4 - done / green"]
   W3_CONT_001 --> W4_RECON_001
-  W4_RPT_001["W4-RPT-001\ndone / green"]
+  W4_RPT_001["W4-RPT-001\nW4 - done / green"]
   W4_RECON_001 --> W4_RPT_001
-  W5_BTSTUDIO_001["W5-BTSTUDIO-001\nplanned / green"]
-  W4_RPT_001 --> W5_BTSTUDIO_001
-  W6_LIVE_001["W6-LIVE-001\nplanned / green"]
-  W5_BTSTUDIO_001 --> W6_LIVE_001
+  W5_ACCT_001["W5-ACCT-001\nW5 - planned / green"]
+  W4_RPT_001 --> W5_ACCT_001
+  W6_BTSTUDIO_001["W6-BTSTUDIO-001\nW6 - planned / green"]
+  W5_ACCT_001 --> W6_BTSTUDIO_001
+  W7_LIVE_001["W7-LIVE-001\nW7 - planned / green"]
+  W6_BTSTUDIO_001 --> W7_LIVE_001

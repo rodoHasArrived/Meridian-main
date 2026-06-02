@@ -155,7 +155,7 @@ React renders that flow as status copy only; credential validation, routing, sto
 state remain server/shared-service responsibilities.
 The app shell workflow-continuity dock now also projects the design-document primary operator
 workflow as a browser-wide strip: `Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and
-`Report`. Route-specific trails such as Market Data To Paper or Accounting Closeout remain intact,
+`Report`. Route-specific trails such as Market Data To Paper, Research To Paper, or Accounting Closeout remain intact,
 while the primary strip anchors every workspace to the financial-operations flow.
 Accounting Closeout also exposes the design-document Financial Operations lane directly:
 `Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
@@ -166,7 +166,8 @@ browser component routing should use Accounting naming.
 Workspace navigation and command-palette root commands canonicalize caller-provided workspace
 metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, `Reporting`,
 `Strategy`, `Data`, and `Settings`. Legacy root labels such as `Research`, `Governance`, and
-`Data Operations` remain route aliases and internal compatibility concepts only.
+`Data Operations` remain route aliases and internal compatibility concepts only. App-shell overview
+event labels also normalize retained source names before entering the visible evidence timeline.
 
 ## Diagrams
 
@@ -181,6 +182,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
+| `W5-ACCT-001` | Accounting records and operational evidence |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

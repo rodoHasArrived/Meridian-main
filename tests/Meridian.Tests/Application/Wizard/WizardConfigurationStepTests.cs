@@ -11,6 +11,22 @@ namespace Meridian.Tests.Application.Wizard;
 public sealed class WizardConfigurationStepTests
 {
     [Fact]
+    public async Task SelectUseCaseStep_ExecuteAsync_PresentsStrategyUseCaseAndStoresCanonicalValue()
+    {
+        var output = new StringWriter();
+        var input = new StringReader($"2{Environment.NewLine}");
+        var step = new SelectUseCaseStep(output, input);
+        var context = new WizardContext();
+
+        var result = await step.ExecuteAsync(context, CancellationToken.None);
+
+        result.Status.Should().Be(WizardStepStatus.Success);
+        context.SelectedUseCase.Should().Be(UseCase.Strategy);
+        output.ToString().Should().Contain("Strategy - Historical analysis, backtesting, and paper-validation preparation");
+        output.ToString().Should().NotContain("Research - Historical data analysis and backtesting");
+    }
+
+    [Fact]
     public async Task ReviewConfigurationStep_ExecuteAsync_RendersJsonUsingSharedAppConfigOptions()
     {
         var output = new StringWriter();

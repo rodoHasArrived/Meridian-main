@@ -38,7 +38,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | Roadmap item | Title |
 | --- | --- |
 | `W2-TRD-001` | Paper trading cockpit reliability |
-| `W6-LIVE-001` | Live-readiness governance |
+| `W7-LIVE-001` | Live-readiness governance |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

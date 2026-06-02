@@ -12,9 +12,111 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
         =>
         [
             new WorkflowDefinitionDto(
+                WorkflowId: "primary-operator-workflow",
+                Title: "Primary Operator Workflow",
+                Summary: "Follow the design-document operating sequence from import through certified reporting.",
+                WorkspaceId: "data",
+                WorkspaceTitle: "Data",
+                EntryPageTag: "DataShell",
+                Tone: "Primary",
+                Actions:
+                [
+                    Action(
+                        WorkflowActionIds.PrimaryOperatorImport,
+                        "Import",
+                        "Bring provider, file, and account-source data into the active operating scope.",
+                        "DataShell",
+                        "Primary"),
+                    Action(
+                        WorkflowActionIds.PrimaryOperatorValidate,
+                        "Validate",
+                        "Check data quality, provider health, and backfill evidence before downstream use.",
+                        "Backfill",
+                        "Warning"),
+                    Action(
+                        WorkflowActionIds.PrimaryOperatorReconcile,
+                        "Reconcile",
+                        "Match source, ledger, cash, security, and position records with explainable breaks.",
+                        "FundReconciliation",
+                        "Warning"),
+                    Action(
+                        WorkflowActionIds.PrimaryOperatorInvestigate,
+                        "Investigate",
+                        "Review portfolio, strategy, and trading evidence behind exceptions or decisions.",
+                        "PortfolioShell",
+                        "Primary"),
+                    Action(
+                        WorkflowActionIds.PrimaryOperatorApprove,
+                        "Approve",
+                        "Capture accounting, control, and operations-continuity approvals with evidence.",
+                        "OperationsContinuity",
+                        "Warning"),
+                    Action(
+                        WorkflowActionIds.PrimaryOperatorReport,
+                        "Report",
+                        "Publish governed report packs, exports, and stakeholder-ready evidence.",
+                        "FundReportPack",
+                        "Primary")
+                ],
+                EvidenceTags: ["source evidence", "validation posture", "break explanations", "approval trail", "report lineage"],
+                MarketPatternTags: ["import validate reconcile", "investigate approve report", "primary operator workflow"]),
+
+            new WorkflowDefinitionDto(
+                WorkflowId: "accounting-records-evidence-review",
+                Title: "Accounting Records Evidence Review",
+                Summary: "Review the v0.15 operational record from source data through report-pack lineage.",
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
+                EntryPageTag: "AccountingShell",
+                Tone: "Warning",
+                Actions:
+                [
+                    Action(
+                        WorkflowActionIds.AccountingRecordsReviewSourceRecords,
+                        "Review Source Records",
+                        "Inspect retained provider, file, and account-source records before accounting use.",
+                        "DataShell",
+                        "Primary"),
+                    Action(
+                        WorkflowActionIds.AccountingRecordsReviewNormalizedActivity,
+                        "Review Normalized Activity",
+                        "Review normalized transactions, positions, balances, and activity for the active scope.",
+                        "PortfolioShell",
+                        "Primary"),
+                    Action(
+                        WorkflowActionIds.AccountingRecordsReviewReconciliationCases,
+                        "Review Reconciliation Cases",
+                        "Work retained reconciliation case history and explainable break evidence.",
+                        "FundReconciliation",
+                        "Warning",
+                        workItemKind: OperatorWorkItemKindDto.ReconciliationBreak,
+                        routePrefixes: [UiApiRoutes.ReconciliationBreakQueue]),
+                    Action(
+                        WorkflowActionIds.AccountingRecordsReviewLedgerEvidence,
+                        "Review Ledger Evidence",
+                        "Inspect journal, ledger, and trial-balance evidence linked to the accounting record.",
+                        "FundTrialBalance",
+                        "Primary"),
+                    Action(
+                        WorkflowActionIds.AccountingRecordsReviewApprovals,
+                        "Review Approval History",
+                        "Inspect close-package status, approval history, checklist controls, and retained evidence.",
+                        "OperationsContinuity",
+                        "Warning"),
+                    Action(
+                        WorkflowActionIds.AccountingRecordsReviewReportLineage,
+                        "Review Report Lineage",
+                        "Review report-pack publication, export, restatement, and retained evidence provenance.",
+                        "FundReportPack",
+                        "Primary")
+                ],
+                EvidenceTags: ["source records", "normalized activity", "reconciliation cases", "ledger evidence", "approvals", "report lineage"],
+                MarketPatternTags: ["accounting records", "operational evidence", "close package", "restatement lineage"]),
+
+            new WorkflowDefinitionDto(
                 WorkflowId: "strategy-to-paper-review",
-                Title: "Strategy to Paper Review",
-                Summary: "Create or review strategy evidence, then hand a candidate to Trading.",
+                Title: "Research to Paper Review",
+                Summary: "Create or review strategy research evidence, then hand a candidate to Trading.",
                 WorkspaceId: "strategy",
                 WorkspaceTitle: "Strategy",
                 EntryPageTag: "StrategyShell",
@@ -63,7 +165,7 @@ public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvi
                         routePrefixes: [UiApiRoutes.WorkstationEvidenceSubjectExportManifest])
                 ],
                 EvidenceTags: ["run history", "promotion state", "portfolio coverage", "ledger coverage"],
-                MarketPatternTags: ["strategy to backtest", "backtest to paper handoff", "review queue"]),
+                MarketPatternTags: ["research to backtest", "backtest to paper handoff", "review queue"]),
 
             new WorkflowDefinitionDto(
                 WorkflowId: "paper-trading-readiness",

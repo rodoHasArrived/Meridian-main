@@ -57,7 +57,7 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 | --- | --- |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
-| `W6-LIVE-001` | Live-readiness governance |
+| `W7-LIVE-001` | Live-readiness governance |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

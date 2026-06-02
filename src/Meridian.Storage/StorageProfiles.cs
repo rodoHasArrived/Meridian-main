@@ -22,7 +22,7 @@ public static class StorageProfilePresets
 {
     /// <summary>
     /// Default storage profile when none is specified.
-    /// Research profile provides balanced defaults suitable for most use cases.
+    /// The retained Research profile ID provides balanced defaults for strategy use cases.
     /// </summary>
     public const string DefaultProfile = "Research";
 
@@ -30,8 +30,8 @@ public static class StorageProfilePresets
     {
         new StorageProfilePreset(
             Id: "Research",
-            Label: "Research",
-            Description: "Balanced defaults for analysis workflows (manifests + compression).",
+            Label: "Strategy",
+            Description: "Balanced defaults for strategy analysis workflows (manifests + compression).",
             Apply: options => new StorageOptions
             {
                 RootPath = options.RootPath,
@@ -108,7 +108,7 @@ public static class StorageProfilePresets
 
     /// <summary>
     /// Applies a storage profile to the given options.
-    /// If no profile is specified, applies the default profile (Research).
+    /// If no profile is specified, applies the default strategy profile.
     /// </summary>
     /// <param name="profile">Profile ID, or null/empty to use default.</param>
     /// <param name="options">Base storage options to apply profile to.</param>

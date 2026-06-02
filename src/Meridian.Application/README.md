@@ -126,6 +126,9 @@ and UI presentation concerns in their owning layers.
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
+The interactive configuration wizard presents historical analysis and backtesting as the canonical
+`Strategy` use case while retaining the older `Research` enum member only as a compatibility alias.
+
 ## API contract notes
 
 - Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.

@@ -12,7 +12,7 @@ decisions:
     summary: Roadmap YAML, source YAML, source READMEs, deterministic generated docs, and AI instructions form one synchronized documentation system.
     related_roadmap_items:
       - W2-TRD-001
-      - W6-LIVE-001
+      - W7-LIVE-001
   - id: DEC-UI-LANE-001
     title: Browser and desktop workstations are active UI lanes
     status: accepted

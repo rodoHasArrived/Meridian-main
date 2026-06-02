@@ -1,4 +1,4 @@
-# Research Briefing Workflow
+# Strategy Briefing Compatibility Redirect
 
 This page is a retained compatibility redirect.
 

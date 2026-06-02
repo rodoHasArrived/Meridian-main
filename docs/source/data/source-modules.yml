@@ -15,7 +15,7 @@ modules:
     roadmap_items:
       - W1-DATA-001
       - W2-TRD-001
-      - W6-LIVE-001
+      - W7-LIVE-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -64,11 +64,13 @@ modules:
       - W3-CONT-001
       - W4-RECON-001
       - W4-RPT-001
+      - W5-ACCT-001
     stage_gates:
       - DataConfidence
       - PaperSession
       - PortfolioLedgerReview
       - GovernedReportPack
+      - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
@@ -88,7 +90,7 @@ modules:
     roadmap_items:
       - W1-DATA-001
       - W2-TRD-001
-      - W6-LIVE-001
+      - W7-LIVE-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -133,7 +135,7 @@ modules:
     readme: src/Meridian.ProviderSdk/README.md
     roadmap_items:
       - W1-DATA-001
-      - W6-LIVE-001
+      - W7-LIVE-001
     stage_gates:
       - DataConfidence
       - LiveReadiness
@@ -155,7 +157,7 @@ modules:
     roadmap_items:
       - W1-DATA-001
       - W2-TRD-001
-      - W6-LIVE-001
+      - W7-LIVE-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -180,11 +182,13 @@ modules:
       - W2-TRD-001
       - W4-RECON-001
       - W4-RPT-001
+      - W5-ACCT-001
     stage_gates:
       - DataConfidence
       - PaperSession
       - PortfolioLedgerReview
       - GovernedReportPack
+      - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
@@ -203,7 +207,7 @@ modules:
     roadmap_items:
       - W2-TRD-001
       - W2-PROMO-001
-      - W6-LIVE-001
+      - W7-LIVE-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -225,7 +229,7 @@ modules:
     readme: src/Meridian.Execution.Sdk/README.md
     roadmap_items:
       - W2-TRD-001
-      - W6-LIVE-001
+      - W7-LIVE-001
     stage_gates:
       - PaperSession
       - LiveReadiness
@@ -246,7 +250,7 @@ modules:
     readme: src/Meridian.Risk/README.md
     roadmap_items:
       - W2-TRD-001
-      - W6-LIVE-001
+      - W7-LIVE-001
     stage_gates:
       - PaperSession
       - LiveReadiness
@@ -268,7 +272,7 @@ modules:
     roadmap_items:
       - W2-PROMO-001
       - W3-CONT-001
-      - W5-BTSTUDIO-001
+      - W6-BTSTUDIO-001
     stage_gates:
       - PromotionReview
       - ResearchContinuity
@@ -290,7 +294,7 @@ modules:
     readme: src/Meridian.Backtesting/README.md
     roadmap_items:
       - W3-CONT-001
-      - W5-BTSTUDIO-001
+      - W6-BTSTUDIO-001
     stage_gates:
       - ResearchContinuity
       - BacktestingEvidence
@@ -310,7 +314,7 @@ modules:
     purpose: SDK surface for backtesting and simulation integrations.
     readme: src/Meridian.Backtesting.Sdk/README.md
     roadmap_items:
-      - W5-BTSTUDIO-001
+      - W6-BTSTUDIO-001
     stage_gates:
       - BacktestingEvidence
     validation:
@@ -351,7 +355,7 @@ modules:
     readme: src/Meridian.FSharp/README.md
     roadmap_items:
       - W3-CONT-001
-      - W5-BTSTUDIO-001
+      - W6-BTSTUDIO-001
     stage_gates:
       - ResearchContinuity
       - BacktestingEvidence
@@ -435,7 +439,7 @@ modules:
     readme: src/Meridian.QuantScript/README.md
     roadmap_items:
       - W3-CONT-001
-      - W5-BTSTUDIO-001
+      - W6-BTSTUDIO-001
     stage_gates:
       - ResearchContinuity
       - BacktestingEvidence
@@ -455,7 +459,7 @@ modules:
     purpose: Minimal MCP host surface for Meridian tools, prompts, and resources.
     readme: src/Meridian.Mcp/README.md
     roadmap_items:
-      - W6-LIVE-001
+      - W7-LIVE-001
     stage_gates:
       - LiveReadiness
     validation:
@@ -519,11 +523,13 @@ modules:
       - W3-CONT-001
       - W4-RECON-001
       - W4-RPT-001
+      - W5-ACCT-001
     stage_gates:
       - PaperSession
       - PromotionReview
       - PortfolioLedgerReview
       - GovernedReportPack
+      - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
     diagrams:
@@ -544,10 +550,12 @@ modules:
       - W2-TRD-001
       - W4-RECON-001
       - W4-RPT-001
+      - W5-ACCT-001
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
       - GovernedReportPack
+      - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
@@ -568,10 +576,12 @@ modules:
       - W2-TRD-001
       - W2-PROMO-001
       - W3-CONT-001
+      - W5-ACCT-001
     stage_gates:
       - PaperSession
       - PromotionReview
       - ResearchContinuity
+      - AccountingRecords
     validation:
       - npm --prefix src/Meridian.Ui/dashboard run test
       - npm --prefix src/Meridian.Ui/dashboard run build
@@ -593,9 +603,11 @@ modules:
     roadmap_items:
       - W4-RECON-001
       - W4-RPT-001
+      - W5-ACCT-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
+      - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
     diagrams:

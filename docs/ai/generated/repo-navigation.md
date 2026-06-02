@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-01T22:40:31Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-02T01:18:43Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -12,7 +12,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 | Browser workstation and dashboard UI issues | `Meridian.Ui.Dashboard`, `Meridian.Ui.Services`, `Meridian.Ui.Shared` | `docs/ai/navigation/README.md`, `docs/ai/ai-known-errors.md` |
 | WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/plans/trading-workstation-migration-blueprint.md`, `docs/ai/ai-known-errors.md` |
 | Storage and WAL investigations | `Meridian.Storage`, `Meridian.Application` | `docs/ai/claude/CLAUDE.storage.md`, `docs/ai/ai-known-errors.md` |
-| MCP tools, prompts, and resources | `Meridian.McpServer`, `Meridian.Mcp` | `docs/ai/navigation/README.md`, `docs/ai/README.md` |
+| MCP tools, prompts, and resources | `Meridian.Mcp` | `docs/ai/navigation/README.md`, `docs/ai/README.md` |
 
 ## Subsystems
 
@@ -81,7 +81,7 @@ Core domain rules, F# interop, ledger logic, and direct lending aggregates.
 MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LLMs.
 
 - Projects: `Meridian.Mcp`
-- Entrypoints: `src/Meridian.Mcp/Program.cs`
+- Entrypoints: `src/Meridian.Mcp/Program.cs`, `src/Meridian.Mcp/Prompts`, `src/Meridian.Mcp/Resources`, `src/Meridian.Mcp/Tools`
 - Key contracts: `src/Meridian.Mcp/Program.cs`
 - Common tasks: mcp work, new mcp tool, resource routing
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`
@@ -100,6 +100,7 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | `IRiskRule` | interface | `Meridian.Risk` | Key contract for pre-trade risk validation work. |
 | `IStrategyLifecycle` | interface | `Meridian.Strategies` | Primary lifecycle abstraction for strategy run work. |
 | `MainWindow` | wpf-shell | `Meridian.Wpf` | Desktop shell entrypoint for WPF workflow and navigation issues. |
+| `Program` | mcp-entrypoint | `Meridian.Mcp` | Registration point for MCP tools, resources, and prompts. |
 
 ## Dependency Highlights
 
@@ -132,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 53 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 51 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `5f46af969` (2026-06-01T12:04:35-07:00) | 44 |
-| `src/Meridian.Application/README.md` | Host and Composition | `5f46af969` (2026-06-01T12:04:35-07:00) | 38 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 37 |
-| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 30 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 30 |
-| `src/Meridian.Contracts/Api/UiApiRoutes.cs` | Host and Composition | `5f46af969` (2026-06-01T12:04:35-07:00) | 29 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 26 |
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `5f46af969` (2026-06-01T12:04:35-07:00) | 20 |
-| `src/Meridian.Ui/dashboard/src/lib/api.ts` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 20 |
-| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 17 |
-| `src/Meridian.Ui.Services/README.md` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 15 |
-| `src/Meridian.Ui/dashboard/src/app.test.tsx` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 15 |
-| `src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.test.ts` | Desktop and UI Workflows | `5f46af969` (2026-06-01T12:04:35-07:00) | 14 |
+| `src/Meridian.Wpf/ViewModels/DataBrowserViewModel.cs` | Desktop and UI Workflows | `52ac3cfc0` (2026-06-01T20:28:53Z) | 3 |
+| `src/Meridian.Application/FundStructure/FundStructurePolicyService.cs` | Host and Composition | `b53ea3b9b` (2026-06-01T20:28:08Z) | 6 |
+| `src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs` | Desktop and UI Workflows | `b53ea3b9b` (2026-06-01T20:28:08Z) | 3 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 54 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 52 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 45 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 31 |
+| `src/Meridian.Contracts/Api/UiApiRoutes.cs` | Host and Composition | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 30 |
+| `src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 30 |
+| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 27 |
+| `src/Meridian.Ui/dashboard/src/lib/api.ts` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 21 |
+| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 18 |
+| `src/Meridian.Ui/dashboard/src/app.test.tsx` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 16 |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | Execution, Risk, and Strategies | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 15 |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.ts` | Desktop and UI Workflows | `214ae1bd0` (2026-06-01T16:47:33-07:00) | 12 |
 

@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-05-20
+Snapshot date: 2026-06-02
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -189,20 +189,50 @@ Closed in the 2026-05-29 W4 evidence slice through governed report-pack workflow
 - `SRC-UI-SHARED`
 - `SRC-WPF`
 
-## W5-BTSTUDIO-001 - Backtesting studio evidence loop
+## W5-ACCT-001 - Accounting records and operational evidence
 | Field | Value |
 | --- | --- |
 | Wave | W5 |
 | Status | planned |
 | Health | green |
-| Priority | medium |
-| Owner lane | Strategy and Research |
+| Priority | high |
+| Owner lane | Governance and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-05-20 |
+| Last reviewed | 2026-06-02 |
 
 ### Current Summary
 
-Backtesting studio work remains downstream of paper-session and research continuity readiness.
+v0.15 deepens accounting, reconciliation, and record-keeping functionality by linking retained source records, normalized activity, reconciliation cases, journal and ledger evidence, approval history, document attachments, report packs, exports, and restatement lineage into audit-ready operational records.
+
+### Exit Criteria
+
+- Accounting record summaries show retained source data, normalized transactions or positions, reconciliation case history, ledger evidence, approvals, and report-pack links.
+- Close-package status and audit/provenance timelines are operator-visible through shared read models consumed by browser and WPF surfaces where each surface participates.
+- Report-pack exports and restatements retain source evidence, approval state, and publication provenance.
+- Documentation identifies Backtesting Studio as deferred and v0.15 as the accounting records and operational evidence release package.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-UI-SERVICES`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W6-BTSTUDIO-001 - Backtesting studio evidence loop
+| Field | Value |
+| --- | --- |
+| Wave | W6 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Strategy and Research |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-06-02 |
+
+### Current Summary
+
+Backtesting studio work is deferred behind the v0.15 accounting records and operational evidence package so Meridian first deepens its system-of-record posture for books, close, retained evidence, and audit-ready reporting.
 
 ### Exit Criteria
 
@@ -215,20 +245,20 @@ Backtesting studio work remains downstream of paper-session and research continu
 - `SRC-APP`
 - `SRC-CONTRACTS`
 
-## W6-LIVE-001 - Live-readiness governance
+## W7-LIVE-001 - Live-readiness governance
 | Field | Value |
 | --- | --- |
-| Wave | W6 |
+| Wave | W7 |
 | Status | planned |
 | Health | green |
 | Priority | medium |
 | Owner lane | Governance and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-05-20 |
+| Last reviewed | 2026-06-02 |
 
 ### Current Summary
 
-Live-readiness remains gated by trusted data, paper validation, reconciliation, and governed reporting evidence.
+Live-readiness remains gated by trusted data, paper validation, reconciliation, governed reporting evidence, and the v0.15 accounting records package.
 
 ### Exit Criteria
 

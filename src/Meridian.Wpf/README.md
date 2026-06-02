@@ -65,6 +65,9 @@ Shared evidence workflow target routing is also explicit: `EvidenceWorkbench` re
 Fund Audit Trail surface while the browser resolves the same shared tag to `/reporting/evidence`.
 The route-registry parity test covers all built-in workflow entry and action target tags so shared
 workflow catalog updates cannot silently become browser-only or desktop-only.
+The WPF workflow library also projects the shared v0.15 `Accounting Records Evidence Review`
+workflow, preserving the source-record, normalized-activity, reconciliation-case, ledger-evidence,
+approval-history, and report-lineage action sequence from the shared catalog.
 Shared workstation affordance primitives under `Workstation/Models` and `Workstation/Controls`
 standardize action posture, readiness tone, evidence links, recovery actions, and sign-off
 requirements for W4 close/report surfaces. Fund Ledger reconciliation and Report Pack handoff
@@ -202,6 +205,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | --- | --- |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
+| `W5-ACCT-001` | Accounting records and operational evidence |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

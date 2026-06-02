@@ -13,4 +13,4 @@ This report marks registered source modules whose code or README hashes differ f
 
 | Module | Path | README | Reason |
 | --- | --- | --- | --- |
-| `SRC-STRATEGIES` | `src/Meridian.Strategies` | `src/Meridian.Strategies/README.md` | `source_hash_drift` |
+| `SRC-STORAGE` | `src/Meridian.Storage` | `src/Meridian.Storage/README.md` | `readme_hash_drift` |

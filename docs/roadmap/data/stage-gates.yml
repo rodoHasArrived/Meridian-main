@@ -42,6 +42,12 @@ stage_gates:
       - docs/roadmap/generated/ROADMAP_SUMMARY.md
       - tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs
       - tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs
+  - id: AccountingRecords
+    title: Accounting records
+    purpose: Source data, reconciliation actions, ledger evidence, approvals, retained documents, and report outputs remain linked as audit-ready operational records.
+    owner_lane: Governance and Ledger
+    exit_evidence:
+      - docs/roadmap/generated/ROADMAP_SUMMARY.md
   - id: BacktestingEvidence
     title: Backtesting evidence
     purpose: Backtest results can be traced to strategy decisions and later paper validation.

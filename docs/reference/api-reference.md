@@ -544,9 +544,9 @@ governance admin surface.
 | GET | `/api/environment-designer/runtime/versions/{versionId}` | Fetch the runtime projection for a specific published version. |
 
 
-### Workstation Accounting And Governance-Control Routes (v1 additive compatibility)
+### Workstation Accounting Control Routes (v1 additive compatibility)
 
-The workstation accounting and governance-control workflows use additive-compatible v1 contracts.
+The workstation accounting-control workflows use additive-compatible v1 contracts.
 Clients must tolerate additional JSON fields and additive state values without breaking existing
 flows. Legacy governance/data-operations aliases remain compatibility routes for retained clients.
 

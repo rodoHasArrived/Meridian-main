@@ -628,8 +628,23 @@ public sealed class WorkspaceServiceTests : IDisposable
             "data-operations",
             "governance"
         ]);
+        svc.Workspaces.Select(workspace => workspace.Name).Should().Contain([
+            "Trading",
+            "Portfolio",
+            "Accounting",
+            "Reporting",
+            "Strategy",
+            "Data",
+            "Settings"
+        ]);
+        svc.Workspaces.Select(workspace => workspace.Name).Should().NotContain([
+            "Research",
+            "Data Operations",
+            "Governance"
+        ]);
         svc.ActiveWorkspace.Should().NotBeNull();
         svc.ActiveWorkspace!.Id.Should().Be("strategy");
+        svc.ActiveWorkspace.Name.Should().Be("Strategy");
 
         var restored = svc.GetLastSessionState();
         restored.Should().NotBeNull();

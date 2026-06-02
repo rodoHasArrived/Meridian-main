@@ -64,10 +64,10 @@ instead of editing generated artifacts when routes, projects, or authoritative d
 
 | Field | Start here |
 | --- | --- |
-| Projects | `src/Meridian.Mcp`, `src/Meridian.McpServer` |
+| Projects | `src/Meridian.Mcp` |
 | First docs | `docs/ai/navigation/README.md`, `docs/ai/README.md`, generated repo-navigation artifacts |
-| Entrypoints | `src/Meridian.Mcp/Program.cs`, repo-navigation resources/tools, MCP server tests |
-| Validation | Focused MCP server/tool tests plus navigation freshness when repo-navigation payloads change |
+| Entrypoints | `src/Meridian.Mcp/Program.cs`, MCP tools/resources/prompts, retained MCP server tests |
+| Validation | Focused MCP host/tool tests plus navigation freshness when repo-navigation payloads change |
 
 ## AI Docs And Codex Tooling
 

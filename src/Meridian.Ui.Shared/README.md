@@ -61,6 +61,17 @@ The shared workflow library owns close-lane command routing as well: `Accounting
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
 target tags instead of inventing client-local close-workflow routes.
+The same shared library also exposes the design-document `Primary Operator Workflow` sequence:
+`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and `Report`. Keep that sequence in
+`BuiltInWorkflowDefinitionProvider` aligned with browser shell continuity and WPF launch targets so
+client shells do not maintain separate primary workflow catalogs.
+The built-in `accounting-records-evidence-review` workflow owns the v0.15 accounting-records
+review path across retained source records, normalized activity, reconciliation cases, ledger
+evidence, approvals, and report-pack lineage. Browser and WPF command surfaces should consume that
+shared workflow instead of creating separate accounting-record launch lists.
+The built-in `strategy-to-paper-review` workflow keeps its compatibility identifier while presenting
+the design-document `Research to Paper Review` label and research-to-backtest market pattern, so
+browser and WPF command surfaces share the same research-to-paper continuity language.
 Portfolio is also a first-class shared workflow library lane. The built-in `portfolio-position-review`
 workflow owns Portfolio workspace entry, aggregate exposure review, run-portfolio inspection,
 brokerage-sync review, and snapshot import targets so Portfolio is not hidden inside Reporting.
@@ -404,6 +415,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
+| `W5-ACCT-001` | Accounting records and operational evidence |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

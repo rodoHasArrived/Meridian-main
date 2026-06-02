@@ -1,9 +1,9 @@
-# Meridian Design Document — Version 0.1
+# Meridian Design Document — Version 0.15
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-01
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.1 extended from roadmap and source-module registry evidence.
+**Reviewed:** 2026-06-02
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.15 extends the roadmap and source-module registry evidence with the v0.15 accounting records and operational evidence release package.
 
 ## 1. Product Vision
 
@@ -175,12 +175,13 @@ The roadmap registry marks W1-W4 as done, with green health and complete evidenc
 
 ### Planned and Gated Baselines
 
-W5 and W6 remain planned, not complete:
+W5, W6, and W7 remain planned, not complete:
 
 | Wave | Planned Capability | Gate |
 | --- | --- | --- |
-| W5 | Backtesting studio evidence loop | Backtest results must link to strategy lineage and operator-facing acceptance criteria. |
-| W6 | Live-readiness governance | Live operation remains gated by trusted data, paper validation, reconciliation, and governed reporting evidence. |
+| W5 | Accounting records and operational evidence | Source records, normalized activity, reconciliation cases, ledger evidence, approvals, documents, report packs, exports, and restatement lineage must remain linked as audit-ready operational records. |
+| W6 | Backtesting studio evidence loop | Backtesting Studio is deferred behind the accounting records package; backtest results must link to strategy lineage and operator-facing acceptance criteria before paper promotion expansion. |
+| W7 | Live-readiness governance | Live operation remains gated by trusted data, paper validation, reconciliation, governed reporting evidence, and v0.15 accounting record-keeping evidence. |
 
 ### Active Product Surfaces
 
@@ -218,7 +219,7 @@ Settings
 | Alternative Asset Management | Supported foundation | Private-credit/direct-lending model support and custom asset profile seams exist; broad alternative-asset operations remain expansion work. |
 | Financing & Capital Structure Analysis | Design-led foundation | Capital-structure analysis remains a product design target with partial support through fund, vehicle, account, and ledger models. |
 | Planning, Forecasting & Decision Support | Design-led foundation | Strategy, run comparison, and reporting evidence exist; full planning and forecasting engines remain future work. |
-| Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, backtesting runtime, research continuity, and promotion evidence exist; W5 Backtesting Studio expansion is planned. |
+| Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, backtesting runtime, research continuity, and promotion evidence exist; W6 Backtesting Studio expansion is planned. |
 | Risk Management | Supported foundation | Pre-trade risk rules and live-readiness controls exist; full enterprise risk management remains expansion work. |
 | Client & Stakeholder Reporting | Implemented evidence | Governed report-pack readiness, provenance, export evidence, and publication/restatement lifecycle are W4 baselines. |
 | Collaboration & Communication | Design-led foundation | Workflow assignment, comments, audit events, and queue state exist; broad collaboration tooling remains later work. |
@@ -1921,6 +1922,25 @@ Defines core entities, relationships, storage boundaries, read models, and contr
 ### 5. Delivery Roadmap
 
 Uses `docs/roadmap/data/*.yml` as the durable source of delivery state, with the design document explaining why each wave matters.
+
+### v0.15 Release Package: Accounting Records and Operational Evidence
+
+The v0.15 release delays Backtesting Studio and focuses on accounting, reconciliation, and record-keeping functionality. This makes Meridian stronger as the operational system of record before expanding research tooling or live-readiness surfaces.
+
+v0.15 should deepen the `Accounting`, `Reporting`, `Portfolio`, and `Data` workspaces by connecting:
+
+* retained source records
+* normalized transactions, positions, balances, and activity
+* reconciliation case history
+* journal and ledger evidence
+* close-package status
+* approval history
+* document and evidence attachments
+* report-pack publication, export, and restatement provenance
+
+The package should preserve the shared-first UI direction: browser and WPF surfaces consume shared contracts, endpoint read models, and services rather than inventing separate accounting state.
+
+Backtesting Studio remains valuable, but it moves behind this accounting records package so that strategy, paper, and later live-readiness work can rely on stronger books, audit, and reporting evidence.
 
 ---
 

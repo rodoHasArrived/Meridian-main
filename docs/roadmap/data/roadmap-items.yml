@@ -7,7 +7,7 @@ registry:
   id: roadmap-items
   title: Meridian Roadmap Items
   owner: Core Team
-  snapshot_date: 2026-05-20
+  snapshot_date: 2026-06-02
 
 items:
   - id: W1-DATA-001
@@ -201,9 +201,45 @@ items:
         path: tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs
     last_reviewed: 2026-05-29
 
-  - id: W5-BTSTUDIO-001
-    title: Backtesting studio evidence loop
+  - id: W5-ACCT-001
+    title: Accounting records and operational evidence
     wave: W5
+    stage_gates:
+      - AccountingRecords
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    workspace:
+      - Accounting
+      - Reporting
+      - Portfolio
+      - Data
+    owner_lane: Governance and Ledger
+    status: planned
+    health: green
+    priority: high
+    evidence_posture: planned_evidence
+    current_summary: v0.15 deepens accounting, reconciliation, and record-keeping functionality by linking retained source records, normalized activity, reconciliation cases, journal and ledger evidence, approval history, document attachments, report packs, exports, and restatement lineage into audit-ready operational records.
+    exit_criteria:
+      - Accounting record summaries show retained source data, normalized transactions or positions, reconciliation case history, ledger evidence, approvals, and report-pack links.
+      - Close-package status and audit/provenance timelines are operator-visible through shared read models consumed by browser and WPF surfaces where each surface participates.
+      - Report-pack exports and restatements retain source evidence, approval state, and publication provenance.
+      - Documentation identifies Backtesting Studio as deferred and v0.15 as the accounting records and operational evidence release package.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-UI-SERVICES
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: status
+        path: docs/roadmap/generated/ROADMAP_SUMMARY.md
+    last_reviewed: 2026-06-02
+
+  - id: W6-BTSTUDIO-001
+    title: Backtesting studio evidence loop
+    wave: W6
     stage_gates:
       - BacktestingEvidence
     workspace:
@@ -213,7 +249,7 @@ items:
     health: green
     priority: medium
     evidence_posture: planned_evidence
-    current_summary: Backtesting studio work remains downstream of paper-session and research continuity readiness.
+    current_summary: Backtesting studio work is deferred behind the v0.15 accounting records and operational evidence package so Meridian first deepens its system-of-record posture for books, close, retained evidence, and audit-ready reporting.
     exit_criteria:
       - Backtest result evidence links to strategy lineage.
       - Operator-facing acceptance criteria are checklist-backed.
@@ -223,11 +259,11 @@ items:
       - SRC-CONTRACTS
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-02
 
-  - id: W6-LIVE-001
+  - id: W7-LIVE-001
     title: Live-readiness governance
-    wave: W6
+    wave: W7
     stage_gates:
       - LiveReadiness
     workspace:
@@ -238,7 +274,7 @@ items:
     health: green
     priority: medium
     evidence_posture: planned_evidence
-    current_summary: Live-readiness remains gated by trusted data, paper validation, reconciliation, and governed reporting evidence.
+    current_summary: Live-readiness remains gated by trusted data, paper validation, reconciliation, governed reporting evidence, and the v0.15 accounting records package.
     exit_criteria:
       - Live action surfaces remain paper-first until acceptance gates are green.
       - Credential and provider checks stay secret-safe and read-only by default.
@@ -250,4 +286,4 @@ items:
       - SRC-UI-DASHBOARD
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-02

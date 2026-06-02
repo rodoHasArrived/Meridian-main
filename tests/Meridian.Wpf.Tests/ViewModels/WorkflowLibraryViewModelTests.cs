@@ -39,6 +39,49 @@ public sealed class WorkflowLibraryViewModelTests
     }
 
     [Fact]
+    public void Load_ShouldExposeAccountingRecordsEvidenceReviewWorkflow()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var navigationService = NavigationService.Instance;
+            navigationService.ResetForTests();
+            navigationService.Initialize(new Frame());
+
+            var viewModel = new WorkflowLibraryViewModel(
+                new WorkflowLibraryService(WorkflowRegistry.CreateDefault()),
+                navigationService);
+
+            viewModel.SearchQuery = "accounting records";
+
+            var workflow = viewModel.Workflows.Should()
+                .ContainSingle(item => item.WorkflowId == "accounting-records-evidence-review")
+                .Subject;
+
+            workflow.Title.Should().Be("Accounting Records Evidence Review");
+            workflow.Summary.Should().Contain("v0.15 operational record");
+            workflow.WorkspaceTitle.Should().Be("Accounting");
+            workflow.EntryPageTag.Should().Be("AccountingShell");
+            workflow.EvidenceText.Should().Contain("source records");
+            workflow.EvidenceText.Should().Contain("report lineage");
+            workflow.MarketPatternText.Should().Contain("close package");
+            workflow.Actions.Select(action => action.Label).Should().Equal(
+                "Review Source Records",
+                "Review Normalized Activity",
+                "Review Reconciliation Cases",
+                "Review Ledger Evidence",
+                "Review Approval History",
+                "Review Report Lineage");
+            workflow.Actions.Select(action => action.TargetPageTag).Should().Equal(
+                "DataShell",
+                "PortfolioShell",
+                "FundReconciliation",
+                "FundTrialBalance",
+                "OperationsContinuity",
+                "FundReportPack");
+        });
+    }
+
+    [Fact]
     public void FilterRecoveryState_ShouldExplainNoMatchesAndClearSearch()
     {
         WpfTestThread.Run(() =>

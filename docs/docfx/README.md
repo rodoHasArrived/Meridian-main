@@ -75,8 +75,7 @@ an older checkout, delete the generated metadata and regenerate it from
 | `Meridian.Ledger` | Double-entry ledger |
 | `Meridian.Ui.Services` | UI service abstractions |
 | `Meridian.Ui.Shared` | Shared HTTP endpoints and UI services |
-| `Meridian.Mcp` | MCP server tools |
-| `Meridian.McpServer` | Standalone MCP server |
+| `Meridian.Mcp` | Stdio MCP host for AI tooling, tools, resources, and prompts |
 
 ## Adding New Documentation
 

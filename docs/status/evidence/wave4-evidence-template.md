@@ -1,6 +1,6 @@
 # Wave 4 Evidence Template
 
-**Owner:** Governance and Ledger  
+**Owner:** Governance and Ledger
 **Last Updated:** 2026-04-21  
 **Status:** Active
 

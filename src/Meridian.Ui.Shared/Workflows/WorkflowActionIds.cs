@@ -5,6 +5,20 @@ namespace Meridian.Ui.Shared.Workflows;
 /// </summary>
 public static class WorkflowActionIds
 {
+    public const string PrimaryOperatorImport = "workflow.primary-operator.import";
+    public const string PrimaryOperatorValidate = "workflow.primary-operator.validate";
+    public const string PrimaryOperatorReconcile = "workflow.primary-operator.reconcile";
+    public const string PrimaryOperatorInvestigate = "workflow.primary-operator.investigate";
+    public const string PrimaryOperatorApprove = "workflow.primary-operator.approve";
+    public const string PrimaryOperatorReport = "workflow.primary-operator.report";
+
+    public const string AccountingRecordsReviewSourceRecords = "workflow.accounting-records.review-source-records";
+    public const string AccountingRecordsReviewNormalizedActivity = "workflow.accounting-records.review-normalized-activity";
+    public const string AccountingRecordsReviewReconciliationCases = "workflow.accounting-records.review-reconciliation-cases";
+    public const string AccountingRecordsReviewLedgerEvidence = "workflow.accounting-records.review-ledger-evidence";
+    public const string AccountingRecordsReviewApprovals = "workflow.accounting-records.review-approvals";
+    public const string AccountingRecordsReviewReportLineage = "workflow.accounting-records.review-report-lineage";
+
     public const string StrategyStartBacktest = "workflow.strategy.start-backtest";
     public const string StrategyReviewRuns = "workflow.strategy.review-runs";
     public const string StrategySendToTradingReview = "workflow.strategy.send-to-trading-review";

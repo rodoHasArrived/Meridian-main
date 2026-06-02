@@ -50,6 +50,28 @@ public sealed class WorkflowLibraryEndpointTests
             .Select(static workflow => workflow.WorkspaceId)
             .Should()
             .Contain(["trading", "portfolio", "accounting", "reporting", "strategy", "data", "settings"]);
+        registry.GetWorkflowDefinitions()
+            .Should()
+            .Contain(workflow =>
+                workflow.WorkflowId == "primary-operator-workflow" &&
+                workflow.Title == "Primary Operator Workflow");
+        registry.GetWorkflowDefinitions()
+            .Should()
+            .Contain(workflow =>
+                workflow.WorkflowId == "accounting-records-evidence-review" &&
+                workflow.Title == "Accounting Records Evidence Review");
+        registry.ResolveTargetPageTag(WorkflowActionIds.PrimaryOperatorReconcile, "Fallback")
+            .Should()
+            .Be("FundReconciliation");
+        registry.ResolveTargetPageTag(WorkflowActionIds.PrimaryOperatorReport, "Fallback")
+            .Should()
+            .Be("FundReportPack");
+        registry.ResolveTargetPageTag(WorkflowActionIds.AccountingRecordsReviewApprovals, "Fallback")
+            .Should()
+            .Be("OperationsContinuity");
+        registry.ResolveTargetPageTag(WorkflowActionIds.AccountingRecordsReviewReportLineage, "Fallback")
+            .Should()
+            .Be("FundReportPack");
         registry.ResolveTargetPageTag(WorkflowActionIds.PortfolioReviewAggregate, "Fallback")
             .Should()
             .Be("AggregatePortfolio");
@@ -89,11 +111,41 @@ public sealed class WorkflowLibraryEndpointTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var library = await response.Content.ReadFromJsonAsync<WorkflowLibraryDto>(ServerJsonOptions);
         library.Should().NotBeNull();
+        library!.Workflows.Should().Contain(workflow => workflow.WorkflowId == "primary-operator-workflow");
+        var primaryOperatorWorkflow = library.Workflows.Single(workflow => workflow.WorkflowId == "primary-operator-workflow");
+        primaryOperatorWorkflow.Title.Should().Be("Primary Operator Workflow");
+        primaryOperatorWorkflow.Summary.Should().Contain("import through certified reporting");
+        primaryOperatorWorkflow.Actions.Select(static action => action.Label)
+            .Should()
+            .Equal("Import", "Validate", "Reconcile", "Investigate", "Approve", "Report");
+        primaryOperatorWorkflow.Actions.Select(static action => action.TargetPageTag)
+            .Should()
+            .Equal("DataShell", "Backfill", "FundReconciliation", "PortfolioShell", "OperationsContinuity", "FundReportPack");
+        primaryOperatorWorkflow.MarketPatternTags.Should().Contain("import validate reconcile");
+        library.Workflows.Should().Contain(workflow => workflow.WorkflowId == "accounting-records-evidence-review");
+        var accountingRecordsWorkflow = library.Workflows.Single(workflow => workflow.WorkflowId == "accounting-records-evidence-review");
+        accountingRecordsWorkflow.Summary.Should().Contain("v0.15 operational record");
+        accountingRecordsWorkflow.Actions.Select(static action => action.Label)
+            .Should()
+            .Equal(
+                "Review Source Records",
+                "Review Normalized Activity",
+                "Review Reconciliation Cases",
+                "Review Ledger Evidence",
+                "Review Approval History",
+                "Review Report Lineage");
+        accountingRecordsWorkflow.Actions.Select(static action => action.TargetPageTag)
+            .Should()
+            .Equal("DataShell", "PortfolioShell", "FundReconciliation", "FundTrialBalance", "OperationsContinuity", "FundReportPack");
+        accountingRecordsWorkflow.EvidenceTags.Should().Contain(["source records", "normalized activity", "reconciliation cases", "ledger evidence", "approvals", "report lineage"]);
+        accountingRecordsWorkflow.MarketPatternTags.Should().Contain("restatement lineage");
         library!.Workflows.Should().Contain(workflow => workflow.WorkflowId == "strategy-to-paper-review");
         library.Workflows.Should().Contain(workflow =>
             workflow.WorkflowId == "strategy-to-paper-review" &&
-            workflow.MarketPatternTags.Contains("strategy to backtest") &&
-            !workflow.MarketPatternTags.Contains("research to backtest"));
+            workflow.Title == "Research to Paper Review" &&
+            workflow.Summary.Contains("strategy research evidence", StringComparison.OrdinalIgnoreCase) &&
+            workflow.MarketPatternTags.Contains("research to backtest") &&
+            !workflow.MarketPatternTags.Contains("strategy to backtest"));
         library.Workflows.Should().Contain(workflow =>
             workflow.WorkflowId == "portfolio-position-review" &&
             workflow.WorkspaceId == "portfolio" &&

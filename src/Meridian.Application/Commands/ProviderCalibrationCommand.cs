@@ -89,7 +89,7 @@ internal sealed class ProviderCalibrationCommand : ICliCommand
             promotionDecision.Approved);
 
         Console.WriteLine(markdown);
-        Console.WriteLine($"Governance calibration gate pass: {promotionDecision.CalibrationPass}");
+        Console.WriteLine($"Provider calibration gate pass: {promotionDecision.CalibrationPass}");
 
         return promotionDecision.Approved
             ? CliResult.Ok()

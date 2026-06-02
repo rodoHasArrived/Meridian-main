@@ -41,7 +41,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | Roadmap item | Title |
 | --- | --- |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
-| `W6-LIVE-001` | Live-readiness governance |
+| `W7-LIVE-001` | Live-readiness governance |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

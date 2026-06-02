@@ -49,8 +49,8 @@ The asset document is the profile over this framework. It must say which capabil
 | L1 | Canonical Terms | `SecurityKind`, terms, mapping, and validation exist. |
 | L2 | Reference Read | Stable DTOs or endpoints expose canonical reference data. |
 | L3 | Projection Safe | Rebuildable projections, checkpoints, lineage, and replay tests exist. |
-| L4 | Operational Workflow | Operator actions, approval/review, correction, and audit trail exist. |
-| L5 | Accounting/Reconciliation Integrated | Journals, period controls, reconciliation, and reporting evidence exist. |
+| L4 | Operational Workflow | operator actions, approval/review, correction, and audit trail exist |
+| L5 | Accounting/Reconciliation Integrated | journals, period controls, reconciliation, and reporting evidence exist |
 
 Use partial levels when current evidence is mixed, for example `L1/L2 partial`. A target-state description is not a maturity claim unless the package names current code and test evidence.
 

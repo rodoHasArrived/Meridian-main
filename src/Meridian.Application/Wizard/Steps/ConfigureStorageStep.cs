@@ -44,7 +44,7 @@ public sealed class ConfigureStorageStep : IWizardStep
         var defaultChoice = useCase switch
         {
             UseCase.Development => 1,
-            UseCase.Research => 1,
+            UseCase.Strategy => 1,
             UseCase.RealTimeTrading => 2,
             UseCase.Production => 3,
             _ => 1

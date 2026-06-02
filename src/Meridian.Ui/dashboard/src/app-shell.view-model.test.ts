@@ -190,7 +190,7 @@ describe("app shell view model", () => {
     });
   });
 
-  it("uses canonical Strategy copy for the strategy-to-paper workflow", () => {
+  it("uses design-document research-to-paper title with canonical Strategy copy", () => {
     const state = buildAppShellViewState({
       pathname: "/strategy",
       loading: false,
@@ -200,7 +200,7 @@ describe("app shell view model", () => {
     });
 
     expect(state.workflowContinuity).toMatchObject({
-      title: "Strategy To Paper",
+      title: "Research To Paper",
       summary: expect.stringContaining("Strategy comparison")
     });
     expect(state.workflowContinuity.summary).not.toContain("strategy comparison");
@@ -230,7 +230,7 @@ describe("app shell view model", () => {
 
     expect(state.workflowContinuity.evidenceTimelineItems).toContainEqual(
       expect.objectContaining({
-        label: "Research warning",
+        label: "Strategy warning",
         workspaceLabel: "Strategy",
         route: "/strategy",
         tone: "review"
