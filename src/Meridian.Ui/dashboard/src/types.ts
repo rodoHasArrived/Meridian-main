@@ -2461,6 +2461,127 @@ export interface PortfolioSummary {
 
 export type AccountingBasisKind = "Primary" | "Gaap" | "Cash" | "Tax" | "Statutory";
 
+export type AccountingConfigurationStatus = "Draft" | "Active" | "Archived";
+export type AccountingConfigurationValidationSeverity = "Info" | "Warning" | "Critical";
+export type AccountingTemplateLineSide = "Debit" | "Credit";
+
+export interface LedgerBook {
+  ledgerBookId: string;
+  fundProfileId: string;
+  fundStructureNodeId: string;
+  fundStructureNodeKind: string;
+  displayName: string;
+  baseCurrency: string;
+  createdAt: string;
+  updatedAt: string;
+  description?: string | null;
+  accountingBasis: AccountingBasisKind;
+  accountingPolicyId: string;
+  accountingPolicyVersion: string;
+}
+
+export interface ChartOfAccountsNode {
+  nodeId: string;
+  path: string;
+  accountName: string;
+  accountType: string;
+  parentPath?: string | null;
+  symbol?: string | null;
+  financialAccountId?: string | null;
+  isArchived: boolean;
+}
+
+export interface JournalEntryTemplateLine {
+  lineId: string;
+  accountPath: string;
+  side: AccountingTemplateLineSide;
+  amount: number;
+  currency: string;
+  description?: string | null;
+}
+
+export interface JournalEntryTemplate {
+  templateId: string;
+  displayName: string;
+  description: string;
+  lines: JournalEntryTemplateLine[];
+  isArchived: boolean;
+  version: string;
+}
+
+export interface PostingRule {
+  ruleId: string;
+  displayName: string;
+  sourceEventType: string;
+  templateId: string;
+  ruleVersion: string;
+  isArchived: boolean;
+  description?: string | null;
+}
+
+export interface AccountingConfigurationValidationIssue {
+  code: string;
+  severity: AccountingConfigurationValidationSeverity;
+  message: string;
+  targetId?: string | null;
+  suggestedAction?: string | null;
+}
+
+export interface AccountingActionAuditEvent {
+  auditEventId: string;
+  recordedAtUtc: string;
+  actor: string;
+  action: string;
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  correlationId?: string | null;
+  beforeHash: string;
+  afterHash: string;
+  validationIssues: AccountingConfigurationValidationIssue[];
+  evidenceLinks: string[];
+}
+
+export interface AccountingConfigurationWorkspace {
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  status: AccountingConfigurationStatus;
+  configurationVersion: string;
+  updatedAtUtc: string;
+  ledgerBooks: LedgerBook[];
+  chartOfAccounts: ChartOfAccountsNode[];
+  journalTemplates: JournalEntryTemplate[];
+  postingRules: PostingRule[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+  auditTrail: AccountingActionAuditEvent[];
+}
+
+export interface AccountingJournalPreviewLine {
+  accountPath: string;
+  accountName: string;
+  side: AccountingTemplateLineSide;
+  amount: number;
+  currency: string;
+  description?: string | null;
+}
+
+export interface AccountingJournalTemplatePreview {
+  templateId: string;
+  displayName: string;
+  isBalanced: boolean;
+  totalDebits: number;
+  totalCredits: number;
+  lines: AccountingJournalPreviewLine[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export interface PreviewJournalTemplateRequest {
+  fundProfileId: string;
+  templateId: string;
+  actor: string;
+  ledgerBookId?: string | null;
+  correlationId?: string | null;
+}
+
 export interface LedgerTrialBalanceLine {
   accountName: string;
   accountType: string;

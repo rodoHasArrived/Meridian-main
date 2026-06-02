@@ -630,6 +630,13 @@ public static class UiApiRoutes
     public const string LedgerPeriodTrialBalance = "/api/ledger/periods/{periodId:guid}/trial-balance";
     public const string LedgerPeriodTrialBalanceReport = "/api/ledger/periods/{periodId:guid}/trial-balance-report";
     public const string LedgerPeriodPnlSummary = "/api/ledger/periods/{periodId:guid}/pnl-summary";
+    public const string LedgerAccountingConfiguration = "/api/ledger/accounting-configuration";
+    public const string LedgerAccountingConfigurationChart = "/api/ledger/accounting-configuration/chart";
+    public const string LedgerAccountingConfigurationTemplates = "/api/ledger/accounting-configuration/templates";
+    public const string LedgerAccountingConfigurationPostingRules = "/api/ledger/accounting-configuration/posting-rules";
+    public const string LedgerAccountingConfigurationPreview = "/api/ledger/accounting-configuration/preview";
+    public const string LedgerAccountingConfigurationActivate = "/api/ledger/accounting-configuration/activate";
+    public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";

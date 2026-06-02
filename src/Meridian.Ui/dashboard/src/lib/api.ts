@@ -734,6 +734,17 @@ export function getAccountingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<AccountingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting, options);
 }
 
+export function getAccountingConfiguration(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfiguration, options);
+}
+
+export function previewAccountingConfigurationTemplate(
+  request: import("@/types").PreviewJournalTemplateRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingJournalTemplatePreview>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPreview, request, options);
+}
+
 export function getGovernanceWorkspace(options: ApiRequestOptions = {}) {
   return getAccountingWorkspace(options);
 }

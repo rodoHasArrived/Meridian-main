@@ -6,6 +6,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Storage.Ledger;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -382,10 +383,206 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerAccountingConfiguration, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingConfigurationService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var workspace = await service.GetWorkspaceAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(workspace, jsonOptions);
+        })
+        .WithName("GetAccountingConfiguration")
+        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationChart, async (UpsertChartOfAccountsNodeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingConfigurationService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var result = await service.UpsertChartNodeAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("UpsertAccountingConfigurationChartNode")
+        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationTemplates, async (UpsertJournalEntryTemplateRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingConfigurationService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var result = await service.UpsertTemplateAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("UpsertAccountingConfigurationTemplate")
+        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRules, async (UpsertPostingRuleRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingConfigurationService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var result = await service.UpsertPostingRuleAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("UpsertAccountingConfigurationPostingRule")
+        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPreview, async (PreviewJournalTemplateRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingConfigurationService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var result = await service.PreviewTemplateAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("PreviewAccountingConfigurationTemplate")
+        .Produces<AccountingJournalTemplatePreviewDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationActivate, async (ActivateAccountingConfigurationRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingConfigurationService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var result = await service.ActivateAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("ActivateAccountingConfiguration")
+        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapGet(UiApiRoutes.LedgerAccountingConfigurationAudit, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingConfigurationService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var audit = await service.ListAuditAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(audit, jsonOptions);
+        })
+        .WithName("ListAccountingConfigurationAudit")
+        .Produces<IReadOnlyList<AccountingActionAuditEventDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
     }
 
     private static ILedgerBookService? ResolveService(HttpContext context)
         => context.RequestServices.GetService<ILedgerBookService>();
+
+    private static IAccountingConfigurationService? ResolveAccountingConfigurationService(HttpContext context)
+        => context.RequestServices.GetService<IAccountingConfigurationService>();
 
     private static IResult ServiceUnavailable()
         => Results.Problem("Ledger book service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -407,6 +604,11 @@ public static class LedgerEndpoints
 
     private static bool TryResolveActor(HttpContext context, out string actor)
         => EndpointAuthorization.TryResolveActor(context, out actor);
+
+    private static string ResolveMutationActor(HttpContext context, string suppliedActor)
+        => EndpointAuthorization.TryResolveActor(context, out var actor) && !string.IsNullOrWhiteSpace(actor)
+            ? actor
+            : suppliedActor;
 
     private static IResult MapServiceException(LedgerBookServiceException exception)
         => exception switch
