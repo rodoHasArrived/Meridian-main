@@ -78,7 +78,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-INFRASTRUCTURE -->
-- No registry-backed TODOs are open for this module.
+| TODO | Title | Status | Priority |
+| --- | --- | --- | --- |
+| `TODO-SRC-INFRASTRUCTURE-001` | Complete W7 provider credential safety and read-only default checks | open | medium |
 <!-- source-todos:end -->
 
 ## Validation

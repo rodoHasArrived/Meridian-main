@@ -163,7 +163,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-APP -->
-- No registry-backed TODOs are open for this module.
+| TODO | Title | Status | Priority |
+| --- | --- | --- | --- |
+| `TODO-SRC-APP-001` | Complete W6 backtesting evidence loop linkage to strategy lineage | open | medium |
 <!-- source-todos:end -->
 
 ## Validation

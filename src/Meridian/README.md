@@ -59,7 +59,9 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## TODO checklist
 
 <!-- source-todos:begin module=SRC-HOST -->
-- No registry-backed TODOs are open for this module.
+| TODO | Title | Status | Priority |
+| --- | --- | --- | --- |
+| `TODO-SRC-HOST-001` | Complete W7 live-readiness paper-first guard enforcement | open | medium |
 <!-- source-todos:end -->
 
 ## Validation

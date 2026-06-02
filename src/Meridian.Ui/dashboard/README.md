@@ -209,6 +209,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | TODO | Title | Status | Priority |
 | --- | --- | --- | --- |
 | `TODO-SRC-UI-DASHBOARD-001` | Add browser workstation route diagram coverage for paper readiness | open | medium |
+| `TODO-SRC-UI-DASHBOARD-002` | Wire Accounting Transaction Lab browser endpoint requests to shared API contracts | open | high |
 <!-- source-todos:end -->
 
 ## Validation
