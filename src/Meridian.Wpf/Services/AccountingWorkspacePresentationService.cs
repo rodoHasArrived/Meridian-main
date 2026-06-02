@@ -17,7 +17,8 @@ internal static class AccountingWorkspacePresentationService
             [
                 new WorkspaceCommandItem { Id = "FundLedger", Label = "Operations", Description = "Open operations lane", ShortcutHint = "Ctrl+1", Glyph = "\uEE94", Tone = WorkspaceTone.Primary },
                 new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting", Description = "Open accounting lane", ShortcutHint = "Ctrl+2", Glyph = "\uE9D9" },
-                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation lane", ShortcutHint = "Ctrl+3", Glyph = "\uE895" }
+                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation lane", ShortcutHint = "Ctrl+3", Glyph = "\uE895" },
+                new WorkspaceCommandItem { Id = "FundAccountingConfigure", Label = "Configure", Description = "Review accounting configuration readiness", ShortcutHint = "Ctrl+4", Glyph = "\uE713" }
             ],
             SecondaryCommands =
             [
@@ -47,7 +48,7 @@ internal static class AccountingWorkspacePresentationService
     internal static PaneDropAction ResolveDockAction(string actionId) => actionId switch
     {
         "FundLedger" => PaneDropAction.Replace,
-        "FundAccounts" or "FundReconciliation" or "FundTrialBalance" => PaneDropAction.SplitRight,
+        "FundAccounts" or "FundReconciliation" or "FundTrialBalance" or "FundAccountingConfigure" => PaneDropAction.SplitRight,
         "FundCashFinancing" or "NotificationCenter" or "Diagnostics" => PaneDropAction.SplitBelow,
         _ => PaneDropAction.OpenTab
     };
@@ -75,7 +76,8 @@ internal static class AccountingWorkspacePresentationService
 
         return
         [
-            new WorkspaceQueueItem { Title = "Trial balance and journals", Detail = $"{ledger.TrialBalance.Count} trial-balance line(s) and {ledger.JournalEntryCount} journal(s) are ready for accounting review from the shared fund-operations query path.", StatusLabel = ledger.TrialBalance.Count > 0 ? "Accounting ready" : "Awaiting snapshot", CountLabel = ledger.TrialBalance.Count > 0 ? $"{ledger.TrialBalance.Count} lines" : "No lines", Tone = ledger.TrialBalance.Count > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning, PrimaryActionId = "FundTrialBalance", PrimaryActionLabel = "Open Accounting", SecondaryActionId = "FundLedger", SecondaryActionLabel = "Ledger" },
+            new WorkspaceQueueItem { Title = "Accounting configuration", Detail = "Books, chart accounts, journal templates, posting rules, validation, and audit trail are read from the shared accounting configuration service.", StatusLabel = "Configuration", CountLabel = "Review", Tone = WorkspaceTone.Info, PrimaryActionId = "FundAccountingConfigure", PrimaryActionLabel = "Open Configure", SecondaryActionId = "FundTrialBalance", SecondaryActionLabel = "Trial Balance" },
+            new WorkspaceQueueItem { Title = "Trial balance and journals", Detail = $"{ledger.TrialBalance.Count} trial-balance line(s) and {ledger.JournalEntryCount} journal(s) are ready for accounting review from the shared fund-operations query path.", StatusLabel = ledger.TrialBalance.Count > 0 ? "Accounting ready" : "Awaiting snapshot", CountLabel = ledger.TrialBalance.Count > 0 ? $"{ledger.TrialBalance.Count} lines" : "No lines", Tone = ledger.TrialBalance.Count > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning, PrimaryActionId = "FundTrialBalance", PrimaryActionLabel = "Open Accounting", SecondaryActionId = "FundAccountingConfigure", SecondaryActionLabel = "Configure" },
             new WorkspaceQueueItem { Title = "Cash and financing posture", Detail = $"Total cash {cash.TotalCash:C0}, financing cost {cash.FinancingCost:C0}, and pending settlement {cash.PendingSettlement:C0} are synchronized for reporting and sign-off.", StatusLabel = "Ready", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Success, PrimaryActionId = "FundCashFinancing", PrimaryActionLabel = "Open Reporting", SecondaryActionId = "FundTrialBalance", SecondaryActionLabel = "Trial Balance" }
         ];
     }

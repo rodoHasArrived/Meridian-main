@@ -1,5 +1,7 @@
 using Meridian.Application.AccountingClose;
+using Meridian.Contracts.Ledger;
 using Meridian.Ui.Services.Services.Accounting;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -25,6 +27,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<TrialBalanceProjectionService>();
         services.TryAddSingleton<MonthEndCloseStateMachine>();
         services.TryAddSingleton<IAccountingProjectionQueryService, AccountingProjectionQueryService>();
+        services.TryAddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
+        services.TryAddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         services.AddTransient<AccountingCloseViewModel>();
     }
 
