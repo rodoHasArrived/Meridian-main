@@ -3,9 +3,11 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -184,6 +186,18 @@ public sealed class DirectLendingEndpointsTests
         configureServices(builder.Services);
 
         var app = builder.Build();
+
+        // SEC-001: direct-lending routes now require ViewDirectLending/ManageDirectLending. This
+        // standalone host has no LoginSessionMiddleware, so seed the manage permission directly into
+        // the request context (the same context.Items injection used by the production middleware)
+        // to keep these lifecycle tests exercising the handlers.
+        app.Use(async (HttpContext context, Func<Task> next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] =
+                UserPermission.ViewDirectLending | UserPermission.ManageDirectLending;
+            await next();
+        });
+
         app.MapDirectLendingEndpoints(new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase

@@ -67,6 +67,7 @@ These problems are individually small but collectively expensive because they un
 ### MW-003 — Fix and generate workflow inventory documentation
 - **Priority:** P1
 - **Effort:** M
+- **Status:** Done — `docs/generated/workflows-overview.md` is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml`, and workflow docs reference it instead of repeating manual inventory tables.
 - **Outcome:** Workflow docs stop relying on hand-maintained counts.
 - **Scope:**
   - Generate workflow inventory from `.github/workflows/*.yml`.

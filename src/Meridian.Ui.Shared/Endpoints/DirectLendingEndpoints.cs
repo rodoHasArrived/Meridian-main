@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.DirectLending;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ui.Shared.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +14,12 @@ public static class DirectLendingEndpoints
     public static void MapDirectLendingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/loans").WithTags("Direct Lending");
+
+        // SEC-001: every loan route exposes or mutates direct-lending contracts, so the group requires
+        // at least a direct-lending view permission. Mutation routes additionally require
+        // ManageDirectLending below. Routes mapped directly on the app (outside this group) attach the
+        // same gates explicitly.
+        group.RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
         group.MapPost("/", async (JsonElement body, HttpContext context) =>
         {
@@ -39,7 +46,8 @@ public static class DirectLendingEndpoints
         })
         .WithName("CreateLoan")
         .Produces<LoanContractDetailDto>(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}", async (Guid loanId, HttpContext context) =>
         {
@@ -98,7 +106,8 @@ public static class DirectLendingEndpoints
         })
         .WithName("RebuildLoanState")
         .Produces<LoanAggregateSnapshotDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/terms-versions", async (Guid loanId, HttpContext context) =>
         {
@@ -154,7 +163,8 @@ public static class DirectLendingEndpoints
         .WithName("AmendLoanTerms")
         .Produces<LoanContractDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapPost("/{loanId:guid}/activate", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -174,7 +184,8 @@ public static class DirectLendingEndpoints
         })
         .WithName("ActivateLoan")
         .Produces<LoanContractDetailDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/servicing-state", async (Guid loanId, HttpContext context) =>
         {
@@ -274,7 +285,8 @@ public static class DirectLendingEndpoints
         .WithName("BookLoanDrawdown")
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapPost("/{loanId:guid}/rate-resets", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -302,7 +314,8 @@ public static class DirectLendingEndpoints
         .WithName("ApplyLoanRateReset")
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapPost("/{loanId:guid}/payments/principal", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -330,7 +343,8 @@ public static class DirectLendingEndpoints
         .WithName("ApplyLoanPrincipalPayment")
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapPost("/{loanId:guid}/accruals/daily", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -358,7 +372,8 @@ public static class DirectLendingEndpoints
         .WithName("PostDailyLoanAccrual")
         .Produces<DailyAccrualEntryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapPost("/{loanId:guid}/payments", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -382,7 +397,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/cash-transactions", async (Guid loanId, HttpContext context) =>
         {
@@ -422,7 +438,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/fee-balances", async (Guid loanId, HttpContext context) =>
         {
@@ -454,7 +471,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapPost("/{loanId:guid}/prepayment-penalties", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -481,7 +499,8 @@ public static class DirectLendingEndpoints
         })
         .WithName("ChargeLoanPrepaymentPenalty")
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapPost("/{loanId:guid}/projections", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -502,7 +521,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/projections", async (Guid loanId, HttpContext context) =>
         {
@@ -518,7 +538,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetProjectedCashFlowsAsync(projectionRunId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/journals", async (Guid loanId, HttpContext context) =>
         {
@@ -545,7 +566,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapPost("/{loanId:guid}/reconcile", async (Guid loanId, HttpContext context) =>
         {
@@ -564,7 +586,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         group.MapGet("/{loanId:guid}/reconciliation-runs", async (Guid loanId, HttpContext context) =>
         {
@@ -580,7 +603,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetReconciliationResultsAsync(runId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
         app.MapGet("/api/reconciliation/exceptions", async (HttpContext context) =>
         {
@@ -588,7 +612,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetReconciliationExceptionsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
         app.MapPost("/api/reconciliation/exceptions/{exceptionId:guid}/resolve", async (Guid exceptionId, JsonElement body, HttpContext context) =>
         {
@@ -607,7 +632,8 @@ public static class DirectLendingEndpoints
 
             var result = await service.ResolveReconciliationExceptionAsync(exceptionId, request, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
-        });
+        })
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         app.MapPost("/api/servicer-reports", async (JsonElement body, HttpContext context) =>
         {
@@ -631,14 +657,16 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .RequirePermission(UserPermission.ManageDirectLending);
 
         app.MapGet("/api/servicer-reports/{batchId:guid}", async (Guid batchId, HttpContext context) =>
         {
             var service = ResolveService(context);
             var batch = service is null ? null : await service.GetServicerReportBatchAsync(batchId, context.RequestAborted).ConfigureAwait(false);
             return batch is null ? Results.NotFound() : Results.Json(batch, jsonOptions);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
         app.MapGet("/api/servicer-reports/{batchId:guid}/position-lines", async (Guid batchId, HttpContext context) =>
         {
@@ -646,7 +674,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetServicerPositionLinesAsync(batchId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
         app.MapGet("/api/servicer-reports/{batchId:guid}/transaction-lines", async (Guid batchId, HttpContext context) =>
         {
@@ -654,7 +683,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetServicerTransactionLinesAsync(batchId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
         app.MapGet("/api/loans/rebuild-checkpoints", async (HttpContext context) =>
         {
@@ -662,7 +692,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetRebuildCheckpointsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
         app.MapGet("/api/loans/portfolio", async (HttpContext context) =>
         {
@@ -672,7 +703,8 @@ public static class DirectLendingEndpoints
                 : Results.Json(await service.GetPortfolioSummaryAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
         })
         .WithName("GetPortfolioSummary")
-        .Produces<LoanPortfolioSummaryDto>(StatusCodes.Status200OK);
+        .Produces<LoanPortfolioSummaryDto>(StatusCodes.Status200OK)
+        .RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending);
 
         app.MapPost("/api/loans/rebuild-all", async (HttpContext context) =>
         {
@@ -691,7 +723,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .RequirePermission(UserPermission.ManageDirectLending);
     }
 
     private static IDirectLendingService? ResolveService(HttpContext context) =>

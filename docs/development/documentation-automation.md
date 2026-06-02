@@ -472,27 +472,31 @@ Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Cus
 | `docs/status/docs-automation-summary.md` | run-docs-automation.py | Human-readable automation run summary with status table and failure details |
 | `docs/status/docs-automation-summary.json` | run-docs-automation.py | Machine-readable automation run summary with script execution metadata |
 | `docs/generated/workflow-command-reference.md` | generate-workflow-manifest.py | Generated command snippets sourced from canonical workflow manifest |
-| `docs/status/workflow-validation-summary.json` | generate-workflow-manifest.py | CI-consumable workflow inventory + missing target/script findings |
+| `docs/status/workflow-validation-summary.json` | generate-workflow-manifest.py | CI-consumable command manifest summary + missing target/script findings |
 | `docs/status/workflow-drift-report.md` | generate-workflow-manifest.py | Human-readable drift report comparing declared workflows to actual targets/scripts |
 
 All generated files include an "auto-generated" notice and should not be edited manually.
 
 ## Canonical Workflow Inventory Source Of Truth
 
-Use the workflow-manifest artifacts below as the only authoritative workflow inventory.
-Do not hard-code explicit numeric workflow totals in docs under
-`README.md`, `archive/docs/developer/`, or `docs/development/`.
+Use `docs/generated/workflows-overview.md` as the authoritative GitHub Actions inventory. It is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` files on disk. Do not hard-code explicit numeric workflow totals in docs under `README.md`, `archive/docs/developer/`, or `docs/development/`.
 
-1. `docs/status/workflow-manifest.json` — canonical declared workflow inventory.
+Workflow command governance uses separate generated artifacts:
+
+1. `docs/status/workflow-manifest.json` — canonical declared command manifest.
 2. `docs/generated/workflow-command-reference.md` — generated human-readable workflow command reference.
-3. `docs/status/workflow-validation-summary.json` — generated machine-readable validation summary, including `workflowCount`.
+3. `docs/status/workflow-validation-summary.json` — generated machine-readable command validation summary.
 4. `docs/status/workflow-drift-report.md` — generated drift surface for missing declared targets/scripts.
 
-When workflow inventory changes:
+When GitHub Actions workflow files change:
+
+- Run `python3 build/scripts/docs/generate-structure-docs.py --workflows-only --output docs/generated/workflows-overview.md`.
+- Reference `docs/generated/workflows-overview.md` in docs instead of restating workflow counts or inventory tables manually.
+
+When workflow command governance changes:
 
 - Update `docs/status/workflow-manifest.json`.
 - Run `python3 build/scripts/docs/generate-workflow-manifest.py`.
-- Reference generated artifacts in docs instead of restating workflow counts manually.
 
 ## Troubleshooting
 
