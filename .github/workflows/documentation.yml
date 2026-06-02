@@ -8,6 +8,10 @@ on:
         required: false
         default: "false"
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
     paths:
       - "docs/**"
       - "build/scripts/docs/**"
