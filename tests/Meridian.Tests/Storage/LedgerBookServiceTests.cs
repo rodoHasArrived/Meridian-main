@@ -757,7 +757,7 @@ public sealed class LedgerBookServiceTests
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-controller";
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Accounting;
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Accounting);
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             return next();
         });
         app.UseRateLimiter();

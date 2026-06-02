@@ -30,6 +30,9 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     private string? _originalPassword;
     private string? _originalUsers;
     private string? _originalDisableRateLimit;
+    private string? _originalUseInMemoryGovernance;
+    private string? _originalDotnetEnvironment;
+    private string? _originalAspNetCoreEnvironment;
 
     public HttpClient Client { get; private set; } = null!;
     public string DataRoot { get; private set; } = null!;
@@ -54,6 +57,9 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         _originalPassword = Environment.GetEnvironmentVariable("MDC_PASSWORD");
         _originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         _originalDisableRateLimit = Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT");
+        _originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
+        _originalDotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        _originalAspNetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
         Environment.SetEnvironmentVariable("MDC_API_KEY", null);
         Environment.SetEnvironmentVariable("MDC_USERNAME", null);
@@ -62,6 +68,9 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // All TestServer requests share a null RemoteIpAddress which maps to the "unknown"
         // partition key; 10 requests would exhaust the production limit immediately.
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", "true");
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
 
         _tempConfigDir = Path.Combine(Path.GetTempPath(), $"mdc-endpoint-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempConfigDir);
@@ -111,6 +120,9 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         Environment.SetEnvironmentVariable("MDC_PASSWORD", _originalPassword);
         Environment.SetEnvironmentVariable("MDC_USERS", _originalUsers);
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", _originalDisableRateLimit);
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", _originalUseInMemoryGovernance);
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", _originalDotnetEnvironment);
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", _originalAspNetCoreEnvironment);
         if (_tempConfigDir != null && Directory.Exists(_tempConfigDir))
         {
             try

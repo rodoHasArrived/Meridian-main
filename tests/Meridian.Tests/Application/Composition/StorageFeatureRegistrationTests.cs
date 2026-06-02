@@ -34,6 +34,19 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     private readonly string? _originalDirectLendingSchema;
     private readonly string? _originalLedgerConnectionString;
     private readonly string? _originalLedgerSchema;
+    private readonly string? _originalFundAccountsConnectionString;
+    private readonly string? _originalFundAccountsSchema;
+    private readonly string? _originalFundStructureConnectionString;
+    private readonly string? _originalFundStructureSchema;
+    private readonly string? _originalBankingConnectionString;
+    private readonly string? _originalBankingSchema;
+    private readonly string? _originalMoneyMarketConnectionString;
+    private readonly string? _originalMoneyMarketSchema;
+    private readonly string? _originalScopedAccessConnectionString;
+    private readonly string? _originalScopedAccessSchema;
+    private readonly string? _originalUseInMemoryGovernance;
+    private readonly string? _originalDotnetEnvironment;
+    private readonly string? _originalAspNetCoreEnvironment;
 
     public StorageFeatureRegistrationTests()
     {
@@ -43,17 +56,26 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         _originalDirectLendingSchema = Environment.GetEnvironmentVariable(DirectLendingStartup.SchemaVariable);
         _originalLedgerConnectionString = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable);
         _originalLedgerSchema = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable);
+        _originalFundAccountsConnectionString = Environment.GetEnvironmentVariable(FundAccountsStartup.ConnectionStringVariable);
+        _originalFundAccountsSchema = Environment.GetEnvironmentVariable(FundAccountsStartup.SchemaVariable);
+        _originalFundStructureConnectionString = Environment.GetEnvironmentVariable(FundStructureStartup.ConnectionStringVariable);
+        _originalFundStructureSchema = Environment.GetEnvironmentVariable(FundStructureStartup.SchemaVariable);
+        _originalBankingConnectionString = Environment.GetEnvironmentVariable(BankingStartup.ConnectionStringVariable);
+        _originalBankingSchema = Environment.GetEnvironmentVariable(BankingStartup.SchemaVariable);
+        _originalMoneyMarketConnectionString = Environment.GetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable);
+        _originalMoneyMarketSchema = Environment.GetEnvironmentVariable(MoneyMarketStartup.SchemaVariable);
+        _originalScopedAccessConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING");
+        _originalScopedAccessSchema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA");
+        _originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
+        _originalDotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        _originalAspNetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
     }
 
     [Fact]
     public void Register_SkipsPostgresBackedServices_WhenConnectionStringsAreMissing()
     {
-        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
-        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
-        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
 
         var services = new ServiceCollection();
 
@@ -84,12 +106,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     [Fact]
     public void Register_AddsStorageCatalogService_ForEtlAndCatalogConsumers()
     {
-        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
-        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
-        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
 
         var services = new ServiceCollection();
 
@@ -102,50 +120,36 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     [Fact]
     public void Register_AddsStatementReconciliationContextServices()
     {
-        var originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
-        var originalDotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
-        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
-        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
-        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
-        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
-        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Development");
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
 
-        try
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton(new ConfigStore(Path.Combine(Path.GetTempPath(), $"meridian-storage-feature-{Guid.NewGuid():N}", "appsettings.json")));
+        var services = new ServiceCollection();
+        services.AddSingleton(new ConfigStore(Path.Combine(Path.GetTempPath(), $"meridian-storage-feature-{Guid.NewGuid():N}", "appsettings.json")));
 
-            new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
 
-            using var provider = services.BuildServiceProvider();
-            provider.GetRequiredService<StatementReconciliationContextAdapter>().Should().NotBeNull();
-            provider.GetRequiredService<IStatementReconciliationValidationService>()
-                .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
-            provider.GetRequiredService<IDataIntegrationIngestionService>()
-                .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
-            provider.GetRequiredService<IReconciliationCaseIntakeService>()
-                .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
-            provider.GetRequiredService<IStatementRunWorkflowService>()
-                .Should().BeOfType<StatementRunWorkflowService>();
-            provider.GetRequiredService<IBrokerStatementService>()
-                .Should().BeOfType<CsvBrokerStatementService>();
-            provider.GetRequiredService<IStatementReconciliationCheckpointStore>()
-                .Should().BeOfType<InMemoryStatementReconciliationCheckpointStore>();
-            provider.GetRequiredService<StatementReconciliationOrchestrator>().Should().NotBeNull();
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", originalUseInMemoryGovernance);
-            Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", originalDotnetEnvironment);
-        }
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<StatementReconciliationContextAdapter>().Should().NotBeNull();
+        provider.GetRequiredService<IStatementReconciliationValidationService>()
+            .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
+        provider.GetRequiredService<IDataIntegrationIngestionService>()
+            .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
+        provider.GetRequiredService<IReconciliationCaseIntakeService>()
+            .Should().BeSameAs(provider.GetRequiredService<StatementReconciliationContextAdapter>());
+        provider.GetRequiredService<IStatementRunWorkflowService>()
+            .Should().BeOfType<StatementRunWorkflowService>();
+        provider.GetRequiredService<IBrokerStatementService>()
+            .Should().BeOfType<CsvBrokerStatementService>();
+        provider.GetRequiredService<IStatementReconciliationCheckpointStore>()
+            .Should().BeOfType<InMemoryStatementReconciliationCheckpointStore>();
+        provider.GetRequiredService<StatementReconciliationOrchestrator>().Should().NotBeNull();
     }
 
     [Fact]
     public void Register_AddsPostgresBackedServices_WhenConnectionStringsAreConfigured()
     {
+        ConfigureInMemoryGovernanceFixture();
+        ClearGovernancePersistenceEnvironment();
         Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, "Host=sm-db;Port=5432;Database=security;Username=postgres;Password=secret");
         Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
         Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, "Host=dl-db;Port=5432;Database=loans;Username=postgres;Password=secret");
@@ -180,12 +184,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     [Fact]
     public void Register_ResolvesProjectionReconciliationJobs_ForEachFundOperationsDomain()
     {
-        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
-        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
-        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
-        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
 
         var services = new ServiceCollection();
 
@@ -200,6 +200,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     [Fact]
     public void Register_AddsLedgerBackedOperationsContinuityServices_WhenLedgerConnectionStringIsConfigured()
     {
+        ConfigureInMemoryGovernanceFixture();
+        ClearGovernancePersistenceEnvironment();
         Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
         Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
         Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
@@ -223,6 +225,38 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsContinuityTransactionalCommitStore));
     }
 
+    private static void ConfigureInMemoryGovernanceFixture()
+    {
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", Environments.Development);
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
+    }
+
+    private static void ClearPostgresBackedStorageEnvironment()
+    {
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+        ClearGovernancePersistenceEnvironment();
+    }
+
+    private static void ClearGovernancePersistenceEnvironment()
+    {
+        Environment.SetEnvironmentVariable(FundAccountsStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(FundAccountsStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(FundStructureStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(FundStructureStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(BankingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(BankingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(MoneyMarketStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING", null);
+        Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA", null);
+    }
+
     public void Dispose()
     {
         Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, _originalSecurityMasterConnectionString);
@@ -231,5 +265,18 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, _originalDirectLendingSchema);
         Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, _originalLedgerConnectionString);
         Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, _originalLedgerSchema);
+        Environment.SetEnvironmentVariable(FundAccountsStartup.ConnectionStringVariable, _originalFundAccountsConnectionString);
+        Environment.SetEnvironmentVariable(FundAccountsStartup.SchemaVariable, _originalFundAccountsSchema);
+        Environment.SetEnvironmentVariable(FundStructureStartup.ConnectionStringVariable, _originalFundStructureConnectionString);
+        Environment.SetEnvironmentVariable(FundStructureStartup.SchemaVariable, _originalFundStructureSchema);
+        Environment.SetEnvironmentVariable(BankingStartup.ConnectionStringVariable, _originalBankingConnectionString);
+        Environment.SetEnvironmentVariable(BankingStartup.SchemaVariable, _originalBankingSchema);
+        Environment.SetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable, _originalMoneyMarketConnectionString);
+        Environment.SetEnvironmentVariable(MoneyMarketStartup.SchemaVariable, _originalMoneyMarketSchema);
+        Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING", _originalScopedAccessConnectionString);
+        Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA", _originalScopedAccessSchema);
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", _originalUseInMemoryGovernance);
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", _originalDotnetEnvironment);
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", _originalAspNetCoreEnvironment);
     }
 }
