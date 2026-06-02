@@ -17,6 +17,31 @@ have() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Derive the .NET install channel (major.minor) from global.json so this script
+# always matches the SDK the repository actually requires. Falls back to "10.0"
+# if global.json cannot be read.
+dotnet_channel_from_global_json() {
+    local global_json="$ROOT_DIR/global.json"
+    local channel=""
+    if have python3 && [[ -f "$global_json" ]]; then
+        channel="$(python3 - "$global_json" <<'PY' 2>/dev/null || true
+import json
+import sys
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as fh:
+        data = json.loads(fh.read())
+    version = data["sdk"]["version"]
+    major, minor = version.split(".")[:2]
+    print(f"{major}.{minor}")
+except Exception:
+    pass
+PY
+)"
+    fi
+    printf '%s\n' "${channel:-10.0}"
+}
+
 on_error() {
     local exit_code=$?
     local line_no="${1:-unknown}"
@@ -35,7 +60,7 @@ RUN_NODE_INSTALL=1
 RUN_AI_HELPER=1
 WRITE_CONTEXT=1
 COPY_SAMPLE_CONFIG=1
-DOTNET_CHANNEL="9.0"
+DOTNET_CHANNEL="$(dotnet_channel_from_global_json)"
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_NOLOGO=1
@@ -201,6 +226,11 @@ Read first:
 - README.md
 - CLAUDE.md
 - docs/ai/ai-known-errors.md
+
+Token and handoff efficiency:
+- docs/ai/agent-handoff-checklist.md
+- docs/ai/parallel-task-manifest-template.md
+- docs/ai/model-routing-policy.json (see contextEfficiency defaults)
 
 Suggested commands:
 - bash scripts/ai/setup.sh

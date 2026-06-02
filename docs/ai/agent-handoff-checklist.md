@@ -50,6 +50,13 @@ Each handoff should include:
 - [ ] Include a cleanup plan if multiple files were touched and conflicts are likely.
 - [ ] Confirm the handoff output is reviewable without re-reading the entire previous lane output.
 
+## 4b) Parallel Lane Integration
+
+- [ ] Set an explicit integration order when lanes touch shared files, so merges land predictably.
+- [ ] Merge lanes with the narrowest shared surface first; integrate doc/index lanes last.
+- [ ] Give each lane a rollback trigger and action so one bad lane can be reverted on its own.
+- [ ] Re-run shared validation (handoff, routing parity, contract drift) once after final integration.
+
 ## 5) Token-Cost Efficiency
 
 - [ ] Reuse this checklist as a fixed template so assistants do not rediscover orchestration rules each run.

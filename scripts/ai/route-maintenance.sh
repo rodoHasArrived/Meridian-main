@@ -65,6 +65,10 @@ DOCS_ONLY=false
 WORKFLOW_CHANGES=false
 UI_CHANGES=false
 LEDGER_CHANGES=false
+PROVIDER_CHANGES=false
+AI_TOOLING_CHANGES=false
+CONFIG_CHANGES=false
+TESTS_ONLY=false
 
 if [[ -z "$CHANGED_FILES" ]]; then
     log "No changed files detected; routing to light maintenance"
@@ -97,6 +101,28 @@ if echo "$CHANGED_FILES" | grep -Eq '^(docs/|CLAUDE\.md$)'; then
     DOCS_ONLY=true
 fi
 
+# Provider adapter changes -> downstream provider validation lanes care about these
+if echo "$CHANGED_FILES" | grep -Eq '^src/Meridian\.Infrastructure/Adapters/'; then
+    PROVIDER_CHANGES=true
+fi
+
+# AI agent tooling changes (scripts, prompts, skills, agent docs) -> AI doc/parity checks
+if echo "$CHANGED_FILES" | grep -Eq '^(scripts/ai/|docs/ai/|build/scripts/docs/|\.codex/|\.claude/|\.agents/|AGENTS\.md$|CLAUDE\.md$)'; then
+    AI_TOOLING_CHANGES=true
+fi
+
+# Build/config changes (central package management, SDK pin, runtime config)
+if echo "$CHANGED_FILES" | grep -Eq '^(config/|global\.json$|Directory\.(Packages|Build)\.props$|NuGet\.Config$)' || \
+   echo "$CHANGED_FILES" | grep -Eq '\.(props|targets)$'; then
+    CONFIG_CHANGES=true
+fi
+
+# tests_only is true only when every changed file lives under tests/ (lets downstream
+# jobs route a lighter validation pass for test-only edits)
+if [[ -n "$CHANGED_FILES" ]] && ! echo "$CHANGED_FILES" | grep -vE '^tests/' | grep -q .; then
+    TESTS_ONLY=true
+fi
+
 # Count non-empty lines safely
 CHANGED_COUNT=0
 if [[ -n "$CHANGED_FILES" ]]; then
@@ -111,6 +137,10 @@ cat >.ai/maintenance-route.json <<EOF
   "workflow_changes": $WORKFLOW_CHANGES,
   "ui_changes": $UI_CHANGES,
   "ledger_changes": $LEDGER_CHANGES,
+  "provider_changes": $PROVIDER_CHANGES,
+  "ai_tooling_changes": $AI_TOOLING_CHANGES,
+  "config_changes": $CONFIG_CHANGES,
+  "tests_only": $TESTS_ONLY,
   "base_ref": "$BASE_REF",
   "head_ref": "$HEAD_REF",
   "changed_files_count": $CHANGED_COUNT
