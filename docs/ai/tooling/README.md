@@ -23,6 +23,7 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 | Check handoff packet schema and validation floor | `build/scripts/docs/check-handoff-packet-schema.py`, `build/scripts/docs/check-validation-floor.py`, `build/scripts/docs/check-mode-escalation.py` | Run the matching `docs/status/*` checks after route or handoff changes |
 | Refresh repo-navigation artifacts | `build/scripts/docs/generate-ai-navigation.py` | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary` |
 | Apply deterministic scoped text edits | `build/scripts/ai/ai-edit-tool.py` | Preview with `plan`, then apply the saved plan |
+| Build token-capped orientation packs | `build/scripts/ai/context-budget.py` | `python build/scripts/ai/context-budget.py --task "<task>" --target-file <path> --summary` |
 | Run broader AI maintenance audits | `build/scripts/ai-repo-updater.py`, `make/ai.mk`, `scripts/ai/*.sh` | Pick the narrowest `audit`, `verify`, or maintenance lane |
 | Run Codex-specific desktop quality scans | `tools/codex/*.ps1` | Use the nearest focused PowerShell tool, then report exact command/results |
 
@@ -75,6 +76,8 @@ Use these for multi-agent, parallel, or route-aware work:
 
 - `build/scripts/ai/ai-edit-tool.py`
   - Preview-first text rewrite tool for deterministic, reviewable repository edits.
+- `build/scripts/ai/context-budget.py`
+  - Generates subsystem-aware, token-capped context packs from task text and touched files.
 - `build/scripts/ai-repo-updater.py`
   - Broader repository audit and maintenance helper.
 - `scripts/ai/setup.sh`, `scripts/ai/setup-ai-agent.sh`
