@@ -27,18 +27,18 @@ do_not_edit: true
 | `SRC-EXECUTION` | Meridian execution | `src/Meridian.Execution` | Execution | active | Execution and Fund Accounts | `src/Meridian.Execution/README.md` |
 | `SRC-EXECUTION-SDK` | Execution SDK | `src/Meridian.Execution.Sdk` | Execution SDK | active | Execution and Fund Accounts | `src/Meridian.Execution.Sdk/README.md` |
 | `SRC-FSHARP` | Meridian FSharp | `src/Meridian.FSharp` | FSharp | active | Strategy and Research | `src/Meridian.FSharp/README.md` |
-| `SRC-FSHARP-DIRECTLENDING` | FSharp direct lending aggregates | `src/Meridian.FSharp.DirectLending.Aggregates` | FSharp | active | Governance and Ledger | `src/Meridian.FSharp.DirectLending.Aggregates/README.md` |
-| `SRC-FSHARP-LEDGER` | FSharp ledger | `src/Meridian.FSharp.Ledger` | FSharp | active | Governance and Ledger | `src/Meridian.FSharp.Ledger/README.md` |
+| `SRC-FSHARP-DIRECTLENDING` | FSharp direct lending aggregates | `src/Meridian.FSharp.DirectLending.Aggregates` | FSharp | active | Accounting and Ledger | `src/Meridian.FSharp.DirectLending.Aggregates/README.md` |
+| `SRC-FSHARP-LEDGER` | FSharp ledger | `src/Meridian.FSharp.Ledger` | FSharp | active | Accounting and Ledger | `src/Meridian.FSharp.Ledger/README.md` |
 | `SRC-FSHARP-TRADING` | FSharp trading | `src/Meridian.FSharp.Trading` | FSharp | active | Execution and Fund Accounts | `src/Meridian.FSharp.Trading/README.md` |
 | `SRC-HOST` | Meridian host | `src/Meridian` | Host | active | Runtime Host | `src/Meridian/README.md` |
 | `SRC-IBAPI-SMOKESTUB` | IB API smoke stub | `src/Meridian.IbApi.SmokeStub` | Provider Test Support | active | Data Confidence and Validation | `src/Meridian.IbApi.SmokeStub/README.md` |
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `src/Meridian.Infrastructure` | Infrastructure | active | Data Confidence and Validation | `src/Meridian.Infrastructure/README.md` |
-| `SRC-LEDGER` | Meridian ledger | `src/Meridian.Ledger` | Ledger | active | Governance and Ledger | `src/Meridian.Ledger/README.md` |
+| `SRC-LEDGER` | Meridian ledger | `src/Meridian.Ledger` | Ledger | active | Accounting and Ledger | `src/Meridian.Ledger/README.md` |
 | `SRC-MCP` | Meridian MCP host | `src/Meridian.Mcp` | MCP | active | Docs and Automation | `src/Meridian.Mcp/README.md` |
 | `SRC-PROVIDER-SDK` | Provider SDK | `src/Meridian.ProviderSdk` | Provider SDK | active | Data Confidence and Validation | `src/Meridian.ProviderSdk/README.md` |
 | `SRC-QUANTSCRIPT` | QuantScript | `src/Meridian.QuantScript` | Research | active | Strategy and Research | `src/Meridian.QuantScript/README.md` |
 | `SRC-RISK` | Meridian risk | `src/Meridian.Risk` | Risk | active | Execution and Fund Accounts | `src/Meridian.Risk/README.md` |
-| `SRC-STORAGE` | Meridian storage | `src/Meridian.Storage` | Storage | active | Governance and Ledger | `src/Meridian.Storage/README.md` |
+| `SRC-STORAGE` | Meridian storage | `src/Meridian.Storage` | Storage | active | Accounting and Ledger | `src/Meridian.Storage/README.md` |
 | `SRC-STRATEGIES` | Meridian strategies | `src/Meridian.Strategies` | Strategies | active | Strategy and Research | `src/Meridian.Strategies/README.md` |
 | `SRC-UI` | Meridian UI asset host | `src/Meridian.Ui` | UI Host Assets | active | Workstation Shell and UX | `src/Meridian.Ui/README.md` |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `src/Meridian.Ui/dashboard` | UI Surface | active | Workstation Shell and UX | `src/Meridian.Ui/dashboard/README.md` |

@@ -174,7 +174,7 @@ modules:
     name: Meridian storage
     layer: Storage
     status: active
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     purpose: WAL-backed persistence, archival packaging, storage catalogs, replay, ledger storage, and export support.
     readme: src/Meridian.Storage/README.md
     roadmap_items:
@@ -329,7 +329,7 @@ modules:
     name: Meridian ledger
     layer: Ledger
     status: active
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     purpose: Ledger and accounting domain support for books, reconciliation, and governed reporting.
     readme: src/Meridian.Ledger/README.md
     roadmap_items:
@@ -371,7 +371,7 @@ modules:
     name: FSharp direct lending aggregates
     layer: FSharp
     status: active
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     purpose: Functional aggregate calculations for direct lending and fund-structure workflows.
     readme: src/Meridian.FSharp.DirectLending.Aggregates/README.md
     roadmap_items:
@@ -392,7 +392,7 @@ modules:
     name: FSharp ledger
     layer: FSharp
     status: active
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     purpose: Functional ledger models and accounting calculations.
     readme: src/Meridian.FSharp.Ledger/README.md
     roadmap_items:

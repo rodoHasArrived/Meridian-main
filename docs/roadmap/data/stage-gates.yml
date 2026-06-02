@@ -29,7 +29,7 @@ stage_gates:
   - id: PortfolioLedgerReview
     title: Portfolio ledger review
     purpose: Ledger and reconciliation records can support books and operator sign-off.
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     exit_evidence:
       - docs/roadmap/generated/ROADMAP_SUMMARY.md
       - tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs
@@ -37,7 +37,7 @@ stage_gates:
   - id: GovernedReportPack
     title: Governed report pack
     purpose: Report packs carry approval and export evidence.
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     exit_evidence:
       - docs/roadmap/generated/ROADMAP_SUMMARY.md
       - tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs
@@ -45,7 +45,7 @@ stage_gates:
   - id: AccountingRecords
     title: Accounting records
     purpose: Source data, reconciliation actions, ledger evidence, approvals, retained documents, and report outputs remain linked as audit-ready operational records.
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     exit_evidence:
       - docs/roadmap/generated/ROADMAP_SUMMARY.md
   - id: BacktestingEvidence
@@ -56,5 +56,5 @@ stage_gates:
   - id: LiveReadiness
     title: Live readiness
     purpose: Live operation remains gated by prior evidence-backed stages.
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     exit_evidence: []

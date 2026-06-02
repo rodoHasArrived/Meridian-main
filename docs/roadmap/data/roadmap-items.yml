@@ -141,7 +141,7 @@ items:
     workspace:
       - Portfolio
       - Accounting
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     status: done
     health: green
     priority: high
@@ -175,7 +175,7 @@ items:
     workspace:
       - Reporting
       - Accounting
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     status: done
     health: green
     priority: high
@@ -213,7 +213,7 @@ items:
       - Reporting
       - Portfolio
       - Data
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     status: planned
     health: green
     priority: high
@@ -269,7 +269,7 @@ items:
     workspace:
       - Trading
       - Settings
-    owner_lane: Governance and Ledger
+    owner_lane: Accounting and Ledger
     status: planned
     health: green
     priority: medium

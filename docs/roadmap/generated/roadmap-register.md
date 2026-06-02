@@ -140,7 +140,7 @@ Closed in the 2026-05-27 evidence slice through shared brokerage/continuity/pilo
 | Status | done |
 | Health | green |
 | Priority | high |
-| Owner lane | Governance and Ledger |
+| Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
 | Last reviewed | 2026-05-29 |
 
@@ -168,7 +168,7 @@ Closed in the 2026-05-29 W4 evidence slice through operations-continuity close-l
 | Status | done |
 | Health | green |
 | Priority | high |
-| Owner lane | Governance and Ledger |
+| Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
 | Last reviewed | 2026-05-29 |
 
@@ -196,7 +196,7 @@ Closed in the 2026-05-29 W4 evidence slice through governed report-pack workflow
 | Status | planned |
 | Health | green |
 | Priority | high |
-| Owner lane | Governance and Ledger |
+| Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
 | Last reviewed | 2026-06-02 |
 
@@ -252,7 +252,7 @@ Backtesting studio work is deferred behind the v0.15 accounting records and oper
 | Status | planned |
 | Health | green |
 | Priority | medium |
-| Owner lane | Governance and Ledger |
+| Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
 | Last reviewed | 2026-06-02 |
 

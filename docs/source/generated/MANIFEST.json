@@ -10,7 +10,7 @@
     },
     {
       "path": "docs/source/data/source-modules.yml",
-      "sha256": "239669a5b801283ceb42ac393182028cd305132bd7808c677bc29a8762c0377f"
+      "sha256": "63204b156dc480a2ae7f13afda9f5d18d509bcf56f51ab5ca3db58ff8b0d961b"
     },
     {
       "path": "docs/source/data/source-readme-coverage.yml",
@@ -28,7 +28,7 @@
   "outputs": [
     {
       "path": "docs/source/generated/source-module-index.md",
-      "sha256": "63c7cd320decb6a76568b22ed0b53ff1dc3586e52d73ed029d4511793bd4e401"
+      "sha256": "57a52c43f135d62cc96eb1be168189160e6a3977a3ba892b1709dddb7e3dca14"
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
