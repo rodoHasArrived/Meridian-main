@@ -120,7 +120,10 @@ const data: AccountingWorkspaceResponse = {
       resolutionNote: null,
       routingTarget: "FundTrialBalance",
       routingDetail: "Open the accounting trial balance for evidence review.",
-      recommendedAction: "Review cash ledger entries before resolving."
+      recommendedAction: "Review cash ledger entries before resolving.",
+      commentCount: 2,
+      evidenceCount: 3,
+      signoffStatus: "Pending"
     }
   ],
   cashFlow: {
@@ -598,6 +601,27 @@ describe("AccountingScreen", () => {
     expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
       "Open reconciliation breaks remain on this run."
     );
+  });
+
+  it("renders operational exception workbench with queue, comment, audit, and workflow handoffs", async () => {
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+
+    await renderAccountingScreen(data, "/accounting/exceptions");
+
+    expect(screen.getByRole("link", { name: "Resolve Exceptions, current financial operations step" })).toHaveAttribute(
+      "href",
+      "/accounting/exceptions"
+    );
+    expect(screen.getAllByRole("heading", { name: "Operational exception workbench" }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("Paper Index Mean Reversion / AmountMismatch");
+    expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("2 comments");
+    expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("3 evidence links");
+    expect(screen.getAllByRole("link", { name: "Approval gate" })[0]).toHaveAttribute("href", "/accounting/approvals");
+    expect(screen.getByRole("link", { name: "Open exception evidence packet" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subjectKind=accounting-exceptions&subjectId=active"
+    );
+    expect(screen.getByRole("table", { name: "Reconciliation break queue" })).toBeInTheDocument();
   });
 
   it("renders calibration tolerance profiles as selectable row-detail evidence", async () => {

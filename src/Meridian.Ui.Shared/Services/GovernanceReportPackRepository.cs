@@ -22,6 +22,11 @@ public interface IGovernanceReportPackRepository
     Task<FundReportPackSnapshotDto?> GetAsync(Guid reportId, CancellationToken ct = default);
 
     Task<FundReportPackSnapshotDto?> FindLatestByRunIdAsync(string runId, CancellationToken ct = default);
+
+    Task<FundReportPackEvidenceBundleDto> SaveEvidenceBundleAsync(
+        FundReportPackSnapshotDto snapshot,
+        FundReportPackEvidenceBundleDto bundle,
+        CancellationToken ct = default);
 }
 
 public sealed record GovernanceReportPackArtifactContent(
@@ -234,6 +239,52 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
                 .OrderByDescending(static snapshot => snapshot.GeneratedAt)
                 .ThenByDescending(static snapshot => snapshot.ReportId)
                 .FirstOrDefault();
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<FundReportPackEvidenceBundleDto> SaveEvidenceBundleAsync(
+        FundReportPackSnapshotDto snapshot,
+        FundReportPackEvidenceBundleDto bundle,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(bundle);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!IsReadableSnapshot(snapshot))
+            {
+                throw new ArgumentException("Report-pack manifest is not readable for evidence-bundle export.", nameof(snapshot));
+            }
+
+            var fundKey = BuildFundKey(snapshot.FundProfileId);
+            var reportKey = snapshot.ReportId.ToString("N");
+            var reportDirectory = Path.Combine(_rootDirectory, fundKey, reportKey);
+            Directory.CreateDirectory(reportDirectory);
+
+            var bundleForWrite = bundle with { BundleArtifact = null };
+            var bundleBytes = JsonSerializer.SerializeToUtf8Bytes(bundleForWrite, _jsonOptions);
+            var fileName = $"evidence-bundle-{bundle.BundleId:N}.json";
+            await AtomicFileWriter
+                .WriteAsync(Path.Combine(reportDirectory, fileName), bundleBytes, ct)
+                .ConfigureAwait(false);
+
+            return bundle with
+            {
+                BundleArtifact = BuildArtifactDto(
+                    fundKey,
+                    reportKey,
+                    "evidence-bundle",
+                    GovernanceReportArtifactFormatDto.Json,
+                    fileName,
+                    bundleBytes)
+            };
         }
         finally
         {

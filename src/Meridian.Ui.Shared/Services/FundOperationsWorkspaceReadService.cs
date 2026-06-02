@@ -409,6 +409,55 @@ public sealed class FundOperationsWorkspaceReadService
         return repository.GetAsync(reportId, ct);
     }
 
+    public async Task<FundReportPackEvidenceBundleDto?> ExportReportPackEvidenceBundleAsync(
+        Guid reportId,
+        string? auditActor = null,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var repository = _reportPackRepository
+            ?? throw new InvalidOperationException("Report-pack repository has not been configured.");
+        var snapshot = await repository.GetAsync(reportId, ct).ConfigureAwait(false);
+        if (snapshot is null)
+        {
+            return null;
+        }
+
+        var bundleId = Guid.NewGuid();
+        var actor = string.IsNullOrWhiteSpace(auditActor)
+            ? snapshot.AuditActor
+            : auditActor.Trim();
+        var manifestPath = ResolveReportPackArtifactPath(snapshot, "manifest") ?? $"{BuildReportPackFundKey(snapshot.FundProfileId)}/{snapshot.ReportId:N}/manifest.json";
+        var provenancePath = ResolveReportPackArtifactPath(snapshot, "provenance") ?? $"{BuildReportPackFundKey(snapshot.FundProfileId)}/{snapshot.ReportId:N}/provenance.json";
+        var bundle = new FundReportPackEvidenceBundleDto(
+            BundleId: bundleId,
+            ReportId: snapshot.ReportId,
+            FundProfileId: snapshot.FundProfileId,
+            DisplayName: snapshot.DisplayName,
+            ReportKind: snapshot.ReportKind,
+            Currency: snapshot.Currency,
+            AsOf: snapshot.AsOf,
+            GeneratedAt: snapshot.GeneratedAt,
+            ExportedAtUtc: DateTimeOffset.UtcNow,
+            ExportedBy: actor,
+            ManifestPath: manifestPath,
+            ProvenancePath: provenancePath,
+            SourceSnapshotHash: snapshot.Provenance.SourceSnapshotHash,
+            Manifest: snapshot,
+            Provenance: snapshot.Provenance,
+            Approvals: BuildEvidenceBundleApprovals(snapshot),
+            SourceLinks: BuildEvidenceBundleSourceLinks(snapshot),
+            Artifacts: snapshot.Artifacts,
+            Warnings: BuildEvidenceBundleWarnings(snapshot),
+            BundleArtifact: null,
+            ContractName: snapshot.ContractName,
+            SchemaVersion: snapshot.SchemaVersion);
+
+        return await repository
+            .SaveEvidenceBundleAsync(snapshot, bundle, ct)
+            .ConfigureAwait(false);
+    }
+
     private async Task<IReadOnlyList<SecurityValidationGateResultDto>> ValidateReportPackSecuritiesAsync(
         ReportPack report,
         string auditActor,
@@ -1346,6 +1395,85 @@ public sealed class FundOperationsWorkspaceReadService
         }
 
         return warnings;
+    }
+
+    private static IReadOnlyList<FundReportPackEvidenceBundleApprovalDto> BuildEvidenceBundleApprovals(
+        FundReportPackSnapshotDto snapshot)
+        => snapshot.LifecycleEvents
+            .Where(static item => item.ToStatus is
+                GovernanceReportPackStatusDto.Generated or
+                GovernanceReportPackStatusDto.Validated or
+                GovernanceReportPackStatusDto.ReviewRequired or
+                GovernanceReportPackStatusDto.Approved or
+                GovernanceReportPackStatusDto.Published)
+            .Select(static item => new FundReportPackEvidenceBundleApprovalDto(
+                FromStatus: item.FromStatus,
+                ToStatus: item.ToStatus,
+                ApprovedAtUtc: item.ChangedAt,
+                Actor: item.Actor,
+                Reason: item.Reason,
+                CorrelationId: item.CorrelationId))
+            .OrderBy(static item => item.ApprovedAtUtc)
+            .ToArray();
+
+    private static IReadOnlyList<FundReportPackEvidenceBundleSourceLinkDto> BuildEvidenceBundleSourceLinks(
+        FundReportPackSnapshotDto snapshot)
+        => snapshot.Provenance.LineagePointers
+            .Select(static pointer => new FundReportPackEvidenceBundleSourceLinkDto(
+                SourceType: pointer.EvidenceType,
+                SourceId: pointer.EvidenceId,
+                Label: string.IsNullOrWhiteSpace(pointer.DisplayLabel)
+                    ? $"{pointer.ScopeType} {pointer.ScopeKey}"
+                    : pointer.DisplayLabel.Trim(),
+                Route: pointer.Route,
+                SourceSystem: string.IsNullOrWhiteSpace(pointer.SourceSystem)
+                    ? pointer.ScopeType
+                    : pointer.SourceSystem.Trim(),
+                RelatedEvidenceIds: pointer.RelatedEvidenceIds ?? [],
+                CapturedAtUtc: pointer.CapturedAt))
+            .OrderBy(static item => item.SourceType, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.SourceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static IReadOnlyList<string> BuildEvidenceBundleWarnings(FundReportPackSnapshotDto snapshot)
+    {
+        var warnings = new List<string>(snapshot.Warnings);
+        if (snapshot.AuditPackReadiness is null)
+        {
+            warnings.Add("Audit-pack readiness metadata is not present on the retained manifest.");
+        }
+
+        if (snapshot.LifecycleEvents.Count == 0)
+        {
+            warnings.Add("No lifecycle approval events are retained on the report-pack manifest.");
+        }
+
+        if (snapshot.Provenance.LineagePointers.Count == 0)
+        {
+            warnings.Add("No source lineage pointers are retained on the report-pack provenance record.");
+        }
+
+        return warnings.Distinct(StringComparer.Ordinal).ToArray();
+    }
+
+    private static string? ResolveReportPackArtifactPath(FundReportPackSnapshotDto snapshot, string artifactKind)
+        => snapshot.Artifacts
+            .FirstOrDefault(artifact => string.Equals(artifact.ArtifactKind, artifactKind, StringComparison.OrdinalIgnoreCase))
+            ?.RelativePath;
+
+    private static string BuildReportPackFundKey(string fundProfileId)
+    {
+        var trimmed = fundProfileId.Trim();
+        var buffer = new StringBuilder(trimmed.Length);
+        foreach (var character in trimmed.ToLowerInvariant())
+        {
+            buffer.Append(char.IsLetterOrDigit(character) || character is '-' or '_' or '.'
+                ? character
+                : '-');
+        }
+
+        var key = buffer.ToString().Trim('-');
+        return key.Length == 0 ? "fund" : key.Length <= 96 ? key : key[..96];
     }
 
     private static FundAuditPackReadinessDto BuildAuditPackReadiness(

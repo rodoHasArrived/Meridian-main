@@ -10,6 +10,8 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
@@ -53,6 +55,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
     private CancellationTokenSource? _activationCts;
     private CancellationTokenSource? _cts;
     private DateTime? _lastRefreshTime;
+    private ProviderReadinessSummaryDto? _providerReadiness;
     private bool _isActive;
     private bool _isDisposed;
 
@@ -504,6 +507,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
 
             await LoadStreamingProvidersAsync(refreshCts.Token);
             await LoadBackfillProvidersAsync(refreshCts.Token);
+            _providerReadiness = await TryLoadProviderReadinessAsync(refreshCts.Token);
             UpdateSummaryStats();
             UpdateProviderManagementCenter();
             _lastRefreshTime = DateTime.UtcNow;
@@ -521,6 +525,23 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         {
             Interlocked.CompareExchange(ref _cts, null, refreshCts);
             CancelAndDispose(refreshCts, cancel: false);
+        }
+    }
+
+    private async Task<ProviderReadinessSummaryDto?> TryLoadProviderReadinessAsync(CancellationToken ct)
+    {
+        try
+        {
+            return await SystemHealthService.Instance.GetProviderReadinessAsync(ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogWarning($"Shared provider readiness endpoint unavailable; using local provider health projection. {ex.Message}");
+            return null;
         }
     }
 
@@ -722,7 +743,9 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
     private void UpdateProviderManagementCenter()
     {
         var previouslySelectedProviderId = SelectedProviderManagementRow?.ProviderId;
-        var rows = BuildProviderManagementRows(StreamingProviders, BackfillProviders, _lastRefreshTime);
+        var rows = _providerReadiness is not null
+            ? BuildProviderManagementRows(_providerReadiness.Providers)
+            : BuildProviderManagementRows(StreamingProviders, BackfillProviders, _lastRefreshTime);
 
         ProviderManagementRows.Clear();
         foreach (var row in rows)
@@ -736,6 +759,153 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
 
         ProviderManagementTable = BuildProviderManagementTable(ProviderManagementRows);
         UpdateProviderManagementSummary();
+    }
+
+    internal static IReadOnlyList<ProviderManagementRowModel> BuildProviderManagementRows(
+        IReadOnlyList<ProviderReadinessRowDto> readinessRows)
+        => readinessRows
+            .Select(row =>
+            {
+                var health = HealthTextForReadiness(row.Status);
+                var model = new ProviderManagementRowModel
+                {
+                    ProviderId = row.ProviderId,
+                    DisplayName = row.DisplayName,
+                    CapabilityText = CapabilityTextForReadiness(row.Capability),
+                    HealthText = health,
+                    CredentialStateText = StateText(row.CredentialState),
+                    CredentialSourceText = $"Source: {StateText(row.CredentialSource)}",
+                    VerificationStateText = StateText(row.VerificationState),
+                    LastSuccessfulConnectionText = row.LastSuccessfulAt.HasValue
+                        ? $"Last good: {row.LastSuccessfulAt.Value:yyyy-MM-dd HH:mm} UTC"
+                        : row.IsConnected ? "Connected" : "Never",
+                    LastVerifiedText = row.LastVerifiedAt.HasValue
+                        ? $"Last verified: {row.LastVerifiedAt.Value:yyyy-MM-dd HH:mm} UTC"
+                        : "Last verified: Never",
+                    LastFailureText = row.LastFailureAt.HasValue
+                        ? $"Last failure: {row.LastFailureAt.Value:yyyy-MM-dd HH:mm} UTC"
+                        : "Last failure: None reported",
+                    LastErrorText = string.IsNullOrWhiteSpace(row.LastError) ? "None reported" : row.LastError,
+                    AffectedWorkflowsText = row.AffectedWorkflows.Count == 0 ? "Data readiness" : string.Join(", ", row.AffectedWorkflows),
+                    RecommendedActionText = row.RecommendedAction,
+                    ActionText = ActionForReadiness(row.Status),
+                    EnvironmentText = string.IsNullOrWhiteSpace(row.Environment) ? "Not reported" : row.Environment,
+                    MaskedKeyPreviewText = string.IsNullOrWhiteSpace(row.MaskedKeyPreview) ? "Not reported" : row.MaskedKeyPreview,
+                    ExternalAccountIdText = string.IsNullOrWhiteSpace(row.ExternalAccountId) ? "Not reported" : row.ExternalAccountId,
+                    FallbackText = row.FallbackActive ? "Fallback active" : "Fallback not active",
+                    TrustExplanationText = BuildReadinessTrustExplanation(row),
+                    IsFallbackActive = row.FallbackActive,
+                    HealthBrush = BrushForHealth(health)
+                };
+
+                foreach (var diagnostic in BuildProviderDiagnostics(row, model))
+                {
+                    model.Diagnostics.Add(diagnostic);
+                }
+
+                return model;
+            })
+            .ToArray();
+
+    private static string CapabilityTextForReadiness(ProviderConnectionCapabilityDto capability)
+        => capability switch
+        {
+            ProviderConnectionCapabilityDto.DataAndBrokerage => "Data + Brokerage",
+            ProviderConnectionCapabilityDto.AccountingSystem => "Accounting system",
+            ProviderConnectionCapabilityDto.Brokerage => "Brokerage",
+            _ => "Data"
+        };
+
+    private static string HealthTextForReadiness(ProviderReadinessStatusDto status)
+        => status switch
+        {
+            ProviderReadinessStatusDto.Ready => "Healthy",
+            ProviderReadinessStatusDto.Degraded => "Degraded",
+            ProviderReadinessStatusDto.Blocked => "Blocked",
+            ProviderReadinessStatusDto.Review => "Warning",
+            _ => "Unknown"
+        };
+
+    private static string ActionForReadiness(ProviderReadinessStatusDto status)
+        => status switch
+        {
+            ProviderReadinessStatusDto.Blocked => "Repair",
+            ProviderReadinessStatusDto.Degraded => "Review",
+            ProviderReadinessStatusDto.Review => "Configure",
+            _ => "View Details"
+        };
+
+    private static string BuildReadinessTrustExplanation(ProviderReadinessRowDto row)
+    {
+        var degradation = row.DegradationScore.HasValue
+            ? $"; degradation={row.DegradationScore.Value:P0}"
+            : string.Empty;
+        return $"Status={row.Status}; credentials={row.CredentialState}; verification={row.VerificationState}; connection={row.ConnectionHealth}{degradation}.";
+    }
+
+    private static IEnumerable<ProviderManagementDiagnosticModel> BuildProviderDiagnostics(
+        ProviderReadinessRowDto readiness,
+        ProviderManagementRowModel row)
+    {
+        foreach (var evidence in readiness.Evidence)
+        {
+            var statusText = evidence.Status switch
+            {
+                ProviderReadinessStatusDto.Ready => "Pass",
+                ProviderReadinessStatusDto.Blocked => "Fail",
+                ProviderReadinessStatusDto.Degraded => "Review",
+                ProviderReadinessStatusDto.Review => "Review",
+                _ => "Unknown"
+            };
+
+            yield return new ProviderManagementDiagnosticModel
+            {
+                Label = evidence.Label,
+                StatusText = statusText,
+                Detail = evidence.Detail,
+                StatusBrush = BrushForHealth(HealthTextForReadiness(evidence.Status))
+            };
+        }
+
+        if (readiness.Evidence.Count == 0)
+        {
+            foreach (var diagnostic in BuildProviderDiagnostics(row))
+            {
+                yield return diagnostic;
+            }
+        }
+    }
+
+    private static string StateText<T>(T value)
+        where T : Enum
+        => value.ToString() switch
+        {
+            "NotRequired" => "Not Required",
+            "NotVerified" => "Not Verified",
+            "LocalEncryptedStore" => "encrypted store",
+            "ExternalVaultReference" => "external vault",
+            var text => SplitPascalCase(text)
+        };
+
+    private static string SplitPascalCase(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var chars = new List<char>(value.Length + 4) { value[0] };
+        for (var i = 1; i < value.Length; i++)
+        {
+            if (char.IsUpper(value[i]) && !char.IsWhiteSpace(value[i - 1]))
+            {
+                chars.Add(' ');
+            }
+
+            chars.Add(value[i]);
+        }
+
+        return new string(chars.ToArray());
     }
 
     private void UpdateProviderManagementSummary()
@@ -1196,6 +1366,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         {
             "Healthy" => CreateModelBrush(63, 185, 80),
             "Warning" => CreateModelBrush(255, 193, 7),
+            "Degraded" => CreateModelBrush(255, 193, 7),
             "Blocked" => CreateModelBrush(244, 67, 54),
             _ => CreateModelBrush(139, 148, 158)
         };
@@ -1304,6 +1475,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         {
             "Healthy" => WorkspaceTone.Success,
             "Warning" => WorkspaceTone.Warning,
+            "Degraded" => WorkspaceTone.Warning,
             "Blocked" => WorkspaceTone.Danger,
             _ => WorkspaceTone.Neutral
         };

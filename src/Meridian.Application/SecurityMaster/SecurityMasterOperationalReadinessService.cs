@@ -93,23 +93,23 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             hardBlocker: false),
         Listed(
             "DirectLoan",
-            "Loans",
-            "Loan readiness requires borrower identity, loan schedule evidence, accrual policy, principal paydown events, and direct-lending ledger classification.",
+            "Private credit / loans",
+            "Private-credit readiness requires borrower identity, commitment and obligation schedules, accrual policy, principal paydown events, covenant notices, and direct-lending ledger classification.",
             ["Internal code", "Borrower", "LEI or provider symbol when available"],
-            ["borrower", "commitment", "principal", "rate", "maturity", "loan schedule"],
-            ["Loan schedule", "Accrual", "Cash", "Collateral", "Valuation"],
-            "Loan receivable / interest income / fees / realized and unrealized P&L",
-            ["quantity", "market value", "cash", "accrual", "loan schedule"],
+            ["borrower", "commitment", "unfunded commitment", "principal", "rate", "maturity", "loan schedule", "covenant", "obligation"],
+            ["Loan schedule", "Borrower notice", "Commitment schedule", "Unfunded commitment", "Paydown", "Covenant", "Accrual", "Cash", "Collateral", "Valuation"],
+            "Loan receivable / unfunded commitment obligation / interest income / fees / realized and unrealized P&L",
+            ["quantity", "market value", "cash", "accrual", "loan schedule", "commitment", "paydown", "obligation"],
             hardBlocker: true),
         Listed(
             "CustomAsset",
             "MBS / ABS / CLO / CMBS / private assets",
-            "Structured and private assets require governed custom profiles, factor or NAV evidence, valuation approval, and profile-aware ledger classification.",
+            "Structured and private assets require governed custom profiles, servicer/trustee reports, factor or NAV evidence, obligation events, valuation approval, and profile-aware ledger classification.",
             ["Internal code", "CUSIP/ISIN/FIGI when available", "Provider symbol"],
-            ["approved profile", "profile version", "required profile fields", "valuation date"],
-            ["Custom profile", "Factor schedule", "Dealer pricing", "NAV", "Cash", "Collateral"],
-            "Profile-derived classification / valuation adjustment / income accrual / commitment accounting",
-            ["quantity", "market value", "cash", "factor schedule", "custom-profile evidence"],
+            ["approved profile", "profile version", "required profile fields", "valuation date", "servicer/trustee cut-off date", "obligation event"],
+            ["Custom profile", "Servicer report", "Trustee report", "Warehouse tape", "Factor schedule", "Dealer pricing", "NAV", "Capital call", "Distribution notice", "Cash", "Collateral", "Obligation schedule"],
+            "Profile-derived classification / valuation adjustment / income accrual / commitment and obligation accounting",
+            ["quantity", "market value", "cash", "factor schedule", "NAV", "servicer report", "trustee report", "capital call", "distribution", "obligation", "custom-profile evidence"],
             hardBlocker: true),
         Listed(
             "OtherSecurity",
@@ -468,6 +468,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                            (MatchesAny(item, spec.ProviderFeeds) ||
                             MatchesAny(item, spec.ReconciliationSignals) ||
                             MatchesText(item, spec.LedgerClassification) ||
+                            string.Equals(item.Category, "SecurityMaster", StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(item.Category, "Reconciliation", StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(item.Category, "CloseReadiness", StringComparison.OrdinalIgnoreCase)))
             .GroupBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)

@@ -4,7 +4,7 @@ param(
     [string]$Configuration = "Release",
     [string]$Framework = "net10.0-windows10.0.19041.0",
     [string]$OutputRoot = "artifacts/wpf-validation/position-blotter-route",
-    [string]$Filter = "FullyQualifiedName~PositionBlotterViewModelTests|FullyQualifiedName~ShellNavigationCatalogTests|FullyQualifiedName~WorkspaceDeepPageChromeTests|FullyQualifiedName~TradingWorkspaceShellPageTests"
+    [string]$Filter = "FullyQualifiedName~PositionBlotterViewModelTests|FullyQualifiedName~WorkspaceDeepPageChromeTests|FullyQualifiedName~TradingWorkspaceShellPageTests|FullyQualifiedName~ShellRouteRegistryTests|FullyQualifiedName~ShellNavigationCatalogTests.WorkspaceShellDefinitions_ShouldOnlyReferenceRegisteredPages|FullyQualifiedName~ShellNavigationCatalogTests.ResolveDefaultPanes_TradingWorkbenchPreset_UsesPresetPanes|FullyQualifiedName~ShellNavigationCatalogTests.TradingShellRelatedPages_ShouldExposePortfolioContinuity"
 )
 
 Set-StrictMode -Version Latest

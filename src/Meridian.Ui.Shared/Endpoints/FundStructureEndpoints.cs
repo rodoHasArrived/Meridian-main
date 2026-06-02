@@ -1049,6 +1049,24 @@ public static class FundStructureEndpoints
         .Produces<FundReportPackSnapshotDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
+        group.MapGet("/report-packs/{reportId:guid}/evidence-bundle", async (Guid reportId, HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var auditActor = context.Request.Query["auditActor"].FirstOrDefault();
+            var result = await service
+                .ExportReportPackEvidenceBundleAsync(reportId, auditActor, context.RequestAborted)
+                .ConfigureAwait(false);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("ExportFundReportPackEvidenceBundle")
+        .Produces<FundReportPackEvidenceBundleDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
         group.MapGet("/report-packs/{reportId:guid}/ledger-provenance", async (Guid reportId, string scopeKey, HttpContext context) =>
         {
             var service = context.RequestServices.GetService<LedgerAmountProvenanceService>();

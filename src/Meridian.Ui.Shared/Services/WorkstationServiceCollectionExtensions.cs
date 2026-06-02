@@ -132,6 +132,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
+        services.TryAddSingleton<ProviderReadinessService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.TryAddSingleton(ResolvePlaidOptions);

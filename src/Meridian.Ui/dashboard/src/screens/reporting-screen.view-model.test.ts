@@ -272,17 +272,58 @@ describe("useReportingScreenViewModel", () => {
     );
     expect(result.current.workflowTaskPanel?.backendLinks.map((link) => link.href)).toEqual([
       "/api/fund-structure/report-packs",
+      "/api/fund-structure/report-packs/{reportId}/evidence-bundle",
       "/api/export/preview?profile=excel",
       "/api/export/analysis"
     ]);
     expect(result.current.workflowTaskPanel?.backendLinks.map((link) => link.interactionLabel)).toEqual([
       "Open",
+      "Reference",
       "Open",
       "Reference"
     ]);
+    expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "evidence-bundle")).toMatchObject({
+      isBrowserNavigable: false,
+      ariaLabel: "Reference-only GET /api/fund-structure/report-packs/{reportId}/evidence-bundle for Evidence bundle route"
+    });
     expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "export-run")).toMatchObject({
       isBrowserNavigable: false,
       ariaLabel: "Reference-only POST /api/export/analysis for Excel export analysis"
+    });
+  });
+
+  it("links the report-pack approval task to a retained evidence bundle when a report id is loaded", () => {
+    const reportId = "1457ccde-fbb0-4b4d-94e7-9b65be8d86bf";
+    const withReportId: GovernanceReportingSummary = {
+      ...reporting,
+      workflowRecords: [
+        {
+          reportId,
+          fundProfileId: "fund-alpha",
+          fundAccountId: "account-alpha",
+          period: "2026-05",
+          templateId: { name: "monthly-board-pack", version: 1 },
+          state: "Published",
+          version: 1,
+          createdAt: "2026-05-27T10:00:00Z",
+          createdBy: "reporter",
+          updatedAt: "2026-05-28T12:00:00Z",
+          auditTrail: [],
+          restatement: null,
+          lineProvenance: [],
+          publication: null
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(withReportId, undefined, "/reporting/report-packs"));
+
+    expect(result.current.workflowTaskPanel?.backendLinks.find((link) => link.id === "evidence-bundle")).toMatchObject({
+      label: "Evidence bundle export",
+      href: `/api/fund-structure/report-packs/${reportId}/evidence-bundle`,
+      isBrowserNavigable: true,
+      interactionLabel: "Open",
+      ariaLabel: `GET /api/fund-structure/report-packs/${reportId}/evidence-bundle for Evidence bundle export`
     });
   });
 

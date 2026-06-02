@@ -62,7 +62,7 @@ import type {
   TradingParameters
 } from "@/types";
 
-export type AccountingWorkstream = "ledger" | "configure" | "reconciliation" | "security-master" | "approvals" | "reporting";
+export type AccountingWorkstream = "ledger" | "configure" | "reconciliation" | "exceptions" | "security-master" | "approvals" | "reporting";
 export type GovernanceWorkstream = AccountingWorkstream;
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
@@ -785,6 +785,41 @@ export interface ReconciliationQueuePanelViewState {
   detailEmptyAriaLabel: string;
   hasRows: boolean;
   rows: ReconciliationQueueRunRowViewModel[];
+}
+
+export interface OperationalExceptionWorkbenchMetricViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
+export interface OperationalExceptionWorkbenchCaseViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: "success" | "warning" | "outline" | "danger";
+  ownerLabel: string;
+  slaLabel: string;
+  commentLabel: string;
+  auditLabel: string;
+  routeHref: string;
+  routeLabel: string;
+  ariaLabel: string;
+}
+
+export interface OperationalExceptionWorkbenchViewState {
+  title: string;
+  description: string;
+  metricRows: OperationalExceptionWorkbenchMetricViewModel[];
+  cases: OperationalExceptionWorkbenchCaseViewModel[];
+  emptyText: string;
+  reconciliationHref: string;
+  approvalsHref: string;
+  evidenceHref: string;
+  auditHref: string;
 }
 
 export type ReconciliationStatementRunLoadStatus = "idle" | "loading" | "ready" | "error";
@@ -2141,7 +2176,7 @@ export function useAccountingReconciliationViewModel(
   }, [data?.breakQueue]);
 
   useEffect(() => {
-    if (workstream !== "reconciliation") {
+    if (workstream !== "reconciliation" && workstream !== "exceptions") {
       return;
     }
 
@@ -2197,7 +2232,7 @@ export function useAccountingReconciliationViewModel(
   }, [services]);
 
   useEffect(() => {
-    if (workstream !== "reconciliation") {
+    if (workstream !== "reconciliation" && workstream !== "exceptions") {
       return;
     }
 
@@ -2226,7 +2261,7 @@ export function useAccountingReconciliationViewModel(
   }, [services]);
 
   useEffect(() => {
-    if (workstream !== "reconciliation") {
+    if (workstream !== "reconciliation" && workstream !== "exceptions") {
       return;
     }
 
@@ -2414,6 +2449,13 @@ export function useAccountingReconciliationViewModel(
     }),
     [reconciliationQueue, selectedRunId, statementRuns, statementRunsError, statementRunsLoading]
   );
+  const exceptionWorkbench = useMemo(
+    () => buildOperationalExceptionWorkbenchState({
+      reconciliationQueue,
+      breakRows: breakQueueState.rows
+    }),
+    [breakQueueState.rows, reconciliationQueue]
+  );
   const transactionLabView = useMemo(
     () => {
       const hasSelection = Boolean(selectedReconciliation);
@@ -2514,6 +2556,7 @@ export function useAccountingReconciliationViewModel(
     detailView,
     queuePanelView,
     statementRunsView,
+    exceptionWorkbench,
     refreshStatementRuns,
     transactionLabView,
     runTransactionLabPreview,
@@ -2616,6 +2659,10 @@ export function resolveAccountingWorkstream(pathname: string): AccountingWorkstr
 
   if (pathname.includes("/reconciliation")) {
     return "reconciliation";
+  }
+
+  if (pathname.includes("/exceptions")) {
+    return "exceptions";
   }
 
   if (pathname.includes("/security-master")) {
@@ -3292,6 +3339,75 @@ export function buildReconciliationBreakQueueState({
       actionError: actionErrorText,
       breakCount: rows.length
     })
+  };
+}
+
+export function buildOperationalExceptionWorkbenchState({
+  reconciliationQueue,
+  breakRows
+}: {
+  reconciliationQueue: AccountingWorkspaceResponse["reconciliationQueue"];
+  breakRows: ReconciliationBreakRowViewModel[];
+}): OperationalExceptionWorkbenchViewState {
+  const activeBreaks = breakRows.filter((row) => row.status === "Open" || row.status === "InReview");
+  const openRunBreakCount = reconciliationQueue.reduce((total, run) => total + run.openBreakCount, 0);
+  const commentCount = breakRows.reduce((total, row) => total + (row.commentCount ?? 0), 0);
+  const evidenceCount = breakRows.reduce((total, row) => total + (row.evidenceCount ?? 0), 0);
+  const signoffCount = breakRows.filter((row) => (row.signoffStatus ?? "").trim() || row.status === "Resolved" || row.status === "SignedOff").length;
+  const cases = activeBreaks.length > 0 ? activeBreaks : breakRows.slice(0, 5);
+
+  return {
+    title: "Operational exception workbench",
+    description: "Unified review for reconciliation breaks, workflow state, comments, audit evidence, and approval handoffs.",
+    metricRows: [
+      {
+        id: "active-breaks",
+        label: "Active exceptions",
+        value: String(activeBreaks.length),
+        detail: `${openRunBreakCount} open break${openRunBreakCount === 1 ? "" : "s"} across reconciliation runs.`,
+        tone: activeBreaks.length > 0 ? "warning" : "success"
+      },
+      {
+        id: "comments",
+        label: "Comments",
+        value: String(commentCount),
+        detail: "Comment counts come from shared reconciliation casework metadata.",
+        tone: commentCount > 0 ? "default" : "warning"
+      },
+      {
+        id: "audit-evidence",
+        label: "Audit evidence",
+        value: String(evidenceCount),
+        detail: "Evidence links stay attached to the originating break and reporting packet.",
+        tone: evidenceCount > 0 ? "success" : "warning"
+      },
+      {
+        id: "signoff",
+        label: "Sign-off states",
+        value: String(signoffCount),
+        detail: "Resolved, signed-off, or role-gated cases are routed back to Accounting approvals.",
+        tone: signoffCount > 0 ? "default" : "warning"
+      }
+    ],
+    cases: cases.map((row) => ({
+      id: row.breakId,
+      title: `${row.strategyName} / ${row.category}`,
+      subtitle: `${row.breakId} - ${row.reason}`,
+      statusLabel: row.status,
+      statusTone: row.statusBadgeVariant,
+      ownerLabel: row.ownerLabel,
+      slaLabel: row.slaBadgeLabel ?? buildReconciliationSlaText(row),
+      commentLabel: `${row.commentCount ?? 0} comment${(row.commentCount ?? 0) === 1 ? "" : "s"}`,
+      auditLabel: `${row.evidenceCount ?? 0} evidence link${(row.evidenceCount ?? 0) === 1 ? "" : "s"}`,
+      routeHref: buildReconciliationBreakRoutingHref(row.routingTarget) ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+      routeLabel: row.routingTarget ? "Open routed workflow" : "Open reconciliation",
+      ariaLabel: `Operational exception ${row.breakId}. ${row.status}. ${row.reason}`
+    })),
+    emptyText: "No reconciliation exceptions are available for this accounting scope.",
+    reconciliationHref: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+    approvalsHref: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+    evidenceHref: evidenceWorkbenchPath("accounting-exceptions", "active"),
+    auditHref: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
   };
 }
 

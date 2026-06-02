@@ -34,6 +34,14 @@ public sealed class SystemHealthService
     }
 
     /// <summary>
+    /// Gets the shared provider readiness command-center model.
+    /// </summary>
+    public async Task<ProviderReadinessSummaryDto?> GetProviderReadinessAsync(CancellationToken ct = default)
+    {
+        return await ApiClientService.Instance.GetAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, ct);
+    }
+
+    /// <summary>
     /// Gets detailed diagnostics for a specific provider.
     /// </summary>
     public async Task<ProviderDiagnostics?> GetProviderDiagnosticsAsync(string provider, CancellationToken ct = default)

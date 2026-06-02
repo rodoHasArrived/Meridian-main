@@ -96,7 +96,8 @@ export const EXPORT_API_ENDPOINTS = {
   analysis: "/api/export/analysis",
   formats: "/api/export/formats",
   preview: "/api/export/preview",
-  reportPacks: "/api/fund-structure/report-packs"
+  reportPacks: "/api/fund-structure/report-packs",
+  reportPackEvidenceBundle: "/api/fund-structure/report-packs/{reportId}/evidence-bundle"
 } as const;
 
 export const BROKERAGE_CONNECTION_API_ENDPOINTS = {
@@ -477,6 +478,12 @@ export function portfolioSymbolExposureEndpoint(symbol: string): string {
 
 export function exportPreviewEndpoint(profile?: string): string {
   return `${EXPORT_API_ENDPOINTS.preview}${queryString({ profile })}`;
+}
+
+export function reportPackEvidenceBundleEndpoint(reportId?: string): string {
+  return reportId
+    ? EXPORT_API_ENDPOINTS.reportPackEvidenceBundle.replace("{reportId}", pathSegment(reportId, "reportId"))
+    : EXPORT_API_ENDPOINTS.reportPackEvidenceBundle;
 }
 
 export function strategyEndpoint(strategyId: string): string {

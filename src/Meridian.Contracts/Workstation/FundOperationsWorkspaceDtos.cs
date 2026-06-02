@@ -454,6 +454,47 @@ public sealed record FundReportPackHistoryItemDto(
     public FundAuditPackReadinessDto? AuditPackReadiness { get; init; }
 }
 
+public sealed record FundReportPackEvidenceBundleSourceLinkDto(
+    string SourceType,
+    string SourceId,
+    string Label,
+    string? Route,
+    string SourceSystem,
+    IReadOnlyList<string> RelatedEvidenceIds,
+    DateTimeOffset? CapturedAtUtc = null);
+
+public sealed record FundReportPackEvidenceBundleApprovalDto(
+    GovernanceReportPackStatusDto? FromStatus,
+    GovernanceReportPackStatusDto ToStatus,
+    DateTimeOffset ApprovedAtUtc,
+    string Actor,
+    string Reason,
+    string CorrelationId);
+
+public sealed record FundReportPackEvidenceBundleDto(
+    Guid BundleId,
+    Guid ReportId,
+    string FundProfileId,
+    string DisplayName,
+    GovernanceReportKindDto ReportKind,
+    string Currency,
+    DateTimeOffset AsOf,
+    DateTimeOffset GeneratedAt,
+    DateTimeOffset ExportedAtUtc,
+    string ExportedBy,
+    string ManifestPath,
+    string ProvenancePath,
+    string SourceSnapshotHash,
+    FundReportPackSnapshotDto Manifest,
+    FundReportPackProvenanceDto Provenance,
+    IReadOnlyList<FundReportPackEvidenceBundleApprovalDto> Approvals,
+    IReadOnlyList<FundReportPackEvidenceBundleSourceLinkDto> SourceLinks,
+    IReadOnlyList<FundReportPackArtifactDto> Artifacts,
+    IReadOnlyList<string> Warnings,
+    FundReportPackArtifactDto? BundleArtifact = null,
+    string ContractName = GovernanceReportPackContract.ContractName,
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
+
 /// <summary>
 /// Shared governed report-pack workflow states. The W4 happy-path lifecycle is
 /// <see cref="Draft"/> to <see cref="InReview"/> to <see cref="Approved"/> to

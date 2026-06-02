@@ -140,6 +140,71 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             requirement.Status == "Ready");
     }
 
+    [Fact]
+    public async Task GetReadinessAsync_WithPrivateCreditObligationEvidence_ShouldClearLoanProviderGate()
+    {
+        var service = new SecurityMasterOperationalReadinessService();
+        var snapshot = new SecurityMasterOperationalEvidenceSnapshot(
+            ProviderId: "private-credit-agent",
+            ExternalAccountId: "PA-PC",
+            ReconciliationStatus: "Matched",
+            ReconciliationDetailPath: "evidence/provider-ledger/private-credit-latest.json",
+            EvidenceItems:
+            [
+                Evidence("loan-security-master", "SecurityMaster", "Private credit borrower identifier commitment schedule covenant obligation", "Ready", assetClass: "PrivateCredit"),
+                Evidence("loan-provider", "ProviderEvidence", "Borrower notice commitment schedule unfunded commitment paydown covenant obligation", "Ready", assetClass: "PrivateCredit"),
+                Evidence("loan-ledger", "Ledger", "Loan receivable unfunded commitment obligation interest income fees realized unrealized P&L", "Ready", assetClass: "PrivateCredit"),
+                Evidence("loan-recon", "Reconciliation", "principal commitment paydown obligation cash collateral market value", "Ready", assetClass: "PrivateCredit")
+            ]);
+
+        var result = await service.GetReadinessAsync(
+            new SecurityMasterOperationalReadinessRequest(AssetClass: "DirectLoan", EvidenceSnapshot: snapshot));
+
+        var row = result.AssetClasses.Should().ContainSingle().Subject;
+        row.DisplayName.Should().Contain("Private credit");
+        row.Status.Should().Be("Ready");
+        row.Blockers.Should().BeEmpty();
+        row.EvidenceRequirements.Should().OnlyContain(requirement => requirement.Status == "Ready");
+        row.EvidenceRequirements.Should().Contain(requirement =>
+            requirement.Category == "ProviderEvidence" &&
+            requirement.Label.Contains("Unfunded commitment", StringComparison.OrdinalIgnoreCase));
+        row.LedgerClassification["classification"].Should().Contain("unfunded commitment obligation");
+        row.ReconciliationSignals["retainedEvidence"].Should().Contain("Borrower notice commitment schedule");
+    }
+
+    [Fact]
+    public async Task GetReadinessAsync_WithStaleStructuredPrivateAssetEvidence_ShouldKeepProviderReviewGate()
+    {
+        var service = new SecurityMasterOperationalReadinessService();
+        var snapshot = new SecurityMasterOperationalEvidenceSnapshot(
+            ProviderId: "structured-servicer",
+            ExternalAccountId: "PA-STRUCTURED",
+            ReconciliationStatus: "Matched",
+            ReconciliationDetailPath: "evidence/provider-ledger/structured-latest.json",
+            EvidenceItems:
+            [
+                Evidence("structured-profile", "SecurityMaster", "Custom profile approved profile profile version required profile fields", "Ready", assetClass: "PrivateAsset"),
+                Evidence("structured-provider", "ProviderEvidence", "Servicer report trustee report NAV capital call distribution obligation schedule", "Stale", assetClass: "PrivateAsset", reason: "Servicer report is older than the controller freshness policy."),
+                Evidence("structured-ledger", "Ledger", "Profile-derived classification valuation adjustment income accrual commitment obligation accounting", "Ready", assetClass: "PrivateAsset"),
+                Evidence("structured-recon", "Reconciliation", "quantity market value cash NAV servicer report trustee report capital call distribution obligation custom-profile evidence", "Ready", assetClass: "PrivateAsset")
+            ]);
+
+        var result = await service.GetReadinessAsync(
+            new SecurityMasterOperationalReadinessRequest(AssetClass: "CustomAsset", EvidenceSnapshot: snapshot));
+
+        var row = result.AssetClasses.Should().ContainSingle().Subject;
+        row.Status.Should().Be("ReviewRequired");
+        row.EvidenceRequirements.Should().Contain(requirement =>
+            requirement.Category == "ProviderEvidence" &&
+            requirement.Status == "ReviewRequired" &&
+            requirement.Label.Contains("Servicer report", StringComparison.OrdinalIgnoreCase));
+        row.Blockers.Should().Contain(blocker =>
+            blocker.Source == "ProviderEvidence" &&
+            blocker.Severity == "Review" &&
+            blocker.Message.Contains("Servicer report", StringComparison.OrdinalIgnoreCase));
+        row.ReconciliationSignals["breaks"].Should().Contain("obligation");
+    }
+
     private static SecurityMasterOperationalEvidenceItem Evidence(
         string id,
         string category,

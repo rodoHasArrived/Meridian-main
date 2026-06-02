@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
-import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint } from "@/lib/workstation-endpoints";
+import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint, reportPackEvidenceBundleEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
 
@@ -715,6 +715,7 @@ function buildWorkflowTaskPanel({
       : readyProfiles > 0
         ? "Approval-ready"
         : "Evidence review";
+  const evidenceBundleReportId = resolveEvidenceBundleReportId(reporting.workflowRecords ?? []);
 
   return {
     regionLabel: "Report-pack approval task",
@@ -795,6 +796,12 @@ function buildWorkflowTaskPanel({
         href: EXPORT_API_ENDPOINTS.reportPacks
       }),
       buildWorkflowBackendLink({
+        id: "evidence-bundle",
+        method: "GET",
+        label: evidenceBundleReportId ? "Evidence bundle export" : "Evidence bundle route",
+        href: reportPackEvidenceBundleEndpoint(evidenceBundleReportId ?? undefined)
+      }),
+      buildWorkflowBackendLink({
         id: "export-preview",
         method: "GET",
         label: selectedProfile ? `${selectedProfile.name} export preview` : "Export preview",
@@ -808,6 +815,15 @@ function buildWorkflowTaskPanel({
       })
     ]
   };
+}
+
+function resolveEvidenceBundleReportId(records: ReportingWorkflowRecord[]): string | null {
+  const selected = [...records].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0];
+  return selected && isGuid(selected.reportId) ? selected.reportId : null;
+}
+
+function isGuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
 export function resolveReportPackProfileKeyCommand(key: string): ReportingProfileKeyCommand | null {

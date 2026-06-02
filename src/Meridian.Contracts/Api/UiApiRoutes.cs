@@ -91,6 +91,7 @@ public static class UiApiRoutes
     public const string ProviderTest = "/api/providers/{providerName}/test";
     public const string ProviderFailoverThresholds = "/api/providers/failover-thresholds";
     public const string ProviderHealth = "/api/providers/health";
+    public const string ProviderReadiness = "/api/providers/readiness";
     public const string ProviderRoutingConnections = "/api/provider-routing/connections";
     public const string ProviderRoutingBindings = "/api/provider-routing/bindings";
     public const string ProviderRoutingTrustSnapshots = "/api/provider-routing/trust-snapshots";
@@ -676,6 +677,7 @@ public static class UiApiRoutes
     public const string ReconciliationBreakBulkResult = "/api/workstation/reconciliation/break-queue/bulk/{bulkActionId}/result";
     public const string FundReportPacks = "/api/fund-structure/report-packs";
     public const string FundReportPackById = "/api/fund-structure/report-packs/{reportId}";
+    public const string FundReportPackEvidenceBundle = "/api/fund-structure/report-packs/{reportId}/evidence-bundle";
     public const string FundReportPackLedgerProvenance = "/api/fund-structure/report-packs/{reportId}/ledger-provenance";
     public const string ReportingPackWorkflows = "/api/fund-structure/reporting/packs";
     public const string ReportingPackWorkflowValidate = "/api/fund-structure/reporting/packs/{reportId}/validate";

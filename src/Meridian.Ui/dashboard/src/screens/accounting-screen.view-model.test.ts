@@ -16,6 +16,7 @@ import {
   formatReportingExportResult,
   buildReconciliationBreakQueueState,
   buildReconciliationBreakRows,
+  buildOperationalExceptionWorkbenchState,
   buildReconciliationDetailActions,
   buildReconciliationQueuePanelViewState,
   buildReconciliationStatementRunsViewState,
@@ -530,6 +531,7 @@ describe("accounting-screen view model", () => {
   it("derives the accounting workstream and selected reconciliation run", () => {
     expect(resolveAccountingWorkstream("/accounting/security-master")).toBe("security-master");
     expect(resolveAccountingWorkstream("/accounting/reconciliation")).toBe("reconciliation");
+    expect(resolveAccountingWorkstream("/accounting/exceptions")).toBe("exceptions");
     expect(resolveAccountingWorkstream("/accounting/approvals")).toBe("approvals");
     expect(resolveAccountingWorkstream("/accounting")).toBe("ledger");
     expect(resolveAccountingWorkstream("/accounting/ledger")).toBe("ledger");
@@ -541,6 +543,52 @@ describe("accounting-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("builds operational exception workbench state from reconciliation queues", () => {
+    const breakRows = buildReconciliationBreakRows([
+      {
+        breakId: "run-42:cash",
+        runId: "run-42",
+        strategyName: "Paper Index Mean Reversion",
+        category: "AmountMismatch",
+        status: "Open",
+        variance: 500,
+        reason: "Cash variance over tolerance.",
+        assignedTo: null,
+        detectedAt: "2026-01-01T00:00:00Z",
+        lastUpdatedAt: "2026-01-01T00:00:00Z",
+        reviewedBy: null,
+        reviewedAt: null,
+        resolvedBy: null,
+        resolvedAt: null,
+        resolutionNote: null,
+        routingTarget: "FundTrialBalance",
+        routingDetail: "Open the accounting trial balance for evidence review.",
+        recommendedAction: "Review cash ledger entries before resolving.",
+        commentCount: 2,
+        evidenceCount: 3,
+        signoffStatus: "Pending"
+      }
+    ], null, "run-42:cash");
+
+    const state = buildOperationalExceptionWorkbenchState({
+      reconciliationQueue,
+      breakRows
+    });
+
+    expect(state.title).toBe("Operational exception workbench");
+    expect(state.metricRows.find((metric) => metric.id === "active-breaks")).toMatchObject({
+      value: "1",
+      tone: "warning"
+    });
+    expect(state.metricRows.find((metric) => metric.id === "comments")?.value).toBe("2");
+    expect(state.metricRows.find((metric) => metric.id === "audit-evidence")?.value).toBe("3");
+    expect(state.cases[0]).toMatchObject({
+      id: "run-42:cash",
+      ownerLabel: "Unassigned",
+      routeHref: "/accounting/ledger"
+    });
   });
 
   it("derives statement run rows and detail tabs from endpoint supplied counts", () => {

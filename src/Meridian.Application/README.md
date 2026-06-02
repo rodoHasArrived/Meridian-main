@@ -110,7 +110,12 @@ and UI presentation concerns in their owning layers.
   futures, FX, fixed income, direct loans, structured/private `CustomAsset`, and `OtherSecurity`
   records. It declares required identifiers, economics, provider evidence, ledger classification,
   reconciliation signals, and close blockers while leaving missing live provider evidence as
-  review-required/blocking evidence instead of fabricating completeness.
+  review-required/blocking evidence instead of fabricating completeness. Private-credit depth is
+  represented on the canonical `DirectLoan` row with commitment, unfunded-commitment, paydown,
+  covenant, and obligation evidence requirements. Structured and private assets stay on governed
+  profile-backed `CustomAsset` rows, where servicer/trustee reports, warehouse tapes, NAV, capital
+  calls, distributions, obligation schedules, and valuation approvals are treated as retained
+  provider evidence before close readiness can become complete.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. The PostgreSQL-backed service now supports the same shared
   governance cash-flow projection path as the local JSON/in-memory service, using stored

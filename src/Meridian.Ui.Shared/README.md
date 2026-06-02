@@ -240,7 +240,12 @@ single read model for browser and WPF clients. Coverage rows include contract-ow
 targets for Security Master passport/profile, provider evidence, reconciliation break/case, ledger
 mapping/evidence, and close readiness so clients can navigate without maintaining local routing
 rules. Missing retained provider inputs remain review-required or blocked rows; clients must not
-mark asset classes ready with UI-local checks.
+mark asset classes ready with UI-local checks. The shared read model treats private-credit
+commitments, unfunded commitments, paydowns, covenant notices, and obligation schedules as
+`DirectLoan` provider evidence. Governed structured/private assets remain profile-backed
+`CustomAsset` coverage rows and require retained servicer/trustee report, warehouse tape, NAV,
+capital-call, distribution, obligation-schedule, and valuation evidence before the provider and
+close-readiness targets can move to ready.
 Provider-ledger reconciliation is shared service/API behavior: it reads the latest brokerage sync
 projection, compares it with the internal fund-account balance snapshot, validates Security Master
 coverage, and retains the latest detail under workstation data for browser and WPF clients to

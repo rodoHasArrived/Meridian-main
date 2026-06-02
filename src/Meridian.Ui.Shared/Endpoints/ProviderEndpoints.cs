@@ -343,6 +343,17 @@ public static class ProviderEndpoints
         .WithDescription("Returns a side-by-side comparison of all provider metrics including latency, quality, and throughput.")
         .Produces<ProviderComparisonResponse>(200);
 
+        group.MapGet(UiApiRoutes.ProviderReadiness, async (
+            ProviderReadinessService service,
+            CancellationToken ct) =>
+        {
+            var readiness = await service.GetReadinessAsync(ct).ConfigureAwait(false);
+            return Results.Json(readiness, jsonOptions);
+        })
+        .WithName("GetProviderReadiness")
+        .WithDescription("Returns the shared provider readiness command-center model across credentials, health, degradation, and evidence.")
+        .Produces<ProviderReadinessSummaryDto>(200);
+
         // Provider status
         group.MapGet(UiApiRoutes.ProviderStatus, (ConfigStore store, [FromServices] ProviderRegistry? registry) =>
         {

@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
@@ -268,6 +270,65 @@ public sealed class ProviderHealthViewModelTests
         alpaca.Diagnostics.Should().Contain(diagnostic =>
             diagnostic.Label == "Credential presence" &&
             diagnostic.StatusText == "Fail");
+    }
+
+    [Fact]
+    public void BuildProviderManagementRows_FromSharedReadiness_ProjectsEvidenceAndRecoveryState()
+    {
+        var rows = ProviderHealthViewModel.BuildProviderManagementRows(
+        [
+            new ProviderReadinessRowDto(
+                ProviderId: "plaid",
+                DisplayName: "Plaid",
+                Capability: ProviderConnectionCapabilityDto.Data,
+                Status: ProviderReadinessStatusDto.Ready,
+                CredentialState: ProviderCredentialStateDto.Verified,
+                CredentialSource: ProviderCredentialSourceDto.LocalEncryptedStore,
+                VerificationState: ProviderVerificationStateDto.Verified,
+                ConnectionHealth: ProviderContinuityHealthDto.Healthy,
+                IsEnabled: true,
+                IsConnected: true,
+                FallbackActive: false,
+                DegradationScore: 0.12,
+                LastVerifiedAt: new DateTimeOffset(2026, 6, 2, 12, 0, 0, TimeSpan.Zero),
+                LastSuccessfulAt: new DateTimeOffset(2026, 6, 2, 12, 5, 0, TimeSpan.Zero),
+                LastFailureAt: null,
+                LastError: null,
+                MaskedKeyPreview: "pla_****",
+                Environment: "sandbox",
+                ExternalAccountId: "item-1",
+                AffectedWorkflows: ["Bank cash reconciliation", "Investment account evidence"],
+                RecommendedAction: "No provider readiness action required.",
+                ActionHref: "/settings#plaid-provider-setup",
+                Evidence:
+                [
+                    new ProviderReadinessEvidenceDto(
+                        ProviderReadinessEvidenceKindDto.Plaid,
+                        "Linked Plaid evidence",
+                        ProviderReadinessStatusDto.Ready,
+                        "1 linked item(s), 2 account(s).")
+                ],
+                RecoveryActions:
+                [
+                    new ProviderRecoveryActionDto(
+                        "provider.plaid.open-setup",
+                        "Open setup",
+                        "/settings#plaid-provider-setup",
+                        RequiresMutation: false)
+                ])
+        ]);
+
+        var plaid = rows.Should().ContainSingle().Subject;
+        plaid.ProviderId.Should().Be("plaid");
+        plaid.HealthText.Should().Be("Healthy");
+        plaid.CredentialStateText.Should().Be("Verified");
+        plaid.CredentialSourceText.Should().Be("Source: encrypted store");
+        plaid.ExternalAccountIdText.Should().Be("item-1");
+        plaid.AffectedWorkflowsText.Should().Contain("Bank cash reconciliation");
+        plaid.Diagnostics.Should().ContainSingle(diagnostic =>
+            diagnostic.Label == "Linked Plaid evidence" &&
+            diagnostic.StatusText == "Pass" &&
+            diagnostic.Detail.Contains("2 account"));
     }
 
     [Fact]

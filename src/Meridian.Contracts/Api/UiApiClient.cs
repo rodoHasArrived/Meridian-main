@@ -338,6 +338,23 @@ public sealed class UiApiClient
             UiApiRoutes.WithParam(UiApiRoutes.FundReportPackById, "reportId", reportId.ToString()),
             ct).ConfigureAwait(false);
 
+    public async Task<FundReportPackEvidenceBundleDto?> ExportFundReportPackEvidenceBundleAsync(
+        Guid reportId,
+        string? auditActor = null,
+        CancellationToken ct = default)
+    {
+        var route = UiApiRoutes.WithParam(
+            UiApiRoutes.FundReportPackEvidenceBundle,
+            "reportId",
+            reportId.ToString());
+        if (!string.IsNullOrWhiteSpace(auditActor))
+        {
+            route = UiApiRoutes.WithQuery(route, $"auditActor={Uri.EscapeDataString(auditActor)}");
+        }
+
+        return await GetAsync<FundReportPackEvidenceBundleDto>(route, ct).ConfigureAwait(false);
+    }
+
     public async Task<EvidencePacketDto?> GetEvidencePacketAsync(
         string subjectKind,
         string subjectId,
