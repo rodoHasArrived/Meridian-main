@@ -28,7 +28,8 @@ import json
 import sys
 
 try:
-    data = json.loads(open(sys.argv[1], encoding="utf-8").read())
+    with open(sys.argv[1], encoding="utf-8") as fh:
+        data = json.loads(fh.read())
     version = data["sdk"]["version"]
     major, minor = version.split(".")[:2]
     print(f"{major}.{minor}")
