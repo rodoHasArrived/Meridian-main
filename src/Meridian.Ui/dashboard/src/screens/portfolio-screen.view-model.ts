@@ -1245,7 +1245,7 @@ export function buildMultiAssetCoveragePanel(
       label: blocker.severity,
       detail: blocker.message,
       source: blocker.source,
-      statusTone: blocker.severity === "Blocker" ? "danger" : "warning",
+      statusTone: (blocker.severity === "Blocker" ? "danger" : "warning") as PortfolioMultiAssetBlockerTarget["statusTone"],
       href: blocker.evidenceRoute,
       ariaLabel: blocker.evidenceRoute
         ? `Open ${item.displayName} ${blocker.source} blocker evidence`
