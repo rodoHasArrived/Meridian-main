@@ -90,24 +90,31 @@ export function WorkspaceTabStrip({
   return (
     <div className={cn("workspace-tab-strip", className)} role="tablist" aria-label={label}>
       {tabs.map((tab) => {
-        const content = (
-          <>
-            <span>{tab.label}</span>
-          </>
-        );
-        const commonProps = {
-          className: cn("workspace-tab", tab.selected && "active"),
-          role: "tab",
-          "aria-selected": tab.selected ? "true" : "false",
-          "aria-controls": tab.panelId
-        };
+        const selected = Boolean(tab.selected);
+        const className = cn("workspace-tab", selected && "active");
+        const content = <span>{tab.label}</span>;
 
         return tab.href ? (
-          <a key={tab.id} href={tab.href} {...commonProps}>
+          <a
+            key={tab.id}
+            href={tab.href}
+            className={className}
+            role="tab"
+            aria-selected={selected}
+            aria-controls={tab.panelId}
+          >
             {content}
           </a>
         ) : (
-          <button key={tab.id} type="button" {...commonProps} onClick={() => onSelect?.(tab.id)}>
+          <button
+            key={tab.id}
+            type="button"
+            className={className}
+            role="tab"
+            aria-selected={selected}
+            aria-controls={tab.panelId}
+            onClick={() => onSelect?.(tab.id)}
+          >
             {content}
           </button>
         );

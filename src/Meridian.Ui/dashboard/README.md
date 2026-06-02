@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-28
+last_reviewed: 2026-06-02
 ---
 
 # src/Meridian.Ui/dashboard
@@ -21,17 +21,20 @@ This module owns the browser UI source for operator workflows. Keep shared contr
 logic in `src/Meridian.Ui.Shared` or `src/Meridian.Ui.Services` when the same behavior is consumed
 by desktop or host surfaces.
 
-The browser workstation visual system is dark-first with a compact ledger-grid treatment inspired
-by the internal `cash-flow-factor-sch` reference: hard-offset shadows, sharp bordered surfaces,
-dense data tables, sticky workstation chrome, and bright but semantic state accents. Keep visual
-changes on the shared tokens and primitives in `src/styles/index.css` and `src/components/ui/`
-instead of introducing one-off screen styling.
+The browser workstation visual system is light-first with a compact black masthead, slim
+context-aware rail, bordered workstation regions, dense Addepar-style tables, and fixed utility
+inspectors. Keep visual changes on the shared tokens and primitives in `src/styles/index.css`,
+`src/components/ui/`, and `src/components/meridian/` instead of introducing one-off screen styling.
+Legacy dark token aliases remain mapped during the migration so older pages continue to render while
+screens move toward the shared workstation primitives.
 
 ## Key folders and files
 
 - `src/` - React/TypeScript workstation source.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
+- `src/components/meridian/workspace-primitives.tsx` - shared filter bars, tab strips,
+  inspector hosts, and document canvas surfaces for migrated workstation layouts.
 
 
 ## Dense row detail accessibility contract

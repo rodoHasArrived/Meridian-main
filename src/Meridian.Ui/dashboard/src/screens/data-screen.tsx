@@ -290,8 +290,8 @@ export function DataScreen({
           <a href="#data-provider-health-title" aria-current="page">Provider catalog</a>
           <a href="#data-backfill-queue-title">Backfill queue</a>
           <a href="#data-recent-exports-title">Export packages</a>
-          <a href="/data/watchlist">Watchlist</a>
-          <a href="/data/quotes">Live quotes</a>
+          <Link to="/data/watchlist">Watchlist</Link>
+          <Link to="/data/quotes">Live quotes</Link>
         </nav>
 
         <div className="data-management-main">
