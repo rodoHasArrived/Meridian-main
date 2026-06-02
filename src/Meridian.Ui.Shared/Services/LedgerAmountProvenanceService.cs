@@ -63,6 +63,12 @@ public sealed class LedgerAmountProvenanceService
                 string.Equals(pointer.ScopeKey, "reconciliation", StringComparison.OrdinalIgnoreCase))
             .Select(ToEvidence)
             .ToArray();
+        var artifactEvidence = snapshot.Artifacts
+            .Select(ToArtifactEvidence)
+            .ToArray();
+        var readinessEvidence = snapshot.AuditPackReadiness?.EvidenceCategorySummaries
+            .Select(ToReadinessEvidence)
+            .ToArray() ?? [];
         var relatedCases = await FindRelatedCasesAsync(
             normalizedScopeKey,
             accountName,
@@ -74,6 +80,8 @@ public sealed class LedgerAmountProvenanceService
             .Select(item => ToProviderCaseEvidence(item, ledgerPointer.Amount))
             .ToArray();
         var evidence = retainedEvidence
+            .Concat(artifactEvidence)
+            .Concat(readinessEvidence)
             .Concat(providerCaseEvidence)
             .GroupBy(static item => $"{item.EvidenceType}:{item.EvidenceId}", StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
@@ -89,7 +97,10 @@ public sealed class LedgerAmountProvenanceService
             snapshot.Provenance.RelatedRunIds,
             snapshot.Provenance.LineagePointers,
             normalizedScopeKey);
-        var warnings = BuildWarnings(evidence, securityPointer, reconciliationPointer, relatedCaseIds, strategyRuns);
+        var warnings = BuildWarnings(evidence, securityPointer, reconciliationPointer, relatedCaseIds, strategyRuns)
+            .Concat(snapshot.AuditPackReadiness?.Warnings ?? [])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         var latestApproval = snapshot.LifecycleEvents
             .Where(static item =>
                 item.ToStatus is GovernanceReportPackStatusDto.Approved or GovernanceReportPackStatusDto.Retained)
@@ -210,6 +221,30 @@ public sealed class LedgerAmountProvenanceService
             pointer.EvidenceCount,
             pointer.Amount,
             pointer.CapturedAt);
+
+    private static LedgerAmountProvenanceEvidenceDto ToArtifactEvidence(FundReportPackArtifactDto artifact)
+        => new(
+            "report-pack-artifact",
+            artifact.RelativePath,
+            artifact.ArtifactKind,
+            artifact.RelativePath,
+            "governance-report-pack",
+            [artifact.ChecksumSha256],
+            1,
+            null,
+            null);
+
+    private static LedgerAmountProvenanceEvidenceDto ToReadinessEvidence(FundAuditEvidenceCategorySummaryDto summary)
+        => new(
+            "audit-pack-readiness",
+            summary.Key.ToString(),
+            summary.Label,
+            summary.Route,
+            "audit-pack-readiness",
+            summary.EvidenceIds,
+            summary.EvidenceCount,
+            null,
+            null);
 
     private static LedgerAmountProvenanceEvidenceDto ToProviderCaseEvidence(
         ReconciliationBreakQueueItem item,

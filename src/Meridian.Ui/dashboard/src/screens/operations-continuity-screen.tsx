@@ -493,6 +493,8 @@ export function OperationsContinuityScreen() {
             >
               <span role="listitem">{vm.accountingRecordSummary.recordIdLabel}</span>
               <span role="listitem">{vm.accountingRecordSummary.evidenceLabel}</span>
+              <span role="listitem">{vm.accountingRecordSummary.auditPackLabel}</span>
+              <span role="listitem">{vm.accountingRecordSummary.auditPackTimingLabel}</span>
             </div>
           </CardHeader>
           <CardContent>

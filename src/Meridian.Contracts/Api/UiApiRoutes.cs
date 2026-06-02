@@ -601,6 +601,7 @@ public static class UiApiRoutes
     public const string RunsEquityCurve = "/api/workstation/runs/{runId}/equity-curve";
     public const string RunsFills = "/api/workstation/runs/{runId}/fills";
     public const string RunsAttribution = "/api/workstation/runs/{runId}/attribution";
+    public const string RunHistory = "/api/workstation/runs/history";
     public const string ReconciliationRuns = "/api/workstation/reconciliation/runs";
     public const string ReconciliationRunById = "/api/workstation/reconciliation/runs/{reconciliationRunId}";
     public const string ReconciliationStatementRuns = "/api/workstation/reconciliation/statement-runs";

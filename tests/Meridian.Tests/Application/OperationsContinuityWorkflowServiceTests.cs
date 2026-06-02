@@ -393,10 +393,11 @@ public sealed class OperationsContinuityWorkflowServiceTests
             ReportPackId: "report-pack-1",
             Rationale: "Report pack is ready"));
         posture.Workflow!.AccountingRecordSummary.Should().NotBeNull();
-        posture.Workflow.AccountingRecordSummary!.CompleteCategoryCount.Should().Be(4);
+        posture.Workflow.AccountingRecordSummary!.CompleteCategoryCount.Should().Be(5);
+        posture.Workflow.AccountingRecordSummary.RequiredCategoryCount.Should().Be(8);
         posture.Workflow.AccountingRecordSummary.IsAuditReady.Should().BeFalse();
         posture.Workflow.AccountingRecordSummary.EvidenceCategories.Should().Contain(category =>
-            category.Key == "report-pack-lineage" &&
+            category.Key == "exports" &&
             !category.IsComplete &&
             category.Status.Contains("close-package publication", StringComparison.OrdinalIgnoreCase));
         var submitted = await service.SubmitForApprovalAsync(workflowId, new OperationsSubmitApprovalRequestDto(
@@ -454,11 +455,14 @@ public sealed class OperationsContinuityWorkflowServiceTests
         closed.Workflow.ClosePackage.ChecklistControlApprovals.Should().HaveCount(6);
         closed.Workflow.AccountingRecordSummary.Should().NotBeNull();
         closed.Workflow.AccountingRecordSummary!.IsAuditReady.Should().BeTrue();
-        closed.Workflow.AccountingRecordSummary.CompleteCategoryCount.Should().Be(6);
+        closed.Workflow.AccountingRecordSummary.CompleteCategoryCount.Should().Be(8);
+        closed.Workflow.AccountingRecordSummary.RequiredCategoryCount.Should().Be(8);
+        closed.Workflow.AccountingRecordSummary.AuditPackReadiness.Should().NotBeNull();
+        closed.Workflow.AccountingRecordSummary.AuditPackReadiness!.IsComplete.Should().BeTrue();
         closed.Workflow.AccountingRecordSummary.EvidenceCategories.Should().Contain(category =>
-            category.Key == "report-pack-lineage" &&
+            category.Key == "exports" &&
             category.IsComplete &&
-            category.Status.Contains("publication/export evidence hash", StringComparison.OrdinalIgnoreCase));
+            category.Status.Contains("evidence hash", StringComparison.OrdinalIgnoreCase));
 
         var timeline = await auditStore.GetTimelineAsync(workflowId);
         timeline.Select(entry => entry.EventType).Should().ContainInOrder(

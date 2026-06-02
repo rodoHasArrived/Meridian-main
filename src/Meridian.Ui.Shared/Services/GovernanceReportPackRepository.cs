@@ -160,7 +160,8 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
                 {
                     Status = snapshot.Status,
                     ValidationIssueCount = snapshot.ValidationIssues.Count,
-                    LifecycleEventCount = snapshot.LifecycleEvents.Count
+                    LifecycleEventCount = snapshot.LifecycleEvents.Count,
+                    AuditPackReadiness = snapshot.AuditPackReadiness
                 });
             }
 

@@ -884,7 +884,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _accountingLifecycle = null;
         AccountingRecordStatusText = "Accounting-record evidence is waiting for fund context.";
         AccountingRecordSummaryText = "Load Operations Continuity detail to inspect retained source records, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage.";
-        AccountingRecordEvidenceText = "0/6 evidence categories complete";
+        AccountingRecordEvidenceText = "0/8 evidence categories complete; 60 sec target not measured";
         AccountingRecordReadinessState = WorkstationStateModel.Empty(
             "Accounting record waiting for fund context",
             "Select a fund profile to inspect retained source, normalized activity, reconciliation, ledger, approval, and report-pack evidence.",
@@ -1649,7 +1649,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         {
             AccountingRecordStatusText = "Accounting-record evidence is not available for the active fund workflow.";
             AccountingRecordSummaryText = "Operations Continuity has not returned a shared accounting-record summary for this fund context.";
-            AccountingRecordEvidenceText = "0/6 evidence categories complete";
+            AccountingRecordEvidenceText = "0/8 evidence categories complete; 60 sec target not measured";
             AccountingRecordReadinessState = WorkstationStateModel.Empty(
                 "Accounting record evidence pending",
                 AccountingRecordSummaryText,
@@ -1683,8 +1683,22 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         AccountingRecordSummaryText = string.IsNullOrWhiteSpace(summary.Summary)
             ? $"{summary.CompleteCategoryCount}/{summary.RequiredCategoryCount} required accounting-record evidence categories are complete."
             : summary.Summary;
-        AccountingRecordEvidenceText = $"{summary.CompleteCategoryCount}/{summary.RequiredCategoryCount} evidence categories complete";
+        AccountingRecordEvidenceText = BuildAccountingRecordEvidenceText(summary);
         AccountingRecordReadinessState = BuildAccountingRecordReadinessState(summary);
+    }
+
+    private static string BuildAccountingRecordEvidenceText(OperationsAccountingRecordSummaryDto summary)
+    {
+        var readiness = summary.AuditPackReadiness;
+        if (readiness is null)
+        {
+            return $"{summary.CompleteCategoryCount}/{summary.RequiredCategoryCount} evidence categories complete; 60 sec target not measured";
+        }
+
+        var readinessLabel = readiness.IsComplete
+            ? "audit pack complete"
+            : $"{readiness.MissingEvidenceCategories.Count} audit-pack categor{(readiness.MissingEvidenceCategories.Count == 1 ? "y" : "ies")} missing";
+        return $"{summary.CompleteCategoryCount}/{summary.RequiredCategoryCount} evidence categories complete; {readinessLabel}; generated in {readiness.GeneratedInSeconds:F3}s, {readiness.SlaTargetSeconds}s target {(readiness.SlaMet ? "met" : "missed")}";
     }
 
     private static WorkstationStateModel BuildAccountingRecordReadinessState(OperationsAccountingRecordSummaryDto summary)

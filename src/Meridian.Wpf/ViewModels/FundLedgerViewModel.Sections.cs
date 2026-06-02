@@ -41,7 +41,7 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     private string _reportPackSnapshotWarningText = "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.";
     private string _accountingRecordStatusText = "Accounting-record evidence is waiting for fund context.";
     private string _accountingRecordSummaryText = "Load Operations Continuity detail to inspect retained source records, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage.";
-    private string _accountingRecordEvidenceText = "0/6 evidence categories complete";
+    private string _accountingRecordEvidenceText = "0/8 evidence categories complete; 60 sec target not measured";
     private WorkstationStateModel _reportPackReadinessState = WorkstationStateModel.Empty(
         "Report pack waiting for fund context",
         "Select a fund profile and refresh the preview before distributing reporting artifacts.",

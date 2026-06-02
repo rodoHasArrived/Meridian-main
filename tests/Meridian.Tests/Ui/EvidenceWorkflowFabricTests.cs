@@ -532,12 +532,12 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Nodes.Should().Contain(node =>
             node.Kind == "accounting-record-category" &&
             node.Status == EvidenceStatusDto.ReviewRequired &&
-            node.RelatedWorkItemIds.Contains($"operations-accounting-record:report-pack-lineage:{workflow.WorkflowId:N}"));
+            node.RelatedWorkItemIds.Contains($"operations-accounting-record:exports:{workflow.WorkflowId:N}"));
         packet.Completeness.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
         packet.Completeness.BlockingWorkItemIds.Should().Contain(
         [
             $"operations-accounting-record:review:{workflow.WorkflowId:N}",
-            $"operations-accounting-record:report-pack-lineage:{workflow.WorkflowId:N}"
+            $"operations-accounting-record:exports:{workflow.WorkflowId:N}"
         ]);
         packet.Completeness.ValidationIssues.Should().Contain(issue =>
             issue.Code == "review-required-evidence" &&
@@ -1532,23 +1532,43 @@ public sealed class EvidenceWorkflowFabricTests
             .ToList();
 
         categories.Add(new OperationsAccountingRecordEvidenceCategoryDto(
-            "report-pack-lineage",
-            "Report-pack lineage",
+            "report-pack",
+            "Report pack",
+            true,
+            $"Report pack report-pack-{workflowId:N} is linked with retained manifest and validation evidence.",
+            $"/api/workstation/operations/continuity/{workflowId:D}",
+            [new OperationsEvidenceLinkDto($"report-pack-{workflowId:N}", "Report pack", "/api/fund-structure/report-packs/current", "report-pack", now)],
+            RequiredEvidence: ["report-pack manifest", "report-pack provenance", "report-pack validation"]));
+        categories.Add(new OperationsAccountingRecordEvidenceCategoryDto(
+            "exports",
+            "Exports and retained evidence",
             isAuditReady,
             isAuditReady
-                ? $"Report pack report-pack-{workflowId:N} is linked with retained manifest, export evidence, document attachments, and restatement lineage."
-                : $"Report pack report-pack-{workflowId:N} still needs export manifest, document attachment, and restatement lineage.",
+                ? $"Report pack report-pack-{workflowId:N} is linked with retained manifest and export evidence."
+                : $"Report pack report-pack-{workflowId:N} still needs export manifest and retained evidence hash.",
             $"/api/workstation/operations/continuity/{workflowId:D}",
             isAuditReady
-                ? [new OperationsEvidenceLinkDto($"report-pack-lineage-{workflowId:N}", "Report-pack lineage", "/api/fund-structure/report-packs/current", "report-pack", now)]
+                ? [new OperationsEvidenceLinkDto($"exports-{workflowId:N}", "Exports", "/api/fund-structure/report-packs/current", "report-pack", now)]
                 : [],
-            RequiredEvidence: ["report-pack publication", "export manifest", "document attachment", "restatement lineage"]));
+            RequiredEvidence: ["export manifest", "retained evidence hash", "close-package publication"]));
+        categories.Add(new OperationsAccountingRecordEvidenceCategoryDto(
+            "restatement-lineage",
+            "Restatement lineage",
+            isAuditReady,
+            isAuditReady
+                ? "Closed package establishes the retained baseline for future restatements."
+                : "Restatement baseline is pending until the close package is published.",
+            $"/api/workstation/operations/continuity/{workflowId:D}",
+            isAuditReady
+                ? [new OperationsEvidenceLinkDto($"restatement-lineage-{workflowId:N}", "Restatement lineage", "/api/fund-structure/report-packs/current", "report-pack", now)]
+                : [],
+            RequiredEvidence: ["published baseline", "prior-version pointer when restated", "changed-line evidence"]));
 
         return new OperationsAccountingRecordSummaryDto(
             $"accounting-record-{workflowId:N}",
             isAuditReady,
             categories.Count(static category => category.IsComplete),
-            6,
+            8,
             isAuditReady
                 ? "Accounting record evidence is audit ready for approval review."
                 : "Accounting record evidence requires report-pack lineage review before audit readiness.",

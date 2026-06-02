@@ -63,6 +63,9 @@
     <Compile Include="Operations/OperationsContinuityRules.fs" />
     <Compile Include="Operations/ReportPackValidationRules.fs" />
     <Compile Include="Operations/SensitiveActionPolicy.fs" />
+    <Compile Include="Operations/ProviderDegradationScoring.fs" />
+    <Compile Include="Operations/SecurityTermValidation.fs" />
+    <Compile Include="Operations/ApprovalWorkflowRules.fs" />
     <Compile Include="Operations/TradingReadinessRules.fs" />
 
     <!-- Pipeline layer: depends on all above -->

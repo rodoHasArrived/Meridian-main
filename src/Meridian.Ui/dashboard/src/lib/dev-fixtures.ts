@@ -1909,13 +1909,31 @@ const fixtureAccountingRecordEvidenceCategories = [
     requiredEvidence: ["distinct operator approval", "close checklist sign-off"]
   },
   {
-    key: "report-pack-lineage",
-    label: "Report-pack links and restatement lineage",
+    key: "report-pack",
+    label: "Report pack",
     isComplete: false,
     status: "Review required",
     routeHint: "/reporting/evidence",
     evidenceLinks: [],
-    requiredEvidence: ["report-pack publication", "export manifest", "document attachment", "restatement lineage"]
+    requiredEvidence: ["report-pack manifest", "report-pack provenance", "report-pack validation"]
+  },
+  {
+    key: "exports",
+    label: "Exports and retained evidence",
+    isComplete: false,
+    status: "Review required",
+    routeHint: "/reporting/evidence",
+    evidenceLinks: [],
+    requiredEvidence: ["export manifest", "retained evidence hash", "close-package publication"]
+  },
+  {
+    key: "restatement-lineage",
+    label: "Restatement lineage",
+    isComplete: false,
+    status: "Review required",
+    routeHint: "/reporting/evidence",
+    evidenceLinks: [],
+    requiredEvidence: ["published baseline", "prior-version pointer when restated", "changed-line evidence"]
   }
 ];
 
@@ -2065,10 +2083,19 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
     recordId: fixtureAccountingRecordId,
     isAuditReady: false,
     completeCategoryCount: 3,
-    requiredCategoryCount: 6,
-    summary: "Demo accounting record is partially retained; approvals, case history, and report-pack lineage still require review.",
+    requiredCategoryCount: 8,
+    summary: "Demo accounting record is partially retained; approvals, case history, report pack, exports, and restatement lineage still require review.",
     evidenceCategories: fixtureAccountingRecordEvidenceCategories,
-    evidenceLinks: fixtureAccountingRecordEvidenceLinks
+    evidenceLinks: fixtureAccountingRecordEvidenceLinks,
+    auditPackReadiness: {
+      isComplete: false,
+      generatedInSeconds: 0,
+      slaTargetSeconds: 60,
+      slaMet: true,
+      missingEvidenceCategories: ["ReconciliationCases", "Approvals", "ReportPack", "Exports", "RestatementLineage"],
+      warnings: ["Demo accounting record is missing required audit-pack evidence."],
+      evidenceCategorySummaries: []
+    }
   },
   closeChecklist: [
     {

@@ -222,16 +222,43 @@ const detail: OperationsContinuityWorkflow = {
         evidenceLinks: []
       },
       {
-        key: "report-pack-lineage",
-        label: "Report-pack links and restatement lineage",
+        key: "report-pack",
+        label: "Report pack",
         isComplete: false,
-        status: "Close workflow has unresolved ledger blockers.",
+        status: "Report-pack readiness evidence has not been linked.",
         routeHint: "/workstation/reporting/report-packs",
-        requiredEvidence: ["report-pack publication", "export manifest", "document attachment", "restatement lineage"],
+        requiredEvidence: ["report-pack manifest", "report-pack provenance", "report-pack validation"],
+        evidenceLinks: []
+      },
+      {
+        key: "exports",
+        label: "Exports and retained evidence",
+        isComplete: false,
+        status: "Export manifest and retained evidence hash still need close-package publication.",
+        routeHint: "/workstation/reporting/report-packs",
+        requiredEvidence: ["export manifest", "retained evidence hash", "close-package publication"],
+        evidenceLinks: []
+      },
+      {
+        key: "restatement-lineage",
+        label: "Restatement lineage",
+        isComplete: false,
+        status: "Restatement baseline is pending until the close package is published.",
+        routeHint: "/workstation/reporting/report-packs",
+        requiredEvidence: ["published baseline", "prior-version pointer when restated", "changed-line evidence"],
         evidenceLinks: []
       }
     ],
-    evidenceLinks: []
+    evidenceLinks: [],
+    auditPackReadiness: {
+      isComplete: false,
+      generatedInSeconds: 0,
+      slaTargetSeconds: 60,
+      slaMet: true,
+      missingEvidenceCategories: ["ReportPack", "Exports", "RestatementLineage"],
+      warnings: ["Audit pack still needs reporting evidence."],
+      evidenceCategorySummaries: []
+    }
   },
   evidenceLinks: [],
   blockers: gates[1]!.blockers

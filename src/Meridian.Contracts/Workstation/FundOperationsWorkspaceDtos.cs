@@ -45,6 +45,19 @@ public enum GovernanceReportValidationSeverityDto
     Critical = 2
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<FundAuditEvidenceCategoryKeyDto>))]
+public enum FundAuditEvidenceCategoryKeyDto
+{
+    SourceRecords = 0,
+    NormalizedActivity = 1,
+    ReconciliationCases = 2,
+    LedgerEvidence = 3,
+    Approvals = 4,
+    ReportPack = 5,
+    Exports = 6,
+    RestatementLineage = 7
+}
+
 /// <summary>
 /// Version contract for governed local report-pack exports.
 /// </summary>
@@ -155,6 +168,24 @@ public sealed record FundReportPackPreviewRequestDto(
 public sealed record FundReportAssetClassSectionDto(
     string AssetClass,
     decimal Total);
+
+public sealed record FundAuditEvidenceCategorySummaryDto(
+    FundAuditEvidenceCategoryKeyDto Key,
+    string Label,
+    bool IsComplete,
+    string Status,
+    int EvidenceCount,
+    IReadOnlyList<string> EvidenceIds,
+    string? Route = null);
+
+public sealed record FundAuditPackReadinessDto(
+    bool IsComplete,
+    double GeneratedInSeconds,
+    int SlaTargetSeconds,
+    bool SlaMet,
+    IReadOnlyList<FundAuditEvidenceCategoryKeyDto> MissingEvidenceCategories,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<FundAuditEvidenceCategorySummaryDto> EvidenceCategorySummaries);
 
 /// <summary>
 /// Preview of a generated governed report pack without writing the artifact to disk.
@@ -392,6 +423,8 @@ public sealed record FundReportPackSnapshotDto(
     public IReadOnlyList<FundReportPackValidationIssueDto> ValidationIssues { get; init; } = [];
 
     public IReadOnlyList<FundReportPackLifecycleEventDto> LifecycleEvents { get; init; } = [];
+
+    public FundAuditPackReadinessDto? AuditPackReadiness { get; init; }
 }
 
 /// <summary>
@@ -417,6 +450,8 @@ public sealed record FundReportPackHistoryItemDto(
     public int ValidationIssueCount { get; init; }
 
     public int LifecycleEventCount { get; init; }
+
+    public FundAuditPackReadinessDto? AuditPackReadiness { get; init; }
 }
 
 /// <summary>

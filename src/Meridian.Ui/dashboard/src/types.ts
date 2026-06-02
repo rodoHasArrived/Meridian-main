@@ -678,6 +678,36 @@ export interface OperationsReportPackReadiness {
   evidenceLinks: OperationsEvidenceLink[];
 }
 
+export type FundAuditEvidenceCategoryKey =
+  | "SourceRecords"
+  | "NormalizedActivity"
+  | "ReconciliationCases"
+  | "LedgerEvidence"
+  | "Approvals"
+  | "ReportPack"
+  | "Exports"
+  | "RestatementLineage";
+
+export interface FundAuditEvidenceCategorySummary {
+  key: FundAuditEvidenceCategoryKey;
+  label: string;
+  isComplete: boolean;
+  status: string;
+  evidenceCount: number;
+  evidenceIds: string[];
+  route: string | null;
+}
+
+export interface FundAuditPackReadiness {
+  isComplete: boolean;
+  generatedInSeconds: number;
+  slaTargetSeconds: number;
+  slaMet: boolean;
+  missingEvidenceCategories: FundAuditEvidenceCategoryKey[];
+  warnings: string[];
+  evidenceCategorySummaries: FundAuditEvidenceCategorySummary[];
+}
+
 export interface OperationsAccountingRecordSummary {
   recordId: string;
   isAuditReady: boolean;
@@ -686,6 +716,7 @@ export interface OperationsAccountingRecordSummary {
   summary: string;
   evidenceCategories: OperationsAccountingRecordEvidenceCategory[];
   evidenceLinks: OperationsEvidenceLink[];
+  auditPackReadiness?: FundAuditPackReadiness | null;
 }
 
 export interface OperationsAccountingRecordEvidenceCategory {

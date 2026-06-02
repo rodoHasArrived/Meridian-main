@@ -142,6 +142,8 @@ export interface OperationsAccountingRecordSummaryViewModel {
   statusTone: OperationsContinuityTone;
   recordIdLabel: string;
   evidenceLabel: string;
+  auditPackLabel: string;
+  auditPackTimingLabel: string;
 }
 
 export interface OperationsContinuityNextActionViewModel {
@@ -782,12 +784,18 @@ function buildAccountingRecordSummaryViewModel(
       statusLabel: loading ? "Loading" : "Not available",
       statusTone: "neutral",
       recordIdLabel: loading ? "Record pending" : "No accounting record selected",
-      evidenceLabel: "No retained evidence links"
+      evidenceLabel: "No retained evidence links",
+      auditPackLabel: "Audit pack readiness unavailable",
+      auditPackTimingLabel: "60 sec target not measured"
     };
   }
 
   const evidenceCount = summary.evidenceLinks.length
     + summary.evidenceCategories.reduce((total, category) => total + category.evidenceLinks.length, 0);
+
+  const readiness = summary.auditPackReadiness ?? null;
+  const missingCount = readiness?.missingEvidenceCategories?.length ?? 0;
+  const generatedIn = readiness ? `${readiness.generatedInSeconds.toFixed(3)}s` : "not measured";
 
   return {
     title: "Accounting record",
@@ -798,7 +806,15 @@ function buildAccountingRecordSummaryViewModel(
     recordIdLabel: summary.recordId || "Record id pending",
     evidenceLabel: evidenceCount === 0
       ? "No retained evidence links"
-      : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`
+      : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
+    auditPackLabel: readiness
+      ? readiness.isComplete
+        ? "Audit pack complete"
+        : `${missingCount} audit-pack categor${missingCount === 1 ? "y" : "ies"} missing`
+      : "Audit pack readiness unavailable",
+    auditPackTimingLabel: readiness
+      ? `${generatedIn} generation, ${readiness.slaTargetSeconds}s target ${readiness.slaMet ? "met" : "missed"}`
+      : "60 sec target not measured"
   };
 }
 

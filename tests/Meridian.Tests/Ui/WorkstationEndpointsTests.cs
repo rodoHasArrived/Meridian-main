@@ -382,9 +382,11 @@ public sealed partial class WorkstationEndpointsTests
         workflow.NextActions.Should().NotBeEmpty();
         workflow.Blockers.Should().Contain(blocker => blocker.EvidenceLinks.Any());
         workflow.AccountingRecordSummary.Should().NotBeNull();
-        workflow.AccountingRecordSummary!.RequiredCategoryCount.Should().Be(6);
+        workflow.AccountingRecordSummary!.RequiredCategoryCount.Should().Be(8);
         workflow.AccountingRecordSummary.CompleteCategoryCount.Should().Be(4);
         workflow.AccountingRecordSummary.IsAuditReady.Should().BeFalse();
+        workflow.AccountingRecordSummary.AuditPackReadiness.Should().NotBeNull();
+        workflow.AccountingRecordSummary.AuditPackReadiness!.MissingEvidenceCategories.Should().Contain(FundAuditEvidenceCategoryKeyDto.ReportPack);
         workflow.AccountingRecordSummary.EvidenceCategories.Select(category => category.Key).Should().BeEquivalentTo(
         [
             "source-records",
@@ -392,23 +394,23 @@ public sealed partial class WorkstationEndpointsTests
             "reconciliation-case-history",
             "ledger-evidence",
             "approvals",
-            "report-pack-lineage"
+            "report-pack",
+            "exports",
+            "restatement-lineage"
         ]);
         workflow.AccountingRecordSummary.EvidenceCategories
-            .Should().Contain(category => category.Key == "report-pack-lineage" && !category.IsComplete);
+            .Should().Contain(category => category.Key == "report-pack" && !category.IsComplete);
         workflow.AccountingRecordSummary.EvidenceCategories
             .Should().Contain(category =>
-                category.Key == "report-pack-lineage" &&
-                category.Status.Contains("close-package publication", StringComparison.OrdinalIgnoreCase) &&
-                category.Status.Contains("export manifest", StringComparison.OrdinalIgnoreCase) &&
-                category.Status.Contains("restatement lineage", StringComparison.OrdinalIgnoreCase));
+                category.Key == "exports" &&
+                category.Status.Contains("Export manifest", StringComparison.OrdinalIgnoreCase) &&
+                category.Status.Contains("retained evidence hash", StringComparison.OrdinalIgnoreCase));
         workflow.AccountingRecordSummary.EvidenceCategories
             .Should().Contain(category =>
-                category.Key == "report-pack-lineage" &&
+                category.Key == "restatement-lineage" &&
                 category.RequiredEvidence != null &&
-                category.RequiredEvidence.Contains("export manifest") &&
-                category.RequiredEvidence.Contains("document attachment") &&
-                category.RequiredEvidence.Contains("restatement lineage"));
+                category.RequiredEvidence.Contains("published baseline") &&
+                category.RequiredEvidence.Contains("changed-line evidence"));
         workflow.AccountingRecordSummary.EvidenceCategories
             .Should().Contain(category => category.Key == "ledger-evidence" && category.IsComplete);
     }

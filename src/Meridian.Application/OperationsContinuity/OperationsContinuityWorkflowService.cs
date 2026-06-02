@@ -1159,26 +1159,50 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     .ToArray(),
                 ["approval submission", "reviewer decision", "checklist control approvals"]),
             BuildAccountingRecordCategory(
-                "report-pack-lineage",
-                "Report-pack links and restatement lineage",
+                "report-pack",
+                "Report pack",
                 workflow.ReportPackReadiness.IsReady &&
-                    !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId) &&
-                    workflow.ClosePackage is not null,
-                BuildReportPackLineageStatus(workflow),
+                    !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId),
+                string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId)
+                    ? "Report-pack readiness evidence has not been linked."
+                    : $"Report pack {workflow.ReportPackReadiness.ReportPackId} is linked for the accounting record.",
+                "/workstation/reporting/report-packs",
+                workflow.ReportPackReadiness.EvidenceLinks,
+                ["report-pack manifest", "report-pack provenance", "report-pack validation"]),
+            BuildAccountingRecordCategory(
+                "exports",
+                "Exports and retained evidence",
+                workflow.ClosePackage is not null &&
+                    !string.IsNullOrWhiteSpace(workflow.ClosePackage.RetainedManifestId) &&
+                    !string.IsNullOrWhiteSpace(workflow.ClosePackage.EvidenceHash),
+                workflow.ClosePackage is null
+                    ? "Export manifest and retained evidence hash still need close-package publication."
+                    : $"Close package {workflow.ClosePackage.ClosePackageId} retains manifest {workflow.ClosePackage.RetainedManifestId} and evidence hash.",
                 "/workstation/reporting/report-packs",
                 workflow.ReportPackReadiness.EvidenceLinks
                     .Concat(workflow.ClosePackage?.EvidenceLinks ?? [])
                     .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
                     .ToArray(),
-                ["report-pack publication", "export manifest", "document attachment", "restatement lineage"])
+                ["export manifest", "retained evidence hash", "close-package publication"]),
+            BuildAccountingRecordCategory(
+                "restatement-lineage",
+                "Restatement lineage",
+                workflow.ClosePackage is not null,
+                workflow.ClosePackage is null
+                    ? "Restatement baseline is pending until the close package is published."
+                    : "Closed package establishes the retained baseline for future restatements.",
+                "/workstation/reporting/report-packs",
+                workflow.ClosePackage?.EvidenceLinks ?? [],
+                ["published baseline", "prior-version pointer when restated", "changed-line evidence"])
         };
 
         var completeCount = categories.Count(static category => category.IsComplete);
         var requiredCount = categories.Length;
         var recordId = $"accounting-record-{workflow.FundAccountId:N}-{workflow.PeriodId}";
         var summary = completeCount == requiredCount
-            ? "Accounting record links retained source data, normalized activity, reconciliation case history, ledger evidence, approvals, and report-pack lineage."
+            ? "Accounting record links retained source data, normalized activity, reconciliation case history, ledger evidence, approvals, report pack, exports, and restatement lineage."
             : $"Accounting record has {completeCount} of {requiredCount} required evidence categories complete.";
+        var auditPackReadiness = BuildAuditPackReadiness(categories, workflow, completeCount, requiredCount);
 
         return new OperationsAccountingRecordSummaryDto(
             recordId,
@@ -1187,7 +1211,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             requiredCount,
             summary,
             categories,
-            evidenceLinks);
+            evidenceLinks,
+            auditPackReadiness);
     }
 
     private static OperationsAccountingRecordEvidenceCategoryDto BuildAccountingRecordCategory(
@@ -1199,6 +1224,63 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
         IReadOnlyList<string> requiredEvidence) =>
         new(key, label, isComplete, status, routeHint, evidenceLinks, requiredEvidence);
+
+    private static FundAuditPackReadinessDto BuildAuditPackReadiness(
+        IReadOnlyList<OperationsAccountingRecordEvidenceCategoryDto> categories,
+        OperationsContinuityWorkflow workflow,
+        int completeCount,
+        int requiredCount)
+    {
+        const int slaTargetSeconds = 60;
+        var generatedInSeconds = workflow.ClosePackage is null
+            ? 0d
+            : Math.Max(0d, (workflow.ClosePackage.PublishedAtUtc - workflow.UpdatedAtUtc).Duration().TotalSeconds);
+        var summaries = categories
+            .Select(category => new FundAuditEvidenceCategorySummaryDto(
+                MapAuditCategoryKey(category.Key),
+                category.Label,
+                category.IsComplete,
+                category.Status,
+                category.EvidenceLinks.Count,
+                category.EvidenceLinks
+                    .Select(static link => link.EvidenceId)
+                    .Where(static id => !string.IsNullOrWhiteSpace(id))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                category.RouteHint))
+            .ToArray();
+        var missing = summaries
+            .Where(static category => !category.IsComplete)
+            .Select(static category => category.Key)
+            .ToArray();
+
+        return new FundAuditPackReadinessDto(
+            IsComplete: completeCount == requiredCount,
+            GeneratedInSeconds: Math.Round(generatedInSeconds, 3, MidpointRounding.AwayFromZero),
+            SlaTargetSeconds: slaTargetSeconds,
+            SlaMet: generatedInSeconds <= slaTargetSeconds,
+            MissingEvidenceCategories: missing,
+            Warnings: categories
+                .Where(static category => !category.IsComplete)
+                .Select(static category => category.Status)
+                .Where(static status => !string.IsNullOrWhiteSpace(status))
+                .ToArray(),
+            EvidenceCategorySummaries: summaries);
+    }
+
+    private static FundAuditEvidenceCategoryKeyDto MapAuditCategoryKey(string key)
+        => key switch
+        {
+            "source-records" => FundAuditEvidenceCategoryKeyDto.SourceRecords,
+            "normalized-activity" => FundAuditEvidenceCategoryKeyDto.NormalizedActivity,
+            "reconciliation-case-history" => FundAuditEvidenceCategoryKeyDto.ReconciliationCases,
+            "ledger-evidence" => FundAuditEvidenceCategoryKeyDto.LedgerEvidence,
+            "approvals" => FundAuditEvidenceCategoryKeyDto.Approvals,
+            "report-pack" => FundAuditEvidenceCategoryKeyDto.ReportPack,
+            "exports" => FundAuditEvidenceCategoryKeyDto.Exports,
+            "restatement-lineage" => FundAuditEvidenceCategoryKeyDto.RestatementLineage,
+            _ => FundAuditEvidenceCategoryKeyDto.SourceRecords
+        };
 
     private static string BuildReportPackLineageStatus(OperationsContinuityWorkflow workflow)
     {

@@ -601,20 +601,23 @@ public sealed class FundOpsCloseLaneScenarioTests
     {
         workflow.AccountingRecordSummary.Should().NotBeNull("closed workflows must expose the retained accounting record summary");
         workflow.AccountingRecordSummary!.IsAuditReady.Should().BeTrue();
-        workflow.AccountingRecordSummary.CompleteCategoryCount.Should().Be(6);
-        workflow.AccountingRecordSummary.RequiredCategoryCount.Should().Be(6);
+        workflow.AccountingRecordSummary.CompleteCategoryCount.Should().Be(8);
+        workflow.AccountingRecordSummary.RequiredCategoryCount.Should().Be(8);
+        workflow.AccountingRecordSummary.AuditPackReadiness.Should().NotBeNull();
+        workflow.AccountingRecordSummary.AuditPackReadiness!.IsComplete.Should().BeTrue();
 
         var reportPackCategory = workflow.AccountingRecordSummary.EvidenceCategories
-            .Single(category => category.Key == "report-pack-lineage");
+            .Single(category => category.Key == "report-pack");
 
         reportPackCategory.IsComplete.Should().BeTrue();
         reportPackCategory.Status.Should().Contain(reportPackId);
-        reportPackCategory.RequiredEvidence.Should().Contain(
+        workflow.AccountingRecordSummary.EvidenceCategories
+            .Single(category => category.Key == "exports")
+            .RequiredEvidence.Should().Contain(
         [
-            "report-pack publication",
             "export manifest",
-            "document attachment",
-            "restatement lineage"
+            "retained evidence hash",
+            "close-package publication"
         ]);
     }
 

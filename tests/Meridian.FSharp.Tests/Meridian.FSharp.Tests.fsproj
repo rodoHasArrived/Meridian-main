@@ -24,6 +24,7 @@
     <Compile Include="LedgerKernelTests.fs" />
     <Compile Include="ReconciliationCaseWorkflowTests.fs" />
     <Compile Include="PeriodManagementTests.fs" />
+    <Compile Include="DeterministicInvariantTests.fs" />
     <Compile Include="DirectLendingInteropTests.fs" />
     <Compile Include="CashFlowProjectorTests.fs" />
     <Compile Include="SettlementInstructionCommandsTests.fs" />

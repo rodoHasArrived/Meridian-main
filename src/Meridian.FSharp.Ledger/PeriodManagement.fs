@@ -50,6 +50,82 @@ type PostingCheck =
     | Denied of reason: string
 
 [<RequireQualifiedAccess>]
+module PeriodCalendarValidation =
+
+    let private overlaps (left: AccountingPeriod) (right: AccountingPeriod) =
+        not (left.EndDate < right.StartDate || right.EndDate < left.StartDate)
+
+    let private isGap (left: AccountingPeriod) (right: AccountingPeriod) =
+        left.EndDate.AddDays(1) < right.StartDate
+
+    let validate (periods: AccountingPeriod list) =
+        let ordered =
+            periods
+            |> List.sortBy (fun period ->
+                period.StartDate.DayNumber, period.FiscalYear, period.PeriodNo)
+
+        let invalidDates =
+            ordered
+            |> List.choose (fun period ->
+                if period.StartDate > period.EndDate then
+                    Some (sprintf "Period %s has StartDate after EndDate." period.Label)
+                else
+                    None)
+
+        let duplicateIds =
+            ordered
+            |> List.map (fun period -> period.PeriodId)
+            |> List.countBy id
+            |> List.choose (fun (periodId, count) ->
+                if count > 1 then
+                    Some (sprintf "Duplicate period Id detected: %O" periodId)
+                else
+                    None)
+
+        let outOfOrderIds =
+            ordered
+            |> List.choose (fun period ->
+                if period.PeriodNo <= 0 then
+                    Some (sprintf "Period '%s' has non-positive PeriodNo." period.Label)
+                else
+                    None)
+
+        let overlapErrors =
+            ordered
+            |> List.pairwise
+            |> List.choose (fun (left, right) ->
+                if overlaps left right then
+                    Some (sprintf "Period '%s' overlaps '%s'." left.Label right.Label)
+                else
+                    None)
+
+        let gapErrors =
+            ordered
+            |> List.pairwise
+            |> List.choose (fun (left, right) ->
+                if isGap left right then
+                    Some (sprintf "Gap between period '%s' and '%s'." left.Label right.Label)
+                else
+                    None)
+
+        let fiscalConsistencyErrors =
+            ordered
+            |> List.choose (fun period ->
+                if period.EndDate < period.StartDate.AddDays(1) then
+                    None
+                elif ordered |> List.exists (fun other -> other.PeriodId <> period.PeriodId && other.FiscalYear <> period.FiscalYear && overlaps period other) then
+                    Some (sprintf "Period '%s' overlaps a different fiscal year period." period.Label)
+                else
+                    None)
+
+        invalidDates
+        |> List.append duplicateIds
+        |> List.append outOfOrderIds
+        |> List.append overlapErrors
+        |> List.append gapErrors
+        |> List.append fiscalConsistencyErrors
+
+[<RequireQualifiedAccess>]
 module PeriodStatus =
 
     let asString = function
@@ -151,9 +227,57 @@ module PeriodManagement =
 
     /// Apply a close event to a period, returning the updated period record.
     let applyClose (period: AccountingPeriod) (event: PeriodCloseEvent) : AccountingPeriod =
-        { period with
-            Status   = event.NewStatus
-            ClosedAt = if event.NewStatus = HardClosed then Some event.RecordedAt else period.ClosedAt }
+            { period with
+                Status   = event.NewStatus
+                ClosedAt = if event.NewStatus = HardClosed then Some event.RecordedAt else period.ClosedAt }
+
+    let validateCloseTransition
+            (period: AccountingPeriod)
+            (newStatus: PeriodStatus)
+            (allPeriods: AccountingPeriod list) =
+        match PeriodStatus.isValidTransition period.Status newStatus with
+        | false ->
+            Error (sprintf "Cannot transition from %s to %s." (PeriodStatus.asString period.Status) (PeriodStatus.asString newStatus))
+        | true ->
+            let sameFiscal = allPeriods |> List.filter (fun p -> p.FiscalYear = period.FiscalYear)
+            let previous =
+                sameFiscal
+                |> List.filter (fun candidate -> candidate.PeriodNo = period.PeriodNo - 1)
+                |> List.tryHead
+
+            let next =
+                sameFiscal
+                |> List.filter (fun candidate -> candidate.PeriodNo = period.PeriodNo + 1)
+                |> List.tryHead
+
+            let openPrior =
+                match previous with
+                | Some prev when prev.Status = Open || prev.Status = SoftClosed ->
+                    Some (sprintf "Cannot close period %s because prior period %s is not hard-closed." period.Label prev.Label)
+                | _ -> None
+
+            let hardBeforeSoft =
+                if newStatus = HardClosed then
+                    match previous with
+                    | Some prev when prev.Status <> HardClosed ->
+                        Some (sprintf "Cannot hard-close %s before prior period %s is hard-closed." period.Label prev.Label)
+                    | _ -> None
+                else
+                    None
+
+            let blockedByNext =
+                match newStatus = SoftClosed, next with
+                | true, Some nextPeriod when nextPeriod.Status = HardClosed ->
+                    Some (sprintf "Cannot soft-close %s because next period %s is already hard-closed." period.Label nextPeriod.Label)
+                | _ -> None
+
+            match openPrior, hardBeforeSoft, blockedByNext with
+            | None, None, None -> Ok()
+            | _ ->
+                let reasons =
+                    [ openPrior; hardBeforeSoft; blockedByNext ]
+                    |> List.choose id
+                Error (String.concat " " reasons)
 
     /// Check whether a posting at the given date is acceptable.
     /// Pass <c>isAdjustment = true</c> to apply soft-close override rules.
@@ -164,17 +288,21 @@ module PeriodManagement =
             : PostingCheck =
 
         let matching =
-            periods |> List.tryFind (AccountingPeriod.contains date)
+            periods
+            |> List.filter (AccountingPeriod.contains date)
+            |> List.sortBy (fun p -> p.StartDate.DayNumber)
 
         match matching with
-        | None -> PeriodNotFound
-        | Some period ->
+        | [] -> PeriodNotFound
+        | [ period ] ->
             match period.Status with
             | HardClosed ->
                 Denied (sprintf "Period '%s' is hard-closed; no postings or adjustments are permitted." period.Label)
             | SoftClosed when not isAdjustment ->
                 Denied (sprintf "Period '%s' is soft-closed; only approved adjustment entries are accepted." period.Label)
             | _ -> Allowed
+        | _ ->
+            Denied "Posting date is ambiguous; multiple ledger periods match this date."
 
     /// Return all open periods from a list, sorted by start date ascending.
     let openPeriods (periods: AccountingPeriod list) =

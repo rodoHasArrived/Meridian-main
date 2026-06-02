@@ -843,7 +843,8 @@ public sealed record OperationsAccountingRecordSummaryDto(
     int RequiredCategoryCount,
     string Summary,
     IReadOnlyList<OperationsAccountingRecordEvidenceCategoryDto> EvidenceCategories,
-    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    FundAuditPackReadinessDto? AuditPackReadiness = null);
 
 public sealed record OperationsAccountingRecordEvidenceCategoryDto(
     string Key,

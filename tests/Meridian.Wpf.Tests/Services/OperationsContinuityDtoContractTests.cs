@@ -133,8 +133,8 @@ public sealed class OperationsContinuityDtoContractTests
                 RecordId: "accounting-record-2026-05",
                 IsAuditReady: false,
                 CompleteCategoryCount: 4,
-                RequiredCategoryCount: 6,
-                Summary: "Accounting record has 4 of 6 required evidence categories complete.",
+                RequiredCategoryCount: 8,
+                Summary: "Accounting record has 4 of 8 required evidence categories complete.",
                 EvidenceCategories:
                 [
                     new OperationsAccountingRecordEvidenceCategoryDto(
@@ -160,7 +160,7 @@ public sealed class OperationsContinuityDtoContractTests
         actual.CloseReadiness!.Score.Should().Be(70);
         actual.CloseReadiness.Components.Should().ContainSingle(component => component.Key == "reconciliation");
         actual.AccountingRecordSummary.Should().NotBeNull();
-        actual.AccountingRecordSummary!.RequiredCategoryCount.Should().Be(6);
+        actual.AccountingRecordSummary!.RequiredCategoryCount.Should().Be(8);
         actual.AccountingRecordSummary.EvidenceCategories.Should().ContainSingle(category => category.Key == "reconciliation-case-history");
         actual.AccountingRecordSummary.EvidenceCategories.Single().RequiredEvidence.Should().Contain("break-case decision history");
         actual.Blockers.Should().ContainSingle(blocker => blocker.EvidenceLinks.Any(link => link.EvidenceId == "ev-pack-1"));

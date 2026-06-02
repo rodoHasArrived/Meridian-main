@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -252,6 +253,7 @@ public sealed class FundOperationsWorkspaceReadService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.AuditActor);
         ct.ThrowIfCancellationRequested();
 
+        var generationStopwatch = Stopwatch.StartNew();
         var repository = _reportPackRepository
             ?? throw new InvalidOperationException("Report-pack repository has not been configured.");
         var schemaVersion = ResolveReportPackSchemaVersion(request.ExpectedSchemaVersion);
@@ -322,6 +324,7 @@ public sealed class FundOperationsWorkspaceReadService
             correlationId,
             report.GeneratedAt,
             status);
+        var lineagePointers = BuildLineagePointers(report, ledgerBook, runs, reconciliation, asOf);
         var provenance = new FundReportPackProvenanceDto(
             RelatedRunIds: runs.Select(static run => run.RunId).ToArray(),
             JournalEntryCount: ledger.JournalEntryCount,
@@ -331,7 +334,7 @@ public sealed class FundOperationsWorkspaceReadService
             OpenReconciliationBreakCount: reconciliation.OpenBreakCount,
             SecurityResolvedCount: securityResolvedCount,
             SecurityMissingCount: securityMissingCount,
-            LineagePointers: BuildLineagePointers(report, ledgerBook, runs, reconciliation, asOf),
+            LineagePointers: lineagePointers,
             SourceSnapshotHash: ComputeSourceSnapshotHash(
                 normalizedFundProfileId,
                 asOf,
@@ -341,6 +344,20 @@ public sealed class FundOperationsWorkspaceReadService
                 nav,
                 runs),
             SchemaVersion: schemaVersion);
+        var artifactContents = BuildReportPackArtifacts(report, formats, ct);
+        generationStopwatch.Stop();
+        var warnings = BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount);
+        var auditPackReadiness = BuildAuditPackReadiness(
+            generationStopwatch.Elapsed,
+            warnings,
+            validationIssues,
+            lifecycleEvents,
+            provenance,
+            artifactContents,
+            report,
+            ledger,
+            reconciliation,
+            runs.Count);
         var snapshot = new FundReportPackSnapshotDto(
             ReportId: report.ReportId,
             FundProfileId: normalizedFundProfileId,
@@ -357,17 +374,18 @@ public sealed class FundOperationsWorkspaceReadService
                 : request.DecisionRationale.Trim(),
             Provenance: provenance,
             Artifacts: [],
-            Warnings: BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount),
+            Warnings: warnings,
             ContractName: GovernanceReportPackContract.ContractName,
             SchemaVersion: schemaVersion)
         {
             Status = status,
             ValidationIssues = validationIssues,
-            LifecycleEvents = lifecycleEvents
+            LifecycleEvents = lifecycleEvents,
+            AuditPackReadiness = auditPackReadiness
         };
 
         return await repository
-            .SaveAsync(snapshot, BuildReportPackArtifacts(report, formats, ct), ct)
+            .SaveAsync(snapshot, artifactContents, ct)
             .ConfigureAwait(false);
     }
 
@@ -1329,6 +1347,159 @@ public sealed class FundOperationsWorkspaceReadService
 
         return warnings;
     }
+
+    private static FundAuditPackReadinessDto BuildAuditPackReadiness(
+        TimeSpan generatedIn,
+        IReadOnlyList<string> reportWarnings,
+        IReadOnlyList<FundReportPackValidationIssueDto> validationIssues,
+        IReadOnlyList<FundReportPackLifecycleEventDto> lifecycleEvents,
+        FundReportPackProvenanceDto provenance,
+        IReadOnlyList<GovernanceReportPackArtifactContent> artifacts,
+        ReportPack report,
+        FundLedgerSummary ledger,
+        ReconciliationSummary reconciliation,
+        int runCount)
+    {
+        const int slaTargetSeconds = 60;
+        var criticalValidationCount = validationIssues.Count(static issue =>
+            issue.Severity == GovernanceReportValidationSeverityDto.Critical);
+        var approvalEvidenceIds = lifecycleEvents
+            .Where(static item => item.ToStatus is GovernanceReportPackStatusDto.Approved
+                or GovernanceReportPackStatusDto.Published
+                or GovernanceReportPackStatusDto.Retained)
+            .Select(static item => item.CorrelationId)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var categories = new[]
+        {
+            BuildAuditCategory(
+                FundAuditEvidenceCategoryKeyDto.SourceRecords,
+                "Source records",
+                runCount > 0,
+                runCount > 0
+                    ? $"{runCount} fund-scoped run source record(s) contributed to the pack."
+                    : "No retained fund-scoped source run is linked.",
+                EvidenceIds(provenance.LineagePointers, "run"),
+                UiApiRoutes.RunHistory),
+            BuildAuditCategory(
+                FundAuditEvidenceCategoryKeyDto.NormalizedActivity,
+                "Normalized activity",
+                report.TrialBalance.Count > 0,
+                report.TrialBalance.Count > 0
+                    ? $"{report.TrialBalance.Count} normalized trial-balance row(s) are included."
+                    : "No normalized trial-balance rows are included.",
+                EvidenceIds(provenance.LineagePointers, "ledger-account"),
+                UiApiRoutes.FundReportPacks),
+            BuildAuditCategory(
+                FundAuditEvidenceCategoryKeyDto.ReconciliationCases,
+                "Reconciliation cases",
+                reconciliation.RunCount > 0 && reconciliation.OpenBreakCount == 0,
+                reconciliation.RunCount == 0
+                    ? "No retained reconciliation run is linked."
+                    : reconciliation.OpenBreakCount == 0
+                        ? $"{reconciliation.RunCount} reconciliation run(s) are linked with no open breaks."
+                        : $"{reconciliation.OpenBreakCount} open reconciliation break(s) remain.",
+                EvidenceIds(provenance.LineagePointers, "reconciliation-summary"),
+                UiApiRoutes.ReconciliationRuns),
+            BuildAuditCategory(
+                FundAuditEvidenceCategoryKeyDto.LedgerEvidence,
+                "Ledger evidence",
+                ledger.JournalEntryCount > 0 && ledger.LedgerEntryCount > 0,
+                ledger.LedgerEntryCount > 0
+                    ? $"{ledger.JournalEntryCount} journal entr{(ledger.JournalEntryCount == 1 ? "y" : "ies")} and {ledger.LedgerEntryCount} ledger entr{(ledger.LedgerEntryCount == 1 ? "y" : "ies")} are linked."
+                    : "No journal or ledger evidence is linked.",
+                EvidenceIds(provenance.LineagePointers, "ledger-account"),
+                UiApiRoutes.FundReportPacks),
+            BuildAuditCategory(
+                FundAuditEvidenceCategoryKeyDto.Approvals,
+                "Approvals",
+                approvalEvidenceIds.Length > 0,
+                approvalEvidenceIds.Length > 0
+                    ? "Approved, published, or retained lifecycle evidence is linked."
+                    : "Report-pack approval or publication lifecycle evidence is still required.",
+                approvalEvidenceIds,
+                UiApiRoutes.FundReportPacks),
+            BuildAuditCategory(
+                FundAuditEvidenceCategoryKeyDto.ReportPack,
+                "Report pack",
+                report.TrialBalance.Count > 0 && criticalValidationCount == 0,
+                criticalValidationCount == 0
+                    ? "Report-pack manifest and provenance are ready for review."
+                    : $"{criticalValidationCount} critical validation issue(s) block the report pack.",
+                [report.ReportId.ToString("D"), provenance.SourceSnapshotHash],
+                UiApiRoutes.FundReportPacks),
+            BuildAuditCategory(
+                FundAuditEvidenceCategoryKeyDto.Exports,
+                "Exports",
+                artifacts.Count > 0,
+                artifacts.Count > 0
+                    ? $"{artifacts.Count} export artifact(s) are prepared for retention."
+                    : "No export artifacts were requested.",
+                artifacts.Select(static item => item.FileName).ToArray(),
+                UiApiRoutes.FundReportPacks),
+            BuildAuditCategory(
+                FundAuditEvidenceCategoryKeyDto.RestatementLineage,
+                "Restatement lineage",
+                true,
+                "Source snapshot hash is retained so future restatements can point to this frozen baseline.",
+                [provenance.SourceSnapshotHash],
+                UiApiRoutes.FundReportPacks)
+        };
+        var missing = categories
+            .Where(static category => !category.IsComplete)
+            .Select(static category => category.Key)
+            .ToArray();
+        var readinessWarnings = reportWarnings
+            .Concat(validationIssues
+                .Where(static issue => issue.Severity != GovernanceReportValidationSeverityDto.Info)
+                .Select(static issue => issue.Message))
+            .Concat(categories
+                .Where(static category => !category.IsComplete)
+                .Select(static category => category.Status))
+            .Where(static warning => !string.IsNullOrWhiteSpace(warning))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new FundAuditPackReadinessDto(
+            IsComplete: missing.Length == 0,
+            GeneratedInSeconds: Math.Round(generatedIn.TotalSeconds, 3, MidpointRounding.AwayFromZero),
+            SlaTargetSeconds: slaTargetSeconds,
+            SlaMet: generatedIn.TotalSeconds <= slaTargetSeconds,
+            MissingEvidenceCategories: missing,
+            Warnings: readinessWarnings,
+            EvidenceCategorySummaries: categories);
+    }
+
+    private static FundAuditEvidenceCategorySummaryDto BuildAuditCategory(
+        FundAuditEvidenceCategoryKeyDto key,
+        string label,
+        bool isComplete,
+        string status,
+        IReadOnlyList<string> evidenceIds,
+        string? route)
+        => new(
+            key,
+            label,
+            isComplete,
+            status,
+            evidenceIds.Count,
+            evidenceIds
+                .Where(static item => !string.IsNullOrWhiteSpace(item))
+                .Select(static item => item.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            route);
+
+    private static IReadOnlyList<string> EvidenceIds(
+        IReadOnlyList<FundReportPackLineagePointerDto> pointers,
+        string evidenceType)
+        => pointers
+            .Where(pointer => string.Equals(pointer.EvidenceType, evidenceType, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(static pointer => new[] { pointer.EvidenceId }.Concat(pointer.RelatedEvidenceIds ?? []))
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     private static string ComputeSourceSnapshotHash(
         string fundProfileId,

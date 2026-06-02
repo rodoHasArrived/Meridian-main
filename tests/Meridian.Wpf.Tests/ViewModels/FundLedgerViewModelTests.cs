@@ -946,7 +946,7 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackReadinessState.SignoffRequirement!.Role.Should().NotBeNullOrWhiteSpace();
                 viewModel.ReportPackReadinessState.SignoffRequirement.Status.Should().Contain("Close readiness");
                 viewModel.ReportPackReadinessState.SignoffRequirement.Detail.Should().Contain("current preview");
-                viewModel.AccountingRecordEvidenceCategories.Should().HaveCount(6);
+                viewModel.AccountingRecordEvidenceCategories.Should().HaveCount(8);
                 viewModel.AccountingRecordEvidenceCategories.Should().Contain(row =>
                     row.Key == "source-records" &&
                     row.Label == "Retained source data" &&
@@ -955,17 +955,17 @@ public sealed class FundLedgerViewModelTests
                     row.EvidenceSubject.StartsWith("accounting-record/accounting-record-", StringComparison.Ordinal) &&
                     row.EvidenceSubjectTarget == $"EvidenceWorkbench:{row.EvidenceSubject}");
                 viewModel.AccountingRecordEvidenceCategories.Should().Contain(row =>
-                    row.Key == "report-pack-lineage" &&
+                    row.Key == "exports" &&
                     row.StatusLabel == "Review required" &&
                     row.RequiredEvidenceLabel.Contains("export manifest", StringComparison.OrdinalIgnoreCase) &&
-                    row.RequiredEvidenceLabel.Contains("document attachment", StringComparison.OrdinalIgnoreCase) &&
-                    row.RequiredEvidenceLabel.Contains("restatement lineage", StringComparison.OrdinalIgnoreCase) &&
+                    row.RequiredEvidenceLabel.Contains("retained evidence hash", StringComparison.OrdinalIgnoreCase) &&
                     row.SourceTarget == "FundReportPack");
                 viewModel.AccountingRecordStatusText.Should().Be("Review required");
-                viewModel.AccountingRecordEvidenceText.Should().Be("0/6 evidence categories complete");
+                viewModel.AccountingRecordEvidenceText.Should().Contain("0/8 evidence categories complete");
+                viewModel.AccountingRecordEvidenceText.Should().Contain("60 sec target");
                 viewModel.AccountingRecordReadinessState.Title.Should().Be("Accounting record review required");
                 viewModel.AccountingRecordReadinessState.TargetText.Should().Be("OperationsContinuity");
-                viewModel.AccountingRecordReadinessState.Detail.Should().Contain("0 of 6 required evidence categories complete");
+                viewModel.AccountingRecordReadinessState.Detail.Should().Contain("0 of 8 required evidence categories complete");
                 viewModel.AccountingRecordReadinessState.VisibleEvidenceLinks.Should().Contain(link =>
                     link.Label == "Retained source data" &&
                     link.Target == "OperationsContinuity" &&
