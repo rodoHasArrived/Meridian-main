@@ -28,7 +28,7 @@ import sys
 import xml.etree.ElementTree as ET
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Optional
 
 
@@ -122,6 +122,11 @@ def _should_skip_project(project_path: Path) -> bool:
     return any(marker in project_path.stem for marker in IGNORED_PROJECT_NAME_MARKERS)
 
 
+def _project_stem(include: str) -> str:
+    """Resolve a project name from a ProjectReference path across slash styles."""
+    return PureWindowsPath(include.replace('/', '\\')).stem
+
+
 def _parse_project(project_path: Path, root: Path) -> Optional[ProjectNode]:
     """Parse a project file and extract dependencies."""
     try:
@@ -144,7 +149,7 @@ def _parse_project(project_path: Path, root: Path) -> Optional[ProjectNode]:
         include = ref.get('Include')
         if include and '$(' not in include:
             # Extract project name from path
-            ref_project = Path(include).stem
+            ref_project = _project_stem(include)
             if any(marker in ref_project for marker in IGNORED_PROJECT_NAME_MARKERS):
                 continue
             node.project_refs.append(ProjectDependency(
