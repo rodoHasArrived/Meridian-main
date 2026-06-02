@@ -2312,6 +2312,166 @@ function AccountingHighlight({
   );
 }
 
+function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {
+  return (
+    <section className="workspace-section-band" aria-labelledby="accounting-configure-heading">
+      <div className="workspace-section-subheader">
+        <div className="min-w-0">
+          <p className="eyebrow-label">Configure</p>
+          <h3 id="accounting-configure-heading" className="workspace-section-title">{view.title}</h3>
+          <p className="workspace-section-summary">{view.description}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={view.statusTone === "success" ? "success" : view.statusTone === "danger" ? "danger" : view.statusTone === "warning" ? "warning" : "outline"} dot>
+            {view.statusLabel}
+          </Badge>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={view.loading}
+            disabledReason={view.loading ? "Configuration refresh is already in progress." : null}
+            onClick={() => void view.refresh()}
+          >
+            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {view.errorText ? (
+        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+          <div className="font-semibold">{view.errorText}</div>
+          {view.errorDetails.length > 0 ? (
+            <ul className="mt-2 list-disc pl-4">
+              {view.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        {view.metricRows.map((metric) => (
+          <div key={metric.id} className="panel-surface px-4 py-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
+            <div className={cn("mt-2 font-mono text-xl font-semibold", cashFlowTextClass(metric.tone))}>{metric.value}</div>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Network className="h-5 w-5 text-primary" />
+              Journal templates and preview
+            </CardTitle>
+            <CardDescription>Preview uses shared accounting configuration endpoints and does not persist journal entries.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                disabled={!view.canPreview}
+                disabledReason={view.previewDisabledReason}
+                busy={view.previewBusy}
+                busyLabel={view.previewButtonLabel}
+                onClick={() => void view.previewFirstTemplate()}
+              >
+                {view.previewButtonLabel}
+              </Button>
+              {view.previewStatusText ? <span className="text-sm text-muted-foreground">{view.previewStatusText}</span> : null}
+            </div>
+
+            <div className="space-y-2">
+              {view.templates.length > 0 ? view.templates.map((template) => (
+                <div key={template.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-foreground">{template.title}</div>
+                      <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{template.subtitle}</div>
+                    </div>
+                    <Badge variant={template.statusLabel === "Balanced" ? "success" : template.statusLabel === "Archived" ? "outline" : "warning"}>
+                      {template.statusLabel}
+                    </Badge>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span>{template.lineCountLabel}</span>
+                    <span>{template.balanceLabel}</span>
+                  </div>
+                </div>
+              )) : (
+                <p role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
+              )}
+            </div>
+
+            {view.preview ? (
+              <div className="rounded-lg border border-border/70 bg-background/35 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="font-semibold text-foreground">{view.preview.title}</div>
+                    <div className="mt-1 font-mono text-xs text-muted-foreground">{view.preview.balanceLabel}</div>
+                  </div>
+                  <Badge variant={view.preview.statusLabel.startsWith("Balanced") ? "success" : "warning"}>{view.preview.statusLabel}</Badge>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {view.preview.lineRows.map((line) => (
+                    <div key={line.id} className="grid gap-2 rounded border border-border/60 px-2 py-2 text-xs sm:grid-cols-[1fr_auto_auto]">
+                      <span className="min-w-0 break-words font-mono text-foreground">{line.account}</span>
+                      <span className="font-mono text-muted-foreground">{line.side}</span>
+                      <span className="font-mono text-foreground">{line.amount}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle>Validation and audit trail</CardTitle>
+            <CardDescription>Configuration readiness and append-only mutation evidence stay visible before activation.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              {view.validationIssues.length > 0 ? view.validationIssues.map((issue) => (
+                <div key={issue.id} className={cn(
+                  "rounded-lg border px-3 py-2 text-sm",
+                  issue.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : "",
+                  issue.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "",
+                  issue.tone === "default" ? "border-border/70 bg-secondary/25 text-muted-foreground" : ""
+                )}>
+                  <div className="font-semibold">{issue.label}</div>
+                  <div className="mt-1">{issue.message}</div>
+                  <div className="mt-1 font-mono text-xs">{issue.detail}</div>
+                </div>
+              )) : (
+                <div className="rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                  No critical configuration validation issues.
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div className="eyebrow-label">Recent audit events</div>
+              {view.auditTrail.length > 0 ? view.auditTrail.map((event) => (
+                <div key={event.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-sm">
+                  <div className="font-semibold text-foreground">{event.title}</div>
+                  <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{event.subtitle}</div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">{event.hashLabel}</div>
+                </div>
+              )) : (
+                <p className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
 function AccountingValue({ label, value, tone, ariaLabel }: { label: string; value: string; tone?: string; ariaLabel?: string }) {
   return (
     <div aria-label={ariaLabel} className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">

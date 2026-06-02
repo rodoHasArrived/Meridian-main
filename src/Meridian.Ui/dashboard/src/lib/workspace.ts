@@ -63,6 +63,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   portfolioBrokerageSync: "/portfolio/brokerage-sync",
   portfolioFamilyOffice: "/portfolio/family-office",
   accounting: "/accounting",
+  accountingConfigure: "/accounting/configure",
   accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingEntitySetup: "/accounting/entity-setup",
   accountingLedger: "/accounting/ledger",
@@ -112,6 +113,7 @@ const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
 export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> = {
   AccountPortfolio: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   AccountingShell: WORKSTATION_ROUTE_CATALOG.accounting,
+  FundAccountingConfigure: WORKSTATION_ROUTE_CATALOG.accountingConfigure,
   OperationsContinuity: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
   FundStructureSetup: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup,
   OperationsClose: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,

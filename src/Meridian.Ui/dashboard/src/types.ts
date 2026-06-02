@@ -2582,6 +2582,38 @@ export interface PreviewJournalTemplateRequest {
   correlationId?: string | null;
 }
 
+export interface UpsertChartOfAccountsNodeRequest {
+  fundProfileId: string;
+  node: ChartOfAccountsNode;
+  actor: string;
+  correlationId?: string | null;
+  evidenceLinks?: string[] | null;
+}
+
+export interface UpsertJournalEntryTemplateRequest {
+  fundProfileId: string;
+  template: JournalEntryTemplate;
+  actor: string;
+  correlationId?: string | null;
+  evidenceLinks?: string[] | null;
+}
+
+export interface UpsertPostingRuleRequest {
+  fundProfileId: string;
+  rule: PostingRule;
+  actor: string;
+  correlationId?: string | null;
+  evidenceLinks?: string[] | null;
+}
+
+export interface ActivateAccountingConfigurationRequest {
+  fundProfileId: string;
+  actor: string;
+  ledgerBookId?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: string[] | null;
+}
+
 export interface LedgerTrialBalanceLine {
   accountName: string;
   accountType: string;
