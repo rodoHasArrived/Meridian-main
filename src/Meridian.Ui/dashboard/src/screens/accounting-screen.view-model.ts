@@ -11,6 +11,7 @@ import {
   getSecurityConflicts,
   getSecurityIdentity,
   getSecurityTrustSnapshot,
+  previewInvestmentAccountingTransaction,
   getTradingParameters,
   runAnalysisExport,
   resolveReconciliationBreak,
@@ -37,6 +38,8 @@ import type {
   ReconciliationBreakQueueItem,
   ReconciliationCalibrationSummary,
   ReconciliationCalibrationStatus,
+  InvestmentAccountingTransactionLabPreview,
+  InvestmentAccountingTransactionLabRequest,
   ResolveConflictRequest,
   ResolveReconciliationBreakRequest,
   ReviewReconciliationBreakRequest,
@@ -73,6 +76,7 @@ export interface AccountingReconciliationServices {
   getCalibrationSummary: () => Promise<ReconciliationCalibrationSummary>;
   getStatementRuns: () => Promise<StatementRunSummary[]>;
   getStatementRun: (runId: string) => Promise<StatementRunSummary>;
+  previewTransactionLab: (request: InvestmentAccountingTransactionLabRequest) => Promise<InvestmentAccountingTransactionLabPreview>;
 }
 
 export interface AccountingReportingServices {
@@ -987,7 +991,8 @@ const defaultAccountingReconciliationServices: AccountingReconciliationServices 
   getTrialBalance: (runId) => getRunTrialBalance(runId),
   getCalibrationSummary: () => getReconciliationCalibrationSummary(),
   getStatementRuns: () => getReconciliationStatementRuns(),
-  getStatementRun: (runId) => getReconciliationStatementRun(runId)
+  getStatementRun: (runId) => getReconciliationStatementRun(runId),
+  previewTransactionLab: (request) => previewInvestmentAccountingTransaction(request)
 };
 
 const defaultAccountingReportingServices: AccountingReportingServices = {
@@ -1787,6 +1792,9 @@ export function useAccountingReconciliationViewModel(
   const [calibrationLoading, setCalibrationLoading] = useState(false);
   const [calibrationError, setCalibrationError] = useState<ApiErrorDisplay | null>(null);
   const [selectedCalibrationProfileId, setSelectedCalibrationProfileId] = useState<string | null>(null);
+  const [transactionLabBusy, setTransactionLabBusy] = useState(false);
+  const [transactionLabPreview, setTransactionLabPreview] = useState<InvestmentAccountingTransactionLabPreview | null>(null);
+  const [transactionLabError, setTransactionLabError] = useState<ApiErrorDisplay | null>(null);
   const calibrationRequestRevisionRef = useRef(0);
 
   const reconciliationQueue = data?.reconciliationQueue ?? [];
@@ -1969,6 +1977,12 @@ export function useAccountingReconciliationViewModel(
     };
   }, [selectedReconciliation, services, workstream]);
 
+  useEffect(() => {
+    setTransactionLabPreview(null);
+    setTransactionLabError(null);
+    setTransactionLabBusy(false);
+  }, [selectedReconciliation?.runId]);
+
   const assignBreak = useCallback(async (breakId: string) => {
     setBreakAction({ breakId, command: "assign" });
     setBreakActionError(null);
@@ -2086,31 +2100,95 @@ export function useAccountingReconciliationViewModel(
     [reconciliationQueue, selectedRunId, statementRuns, statementRunsError, statementRunsLoading]
   );
   const transactionLabView = useMemo(
-    () => ({
-      title: "Investment Accounting Transaction Lab",
-      description: "Preview accounting journal impact before committing ledger or reconciliation changes.",
-      statusTone: "default" as "default" | "success" | "warning" | "danger",
-      requestSummaryLabel: selectedReconciliation ? "Ready for request" : "Select run",
-      statusRole: "status" as const,
-      statusText: selectedReconciliation
-        ? "Transaction Lab preview wiring is available for this Accounting surface but not yet connected to an operator request."
-        : "Select a reconciliation run before previewing accounting transaction impact.",
-      journalLineCountLabel: "Pending preview",
-      ledgerImpactLabel: "Pending preview",
-      reconciliationLabel: selectedReconciliation ? selectedReconciliation.status : "No run selected",
-      evidenceLabel: selectedReconciliation ? selectedReconciliation.runId : "Pending evidence",
-      impactRows: [] as Array<{ id: string; label: string; value: string; tone: "default" | "success" | "warning" | "danger" }>,
-      canPreview: false,
-      disabledReason: "Transaction Lab preview request wiring is not enabled from this Accounting surface yet.",
-      busy: false,
-      previewButtonLabel: "Preview accounting impact",
-      previewButtonAriaLabel: "Preview accounting transaction impact"
-    }),
-    [selectedReconciliation]
+    () => {
+      const hasSelection = Boolean(selectedReconciliation);
+      const hasPreview = Boolean(transactionLabPreview);
+      const hasError = Boolean(transactionLabError);
+      const canPreview = hasSelection && !transactionLabBusy;
+      const statusTone: "default" | "success" | "warning" | "danger" = hasError
+        ? "danger"
+        : hasPreview && transactionLabPreview?.ledgerImpact.hasValidationWarnings
+          ? "warning"
+          : hasPreview
+            ? "success"
+            : "default";
+
+      const requestSummaryLabel = !hasSelection
+        ? "Select run"
+        : transactionLabBusy
+          ? "Requesting preview"
+          : hasError
+            ? "Request failed"
+            : hasPreview
+              ? "Preview ready"
+              : "Ready for request";
+
+      const statusText = !hasSelection
+        ? "Select a reconciliation run before previewing accounting transaction impact."
+        : transactionLabBusy
+          ? "Requesting Transaction Lab preview from the shared endpoint."
+          : hasError
+            ? transactionLabError?.summary ?? "Transaction Lab preview failed."
+            : hasPreview
+              ? `Preview ${transactionLabPreview?.previewId ?? ""} loaded from shared endpoint calculations.`
+              : "Ready to preview accounting impact through the shared Transaction Lab endpoint.";
+
+      const impactRows = transactionLabPreview?.trialBalanceImpact.map((row, index) => ({
+        id: `${row.accountName}-${index}`,
+        label: row.accountName,
+        value: formatSignedCurrency(row.balanceDelta),
+        tone: row.balanceDelta > 0 ? "success" as const : row.balanceDelta < 0 ? "danger" as const : "default" as const
+      })) ?? [];
+
+      return {
+        title: "Investment Accounting Transaction Lab",
+        description: "Preview accounting journal impact before committing ledger or reconciliation changes.",
+        statusTone,
+        requestSummaryLabel,
+        statusRole: hasError ? "alert" as const : "status" as const,
+        statusText,
+        journalLineCountLabel: hasPreview && transactionLabPreview
+          ? formatCount(transactionLabPreview.journalPreview.lines.length, "line")
+          : "Pending preview",
+        ledgerImpactLabel: hasPreview && transactionLabPreview
+          ? formatSignedCurrency(transactionLabPreview.ledgerImpact.netBalanceDelta)
+          : "Pending preview",
+        reconciliationLabel: hasPreview && transactionLabPreview
+          ? transactionLabPreview.reconciliationExpectation.expectedState
+          : selectedReconciliation?.status ?? "No run selected",
+        evidenceLabel: hasPreview && transactionLabPreview
+          ? formatCount(transactionLabPreview.evidenceIds.length, "evidence item")
+          : selectedReconciliation?.runId ?? "Pending evidence",
+        impactRows,
+        canPreview,
+        disabledReason: hasSelection
+          ? null
+          : "Select a reconciliation run before requesting a Transaction Lab preview.",
+        busy: transactionLabBusy,
+        previewButtonLabel: transactionLabBusy ? "Previewing accounting impact..." : "Preview accounting impact",
+        previewButtonAriaLabel: "Preview accounting transaction impact"
+      };
+    },
+    [selectedReconciliation, transactionLabBusy, transactionLabError, transactionLabPreview]
   );
   const runTransactionLabPreview = useCallback(async () => {
-    // Reserved for the Investment Accounting Transaction Lab endpoint wiring.
-  }, []);
+    if (!selectedReconciliation || transactionLabBusy) {
+      return;
+    }
+
+    setTransactionLabBusy(true);
+    setTransactionLabError(null);
+
+    try {
+      const preview = await services.previewTransactionLab(buildTransactionLabPreviewRequest(selectedReconciliation));
+      setTransactionLabPreview(preview);
+    } catch (err) {
+      setTransactionLabPreview(null);
+      setTransactionLabError(describeApiError(err, "Transaction Lab preview failed."));
+    } finally {
+      setTransactionLabBusy(false);
+    }
+  }, [selectedReconciliation, services, transactionLabBusy]);
 
   return {
     reconciliationQueue,
@@ -3880,6 +3958,24 @@ function normalizeCashFlowTone(
   }
 
   return "warning";
+}
+
+function buildTransactionLabPreviewRequest(
+  reconciliation: AccountingWorkspaceResponse["reconciliationQueue"][number]
+): InvestmentAccountingTransactionLabRequest {
+  return {
+    kind: "BrokerReconciliation",
+    fundAccountId: "fund-account-ops",
+    symbol: "BOOKS",
+    eventDate: new Date().toISOString().slice(0, 10),
+    currency: "USD",
+    amount: Math.max(1, reconciliation.openBreakCount || reconciliation.breakCount || 0),
+    sourceRunId: reconciliation.runId,
+    brokerStatementId: `statement-${reconciliation.runId}`,
+    reconciliationCaseId: `case-${reconciliation.runId}`,
+    evidenceIds: [`reconciliation-run:${reconciliation.runId}`],
+    previewMode: "BooksBeforeBroker"
+  };
 }
 
 function formatCount(count: number, singular: string): string {
