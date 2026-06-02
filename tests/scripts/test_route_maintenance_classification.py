@@ -21,7 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ROUTE_SCRIPT = REPO_ROOT / "scripts" / "ai" / "route-maintenance.sh"
 
 
-def _git(cwd: Path, *args: str) -> None:
+def _run_git(cwd: Path, *args: str) -> None:
     subprocess.run(
         ["git", *args],
         cwd=cwd,
@@ -35,14 +35,14 @@ def _classify(changed_files: list[str]) -> dict:
     """Run the router over a temp repo where `changed_files` are added on HEAD."""
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
-        _git(root, "init", "-q")
-        _git(root, "config", "user.email", "test@example.com")
-        _git(root, "config", "user.name", "Test")
+        _run_git(root, "init", "-q")
+        _run_git(root, "config", "user.email", "test@example.com")
+        _run_git(root, "config", "user.name", "Test")
 
         # Base commit with a single unrelated file so a base ref exists.
         (root / "README.md").write_text("base\n", encoding="utf-8")
-        _git(root, "add", "README.md")
-        _git(root, "commit", "-q", "-m", "base")
+        _run_git(root, "add", "README.md")
+        _run_git(root, "commit", "-q", "-m", "base")
         base_sha = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             cwd=root,
@@ -56,8 +56,8 @@ def _classify(changed_files: list[str]) -> dict:
             path = root / rel
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("change\n", encoding="utf-8")
-        _git(root, "add", "-A")
-        _git(root, "commit", "-q", "-m", "head")
+        _run_git(root, "add", "-A")
+        _run_git(root, "commit", "-q", "-m", "head")
 
         env = dict(os.environ)
         subprocess.run(
