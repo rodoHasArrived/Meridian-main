@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.DirectLending;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ui.Shared.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -12,7 +13,14 @@ public static class DirectLendingEndpoints
 {
     public static void MapDirectLendingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
-        var group = app.MapGroup("/api/loans").WithTags("Direct Lending");
+        var requireViewDirectLending = EndpointAuthorization.RequireAny(
+            UserPermission.ViewDirectLending,
+            UserPermission.ManageDirectLending);
+        var requireManageDirectLending = EndpointAuthorization.Require(UserPermission.ManageDirectLending);
+
+        var group = app.MapGroup("/api/loans")
+            .WithTags("Direct Lending")
+            .AddEndpointFilter(requireViewDirectLending);
 
         group.MapPost("/", async (JsonElement body, HttpContext context) =>
         {
@@ -39,7 +47,8 @@ public static class DirectLendingEndpoints
         })
         .WithName("CreateLoan")
         .Produces<LoanContractDetailDto>(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest);
+        .Produces(StatusCodes.Status400BadRequest)
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapGet("/{loanId:guid}", async (Guid loanId, HttpContext context) =>
         {
@@ -98,7 +107,8 @@ public static class DirectLendingEndpoints
         })
         .WithName("RebuildLoanState")
         .Produces<LoanAggregateSnapshotDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapGet("/{loanId:guid}/terms-versions", async (Guid loanId, HttpContext context) =>
         {
@@ -154,7 +164,8 @@ public static class DirectLendingEndpoints
         .WithName("AmendLoanTerms")
         .Produces<LoanContractDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapPost("/{loanId:guid}/activate", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -174,7 +185,8 @@ public static class DirectLendingEndpoints
         })
         .WithName("ActivateLoan")
         .Produces<LoanContractDetailDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapGet("/{loanId:guid}/servicing-state", async (Guid loanId, HttpContext context) =>
         {
@@ -274,7 +286,8 @@ public static class DirectLendingEndpoints
         .WithName("BookLoanDrawdown")
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapPost("/{loanId:guid}/rate-resets", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -302,7 +315,8 @@ public static class DirectLendingEndpoints
         .WithName("ApplyLoanRateReset")
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapPost("/{loanId:guid}/payments/principal", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -330,7 +344,8 @@ public static class DirectLendingEndpoints
         .WithName("ApplyLoanPrincipalPayment")
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapPost("/{loanId:guid}/accruals/daily", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -358,7 +373,8 @@ public static class DirectLendingEndpoints
         .WithName("PostDailyLoanAccrual")
         .Produces<DailyAccrualEntryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapPost("/{loanId:guid}/payments", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -382,7 +398,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapGet("/{loanId:guid}/cash-transactions", async (Guid loanId, HttpContext context) =>
         {
@@ -422,7 +439,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapGet("/{loanId:guid}/fee-balances", async (Guid loanId, HttpContext context) =>
         {
@@ -454,7 +472,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapPost("/{loanId:guid}/prepayment-penalties", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -481,7 +500,8 @@ public static class DirectLendingEndpoints
         })
         .WithName("ChargeLoanPrepaymentPenalty")
         .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapPost("/{loanId:guid}/projections", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
@@ -502,7 +522,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapGet("/{loanId:guid}/projections", async (Guid loanId, HttpContext context) =>
         {
@@ -518,7 +539,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetProjectedCashFlowsAsync(projectionRunId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireViewDirectLending);
 
         group.MapGet("/{loanId:guid}/journals", async (Guid loanId, HttpContext context) =>
         {
@@ -526,7 +548,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetJournalsAsync(loanId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireViewDirectLending);
 
         app.MapPost("/api/journals/{journalEntryId:guid}/post", async (Guid journalEntryId, HttpContext context) =>
         {
@@ -545,7 +568,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapPost("/{loanId:guid}/reconcile", async (Guid loanId, HttpContext context) =>
         {
@@ -564,7 +588,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .AddEndpointFilter(requireManageDirectLending);
 
         group.MapGet("/{loanId:guid}/reconciliation-runs", async (Guid loanId, HttpContext context) =>
         {
@@ -572,7 +597,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetReconciliationRunsAsync(loanId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireViewDirectLending);
 
         app.MapGet("/api/reconciliation/{runId:guid}/results", async (Guid runId, HttpContext context) =>
         {
@@ -580,7 +606,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetReconciliationResultsAsync(runId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireViewDirectLending);
 
         app.MapGet("/api/reconciliation/exceptions", async (HttpContext context) =>
         {
@@ -588,7 +615,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetReconciliationExceptionsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireViewDirectLending);
 
         app.MapPost("/api/reconciliation/exceptions/{exceptionId:guid}/resolve", async (Guid exceptionId, JsonElement body, HttpContext context) =>
         {
@@ -607,7 +635,8 @@ public static class DirectLendingEndpoints
 
             var result = await service.ResolveReconciliationExceptionAsync(exceptionId, request, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireManageDirectLending);
 
         app.MapPost("/api/servicer-reports", async (JsonElement body, HttpContext context) =>
         {
@@ -631,14 +660,16 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .AddEndpointFilter(requireManageDirectLending);
 
         app.MapGet("/api/servicer-reports/{batchId:guid}", async (Guid batchId, HttpContext context) =>
         {
             var service = ResolveService(context);
             var batch = service is null ? null : await service.GetServicerReportBatchAsync(batchId, context.RequestAborted).ConfigureAwait(false);
             return batch is null ? Results.NotFound() : Results.Json(batch, jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireViewDirectLending);
 
         app.MapGet("/api/servicer-reports/{batchId:guid}/position-lines", async (Guid batchId, HttpContext context) =>
         {
@@ -646,7 +677,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetServicerPositionLinesAsync(batchId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireViewDirectLending);
 
         app.MapGet("/api/servicer-reports/{batchId:guid}/transaction-lines", async (Guid batchId, HttpContext context) =>
         {
@@ -654,7 +686,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetServicerTransactionLinesAsync(batchId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireViewDirectLending);
 
         app.MapGet("/api/loans/rebuild-checkpoints", async (HttpContext context) =>
         {
@@ -662,7 +695,8 @@ public static class DirectLendingEndpoints
             return service is null
                 ? ServiceUnavailable()
                 : Results.Json(await service.GetRebuildCheckpointsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
-        });
+        })
+        .AddEndpointFilter(requireViewDirectLending);
 
         app.MapGet("/api/loans/portfolio", async (HttpContext context) =>
         {
@@ -672,7 +706,8 @@ public static class DirectLendingEndpoints
                 : Results.Json(await service.GetPortfolioSummaryAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
         })
         .WithName("GetPortfolioSummary")
-        .Produces<LoanPortfolioSummaryDto>(StatusCodes.Status200OK);
+        .Produces<LoanPortfolioSummaryDto>(StatusCodes.Status200OK)
+        .AddEndpointFilter(requireViewDirectLending);
 
         app.MapPost("/api/loans/rebuild-all", async (HttpContext context) =>
         {
@@ -691,7 +726,8 @@ public static class DirectLendingEndpoints
             {
                 return ToProblem(ex);
             }
-        });
+        })
+        .AddEndpointFilter(requireManageDirectLending);
     }
 
     private static IDirectLendingService? ResolveService(HttpContext context) =>

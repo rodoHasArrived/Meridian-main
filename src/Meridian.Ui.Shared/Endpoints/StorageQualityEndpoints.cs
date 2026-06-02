@@ -263,6 +263,7 @@ public static class StorageQualityEndpoints
         // POST /api/storage/quality/check — run a quality check on specified path
         group.MapPost(UiApiRoutes.StorageQualityCheck, async (
             IDataQualityService? qualityService,
+            StorageOptions opts,
             StorageQualityCheckRequest req,
             CancellationToken ct) =>
         {
@@ -272,8 +273,10 @@ public static class StorageQualityEndpoints
             if (string.IsNullOrWhiteSpace(req.Path))
                 return Results.BadRequest(new { error = "Path is required" });
 
-            // Prevent path traversal
-            var fullPath = Path.GetFullPath(req.Path);
+            var fullRootPath = Path.GetFullPath(opts.RootPath);
+            if (!TryResolvePathWithinRoot(req.Path, fullRootPath, out var fullPath))
+                return Results.BadRequest(new { error = "Path must resolve within the configured storage root." });
+
             if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
                 return Results.NotFound(new { error = $"Path not found: {req.Path}" });
 
@@ -290,6 +293,27 @@ public static class StorageQualityEndpoints
         })
         .WithName("RunQualityCheck").Produces(200).Produces(400).Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+    }
+
+    private static bool TryResolvePathWithinRoot(string candidatePath, string rootPath, out string fullPath)
+    {
+        fullPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(candidatePath))
+            return false;
+
+        try
+        {
+            fullPath = Path.IsPathRooted(candidatePath)
+                ? Path.GetFullPath(candidatePath)
+                : Path.GetFullPath(Path.Combine(rootPath, candidatePath));
+            var rootPrefix = rootPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            return fullPath.Equals(rootPath, StringComparison.OrdinalIgnoreCase) ||
+                   fullPath.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>

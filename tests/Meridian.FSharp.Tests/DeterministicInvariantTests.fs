@@ -1,9 +1,8 @@
-namespace Meridian.FSharp.Tests
+module Meridian.FSharp.Tests.DeterministicInvariantTests
 
 open System
-open FsCheck
-open FsCheck.Xunit
-open Xunit
+open global.FsCheck
+open global.Xunit
 open FsUnit.Xunit
 open Meridian.FSharp.Ledger
 open Meridian.FSharp.Domain
@@ -118,7 +117,7 @@ let ``Deterministic reconciliation materiality thresholds are consistent for can
 let ``ReconciliationRules classifyBreaks keeps non-matches deterministic`` () =
     let rule = MatchingRule.strict
     let candidate = mkCandidate 1000m 1005m
-    let breaks = ReconciliationRules.classifyBreaks Guid.NewGuid() rule [ candidate ]
+    let breaks = ReconciliationRules.classifyBreaks (Guid.NewGuid()) rule [ candidate ]
     breaks.Length |> should equal 1
     breaks[0].Classification |> should equal "AmountBreak"
 
@@ -126,7 +125,7 @@ let ``ReconciliationRules classifyBreaks keeps non-matches deterministic`` () =
 let ``ReconciliationRules materiality-adjusted classification emits materiality marker`` () =
     let profile = MatchingThresholdProfile.conservative
     let candidate = mkCandidate 10000m 12000m
-    let breaks = ReconciliationRules.materialityAdjustedClassifyBreaks profile Guid.NewGuid() MatchingRule.strict [ candidate ]
+    let breaks = ReconciliationRules.materialityAdjustedClassifyBreaks profile (Guid.NewGuid()) MatchingRule.strict [ candidate ]
     breaks.Length |> should equal 1
     breaks[0] |> snd |> should equal true
 
@@ -185,14 +184,14 @@ let ``Security term validation blocks incomplete private-asset modules`` () =
             Version = 1L
             EffectiveFrom = asOf
             EffectiveTo = None
-            Provenance = { SourceSystem = "unit-test"; SourceRecordId = "src"; AsOf = asOf; UpdatedBy = "builder"; Reason = "unit" }
+            Provenance = { SourceSystem = "unit-test"; SourceRecordId = Some "src"; AsOf = asOf; UpdatedBy = "builder"; Reason = Some "unit" }
         }
 
     let result = SecurityTermValidation.validate definition
     result.IsValid |> should equal false
     result.Errors.Length |> should equal 4
 
-[<Property>]
+[<global.FsCheck.Xunit.Property>]
 let ``Cash-flow settled invariant under exact matches`` (amount: int, days: int) =
     let expected = decimal amount + 1m
     let due = asOf.AddDays(float (abs days % 30))
@@ -214,7 +213,7 @@ let ``Cash-flow settled invariant under exact matches`` (amount: int, days: int)
         | Settled (_, _) -> true
         | _ -> false
 
-[<Property>]
+[<global.FsCheck.Xunit.Property>]
 let ``Approval workflow rejects illegal transitions deterministically`` (seed: int) =
     let states = [| "Open"; "Submitted"; "UnderReview"; "Approved"; "Rejected"; "Executed" |]
     let actions = [| "Submit"; "Review"; "Approve"; "Reject"; "Execute"; "Reopen"; "Archive"; "Cancel" |]

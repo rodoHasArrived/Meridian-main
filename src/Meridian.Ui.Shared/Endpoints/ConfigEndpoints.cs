@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Config;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.Configuration;
 // Import extension methods for DTO to domain conversion
 using Meridian.Ui.Shared;
@@ -24,6 +25,7 @@ public static class ConfigEndpoints
     public static void MapConfigEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Configuration");
+        var requireModifyConfig = EndpointAuthorization.Require(UserPermission.ModifyConfig);
 
         // Get full configuration
         group.MapGet(UiApiRoutes.Config, (ConfigStore store) =>
@@ -123,7 +125,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpdateDataSource")
         .WithDescription("Updates the active streaming data source (e.g., IB, Alpaca, Polygon).")
-        .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(200).Produces(400)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig);
 
         // Update Alpaca settings
         group.MapPost(UiApiRoutes.ConfigAlpaca, async (ConfigStore store, AlpacaOptionsDto alpaca) =>
@@ -134,7 +138,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpdateAlpaca")
         .WithDescription("Updates Alpaca provider connection settings.")
-        .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(200)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig);
 
         // Update storage settings
         group.MapPost(UiApiRoutes.ConfigStorage, async (ConfigStore store, StorageSettingsRequest req) =>
@@ -161,7 +167,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpdateStorage")
         .WithDescription("Updates storage settings including root path, naming convention, and compression.")
-        .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(200).Produces(400)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig);
 
         // Add or update symbol
         group.MapPost(UiApiRoutes.ConfigSymbols, async (ConfigStore store, SymbolConfig symbol) =>
@@ -184,7 +192,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpsertSymbol")
         .WithDescription("Adds or updates a symbol in the monitoring configuration.")
-        .Produces(200).Produces(400).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(200).Produces(400)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig);
 
         // Delete symbol
         group.MapDelete(UiApiRoutes.ConfigSymbols + "/{symbol}", async (ConfigStore store, string symbol) =>
@@ -197,7 +207,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("DeleteConfigSymbol")
         .WithDescription("Removes a symbol from the monitoring configuration.")
-        .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(200)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig);
 
         // Get derivatives configuration
         group.MapGet(UiApiRoutes.ConfigDerivatives, (ConfigStore store) =>
@@ -217,7 +229,9 @@ public static class ConfigEndpoints
             return Results.Ok();
         }).WithName("UpdateDerivatives")
         .WithDescription("Updates the derivatives trading configuration.")
-        .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        .Produces(200)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig);
     }
 
     private static object BuildEntry(

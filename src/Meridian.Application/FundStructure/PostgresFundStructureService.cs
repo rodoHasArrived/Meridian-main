@@ -16,16 +16,18 @@ public sealed class PostgresFundStructureService : IFundStructureService
     private readonly IFundStructureStore _store;
     private readonly IFundAccountService _fundAccountService;
     private readonly IGovernanceSharedDataAccessService? _sharedDataAccessService;
-    private readonly FundStructurePolicyService _policy = new();
+    private readonly IFundStructurePolicyService _policy;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
     public PostgresFundStructureService(
         IFundStructureStore store,
         IFundAccountService fundAccountService,
+        IFundStructurePolicyService policyService,
         IGovernanceSharedDataAccessService? sharedDataAccessService = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
+        _policy = policyService ?? throw new ArgumentNullException(nameof(policyService));
         _sharedDataAccessService = sharedDataAccessService;
     }
 

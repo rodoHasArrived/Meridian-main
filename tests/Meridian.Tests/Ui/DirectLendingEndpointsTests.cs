@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
+using Meridian.Contracts.Auth;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -184,6 +185,14 @@ public sealed class DirectLendingEndpointsTests
         configureServices(builder.Services);
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "integration-user";
+            context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Admin;
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] =
+                UserPermission.ViewDirectLending | UserPermission.ManageDirectLending;
+            await next();
+        });
         app.MapDirectLendingEndpoints(new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
