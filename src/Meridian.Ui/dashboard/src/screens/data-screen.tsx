@@ -272,7 +272,7 @@ export function DataScreen({
               <span className="ml-1.5">Watchlist</span>
             </Link>
           </Button>
-          <Button type="button" size="sm" onClick={vm.openProviderSetup} aria-label="Configure a new data provider">
+          <Button type="button" size="sm" onClick={vm.openProviderSetup} aria-label="Import a data source">
             <Plus className="h-4 w-4" aria-hidden="true" />
             <span className="ml-1.5">Import source</span>
           </Button>

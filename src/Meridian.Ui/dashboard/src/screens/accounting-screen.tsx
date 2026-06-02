@@ -20,6 +20,7 @@ import {
   useReconciliationResolveDialogViewModel,
   useSecurityMasterViewModel
 } from "@/screens/accounting-screen.view-model";
+import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-model";
 import type {
   CalibrationProfileRowViewModel,
   CalibrationSummaryViewModel,
@@ -503,9 +504,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
   const focus = focusCopy[workstream];
   const activeFinancialOperationsStep = resolveActiveFinancialOperationsStep(pathname);
-  const multiAssetBlockedCount = multiAssetCoverage?.assetClasses.filter((item) => item.status === "Blocked").length ?? 0;
-  const multiAssetReviewCount = multiAssetCoverage?.assetClasses.filter((item) => item.status === "ReviewRequired").length ?? 0;
-  const multiAssetTone = multiAssetBlockedCount > 0 ? "danger" : multiAssetReviewCount > 0 ? "warning" : "success";
+  const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
 
   return (
     <div className="space-y-8">
@@ -567,7 +566,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </div>
       </section>
 
-      {multiAssetCoverage ? (
+      {multiAssetCoveragePanel ? (
         <Card className="panel-surface" role="region" aria-label="Multi-asset accounting coverage">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -578,30 +577,39 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   Asset-class readiness is supplied by the shared portfolio coverage endpoint and rendered without Accounting-local rules.
                 </CardDescription>
               </div>
-              <Badge variant={multiAssetTone}>{multiAssetBlockedCount > 0 ? `${multiAssetBlockedCount} blocked` : multiAssetReviewCount > 0 ? `${multiAssetReviewCount} review` : "Ready"}</Badge>
+              <Badge variant={multiAssetCoveragePanel.statusTone}>{multiAssetCoveragePanel.statusLabel}</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-wrap gap-2">
-              {multiAssetCoverage.metrics.map((metric) => (
-                <AccountingChip key={metric.id} label={metric.label} value={metric.value} />
+              {multiAssetCoveragePanel.chips.map((chip) => (
+                <AccountingChip key={chip.label} label={chip.label} value={chip.value} />
               ))}
             </div>
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-              {multiAssetCoverage.assetClasses.slice(0, 8).map((item) => (
-                <div key={item.assetClass} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+              {multiAssetCoveragePanel.rows.slice(0, 8).map((item) => (
+                <div key={item.assetClass} className={cn("rounded-md border bg-secondary/20 px-3 py-2", item.statusTone === "danger" ? "border-danger/30" : item.statusTone === "warning" ? "border-warning/30" : "border-border/70")}>
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-sm font-semibold text-foreground">{item.displayName}</span>
-                    <Badge variant={item.status === "Ready" ? "success" : item.status === "Blocked" ? "danger" : "warning"}>
+                    <Badge variant={item.statusTone === "default" ? "outline" : item.statusTone}>
                       {item.statusLabel}
                     </Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    {item.ledgerClassification.classification ?? "Ledger classification retained"}
+                    {item.readinessDetail}
+                  </p>
+                  <a href={item.primaryEvidenceRoute} className="mt-2 block truncate text-xs font-medium text-primary hover:underline">
+                    {item.evidenceLabel}
+                  </a>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {item.ledgerLabel}
                   </p>
                 </div>
               ))}
             </div>
+            <a href={multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
+              {multiAssetCoveragePanel.evidenceRouteLabel}
+            </a>
           </CardContent>
         </Card>
       ) : null}

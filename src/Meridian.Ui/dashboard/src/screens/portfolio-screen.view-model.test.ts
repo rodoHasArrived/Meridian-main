@@ -104,8 +104,8 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
   entity: "portfolio",
   asOfUtc: "2026-06-02T00:00:00Z",
   metrics: [
-    { id: "multi-asset-classes", label: "Asset classes", value: "2", delta: "covered", tone: "default" },
-    { id: "multi-asset-review", label: "Review required", value: "1", delta: "evidence gaps", tone: "warning" }
+    { id: "multi-asset-classes", label: "Asset classes", value: "3", delta: "covered", tone: "default" },
+    { id: "multi-asset-review", label: "Review required", value: "2", delta: "evidence gaps", tone: "warning" }
   ],
   assetClasses: [
     {
@@ -120,6 +120,20 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
       blockers: [],
       ledgerClassification: { classification: "Security position" },
       reconciliationSignals: { breaks: "quantity, market value, cash" }
+    },
+    {
+      assetClass: "FixedIncome",
+      displayName: "Corporate bonds",
+      status: "Degraded",
+      statusLabel: "Degraded",
+      summary: "Bond coverage is usable with stale provider evidence.",
+      evidenceRequirements: [
+        { requirementId: "FixedIncome:security-master-identifiers", label: "Identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true },
+        { requirementId: "FixedIncome:price-evidence", label: "Price evidence", category: "ProviderEvidence", status: "Degraded", evidenceRoute: "/api/workstation/data-operations", required: true }
+      ],
+      blockers: [],
+      ledgerClassification: { classification: "Amortized-cost security position" },
+      reconciliationSignals: { breaks: "principal, accrued interest, market value" }
     },
     {
       assetClass: "CustomAsset",
@@ -407,15 +421,62 @@ describe("buildPortfolioScreenViewModel", () => {
 
   it("projects multi-asset coverage without recalculating readiness client-side", () => {
     const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting, multiAssetCoverage });
+    const customAssetRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "CustomAsset");
+    const fixedIncomeRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "FixedIncome");
 
-    expect(vm.multiAssetCoveragePanel?.statusLabel).toBe("1 review");
-    expect(vm.multiAssetCoveragePanel?.rows).toHaveLength(2);
-    expect(vm.multiAssetCoveragePanel?.rows[1]).toMatchObject({
+    expect(vm.multiAssetCoveragePanel?.statusLabel).toBe("2 review");
+    expect(vm.multiAssetCoveragePanel?.rows).toHaveLength(3);
+    expect(vm.multiAssetCoveragePanel?.groups.map((group) => ({
+      id: group.id,
+      label: group.label,
+      summary: group.summary
+    }))).toEqual([
+      { id: "review", label: "Review required", summary: "2 asset classes" },
+      { id: "ready", label: "Ready", summary: "1 asset class" }
+    ]);
+    expect(fixedIncomeRow).toMatchObject({
+      displayName: "Corporate bonds",
+      statusLabel: "Degraded",
+      statusTone: "warning",
+      readinessGroupId: "review",
+      readinessDetail: "Degraded: 1/2 evidence targets ready with no blockers.",
+      primaryEvidenceRoute: "/api/workstation/data-operations"
+    });
+    expect(customAssetRow).toMatchObject({
       displayName: "MBS / ABS / CLO / CMBS / private assets",
       statusLabel: "Review required",
       evidenceLabel: "1/2 ready",
-      ledgerLabel: "Profile-derived classification"
+      ledgerLabel: "Profile-derived classification",
+      readinessGroupId: "review",
+      readinessDetail: "Review required: 1/2 evidence targets ready with 1 blocker.",
+      primaryEvidenceRoute: "/api/workstation/data-operations"
     });
+    expect(customAssetRow?.evidenceTargets).toEqual([
+      expect.objectContaining({
+        id: "CustomAsset:governed-profile",
+        statusLabel: "Ready",
+        statusTone: "success",
+        href: "/api/security-master/asset-profiles",
+        requiredLabel: "Required"
+      }),
+      expect.objectContaining({
+        id: "CustomAsset:provider-evidence",
+        statusLabel: "Review required",
+        statusTone: "warning",
+        href: "/api/workstation/data-operations",
+        ariaLabel: "Open MBS / ABS / CLO / CMBS / private assets Provider evidence target"
+      })
+    ]);
+    expect(customAssetRow?.blockerTargets).toEqual([
+      expect.objectContaining({
+        id: "CustomAsset:provider-evidence-review",
+        label: "Review",
+        source: "ProviderEvidence",
+        href: "/api/workstation/portfolio/multi-asset-coverage"
+      })
+    ]);
+    expect(vm.multiAssetCoveragePanel?.evidenceRouteLabel).toBe("GET /api/workstation/portfolio/multi-asset-coverage");
+    expect(vm.multiAssetCoveragePanel?.asOfLabel).toBe("As of 2026-06-02T00:00:00Z");
     expect(vm.multiAssetCoveragePanel?.blockerMessages[0]).toContain("Retained provider evidence is required.");
   });
 

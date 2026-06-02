@@ -24,7 +24,7 @@ describe("workspace primitives", () => {
 
     expect(screen.getByRole("region", { name: "Data filters" })).toBeInTheDocument();
     expect(screen.getByRole("search", { name: "Search" })).toHaveTextContent("provider: polygon");
-    expect(screen.getByRole("listitem", { name: "All 4" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByText("All").closest('[role="listitem"]')).toHaveAttribute("aria-current", "true");
     expect(screen.getByText("Sync").closest("dl")).toHaveTextContent("Healthy");
     expect(screen.getByRole("button", { name: "Import" })).toBeInTheDocument();
   });

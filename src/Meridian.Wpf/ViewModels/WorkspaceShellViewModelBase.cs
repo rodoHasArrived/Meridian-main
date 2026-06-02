@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Commands;
 using Meridian.Wpf.Workstation.ViewModels.Base;
@@ -31,6 +32,8 @@ public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
 
 public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
+    private const string MultiAssetCoverageRoute = UiApiRoutes.WorkstationPortfolioMultiAssetCoverage;
+
     public IReadOnlyList<WorkspaceQueueItem> CockpitDecisionItems { get; } =
     [
         new()
@@ -68,14 +71,56 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
         },
         new()
         {
-            Title = "Multi-asset coverage",
-            Detail = $"Review asset-class readiness, provider evidence, ledger coverage, reconciliation status, and close blockers from {UiApiRoutes.WorkstationPortfolioMultiAssetCoverage}.",
-            StatusLabel = "Shared endpoint",
+            Title = "Multi-asset readiness groups",
+            Detail = $"Review {nameof(MultiAssetCoverageSummaryDto.AssetClasses)}, {nameof(MultiAssetClassCoverageDto.Status)}, and {nameof(MultiAssetClassCoverageDto.Blockers)} from {MultiAssetCoverageRoute}.",
+            StatusLabel = "Asset class readiness",
             CountLabel = "Review",
+            Tone = WorkspaceTone.Info,
+            PrimaryActionId = "FundPortfolio",
+            PrimaryActionLabel = "Open Portfolio",
+            SecondaryActionId = "FundAccounts",
+            SecondaryActionLabel = "Accounts",
+            AutomationName = "Portfolio multi-asset readiness grouping decision"
+        },
+        new()
+        {
+            Title = "Provider evidence degradation",
+            Detail = $"Inspect {nameof(MultiAssetClassCoverageDto.EvidenceRequirements)} and {nameof(MultiAssetEvidenceRequirementDto.EvidenceRoute)} references from {MultiAssetCoverageRoute}.",
+            StatusLabel = "Provider degraded",
+            CountLabel = "Check",
             Tone = WorkspaceTone.Warning,
-            PrimaryActionId = "MultiAssetCoverage",
-            PrimaryActionLabel = "Open",
-            AutomationName = "Portfolio multi-asset coverage decision"
+            PrimaryActionId = "PortfolioImport",
+            PrimaryActionLabel = "Open Imports",
+            SecondaryActionId = "ProviderHealth",
+            SecondaryActionLabel = "Providers",
+            AutomationName = "Portfolio multi-asset provider degradation decision"
+        },
+        new()
+        {
+            Title = "Ledger and reconciliation coverage",
+            Detail = $"Compare {nameof(MultiAssetClassCoverageDto.LedgerClassification)} and {nameof(MultiAssetClassCoverageDto.ReconciliationSignals)} from {MultiAssetCoverageRoute}.",
+            StatusLabel = "Coverage drift",
+            CountLabel = "Investigate",
+            Tone = WorkspaceTone.Warning,
+            PrimaryActionId = "FundReconciliation",
+            PrimaryActionLabel = "Reconcile",
+            SecondaryActionId = "FundAuditTrail",
+            SecondaryActionLabel = "Audit",
+            AutomationName = "Portfolio multi-asset reconciliation coverage decision"
+        },
+        new()
+        {
+            Title = "Close readiness blockers",
+            Detail = $"Open blocker evidence carried by {nameof(MultiAssetReadinessBlockerDto.EvidenceRoute)} and {nameof(MultiAssetCoverageSummaryDto.DrillThroughRoutes)} from {MultiAssetCoverageRoute}.",
+            StatusLabel = "Close readiness",
+            CountLabel = "Blocked",
+            Tone = WorkspaceTone.Danger,
+            IsBlocked = true,
+            PrimaryActionId = "OperationsClose",
+            PrimaryActionLabel = "Close Review",
+            SecondaryActionId = "FundAuditTrail",
+            SecondaryActionLabel = "Evidence",
+            AutomationName = "Portfolio multi-asset close blocker decision"
         },
         new()
         {

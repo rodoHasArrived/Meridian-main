@@ -203,11 +203,46 @@ export interface PortfolioMultiAssetCoverageRow {
   displayName: string;
   statusLabel: string;
   statusTone: "default" | "success" | "warning" | "danger";
+  readinessGroupId: string;
+  readinessGroupLabel: string;
+  readinessDetail: string;
   summary: string;
   evidenceLabel: string;
   blockerLabel: string;
   ledgerLabel: string;
   reconciliationLabel: string;
+  evidenceTargets: PortfolioMultiAssetEvidenceTarget[];
+  blockerTargets: PortfolioMultiAssetBlockerTarget[];
+  primaryEvidenceRoute: string;
+}
+
+export interface PortfolioMultiAssetEvidenceTarget {
+  id: string;
+  label: string;
+  category: string;
+  statusLabel: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  href: string;
+  requiredLabel: string;
+  ariaLabel: string;
+}
+
+export interface PortfolioMultiAssetBlockerTarget {
+  id: string;
+  label: string;
+  detail: string;
+  source: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  href: string | null;
+  ariaLabel: string;
+}
+
+export interface PortfolioMultiAssetCoverageGroup {
+  id: string;
+  label: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  summary: string;
+  rows: PortfolioMultiAssetCoverageRow[];
 }
 
 export interface PortfolioMultiAssetCoveragePanel {
@@ -217,8 +252,11 @@ export interface PortfolioMultiAssetCoveragePanel {
   statusTone: "default" | "success" | "warning" | "danger";
   chips: PortfolioHeaderChip[];
   rows: PortfolioMultiAssetCoverageRow[];
+  groups: PortfolioMultiAssetCoverageGroup[];
   blockerMessages: string[];
   evidenceRoute: string;
+  evidenceRouteLabel: string;
+  asOfLabel: string;
 }
 
 interface PortfolioRunContinuityBlocker {
@@ -1182,7 +1220,7 @@ export function usePortfolioScreenViewModel({
   });
 }
 
-function buildMultiAssetCoveragePanel(
+export function buildMultiAssetCoveragePanel(
   coverage: MultiAssetCoverageSummary | null | undefined
 ): PortfolioMultiAssetCoveragePanel | null {
   if (!coverage) {
@@ -1192,17 +1230,49 @@ function buildMultiAssetCoveragePanel(
   const rows: PortfolioMultiAssetCoverageRow[] = coverage.assetClasses.map((item) => {
     const evidenceReady = item.evidenceRequirements.filter((requirement) => requirement.status === "Ready").length;
     const evidenceTotal = item.evidenceRequirements.length;
+    const evidenceTargets = item.evidenceRequirements.map((requirement) => ({
+      id: requirement.requirementId,
+      label: requirement.label,
+      category: requirement.category,
+      statusLabel: multiAssetStatusLabel(requirement.status),
+      statusTone: multiAssetStatusTone(requirement.status),
+      href: requirement.evidenceRoute,
+      requiredLabel: requirement.required ? "Required" : "Optional",
+      ariaLabel: `Open ${item.displayName} ${requirement.label} target`
+    }));
+    const blockerTargets = item.blockers.map((blocker) => ({
+      id: blocker.code,
+      label: blocker.severity,
+      detail: blocker.message,
+      source: blocker.source,
+      statusTone: blocker.severity === "Blocker" ? "danger" : "warning",
+      href: blocker.evidenceRoute,
+      ariaLabel: blocker.evidenceRoute
+        ? `Open ${item.displayName} ${blocker.source} blocker evidence`
+        : `${item.displayName} ${blocker.source} blocker has no drill-through route`
+    }));
+    const readinessGroup = multiAssetReadinessGroup(item.status);
+
     return {
       id: item.assetClass,
       assetClass: item.assetClass,
       displayName: item.displayName,
       statusLabel: item.statusLabel,
       statusTone: multiAssetStatusTone(item.status),
+      readinessGroupId: readinessGroup.id,
+      readinessGroupLabel: readinessGroup.label,
+      readinessDetail: multiAssetReadinessDetail(item.status, item.statusLabel, item.blockers.length, evidenceReady, evidenceTotal),
       summary: item.summary,
       evidenceLabel: `${evidenceReady}/${evidenceTotal} ready`,
       blockerLabel: item.blockers.length === 0 ? "None" : `${item.blockers.length} blocker${item.blockers.length === 1 ? "" : "s"}`,
       ledgerLabel: item.ledgerClassification.classification ?? "Ledger classification retained",
-      reconciliationLabel: item.reconciliationSignals.breaks ?? "Reconciliation evidence retained"
+      reconciliationLabel: item.reconciliationSignals.breaks ?? "Reconciliation evidence retained",
+      evidenceTargets,
+      blockerTargets,
+      primaryEvidenceRoute: evidenceTargets.find((target) => target.statusTone !== "success")?.href
+        ?? evidenceTargets[0]?.href
+        ?? coverage.drillThroughRoutes.coverage
+        ?? WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage
     };
   });
 
@@ -1210,8 +1280,9 @@ function buildMultiAssetCoveragePanel(
     .flatMap((item) => item.blockers.map((blocker) => `${item.displayName}: ${blocker.message}`))
     .slice(0, 4);
   const blockedCount = coverage.assetClasses.filter((item) => item.status === "Blocked").length;
-  const reviewCount = coverage.assetClasses.filter((item) => item.status === "ReviewRequired").length;
+  const reviewCount = coverage.assetClasses.filter((item) => multiAssetReadinessGroup(item.status).id === "review").length;
   const statusTone = blockedCount > 0 ? "danger" : reviewCount > 0 ? "warning" : "success";
+  const evidenceRoute = coverage.drillThroughRoutes.coverage ?? WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage;
 
   return {
     title: "Multi-asset operational coverage",
@@ -1224,16 +1295,77 @@ function buildMultiAssetCoveragePanel(
     statusTone,
     chips: coverage.metrics.map((metric) => ({ label: metric.label, value: metric.value })),
     rows,
+    groups: buildMultiAssetCoverageGroups(rows),
     blockerMessages,
-    evidenceRoute: coverage.drillThroughRoutes.coverage ?? WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage
+    evidenceRoute,
+    evidenceRouteLabel: `GET ${evidenceRoute}`,
+    asOfLabel: `As of ${coverage.asOfUtc}`
   };
 }
 
 function multiAssetStatusTone(status: string): PortfolioMultiAssetCoverageRow["statusTone"] {
   if (status === "Ready") return "success";
   if (status === "Blocked") return "danger";
-  if (status === "ReviewRequired") return "warning";
+  if (status === "ReviewRequired" || status === "Degraded") return "warning";
   return "default";
+}
+
+function multiAssetStatusLabel(status: string): string {
+  if (status === "ReviewRequired") return "Review required";
+  return status;
+}
+
+function multiAssetReadinessGroup(status: string): Pick<PortfolioMultiAssetCoverageGroup, "id" | "label" | "statusTone"> {
+  if (status === "Ready") return { id: "ready", label: "Ready", statusTone: "success" };
+  if (status === "Blocked") return { id: "blocked", label: "Blocked", statusTone: "danger" };
+  if (status === "ReviewRequired" || status === "Degraded") return { id: "review", label: "Review required", statusTone: "warning" };
+  return { id: "other", label: "Other state", statusTone: "default" };
+}
+
+function multiAssetReadinessDetail(
+  status: string,
+  statusLabel: string,
+  blockerCount: number,
+  evidenceReady: number,
+  evidenceTotal: number
+): string {
+  if (status === "Ready") {
+    return `${statusLabel}: ${evidenceReady}/${evidenceTotal} evidence targets ready.`;
+  }
+
+  const blockerLabel = blockerCount === 0
+    ? "no blockers"
+    : `${blockerCount} blocker${blockerCount === 1 ? "" : "s"}`;
+  return `${statusLabel}: ${evidenceReady}/${evidenceTotal} evidence targets ready with ${blockerLabel}.`;
+}
+
+function buildMultiAssetCoverageGroups(rows: PortfolioMultiAssetCoverageRow[]): PortfolioMultiAssetCoverageGroup[] {
+  const order = ["blocked", "review", "ready", "other"];
+  const groups = order
+    .map((id) => {
+      const groupRows = rows.filter((row) => row.readinessGroupId === id);
+      if (groupRows.length === 0) {
+        return null;
+      }
+
+      const label = groupRows[0].readinessGroupLabel;
+      return {
+        id,
+        label,
+        statusTone: groupRows[0].readinessGroupId === "blocked"
+          ? "danger"
+          : groupRows[0].readinessGroupId === "ready"
+            ? "success"
+            : groupRows[0].readinessGroupId === "review"
+              ? "warning"
+              : "default",
+        summary: `${groupRows.length} asset class${groupRows.length === 1 ? "" : "es"}`,
+        rows: groupRows
+      };
+    })
+    .filter((group): group is PortfolioMultiAssetCoverageGroup => group !== null);
+
+  return groups;
 }
 
 function buildBrokerageAccountOptions(
