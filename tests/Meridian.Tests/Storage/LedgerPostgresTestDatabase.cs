@@ -18,6 +18,7 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
         Options = options;
         StatusDerivation = new OperationsStatusDerivationService();
         JournalStore = new PostgresLedgerJournalStore(options);
+        AccountingConfigurationStore = new PostgresAccountingConfigurationStore(options);
         OperationsStore = new PostgresOperationsContinuityStore(
             options,
             JournalStore,
@@ -29,6 +30,8 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
     public OperationsStatusDerivationService StatusDerivation { get; }
 
     public PostgresLedgerJournalStore JournalStore { get; }
+
+    public PostgresAccountingConfigurationStore AccountingConfigurationStore { get; }
 
     public PostgresOperationsContinuityStore OperationsStore { get; }
 

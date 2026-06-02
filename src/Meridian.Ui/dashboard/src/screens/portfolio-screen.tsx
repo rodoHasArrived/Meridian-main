@@ -23,6 +23,7 @@ import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   AccountingWorkspaceResponse,
+  MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
   TradingWorkspaceResponse
@@ -35,6 +36,7 @@ interface PortfolioScreenProps {
   accounting: AccountingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
+  multiAssetCoverage?: MultiAssetCoverageSummary | null;
 }
 
 const pnlToneClass = {
@@ -250,7 +252,8 @@ export function PortfolioScreen({
   strategy,
   accounting,
   brokerageConnection,
-  brokeragePortfolio
+  brokeragePortfolio,
+  multiAssetCoverage
 }: PortfolioScreenProps) {
   const location = useLocation();
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -264,6 +267,7 @@ export function PortfolioScreen({
     accounting,
     brokerageConnection,
     brokeragePortfolio,
+    multiAssetCoverage,
     selectedRunDrillIn,
     pathname: location.pathname
   });
@@ -430,6 +434,73 @@ export function PortfolioScreen({
             </div>
           </div>
         </section>
+      ) : null}
+
+      {vm.multiAssetCoveragePanel ? (
+        <Card className={cn("panel-surface border", cashFlowBorderClass[vm.multiAssetCoveragePanel.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="eyebrow-label">Coverage</div>
+                <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                  <Network className="h-4 w-4 text-primary" />
+                  {vm.multiAssetCoveragePanel.title}
+                </CardTitle>
+                <CardDescription>{vm.multiAssetCoveragePanel.description}</CardDescription>
+              </div>
+              <Badge variant={workflowStatusVariant(vm.multiAssetCoveragePanel.statusTone)}>
+                {vm.multiAssetCoveragePanel.statusLabel}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {vm.multiAssetCoveragePanel.chips.map((chip) => (
+                <PortfolioChip key={chip.label} label={chip.label} value={chip.value} />
+              ))}
+            </div>
+            <div className="overflow-x-auto rounded-lg border border-border/70">
+              <table className="min-w-full divide-y divide-border/70 text-sm">
+                <thead className="bg-secondary/30 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-medium">Asset class</th>
+                    <th className="px-3 py-2 text-left font-medium">Status</th>
+                    <th className="px-3 py-2 text-left font-medium">Evidence</th>
+                    <th className="px-3 py-2 text-left font-medium">Ledger</th>
+                    <th className="px-3 py-2 text-left font-medium">Reconciliation</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 bg-background/20">
+                  {vm.multiAssetCoveragePanel.rows.map((row) => (
+                    <tr key={row.id}>
+                      <td className="max-w-[18rem] px-3 py-3 align-top">
+                        <div className="font-semibold text-foreground">{row.displayName}</div>
+                        <div className="mt-1 text-xs leading-5 text-muted-foreground">{row.summary}</div>
+                      </td>
+                      <td className="px-3 py-3 align-top">
+                        <Badge variant={workflowStatusVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                        <div className="mt-2 text-xs text-muted-foreground">{row.blockerLabel}</div>
+                      </td>
+                      <td className="px-3 py-3 align-top font-mono text-xs text-foreground">{row.evidenceLabel}</td>
+                      <td className="max-w-[16rem] px-3 py-3 align-top text-xs text-muted-foreground">{row.ledgerLabel}</td>
+                      <td className="max-w-[16rem] px-3 py-3 align-top text-xs text-muted-foreground">{row.reconciliationLabel}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {vm.multiAssetCoveragePanel.blockerMessages.length > 0 ? (
+              <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                {vm.multiAssetCoveragePanel.blockerMessages.map((message) => (
+                  <div key={message}>{message}</div>
+                ))}
+              </div>
+            ) : null}
+            <a href={vm.multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
+              Open coverage endpoint
+            </a>
+          </CardContent>
+        </Card>
       ) : null}
 
       <Card className={cn("panel-surface border", cashFlowBorderClass[vm.brokerageConnectionTone])}>

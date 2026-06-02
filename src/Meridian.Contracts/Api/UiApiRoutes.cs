@@ -556,6 +556,7 @@ public static class UiApiRoutes
     public const string WorkstationReporting = "/api/workstation/reporting";
     public const string WorkstationPortfolio = "/api/workstation/portfolio";
     public const string WorkstationPortfolioSummary = "/api/workstation/portfolio/summary";
+    public const string WorkstationPortfolioMultiAssetCoverage = "/api/workstation/portfolio/multi-asset-coverage";
 
     // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";

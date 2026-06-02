@@ -68,8 +68,36 @@ Preview does not append audit events and does not persist journal entries. Posti
 
 ---
 
+## Durable Storage
+
+When ledger Postgres storage is configured, `V_ledger_010__accounting_configuration.sql` creates:
+
+| Table | Purpose |
+| --- | --- |
+| `accounting_configuration_workspaces` | Active workspace header, status, version, optional ledger book, and validation snapshot. |
+| `accounting_configuration_chart_nodes` | Fund-scoped hierarchical chart-of-accounts nodes. |
+| `accounting_configuration_journal_templates` | Fund-scoped journal template headers and JSONB template lines. |
+| `accounting_configuration_posting_rules` | Fund-scoped source-event to template mappings. |
+| `accounting_action_audit_events` | Append-only action audit events across configuration mutations and future accounting actions. |
+
+`PostgresAccountingConfigurationStore` implements `IAccountingConfigurationStore` and `IAccountingActionAuditStore`. The implementation uses the existing ledger schema options and keeps audit events append-only.
+
+---
+
 ## Browser Workflow
 
 The browser workstation adds `/accounting/configure` as the Accounting Configure workstream.
 
 The screen view model owns visible copy for setup status, validation issues, disabled preview reasons, template summary rows, preview status, and audit labels. React components render that view model and do not fork accounting validation or posting logic.
+
+---
+
+## WPF Parity
+
+The WPF Accounting workspace exposes read/parity configuration status through the existing Accounting shell:
+
+- `FundAccountingConfigure` is a dockable Accounting page target.
+- The command surface includes a Configure command.
+- The inspector shows shared configuration status, chart/template/rule counts, validation posture, and latest audit evidence.
+
+WPF intentionally consumes `IAccountingConfigurationService` and shared DTOs. It does not fork posting-rule evaluation, template validation, activation rules, or mutation workflows.

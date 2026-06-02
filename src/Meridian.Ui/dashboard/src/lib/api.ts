@@ -43,6 +43,7 @@ import type {
   LedgerSummary,
   LedgerTrialBalanceLine,
   MetricSnapshot,
+  MultiAssetCoverageSummary,
   NetSymbolPosition,
   OperatorInbox,
   OperationsContinuityWorkflow,
@@ -1561,6 +1562,10 @@ export function revokeRobinhoodConnection() {
 
 export function getPortfolioWorkspace(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").PortfolioWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.portfolio, options);
+}
+
+export function getPortfolioMultiAssetCoverage(options: ApiRequestOptions = {}) {
+  return getJson<MultiAssetCoverageSummary>(WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage, options);
 }
 
 export function getAlpacaConnectionStatus(options: ApiRequestOptions = {}) {

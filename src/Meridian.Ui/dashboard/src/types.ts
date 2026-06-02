@@ -1882,6 +1882,44 @@ export interface PortfolioWorkspaceResponse {
   cashFlow: AccountingCashFlowSummary | null;
 }
 
+export interface MultiAssetEvidenceRequirement {
+  requirementId: string;
+  label: string;
+  category: string;
+  status: "Ready" | "ReviewRequired" | "Blocked" | string;
+  evidenceRoute: string;
+  required: boolean;
+}
+
+export interface MultiAssetReadinessBlocker {
+  code: string;
+  severity: "Review" | "Blocker" | string;
+  message: string;
+  source: string;
+  evidenceRoute: string | null;
+}
+
+export interface MultiAssetClassCoverage {
+  assetClass: string;
+  displayName: string;
+  status: "Ready" | "ReviewRequired" | "Blocked" | string;
+  statusLabel: string;
+  summary: string;
+  evidenceRequirements: MultiAssetEvidenceRequirement[];
+  blockers: MultiAssetReadinessBlocker[];
+  ledgerClassification: Record<string, string>;
+  reconciliationSignals: Record<string, string>;
+}
+
+export interface MultiAssetCoverageSummary {
+  fundAccountId: string;
+  entity: string;
+  asOfUtc: string;
+  metrics: MetricSnapshot[];
+  assetClasses: MultiAssetClassCoverage[];
+  drillThroughRoutes: Record<string, string>;
+}
+
 
 export interface StatementRunSummary {
   runId: string;

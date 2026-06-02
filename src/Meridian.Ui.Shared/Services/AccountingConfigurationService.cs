@@ -121,7 +121,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "chart-node-upserted", null, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "chart.upsert", null, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertTemplateAsync(
@@ -148,7 +148,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "journal-template-upserted", null, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "template.upsert", null, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertPostingRuleAsync(
@@ -176,7 +176,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "posting-rule-upserted", null, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "posting-rule.upsert", null, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingJournalTemplatePreviewDto> PreviewTemplateAsync(
@@ -255,7 +255,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "configuration-activated", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "configuration.activate", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(

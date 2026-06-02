@@ -13,6 +13,7 @@ import {
   getProviderRoutingConnections,
   getProviderRoutingTrustSnapshots,
   hasDevelopmentFixtureUsage,
+  getPortfolioMultiAssetCoverage,
   getPortfolioWorkspace,
   getReportingWorkspace,
   resetDevelopmentFixtureUsage,
@@ -38,6 +39,7 @@ import type {
   LedgerMappingWorkbench,
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
+  MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
   ProviderRoutingBinding,
@@ -63,6 +65,7 @@ interface WorkstationDataState {
   strategy: StrategyWorkspaceResponse | null;
   trading: TradingWorkspaceResponse | null;
   portfolio: PortfolioWorkspaceResponse | null;
+  portfolioMultiAssetCoverage: MultiAssetCoverageSummary | null;
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
   reporting: ReportingWorkspaceResponse | null;
@@ -98,6 +101,7 @@ const initialState: WorkstationDataState = {
   strategy: null,
   trading: null,
   portfolio: null,
+  portfolioMultiAssetCoverage: null,
   data: null,
   accounting: null,
   reporting: null,
@@ -203,6 +207,7 @@ export function useWorkstationData() {
       strategy,
       trading,
       portfolio,
+      portfolioMultiAssetCoverage,
       data,
       accounting,
       reporting,
@@ -226,6 +231,7 @@ export function useWorkstationData() {
       getStrategyWorkspace(requestOptions),
       getTradingWorkspace(requestOptions),
       getPortfolioWorkspace(requestOptions),
+      getPortfolioMultiAssetCoverage(requestOptions),
       getDataWorkspace(requestOptions),
       getAccountingWorkspace(requestOptions),
       getReportingWorkspace(requestOptions),
@@ -284,6 +290,7 @@ export function useWorkstationData() {
       strategy: readWorkspace(["strategy"], strategy),
       trading: readWorkspace(["trading"], trading),
       portfolio: readWorkspace(["portfolio"], portfolio),
+      portfolioMultiAssetCoverage: readWorkspace(["portfolio", "accounting"], portfolioMultiAssetCoverage),
       data: readWorkspace(["data"], data),
       accounting: readWorkspace(["accounting"], accounting),
       reporting: readWorkspace(["reporting"], reporting),
@@ -489,8 +496,9 @@ export function useWorkstationData() {
     if (!token) return;
     refreshingPortfolio.current = true;
     try {
-      const [portfolio, brokeragePortfolio] = await Promise.allSettled([
+      const [portfolio, portfolioMultiAssetCoverage, brokeragePortfolio] = await Promise.allSettled([
         getPortfolioWorkspace({ signal: token.signal }),
+        getPortfolioMultiAssetCoverage({ signal: token.signal }),
         getBrokerageHouseholdPortfolio("alpaca", { signal: token.signal })
       ]);
       if (!token.isCurrent()) {
@@ -505,6 +513,11 @@ export function useWorkstationData() {
           next = { ...next, portfolio: portfolio.value };
         } else {
           refreshErrors.push(formatRequestError(portfolio.reason, "Portfolio workspace refresh failed"));
+        }
+        if (portfolioMultiAssetCoverage.status === "fulfilled") {
+          next = { ...next, portfolioMultiAssetCoverage: portfolioMultiAssetCoverage.value };
+        } else {
+          refreshErrors.push(formatRequestError(portfolioMultiAssetCoverage.reason, "Multi-asset coverage refresh failed"));
         }
         if (brokeragePortfolio.status === "fulfilled") {
           next = { ...next, brokeragePortfolio: brokeragePortfolio.value };

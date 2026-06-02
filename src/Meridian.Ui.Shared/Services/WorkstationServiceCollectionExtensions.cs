@@ -116,6 +116,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
+        services.TryAddSingleton<ISecurityMasterOperationalReadinessService, SecurityMasterOperationalReadinessService>();
+        services.TryAddSingleton<IMultiAssetCoverageReadService, MultiAssetCoverageReadService>();
         services.TryAddSingleton<LedgerReadService>();
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<StrategyRunComparisonService>();

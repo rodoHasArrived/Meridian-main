@@ -90,6 +90,7 @@ function AppShell() {
     strategy,
     trading,
     portfolio,
+    portfolioMultiAssetCoverage,
     data,
     accounting,
     reporting,
@@ -354,11 +355,12 @@ function AppShell() {
                       accounting={accounting}
                       brokerageConnection={brokerageConnection}
                       brokeragePortfolio={brokeragePortfolio}
+                      multiAssetCoverage={portfolioMultiAssetCoverage}
                     />
                   )} />
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
-                  <Route path="/accounting/*" element={<AccountingScreen data={accounting} />} />
+                  <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />

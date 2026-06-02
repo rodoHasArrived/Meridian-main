@@ -9,6 +9,7 @@ import type {
   GovernanceCashFlowSummary,
   AccountingWorkspaceResponse,
   MetricSnapshot,
+  MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
   RunAttributionSummary,
@@ -196,6 +197,30 @@ export interface PortfolioWorkflowTaskPanel {
   selectedSummary: string;
 }
 
+export interface PortfolioMultiAssetCoverageRow {
+  id: string;
+  assetClass: string;
+  displayName: string;
+  statusLabel: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  summary: string;
+  evidenceLabel: string;
+  blockerLabel: string;
+  ledgerLabel: string;
+  reconciliationLabel: string;
+}
+
+export interface PortfolioMultiAssetCoveragePanel {
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  chips: PortfolioHeaderChip[];
+  rows: PortfolioMultiAssetCoverageRow[];
+  blockerMessages: string[];
+  evidenceRoute: string;
+}
+
 interface PortfolioRunContinuityBlocker {
   code: string;
   label: string;
@@ -320,6 +345,7 @@ export interface PortfolioRunEvidenceAction {
 export interface PortfolioScreenViewModel {
   metricsFromTrading: boolean;
   metricCards: TradingWorkspaceResponse["metrics"];
+  multiAssetCoveragePanel: PortfolioMultiAssetCoveragePanel | null;
   positionSourceLabel: string;
   fallbackStats: MetricSnapshot[];
   headerChips: PortfolioHeaderChip[];
@@ -389,6 +415,7 @@ export function buildPortfolioScreenViewModel({
   accounting,
   brokerageConnection,
   brokeragePortfolio,
+  multiAssetCoverage,
   selectedPositionId = null,
   selectedRunId = null,
   selectedRunContinuity = null,
@@ -407,6 +434,7 @@ export function buildPortfolioScreenViewModel({
   accounting: AccountingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
+  multiAssetCoverage?: MultiAssetCoverageSummary | null;
   selectedPositionId?: string | null;
   selectedRunId?: string | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
@@ -565,6 +593,7 @@ export function buildPortfolioScreenViewModel({
   return {
     metricsFromTrading: portfolio == null && trading !== null,
     metricCards: portfolio?.metrics ?? trading?.metrics ?? [],
+    multiAssetCoveragePanel: buildMultiAssetCoveragePanel(multiAssetCoverage),
     positionSourceLabel: portfolio ? "Portfolio workspace" : trading ? "Trading workspace" : "Unavailable",
     fallbackStats,
     headerChips: buildPortfolioHeaderChips({
@@ -1110,6 +1139,7 @@ export function usePortfolioScreenViewModel({
   accounting,
   brokerageConnection,
   brokeragePortfolio,
+  multiAssetCoverage,
   selectedRunContinuity = null,
   selectedRunDrillIn = null,
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio
@@ -1120,6 +1150,7 @@ export function usePortfolioScreenViewModel({
   accounting: AccountingWorkspaceResponse | null;
   brokerageConnection?: BrokerageConnectionStatus | null;
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
+  multiAssetCoverage?: MultiAssetCoverageSummary | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
   selectedRunDrillIn?: PortfolioRunDrillInData | null;
   pathname?: string;
@@ -1136,6 +1167,7 @@ export function usePortfolioScreenViewModel({
     accounting,
     brokerageConnection,
     brokeragePortfolio,
+    multiAssetCoverage,
     selectedRunContinuity,
     selectedRunDrillIn,
     pathname,
@@ -1148,6 +1180,60 @@ export function usePortfolioScreenViewModel({
     selectBrokeragePosition: setSelectedBrokeragePositionId,
     selectBrokerageAccount: setSelectedBrokerageAccountKey
   });
+}
+
+function buildMultiAssetCoveragePanel(
+  coverage: MultiAssetCoverageSummary | null | undefined
+): PortfolioMultiAssetCoveragePanel | null {
+  if (!coverage) {
+    return null;
+  }
+
+  const rows: PortfolioMultiAssetCoverageRow[] = coverage.assetClasses.map((item) => {
+    const evidenceReady = item.evidenceRequirements.filter((requirement) => requirement.status === "Ready").length;
+    const evidenceTotal = item.evidenceRequirements.length;
+    return {
+      id: item.assetClass,
+      assetClass: item.assetClass,
+      displayName: item.displayName,
+      statusLabel: item.statusLabel,
+      statusTone: multiAssetStatusTone(item.status),
+      summary: item.summary,
+      evidenceLabel: `${evidenceReady}/${evidenceTotal} ready`,
+      blockerLabel: item.blockers.length === 0 ? "None" : `${item.blockers.length} blocker${item.blockers.length === 1 ? "" : "s"}`,
+      ledgerLabel: item.ledgerClassification.classification ?? "Ledger classification retained",
+      reconciliationLabel: item.reconciliationSignals.breaks ?? "Reconciliation evidence retained"
+    };
+  });
+
+  const blockerMessages = coverage.assetClasses
+    .flatMap((item) => item.blockers.map((blocker) => `${item.displayName}: ${blocker.message}`))
+    .slice(0, 4);
+  const blockedCount = coverage.assetClasses.filter((item) => item.status === "Blocked").length;
+  const reviewCount = coverage.assetClasses.filter((item) => item.status === "ReviewRequired").length;
+  const statusTone = blockedCount > 0 ? "danger" : reviewCount > 0 ? "warning" : "success";
+
+  return {
+    title: "Multi-asset operational coverage",
+    description: "Security Master validation, provider evidence, ledger classification, reconciliation signals, and close blockers are rendered from the shared workstation readiness endpoint.",
+    statusLabel: blockedCount > 0
+      ? `${blockedCount} blocked`
+      : reviewCount > 0
+        ? `${reviewCount} review`
+        : "Ready",
+    statusTone,
+    chips: coverage.metrics.map((metric) => ({ label: metric.label, value: metric.value })),
+    rows,
+    blockerMessages,
+    evidenceRoute: coverage.drillThroughRoutes.coverage ?? WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage
+  };
+}
+
+function multiAssetStatusTone(status: string): PortfolioMultiAssetCoverageRow["statusTone"] {
+  if (status === "Ready") return "success";
+  if (status === "Blocked") return "danger";
+  if (status === "ReviewRequired") return "warning";
+  return "default";
 }
 
 function buildBrokerageAccountOptions(

@@ -8,6 +8,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   operatorInbox: "/api/workstation/operator/inbox",
   portfolio: "/api/workstation/portfolio",
   portfolioSummary: "/api/workstation/portfolio/summary",
+  portfolioMultiAssetCoverage: "/api/workstation/portfolio/multi-asset-coverage",
   data: "/api/workstation/data",
   accounting: "/api/workstation/accounting",
   accountingConfiguration: "/api/ledger/accounting-configuration",

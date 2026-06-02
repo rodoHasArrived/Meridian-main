@@ -31,6 +31,8 @@ public sealed class LedgerJournalStoreTests
         var journalStore = provider.GetRequiredService<ILedgerJournalStore>();
         journalStore.Should().BeOfType<PostgresLedgerJournalStore>();
         provider.GetRequiredService<ITransactionalLedgerJournalStore>().Should().BeSameAs(journalStore);
+        provider.GetRequiredService<IAccountingConfigurationStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
+        provider.GetRequiredService<IAccountingActionAuditStore>().Should().BeOfType<PostgresAccountingConfigurationStore>();
         provider.GetRequiredService<LedgerMigrationRunner>().Should().NotBeNull();
         provider.GetRequiredService<ILedgerBookService>().Should().BeOfType<PostgresLedgerBookService>();
     }
