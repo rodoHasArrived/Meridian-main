@@ -2,7 +2,7 @@
 """
 Project Dependency Graph Generator
 
-Analyzes C# project files (.csproj) to extract dependencies and generates
+Analyzes .NET project files (.csproj/.fsproj) to extract dependencies and generates
 a visual dependency graph in multiple formats (DOT, Mermaid, JSON).
 
 Features:
@@ -39,6 +39,8 @@ from typing import Optional
 EXCLUDE_DIRS: frozenset[str] = frozenset({
     '.git', 'archive', 'node_modules', 'bin', 'obj', '__pycache__', '.vs', 'packages', 'TestResults'
 })
+PROJECT_EXTENSIONS: frozenset[str] = frozenset({'.csproj', '.fsproj'})
+IGNORED_PROJECT_NAME_MARKERS: tuple[str, ...] = ('_wpftmp',)
 
 
 # ---------------------------------------------------------------------------
@@ -115,29 +117,36 @@ def _should_skip(path: Path) -> bool:
     return any(part in EXCLUDE_DIRS for part in path.parts)
 
 
-def _parse_csproj(csproj_path: Path, root: Path) -> Optional[ProjectNode]:
-    """Parse a .csproj file and extract dependencies."""
+def _should_skip_project(project_path: Path) -> bool:
+    """Check if a project file should be excluded from the graph."""
+    return any(marker in project_path.stem for marker in IGNORED_PROJECT_NAME_MARKERS)
+
+
+def _parse_project(project_path: Path, root: Path) -> Optional[ProjectNode]:
+    """Parse a project file and extract dependencies."""
     try:
-        tree = ET.parse(csproj_path)
+        tree = ET.parse(project_path)
         xml_root = tree.getroot()
     except Exception as e:
-        print(f"Warning: Could not parse {csproj_path}: {e}", file=sys.stderr)
+        print(f"Warning: Could not parse {project_path}: {e}", file=sys.stderr)
         return None
 
-    project_name = csproj_path.stem
+    project_name = project_path.stem
     try:
-        rel_path = str(csproj_path.relative_to(root))
+        rel_path = str(project_path.relative_to(root))
     except ValueError:
-        rel_path = str(csproj_path)
+        rel_path = str(project_path)
 
     node = ProjectNode(name=project_name, path=rel_path)
 
     # Extract ProjectReference elements
     for ref in xml_root.findall('.//ProjectReference'):
         include = ref.get('Include')
-        if include:
+        if include and '$(' not in include:
             # Extract project name from path
             ref_project = Path(include).stem
+            if any(marker in ref_project for marker in IGNORED_PROJECT_NAME_MARKERS):
+                continue
             node.project_refs.append(ProjectDependency(
                 name=ref_project,
                 path=include
@@ -194,12 +203,12 @@ def _detect_circular_deps(graph: dict[str, ProjectNode]) -> list[list[str]]:
 
 
 def build_dependency_graph(root: Path) -> DependencyGraph:
-    """Build dependency graph from all .csproj files in repository."""
+    """Build dependency graph from all supported project files in repository."""
     graph = DependencyGraph(
         generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     )
 
-    # Find all .csproj files while pruning ignored directories before traversal.
+    # Find all supported project files while pruning ignored directories before traversal.
     for current_root, dirnames, filenames in os.walk(root):
         dirnames[:] = [name for name in dirnames if name not in EXCLUDE_DIRS]
         current_path = Path(current_root)
@@ -207,10 +216,11 @@ def build_dependency_graph(root: Path) -> DependencyGraph:
             continue
 
         for filename in filenames:
-            if not filename.endswith(".csproj"):
+            project_path = current_path / filename
+            if project_path.suffix not in PROJECT_EXTENSIONS or _should_skip_project(project_path):
                 continue
 
-            node = _parse_csproj(current_path / filename, root)
+            node = _parse_project(project_path, root)
             if node:
                 graph.projects[node.name] = node
 
@@ -224,6 +234,36 @@ def build_dependency_graph(root: Path) -> DependencyGraph:
     graph.circular_deps = _detect_circular_deps(graph.projects)
 
     return graph
+
+
+def categorize_project(node: ProjectNode) -> str:
+    """Classify a project into a high-level repo family."""
+    path = Path(node.path)
+    top_level = path.parts[0] if path.parts else ""
+
+    if top_level == "tests":
+        return "Tests"
+    if top_level == "benchmarks":
+        return "Benchmarks"
+    if top_level == "build":
+        return "Build Tools"
+
+    if node.name in {"Meridian", "Meridian.Mcp", "Meridian.Wpf"}:
+        return "Hosts"
+    if node.name.startswith("Meridian.Ui."):
+        return "UI Shared"
+    if node.name in {
+        "Meridian.Contracts",
+        "Meridian.Core",
+        "Meridian.Domain",
+        "Meridian.Execution.Sdk",
+        "Meridian.IbApi.SmokeStub",
+        "Meridian.Ledger",
+        "Meridian.ProviderSdk",
+    } or node.name.startswith("Meridian.FSharp"):
+        return "Foundation"
+
+    return "Runtime"
 
 
 # ---------------------------------------------------------------------------
@@ -254,19 +294,77 @@ def generate_dot(graph: DependencyGraph) -> str:
     return '\n'.join(lines)
 
 
-def generate_mermaid(graph: DependencyGraph) -> str:
+def _category_matches(node: ProjectNode, categories: Optional[set[str]]) -> bool:
+    if categories is None:
+        return True
+    return categorize_project(node) in categories
+
+
+def generate_mermaid(graph: DependencyGraph, categories: Optional[set[str]] = None) -> str:
     """Generate Mermaid diagram syntax."""
     lines = []
     lines.append('```mermaid')
     lines.append('graph LR')
 
+    nodes = [
+        node for name, node in sorted(graph.projects.items())
+        if _category_matches(node, categories)
+    ]
+    included_names = {node.name for node in nodes}
+
+    for node in nodes:
+        safe_name = node.name.replace('-', '_').replace('.', '_')
+        lines.append(f'    {safe_name}[{node.name}]')
+
     for name, node in sorted(graph.projects.items()):
+        if name not in included_names:
+            continue
         safe_name = name.replace('-', '_').replace('.', '_')
         for dep in node.project_refs:
+            if dep.name not in included_names:
+                continue
             safe_dep = dep.name.replace('-', '_').replace('.', '_')
             lines.append(f'    {safe_name}[{name}] --> {safe_dep}[{dep.name}]')
 
     lines.append('```')
+    return '\n'.join(lines)
+
+
+def generate_family_overview(graph: DependencyGraph) -> str:
+    """Generate a compact family-level overview diagram."""
+    grouped: dict[str, list[str]] = {}
+    for node in sorted(graph.projects.values(), key=lambda item: (categorize_project(item), item.name)):
+        grouped.setdefault(categorize_project(node), []).append(node.name)
+
+    def label(category: str) -> str:
+        names = grouped.get(category, [])
+        detail = "<br/>".join(names) if names else "None"
+        return f'{category}<br/><br/>{detail}'
+
+    lines = [
+        '```mermaid',
+        'flowchart LR',
+        f'    BuildTools["{label("Build Tools")}"]',
+        f'    Foundation["{label("Foundation")}"]',
+        f'    Runtime["{label("Runtime")}"]',
+        f'    UIShared["{label("UI Shared")}"]',
+        f'    Hosts["{label("Hosts")}"]',
+        f'    Benchmarks["{label("Benchmarks")}"]',
+        f'    Tests["{label("Tests")}"]',
+        '    BuildTools --> Foundation',
+        '    Foundation --> Runtime',
+        '    Runtime --> UIShared',
+        '    UIShared --> Hosts',
+        '    Foundation --> Hosts',
+        '    Runtime --> Hosts',
+        '    Foundation --> Tests',
+        '    Runtime --> Tests',
+        '    UIShared --> Tests',
+        '    Hosts --> Tests',
+        '    Runtime --> Benchmarks',
+        '    Hosts --> Benchmarks',
+        '```',
+    ]
     return '\n'.join(lines)
 
 
@@ -281,14 +379,38 @@ def generate_markdown(graph: DependencyGraph) -> str:  # noqa: C901
 
     # Summary
     stats = graph.to_dict()['statistics']
+    category_counts: dict[str, int] = {}
+    for node in graph.projects.values():
+        category = categorize_project(node)
+        category_counts[category] = category_counts.get(category, 0) + 1
     lines.append('## Summary')
     lines.append('')
     lines.append('| Metric | Value |')
     lines.append('|--------|-------|')
     lines.append(f"| Total Projects | {stats['total_projects']} |")
+    lines.append(f"| Foundation Projects | {category_counts.get('Foundation', 0)} |")
+    lines.append(f"| Runtime Projects | {category_counts.get('Runtime', 0)} |")
+    lines.append(f"| UI/Host Projects | {category_counts.get('UI Shared', 0) + category_counts.get('Hosts', 0)} |")
+    lines.append(f"| Test Projects | {category_counts.get('Tests', 0)} |")
+    lines.append(f"| Build/Benchmark Projects | {category_counts.get('Build Tools', 0) + category_counts.get('Benchmarks', 0)} |")
     lines.append(f"| Root Projects | {stats['root_projects']} |")
     lines.append(f"| Leaf Projects | {stats['leaf_projects']} |")
     lines.append(f"| Circular Dependencies | {stats['circular_dependencies']} |")
+    lines.append('')
+
+    lines.append('> This file is auto-generated. Do not edit manually.')
+    lines.append('')
+
+    lines.append('## Project Family Overview')
+    lines.append('')
+    lines.append(generate_family_overview(graph))
+    lines.append('')
+
+    lines.append('## Runtime Project Graph')
+    lines.append('')
+    lines.append('Shows the current source/runtime dependency shape without tests, benchmarks, or build tooling noise.')
+    lines.append('')
+    lines.append(generate_mermaid(graph, categories={'Foundation', 'Runtime', 'UI Shared', 'Hosts'}))
     lines.append('')
 
     # Circular dependencies
@@ -334,7 +456,7 @@ def generate_markdown(graph: DependencyGraph) -> str:  # noqa: C901
         lines.append('')
 
     # Dependency graph (Mermaid)
-    lines.append('## Dependency Graph')
+    lines.append('## Full Dependency Graph')
     lines.append('')
     lines.append(generate_mermaid(graph))
     lines.append('')
