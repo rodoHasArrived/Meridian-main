@@ -201,13 +201,63 @@ export function workflowTargetPath(
   targetPageTag: string | null | undefined,
   workspaceId: string | null | undefined
 ) {
-  const tagRoute = targetPageTag ? WORKSTATION_PAGE_TAG_ROUTES[targetPageTag] : undefined;
+  const evidenceRoute = evidenceWorkbenchPathFromPageTag(targetPageTag);
+  if (evidenceRoute) {
+    return evidenceRoute;
+  }
+
+  const normalizedPageTag = normalizeParameterizedPageTag(targetPageTag);
+  const tagRoute = normalizedPageTag ? WORKSTATION_PAGE_TAG_ROUTES[normalizedPageTag] : undefined;
   if (tagRoute) {
     return tagRoute;
   }
 
   const workspaceKey = workspaceKeyFromId(workspaceId);
   return workspaceKey ? workspacePath(workspaceKey) : "/trading";
+}
+
+function evidenceWorkbenchPathFromPageTag(targetPageTag: string | null | undefined): string | null {
+  const trimmed = targetPageTag?.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const separatorIndex = trimmed.indexOf(":");
+  if (separatorIndex < 0) {
+    return null;
+  }
+
+  const prefix = trimmed.slice(0, separatorIndex).trim();
+  if (prefix.toLowerCase() !== "evidenceworkbench") {
+    return null;
+  }
+
+  const subject = trimmed.slice(separatorIndex + 1).trim().replace(/^\/+/, "");
+  const subjectSeparatorIndex = subject.indexOf("/");
+  if (subjectSeparatorIndex < 0) {
+    return WORKSTATION_ROUTE_CATALOG.reportingEvidence;
+  }
+
+  const subjectKind = subject.slice(0, subjectSeparatorIndex).trim();
+  const subjectId = subject.slice(subjectSeparatorIndex + 1).trim();
+  return subjectKind && subjectId
+    ? evidenceWorkbenchPath(subjectKind, subjectId)
+    : WORKSTATION_ROUTE_CATALOG.reportingEvidence;
+}
+
+function normalizeParameterizedPageTag(targetPageTag: string | null | undefined): string | null {
+  const trimmed = targetPageTag?.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const separatorIndex = trimmed.indexOf(":");
+  if (separatorIndex < 0) {
+    return trimmed;
+  }
+
+  const prefix = trimmed.slice(0, separatorIndex).trim();
+  return prefix.toLowerCase() === "evidenceworkbench" ? "EvidenceWorkbench" : trimmed;
 }
 
 export function normalizeLocalWorkstationRoute(route: string | null | undefined): string | null {

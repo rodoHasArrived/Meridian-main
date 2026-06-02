@@ -377,6 +377,46 @@ describe("command palette view model", () => {
     });
   });
 
+  it("preserves parameterized accounting-record evidence targets in saved workflow presets", () => {
+    const model = buildCommandPaletteViewModel(
+      "/accounting?fundAccountId=fund-1&from=2026-05-01&to=2026-05-31",
+      undefined,
+      {
+        workflowPresets: {
+          generatedAt: "2026-01-01T00:00:00Z",
+          presets: [
+            {
+              presetId: "may-accounting-record",
+              name: "May accounting record",
+              description: "Review retained evidence for the May accounting record.",
+              workflowId: "accounting-records-evidence-review",
+              workflowTitle: "Accounting Records Evidence Review",
+              actionId: "workflow.accounting-records.open-record-evidence",
+              actionLabel: "Open Accounting Record Evidence",
+              workspaceId: "accounting",
+              workspaceTitle: "Accounting",
+              targetPageTag: "EvidenceWorkbench:accounting-record/accounting-record-2026-05",
+              tags: ["accounting-record"],
+              isPinned: true,
+              createdAt: "2026-01-01T00:00:00Z",
+              updatedAt: "2026-01-01T00:00:00Z",
+              lastUsedAt: "2026-01-02T00:00:00Z"
+            }
+          ]
+        }
+      }
+    );
+
+    expect(model.items.find((item) => item.id === "preset:may-accounting-record")).toMatchObject({
+      kind: "preset",
+      label: "May accounting record",
+      route: "/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05&fundAccountId=fund-1&from=2026-05-01&to=2026-05-31",
+      routeLabel: "/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05&fundAccountId=fund-1&from=2026-05-01&to=2026-05-31",
+      statusLabel: "Pinned",
+      statusTone: "ready"
+    });
+  });
+
   it("prefers the route symbol over the stored operating symbol", () => {
     const model = buildCommandPaletteViewModel("/data/quotes?symbol=AAPL", undefined, {}, "", "MSFT");
 
@@ -854,6 +894,50 @@ describe("command palette view model", () => {
     expect(workflowItems.find((item) => item.label === "Review Report Lineage")).toMatchObject({
       description: "Accounting Records Evidence Review: Review report-pack publication, export manifests, document attachments, restatement lineage, and retained evidence provenance.",
       ariaLabel: "Review Report Lineage, Accounting Records Evidence Review",
+      statusLabel: "Ready",
+      statusTone: "ready"
+    });
+  });
+
+  it("preserves parameterized accounting-record evidence workflow targets", () => {
+    const model = buildCommandPaletteViewModel("/accounting", undefined, {
+      workflowLibrary: {
+        generatedAt: "2026-01-01T00:00:00Z",
+        actions: [],
+        workflows: [
+          {
+            workflowId: "accounting-records-evidence-review",
+            title: "Accounting Records Evidence Review",
+            summary: "Review the v0.15 operational record from source data through report-pack lineage.",
+            workspaceId: "accounting",
+            workspaceTitle: "Accounting",
+            entryPageTag: "AccountingShell",
+            tone: "Warning",
+            evidenceTags: ["source records", "export manifests", "restatement lineage"],
+            marketPatternTags: ["accounting records", "operational evidence"],
+            actions: [
+              {
+                actionId: "workflow.accounting-records.open-record-evidence",
+                label: "Open Accounting Record Evidence",
+                detail: "Inspect the retained evidence packet for the selected accounting record.",
+                targetPageTag: "EvidenceWorkbench:accounting-record/accounting-record-2026-05",
+                tone: "Primary",
+                workItemKind: null,
+                routePrefixes: ["/api/workstation/evidence/subjects/accounting-record/accounting-record-2026-05"],
+                routeContains: [],
+                aliases: []
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    const item = model.items.find((candidate) => candidate.id === "workflow:accounting-records-evidence-review:workflow.accounting-records.open-record-evidence");
+    expect(item).toMatchObject({
+      label: "Open Accounting Record Evidence",
+      route: "/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05",
+      routeLabel: "/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05",
       statusLabel: "Ready",
       statusTone: "ready"
     });

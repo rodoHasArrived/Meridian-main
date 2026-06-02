@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -82,6 +83,27 @@ public sealed class WorkflowLibraryViewModelTests
                 "OperationsContinuity",
                 "FundReportPack");
         });
+    }
+
+    [Fact]
+    public void WorkflowActionItem_ShouldHideParameterizedEvidenceWorkbenchSyntaxInTargetText()
+    {
+        var action = new WorkflowActionDto(
+            ActionId: "workflow.accounting-records.open-record-evidence",
+            Label: "Open Accounting Record Evidence",
+            Detail: "Inspect retained accounting-record evidence.",
+            TargetPageTag: "EvidenceWorkbench:accounting-record/accounting-record-2026-05",
+            Tone: "Primary",
+            WorkItemKind: null,
+            RoutePrefixes: ["/api/workstation/evidence/subjects/accounting-record/accounting-record-2026-05"],
+            RouteContains: [],
+            Aliases: []);
+
+        var item = new WorkflowLibraryActionItem(action);
+
+        item.TargetPageTag.Should().Be("EvidenceWorkbench:accounting-record/accounting-record-2026-05");
+        item.TargetText.Should().Be("Open EvidenceWorkbench");
+        item.Matches("accounting-record-2026-05").Should().BeTrue();
     }
 
     [Fact]

@@ -278,11 +278,26 @@ public sealed class WorkflowLibraryActionItem
 
     public string TargetPageTag => Action.TargetPageTag;
 
-    public string TargetText => $"Open {Action.TargetPageTag}";
+    public string TargetText => $"Open {FormatTargetPageTag(Action.TargetPageTag)}";
 
     public bool Matches(string query)
         => Label.Contains(query, StringComparison.OrdinalIgnoreCase) ||
            Detail.Contains(query, StringComparison.OrdinalIgnoreCase) ||
            TargetPageTag.Contains(query, StringComparison.OrdinalIgnoreCase) ||
            ActionId.Contains(query, StringComparison.OrdinalIgnoreCase);
+
+    private static string FormatTargetPageTag(string targetPageTag)
+    {
+        var trimmed = targetPageTag.Trim();
+        var separatorIndex = trimmed.IndexOf(':', StringComparison.Ordinal);
+        if (separatorIndex < 0)
+        {
+            return trimmed;
+        }
+
+        var prefix = trimmed[..separatorIndex].Trim();
+        return string.Equals(prefix, "EvidenceWorkbench", StringComparison.OrdinalIgnoreCase)
+            ? "EvidenceWorkbench"
+            : trimmed;
+    }
 }

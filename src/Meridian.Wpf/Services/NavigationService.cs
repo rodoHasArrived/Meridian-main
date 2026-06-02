@@ -116,9 +116,9 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked,
         IServiceScope? workspaceScope = null)
     {
-        var requestedPageType = GetPageType(pageTag)
-            ?? throw new InvalidOperationException($"Unknown page tag '{pageTag}'.");
         var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
+        var requestedPageType = GetPageType(pageTag) ?? GetPageType(canonicalPageTag)
+            ?? throw new InvalidOperationException($"Unknown page tag '{pageTag}'.");
         var pageType = GetPageType(canonicalPageTag) ?? requestedPageType;
         var effectiveParameter = parameter ?? TransformNavigationParameter(pageTag, requestedPageType, null);
 
@@ -139,13 +139,13 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         _navigationScopeProvider.Value = workspaceScope?.ServiceProvider;
         try
         {
-            var requestedPageType = GetPageType(pageTag);
+            var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
+            var requestedPageType = GetPageType(pageTag) ?? GetPageType(canonicalPageTag);
             if (requestedPageType is null)
             {
                 return base.NavigateTo(pageTag, parameter);
             }
 
-            var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
             var effectiveParameter = parameter ?? TransformNavigationParameter(pageTag, requestedPageType, null);
             return base.NavigateTo(canonicalPageTag, effectiveParameter);
         }
@@ -271,6 +271,15 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             return parameter;
         }
 
+        var evidenceSubject = TryResolveEvidenceWorkbenchSubject(pageTag);
+        if (evidenceSubject is not null)
+        {
+            return new FundOperationsNavigationContext(
+                Tab: FundOperationsTab.AuditTrail,
+                EvidenceSubject: evidenceSubject,
+                EvidenceSubjectTarget: pageTag.Trim());
+        }
+
         return pageTag switch
         {
             "FundBanking" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Banking),
@@ -285,6 +294,19 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             "FundReportPack" => new FundOperationsNavigationContext(Tab: FundOperationsTab.ReportPack),
             _ => parameter
         };
+    }
+
+    private static string? TryResolveEvidenceWorkbenchSubject(string pageTag)
+    {
+        var trimmed = pageTag.Trim();
+        const string prefix = "EvidenceWorkbench:";
+        if (!trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var subject = trimmed[prefix.Length..].Trim().TrimStart('/');
+        return string.IsNullOrWhiteSpace(subject) ? null : subject;
     }
 
     /// <summary>

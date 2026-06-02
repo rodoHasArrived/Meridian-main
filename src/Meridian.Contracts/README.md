@@ -73,6 +73,9 @@ status prose.
 Evidence workflow linkage and vault lookup DTOs include `AccountingRecordId` so retained
 accounting-record manifests can be indexed and queried as first-class audit records, not only by a
 generic evidence subject string.
+`FundOperationsNavigationContext` also carries optional evidence subject metadata for shared
+evidence routes such as `EvidenceWorkbench:accounting-record/{recordId}`, allowing browser and WPF
+clients to preserve the subject and source target while resolving to their local audit surfaces.
 
 Plaid contracts define the shared provider lane for bank account linking, transaction sync,
 balance evidence, investment snapshots, identity verification, webhook retention, and sandbox

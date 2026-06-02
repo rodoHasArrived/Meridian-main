@@ -1164,7 +1164,19 @@ function formatKind(kind: string) {
 }
 
 function formatPageTag(value: string) {
-  return value.replace(/([a-z])([A-Z])/g, "$1 $2");
+  const tag = normalizePageTagForDisplay(value);
+  return tag.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function normalizePageTagForDisplay(value: string) {
+  const trimmed = value.trim();
+  const separatorIndex = trimmed.indexOf(":");
+  if (separatorIndex < 0) {
+    return trimmed;
+  }
+
+  const prefix = trimmed.slice(0, separatorIndex).trim();
+  return prefix.toLowerCase() === "evidenceworkbench" ? "EvidenceWorkbench" : trimmed;
 }
 
 function formatRelationship(value: string) {

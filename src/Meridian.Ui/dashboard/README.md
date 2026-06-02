@@ -123,6 +123,13 @@ the same API shape used by WPF and host endpoints.
 No-host browser previews include the same accounting-record evidence subject, packet, validation,
 manifest export, and vault-search fixture path so operators can inspect the evidence workbench demo
 without a live Meridian API host.
+Shared workflow targets that carry `EvidenceWorkbench:accounting-record/{recordId}` resolve to the
+browser evidence workbench with the accounting-record subject query intact, matching the WPF
+desktop route-parity rule while keeping the browser page tag catalog explicit. Evidence Workbench
+packet actions use the same subject-aware route while displaying the operator target as
+`Evidence Workbench` instead of leaking parameterized page-tag syntax. Saved workflow presets use
+the same route helper, so pinned accounting-record evidence commands preserve subject and operating
+scope when launched from the command palette.
 Operator readiness console API source identifiers use the canonical workspace roots
 `strategy`, `data`, `accounting`, and `reporting`; legacy payload type names and retained
 compatibility routes must not reintroduce visible `Research`, `Data Operations`, or `Governance`

@@ -27,7 +27,9 @@ public sealed record FundOperationsNavigationContext(
     FundOperationsTab Tab = FundOperationsTab.Overview,
     string? FundProfileId = null,
     Guid? AccountId = null,
-    string? RunId = null);
+    string? RunId = null,
+    string? EvidenceSubject = null,
+    string? EvidenceSubjectTarget = null);
 
 /// <summary>
 /// Summary cards shown at the top of the Accounting fund operations workspace.

@@ -452,6 +452,56 @@ describe("Evidence Workbench view model", () => {
     expect(vm.sourceWorkflowAriaLabel).toBe("Open source workflow for Momentum strategy run");
   });
 
+  it("preserves parameterized accounting-record evidence targets without exposing route syntax", () => {
+    const accountingRecordSubject: EvidenceSubject = {
+      subjectId: "accounting-record-2026-05",
+      subjectKind: "accounting-record",
+      label: "May accounting record",
+      workspace: "Accounting",
+      route: null,
+      pageTag: "EvidenceWorkbench:accounting-record/accounting-record-2026-05"
+    };
+    const accountingRecordPacket: EvidencePacket = {
+      ...packet,
+      subject: accountingRecordSubject,
+      actions: [
+        {
+          actionId: "workflow.evidence.open-packet",
+          label: "Open Accounting Record Evidence",
+          detail: "Open the retained accounting-record evidence packet.",
+          targetPageTag: "EvidenceWorkbench:accounting-record/accounting-record-2026-05",
+          tone: "Primary",
+          workItemKind: null,
+          routePrefixes: ["/api/workstation/evidence/subjects/accounting-record/accounting-record-2026-05"],
+          routeContains: [],
+          aliases: []
+        }
+      ]
+    };
+
+    const vm = buildEvidenceWorkbenchViewModel({
+      selectedSubjectKind: "accounting-record",
+      selectedSubjectId: "accounting-record-2026-05",
+      loading: false,
+      error: null,
+      subjects: [accountingRecordSubject],
+      packet: accountingRecordPacket,
+      exportBusy: false,
+      exportResult: null,
+      validateBusy: false,
+      validationResult: null,
+      exportManifest: vi.fn(),
+      validatePacket: vi.fn()
+    });
+
+    const expectedHref = "/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05";
+    expect(vm.sourceWorkflowHref).toBe(expectedHref);
+    expect(vm.packetActions[0]).toMatchObject({
+      href: expectedHref,
+      targetLabel: "Evidence Workbench"
+    });
+  });
+
   it("preserves operating scope in source-workflow, subject, and packet-action links", () => {
     const vm = buildEvidenceWorkbenchViewModel({
       selectedSubjectKind: "strategy-run",

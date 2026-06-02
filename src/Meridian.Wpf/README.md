@@ -65,12 +65,19 @@ Shared evidence workflow target routing is also explicit: `EvidenceWorkbench` re
 Fund Audit Trail surface while the browser resolves the same shared tag to `/reporting/evidence`.
 Parameterized desktop targets such as `EvidenceWorkbench:accounting-record/{recordId}` preserve the
 canonical evidence subject for row/readiness metadata while resolving to the same Fund Audit Trail
-route.
+route. Direct WPF navigation and embedded page-content creation canonicalize those parameterized
+targets before resolving page content and carry the subject plus source target through
+`FundOperationsNavigationContext`, so view models can use the same shared target string carried by
+browser routes, workflow rows, and saved presets.
 The route-registry parity test covers all built-in workflow entry and action target tags so shared
 workflow catalog updates cannot silently become browser-only or desktop-only.
 The WPF workflow library also projects the shared v0.15 `Accounting Records Evidence Review`
 workflow, preserving the source-record, normalized-activity, reconciliation-case, ledger-evidence,
 approval-history, and report-lineage action sequence from the shared catalog.
+When shared workflow actions carry parameterized evidence targets such as
+`EvidenceWorkbench:accounting-record/{recordId}`, the workflow library keeps the raw target tag for
+navigation and filtering but presents the operator action target as `EvidenceWorkbench` so route
+syntax does not leak into desktop workflow copy.
 Shared workstation affordance primitives under `Workstation/Models` and `Workstation/Controls`
 standardize action posture, readiness tone, evidence links, recovery actions, and sign-off
 requirements for W4 close/report surfaces. Fund Ledger reconciliation and Report Pack handoff

@@ -412,6 +412,52 @@ public sealed class NavigationServiceTests : IDisposable
     }
 
     [Fact]
+    public void NavigateTo_WithParameterizedEvidenceWorkbenchTarget_ShouldStoreCanonicalAuditTrailPage()
+    {
+        RunOnSta(() =>
+        {
+            var service = NavigationService.Instance;
+            var frame = new Frame();
+            service.Initialize(frame);
+            string? navigatedPageTag = null;
+            object? navigatedParameter = null;
+
+            service.Navigated += (_, args) =>
+            {
+                navigatedPageTag = args.PageTag;
+                navigatedParameter = args.Parameter;
+            };
+
+            var result = service.NavigateTo("EvidenceWorkbench:accounting-record/accounting-record-2026-05");
+
+            result.Should().BeTrue("parameterized EvidenceWorkbench targets should route through the canonical audit surface");
+            navigatedPageTag.Should().Be("FundAuditTrail");
+            var context = navigatedParameter.Should().BeOfType<FundOperationsNavigationContext>().Subject;
+            context.Tab.Should().Be(FundOperationsTab.AuditTrail);
+            context.EvidenceSubject.Should().Be("accounting-record/accounting-record-2026-05");
+            context.EvidenceSubjectTarget.Should().Be("EvidenceWorkbench:accounting-record/accounting-record-2026-05");
+            service.GetCurrentPageTag().Should().Be("FundAuditTrail");
+            service.GetBreadcrumbs().Should().ContainSingle(entry => entry.PageTag == "FundAuditTrail");
+        });
+    }
+
+    [Fact]
+    public void CreatePageContent_WithParameterizedEvidenceWorkbenchTarget_ShouldCreateCanonicalAuditTrailContent()
+    {
+        RunOnSta(() =>
+        {
+            var service = NavigationService.Instance;
+
+            var content = service.CreatePageContent("EvidenceWorkbench:accounting-record/accounting-record-2026-05");
+
+            content.Should().NotBeNull();
+            ShellNavigationCatalog.GetCanonicalPageTag("EvidenceWorkbench:accounting-record/accounting-record-2026-05")
+                .Should()
+                .Be("FundAuditTrail");
+        });
+    }
+
+    [Fact]
     public void GetPageType_WithUnregisteredPage_ShouldReturnNull()
     {
         // Arrange
