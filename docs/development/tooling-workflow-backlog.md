@@ -42,6 +42,8 @@ These problems are individually small but collectively expensive because they un
 ### MW-001 — Canonicalize Node-based tooling entrypoints
 - **Priority:** P0
 - **Effort:** S
+- **Status:** Done — `make generate-icons` and `make generate-diagrams` delegate to the
+  matching `npm run ...` scripts, and `make verify-tooling-metadata` checks that this stays true.
 - **Outcome:** One canonical invocation path for repo-local Node tooling.
 - **Scope:**
   - Standardize `generate-icons` and `generate-diagrams` on shared script locations.
@@ -109,6 +111,9 @@ These problems are individually small but collectively expensive because they un
 ### MW-007 — Add a tooling architecture document
 - **Priority:** P2
 - **Effort:** M
+- **Status:** Done — [`tooling-architecture.md`](tooling-architecture.md) documents command
+  layering, authoritative vs convenience commands, generated artifacts, and local-to-CI
+  mapping, and is linked from the developer docs index.
 - **Outcome:** Contributors can understand the toolchain as a system instead of a list of commands.
 - **Scope:**
   - Document command layering, ownership, generated artifacts, and local-to-CI mapping.

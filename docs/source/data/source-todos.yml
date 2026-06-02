@@ -7,7 +7,7 @@ todos:
   - id: TODO-SRC-UI-DASHBOARD-001
     title: Add browser workstation route diagram coverage for paper readiness
     module_id: SRC-UI-DASHBOARD
-    status: open
+    status: done
     priority: medium
     roadmap_item: W2-TRD-001
     stage_gate: PaperSession
@@ -18,7 +18,7 @@ todos:
       - Register the route-level browser workstation diagram.
       - Link trading readiness route behavior to the PaperSession stage gate.
       - Keep dashboard validation commands in the source README.
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-02
   - id: TODO-SRC-CONTRACTS-001
     title: Complete W5 accounting record evidence-chain contract coverage
     module_id: SRC-CONTRACTS
@@ -67,7 +67,7 @@ todos:
   - id: TODO-SRC-APP-001
     title: Complete W6 backtesting evidence loop linkage to strategy lineage
     module_id: SRC-APP
-    status: open
+    status: done
     priority: medium
     roadmap_item: W6-BTSTUDIO-001
     stage_gate: BacktestingEvidence
@@ -82,7 +82,7 @@ todos:
   - id: TODO-SRC-HOST-001
     title: Complete W7 live-readiness paper-first guard enforcement
     module_id: SRC-HOST
-    status: open
+    status: done
     priority: medium
     roadmap_item: W7-LIVE-001
     stage_gate: LiveReadiness
@@ -97,7 +97,7 @@ todos:
   - id: TODO-SRC-INFRASTRUCTURE-001
     title: Complete W7 provider credential safety and read-only default checks
     module_id: SRC-INFRASTRUCTURE
-    status: open
+    status: done
     priority: medium
     roadmap_item: W7-LIVE-001
     stage_gate: LiveReadiness

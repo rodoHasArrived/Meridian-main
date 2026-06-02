@@ -1,10 +1,21 @@
 # Tooling Architecture
 
+**Last Updated:** 2026-06-02  
 **Status:** Active  
-**Owner:** Core Team  
-**Reviewed:** 2026-05-20
+**Owner:** Core Team
 
-This guide explains Meridian tooling as a layered system so contributors can pick the right command path quickly and understand how local commands map to CI.
+This guide explains Meridian tooling as a layered system so contributors can pick the right command path quickly and understand how local commands map to CI. It treats the toolchain as one connected system — not just a list of commands — so you can tell which commands are the real source of truth and which are friendly shortcuts.
+
+## How the pieces fit together
+
+There are four layers, and each one is built on top of the layer below it:
+
+1. **Runtime/build primitives** — the underlying tools (`dotnet`, the `buildctl.py` helper, `npm`, and PowerShell scripts) that actually do the work.
+2. **Local orchestration** — `make` targets that bundle those primitives into short, memorable commands for everyday local use.
+3. **CI orchestration** — the GitHub Actions workflows that run the same checks automatically on every pull request and branch push.
+4. **Generated documentation and inventories** — scripts that turn the repository's real state into committed reference files.
+
+A useful rule of thumb: `make` targets and npm scripts are *convenience wrappers*; the `dotnet`, `python3 build/...`, `npm --prefix ...`, and `pwsh` commands they call are the *authoritative* operations. CI runs the authoritative commands directly, so anything you can reproduce locally with the authoritative command will behave the same way in CI.
 
 ## 1) Command layering and ownership
 
@@ -14,6 +25,13 @@ This guide explains Meridian tooling as a layered system so contributors can pic
 | Local orchestration | Human-friendly local workflows that compose primitives | `make/*.mk` targets | `make` aliases such as `build-quick`, `test-coverage`, `pre-pr` | Core Team |
 | CI orchestration | Pull-request and branch gates | `.github/workflows/ci.yml`, `windows-desktop-build.yml`, `golden-path-validation.yml`, `maintenance.yml`, `publish-smoke.yml` | manual `workflow_dispatch` entrypoints | Core Team |
 | Generated documentation and inventories | Deterministic repo metadata outputs | `python3 build/scripts/docs/*.py`, `make gen-*`, `make docs*` | summary docs in `docs/generated/` | Core Team |
+
+### Where npm scripts live
+
+There are two separate npm scopes, and it helps to keep them straight:
+
+- The **root `package.json`** holds a few build-asset helpers (`generate-icons`, `generate-diagrams`) plus thin pass-throughs to the dashboard (`ui:dashboard:install`, `ui:dashboard:build`, `ui:dashboard:test`). `make generate-icons` and `make generate-diagrams` simply call these root scripts.
+- The **dashboard `package.json`** (under `src/Meridian.Ui/dashboard/`) owns the browser workstation's own build and test scripts. CI and local commands reach it with `npm --prefix src/Meridian.Ui/dashboard run <script>`.
 
 ## 2) Authoritative vs convenience command policy
 

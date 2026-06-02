@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-28
+last_reviewed: 2026-06-02
 ---
 
 # src/Meridian.Ui/dashboard
@@ -88,7 +88,9 @@ browser routes under `/strategy`, `/data`, and `/accounting`.
 Trading readiness work-item actions consume shared route metadata when it is specific enough to
 resolve locally. Execution-control and promotion-review items carrying the shared
 `/api/workstation/trading/readiness` route land on `/trading`, while paper-replay items keep the
-session replay panel hash target so replay verification remains directly actionable.
+session replay panel hash target so replay verification remains directly actionable. This is the
+browser PaperSession route handoff covered by `DIA-BROWSER-WORKSTATION` and
+`DIA-PAPER-SESSION-REPLAY`; keep route changes aligned with those diagram records.
 Accounting reconciliation break detail preserves shared queue metadata such as exception route,
 tolerance profile, priority, SLA badge label/tone, age band, root cause, resolution code, last
 comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
@@ -208,7 +210,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-todos:begin module=SRC-UI-DASHBOARD -->
 | TODO | Title | Status | Priority |
 | --- | --- | --- | --- |
-| `TODO-SRC-UI-DASHBOARD-001` | Add browser workstation route diagram coverage for paper readiness | open | medium |
+| `TODO-SRC-UI-DASHBOARD-001` | Add browser workstation route diagram coverage for paper readiness | done | medium |
 | `TODO-SRC-UI-DASHBOARD-002` | Wire Accounting Transaction Lab browser endpoint requests to shared API contracts | done | high |
 <!-- source-todos:end -->
 

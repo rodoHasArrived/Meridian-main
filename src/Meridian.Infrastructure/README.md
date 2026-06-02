@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-05-28
+last_reviewed: 2026-06-02
 ---
 
 # src/Meridian.Infrastructure
@@ -51,6 +51,11 @@ The Plaid adapter family owns only vendor transport and file-backed connection p
 link-token, public-token exchange, balances, transaction sync, investments, identity, webhooks,
 and sandbox-transfer calls are mapped into contract DTOs before shared workstation services attach
 them to fund-account, treasury, reconciliation, or evidence workflows.
+Credential and connectivity checks in this layer must stay secret-safe and read-only by default:
+provider credential responses expose masked status only, file-backed vault payloads must not echo
+submitted secrets, and read-only brokerage sync adapters may fetch account, portfolio, activity,
+corporate-action, and factor evidence without placing orders. Adapter readiness notes should link
+any write-capable live execution path back to the shared execution governance gates.
 
 Streaming failover state is updated from explicit success, failure, and latency signals in addition
 to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider
@@ -80,7 +85,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:begin module=SRC-INFRASTRUCTURE -->
 | TODO | Title | Status | Priority |
 | --- | --- | --- | --- |
-| `TODO-SRC-INFRASTRUCTURE-001` | Complete W7 provider credential safety and read-only default checks | open | medium |
+| `TODO-SRC-INFRASTRUCTURE-001` | Complete W7 provider credential safety and read-only default checks | done | medium |
 <!-- source-todos:end -->
 
 ## Validation

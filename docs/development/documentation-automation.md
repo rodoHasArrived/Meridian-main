@@ -36,6 +36,9 @@ WPF UI implementation diagrams are generated from source code without hand-maint
 npm run generate-diagrams
 ```
 
+`make generate-diagrams` delegates to the same package script. Keep docs and Makefile targets on
+that canonical entrypoint instead of calling the Node script path directly.
+
 That command updates `docs/diagrams/ui-navigation-map.dot` and `docs/diagrams/ui-implementation-flow.dot` from these inputs:
 
 - `src/Meridian.Wpf/App.xaml.cs`
