@@ -4159,6 +4159,7 @@ public static partial class WorkstationEndpoints
             {
                 ProviderConnectionCapabilityDto.DataAndBrokerage => "Data + Brokerage",
                 ProviderConnectionCapabilityDto.Brokerage => "Brokerage",
+                ProviderConnectionCapabilityDto.AccountingSystem => "Accounting System",
                 _ => "Data"
             };
         }

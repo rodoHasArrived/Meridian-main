@@ -22,6 +22,7 @@ Claude, Copilot, MCP clients, or local maintenance scripts.
   - `docs/ai/generated/repo-navigation.json` (for MCP tools)
 - [ ] For large-repo tasks, do not recurse through the entire tree before task classification.
 - [ ] Re-read only files needed for the current lane.
+- [ ] Record inspected files before widening scope so downstream lanes can reuse discovery.
 - [ ] Preserve reusable context in short handoff packets (required vs optional context), not full log dumps.
 - [ ] Keep a compact evidence budget: summarize command output and include raw logs only when diagnosis requires them.
 - [ ] Mark each shared fact as either validated evidence (with path) or assumption needing follow-up.
@@ -34,7 +35,9 @@ Each handoff should include:
 
 - `Scope`: what was requested and what was excluded.
 - `Inputs loaded`: files already read and why they were needed.
+- `Inspected files`: concise ledger of files or folders already scanned.
 - `Changes made`: files edited plus concise reason per file.
+- `Validation owner`: who is responsible for rerunning or expanding checks after integration.
 - `Validation`: exact commands and outcomes.
 - `Open risks`: concrete risks that remain.
 - `Next lane`: requested action for the next agent/phase.
@@ -49,6 +52,7 @@ Each handoff should include:
 - [ ] Keep provider-specific instructions concise and aligned to shared policy documents.
 - [ ] Include a cleanup plan if multiple files were touched and conflicts are likely.
 - [ ] Confirm the handoff output is reviewable without re-reading the entire previous lane output.
+- [ ] Run `python build/scripts/docs/check-ai-handoff.py --strict` when shared handoff, manifest, or mode docs change.
 
 ## 4b) Parallel Lane Integration
 
@@ -56,6 +60,7 @@ Each handoff should include:
 - [ ] Merge lanes with the narrowest shared surface first; integrate doc/index lanes last.
 - [ ] Give each lane a rollback trigger and action so one bad lane can be reverted on its own.
 - [ ] Re-run shared validation (handoff, routing parity, contract drift) once after final integration.
+- [ ] Summarize merge risks in one short block so the coordinator can decide whether validation reuse is still valid.
 
 ## 5) Token-Cost Efficiency
 
@@ -64,6 +69,7 @@ Each handoff should include:
 - [ ] Include only validation evidence relevant to the touched surface.
 - [ ] Keep logs summarized in the handoff packet and avoid full command output unless needed for diagnosis.
 - [ ] Keep handoff file lists minimal: only touched files, files inspected, and next-lane required context.
+- [ ] Prefer artifact paths (`docs/status/*.json`, generated reports) over pasted log bodies when a validator already emitted reusable evidence.
 
 ## 6) Cross-System Alignment Pointers
 

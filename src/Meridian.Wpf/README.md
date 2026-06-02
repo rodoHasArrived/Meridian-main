@@ -86,8 +86,9 @@ surfaces consume these primitives so blocker, evidence, recovery, and sign-off s
 visible without creating desktop-only business rules.
 Portfolio cockpit decision items include the shared multi-asset coverage route
 `/api/workstation/portfolio/multi-asset-coverage` so desktop operators can review asset-class
-readiness, provider evidence, ledger coverage, reconciliation posture, and close blockers through
-the same read model used by the browser Portfolio and Accounting screens.
+readiness, provider evidence, ledger coverage, reconciliation posture, close blockers, and
+contract-owned drill-through targets through the same read model used by the browser Portfolio and
+Accounting screens.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
 summary, including retained source records, normalized activity, reconciliation history, ledger
 evidence, approvals, report-pack lineage, export evidence, restatement lineage, measured
@@ -170,8 +171,11 @@ commands.
 The desktop shell visual system now targets a light institutional workstation frame with a
 near-black global app bar, paper page bands, compact filter bars, and dense table chrome. New
 workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
-`WorkstationFilterChipStyle`, `DenseDataGridControl`, and inspector host primitives before adding
-page-local cards or dark terminal styling.
+`WorkstationFilterChipStyle`, `WorkstationTablePanelStyle`, `WorkstationInspectorRailStyle`,
+`WorkstationDockStripStyle`, `DenseDataGridControl`, and inspector host primitives before adding
+page-local cards or dark terminal styling. The Data shell is the reference implementation for this
+professional table-plus-inspector composition, including bounded dock height for stable repeated
+operator use.
 Settings/Admin cockpit work uses `WorkstationStatePanelControl` for schedule and cleanup readiness
 state so maintenance blockers, confirmation posture, and evidence summaries reuse the same
 `WorkspaceTone` semantics as other operational pages.

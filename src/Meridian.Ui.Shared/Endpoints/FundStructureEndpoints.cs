@@ -1163,7 +1163,11 @@ public static class FundStructureEndpoints
         => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
 
     private static bool HasLedgerMappingAssignmentPermission(HttpContext context)
-        => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ManageFundStructure,
+            UserPermission.ManageDirectLending,
+            UserPermission.AdminMaintenance);
 
     private static bool HasReportingWorkflowPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);

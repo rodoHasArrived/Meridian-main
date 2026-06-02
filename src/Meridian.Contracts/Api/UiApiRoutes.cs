@@ -106,6 +106,12 @@ public static class UiApiRoutes
     public const string PlaidWebhook = "/api/plaid/webhook";
     public const string PlaidSandboxTransfer = "/api/plaid/transfers/sandbox";
 
+    // Accounting system / external GL provider endpoints
+    public const string AccountingSystemProviders = "/api/accounting-system/providers";
+    public const string AccountingSystemImportPreview = "/api/accounting-system/import/preview";
+    public const string AccountingSystemImportLatest = "/api/accounting-system/import/latest";
+    public const string AccountingSystemReconciliationLatest = "/api/accounting-system/reconciliation/latest";
+
     /// <summary>
     /// Unified traffic-light health dashboard across all providers.
     /// Returns green/yellow/red overall status with per-provider detail.

@@ -210,7 +210,7 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         edited.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         edited.Item!.Comments![0].PreviousTextHash.Should().NotBeNullOrWhiteSpace();
 
-        var deletedWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(edited.Item, ReconciliationCaseworkAction.DeleteComment) with { CommentId = "comment-1" });
+        var deletedWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(edited.Item, ReconciliationCaseworkAction.DeleteComment) with { CommentId = "comment-1", Reason = " " });
         deletedWithoutReason.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingReason);
 
         var deleted = await repo.ApplyCaseworkCommandAsync(Command(edited.Item, ReconciliationCaseworkAction.DeleteComment) with { CommentId = "comment-1", Reason = "Duplicate request." });

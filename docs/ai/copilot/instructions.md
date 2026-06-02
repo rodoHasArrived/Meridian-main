@@ -21,6 +21,8 @@ Use this order for Copilot Chat, Copilot coding agent, and Copilot-authored PRs:
    [`../generated/repo-navigation.md`](../generated/repo-navigation.md) for large-repo routing.
 6. `../agent-handoff-checklist.md` for coordinator-to-specialist-to-assurance handoffs.
 7. `../work-modes.md` to select Lightweight, Standard, or Deep Review context budgets before implementation.
+8. [`../tooling/README.md`](../tooling/README.md) when the task needs AI validators, route tooling,
+   or maintenance scripts.
 
 Do not copy the full repository tree or long convention lists into Copilot prompts. Link to the
 current source instead.
@@ -87,12 +89,20 @@ python build/scripts/docs/check-ai-inventory.py --summary
 git diff --check
 ```
 
+If the change touches shared handoff, manifest, or mode guidance, also run:
+
+```bash
+python build/scripts/docs/check-ai-handoff.py --strict
+```
+
 ## Maintenance Rules
 
 - Keep this file Copilot-specific; update shared rules in
   [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 - Keep `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`,
   `.github/prompts/`, and this file aligned when Copilot behavior changes.
+- Keep [`../tooling/README.md`](../tooling/README.md) aligned when Copilot-facing validation or
+  script-discovery guidance changes.
 - Update [`../README.md`](../README.md), [`../agents/README.md`](../agents/README.md),
   [`../prompts/README.md`](../prompts/README.md), or [`../instructions/README.md`](../instructions/README.md)
   when discoverability changes.

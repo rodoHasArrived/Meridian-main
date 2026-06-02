@@ -3,6 +3,10 @@ import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
+  AccountingSystemImportDetail,
+  AccountingSystemImportRequest,
+  AccountingSystemProvider,
+  AccountingSystemReconciliationSummary,
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   CellExecuteRequest,
@@ -146,6 +150,7 @@ import type {
 } from "@/types";
 import {
   AUTH_API_ENDPOINTS,
+  ACCOUNTING_SYSTEM_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   EXPORT_API_ENDPOINTS,
@@ -758,6 +763,25 @@ export function getAccountingWorkspace(options: ApiRequestOptions = {}) {
 
 export function getAccountingConfiguration(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfiguration, options);
+}
+
+export function getAccountingSystemProviders(options: ApiRequestOptions = {}) {
+  return getJson<AccountingSystemProvider[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.providers, options);
+}
+
+export function previewAccountingSystemImport(
+  request: AccountingSystemImportRequest = { providerId: "quickbooks-fixture", persistPreview: true },
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingSystemImportDetail>(ACCOUNTING_SYSTEM_API_ENDPOINTS.importPreview, request, options);
+}
+
+export function getLatestAccountingSystemImport(options: ApiRequestOptions = {}) {
+  return getJson<AccountingSystemImportDetail>(ACCOUNTING_SYSTEM_API_ENDPOINTS.importLatest, options);
+}
+
+export function getLatestAccountingSystemReconciliation(options: ApiRequestOptions = {}) {
+  return getJson<AccountingSystemReconciliationSummary>(ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest, options);
 }
 
 export function previewAccountingConfigurationTemplate(

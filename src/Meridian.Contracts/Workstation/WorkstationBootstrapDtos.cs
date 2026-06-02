@@ -380,6 +380,18 @@ public sealed record MultiAssetReadinessBlockerDto(
     string? EvidenceRoute);
 
 /// <summary>
+/// Shared drill-through target for one asset-class coverage row.
+/// </summary>
+public sealed record MultiAssetDrillThroughTargetDto(
+    string TargetId,
+    string TargetType,
+    string Label,
+    string Route,
+    string? EvidenceLink,
+    string Status,
+    string Source);
+
+/// <summary>
 /// Operational coverage row for one asset class across Security Master, provider evidence,
 /// ledger, reconciliation, and close readiness.
 /// </summary>
@@ -391,6 +403,7 @@ public sealed record MultiAssetClassCoverageDto(
     string Summary,
     IReadOnlyList<MultiAssetEvidenceRequirementDto> EvidenceRequirements,
     IReadOnlyList<MultiAssetReadinessBlockerDto> Blockers,
+    IReadOnlyList<MultiAssetDrillThroughTargetDto> DrillThroughTargets,
     IReadOnlyDictionary<string, string> LedgerClassification,
     IReadOnlyDictionary<string, string> ReconciliationSignals);
 

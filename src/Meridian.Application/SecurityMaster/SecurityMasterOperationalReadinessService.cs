@@ -174,7 +174,11 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                 ["portfolio"] = UiApiRoutes.WorkstationPortfolio,
                 ["accounting"] = UiApiRoutes.WorkstationAccounting,
                 ["securityMaster"] = UiApiRoutes.WorkstationSecurityMasterSearch,
+                ["securityMasterProfiles"] = UiApiRoutes.SecurityMasterAssetProfiles,
+                ["providerEvidence"] = UiApiRoutes.WorkstationDataOperations,
                 ["reconciliation"] = UiApiRoutes.ReconciliationRuns,
+                ["ledgerMapping"] = UiApiRoutes.FundStructureLedgerMappingAssignments,
+                ["closeReadiness"] = UiApiRoutes.FundAccountCloseReadiness,
                 ["coverage"] = UiApiRoutes.WorkstationPortfolioMultiAssetCoverage
             }));
     }
@@ -195,6 +199,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         var evidence = SelectEvidence(spec, evidenceSnapshot);
         var requirements = BuildRequirements(spec, hasValidator, hasCatalogDescriptor, hasProfileCoverage, evidenceSnapshot, evidence);
         var blockers = BuildBlockers(spec, hasValidator, hasCatalogDescriptor, hasProfileCoverage, evidenceSnapshot, evidence);
+        var drillThroughTargets = BuildDrillThroughTargets(spec, requirements, blockers, evidence);
         var status = blockers.Any(static blocker => string.Equals(blocker.Severity, "Blocker", StringComparison.OrdinalIgnoreCase))
             ? "Blocked"
             : requirements.Any(static requirement => string.Equals(requirement.Status, "ReviewRequired", StringComparison.OrdinalIgnoreCase))
@@ -209,6 +214,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             Summary: spec.Summary,
             EvidenceRequirements: requirements,
             Blockers: blockers,
+            DrillThroughTargets: drillThroughTargets,
             LedgerClassification: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["classification"] = spec.LedgerClassification,
@@ -310,6 +316,71 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         }
 
         return requirements;
+    }
+
+    private static IReadOnlyList<MultiAssetDrillThroughTargetDto> BuildDrillThroughTargets(
+        MultiAssetCoverageSpecification spec,
+        IReadOnlyList<MultiAssetEvidenceRequirementDto> requirements,
+        IReadOnlyList<MultiAssetReadinessBlockerDto> blockers,
+        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence)
+    {
+        var providerRoute = RouteForRequirement(requirements, "ProviderEvidence") ?? UiApiRoutes.WorkstationDataOperations;
+        var reconciliationRoute = RouteForRequirement(requirements, "Reconciliation") ?? UiApiRoutes.ReconciliationRuns;
+        var ledgerRoute = RouteForRequirement(requirements, "Ledger") ?? UiApiRoutes.WorkstationAccounting;
+        var closeRoute = BestEvidenceRoute(evidence, "CloseReadiness")
+            ?? blockers.FirstOrDefault(static blocker =>
+                string.Equals(blocker.Source, "CloseReadiness", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(blocker.Source, "FundAccountCloseReadinessService", StringComparison.OrdinalIgnoreCase))
+                ?.EvidenceRoute
+            ?? UiApiRoutes.WorkstationPortfolioMultiAssetCoverage;
+        var closeStatus = EvaluateTargetStatus(evidence, "CloseReadiness") ??
+                          (blockers.Count == 0 ? "Ready" : "ReviewRequired");
+
+        var targets = new List<MultiAssetDrillThroughTargetDto>
+        {
+            new(
+                $"{spec.AssetClass}:security-master-passport",
+                "SecurityMasterPassport",
+                "Security Master passport/profile",
+                RequiresGovernedProfile(spec.AssetClass) ? UiApiRoutes.SecurityMasterAssetProfiles : UiApiRoutes.WorkstationSecurityMasterSearch,
+                BestEvidenceLink(evidence, "SecurityMaster"),
+                RequirementStatus(requirements, "SecurityMaster"),
+                "SecurityMaster"),
+            new(
+                $"{spec.AssetClass}:provider-evidence",
+                "ProviderEvidence",
+                "Provider evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                RequirementStatus(requirements, "ProviderEvidence"),
+                "ProviderLedgerReconciliation"),
+            new(
+                $"{spec.AssetClass}:reconciliation-case",
+                "ReconciliationCase",
+                "Reconciliation break/case",
+                reconciliationRoute,
+                BestEvidenceLink(evidence, "Reconciliation"),
+                RequirementStatus(requirements, "Reconciliation"),
+                "ProviderLedgerReconciliation"),
+            new(
+                $"{spec.AssetClass}:ledger-mapping",
+                "LedgerMapping",
+                "Ledger mapping/evidence",
+                ledgerRoute,
+                BestEvidenceLink(evidence, "Ledger"),
+                RequirementStatus(requirements, "Ledger"),
+                "LedgerPeriodPostingGuard"),
+            new(
+                $"{spec.AssetClass}:close-readiness",
+                "CloseReadiness",
+                "Close readiness",
+                closeRoute,
+                BestEvidenceLink(evidence, "CloseReadiness"),
+                closeStatus,
+                "FundAccountCloseReadinessService")
+        };
+
+        return targets;
     }
 
     private static IReadOnlyList<MultiAssetReadinessBlockerDto> BuildBlockers(
@@ -477,6 +548,60 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                 string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase) &&
                 !string.IsNullOrWhiteSpace(item.EvidenceRoute))
             ?.EvidenceRoute;
+
+    private static string? BestEvidenceLink(
+        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
+        string category)
+        => evidence.FirstOrDefault(item =>
+                string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(item.EvidenceLink))
+            ?.EvidenceLink;
+
+    private static string? RouteForRequirement(
+        IReadOnlyList<MultiAssetEvidenceRequirementDto> requirements,
+        string category)
+        => requirements.FirstOrDefault(requirement =>
+                string.Equals(requirement.Category, category, StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(requirement.EvidenceRoute))
+            ?.EvidenceRoute;
+
+    private static string RequirementStatus(
+        IReadOnlyList<MultiAssetEvidenceRequirementDto> requirements,
+        string category)
+        => requirements
+               .Where(requirement => string.Equals(requirement.Category, category, StringComparison.OrdinalIgnoreCase))
+               .Select(static requirement => requirement.Status)
+               .OrderBy(static status => status switch
+               {
+                   "Blocked" => 0,
+                   "ReviewRequired" => 1,
+                   "Degraded" => 2,
+                   "Ready" => 3,
+                   _ => 2
+               })
+               .FirstOrDefault()
+           ?? "ReviewRequired";
+
+    private static string? EvaluateTargetStatus(
+        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
+        string category)
+    {
+        var statuses = evidence
+            .Where(item => string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase))
+            .Select(static item => EvaluateEvidenceItemStatus(item.Status))
+            .ToArray();
+
+        if (statuses.Length == 0)
+        {
+            return null;
+        }
+
+        return statuses.Contains("Blocked", StringComparer.OrdinalIgnoreCase)
+            ? "Blocked"
+            : statuses.Contains("ReviewRequired", StringComparer.OrdinalIgnoreCase)
+                ? "ReviewRequired"
+                : "Ready";
+    }
 
     private static bool MatchesAny(SecurityMasterOperationalEvidenceItem item, IReadOnlyList<string> values)
         => values.Any(value => MatchesText(item, value));

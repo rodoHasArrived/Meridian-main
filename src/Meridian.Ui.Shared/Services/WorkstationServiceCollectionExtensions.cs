@@ -15,7 +15,9 @@ using Meridian.Contracts.Services;
 using Meridian.Contracts.Plaid;
 using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Adapters.Plaid;
+using Meridian.Infrastructure.Adapters.QuickBooks;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Services;
@@ -130,6 +132,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
+        services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
             new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp)));

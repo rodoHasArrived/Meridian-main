@@ -111,6 +111,34 @@ public static class ProviderCredentialCatalog
             RecommendedActionWhenMissing: "Add Plaid client credentials before linking bank accounts or syncing Plaid evidence.",
             ActionHref: "/settings#plaid-provider-setup"),
         new(
+            ProviderId: "quickbooks-fixture",
+            DisplayName: "QuickBooks Fixture",
+            Capability: ProviderConnectionCapabilityDto.AccountingSystem,
+            RequiredFields: [],
+            AffectedWorkflows:
+            [
+                "External GL reconciliation",
+                "Accounting records evidence",
+                "Close-package trial balance review"
+            ],
+            RecommendedActionWhenMissing: "No credential action required; use the fixture to preview external GL reconciliation.",
+            ActionHref: "/settings#provider-quickbooks-fixture-connection"),
+        new(
+            ProviderId: "quickbooks",
+            DisplayName: "QuickBooks Online",
+            Capability: ProviderConnectionCapabilityDto.AccountingSystem,
+            RequiredFields: [],
+            EnvironmentNames: ["QUICKBOOKS_ENVIRONMENT"],
+            DefaultEnvironment: "sandbox",
+            AffectedWorkflows:
+            [
+                "External GL reconciliation",
+                "Accounting records evidence",
+                "Close-package trial balance review"
+            ],
+            RecommendedActionWhenMissing: "QuickBooks Online OAuth is planned; use the fixture provider until live OAuth is enabled.",
+            ActionHref: "/settings#provider-quickbooks-connection"),
+        new(
             ProviderId: "ib",
             DisplayName: "Interactive Brokers",
             Capability: ProviderConnectionCapabilityDto.DataAndBrokerage,
@@ -148,7 +176,10 @@ public static class ProviderCredentialCatalog
         ["nasdaq-data-link"] = "nasdaqdatalink",
         ["interactivebrokers"] = "ib",
         ["interactive-brokers"] = "ib",
-        ["plaid-api"] = "plaid"
+        ["plaid-api"] = "plaid",
+        ["qbo"] = "quickbooks",
+        ["quickbooks-online"] = "quickbooks",
+        ["qbo-fixture"] = "quickbooks-fixture"
     };
 
     public static IReadOnlyList<ProviderCredentialCatalogEntry> All => Entries;
@@ -192,6 +223,12 @@ public sealed record ProviderCredentialCatalogEntry(
         {
             var normalized = string.IsNullOrWhiteSpace(value) ? DefaultEnvironment ?? "sandbox" : value.Trim().ToLowerInvariant();
             return normalized is "production" or "development" or "sandbox" ? normalized : "sandbox";
+        }
+
+        if (ProviderId.Equals("quickbooks", StringComparison.OrdinalIgnoreCase))
+        {
+            var normalized = string.IsNullOrWhiteSpace(value) ? DefaultEnvironment ?? "sandbox" : value.Trim().ToLowerInvariant();
+            return normalized is "production" or "sandbox" ? normalized : "sandbox";
         }
 
         return string.IsNullOrWhiteSpace(value) ? DefaultEnvironment ?? string.Empty : value.Trim();

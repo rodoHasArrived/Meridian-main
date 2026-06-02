@@ -283,6 +283,37 @@
         <Setter Property="CornerRadius" Value="4" />
     </Style>
 
+    <Style x:Key="WorkstationTablePanelStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <Style x:Key="WorkstationPanelHeaderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="14,10" />
+    </Style>
+
+    <Style x:Key="WorkstationPanelBodyStyle" TargetType="Border">
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+    </Style>
+
+    <Style x:Key="WorkstationInspectorRailStyle" TargetType="Border" BasedOn="{StaticResource WorkstationTablePanelStyle}">
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceRaisedBrush}" />
+    </Style>
+
+    <Style x:Key="WorkstationDockStripStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Padding" Value="16,10" />
+    </Style>
+
     <Style x:Key="WorkspaceKpiTileStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
         <Setter Property="MinWidth" Value="112" />
         <Setter Property="Padding" Value="18,12" />

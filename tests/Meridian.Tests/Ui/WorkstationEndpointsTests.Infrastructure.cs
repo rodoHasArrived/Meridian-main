@@ -93,6 +93,7 @@ public sealed partial class WorkstationEndpointsTests
         }
 
         app.MapWorkstationEndpoints(jsonOptions);
+        app.MapLedgerEndpoints(jsonOptions);
 
         await app.StartAsync();
         return app;

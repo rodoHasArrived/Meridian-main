@@ -5,6 +5,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { settingsProviderConnectionRoute, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   AUTH_API_ENDPOINTS,
+  ACCOUNTING_SYSTEM_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   CONFIG_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
@@ -796,7 +797,7 @@ export interface SettingsProviderConnectionRow {
   rowAnchorId: string;
   displayName: string;
   capabilityLabel: string;
-  capabilityGroup: "brokerage" | "data";
+  capabilityGroup: "brokerage" | "data" | "accounting";
   credentialLabel: string;
   credentialTone: "default" | "success" | "warning" | "danger" | "muted";
   credentialStatus: "present" | "missing" | "not-required";
@@ -822,7 +823,7 @@ export interface SettingsProviderConnectionRow {
 }
 
 export interface SettingsProviderConnectionGroup {
-  id: "brokerage" | "data";
+  id: "brokerage" | "data" | "accounting";
   label: string;
   summary: string;
   rows: SettingsProviderConnectionRow[];
@@ -1152,6 +1153,8 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
       { id: "recon-runs", method: "POST", label: "Run reconciliation", href: RECONCILIATION_API_ENDPOINTS.runs },
       { id: "break-queue", method: "GET", label: "Break queue", href: RECONCILIATION_API_ENDPOINTS.breakQueue },
       { id: "calibration", method: "GET", label: "Calibration", href: RECONCILIATION_API_ENDPOINTS.calibrationSummary },
+      { id: "gl-providers", method: "GET", label: "GL providers", href: ACCOUNTING_SYSTEM_API_ENDPOINTS.providers },
+      { id: "gl-reconciliation", method: "GET", label: "External GL", href: ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest },
       { id: "break-audit", method: "GET", label: "Break audit", href: `${RECONCILIATION_API_ENDPOINTS.breakQueue}/{breakId}/audit` },
       { id: "security-master", method: "GET", label: "Security Master", href: SECURITY_MASTER_API_ENDPOINTS.workstationSecurities }
     ]
@@ -1831,6 +1834,7 @@ function buildProviderConnectionCenter(
       ))
   ];
   const brokerageRows = rows.filter((row) => row.capabilityGroup === "brokerage");
+  const accountingRows = rows.filter((row) => row.capabilityGroup === "accounting");
   const dataRows = rows.filter((row) => row.capabilityGroup === "data");
   const blockedCount = rows.filter((row) => row.healthTone === "danger").length;
   const warningCount = rows.filter((row) => row.healthTone === "warning").length;
@@ -1873,6 +1877,13 @@ function buildProviderConnectionCenter(
         emptyLabel: "No brokerage-capable provider rows loaded."
       },
       {
+        id: "accounting",
+        label: "Accounting systems",
+        summary: "External GL and accounting-system providers used by accounting evidence and close reconciliation.",
+        rows: accountingRows,
+        emptyLabel: "No accounting-system provider rows loaded."
+      },
+      {
         id: "data",
         label: "Data providers",
         summary: "Market-data and reference-data providers used by backfill and repair workflows.",
@@ -1900,7 +1911,11 @@ function buildProviderConnectionRow(
     rowAnchorId: row.providerId === "alpaca" ? "alpaca-provider-setup" : `provider-${row.providerId}-connection`,
     displayName: row.displayName,
     capabilityLabel: providerCapabilityLabel(row.capability),
-    capabilityGroup: row.capability === "Brokerage" || row.capability === "DataAndBrokerage" ? "brokerage" : "data",
+    capabilityGroup: row.capability === "AccountingSystem"
+      ? "accounting"
+      : row.capability === "Brokerage" || row.capability === "DataAndBrokerage"
+        ? "brokerage"
+        : "data",
     credentialLabel: providerCredentialLabel(row.credentialState),
     credentialTone,
     credentialStatus: row.credentialState === "NotRequired"
@@ -2197,6 +2212,8 @@ function providerCapabilityLabel(value: ProviderConnectionRow["capability"]): st
       return "Data + Brokerage";
     case "Brokerage":
       return "Brokerage";
+    case "AccountingSystem":
+      return "Accounting System";
     default:
       return "Data";
   }

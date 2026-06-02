@@ -7,7 +7,8 @@ public enum ProviderConnectionCapabilityDto
 {
     Data,
     Brokerage,
-    DataAndBrokerage
+    DataAndBrokerage,
+    AccountingSystem
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]

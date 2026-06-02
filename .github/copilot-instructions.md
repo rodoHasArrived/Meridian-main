@@ -1,6 +1,6 @@
 # Copilot Repository Instructions
 
-**Last Updated:** 2026-04-29
+**Last Updated:** 2026-06-02
 
 Use these instructions for every task in this repository to improve quality, reliability, and review speed.
 
@@ -17,7 +17,8 @@ For each task, follow this sequence:
 5. For multi-agent or multi-lane tasks, use `docs/ai/agent-handoff-checklist.md` when handing off between phases.
 6. Select a mode from `docs/ai/work-modes.md` before implementation; escalate only when risk or scope increases.
 7. For concurrent lanes, initialize `docs/ai/parallel-task-manifest-template.md` before edits to keep ownership boundaries explicit.
-8. Summarize what changed, why, and how it was validated.
+8. If the task needs AI validators, routing tools, or maintenance scripts, load `docs/ai/tooling/README.md` instead of rediscovering command lanes ad hoc.
+9. Summarize what changed, why, and how it was validated.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
@@ -65,6 +66,7 @@ Always do the following before opening a PR:
 6. Keep provider-specific guidance aligned with `docs/ai/assistant-workflow-contract.md`.
 7. When editing `src/**`, read the nearest source README and keep `docs/source/data/*.yml`
    synchronized when module ownership, validation, roadmap mapping, diagrams, or TODO scope changes.
+8. If editing shared handoff, manifest, or AI work-mode guidance, run `python build/scripts/docs/check-ai-handoff.py --strict`.
 
 ## 4) Build and test commands
 
@@ -111,5 +113,6 @@ Relevant examples:
 - [`docs/ai/README.md`](../docs/ai/README.md) — master AI resource index with reading order by task type
 - [`docs/ai/ai-known-errors.md`](../docs/ai/ai-known-errors.md) — mandatory error prevention registry
 - [`docs/ai/copilot/instructions.md`](../docs/ai/copilot/instructions.md) — compact Copilot host guide and routing links
+- [`docs/ai/tooling/README.md`](../docs/ai/tooling/README.md) — shared AI validator and script index
 - [`agents/code-review-agent.md`](agents/code-review-agent.md) — 7-lens code review framework
 - [`prompts/`](prompts/) — 16 reusable prompt templates

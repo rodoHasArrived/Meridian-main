@@ -80,15 +80,19 @@ public sealed class WorkspaceCockpitShellViewModelTests
 
         multiAssetItems[0].Detail.Should().Contain(nameof(MultiAssetCoverageSummaryDto.AssetClasses))
             .And.Contain(nameof(MultiAssetClassCoverageDto.Status))
-            .And.Contain(nameof(MultiAssetClassCoverageDto.Blockers));
+            .And.Contain(nameof(MultiAssetClassCoverageDto.Blockers))
+            .And.Contain(nameof(MultiAssetClassCoverageDto.DrillThroughTargets));
 
         multiAssetItems[1].Detail.Should().Contain(nameof(MultiAssetClassCoverageDto.EvidenceRequirements))
-            .And.Contain(nameof(MultiAssetEvidenceRequirementDto.EvidenceRoute));
+            .And.Contain(nameof(MultiAssetEvidenceRequirementDto.EvidenceRoute))
+            .And.Contain(nameof(MultiAssetDrillThroughTargetDto.TargetType));
 
         multiAssetItems[2].Detail.Should().Contain(nameof(MultiAssetClassCoverageDto.LedgerClassification))
-            .And.Contain(nameof(MultiAssetClassCoverageDto.ReconciliationSignals));
+            .And.Contain(nameof(MultiAssetClassCoverageDto.ReconciliationSignals))
+            .And.Contain(nameof(MultiAssetDrillThroughTargetDto.Route));
 
         multiAssetItems[3].Detail.Should().Contain(nameof(MultiAssetReadinessBlockerDto.EvidenceRoute))
+            .And.Contain(nameof(MultiAssetDrillThroughTargetDto.EvidenceLink))
             .And.Contain(nameof(MultiAssetCoverageSummaryDto.DrillThroughRoutes));
     }
 

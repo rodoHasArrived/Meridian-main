@@ -50,6 +50,13 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceFilterBar\"");
         xaml.Should().Contain("Style=\"{StaticResource WorkstationFilterBarStyle}\"");
         xaml.Should().Contain("Style=\"{StaticResource WorkstationFilterChipStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationTablePanelStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationPanelHeaderStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationPanelBodyStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationInspectorRailStyle}\"");
+        xaml.Should().Contain("Style=\"{StaticResource WorkstationDockStripStyle}\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceQueuePanel\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceDockStrip\"");
         xaml.Should().Contain("WorkspaceShellContextStripControl");
         xaml.Should().Contain("Next Handoff");
         xaml.Should().Contain("OperationsHeroScopeText");
@@ -64,6 +71,10 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().Contain("OperationsHeroTargetText");
         xaml.IndexOf("DataWorkspaceFilterBar", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Operational Queues", StringComparison.Ordinal));
         xaml.IndexOf("OperationsHeroSummaryText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("DataWorkspaceFilterBar", StringComparison.Ordinal));
+        xaml.IndexOf("DataWorkspaceQueuePanel", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("WorkspaceInspectorHostData", StringComparison.Ordinal));
+        xaml.Should().Contain("MinHeight=\"176\"");
+        xaml.Should().Contain("MaxHeight=\"240\"");
+        xaml.Should().Contain("Height=\"196\"");
 
         xaml.Should().Contain("Text=\"{Binding HeroScopeText}\"");
         xaml.Should().Contain("Text=\"{Binding HeroSummaryText}\"");

@@ -213,6 +213,7 @@ export interface PortfolioMultiAssetCoverageRow {
   reconciliationLabel: string;
   evidenceTargets: PortfolioMultiAssetEvidenceTarget[];
   blockerTargets: PortfolioMultiAssetBlockerTarget[];
+  drillThroughTargets: PortfolioMultiAssetDrillThroughTarget[];
   primaryEvidenceRoute: string;
 }
 
@@ -234,6 +235,18 @@ export interface PortfolioMultiAssetBlockerTarget {
   source: string;
   statusTone: "default" | "success" | "warning" | "danger";
   href: string | null;
+  ariaLabel: string;
+}
+
+export interface PortfolioMultiAssetDrillThroughTarget {
+  id: string;
+  type: string;
+  label: string;
+  href: string;
+  evidenceLink: string | null;
+  statusLabel: string;
+  statusTone: "default" | "success" | "warning" | "danger";
+  source: string;
   ariaLabel: string;
 }
 
@@ -1251,6 +1264,17 @@ export function buildMultiAssetCoveragePanel(
         ? `Open ${item.displayName} ${blocker.source} blocker evidence`
         : `${item.displayName} ${blocker.source} blocker has no drill-through route`
     }));
+    const drillThroughTargets = (item.drillThroughTargets ?? []).map((target) => ({
+      id: target.targetId,
+      type: target.targetType,
+      label: target.label,
+      href: target.route,
+      evidenceLink: target.evidenceLink,
+      statusLabel: multiAssetStatusLabel(target.status),
+      statusTone: multiAssetStatusTone(target.status),
+      source: target.source,
+      ariaLabel: `Open ${item.displayName} ${target.label} drill-through`
+    }));
     const readinessGroup = multiAssetReadinessGroup(item.status);
 
     return {
@@ -1269,8 +1293,11 @@ export function buildMultiAssetCoveragePanel(
       reconciliationLabel: item.reconciliationSignals.breaks ?? "Reconciliation evidence retained",
       evidenceTargets,
       blockerTargets,
+      drillThroughTargets,
       primaryEvidenceRoute: evidenceTargets.find((target) => target.statusTone !== "success")?.href
+        ?? drillThroughTargets.find((target) => target.statusTone !== "success")?.href
         ?? evidenceTargets[0]?.href
+        ?? drillThroughTargets[0]?.href
         ?? coverage.drillThroughRoutes.coverage
         ?? WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage
     };

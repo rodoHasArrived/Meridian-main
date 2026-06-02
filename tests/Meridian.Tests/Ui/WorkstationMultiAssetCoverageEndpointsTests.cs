@@ -22,11 +22,24 @@ public sealed partial class WorkstationEndpointsTests
         payload!.FundAccountId.Should().Be("fund-ops");
         payload.Entity.Should().Be("master-fund");
         payload.DrillThroughRoutes.Should().ContainKey("coverage");
+        payload.DrillThroughRoutes.Should().ContainKeys(
+            "securityMaster",
+            "securityMasterProfiles",
+            "providerEvidence",
+            "reconciliation",
+            "ledgerMapping",
+            "closeReadiness");
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "DirectLoan" &&
             row.ReconciliationSignals["breaks"].Contains("loan schedule", StringComparison.OrdinalIgnoreCase));
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "CustomAsset" &&
             row.EvidenceRequirements.Any(static requirement => requirement.Category == "Governance"));
+        payload.AssetClasses.Should().OnlyContain(static row =>
+            row.DrillThroughTargets.Any(static target => target.TargetType == "SecurityMasterPassport") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "ProviderEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "ReconciliationCase") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "LedgerMapping") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "CloseReadiness"));
     }
 }

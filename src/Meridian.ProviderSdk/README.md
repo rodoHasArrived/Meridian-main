@@ -13,7 +13,8 @@ last_reviewed: 2026-05-20
 
 ## Purpose
 
-ProviderSdk defines provider-facing abstractions for streaming, historical, and symbol-search integrations.
+ProviderSdk defines provider-facing abstractions for streaming, historical, symbol-search, and
+accounting-system integrations.
 
 ## Layer responsibility
 
@@ -21,7 +22,7 @@ This layer is the plugin contract for provider adapters. It should expose stable
 
 ## Key folders and files
 
-- Provider-facing interfaces such as market data client contracts.
+- Provider-facing interfaces such as market data client and accounting-system contracts.
 - Shared provider metadata and attribute types.
 
 ## Important workflows
@@ -30,6 +31,10 @@ Use this module when a provider abstraction must be consumed by multiple adapter
 Provider routing capabilities are contract-level workflow gates; `FactorSchedule` is distinct from
 generic `CorporateActions` so accounting workflows can degrade fixed-income, structured-credit,
 amortization, and paydown evidence when a provider cannot route the required factor/coupon feed.
+`AccountingSystem/IAccountingSystemProvider.cs` defines the provider-neutral GL import surface for
+chart-of-accounts, journal-entry, trial-balance, and reconciliation-preview evidence. It is
+read-oriented by default; write/posting support must be exposed explicitly by provider capabilities
+before any service or client can offer export actions.
 
 ## Diagrams
 

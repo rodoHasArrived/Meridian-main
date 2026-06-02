@@ -72,7 +72,7 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
         new()
         {
             Title = "Multi-asset readiness groups",
-            Detail = $"Review {nameof(MultiAssetCoverageSummaryDto.AssetClasses)}, {nameof(MultiAssetClassCoverageDto.Status)}, and {nameof(MultiAssetClassCoverageDto.Blockers)} from {MultiAssetCoverageRoute}.",
+            Detail = $"Review {nameof(MultiAssetCoverageSummaryDto.AssetClasses)}, {nameof(MultiAssetClassCoverageDto.Status)}, {nameof(MultiAssetClassCoverageDto.Blockers)}, and {nameof(MultiAssetClassCoverageDto.DrillThroughTargets)} from {MultiAssetCoverageRoute}.",
             StatusLabel = "Asset class readiness",
             CountLabel = "Review",
             Tone = WorkspaceTone.Info,
@@ -85,7 +85,7 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
         new()
         {
             Title = "Provider evidence degradation",
-            Detail = $"Inspect {nameof(MultiAssetClassCoverageDto.EvidenceRequirements)} and {nameof(MultiAssetEvidenceRequirementDto.EvidenceRoute)} references from {MultiAssetCoverageRoute}.",
+            Detail = $"Inspect {nameof(MultiAssetClassCoverageDto.EvidenceRequirements)}, {nameof(MultiAssetEvidenceRequirementDto.EvidenceRoute)}, and {nameof(MultiAssetDrillThroughTargetDto.TargetType)} references from {MultiAssetCoverageRoute}.",
             StatusLabel = "Provider degraded",
             CountLabel = "Check",
             Tone = WorkspaceTone.Warning,
@@ -98,7 +98,7 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
         new()
         {
             Title = "Ledger and reconciliation coverage",
-            Detail = $"Compare {nameof(MultiAssetClassCoverageDto.LedgerClassification)} and {nameof(MultiAssetClassCoverageDto.ReconciliationSignals)} from {MultiAssetCoverageRoute}.",
+            Detail = $"Compare {nameof(MultiAssetClassCoverageDto.LedgerClassification)}, {nameof(MultiAssetClassCoverageDto.ReconciliationSignals)}, and {nameof(MultiAssetDrillThroughTargetDto.Route)} from {MultiAssetCoverageRoute}.",
             StatusLabel = "Coverage drift",
             CountLabel = "Investigate",
             Tone = WorkspaceTone.Warning,
@@ -111,7 +111,7 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
         new()
         {
             Title = "Close readiness blockers",
-            Detail = $"Open blocker evidence carried by {nameof(MultiAssetReadinessBlockerDto.EvidenceRoute)} and {nameof(MultiAssetCoverageSummaryDto.DrillThroughRoutes)} from {MultiAssetCoverageRoute}.",
+            Detail = $"Open blocker evidence carried by {nameof(MultiAssetReadinessBlockerDto.EvidenceRoute)}, {nameof(MultiAssetDrillThroughTargetDto.EvidenceLink)}, and {nameof(MultiAssetCoverageSummaryDto.DrillThroughRoutes)} from {MultiAssetCoverageRoute}.",
             StatusLabel = "Close readiness",
             CountLabel = "Blocked",
             Tone = WorkspaceTone.Danger,

@@ -151,5 +151,20 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("VirtualizingPanel.ScrollUnit=\"Item\"");
     }
 
+    [Fact]
+    public void ThemeSurfacesSource_ShouldExposeProfessionalWorkstationPanelChrome()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Styles\ThemeSurfaces.xaml"));
+
+        xaml.Should().Contain("WorkstationTablePanelStyle");
+        xaml.Should().Contain("WorkstationPanelHeaderStyle");
+        xaml.Should().Contain("WorkstationPanelBodyStyle");
+        xaml.Should().Contain("WorkstationInspectorRailStyle");
+        xaml.Should().Contain("WorkstationDockStripStyle");
+        xaml.Should().Contain("<Setter Property=\"CornerRadius\" Value=\"4\" />");
+        xaml.Should().Contain("<Setter Property=\"BorderThickness\" Value=\"0,1,0,0\" />");
+    }
+
     private sealed record RowFixture(string Name, string Status);
 }

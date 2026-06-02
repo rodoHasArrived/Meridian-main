@@ -154,6 +154,13 @@ export const PROVIDER_API_ENDPOINTS = {
   connections: "/api/providers/connections"
 } as const;
 
+export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
+  providers: "/api/accounting-system/providers",
+  importPreview: "/api/accounting-system/import/preview",
+  importLatest: "/api/accounting-system/import/latest",
+  reconciliationLatest: "/api/accounting-system/reconciliation/latest"
+} as const;
+
 export const PLAID_API_ENDPOINTS = {
   institutionSearch: "/api/plaid/institutions/search",
   linkToken: "/api/plaid/link-token",

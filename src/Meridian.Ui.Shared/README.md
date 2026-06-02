@@ -57,6 +57,12 @@ and mutation access resolved from the workstation session. The shared Plaid work
 keeps link-token creation, public-token exchange, item sync, webhook retention, and sandbox
 transfer gating server-owned so browser and WPF clients do not handle Plaid access tokens or
 duplicate bank evidence ingestion rules.
+Accounting-system endpoints are also registered as a shared endpoint group from `UiApiRoutes`.
+`AccountingSystemIntegrationService` lists GL providers, previews the fixture QuickBooks import,
+retains the latest import in process, and compares external trial-balance evidence with Meridian
+ledger totals when the ledger store is available. Posting/export remains disabled in the shared
+service until an adapter capability explicitly supports it, so browser and WPF clients inherit the
+same read-only reconciliation posture.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
@@ -230,8 +236,11 @@ Portfolio multi-asset coverage is exposed through the shared workstation route
 `/api/workstation/portfolio/multi-asset-coverage` and the `IMultiAssetCoverageReadService`
 projection. It joins Security Master validation/profile posture, required provider evidence,
 ledger classification, reconciliation evidence categories, and close-readiness blockers into a
-single read model for browser and WPF clients. Missing retained provider inputs remain
-review-required or blocked rows; clients must not mark asset classes ready with UI-local checks.
+single read model for browser and WPF clients. Coverage rows include contract-owned drill-through
+targets for Security Master passport/profile, provider evidence, reconciliation break/case, ledger
+mapping/evidence, and close readiness so clients can navigate without maintaining local routing
+rules. Missing retained provider inputs remain review-required or blocked rows; clients must not
+mark asset classes ready with UI-local checks.
 Provider-ledger reconciliation is shared service/API behavior: it reads the latest brokerage sync
 projection, compares it with the internal fund-account balance snapshot, validates Security Master
 coverage, and retains the latest detail under workstation data for browser and WPF clients to

@@ -6,6 +6,9 @@ import type {
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
+  AccountingSystemImportDetail,
+  AccountingSystemProvider,
+  AccountingSystemReconciliationSummary,
   CorporateAction,
   DataWorkspaceResponse,
   EvidenceCompleteness,
@@ -60,6 +63,7 @@ import type {
   WorkflowPresetLibrary
 } from "../types";
 import {
+  ACCOUNTING_SYSTEM_API_ENDPOINTS,
   AUTH_API_ENDPOINTS,
   COVERED_CALL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
@@ -1436,6 +1440,113 @@ const fixturePortfolioWorkspace: PortfolioWorkspaceResponse = {
   cashFlow: fixtureAccountingWorkspace.cashFlow
 };
 
+const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
+  {
+    providerId: "quickbooks-fixture",
+    displayName: "QuickBooks Fixture",
+    state: "Available",
+    requiresCredentials: false,
+    supportsChartOfAccounts: true,
+    supportsJournalEntries: true,
+    supportsTrialBalance: true,
+    supportsPosting: false,
+    statusLabel: "Ready for fixture import",
+    statusDetail: "Read-only external GL import and reconciliation are available for contract-first validation.",
+    evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
+  },
+  {
+    providerId: "quickbooks",
+    displayName: "QuickBooks Online",
+    state: "Planned",
+    requiresCredentials: true,
+    supportsChartOfAccounts: true,
+    supportsJournalEntries: true,
+    supportsTrialBalance: true,
+    supportsPosting: false,
+    statusLabel: "OAuth adapter planned",
+    statusDetail: "Live QuickBooks Online OAuth and posting/export are outside the contract-first slice.",
+    evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
+  }
+];
+
+const fixtureAccountingSystemImport: AccountingSystemImportDetail = {
+  summary: {
+    importId: "qbo-fixture-20260131",
+    providerId: "quickbooks-fixture",
+    providerDisplayName: "QuickBooks Fixture",
+    fundProfileId: "default-fund",
+    ledgerBookId: null,
+    state: "Imported",
+    periodStart: "2026-01-01",
+    periodEnd: "2026-01-31",
+    importedAtUtc: "2026-02-01T00:00:00Z",
+    chartAccountCount: 4,
+    journalEntryCount: 2,
+    trialBalanceLineCount: 4,
+    evidenceReferences: ["quickbooks-fixture:chart-of-accounts", "quickbooks-fixture:journal", "quickbooks-fixture:trial-balance"],
+    warnings: ["External posting/export is disabled for the contract-first slice."]
+  },
+  chartAccounts: [
+    { externalAccountId: "qbo-1000", accountCode: "Assets:Cash:Operating", displayName: "Operating Cash", accountType: "Asset", currency: "USD", isActive: true, parentExternalAccountId: null, evidenceRef: "quickbooks-fixture:account:qbo-1000" },
+    { externalAccountId: "qbo-1500", accountCode: "Assets:Investments:Public", displayName: "Public Investments", accountType: "Asset", currency: "USD", isActive: true, parentExternalAccountId: null, evidenceRef: "quickbooks-fixture:account:qbo-1500" },
+    { externalAccountId: "qbo-4000", accountCode: "Income:Investment", displayName: "Investment Income", accountType: "Income", currency: "USD", isActive: true, parentExternalAccountId: null, evidenceRef: "quickbooks-fixture:account:qbo-4000" },
+    { externalAccountId: "qbo-6100", accountCode: "Expenses:Trading", displayName: "Trading Expenses", accountType: "Expense", currency: "USD", isActive: true, parentExternalAccountId: null, evidenceRef: "quickbooks-fixture:account:qbo-6100" }
+  ],
+  journalEntries: [
+    {
+      externalJournalEntryId: "qbo-je-100",
+      accountingDate: "2026-01-05",
+      description: "Fixture capital contribution",
+      currency: "USD",
+      totalDebits: 250000,
+      totalCredits: 250000,
+      evidenceRef: "quickbooks-fixture:journal:qbo-je-100",
+      lines: [
+        { externalLineId: "qbo-je-100-1", externalAccountId: "qbo-1000", accountCode: "Assets:Cash:Operating", description: "Capital contribution received", debit: 250000, credit: 0, currency: "USD", evidenceRef: "quickbooks-fixture:journal:qbo-je-100:1" },
+        { externalLineId: "qbo-je-100-2", externalAccountId: "qbo-4000", accountCode: "Income:Investment", description: "Capital contribution offset", debit: 0, credit: 250000, currency: "USD", evidenceRef: "quickbooks-fixture:journal:qbo-je-100:2" }
+      ]
+    }
+  ],
+  trialBalance: [
+    { externalAccountId: "qbo-1000", accountCode: "Assets:Cash:Operating", accountName: "Operating Cash", accountType: "Asset", debit: 248750, credit: 0, currency: "USD", asOfDate: "2026-01-31", evidenceRef: "quickbooks-fixture:trial-balance:qbo-1000" },
+    { externalAccountId: "qbo-4000", accountCode: "Income:Investment", accountName: "Investment Income", accountType: "Income", debit: 0, credit: 250000, currency: "USD", asOfDate: "2026-01-31", evidenceRef: "quickbooks-fixture:trial-balance:qbo-4000" },
+    { externalAccountId: "qbo-6100", accountCode: "Expenses:Trading", accountName: "Trading Expenses", accountType: "Expense", debit: 1250, credit: 0, currency: "USD", asOfDate: "2026-01-31", evidenceRef: "quickbooks-fixture:trial-balance:qbo-6100" }
+  ]
+};
+
+const fixtureAccountingSystemReconciliation: AccountingSystemReconciliationSummary = {
+  reconciliationId: "gl-recon-qbo-fixture-20260131",
+  importId: fixtureAccountingSystemImport.summary.importId,
+  providerId: "quickbooks-fixture",
+  fundProfileId: "default-fund",
+  periodStart: "2026-01-01",
+  periodEnd: "2026-01-31",
+  generatedAtUtc: "2026-02-01T00:05:00Z",
+  matchedCount: 0,
+  breakCount: 3,
+  totalExternalDebits: 250000,
+  totalExternalCredits: 250000,
+  totalMeridianDebits: 0,
+  totalMeridianCredits: 0,
+  postingEnabled: false,
+  postingDisabledReason: "External GL posting/export is disabled until the provider-neutral evidence and reconciliation path is proven.",
+  evidenceReferences: fixtureAccountingSystemImport.summary.evidenceReferences,
+  rows: fixtureAccountingSystemImport.trialBalance.map((row) => ({
+    rowId: `gl-recon-${row.externalAccountId}`,
+    accountCode: row.accountCode,
+    accountName: row.accountName,
+    currency: row.currency,
+    status: "MissingMeridian",
+    externalDebit: row.debit,
+    externalCredit: row.credit,
+    meridianDebit: 0,
+    meridianCredit: 0,
+    variance: row.debit - row.credit,
+    detail: "External GL has activity that is absent from Meridian ledger evidence.",
+    evidenceRef: row.evidenceRef
+  }))
+};
+
 const fixturePortfolioMultiAssetCoverage = {
   fundAccountId: "all",
   entity: "portfolio",
@@ -1457,6 +1568,13 @@ const fixturePortfolioMultiAssetCoverage = {
         { requirementId: "Equity:security-master-identifiers", label: "Security Master identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true }
       ],
       blockers: [],
+      drillThroughTargets: [
+        { targetId: "Equity:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/workstation/security-master/securities", evidenceLink: null, status: "Ready", source: "SecurityMaster" },
+        { targetId: "Equity:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "fixture://provider/equity", status: "Ready", source: "ProviderLedgerReconciliation" },
+        { targetId: "Equity:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: null, status: "Ready", source: "ProviderLedgerReconciliation" },
+        { targetId: "Equity:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "Equity:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: null, status: "Ready", source: "FundAccountCloseReadinessService" }
+      ],
       ledgerClassification: { classification: "Security position / realized and unrealized P&L / dividend income" },
       reconciliationSignals: { breaks: "quantity, market value, cash, corporate action, tax lot" }
     },
@@ -1472,6 +1590,13 @@ const fixturePortfolioMultiAssetCoverage = {
       ],
       blockers: [
         { code: "CustomAsset:provider-evidence-review", severity: "Review", message: "Retained provider evidence is required before close readiness can be marked complete.", source: "ProviderEvidence", evidenceRoute: "/api/workstation/portfolio/multi-asset-coverage" }
+      ],
+      drillThroughTargets: [
+        { targetId: "CustomAsset:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/security-master/asset-profiles", evidenceLink: "fixture://security-master/profile/custom-asset", status: "Ready", source: "SecurityMaster" },
+        { targetId: "CustomAsset:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "fixture://provider/custom-asset", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: "fixture://reconciliation/custom-profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "CustomAsset:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: "fixture://close/custom-profile", status: "ReviewRequired", source: "FundAccountCloseReadinessService" }
       ],
       ledgerClassification: { classification: "Profile-derived classification / valuation adjustment / income accrual / commitment accounting" },
       reconciliationSignals: { breaks: "quantity, market value, cash, factor schedule, custom-profile evidence" }
@@ -2523,6 +2648,10 @@ const fixtures = {
   "/api/workstation/data-operations": fixtureDataWorkspace,
   [WORKSTATION_API_ENDPOINTS.accounting]: fixtureAccountingWorkspace,
   [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.providers]: fixtureAccountingSystemProviders,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.importPreview]: fixtureAccountingSystemImport,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.importLatest]: fixtureAccountingSystemImport,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest]: fixtureAccountingSystemReconciliation,
   "/api/workstation/governance": fixtureAccountingWorkspace,
   [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,

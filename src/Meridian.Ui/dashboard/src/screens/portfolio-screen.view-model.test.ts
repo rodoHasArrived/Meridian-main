@@ -118,6 +118,13 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
         { requirementId: "Equity:security-master-identifiers", label: "Identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true }
       ],
       blockers: [],
+      drillThroughTargets: [
+        { targetId: "Equity:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/workstation/security-master/securities", evidenceLink: null, status: "Ready", source: "SecurityMaster" },
+        { targetId: "Equity:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://equity/aapl", status: "Ready", source: "ProviderLedgerReconciliation" },
+        { targetId: "Equity:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: null, status: "Ready", source: "ProviderLedgerReconciliation" },
+        { targetId: "Equity:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "Equity:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: null, status: "Ready", source: "FundAccountCloseReadinessService" }
+      ],
       ledgerClassification: { classification: "Security position" },
       reconciliationSignals: { breaks: "quantity, market value, cash" }
     },
@@ -132,6 +139,13 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
         { requirementId: "FixedIncome:price-evidence", label: "Price evidence", category: "ProviderEvidence", status: "Degraded", evidenceRoute: "/api/workstation/data-operations", required: true }
       ],
       blockers: [],
+      drillThroughTargets: [
+        { targetId: "FixedIncome:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/workstation/security-master/securities", evidenceLink: null, status: "Ready", source: "SecurityMaster" },
+        { targetId: "FixedIncome:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://bond/factor", status: "Degraded", source: "ProviderLedgerReconciliation" },
+        { targetId: "FixedIncome:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: "case://factor-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "FixedIncome:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "FixedIncome:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: null, status: "ReviewRequired", source: "FundAccountCloseReadinessService" }
+      ],
       ledgerClassification: { classification: "Amortized-cost security position" },
       reconciliationSignals: { breaks: "principal, accrued interest, market value" }
     },
@@ -147,6 +161,13 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
       ],
       blockers: [
         { code: "CustomAsset:provider-evidence-review", severity: "Review", message: "Retained provider evidence is required.", source: "ProviderEvidence", evidenceRoute: "/api/workstation/portfolio/multi-asset-coverage" }
+      ],
+      drillThroughTargets: [
+        { targetId: "CustomAsset:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/security-master/asset-profiles", evidenceLink: "profile://custom/private-credit", status: "Ready", source: "SecurityMaster" },
+        { targetId: "CustomAsset:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://custom/profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: "case://custom-profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "CustomAsset:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", evidenceLink: "close://custom-profile", status: "ReviewRequired", source: "FundAccountCloseReadinessService" }
       ],
       ledgerClassification: { classification: "Profile-derived classification" },
       reconciliationSignals: { breaks: "custom-profile evidence" }
@@ -474,6 +495,17 @@ describe("buildPortfolioScreenViewModel", () => {
         source: "ProviderEvidence",
         href: "/api/workstation/portfolio/multi-asset-coverage"
       })
+    ]);
+    expect(customAssetRow?.drillThroughTargets.map((target) => ({
+      type: target.type,
+      href: target.href,
+      statusLabel: target.statusLabel
+    }))).toEqual([
+      { type: "SecurityMasterPassport", href: "/api/security-master/asset-profiles", statusLabel: "Ready" },
+      { type: "ProviderEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required" },
+      { type: "ReconciliationCase", href: "/api/reconciliation/runs", statusLabel: "Review required" },
+      { type: "LedgerMapping", href: "/api/fund-structure/ledger-mapping-assignments", statusLabel: "Ready" },
+      { type: "CloseReadiness", href: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", statusLabel: "Review required" }
     ]);
     expect(vm.multiAssetCoveragePanel?.evidenceRouteLabel).toBe("GET /api/workstation/portfolio/multi-asset-coverage");
     expect(vm.multiAssetCoveragePanel?.asOfLabel).toBe("As of 2026-06-02T00:00:00Z");

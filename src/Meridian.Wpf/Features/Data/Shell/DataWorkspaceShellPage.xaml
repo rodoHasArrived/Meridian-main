@@ -418,106 +418,117 @@
                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceData" />
 
         <Grid Grid.Row="3"
-              Margin="16,0,16,0">
+              Margin="16,0,16,10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2.15*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="2.25*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="0.95*" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Style="{StaticResource WorkspaceWorkbenchCardStyle}">
+            <Border Grid.Column="0"
+                    Style="{StaticResource WorkstationTablePanelStyle}"
+                    AutomationProperties.AutomationId="DataWorkspaceQueuePanel"
+                    AutomationProperties.Name="Data Workspace Queue Panel">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Style="{StaticResource WorkspaceCardHeaderGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="Operational Queues"
-                                       Style="{StaticResource CardHeaderStyle}" />
-                            <TextBlock x:Name="QueueSummaryText"
-                                       Margin="0,6,0,0"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="{Binding QueueSummaryText}" />
-                        </StackPanel>
-                        <Border Grid.Column="1"
-                                Style="{StaticResource NeutralBadgeStyle}"
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Top">
-                            <TextBlock x:Name="QueueScopeBadgeText"
-                                       FontSize="11"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="{Binding QueueScopeBadgeText}" />
-                        </Border>
-                    </Grid>
+                    <Border Grid.Row="0" Style="{StaticResource WorkstationPanelHeaderStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Operational Queues"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock x:Name="QueueSummaryText"
+                                           Margin="0,4,0,0"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           Text="{Binding QueueSummaryText}" />
+                            </StackPanel>
+                            <Border Grid.Column="1"
+                                    Style="{StaticResource WorkstationFilterChipStyle}"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Top">
+                                <TextBlock x:Name="QueueScopeBadgeText"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           Text="{Binding QueueScopeBadgeText}" />
+                            </Border>
+                        </Grid>
+                    </Border>
 
-                    <ScrollViewer Grid.Row="1"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel>
-                            <TextBlock Text="Providers"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
-                                       Margin="0,0,0,8" />
-                            <Grid>
-                                <views:WorkspaceDecisionQueueControl x:Name="ProviderQueueList"
-                                                                     Columns="1"
-                                                                     ItemsSource="{Binding ProviderQueueItems}"
-                                                                     Visibility="{Binding ProviderQueueListVisibility}"
-                                                                     QueueAutomationId="DataProviderDecisionQueue"
-                                                                     DecisionInvoked="OnDataDecisionInvoked" />
-                                <ContentControl x:Name="ProviderQueueStateContainer"
-                                                Content="{Binding ProviderQueueState}"
-                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
-                                                Visibility="{Binding ProviderQueueStateVisibility}" />
-                            </Grid>
+                    <Border Grid.Row="1" Style="{StaticResource WorkstationPanelBodyStyle}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+                                <TextBlock Text="Providers"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="0,0,0,8" />
+                                <Grid>
+                                    <views:WorkspaceDecisionQueueControl x:Name="ProviderQueueList"
+                                                                         Columns="1"
+                                                                         ItemsSource="{Binding ProviderQueueItems}"
+                                                                         Visibility="{Binding ProviderQueueListVisibility}"
+                                                                         QueueAutomationId="DataProviderDecisionQueue"
+                                                                         DecisionInvoked="OnDataDecisionInvoked" />
+                                    <ContentControl x:Name="ProviderQueueStateContainer"
+                                                    Content="{Binding ProviderQueueState}"
+                                                    ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                    Visibility="{Binding ProviderQueueStateVisibility}" />
+                                </Grid>
 
-                            <TextBlock Text="Backfill"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
-                                       Margin="0,12,0,8" />
-                            <Grid>
-                                <views:WorkspaceDecisionQueueControl x:Name="BackfillQueueList"
-                                                                     Columns="1"
-                                                                     ItemsSource="{Binding BackfillQueueItems}"
-                                                                     Visibility="{Binding BackfillQueueListVisibility}"
-                                                                     QueueAutomationId="DataBackfillDecisionQueue"
-                                                                     DecisionInvoked="OnDataDecisionInvoked" />
-                                <ContentControl x:Name="BackfillQueueStateContainer"
-                                                Content="{Binding BackfillQueueState}"
-                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
-                                                Visibility="{Binding BackfillQueueStateVisibility}" />
-                            </Grid>
+                                <TextBlock Text="Backfill"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="0,12,0,8" />
+                                <Grid>
+                                    <views:WorkspaceDecisionQueueControl x:Name="BackfillQueueList"
+                                                                         Columns="1"
+                                                                         ItemsSource="{Binding BackfillQueueItems}"
+                                                                         Visibility="{Binding BackfillQueueListVisibility}"
+                                                                         QueueAutomationId="DataBackfillDecisionQueue"
+                                                                         DecisionInvoked="OnDataDecisionInvoked" />
+                                    <ContentControl x:Name="BackfillQueueStateContainer"
+                                                    Content="{Binding BackfillQueueState}"
+                                                    ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                    Visibility="{Binding BackfillQueueStateVisibility}" />
+                                </Grid>
 
-                            <TextBlock Text="Storage"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
-                                       Margin="0,12,0,8" />
-                            <Grid>
-                                <views:WorkspaceDecisionQueueControl x:Name="StorageQueueList"
-                                                                     Columns="1"
-                                                                     ItemsSource="{Binding StorageQueueItems}"
-                                                                     Visibility="{Binding StorageQueueListVisibility}"
-                                                                     QueueAutomationId="DataStorageDecisionQueue"
-                                                                     DecisionInvoked="OnDataDecisionInvoked" />
-                                <ContentControl x:Name="StorageQueueStateContainer"
-                                                Content="{Binding StorageQueueState}"
-                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
-                                                Visibility="{Binding StorageQueueStateVisibility}" />
-                            </Grid>
-                        </StackPanel>
-                    </ScrollViewer>
+                                <TextBlock Text="Storage"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="0,12,0,8" />
+                                <Grid>
+                                    <views:WorkspaceDecisionQueueControl x:Name="StorageQueueList"
+                                                                         Columns="1"
+                                                                         ItemsSource="{Binding StorageQueueItems}"
+                                                                         Visibility="{Binding StorageQueueListVisibility}"
+                                                                         QueueAutomationId="DataStorageDecisionQueue"
+                                                                         DecisionInvoked="OnDataDecisionInvoked" />
+                                    <ContentControl x:Name="StorageQueueStateContainer"
+                                                    Content="{Binding StorageQueueState}"
+                                                    ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                    Visibility="{Binding StorageQueueStateVisibility}" />
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
                 </Grid>
             </Border>
 
-            <ScrollViewer Grid.Column="2"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled"
-                          AutomationProperties.AutomationId="WorkspaceInspectorHostData">
-                <StackPanel>
+            <Border Grid.Column="2"
+                    Style="{StaticResource WorkstationInspectorRailStyle}"
+                    AutomationProperties.AutomationId="WorkspaceInspectorHostData"
+                    AutomationProperties.Name="Data Workspace Inspector Rail">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Padding="10">
+                    <StackPanel>
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
                             <TextBlock Text="Operations Summary"
@@ -654,22 +665,31 @@
                             </WrapPanel>
                         </StackPanel>
                     </Border>
-                </StackPanel>
-            </ScrollViewer>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
         </Grid>
 
         <Border Grid.Row="4"
-                Margin="0,12,0,0"
-                Style="{StaticResource WorkspaceDockHostStyle}">
-            <StackPanel>
+                Style="{StaticResource WorkstationDockStripStyle}"
+                AutomationProperties.AutomationId="DataWorkspaceDockStrip"
+                AutomationProperties.Name="Data Workspace Dock Strip">
+            <DockPanel LastChildFill="True">
                 <TextBlock Text="Operations Dock"
-                           Style="{StaticResource CardHeaderStyle}"
-                           Margin="4,0,0,10" />
+                           DockPanel.Dock="Left"
+                           Width="150"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                           VerticalAlignment="Top"
+                           Margin="0,2,14,0" />
                 <views:MeridianDockingManager x:Name="DataDockManager"
-                                              Height="320"
+                                              MinHeight="176"
+                                              MaxHeight="240"
+                                              Height="196"
                                               PaneDropRequested="OnPaneDropRequested"
                                               AutomationProperties.Name="Data Dock Manager" />
-            </StackPanel>
+            </DockPanel>
         </Border>
     </Grid>
 </views:DataWorkspaceShellPageBase>

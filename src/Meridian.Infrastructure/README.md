@@ -51,6 +51,11 @@ The Plaid adapter family owns only vendor transport and file-backed connection p
 link-token, public-token exchange, balances, transaction sync, investments, identity, webhooks,
 and sandbox-transfer calls are mapped into contract DTOs before shared workstation services attach
 them to fund-account, treasury, reconciliation, or evidence workflows.
+The QuickBooks adapter folder currently contains a fixture-backed accounting-system provider for
+contract and workflow validation. It emits deterministic chart-of-accounts, journal, and
+trial-balance evidence through the provider SDK accounting contract, but it does not perform
+QuickBooks OAuth, network access, export, or posting. Real QuickBooks transport should remain in
+Infrastructure and continue to project vendor payloads into the shared accounting-system DTOs.
 
 Streaming failover state is updated from explicit success, failure, and latency signals in addition
 to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider

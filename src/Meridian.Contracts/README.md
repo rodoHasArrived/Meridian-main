@@ -82,6 +82,11 @@ balance evidence, investment snapshots, identity verification, webhook retention
 transfer gating. Keep Plaid DTOs contract-owned so Data provider onboarding, Treasury cash
 movement, fund-account reconciliation, browser, WPF, and endpoint services consume the same
 auditable account evidence rather than vendor-shaped payloads.
+Accounting-system contracts define the shared GL provider lane for external chart-of-accounts,
+journal-entry, trial-balance, import-summary, and reconciliation-preview evidence. Keep these DTOs
+provider-neutral so QuickBooks-like adapters, shared endpoints, browser Accounting, Settings, and
+future WPF surfaces consume the same read-only import and reconciliation vocabulary before any
+posting/export workflow is enabled.
 
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
@@ -195,9 +200,11 @@ The workstation bootstrap contract in `Workstation/WorkstationBootstrapDtos.cs` 
 The same workstation contract file owns the multi-asset operational coverage DTOs returned by
 `/api/workstation/portfolio/multi-asset-coverage`: `MultiAssetCoverageSummaryDto`,
 `MultiAssetClassCoverageDto`, `MultiAssetEvidenceRequirementDto`, and
-`MultiAssetReadinessBlockerDto`. Browser, WPF, and shared endpoint clients should render those rows
-as supplied instead of recalculating asset-class readiness, ledger coverage, reconciliation status,
-or close blockers locally.
+`MultiAssetReadinessBlockerDto`. Each asset-class row also carries
+`MultiAssetDrillThroughTargetDto` entries for Security Master passport/profile, provider evidence,
+reconciliation casework, ledger mapping/evidence, and close readiness. Browser, WPF, and shared
+endpoint clients should render those rows as supplied instead of recalculating asset-class
+readiness, ledger coverage, reconciliation status, or close blockers locally.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve

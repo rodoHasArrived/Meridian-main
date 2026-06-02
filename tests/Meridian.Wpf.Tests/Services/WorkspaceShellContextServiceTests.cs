@@ -84,7 +84,7 @@ public sealed class WorkspaceShellContextServiceTests
         context.WorkspaceTitle.Should().Be("Data");
         context.Badges.Should().ContainSingle(b => b.Label == "Environment" && b.Value == "Demo data" && b.Tone == WorkspaceTone.Info);
         context.Badges.Should().ContainSingle(b => b.Label == "Freshness" && b.Tone == WorkspaceTone.Warning);
-        context.Badges.Should().ContainSingle(b => b.Label == "Attention" && b.Value.Contains("1 unread alert(s)") && b.Tone == WorkspaceTone.Warning);
+        context.Badges.Should().ContainSingle(b => b.Label == "Alerts" && b.Value.Contains("1 unread") && b.Tone == WorkspaceTone.Warning);
 
         NotificationService.Instance.ClearHistory();
         detector.SetFixtureMode(false);

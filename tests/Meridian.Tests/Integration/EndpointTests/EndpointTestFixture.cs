@@ -115,6 +115,13 @@ public sealed class EndpointTestFixture : IAsyncLifetime
                 context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Admin;
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Admin);
             }
+            else if (context.Request.Headers.TryGetValue("X-Test-Auth", out mode) &&
+                     StringComparer.Ordinal.Equals(mode.ToString(), "fund-accounting"))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "fund-ops";
+                context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Accounting;
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Accounting);
+            }
 
             await next(context);
         });

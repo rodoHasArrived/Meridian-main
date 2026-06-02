@@ -26,6 +26,7 @@ import {
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { cn } from "@/lib/utils";
 import {
   formatReadinessStatusValue,
@@ -143,6 +144,33 @@ const dataTonePanelClass: Record<TradingDataTone, string> = {
   danger: "border-danger/35 bg-danger/10",
   muted: "border-border/70 bg-secondary/20"
 };
+
+type TradingTaskViewId =
+  | "overview"
+  | "posture"
+  | "exceptions"
+  | "actions"
+  | "history";
+
+interface TradingTaskView {
+  id: TradingTaskViewId;
+  label: string;
+  href: string;
+  sectionId: string;
+}
+
+const tradingTaskViews: TradingTaskView[] = [
+  { id: "overview", label: "Overview", href: "#trading-overview", sectionId: "trading-overview" },
+  { id: "posture", label: "Readiness", href: "#trading-posture", sectionId: "trading-posture" },
+  { id: "exceptions", label: "Exceptions", href: "#trading-exceptions", sectionId: "trading-exceptions" },
+  { id: "actions", label: "Order Actions", href: "#trading-actions", sectionId: "trading-actions" },
+  { id: "history", label: "Paper Sessions", href: "#trading-history", sectionId: "trading-history" }
+];
+
+function resolveTradingTaskViewId(hash: string): TradingTaskViewId {
+  const normalizedHash = hash.replace(/^#/, "");
+  return tradingTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
+}
 
 function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
   return [
@@ -443,6 +471,19 @@ export function TradingScreen({ data }: TradingScreenProps) {
   });
   const sessionReplay = useSessionReplayControlsViewModel();
   const promotionGate = usePromotionGateViewModel();
+  const [activeTaskView, setActiveTaskView] = React.useState<TradingTaskViewId>(() => (
+    typeof window === "undefined" ? "overview" : resolveTradingTaskViewId(window.location.hash)
+  ));
+
+  React.useEffect(() => {
+    const updateActiveTaskView = () => {
+      setActiveTaskView(resolveTradingTaskViewId(window.location.hash));
+    };
+
+    updateActiveTaskView();
+    window.addEventListener("hashchange", updateActiveTaskView);
+    return () => window.removeEventListener("hashchange", updateActiveTaskView);
+  }, []);
 
   async function refreshSessionEvidence() {
     await Promise.all([
@@ -467,6 +508,19 @@ export function TradingScreen({ data }: TradingScreenProps) {
     promotionApprovedBy: promotionGate.form.approvedBy,
     promotionApprovalReason: promotionGate.form.approvalReason
   });
+  const tradingTaskFields = [
+    { id: "positions", label: "Positions", value: String(data.positions.length) },
+    { id: "orders", label: "Orders", value: String(data.openOrders.length) },
+    { id: "fills", label: "Fills", value: String(data.fills.length) },
+    { id: "sessions", label: "Sessions", value: String(paperSessions.sessions.length) }
+  ];
+  const tradingTaskTabs = tradingTaskViews.map((view) => ({
+    id: view.id,
+    label: view.label,
+    selected: activeTaskView === view.id,
+    panelId: view.sectionId,
+    href: view.href
+  }));
 
   return (
     <div className="space-y-8">
@@ -477,6 +531,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </section>
 
       <section
+        id="trading-overview"
         role="region"
         aria-label="Execution cockpit context"
         className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
@@ -497,11 +552,18 @@ export function TradingScreen({ data }: TradingScreenProps) {
         </div>
       </section>
 
-      <nav className="operator-mode-toggle" aria-label="Trading operator modes">
-        <a href="#trading-posture" aria-current="page">Monitor</a>
-        <a href="#trading-exceptions">Investigate</a>
-        <a href="#trading-actions">Act</a>
-      </nav>
+      <WorkspaceFilterBar
+        label="Trading task navigator"
+        searchLabel="Trading tasks"
+        searchValue={tradingTaskViews.find((view) => view.id === activeTaskView)?.label ?? "Overview"}
+        fields={tradingTaskFields}
+        actions={
+          <WorkspaceTabStrip
+            label="Trading sub-task screens"
+            tabs={tradingTaskTabs}
+          />
+        }
+      />
 
       <section id="trading-posture" className="workspace-section-band" aria-labelledby="trading-posture-heading">
         <div className="workspace-section-subheader">

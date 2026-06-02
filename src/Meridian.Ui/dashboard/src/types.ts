@@ -1394,7 +1394,7 @@ export interface AlpacaBrokerageConnectionRequest {
   environment: "paper" | "live";
 }
 
-export type ProviderConnectionCapability = "Data" | "Brokerage" | "DataAndBrokerage";
+export type ProviderConnectionCapability = "Data" | "Brokerage" | "DataAndBrokerage" | "AccountingSystem";
 export type ProviderCredentialState = "NotRequired" | "Missing" | "Partial" | "Configured" | "Verified" | "Invalid";
 export type ProviderCredentialSource =
   | "None"
@@ -1452,6 +1452,142 @@ export interface ProviderCredentialVerificationResult {
   lastError: string | null;
   externalAccountId: string | null;
   warnings: string[];
+}
+
+export type AccountingSystemProviderState = "Available" | "Planned" | "Disabled";
+export type AccountingSystemImportState = "NotStarted" | "Previewed" | "Imported" | "Failed";
+export type AccountingSystemReconciliationStatus =
+  | "Matched"
+  | "Variance"
+  | "MissingExternal"
+  | "MissingMeridian"
+  | "ReviewRequired";
+
+export interface AccountingSystemProvider {
+  providerId: string;
+  displayName: string;
+  state: AccountingSystemProviderState;
+  requiresCredentials: boolean;
+  supportsChartOfAccounts: boolean;
+  supportsJournalEntries: boolean;
+  supportsTrialBalance: boolean;
+  supportsPosting: boolean;
+  statusLabel: string;
+  statusDetail: string;
+  evidenceKinds: string[];
+}
+
+export interface AccountingSystemImportRequest {
+  providerId?: string | null;
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  persistPreview?: boolean;
+}
+
+export interface AccountingSystemImportSummary {
+  importId: string;
+  providerId: string;
+  providerDisplayName: string;
+  fundProfileId: string;
+  ledgerBookId: string | null;
+  state: AccountingSystemImportState;
+  periodStart: string;
+  periodEnd: string;
+  importedAtUtc: string;
+  chartAccountCount: number;
+  journalEntryCount: number;
+  trialBalanceLineCount: number;
+  evidenceReferences: string[];
+  warnings: string[];
+}
+
+export interface AccountingSystemChartAccount {
+  externalAccountId: string;
+  accountCode: string;
+  displayName: string;
+  accountType: string;
+  currency: string;
+  isActive: boolean;
+  parentExternalAccountId: string | null;
+  evidenceRef: string | null;
+}
+
+export interface AccountingSystemJournalLine {
+  externalLineId: string;
+  externalAccountId: string;
+  accountCode: string;
+  description: string;
+  debit: number;
+  credit: number;
+  currency: string;
+  evidenceRef: string | null;
+}
+
+export interface AccountingSystemJournalEntry {
+  externalJournalEntryId: string;
+  accountingDate: string;
+  description: string;
+  currency: string;
+  totalDebits: number;
+  totalCredits: number;
+  lines: AccountingSystemJournalLine[];
+  evidenceRef: string | null;
+}
+
+export interface AccountingSystemTrialBalanceLine {
+  externalAccountId: string;
+  accountCode: string;
+  accountName: string;
+  accountType: string;
+  debit: number;
+  credit: number;
+  currency: string;
+  asOfDate: string;
+  evidenceRef: string | null;
+}
+
+export interface AccountingSystemImportDetail {
+  summary: AccountingSystemImportSummary;
+  chartAccounts: AccountingSystemChartAccount[];
+  journalEntries: AccountingSystemJournalEntry[];
+  trialBalance: AccountingSystemTrialBalanceLine[];
+}
+
+export interface AccountingSystemReconciliationRow {
+  rowId: string;
+  accountCode: string;
+  accountName: string;
+  currency: string;
+  status: AccountingSystemReconciliationStatus;
+  externalDebit: number;
+  externalCredit: number;
+  meridianDebit: number;
+  meridianCredit: number;
+  variance: number;
+  detail: string;
+  evidenceRef: string | null;
+}
+
+export interface AccountingSystemReconciliationSummary {
+  reconciliationId: string;
+  importId: string;
+  providerId: string;
+  fundProfileId: string;
+  periodStart: string;
+  periodEnd: string;
+  generatedAtUtc: string;
+  matchedCount: number;
+  breakCount: number;
+  totalExternalDebits: number;
+  totalExternalCredits: number;
+  totalMeridianDebits: number;
+  totalMeridianCredits: number;
+  postingEnabled: boolean;
+  postingDisabledReason: string;
+  rows: AccountingSystemReconciliationRow[];
+  evidenceReferences: string[];
 }
 
 export interface BrokerageHouseholdAccount {
@@ -1899,6 +2035,16 @@ export interface MultiAssetReadinessBlocker {
   evidenceRoute: string | null;
 }
 
+export interface MultiAssetDrillThroughTarget {
+  targetId: string;
+  targetType: string;
+  label: string;
+  route: string;
+  evidenceLink: string | null;
+  status: "Ready" | "ReviewRequired" | "Blocked" | string;
+  source: string;
+}
+
 export interface MultiAssetClassCoverage {
   assetClass: string;
   displayName: string;
@@ -1907,6 +2053,7 @@ export interface MultiAssetClassCoverage {
   summary: string;
   evidenceRequirements: MultiAssetEvidenceRequirement[];
   blockers: MultiAssetReadinessBlocker[];
+  drillThroughTargets?: MultiAssetDrillThroughTarget[];
   ledgerClassification: Record<string, string>;
   reconciliationSignals: Record<string, string>;
 }

@@ -547,6 +547,26 @@ export function PortfolioScreen({
                             </div>
                           </div>
                         </div>
+                        {row.drillThroughTargets.length > 0 ? (
+                          <div className="mt-3">
+                            <div className="text-[11px] uppercase text-muted-foreground">Drill-through targets</div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {row.drillThroughTargets.map((target) => (
+                                <a
+                                  key={target.id}
+                                  href={target.href}
+                                  aria-label={target.ariaLabel}
+                                  className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-background/40 px-2 py-1 text-xs hover:border-primary/50 hover:bg-primary/10"
+                                >
+                                  <Badge variant={workflowStatusVariant(target.statusTone)}>{target.statusLabel}</Badge>
+                                  <span className="font-medium text-foreground">{target.label}</span>
+                                  <span className="text-muted-foreground">{target.type}</span>
+                                  <span className="font-mono text-muted-foreground">{target.source}</span>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
                     ))}
                   </div>

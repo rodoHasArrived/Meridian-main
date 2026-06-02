@@ -29,12 +29,14 @@ still lives in `../assistant-workflow-contract.md`.
     1) update `assistant-workflow-contract.md` when shared rules change,
     2) run `check-ai-inventory.py` / `check-codex-skills.py`,
     3) avoid direct edits to `docs/ai/generated/*` unless refreshing generation.
-11. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
-12. For deterministic lane preflight (pilot), run:
+11. For AI tooling or validator changes, read [`../tooling/README.md`](../tooling/README.md)
+    before choosing scripts or broader maintenance lanes.
+12. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
+13. For deterministic lane preflight (pilot), run:
     `python3 build/scripts/docs/prompt-route-linter.py --prompt "<user prompt>"`.
-13. For deterministic lane handoff packets (pilot), run:
+14. For deterministic lane handoff packets (pilot), run:
     `python3 build/scripts/docs/handoff-packet-generator.py --route-json docs/status/prompt-route-lint-report.json --scope "<scope>" --next-lane "<lane>"`.
-14. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
+15. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
     `docs/status/ai-handoff-packet.json` as the canonical local evidence artifacts. The route
     artifact must include `modelRouteId`, validation requirements, required telemetry, and
     escalation triggers.

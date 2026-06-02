@@ -96,6 +96,7 @@ public sealed class UiServer : IAsyncDisposable
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         builder.Services.AddMarketDataServices(compositionOptions);
+        builder.Services.AddMutationRateLimiter();
         builder.Services.AddSingleton(_lifecycle);
 
         builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
