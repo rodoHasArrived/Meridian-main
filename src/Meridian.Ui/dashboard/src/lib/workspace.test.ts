@@ -135,6 +135,7 @@ describe("workspace metadata", () => {
       "DataOperationsShell",
       "DataShell",
       "EvidenceWorkbench",
+      "FundAccountingConfigure",
       "FundAuditTrail",
       "FundReconciliation",
       "FundReportPack",

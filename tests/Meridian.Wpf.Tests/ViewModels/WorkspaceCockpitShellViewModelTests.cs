@@ -101,7 +101,7 @@ public sealed class WorkspaceCockpitShellViewModelTests
             .SelectMany(static item => new[] { item.PrimaryActionId, item.SecondaryActionId })
             .Where(static actionId => !string.IsNullOrWhiteSpace(actionId));
 
-        actionIds.Should().OnlyContain(static actionId => ShellNavigationCatalog.GetPage(actionId) is not null);
+        actionIds.Should().OnlyContain(static actionId => ShellNavigationCatalog.GetPage(actionId) != null);
     }
 
     [Fact]

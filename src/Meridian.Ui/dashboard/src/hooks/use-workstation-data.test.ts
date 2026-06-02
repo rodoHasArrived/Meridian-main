@@ -592,7 +592,7 @@ describe("useWorkstationData", () => {
       resolveRequest<MultiAssetCoverageSummary>(
         "portfolioMultiAssetCoverage",
         1,
-        { marker: "initial portfolio coverage" } as unknown as MultiAssetCoverageSummary
+        { marker: "refreshed portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
       rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
       await portfolioRefresh;
@@ -628,7 +628,7 @@ describe("useWorkstationData", () => {
       resolveRequest<MultiAssetCoverageSummary>(
         "portfolioMultiAssetCoverage",
         1,
-        { marker: "initial portfolio coverage" } as unknown as MultiAssetCoverageSummary
+        { marker: "failed-refresh portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
       rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
       await failedRefresh;
@@ -646,7 +646,7 @@ describe("useWorkstationData", () => {
       resolveRequest<MultiAssetCoverageSummary>(
         "portfolioMultiAssetCoverage",
         2,
-        { marker: "recovered coverage" } as unknown as MultiAssetCoverageSummary
+        { marker: "recovered portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
       resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 2, { marker: "recovered brokerage" } as unknown as BrokerageHouseholdPortfolio);
       await recoveryRefresh;
