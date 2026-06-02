@@ -1,0 +1,196 @@
+name: Documentation Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      refresh_all:
+        description: "Force a full documentation and diagram refresh"
+        required: false
+        default: "false"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - "docs/**"
+      - "build/scripts/docs/**"
+      - "scripts/generate-diagrams.mjs"
+      - "scripts/lib/ui-diagram-generator.mjs"
+      - "src/Meridian.Wpf/**"
+      - "package.json"
+      - ".github/workflows/documentation.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "build/scripts/docs/**"
+      - "scripts/generate-diagrams.mjs"
+      - "scripts/lib/ui-diagram-generator.mjs"
+      - "src/Meridian.Wpf/**"
+      - "package.json"
+      - ".github/workflows/documentation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Run docs rules engine
+        run: python3 build/scripts/docs/rules-engine.py --summary
+
+      - name: Validate examples
+        run: python3 build/scripts/docs/validate-examples.py --summary
+
+      - name: Check AI inventory
+        run: python3 build/scripts/docs/check-ai-inventory.py --summary
+
+      - name: Check AI handoff
+        run: python3 build/scripts/docs/check-ai-handoff.py --summary
+
+      - name: Check AI contract drift
+        run: python3 build/scripts/docs/check-ai-contract-drift.py --summary
+
+  regenerate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: "24"
+
+      - name: Install diagram dependencies
+        run: npm install --no-fund --no-audit
+
+      - name: Run docs automation profile
+        run: |
+          python3 build/scripts/docs/run-docs-automation.py \
+            --profile core \
+            --summary-output docs/status/docs-automation-summary.md \
+            --json-output docs/status/docs-automation-summary.json
+
+      - name: Render Mermaid diagrams
+        run: |
+          python3 build/scripts/docs/render-roadmap-diagrams.py --summary
+          python3 build/scripts/docs/render-source-diagrams.py --summary
+
+      - name: Render WPF UI diagrams
+        run: npm run generate-diagrams
+
+      - name: Install PlantUML
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz plantuml
+
+      - name: Render UML diagrams
+        run: |
+          plantuml -tpng docs/diagrams/uml/*.puml
+          plantuml -tsvg docs/diagrams/uml/*.puml
+
+      - name: Refresh workflow overview
+        run: python3 build/scripts/docs/generate-structure-docs.py --workflows-only --output docs/generated/workflows-overview.md
+
+      - name: Refresh workflow manifest outputs
+        run: python3 build/scripts/docs/generate-workflow-manifest.py
+
+      - name: Compare dashboard readiness deltas vs previous commit
+        shell: python
+        run: |
+          import json
+          import subprocess
+          from pathlib import Path
+
+          current_path = Path("docs/status/doc-health-dashboard.json")
+          current = json.loads(current_path.read_text(encoding="utf-8")) if current_path.exists() else {}
+
+          previous = ""
+          try:
+              previous = subprocess.run(
+                  ["git", "show", "HEAD~1:docs/status/doc-health-dashboard.json"],
+                  check=True,
+                  capture_output=True,
+                  text=True,
+              ).stdout
+          except subprocess.CalledProcessError:
+              previous = ""
+
+          baseline_available = bool(previous.strip())
+          missing_previous = []
+          previous_dashboard = {}
+
+          if baseline_available:
+              previous_dashboard = json.loads(previous)
+          else:
+              missing_previous.append("docs/status/doc-health-dashboard.json")
+
+          def extract_score(payload):
+              if isinstance(payload.get("healthScore"), (int, float)):
+                  return float(payload["healthScore"])
+              summary = payload.get("summary")
+              if isinstance(summary, dict) and isinstance(summary.get("healthScore"), (int, float)):
+                  return float(summary["healthScore"])
+              return 0.0
+
+          current_score = extract_score(current)
+          previous_score = extract_score(previous_dashboard) if baseline_available else current_score
+          delta = current_score - previous_score
+          severe = baseline_available and (delta < -10.0)
+
+          payload = {
+              'baseline_available': baseline_available,
+              'current_score': current_score,
+              'previous_score': previous_score,
+              'delta': delta,
+              'missing_previous_files': missing_previous,
+              'severe': severe,
+          }
+
+          artifact_dir = Path("artifacts/docs")
+          artifact_dir.mkdir(parents=True, exist_ok=True)
+          (artifact_dir / "dashboard-delta.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+          if severe:
+              raise SystemExit(
+                  f"Severe dashboard readiness regression detected ({previous_score:.1f} -> {current_score:.1f})."
+              )
+
+          if not baseline_available:
+              print("Baseline dashboard source was unavailable; severe regression gating was skipped")
+
+          print(json.dumps(payload, indent=2))
+
+      - name: Check generated docs are current
+        run: git diff --exit-code
+
+      - name: Check whitespace
+        run: git diff --check

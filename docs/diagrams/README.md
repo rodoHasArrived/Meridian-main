@@ -209,18 +209,17 @@ Comprehensive reference for all 24+ CLI flags:
 
 ### Project Dependencies
 
-Shows all 28 source projects as a layered dependency graph, derived directly from `.csproj`/`.fsproj` `ProjectReference` entries:
+Shows the current project structure straight from `.csproj` and `.fsproj`
+`ProjectReference` entries, with both a compact family overview and the full
+repo-level graph:
 
-- **Layer 0 (Foundation)**: Contracts · F# Domain family (FSharp, FSharp.Ledger, FSharp.Trading, FSharp.DirectLending.Aggregates)
-- **Layer 1 (SDK & Core Interfaces)**: ProviderSdk · Execution.Sdk · IbApi.SmokeStub
-- **Layer 2 (Core Domain)**: Domain · Core · Ledger (double-entry journal)
-- **Layer 3 (Infrastructure & Storage)**: Infrastructure · Storage
-- **Layer 4 (Application & Backtesting SDK)**: Application · Backtesting.Sdk
-- **Layer 5 (Execution, Backtesting, Risk, Strategies)**: Execution · Backtesting · Risk · Strategies · QuantScript
-- **Layer 6 (UI & Presentation)**: Ui.Shared · Ui.Services · Wpf (desktop) · Mcp
-- **Layer 7 (Entry Point)**: Meridian main app
-- **Tests (7 projects · ~356 test files)**: Tests (251) · FSharp.Tests (10) · Backtesting.Tests (13) · DirectLending.Tests (5) · QuantScript.Tests (6) · Wpf.Tests (30) · Ui.Tests (54)
-- **Benchmarks**: BenchmarkDotNet — pipeline, storage, and serialization hot paths
+- **Build Tools**: `DocGenerator`, `FSharpInteropGenerator`
+- **Foundation**: Contracts, Core, Domain, ProviderSdk, Execution SDK, Ledger, `IbApi.SmokeStub`, and the F# domain projects
+- **Runtime**: Application, Infrastructure, Storage, Backtesting, Execution, Risk, Strategies, and QuantScript
+- **UI Shared / Surfaces**: `Meridian.Ui.Shared`, `Meridian.Ui.Services`, `Meridian.Wpf`
+- **Hosts**: `Meridian`, `Meridian.Mcp`, `Meridian.Wpf`
+- **Validation / Performance**: test projects plus `Meridian.Benchmarks`
+- **Noise removed**: generated WPF temporary projects and unresolved MSBuild placeholder references are excluded so the diagram stays aligned with the active repo
 
 ### Runtime Hosts & Startup Modes
 

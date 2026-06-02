@@ -70,23 +70,24 @@ Install the PlantUML extension (`jebbs.plantuml`) and preview with `Alt+D`.
 
 ## Automated Maintenance Workflow (GitHub Actions)
 
-The repository includes `.github/workflows/update-diagrams.yml` to keep committed diagram artifacts in sync:
+The repository includes `.github/workflows/documentation.yml` to keep committed diagram artifacts in sync:
 
 **Triggers:**
-- Push to `main` that modifies any of:
+- Push or pull request activity that modifies any of:
   - `docs/diagrams/uml/*.puml` — PlantUML source edits
-  - `docs/diagrams/**/*.dot` — Graphviz DOT source edits
-  - `npm run generate-diagrams` (which invokes the canonical package script) — generator updates
+  - `docs/architecture/diagrams/*.mmd` — Mermaid source edits
+  - `docs/generated/source/diagrams/*.mmd` — generated Mermaid source edits
+  - `docs/diagrams/**/*.dot` — Graphviz/DOT source edits
+  - `npm run generate-diagrams` (which invokes the canonical package script) — UI diagram generator updates
   - `src/Meridian.Wpf/**/*.xaml` or `src/Meridian.Wpf/**/*.cs` — WPF source changes that affect UI diagrams
-- Manually via **Actions → Update Diagram Artifacts**
+- Manually via **Actions → Documentation Automation**
 
 **What it does:**
-1. Runs `npm run generate-diagrams` to regenerate auto-derived DOT sources from WPF XAML
-2. Converts every `docs/diagrams/**/*.dot` file to both `.svg` and `.png` using Graphviz
-3. Converts every `docs/diagrams/uml/*.puml` file to both `.svg` and `.png` using PlantUML
-4. Verifies that all generated artifacts are non-empty
-5. Publishes a workflow summary with artifact counts
-6. Auto-commits changed `.svg` and `.png` files back to the branch
+1. Runs the docs automation profile to refresh tracked generated documentation outputs
+2. Re-renders Mermaid source snapshots from roadmap/source registries
+3. Runs `npm run generate-diagrams` to regenerate auto-derived DOT sources from WPF XAML
+4. Converts every `docs/diagrams/uml/*.puml` file to both `.svg` and `.png` using PlantUML
+5. Fails if committed generated artifacts are out of date or contain whitespace issues
 
 ---
 
