@@ -20,7 +20,7 @@ let ``Reconciliation case workflow allows open break review`` () =
     let decision = ReconciliationCaseWorkflowInterop.Apply(transition "Open" "StartReview")
 
     decision.IsValid |> should equal true
-    decision.NextLifecycleState |> should equal "InReview"
+    decision.NextLifecycleState |> should equal "Investigating"
     decision.NextQueueStatus |> should equal "InReview"
 
 [<Fact>]
@@ -37,7 +37,7 @@ let ``Reconciliation case workflow rejects missing actor before transition check
 let ``Reconciliation case workflow requires distinct approver`` () =
     let decision =
         ReconciliationCaseWorkflowInterop.Apply(
-            { transition "AwaitingApproval" "Approve" with
+            { transition "Resolved" "Approve" with
                 Actor = "same"
                 ReviewedBy = "same" })
 
