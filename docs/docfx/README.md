@@ -100,10 +100,10 @@ New namespaces are discovered automatically from source code. Ensure classes hav
 
 ## CI Integration
 
-The `documentation.yml` workflow builds the DocFX site and publishes it to **GitHub Pages** by default.
+The `documentation.yml` workflow validates the tracked documentation automation outputs and refreshes Mermaid, UML, and WPF UI diagram artifacts when documentation-facing files change.
 
-- On every push to `main` (and on the weekly schedule), the `build-docfx` job installs DocFX, builds the full site from source, and the `deploy-pages` job deploys it to the repository's GitHub Pages environment.
-- On pull requests the site is built and validated but not deployed, so review builds are kept separate from production.
-- Manual runs via `workflow_dispatch` also trigger a full build and deployment.
+- On pull requests it rebuilds the tracked docs outputs and fails if committed generated content has drifted.
+- On pushes to `main` it performs the same refresh/gate steps for the default branch.
+- Manual runs via `workflow_dispatch` are available when you want a dedicated documentation refresh pass.
 
-The live documentation is served at `https://<org>.github.io/<repo>/` once GitHub Pages is enabled in repository settings (**Settings → Pages → Source: GitHub Actions**).
+DocFX site generation remains a manual/local step (`docfx docfx.json`) rather than a GitHub Pages deployment workflow.
