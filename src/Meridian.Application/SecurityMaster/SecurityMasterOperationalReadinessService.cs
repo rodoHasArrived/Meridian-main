@@ -380,7 +380,86 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                 "FundAccountCloseReadinessService")
         };
 
+        AddAssetClassDepthTargets(targets, spec, requirements, evidence, providerRoute, ledgerRoute, closeRoute);
+
         return targets;
+    }
+
+    private static void AddAssetClassDepthTargets(
+        List<MultiAssetDrillThroughTargetDto> targets,
+        MultiAssetCoverageSpecification spec,
+        IReadOnlyList<MultiAssetEvidenceRequirementDto> requirements,
+        IReadOnlyList<SecurityMasterOperationalEvidenceItem> evidence,
+        string providerRoute,
+        string ledgerRoute,
+        string closeRoute)
+    {
+        if (string.Equals(spec.AssetClass, "DirectLoan", StringComparison.OrdinalIgnoreCase))
+        {
+            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
+            targets.Add(new(
+                $"{spec.AssetClass}:loan-schedule-evidence",
+                "LoanScheduleEvidence",
+                "Loan schedule and borrower notices",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:commitment-covenant-evidence",
+                "CommitmentCovenantEvidence",
+                "Commitment, unfunded commitment, and covenant evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:paydown-obligation-ledger",
+                "PaydownObligationLedger",
+                "Paydown and obligation ledger support",
+                ledgerRoute,
+                BestEvidenceLink(evidence, "Ledger") ?? BestEvidenceLink(evidence, "ProviderEvidence"),
+                RequirementStatus(requirements, "Ledger"),
+                "LoanAccountingProjector"));
+        }
+
+        if (string.Equals(spec.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase))
+        {
+            var governanceStatus = RequirementStatus(requirements, "Governance");
+            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
+            targets.Add(new(
+                $"{spec.AssetClass}:profile-lineage",
+                "AssetProfileLineage",
+                "Approved profile lineage",
+                UiApiRoutes.SecurityMasterAssetProfiles,
+                BestEvidenceLink(evidence, "SecurityMaster"),
+                governanceStatus,
+                "SecurityAssetProfileGovernanceService"));
+            targets.Add(new(
+                $"{spec.AssetClass}:servicer-trustee-evidence",
+                "ServicerTrusteeEvidence",
+                "Servicer, trustee, warehouse, and factor evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:valuation-nav-evidence",
+                "StructuredValuationEvidence",
+                "NAV, dealer pricing, capital call, and distribution evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+            targets.Add(new(
+                $"{spec.AssetClass}:obligation-close-evidence",
+                "ObligationCloseEvidence",
+                "Obligation schedule and close-readiness evidence",
+                closeRoute,
+                BestEvidenceLink(evidence, "CloseReadiness") ?? BestEvidenceLink(evidence, "ProviderEvidence"),
+                EvaluateTargetStatus(evidence, "CloseReadiness") ?? providerStatus,
+                "FundAccountCloseReadinessService"));
+        }
     }
 
     private static IReadOnlyList<MultiAssetReadinessBlockerDto> BuildBlockers(

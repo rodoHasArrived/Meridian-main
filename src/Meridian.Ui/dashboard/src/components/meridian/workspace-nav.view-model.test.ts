@@ -11,10 +11,10 @@ describe("workspace nav view model", () => {
     expect(model.items.find((item) => item.key === "portfolio")).toMatchObject({
       route: "/portfolio",
       active: true,
-      ariaCurrent: "page",
+      ariaCurrent: undefined,
       statusLabel: "Preview · Current",
       statusTone: "preview",
-      ariaLabel: "Portfolio workspace, current route, Preview"
+      ariaLabel: "Portfolio workspace, active section, Preview"
     });
     expect(model.currentWorkspace).toMatchObject({
       label: "Portfolio",
@@ -33,6 +33,13 @@ describe("workspace nav view model", () => {
       statusTone: "review",
       ariaLabel: "Open Trading workspace, Review"
     });
+    expect(model.items.find((item) => item.key === "trading")?.subItems.map((item) => item.route)).toEqual([
+      "/trading",
+      "/trading/orders",
+      "/trading/positions",
+      "/trading/risk",
+      "/trading/readiness"
+    ]);
   });
 
   it("normalizes legacy workspace aliases for current-route state", () => {
@@ -40,7 +47,7 @@ describe("workspace nav view model", () => {
 
     expect(model.items.find((item) => item.key === "data")).toMatchObject({
       active: true,
-      ariaCurrent: "page",
+      ariaCurrent: undefined,
       statusLabel: "Live · Current",
       statusTone: "live"
     });
@@ -95,6 +102,7 @@ describe("workspace nav view model", () => {
     const portfolio = model.items.find((item) => item.key === "portfolio");
 
     expect(portfolio?.subItems.map((item) => item.route)).toEqual([
+      "/portfolio",
       "/portfolio/attribution",
       "/portfolio/brokerage-sync",
       "/portfolio/family-office"
@@ -112,20 +120,29 @@ describe("workspace nav view model", () => {
     const accounting = model.items.find((item) => item.key === "accounting");
 
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
+      "/accounting",
       "/accounting/operations-continuity",
+      "/accounting/entity-setup",
       "/accounting/ledger",
       "/accounting/reconciliation",
       "/accounting/exceptions",
       "/accounting/security-master",
-      "/accounting/approvals"
+      "/accounting/approvals",
+      "/accounting/configure"
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
+      label: "Overview",
+      active: false,
+      ariaCurrent: undefined,
+      ariaLabel: "Open Overview"
+    });
+    expect(accounting?.subItems[1]).toMatchObject({
       label: "Continuity",
       active: false,
       ariaCurrent: undefined,
       ariaLabel: "Open Continuity"
     });
-    expect(accounting?.subItems[1]).toMatchObject({
+    expect(accounting?.subItems[3]).toMatchObject({
       label: "Ledger",
       active: true,
       ariaCurrent: "page",
@@ -138,6 +155,7 @@ describe("workspace nav view model", () => {
     const strategy = model.items.find((item) => item.key === "strategy");
 
     expect(strategy?.subItems.map((item) => item.route)).toEqual([
+      "/strategy",
       "/strategy/designer",
       "/strategy/formula-workbench",
       "/strategy/covered-call",
@@ -165,6 +183,7 @@ describe("workspace nav view model", () => {
     const data = model.items.find((item) => item.key === "data");
 
     expect(data?.subItems.map((item) => item.route)).toEqual([
+      "/data",
       "/data/providers",
       "/data/watchlist",
       "/data/quotes",
@@ -183,7 +202,7 @@ describe("workspace nav view model", () => {
     const model = buildWorkspaceNavViewModel("/data/providers");
     const data = model.items.find((item) => item.key === "data");
 
-    expect(data?.subItems[0]).toMatchObject({
+    expect(data?.subItems[1]).toMatchObject({
       label: "Providers",
       route: "/data/providers",
       active: true,
@@ -205,7 +224,7 @@ describe("workspace nav view model", () => {
     });
     expect(data).toMatchObject({
       route: "/data?symbol=AAPL&provider=alpaca",
-      ariaLabel: "Data workspace, current route, Live, preserving Subject: AAPL / Provider: alpaca"
+      ariaLabel: "Data workspace, active section, Live, preserving Subject: AAPL / Provider: alpaca"
     });
     expect(quotes).toMatchObject({
       route: "/data/quotes?symbol=AAPL&provider=alpaca",

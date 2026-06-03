@@ -39,7 +39,13 @@ import type {
   AccountingReportingProfile,
   AccountingReportingSummary,
   AccountingWorkspaceResponse,
+  AccountingSystemImportDetail,
+  AccountingSystemProvider,
+  AccountingSystemReconciliationSummary,
   LedgerTrialBalanceLine,
+  MultiAssetCoverageSummary,
+  OperationsContinuityWorkflow,
+  OperationsWorkflowBlocker,
   ReconciliationBreakQueueItem,
   ReconciliationCalibrationSummary,
   ReconciliationCalibrationStatus,
@@ -1052,6 +1058,111 @@ export interface AccountingTrialBalanceViewState {
   errorText: string | null;
   errorDetails: string[];
   statusAnnouncement: string;
+}
+
+export type AccountingToolingTone = "default" | "success" | "warning" | "danger";
+
+export interface AccountingToolingSummaryTileViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: AccountingToolingTone;
+}
+
+export interface AccountingToolingStepViewModel {
+  id: string;
+  label: string;
+  description: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  href: string;
+  ariaLabel: string;
+}
+
+export interface AccountingCustomReportSetupRowViewModel {
+  id: string;
+  label: string;
+  value: string;
+  tone: AccountingToolingTone;
+}
+
+export interface AccountingCustomReportSetupViewModel {
+  title: string;
+  description: string;
+  selectedProfileLabel: string;
+  selectedProfileDetail: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  rows: AccountingCustomReportSetupRowViewModel[];
+  actionLabel: string;
+  actionHref: string;
+  actionAriaLabel: string;
+}
+
+export interface AccountingToolingWorkbenchViewState {
+  title: string;
+  description: string;
+  ariaLabel: string;
+  summaryTiles: AccountingToolingSummaryTileViewModel[];
+  steps: AccountingToolingStepViewModel[];
+  customReportSetup: AccountingCustomReportSetupViewModel;
+  liveRegionText: string;
+}
+
+export type CloseCommandCenterStatus = "ready" | "at-risk" | "blocked" | "loading";
+
+export interface CloseCommandCenterMetricViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: AccountingToolingTone;
+  href: string | null;
+}
+
+export interface CloseCommandCenterBlockerViewModel {
+  id: string;
+  label: string;
+  detail: string;
+  tone: AccountingToolingTone;
+  href: string | null;
+}
+
+export interface CloseCommandCenterActionViewModel {
+  id: string;
+  label: string;
+  href: string;
+  ariaLabel: string;
+  tone: AccountingToolingTone;
+}
+
+export interface CloseCommandCenterViewState {
+  title: string;
+  description: string;
+  ariaLabel: string;
+  status: CloseCommandCenterStatus;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  periodLabel: string;
+  fundAccountLabel: string;
+  summary: string;
+  updatedLabel: string;
+  metricRows: CloseCommandCenterMetricViewModel[];
+  blockerRows: CloseCommandCenterBlockerViewModel[];
+  actionRows: CloseCommandCenterActionViewModel[];
+  loadingText: string | null;
+  errorText: string | null;
+  liveRegionText: string;
+}
+
+interface CloseCommandCenterRawBlocker {
+  code: string;
+  category: string;
+  severity: string;
+  message: string;
+  gate: OperationsWorkflowBlocker["gate"];
+  routeHint: string | null;
 }
 
 export type GovernanceCashFlowRowViewModel = AccountingCashFlowRowViewModel;
@@ -3807,6 +3918,578 @@ export function buildGovernanceReportingViewState(
   options: Parameters<typeof buildAccountingReportingViewState>[0]
 ): AccountingReportingViewState {
   return buildAccountingReportingViewState(options);
+}
+
+export function buildCloseCommandCenterViewState({
+  data,
+  workflow,
+  workflowLoading,
+  workflowError,
+  accountingSystemProviders,
+  accountingSystemImport,
+  accountingSystemReconciliation,
+  multiAssetCoverage
+}: {
+  data: AccountingWorkspaceResponse;
+  workflow: OperationsContinuityWorkflow | null;
+  workflowLoading: boolean;
+  workflowError: string | null;
+  accountingSystemProviders: AccountingSystemProvider[];
+  accountingSystemImport: AccountingSystemImportDetail | null;
+  accountingSystemReconciliation: AccountingSystemReconciliationSummary | null;
+  multiAssetCoverage: MultiAssetCoverageSummary | null | undefined;
+}): CloseCommandCenterViewState {
+  const openBreakCount = data.breakQueue.filter((item) => isOpenAccountingBreakStatus(item.status)).length;
+  const workflowOpenBreakCount = workflow?.breakCases.filter((item) => isOpenAccountingBreakStatus(item.status)).length ?? 0;
+  const closeBlockers = workflow ? collectCloseCommandCenterBlockers(workflow) : [];
+  const incompleteEvidenceCategories = workflow?.accountingRecordSummary?.evidenceCategories.filter((category) => !category.isComplete) ?? [];
+  const missingSourceCount = incompleteEvidenceCategories.filter((category) => closeCommandCenterTextMatches(category.key, category.label, "source")).length
+    + (workflow?.closeChecklist.filter((task) => !isCloseChecklistDone(task.status) && !task.evidencePointer).length ?? 0);
+  const missingEvidenceCount = incompleteEvidenceCategories.length
+    + (workflow?.closeReadiness?.blockers.filter((blocker) => blocker.category.toLowerCase().includes("evidence")).length ?? 0);
+  const pendingApprovalCount = workflow?.approvals.filter((approval) => approval.status !== "Approved").length ?? 0;
+  const unapprovedChecklistCount = workflow?.closeChecklist.filter((task) => !isCloseChecklistDone(task.status) && task.requiredApprovalCount > 0).length ?? 0;
+  const unapprovedAdjustmentCount = pendingApprovalCount + unapprovedChecklistCount;
+  const staleValuationCount = countCloseCommandCenterValuationIssues(multiAssetCoverage);
+  const providerWarningCount = countCloseCommandCenterProviderWarnings(accountingSystemProviders, accountingSystemImport, accountingSystemReconciliation);
+  const reportPackReady = workflow?.reportPackReadiness.isReady ?? false;
+  const reportPackLabel = workflow
+    ? reportPackReady
+      ? workflow.reportPackReadiness.reportPackId ?? "Ready"
+      : "Not ready"
+    : "Detail pending";
+  const signOffStatus = resolveCloseCommandCenterSignOffStatus(workflow);
+  const hasCriticalBlocker = closeBlockers.some((blocker) => closeCommandCenterSeverityTone(blocker.severity) === "danger");
+  const hasFailedRequiredGate = workflow?.gates.some((gate) => gate.isRequired && gate.status === "Blocked") ?? false;
+  const isReadyToClose = workflow?.closeReadiness?.isReadyToClose === true || workflow?.status === "ReadyForClose" || workflow?.status === "Closed";
+  const status: CloseCommandCenterStatus = workflowLoading && !workflow
+    ? "loading"
+    : hasCriticalBlocker || hasFailedRequiredGate || workflow?.status === "Blocked"
+      ? "blocked"
+      : isReadyToClose
+        && openBreakCount === 0
+        && workflowOpenBreakCount === 0
+        && missingEvidenceCount === 0
+        && unapprovedAdjustmentCount === 0
+        && staleValuationCount === 0
+        && providerWarningCount === 0
+        && reportPackReady
+        && signOffStatus.tone === "success"
+          ? "ready"
+          : "at-risk";
+  const statusTone = closeCommandCenterStatusTone(status);
+  const readinessLabel = workflow?.closeReadiness?.severity
+    ?? workflow?.status
+    ?? data.controlCenter?.closeReadiness
+    ?? "Close detail pending";
+  const updatedLabel = workflow?.updatedAtUtc ?? accountingSystemReconciliation?.generatedAtUtc ?? multiAssetCoverage?.asOfUtc ?? "Not refreshed";
+
+  const metricRows: CloseCommandCenterMetricViewModel[] = [
+    {
+      id: "period",
+      label: "Period status",
+      value: readinessLabel,
+      detail: workflow ? `${workflow.status} workflow ${workflow.workflowId}` : "Using bootstrap close posture until workflow detail loads.",
+      tone: statusTone,
+      href: workflow ? WORKSTATION_ROUTE_CATALOG.accountingApprovals : null
+    },
+    {
+      id: "breaks",
+      label: "Open breaks",
+      value: String(openBreakCount + workflowOpenBreakCount),
+      detail: `${formatCount(openBreakCount, "queue break")} and ${formatCount(workflowOpenBreakCount, "workflow break")} remain open.`,
+      tone: openBreakCount + workflowOpenBreakCount > 0 ? "warning" : "success",
+      href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
+    },
+    {
+      id: "source-files",
+      label: "Missing source files",
+      value: String(missingSourceCount),
+      detail: missingSourceCount > 0 ? "Required source evidence or checklist evidence pointers are incomplete." : "Required source evidence is retained.",
+      tone: missingSourceCount > 0 ? "warning" : "success",
+      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
+    },
+    {
+      id: "adjustments",
+      label: "Unapproved adjustments",
+      value: String(unapprovedAdjustmentCount),
+      detail: unapprovedAdjustmentCount > 0 ? "Pending approvals or checklist controls remain before sign-off." : "No pending approval controls are surfaced.",
+      tone: unapprovedAdjustmentCount > 0 ? "warning" : "success",
+      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
+    },
+    {
+      id: "valuations",
+      label: "Stale valuations",
+      value: String(staleValuationCount),
+      detail: staleValuationCount > 0 ? "Asset readiness signals include valuation or stale-data review items." : "No stale valuation blockers are surfaced.",
+      tone: staleValuationCount > 0 ? "warning" : "success",
+      href: multiAssetCoverage?.drillThroughRoutes.coverage ?? null
+    },
+    {
+      id: "providers",
+      label: "Provider warnings",
+      value: String(providerWarningCount),
+      detail: providerWarningCount > 0 ? "Provider, external GL, or import reconciliation warnings need review." : "Provider and external GL evidence is clean.",
+      tone: providerWarningCount > 0 ? "warning" : "success",
+      href: WORKSTATION_ROUTE_CATALOG.accountingLedger
+    },
+    {
+      id: "report-pack",
+      label: "Report-pack readiness",
+      value: reportPackLabel,
+      detail: workflow?.reportPackReadiness.blockingReason ?? "Report-pack readiness comes from the selected close workflow.",
+      tone: reportPackReady ? "success" : workflow ? "warning" : "default",
+      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
+    },
+    {
+      id: "signoff",
+      label: "Sign-off status",
+      value: signOffStatus.label,
+      detail: signOffStatus.detail,
+      tone: signOffStatus.tone,
+      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
+    }
+  ];
+
+  const blockerRows = [
+    ...closeBlockers.map((blocker) => ({
+      id: blocker.code,
+      label: blocker.category ? `${blocker.category} - ${blocker.code}` : blocker.code,
+      detail: blocker.message,
+      tone: closeCommandCenterSeverityTone(blocker.severity),
+      href: blocker.routeHint ?? closeCommandCenterGateRoute(blocker.gate)
+    })),
+    ...incompleteEvidenceCategories.slice(0, 3).map((category) => ({
+      id: `evidence-${category.key}`,
+      label: category.label,
+      detail: category.requiredEvidence?.length
+        ? `Missing: ${category.requiredEvidence.join(", ")}`
+        : category.status,
+      tone: "warning" as AccountingToolingTone,
+      href: category.routeHint
+    })),
+    ...((data.controlCenter?.alerts ?? []).slice(0, 2).map((alert, index) => ({
+      id: `bootstrap-alert-${index}`,
+      label: "Control-center alert",
+      detail: alert.message,
+      tone: alert.tone === "danger" ? "danger" as AccountingToolingTone : "warning" as AccountingToolingTone,
+      href: null
+    })))
+  ].slice(0, 8);
+
+  return {
+    title: "CFO / Controller close command center",
+    description: "Controller-facing period readiness, close blockers, evidence gaps, provider warnings, report-pack readiness, and sign-off status from shared Accounting read models.",
+    ariaLabel: "CFO and controller close command center",
+    status,
+    statusLabel: status === "ready" ? "Ready" : status === "blocked" ? "Blocked" : status === "loading" ? "Loading" : "At risk",
+    statusTone,
+    periodLabel: workflow?.periodId ?? "Current period",
+    fundAccountLabel: workflow?.fundAccountId ?? multiAssetCoverage?.fundAccountId ?? "All accounts",
+    summary: buildCloseCommandCenterSummary(status, metricRows, workflowError),
+    updatedLabel,
+    metricRows,
+    blockerRows,
+    actionRows: [
+      {
+        id: "reconciliation",
+        label: "Review breaks",
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        ariaLabel: "Open Accounting reconciliation breaks from close command center",
+        tone: openBreakCount + workflowOpenBreakCount > 0 ? "warning" : "success"
+      },
+      {
+        id: "approvals",
+        label: "Open approvals",
+        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+        ariaLabel: "Open Accounting approvals from close command center",
+        tone: unapprovedAdjustmentCount > 0 || signOffStatus.tone !== "success" ? "warning" : "success"
+      },
+      {
+        id: "reporting",
+        label: "Report evidence",
+        href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+        ariaLabel: "Open Reporting evidence from close command center",
+        tone: reportPackReady ? "success" : "warning"
+      }
+    ],
+    loadingText: workflowLoading ? "Refreshing close workflow detail." : null,
+    errorText: workflowError,
+    liveRegionText: `Close command center ${status}. ${readinessLabel}. ${formatCount(blockerRows.length, "visible blocker")}.`
+  };
+}
+
+function collectCloseCommandCenterBlockers(workflow: OperationsContinuityWorkflow): CloseCommandCenterRawBlocker[] {
+  const workflowBlockers = workflow.blockers.map((blocker) => ({
+    code: blocker.code,
+    category: blocker.gate ?? "Workflow",
+    severity: blocker.severity,
+    message: blocker.message,
+    gate: blocker.gate,
+    routeHint: null
+  }));
+  const gateBlockers = workflow.gates.flatMap((gate) => gate.blockers.map((blocker) => ({
+    code: blocker.code,
+    category: gate.displayName,
+    severity: blocker.severity,
+    message: blocker.message,
+    gate: blocker.gate,
+    routeHint: closeCommandCenterGateRoute(gate.gateKey)
+  })));
+  const readinessBlockers = workflow.closeReadiness?.blockers.map((blocker) => ({
+    code: blocker.code,
+    category: blocker.category,
+    severity: blocker.severity,
+    message: blocker.message,
+    gate: blocker.gate,
+    routeHint: blocker.routeHint
+  })) ?? [];
+
+  const byKey = new Map<string, CloseCommandCenterRawBlocker>();
+  for (const blocker of [...workflowBlockers, ...gateBlockers, ...readinessBlockers]) {
+    byKey.set(`${blocker.code}:${blocker.message}`, blocker);
+  }
+
+  return [...byKey.values()];
+}
+
+function isCloseChecklistDone(status: string): boolean {
+  const normalized = status.trim().toLowerCase();
+  return normalized === "done" || normalized === "complete" || normalized === "completed" || normalized === "acknowledged";
+}
+
+function closeCommandCenterTextMatches(left: string | null | undefined, right: string | null | undefined, needle: string): boolean {
+  const normalizedNeedle = needle.toLowerCase();
+  return [left, right]
+    .map((value) => value?.toLowerCase() ?? "")
+    .some((value) => value.includes(normalizedNeedle));
+}
+
+function countCloseCommandCenterValuationIssues(coverage: MultiAssetCoverageSummary | null | undefined): number {
+  if (!coverage) {
+    return 0;
+  }
+
+  return coverage.assetClasses.filter((assetClass) => {
+    const blockerMatch = assetClass.blockers.some((blocker) => (
+      closeCommandCenterTextMatches(blocker.code, blocker.message, "valuation")
+      || closeCommandCenterTextMatches(blocker.source, blocker.message, "stale")
+    ));
+    const requirementMatch = assetClass.evidenceRequirements.some((requirement) => (
+      requirement.status !== "Ready"
+      && (closeCommandCenterTextMatches(requirement.label, requirement.category, "valuation")
+        || closeCommandCenterTextMatches(requirement.label, requirement.category, "stale"))
+    ));
+
+    return blockerMatch || requirementMatch;
+  }).length;
+}
+
+function countCloseCommandCenterProviderWarnings(
+  providers: AccountingSystemProvider[],
+  importDetail: AccountingSystemImportDetail | null,
+  reconciliation: AccountingSystemReconciliationSummary | null
+): number {
+  const unavailableProviders = providers.filter((provider) => provider.state !== "Available").length;
+  const importWarnings = importDetail?.summary.warnings.length ?? 0;
+  const reconciliationRows = reconciliation?.rows.filter((row) => row.status !== "Matched").length ?? 0;
+
+  return unavailableProviders + importWarnings + reconciliationRows;
+}
+
+function resolveCloseCommandCenterSignOffStatus(workflow: OperationsContinuityWorkflow | null): {
+  label: string;
+  detail: string;
+  tone: AccountingToolingTone;
+} {
+  if (!workflow) {
+    return {
+      label: "Detail pending",
+      detail: "Load the close workflow before sign-off status can be confirmed.",
+      tone: "default"
+    };
+  }
+
+  if (workflow.closePackage) {
+    return {
+      label: `Signed by ${workflow.closePackage.publishedBy}`,
+      detail: workflow.closePackage.signOffRationale,
+      tone: "success"
+    };
+  }
+
+  const approvedCount = workflow.approvals.filter((approval) => approval.status === "Approved").length;
+  const totalApprovalCount = workflow.approvals.length;
+  if (totalApprovalCount > 0) {
+    return {
+      label: `${approvedCount}/${totalApprovalCount} approved`,
+      detail: approvedCount === totalApprovalCount
+        ? "Approval rows are complete; publish the close package when report evidence is ready."
+        : "Approval rows still need reviewer decisions before close sign-off.",
+      tone: approvedCount === totalApprovalCount ? "success" : "warning"
+    };
+  }
+
+  return {
+    label: workflow.approvalState,
+    detail: "No approval rows are attached to the selected close workflow.",
+    tone: workflow.approvalState === "Approved" ? "success" : "warning"
+  };
+}
+
+function closeCommandCenterSeverityTone(severity: string): AccountingToolingTone {
+  const normalized = severity.trim().toLowerCase();
+  if (normalized === "critical" || normalized === "blocker" || normalized === "danger") {
+    return "danger";
+  }
+
+  if (normalized === "warning" || normalized === "warn" || normalized === "review") {
+    return "warning";
+  }
+
+  return "default";
+}
+
+function closeCommandCenterStatusTone(status: CloseCommandCenterStatus): AccountingToolingTone {
+  if (status === "ready") return "success";
+  if (status === "blocked") return "danger";
+  if (status === "at-risk") return "warning";
+  return "default";
+}
+
+function closeCommandCenterGateRoute(gate: OperationsWorkflowBlocker["gate"]): string | null {
+  if (gate === "Reconciliation") return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
+  if (gate === "Approval") return WORKSTATION_ROUTE_CATALOG.accountingApprovals;
+  if (gate === "LedgerPosting") return WORKSTATION_ROUTE_CATALOG.accountingLedger;
+  if (gate === "SecurityMaster") return WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster;
+  if (gate === "BrokerIngest") return WORKSTATION_ROUTE_CATALOG.accountingLedger;
+  return null;
+}
+
+function buildCloseCommandCenterSummary(
+  status: CloseCommandCenterStatus,
+  metricRows: CloseCommandCenterMetricViewModel[],
+  workflowError: string | null
+): string {
+  if (workflowError) {
+    return `Close workflow detail could not be refreshed: ${workflowError}`;
+  }
+
+  const activeRows = metricRows.filter((row) => row.tone === "warning" || row.tone === "danger");
+  if (status === "ready") {
+    return "The close is ready: breaks, source evidence, approvals, valuations, providers, report pack, and sign-off are clear.";
+  }
+
+  if (status === "blocked") {
+    return `The close is blocked by ${formatCount(activeRows.length, "active control")}; review the blocker list before sign-off.`;
+  }
+
+  if (status === "loading") {
+    return "Refreshing workflow detail before confirming the close state.";
+  }
+
+  return `The close is at risk with ${formatCount(activeRows.length, "watch item")} across the command center.`;
+}
+
+export function buildAccountingToolingWorkbenchViewState({
+  data,
+  workstream,
+  selectedReconciliation,
+  trialBalanceView,
+  reportingView,
+  configurationStatusLabel
+}: {
+  data: AccountingWorkspaceResponse;
+  workstream: AccountingWorkstream;
+  selectedReconciliation: AccountingWorkspaceResponse["reconciliationQueue"][number] | null;
+  trialBalanceView: AccountingTrialBalanceViewState;
+  reportingView: AccountingReportingViewState;
+  configurationStatusLabel: string;
+}): AccountingToolingWorkbenchViewState {
+  const openBreakCount = data.breakQueue.filter((item) => isOpenAccountingBreakStatus(item.status)).length;
+  const selectedRunLabel = selectedReconciliation?.runId ?? "No run selected";
+  const reportProfileCount = data.reporting.profileCount;
+  const targetCount = data.reporting.reportPackTargets.length;
+  const trialBalanceLineCount = trialBalanceView.basisOptions.reduce((total, option) => total + option.rowCount, 0);
+  const trialBalanceStatusLabel = buildTrialBalanceToolingStatusLabel(trialBalanceView, trialBalanceLineCount);
+  const trialBalanceTone = trialBalanceView.state === "error"
+    ? "danger"
+    : trialBalanceView.state === "empty"
+      ? "warning"
+      : trialBalanceView.state === "loading"
+        ? "default"
+        : "success";
+  const reportingTone: AccountingToolingTone = reportProfileCount > 0 && targetCount > 0 ? "success" : reportProfileCount > 0 ? "warning" : "danger";
+  const ledgerTone: AccountingToolingTone = selectedReconciliation
+    ? selectedReconciliation.openBreakCount > 0 || selectedReconciliation.reconciliationStatus === "BreaksOpen"
+      ? "warning"
+      : "success"
+    : "warning";
+
+  return {
+    title: "Accounting tooling workbench",
+    description: "One operator surface for accounting setup, reconciliation, ledger review, trial balance, and custom report configuration.",
+    ariaLabel: "Accounting tooling workbench",
+    summaryTiles: [
+      {
+        id: "reconciliation",
+        label: "Reconciliation",
+        value: formatCount(openBreakCount, "open break"),
+        detail: `${formatCount(data.reconciliationQueue.length, "run")} in the Accounting queue.`,
+        tone: openBreakCount > 0 ? "warning" : "success"
+      },
+      {
+        id: "ledger",
+        label: "Ledger",
+        value: selectedRunLabel,
+        detail: selectedReconciliation
+          ? `${selectedReconciliation.strategyName} is selected for ledger and audit drill-through.`
+          : "Select a reconciliation run to load ledger and trial-balance evidence.",
+        tone: ledgerTone
+      },
+      {
+        id: "trial-balance",
+        label: "Trial balance",
+        value: trialBalanceStatusLabel,
+        detail: `${accountingBasisDisplayName(trialBalanceView.selectedBasis)} basis is active for account review.`,
+        tone: trialBalanceTone
+      },
+      {
+        id: "report-setup",
+        label: "Report setups",
+        value: formatCount(reportProfileCount, "profile"),
+        detail: `${formatCount(targetCount, "report-pack target")} configured for custom output setup.`,
+        tone: reportingTone
+      }
+    ],
+    steps: [
+      {
+        id: "configure",
+        label: "Configure accounting",
+        description: "Define basis, templates, mappings, and activation readiness before ledger use.",
+        statusLabel: configurationStatusLabel,
+        statusTone: normalizeToolingStatusTone(configurationStatusLabel),
+        href: WORKSTATION_ROUTE_CATALOG.accountingConfigure,
+        ariaLabel: "Open configurable accounting setup"
+      },
+      {
+        id: "reconcile",
+        label: "Run reconciliation",
+        description: "Match imported statements, queue breaks, and keep case evidence attached.",
+        statusLabel: openBreakCount > 0 ? `${openBreakCount} open` : "Balanced",
+        statusTone: openBreakCount > 0 ? "warning" : "success",
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+        ariaLabel: "Open accounting reconciliation"
+      },
+      {
+        id: "ledger",
+        label: "Review ledger",
+        description: "Inspect run ledger, source event ids, approval ids, and audit packet routes.",
+        statusLabel: selectedRunLabel,
+        statusTone: ledgerTone,
+        href: WORKSTATION_ROUTE_CATALOG.accountingLedger,
+        ariaLabel: "Open accounting ledger review"
+      },
+      {
+        id: "trial-balance",
+        label: "Gain trial balance",
+        description: "Switch accounting basis and inspect account-level evidence before report handoff.",
+        statusLabel: trialBalanceStatusLabel,
+        statusTone: trialBalanceTone,
+        href: "#trial-balance-title",
+        ariaLabel: "Jump to the trial balance panel"
+      },
+      {
+        id: "reports",
+        label: "Configure reports",
+        description: "Pick report profiles, verify dictionaries and loader scripts, then run governed exports.",
+        statusLabel: formatCount(reportProfileCount, "profile"),
+        statusTone: reportingTone,
+        href: "#accounting-reporting",
+        ariaLabel: "Jump to custom report setup"
+      }
+    ],
+    customReportSetup: buildCustomReportSetupViewState(reportingView, data.reporting.reportPackTargets, reportingTone),
+    liveRegionText: `${workstream} accounting tooling selected. ${trialBalanceStatusLabel}. ${formatCount(reportProfileCount, "report setup")} available.`
+  };
+}
+
+function buildCustomReportSetupViewState(
+  reportingView: AccountingReportingViewState,
+  reportPackTargets: string[],
+  statusTone: AccountingToolingTone
+): AccountingCustomReportSetupViewModel {
+  const profile = reportingView.selectedProfile;
+  const detailRows = profile?.fields ?? [];
+  const format = detailRows.find((row) => row.label === "Format")?.value ?? "Not selected";
+  const target = detailRows.find((row) => row.label === "Target")?.value ?? "Not selected";
+  const dataDictionary = detailRows.find((row) => row.label === "Data dictionary")?.value ?? "Missing";
+  const loaderScript = detailRows.find((row) => row.label === "Loader script")?.value ?? "Not configured";
+  const recommendation = detailRows.find((row) => row.label === "Recommendation")?.value ?? "No recommended profile selected";
+  const targetSummary = reportPackTargets.length > 0 ? reportPackTargets.join(", ") : "No report-pack targets";
+
+  return {
+    title: "Custom report setup",
+    description: "Selected report profiles stay close to ledger evidence so packet setup can be checked before export.",
+    selectedProfileLabel: profile?.title ?? "No report profile selected",
+    selectedProfileDetail: profile?.subtitle ?? "Load reporting metadata before configuring custom report output.",
+    statusLabel: reportingView.exportCanRun ? "Ready to export" : "Setup blocked",
+    statusTone,
+    rows: [
+      { id: "format", label: "Format", value: format, tone: format === "Not selected" ? "warning" : "success" },
+      { id: "target", label: "Target", value: target, tone: target === "Not selected" ? "warning" : "success" },
+      { id: "dictionary", label: "Data dictionary", value: dataDictionary, tone: dataDictionary === "Included" ? "success" : "warning" },
+      { id: "loader", label: "Loader script", value: loaderScript, tone: loaderScript === "Available" ? "success" : "default" },
+      { id: "targets", label: "Report-pack targets", value: targetSummary, tone: reportPackTargets.length > 0 ? "success" : "warning" },
+      { id: "recommendation", label: "Recommendation", value: recommendation, tone: recommendation.startsWith("Recommended") ? "success" : "default" }
+    ],
+    actionLabel: reportingView.exportCanRun ? reportingView.exportButtonLabel : "Select report setup",
+    actionHref: "#accounting-reporting",
+    actionAriaLabel: reportingView.exportCanRun
+      ? reportingView.exportAriaLabel
+      : reportingView.exportDisabledReason ?? "Select a report setup before export"
+  };
+}
+
+function buildTrialBalanceToolingStatusLabel(
+  view: AccountingTrialBalanceViewState,
+  totalLineCount: number
+): string {
+  if (view.state === "error") {
+    return "Error";
+  }
+
+  if (view.state === "loading") {
+    return "Loading";
+  }
+
+  if (view.state === "empty") {
+    return "No lines";
+  }
+
+  return formatCount(totalLineCount, "line");
+}
+
+function normalizeToolingStatusTone(value: string): AccountingToolingTone {
+  const normalized = value.trim().toLowerCase();
+  if (normalized.includes("active") || normalized.includes("ready") || normalized.includes("valid")) {
+    return "success";
+  }
+
+  if (normalized.includes("blocked") || normalized.includes("error") || normalized.includes("failed")) {
+    return "danger";
+  }
+
+  if (normalized.includes("warning") || normalized.includes("pending") || normalized.includes("review")) {
+    return "warning";
+  }
+
+  return "default";
+}
+
+function isOpenAccountingBreakStatus(status: string): boolean {
+  const normalized = status.trim().toLowerCase();
+  return normalized !== "resolved" && normalized !== "dismissed" && normalized !== "closed";
 }
 
 function buildReportingExportDisabledReason(

@@ -333,17 +333,65 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
     }
 
     private static string? CandidateAssetClass(ProviderCorporateActionEvidenceCandidateDto candidate)
-        => candidate.CandidateType.Contains("Factor", StringComparison.OrdinalIgnoreCase)
+    {
+        var combined = $"{candidate.CandidateType} {candidate.RequiredFeed} {candidate.Symbol} {candidate.SecurityDisplayName} {candidate.Reason}";
+        if (IsPrivateCreditEvidence(combined))
+        {
+            return "DirectLoan";
+        }
+
+        if (IsStructuredAssetEvidence(combined))
+        {
+            return "CustomAsset";
+        }
+
+        return candidate.CandidateType.Contains("Factor", StringComparison.OrdinalIgnoreCase)
             ? "Bond"
             : null;
+    }
 
     private static string? ScheduleAssetClass(ProviderSecurityMasterScheduleFeedDto feed)
-        => feed.FeedKind.Contains("Loan", StringComparison.OrdinalIgnoreCase)
+    {
+        var combined = $"{feed.FeedKind} {feed.RequiredFeed} {feed.Symbol} {feed.LedgerEffectKind} {feed.Reason}";
+        if (IsPrivateCreditEvidence(combined))
+        {
+            return "DirectLoan";
+        }
+
+        if (IsStructuredAssetEvidence(combined))
+        {
+            return "CustomAsset";
+        }
+
+        return feed.FeedKind.Contains("Loan", StringComparison.OrdinalIgnoreCase)
             ? "DirectLoan"
             : feed.FeedKind.Contains("Factor", StringComparison.OrdinalIgnoreCase) ||
               feed.RequiredFeed.Contains("factor", StringComparison.OrdinalIgnoreCase)
                 ? "Bond"
                 : null;
+    }
+
+    private static bool IsPrivateCreditEvidence(string value)
+        => value.Contains("loan", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("private credit", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("privatecredit", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("borrower", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("covenant", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("unfunded", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsStructuredAssetEvidence(string value)
+        => value.Contains("mbs", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("abs", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("clo", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("cmbs", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("structured", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("servicer", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("trustee", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("warehouse", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("nav", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("capital call", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("distribution", StringComparison.OrdinalIgnoreCase) ||
+           value.Contains("obligation", StringComparison.OrdinalIgnoreCase);
 
     private static string BuildRoute(string routeTemplate, Guid accountId)
         => routeTemplate.Replace("{accountId}", accountId.ToString("D"), StringComparison.OrdinalIgnoreCase);

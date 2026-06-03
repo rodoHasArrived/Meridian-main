@@ -32,6 +32,8 @@ import type {
   PaperSessionReplayVerification,
   PaperSessionSummary,
   PortfolioWorkspaceResponse,
+  ProviderConnectionRow,
+  ProviderReadinessSummary,
   PromotionEvaluationResult,
   PromotionRecord,
   QuantParametersResponse,
@@ -70,6 +72,7 @@ import {
   FUND_STRUCTURE_API_ENDPOINTS,
   MARKET_DATA_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
+  PROVIDER_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUANT_API_ENDPOINTS,
   RECONCILIATION_API_ENDPOINTS,
@@ -685,6 +688,289 @@ const fixtureDataWorkspace: DataWorkspaceResponse = {
       status: "Ready",
       rows: "124k",
       updatedAt: "4m ago"
+    }
+  ]
+};
+
+const fixtureProviderConnections: ProviderConnectionRow[] = [
+  {
+    providerId: "polygon",
+    displayName: "Polygon.io",
+    capability: "Data",
+    credentialState: "Verified",
+    credentialSource: "LocalEncryptedStore",
+    verificationState: "Verified",
+    health: "Healthy",
+    fallbackActive: false,
+    lastVerifiedAt: "2026-06-02T16:40:00Z",
+    lastSuccessfulAt: "2026-06-02T16:45:00Z",
+    lastFailureAt: null,
+    lastError: null,
+    maskedKeyPreview: "pk_live_****7F3A",
+    environment: "paper",
+    externalAccountId: null,
+    affectedWorkflows: ["Import", "Validate", "Backfill"],
+    recommendedAction: "No provider readiness action required.",
+    actionHref: "/settings#provider-polygon"
+  },
+  {
+    providerId: "databento",
+    displayName: "Databento",
+    capability: "Data",
+    credentialState: "Configured",
+    credentialSource: "ExternalVaultReference",
+    verificationState: "Stale",
+    health: "Degraded",
+    fallbackActive: true,
+    lastVerifiedAt: "2026-06-01T15:15:00Z",
+    lastSuccessfulAt: "2026-06-02T14:05:00Z",
+    lastFailureAt: "2026-06-02T15:48:00Z",
+    lastError: "Backfill latency exceeded the validation threshold.",
+    maskedKeyPreview: "db_live_****91AC",
+    environment: "paper",
+    externalAccountId: null,
+    affectedWorkflows: ["Acquire Data", "Validate Data", "Publish Data"],
+    recommendedAction: "Review degradation evidence and fallback routing before accepting downstream readiness.",
+    actionHref: "/settings#provider-databento"
+  },
+  {
+    providerId: "plaid",
+    displayName: "Plaid",
+    capability: "Data",
+    credentialState: "Missing",
+    credentialSource: "None",
+    verificationState: "NotVerified",
+    health: "Warning",
+    fallbackActive: false,
+    lastVerifiedAt: null,
+    lastSuccessfulAt: null,
+    lastFailureAt: null,
+    lastError: null,
+    maskedKeyPreview: null,
+    environment: "sandbox",
+    externalAccountId: null,
+    affectedWorkflows: ["Accounting evidence", "Brokerage sync"],
+    recommendedAction: "Connect Plaid sandbox credentials before bank-account evidence can be retained.",
+    actionHref: "/data/providers"
+  }
+];
+
+const fixtureProviderReadiness: ProviderReadinessSummary = {
+  asOf: "2026-06-02T16:50:00Z",
+  status: "Blocked",
+  totalProviders: 4,
+  readyProviders: 1,
+  reviewProviders: 1,
+  degradedProviders: 1,
+  blockedProviders: 1,
+  summary: "1 provider blocks dependent workflows.",
+  recommendedAction: "Repair Plaid credentials before routing accounting evidence workflows.",
+  providers: [
+    {
+      providerId: "plaid",
+      displayName: "Plaid",
+      capability: "Data",
+      status: "Blocked",
+      credentialState: "Missing",
+      credentialSource: "None",
+      verificationState: "NotVerified",
+      connectionHealth: "Warning",
+      isEnabled: true,
+      isConnected: false,
+      fallbackActive: false,
+      degradationScore: null,
+      lastVerifiedAt: null,
+      lastSuccessfulAt: null,
+      lastFailureAt: null,
+      lastError: "Sandbox client credentials have not been configured.",
+      maskedKeyPreview: null,
+      environment: "sandbox",
+      externalAccountId: null,
+      affectedWorkflows: ["Accounting evidence", "Brokerage sync"],
+      recommendedAction: "Connect Plaid sandbox credentials before bank-account evidence can be retained.",
+      actionHref: "/data/providers",
+      evidence: [
+        {
+          kind: "Credential",
+          label: "Credential",
+          status: "Blocked",
+          detail: "Required Plaid client fields are missing."
+        },
+        {
+          kind: "Plaid",
+          label: "Linked Plaid evidence",
+          status: "Review",
+          detail: "No linked Plaid items retained yet."
+        }
+      ],
+      recoveryActions: [
+        {
+          actionId: "provider.plaid.open-setup",
+          label: "Open setup",
+          target: "/data/providers",
+          requiresMutation: false
+        }
+      ]
+    },
+    {
+      providerId: "databento",
+      displayName: "Databento",
+      capability: "Data",
+      status: "Degraded",
+      credentialState: "Configured",
+      credentialSource: "ExternalVaultReference",
+      verificationState: "Stale",
+      connectionHealth: "Degraded",
+      isEnabled: true,
+      isConnected: true,
+      fallbackActive: true,
+      degradationScore: 0.74,
+      lastVerifiedAt: "2026-06-01T15:15:00Z",
+      lastSuccessfulAt: "2026-06-02T14:05:00Z",
+      lastFailureAt: "2026-06-02T15:48:00Z",
+      lastError: "Backfill latency exceeded the validation threshold.",
+      maskedKeyPreview: "db_live_****91AC",
+      environment: "paper",
+      externalAccountId: null,
+      affectedWorkflows: ["Acquire Data", "Validate Data", "Publish Data"],
+      recommendedAction: "Review degradation evidence and fallback routing before accepting downstream readiness.",
+      actionHref: "/settings#provider-databento",
+      evidence: [
+        {
+          kind: "Credential",
+          label: "Credential",
+          status: "Review",
+          detail: "Configured from external vault reference; verification is stale.",
+          observedAt: "2026-06-01T15:15:00Z",
+          route: "/settings#provider-databento"
+        },
+        {
+          kind: "Degradation",
+          label: "Degradation",
+          status: "Degraded",
+          detail: "Composite degradation score 74%."
+        },
+        {
+          kind: "Routing",
+          label: "Fallback route",
+          status: "Degraded",
+          detail: "Fallback routing is active for historical bars."
+        }
+      ],
+      recoveryActions: [
+        {
+          actionId: "provider.databento.verify",
+          label: "Verify credentials",
+          target: "/api/providers/databento/verify",
+          requiresMutation: true
+        },
+        {
+          actionId: "provider.databento.diagnostics",
+          label: "Open diagnostics",
+          target: "/api/health/providers/databento/diagnostics",
+          requiresMutation: false
+        }
+      ]
+    },
+    {
+      providerId: "polygon",
+      displayName: "Polygon.io",
+      capability: "Data",
+      status: "Ready",
+      credentialState: "Verified",
+      credentialSource: "LocalEncryptedStore",
+      verificationState: "Verified",
+      connectionHealth: "Healthy",
+      isEnabled: true,
+      isConnected: true,
+      fallbackActive: false,
+      degradationScore: 0.08,
+      lastVerifiedAt: "2026-06-02T16:40:00Z",
+      lastSuccessfulAt: "2026-06-02T16:45:00Z",
+      lastFailureAt: null,
+      lastError: null,
+      maskedKeyPreview: "pk_live_****7F3A",
+      environment: "paper",
+      externalAccountId: null,
+      affectedWorkflows: ["Import", "Validate", "Backfill"],
+      recommendedAction: "No provider readiness action required.",
+      actionHref: "/settings#provider-polygon",
+      evidence: [
+        {
+          kind: "Credential",
+          label: "Credential",
+          status: "Ready",
+          detail: "Verified from encrypted local store.",
+          observedAt: "2026-06-02T16:40:00Z"
+        },
+        {
+          kind: "Connection",
+          label: "Connection",
+          status: "Ready",
+          detail: "Connected with 12 active subscriptions and 18 ms average latency.",
+          observedAt: "2026-06-02T16:45:00Z"
+        }
+      ],
+      recoveryActions: [
+        {
+          actionId: "provider.polygon.open-setup",
+          label: "Open setup",
+          target: "/settings#provider-polygon",
+          requiresMutation: false
+        },
+        {
+          actionId: "provider.polygon.verify",
+          label: "Verify credentials",
+          target: "/api/providers/polygon/verify",
+          requiresMutation: true
+        }
+      ]
+    },
+    {
+      providerId: "yahoo",
+      displayName: "Yahoo Finance",
+      capability: "Data",
+      status: "Review",
+      credentialState: "NotRequired",
+      credentialSource: "NotRequired",
+      verificationState: "NotRequired",
+      connectionHealth: "Warning",
+      isEnabled: false,
+      isConnected: false,
+      fallbackActive: false,
+      degradationScore: null,
+      lastVerifiedAt: null,
+      lastSuccessfulAt: null,
+      lastFailureAt: null,
+      lastError: null,
+      maskedKeyPreview: null,
+      environment: null,
+      externalAccountId: null,
+      affectedWorkflows: ["Backfill fallback"],
+      recommendedAction: "Review provider setup before routing dependent workflows.",
+      actionHref: "/settings#provider-yahoo",
+      evidence: [
+        {
+          kind: "Credential",
+          label: "Credential",
+          status: "Ready",
+          detail: "No credentials are required for this provider."
+        },
+        {
+          kind: "Connection",
+          label: "Connection",
+          status: "Review",
+          detail: "Provider is not enabled for fallback routing."
+        }
+      ],
+      recoveryActions: [
+        {
+          actionId: "provider.yahoo.open-setup",
+          label: "Open setup",
+          target: "/settings#provider-yahoo",
+          requiresMutation: false
+        }
+      ]
     }
   ]
 };
@@ -1579,6 +1865,33 @@ const fixturePortfolioMultiAssetCoverage = {
       reconciliationSignals: { breaks: "quantity, market value, cash, corporate action, tax lot" }
     },
     {
+      assetClass: "DirectLoan",
+      displayName: "Private credit / loans",
+      status: "ReviewRequired",
+      statusLabel: "Review required",
+      summary: "Private-credit readiness keeps borrower, commitment, covenant, paydown, and obligation evidence on the shared DirectLoan row.",
+      evidenceRequirements: [
+        { requirementId: "DirectLoan:security-master-identifiers", label: "Security Master identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true },
+        { requirementId: "DirectLoan:provider-evidence", label: "Provider evidence feeds: Loan schedule, Borrower notice, Commitment schedule, Unfunded commitment, Paydown, Covenant, Accrual, Cash, Collateral, Valuation", category: "ProviderEvidence", status: "ReviewRequired", evidenceRoute: "/api/workstation/data-operations", required: true },
+        { requirementId: "DirectLoan:ledger-classification", label: "Loan receivable / unfunded commitment obligation / interest income / fees", category: "Ledger", status: "Ready", evidenceRoute: "/api/workstation/accounting", required: true }
+      ],
+      blockers: [
+        { code: "DirectLoan:provider-evidence-review", severity: "Review", message: "Retained loan schedule, unfunded commitment, covenant, paydown, and obligation evidence is required before close readiness can be marked complete.", source: "ProviderEvidence", evidenceRoute: "/api/workstation/portfolio/multi-asset-coverage" }
+      ],
+      drillThroughTargets: [
+        { targetId: "DirectLoan:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/workstation/security-master/securities", evidenceLink: "fixture://security-master/direct-loan/acme", status: "Ready", source: "SecurityMaster" },
+        { targetId: "DirectLoan:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "fixture://provider/direct-loan/acme", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "DirectLoan:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/workstation/reconciliation/runs", evidenceLink: "fixture://reconciliation/direct-loan", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "DirectLoan:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: "fixture://ledger/direct-loan", status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "DirectLoan:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: null, status: "ReviewRequired", source: "FundAccountCloseReadinessService" },
+        { targetId: "DirectLoan:loan-schedule-evidence", targetType: "LoanScheduleEvidence", label: "Loan schedule and borrower notices", route: "/api/workstation/data-operations", evidenceLink: "fixture://provider/direct-loan/acme", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "DirectLoan:commitment-covenant-evidence", targetType: "CommitmentCovenantEvidence", label: "Commitment, unfunded commitment, and covenant evidence", route: "/api/workstation/data-operations", evidenceLink: "fixture://provider/direct-loan/acme", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "DirectLoan:paydown-obligation-ledger", targetType: "PaydownObligationLedger", label: "Paydown and obligation ledger support", route: "/api/workstation/accounting", evidenceLink: "fixture://ledger/direct-loan", status: "Ready", source: "LoanAccountingProjector" }
+      ],
+      ledgerClassification: { classification: "Loan receivable / unfunded commitment obligation / interest income / fees / realized and unrealized P&L" },
+      reconciliationSignals: { breaks: "loan schedule, commitment, paydown, obligation, cash, collateral" }
+    },
+    {
       assetClass: "CustomAsset",
       displayName: "MBS / ABS / CLO / CMBS / private assets",
       status: "ReviewRequired",
@@ -1596,7 +1909,11 @@ const fixturePortfolioMultiAssetCoverage = {
         { targetId: "CustomAsset:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "fixture://provider/custom-asset", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
         { targetId: "CustomAsset:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: "fixture://reconciliation/custom-profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
         { targetId: "CustomAsset:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
-        { targetId: "CustomAsset:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: "fixture://close/custom-profile", status: "ReviewRequired", source: "FundAccountCloseReadinessService" }
+        { targetId: "CustomAsset:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: "fixture://close/custom-profile", status: "ReviewRequired", source: "FundAccountCloseReadinessService" },
+        { targetId: "CustomAsset:profile-lineage", targetType: "AssetProfileLineage", label: "Approved profile lineage", route: "/api/security-master/asset-profiles", evidenceLink: "fixture://security-master/profile/custom-asset", status: "Ready", source: "SecurityAssetProfileGovernanceService" },
+        { targetId: "CustomAsset:servicer-trustee-evidence", targetType: "ServicerTrusteeEvidence", label: "Servicer, trustee, warehouse, and factor evidence", route: "/api/workstation/data-operations", evidenceLink: "fixture://provider/custom-asset", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:valuation-nav-evidence", targetType: "StructuredValuationEvidence", label: "NAV, dealer pricing, capital call, and distribution evidence", route: "/api/workstation/data-operations", evidenceLink: "fixture://provider/custom-asset", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:obligation-close-evidence", targetType: "ObligationCloseEvidence", label: "Obligation schedule and close-readiness evidence", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: "fixture://close/custom-profile", status: "ReviewRequired", source: "FundAccountCloseReadinessService" }
       ],
       ledgerClassification: { classification: "Profile-derived classification / valuation adjustment / income accrual / commitment accounting" },
       reconciliationSignals: { breaks: "quantity, market value, cash, factor schedule, custom-profile evidence" }
@@ -2646,6 +2963,8 @@ const fixtures = {
   [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
   [WORKSTATION_API_ENDPOINTS.data]: fixtureDataWorkspace,
   "/api/workstation/data-operations": fixtureDataWorkspace,
+  [PROVIDER_API_ENDPOINTS.connections]: fixtureProviderConnections,
+  [PROVIDER_API_ENDPOINTS.readiness]: fixtureProviderReadiness,
   [WORKSTATION_API_ENDPOINTS.accounting]: fixtureAccountingWorkspace,
   [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.providers]: fixtureAccountingSystemProviders,

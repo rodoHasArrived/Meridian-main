@@ -1432,6 +1432,8 @@ export type ProviderCredentialSource =
   | "NotRequired";
 export type ProviderVerificationState = "NotRequired" | "NotVerified" | "Verified" | "Failed" | "Stale";
 export type ProviderContinuityHealth = "Unknown" | "Healthy" | "Warning" | "Degraded" | "Blocked";
+export type ProviderReadinessStatus = "Ready" | "Review" | "Degraded" | "Blocked" | "Unknown";
+export type ProviderReadinessEvidenceKind = "Credential" | "Connection" | "Validation" | "Degradation" | "Plaid" | "Routing";
 
 export interface ProviderConnectionRow {
   providerId: string;
@@ -1480,6 +1482,63 @@ export interface ProviderCredentialVerificationResult {
   lastError: string | null;
   externalAccountId: string | null;
   warnings: string[];
+}
+
+export interface ProviderReadinessSummary {
+  asOf: string;
+  status: ProviderReadinessStatus;
+  totalProviders: number;
+  readyProviders: number;
+  reviewProviders: number;
+  degradedProviders: number;
+  blockedProviders: number;
+  summary: string;
+  recommendedAction: string;
+  providers: ProviderReadinessRow[];
+}
+
+export interface ProviderReadinessRow {
+  providerId: string;
+  displayName: string;
+  capability: ProviderConnectionCapability;
+  status: ProviderReadinessStatus;
+  credentialState: ProviderCredentialState;
+  credentialSource: ProviderCredentialSource;
+  verificationState: ProviderVerificationState;
+  connectionHealth: ProviderContinuityHealth;
+  isEnabled: boolean;
+  isConnected: boolean;
+  fallbackActive: boolean;
+  degradationScore: number | null;
+  lastVerifiedAt: string | null;
+  lastSuccessfulAt: string | null;
+  lastFailureAt: string | null;
+  lastError: string | null;
+  maskedKeyPreview: string | null;
+  environment: string | null;
+  externalAccountId: string | null;
+  affectedWorkflows: string[];
+  recommendedAction: string;
+  actionHref: string;
+  evidence: ProviderReadinessEvidence[];
+  recoveryActions: ProviderRecoveryAction[];
+}
+
+export interface ProviderReadinessEvidence {
+  kind: ProviderReadinessEvidenceKind;
+  label: string;
+  status: ProviderReadinessStatus;
+  detail: string;
+  observedAt?: string | null;
+  route?: string | null;
+}
+
+export interface ProviderRecoveryAction {
+  actionId: string;
+  label: string;
+  target: string;
+  requiresMutation: boolean;
+  disabledReason?: string | null;
 }
 
 export type AccountingSystemProviderState = "Available" | "Planned" | "Disabled";

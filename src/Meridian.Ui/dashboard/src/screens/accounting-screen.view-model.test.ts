@@ -7,6 +7,8 @@ import {
   buildAccountingCashFlowViewState,
   buildAccountingLoadingViewState,
   buildAccountingReportingViewState,
+  buildAccountingToolingWorkbenchViewState,
+  buildCloseCommandCenterViewState,
   buildAccountingTrialBalanceViewState,
   buildSecurityScheduleRows,
   buildSecuritySchedulesViewState,
@@ -45,8 +47,12 @@ import type {
 import type {
   CorporateAction,
   AccountingCashFlowSummary,
+  AccountingSystemProvider,
+  AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
   LedgerTrialBalanceLine,
+  MultiAssetCoverageSummary,
+  OperationsContinuityWorkflow,
   ReconciliationCalibrationSummary,
   ReconciliationBreakQueueItem,
   SecurityMasterConflict,
@@ -527,6 +533,279 @@ const trialBalanceLines: LedgerTrialBalanceLine[] = [
   }
 ];
 
+const accountingWorkspace: AccountingWorkspaceResponse = {
+  metrics: [],
+  reconciliationQueue,
+  breakQueue,
+  cashFlow: {
+    totalCash: 120000,
+    totalLedgerCash: 119500,
+    netVariance: 500,
+    totalFinancing: 0,
+    runsWithCashSignals: 2,
+    runsWithCashVariance: 1,
+    tone: "warning",
+    summary: "Cash variance is under controller review."
+  },
+  reporting: {
+    profileCount: 1,
+    recommendedProfiles: ["controller"],
+    reportPackTargets: ["monthly-close"],
+    summary: "Controller reporting profile is available.",
+    profiles: []
+  },
+  controlCenter: {
+    closeReadiness: "Blocked",
+    portfolioFilterOptions: ["all-portfolios"],
+    accountFilterOptions: ["fund-alpha"],
+    blockerSeverityDistribution: [{ severity: "Critical", count: 1 }],
+    agingCurves: [],
+    ownerWorkload: [],
+    slaBreachCount: 1,
+    trendSnapshots: [],
+    drillLinks: [],
+    alerts: [{ tone: "danger", message: "Ledger validation is blocking close." }]
+  }
+};
+
+const closeWorkflow: OperationsContinuityWorkflow = {
+  workflowId: "workflow-close-1",
+  fundAccountId: "fund-alpha",
+  periodId: "2026-05",
+  securityMasterSnapshotId: "snapshot-1",
+  brokerSource: "broker-fixture",
+  status: "Blocked",
+  version: 3,
+  createdAtUtc: "2026-05-31T00:00:00Z",
+  updatedAtUtc: "2026-06-01T02:00:00Z",
+  brokerIntakeState: "Complete",
+  securityMasterState: "Complete",
+  ledgerPostingState: "Drafted",
+  reconciliationState: "ExceptionsOpen",
+  approvalState: "Pending",
+  gates: [
+    {
+      gateKey: "LedgerPosting",
+      displayName: "Ledger posting",
+      status: "Blocked",
+      isRequired: true,
+      description: "Ledger validation must pass before close.",
+      blockers: [
+        {
+          code: "LEDGER_VALIDATION_REQUIRED",
+          message: "Ledger posting requires a balanced journal draft.",
+          gate: "LedgerPosting",
+          severity: "Critical",
+          evidenceLinks: []
+        }
+      ],
+      nextActions: [],
+      completedAtUtc: null,
+      completedBy: null
+    }
+  ],
+  nextActions: [
+    { code: "FIX_LEDGER", label: "Resolve ledger blockers", route: "/accounting/ledger", gate: "LedgerPosting" }
+  ],
+  timeline: [],
+  breakCases: [
+    {
+      breakId: "break-close-1",
+      checkId: "cash-check",
+      category: "Cash",
+      severity: "Critical",
+      status: "Open",
+      owner: null,
+      dueDate: "2026-06-02",
+      expectedSource: "custodian",
+      actualSource: null,
+      expectedAmount: 100,
+      actualAmount: null,
+      variance: 100,
+      securityId: null,
+      symbol: null,
+      suggestedAction: "Attach custodian source file.",
+      evidenceLinks: []
+    }
+  ],
+  ledgerPreview: {
+    previewId: "ledger-preview-1",
+    status: "Drafted",
+    ledgerBatchId: null,
+    generatedAtUtc: "2026-06-01T01:00:00Z",
+    evidenceLinks: []
+  },
+  approvals: [
+    {
+      approvalId: "approval-1",
+      status: "Pending",
+      operator: "controller",
+      reviewer: null,
+      rationale: null,
+      submittedAtUtc: "2026-06-01T01:30:00Z",
+      decidedAtUtc: null,
+      evidenceLinks: []
+    }
+  ],
+  reportPackReadiness: {
+    isReady: false,
+    reportPackId: null,
+    blockingReason: "Report pack is waiting on ledger validation.",
+    evidenceLinks: []
+  },
+  closeChecklist: [
+    {
+      taskId: "source-file",
+      gate: "BrokerIngest",
+      label: "Source file retained",
+      owner: "controller",
+      requiredEvidence: "Custodian source file",
+      dueDate: "2026-06-02",
+      requiredApprovalCount: 1,
+      expiresOn: null,
+      status: "Open",
+      blockingReason: "Source file missing.",
+      evidencePointer: null,
+      remediationRoute: "/accounting/reconciliation",
+      canAcknowledge: false,
+      acknowledgedAtUtc: null,
+      acknowledgedBy: null
+    }
+  ],
+  closeReadiness: {
+    isReadyToClose: false,
+    severity: "Critical",
+    blockers: [
+      {
+        code: "SOURCE_FILE_MISSING",
+        category: "Evidence",
+        severity: "Warning",
+        message: "Custodian source file is missing.",
+        gate: "BrokerIngest",
+        routeHint: "/accounting/reconciliation"
+      }
+    ],
+    nextActions: []
+  },
+  closePackage: null,
+  accountingRecordSummary: {
+    recordId: "acct-record-1",
+    isAuditReady: false,
+    completeCategoryCount: 1,
+    requiredCategoryCount: 3,
+    summary: "Accounting record is incomplete.",
+    evidenceCategories: [
+      {
+        key: "source-records",
+        label: "Retained source records",
+        isComplete: false,
+        status: "Missing",
+        routeHint: "/reporting/evidence",
+        evidenceLinks: [],
+        requiredEvidence: ["custodian activity file"]
+      },
+      {
+        key: "ledger-evidence",
+        label: "Ledger evidence",
+        isComplete: true,
+        status: "Complete",
+        routeHint: "/accounting/ledger",
+        evidenceLinks: [],
+        requiredEvidence: ["journal preview"]
+      }
+    ],
+    evidenceLinks: []
+  },
+  evidenceLinks: [],
+  blockers: [
+    {
+      code: "CLOSE_BLOCKED",
+      message: "Close workflow has unresolved blockers.",
+      gate: "LedgerPosting",
+      severity: "Critical",
+      evidenceLinks: []
+    }
+  ]
+};
+
+const accountingSystemProvider: AccountingSystemProvider = {
+  providerId: "quickbooks-fixture",
+  displayName: "QuickBooks fixture",
+  state: "Planned",
+  requiresCredentials: false,
+  supportsChartOfAccounts: true,
+  supportsJournalEntries: true,
+  supportsTrialBalance: true,
+  supportsPosting: false,
+  statusLabel: "Planned",
+  statusDetail: "Posting is disabled for fixture evidence.",
+  evidenceKinds: ["trial-balance"]
+};
+
+const accountingSystemReconciliation: AccountingSystemReconciliationSummary = {
+  reconciliationId: "gl-recon-1",
+  importId: "gl-import-1",
+  providerId: "quickbooks-fixture",
+  fundProfileId: "fund-alpha",
+  periodStart: "2026-05-01",
+  periodEnd: "2026-05-31",
+  generatedAtUtc: "2026-06-01T03:00:00Z",
+  matchedCount: 1,
+  breakCount: 1,
+  totalExternalDebits: 100,
+  totalExternalCredits: 100,
+  totalMeridianDebits: 95,
+  totalMeridianCredits: 95,
+  postingEnabled: false,
+  postingDisabledReason: "Read-only fixture.",
+  evidenceReferences: [],
+  rows: [
+    {
+      rowId: "row-1",
+      accountCode: "1000",
+      accountName: "Cash",
+      currency: "USD",
+      status: "ReviewRequired",
+      externalDebit: 100,
+      externalCredit: 0,
+      meridianDebit: 95,
+      meridianCredit: 0,
+      variance: 5,
+      detail: "Cash variance requires controller review.",
+      evidenceRef: null
+    }
+  ]
+};
+
+const multiAssetCoverage: MultiAssetCoverageSummary = {
+  fundAccountId: "fund-alpha",
+  entity: "Fund Alpha",
+  asOfUtc: "2026-06-01T03:00:00Z",
+  metrics: [],
+  drillThroughRoutes: { coverage: "/api/workstation/portfolio/multi-asset-coverage" },
+  assetClasses: [
+    {
+      assetClass: "PrivateCredit",
+      displayName: "Private credit",
+      status: "ReviewRequired",
+      statusLabel: "Review required",
+      summary: "Valuation source is stale.",
+      evidenceRequirements: [],
+      blockers: [
+        {
+          code: "VALUATION_STALE",
+          severity: "Warning",
+          message: "Private credit valuation is stale.",
+          source: "valuation-feed",
+          evidenceRoute: "/accounting/security-master"
+        }
+      ],
+      ledgerClassification: {},
+      reconciliationSignals: {}
+    }
+  ]
+};
+
 describe("accounting-screen view model", () => {
   it("derives the accounting workstream and selected reconciliation run", () => {
     expect(resolveAccountingWorkstream("/accounting/security-master")).toBe("security-master");
@@ -543,6 +822,315 @@ describe("accounting-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("builds the accounting tooling workbench across setup, reconciliation, ledger, trial balance, and report setup", () => {
+    const reportingSummary = {
+      profileCount: 2,
+      recommendedProfiles: ["board"],
+      reportPackTargets: ["board", "audit"],
+      summary: "2 export/reporting profiles are available for Accounting and Reporting workflows.",
+      profiles: [
+        {
+          id: "board",
+          name: "Board packet",
+          targetTool: "Board",
+          format: "Markdown",
+          description: "Owner sign-off packet.",
+          loaderScript: true,
+          dataDictionary: true
+        },
+        {
+          id: "excel",
+          name: "Excel",
+          targetTool: "Excel",
+          format: "Xlsx",
+          description: "Board-ready workbook export.",
+          loaderScript: false,
+          dataDictionary: true
+        }
+      ]
+    };
+    const reportingView = buildAccountingReportingViewState({
+      reporting: reportingSummary,
+      selectedProfileId: "board"
+    });
+    const trialBalanceView = buildAccountingTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      selectedRowId: null,
+      loading: false,
+      error: null
+    });
+    const state = buildAccountingToolingWorkbenchViewState({
+      data: {
+        metrics: [],
+        reconciliationQueue,
+        breakQueue,
+        cashFlow: {
+          totalCash: 120000,
+          totalLedgerCash: 120500,
+          netVariance: 500,
+          totalFinancing: 1400,
+          runsWithCashSignals: 4,
+          runsWithCashVariance: 1,
+          tone: "warning",
+          summary: "Cash-flow coverage is available."
+        },
+        reporting: reportingSummary
+      },
+      workstream: "ledger",
+      selectedReconciliation: reconciliationQueue[0],
+      trialBalanceView,
+      reportingView,
+      configurationStatusLabel: "Ready"
+    });
+
+    expect(state.summaryTiles).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "reconciliation", value: "1 open break", tone: "warning" }),
+      expect.objectContaining({ id: "ledger", value: "run-42", tone: "warning" }),
+      expect.objectContaining({ id: "trial-balance", value: "2 lines", tone: "success" }),
+      expect.objectContaining({ id: "report-setup", value: "2 profiles", tone: "success" })
+    ]));
+    expect(state.steps.map((step) => step.label)).toEqual([
+      "Configure accounting",
+      "Run reconciliation",
+      "Review ledger",
+      "Gain trial balance",
+      "Configure reports"
+    ]);
+    expect(state.customReportSetup).toMatchObject({
+      selectedProfileLabel: "Selected reporting profile - Board packet",
+      selectedProfileDetail: "MARKDOWN - Board",
+      statusLabel: "Ready to export",
+      statusTone: "success",
+      actionLabel: "Run reporting export"
+    });
+    expect(state.customReportSetup.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "format", value: "MARKDOWN", tone: "success" }),
+      expect.objectContaining({ id: "targets", value: "board, audit", tone: "success" })
+    ]));
+    expect(state.liveRegionText).toContain("ledger accounting tooling selected");
+  });
+
+  it("surfaces blocked custom report setup when no profiles are loaded", () => {
+    const reportingSummary = {
+      profileCount: 0,
+      recommendedProfiles: [],
+      reportPackTargets: [],
+      profiles: [],
+      summary: "No profiles loaded."
+    };
+    const reportingView = buildAccountingReportingViewState({
+      reporting: reportingSummary,
+      selectedProfileId: null
+    });
+    const trialBalanceView = buildAccountingTrialBalanceViewState({
+      runId: null,
+      rows: [],
+      selectedRowId: null,
+      loading: false,
+      error: null
+    });
+    const state = buildAccountingToolingWorkbenchViewState({
+      data: {
+        metrics: [],
+        reconciliationQueue: [],
+        breakQueue: [],
+        cashFlow: {
+          totalCash: 0,
+          totalLedgerCash: 0,
+          netVariance: 0,
+          totalFinancing: 0,
+          runsWithCashSignals: 0,
+          runsWithCashVariance: 0,
+          tone: "default",
+          summary: "No cash-flow coverage loaded."
+        },
+        reporting: reportingSummary
+      },
+      workstream: "reporting",
+      selectedReconciliation: null,
+      trialBalanceView,
+      reportingView,
+      configurationStatusLabel: "Pending review"
+    });
+
+    expect(state.summaryTiles).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "ledger", value: "No run selected", tone: "warning" }),
+      expect.objectContaining({ id: "trial-balance", value: "No lines", tone: "warning" }),
+      expect.objectContaining({ id: "report-setup", value: "0 profiles", tone: "danger" })
+    ]));
+    expect(state.customReportSetup).toMatchObject({
+      selectedProfileLabel: "No report profile selected",
+      statusLabel: "Setup blocked",
+      statusTone: "danger",
+      actionLabel: "Select report setup"
+    });
+    expect(state.customReportSetup.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "format", value: "Not selected", tone: "warning" }),
+      expect.objectContaining({ id: "targets", value: "No report-pack targets", tone: "warning" })
+    ]));
+  });
+
+  it("derives a blocked controller close command center from workflow and provider signals", () => {
+    const state = buildCloseCommandCenterViewState({
+      data: accountingWorkspace,
+      workflow: closeWorkflow,
+      workflowLoading: false,
+      workflowError: null,
+      accountingSystemProviders: [accountingSystemProvider],
+      accountingSystemImport: null,
+      accountingSystemReconciliation,
+      multiAssetCoverage
+    });
+
+    expect(state).toMatchObject({
+      title: "CFO / Controller close command center",
+      status: "blocked",
+      statusLabel: "Blocked",
+      statusTone: "danger",
+      periodLabel: "2026-05",
+      fundAccountLabel: "fund-alpha"
+    });
+    expect(state.metricRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "breaks", value: "2", tone: "warning" }),
+      expect.objectContaining({ id: "source-files", value: "2", tone: "warning" }),
+      expect.objectContaining({ id: "adjustments", value: "2", tone: "warning" }),
+      expect.objectContaining({ id: "valuations", value: "1", tone: "warning" }),
+      expect.objectContaining({ id: "providers", value: "2", tone: "warning" }),
+      expect.objectContaining({ id: "report-pack", value: "Not ready", tone: "warning" }),
+      expect.objectContaining({ id: "signoff", value: "0/1 approved", tone: "warning" })
+    ]));
+    expect(state.blockerRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "CLOSE_BLOCKED", tone: "danger" }),
+      expect.objectContaining({ id: "SOURCE_FILE_MISSING", href: "/accounting/reconciliation" }),
+      expect.objectContaining({ id: "evidence-source-records", detail: "Missing: custodian activity file" })
+    ]));
+    expect(state.actionRows.map((action) => action.href)).toEqual([
+      "/accounting/reconciliation",
+      "/accounting/approvals",
+      "/reporting/evidence"
+    ]);
+  });
+
+  it("marks the controller close command center ready only when all close signals clear", () => {
+    const readyWorkflow: OperationsContinuityWorkflow = {
+      ...closeWorkflow,
+      status: "ReadyForClose",
+      gates: [],
+      nextActions: [],
+      breakCases: [],
+      approvals: [
+        {
+          ...closeWorkflow.approvals[0],
+          status: "Approved",
+          reviewer: "controller-reviewer",
+          decidedAtUtc: "2026-06-01T04:00:00Z"
+        }
+      ],
+      reportPackReadiness: {
+        isReady: true,
+        reportPackId: "report-pack-2026-05",
+        blockingReason: null,
+        evidenceLinks: []
+      },
+      closeChecklist: [
+        {
+          ...closeWorkflow.closeChecklist[0],
+          status: "Done",
+          evidencePointer: "source-file-evidence",
+          acknowledgedAtUtc: "2026-06-01T03:00:00Z",
+          acknowledgedBy: "controller"
+        }
+      ],
+      closeReadiness: {
+        isReadyToClose: true,
+        severity: "Ready",
+        blockers: [],
+        nextActions: []
+      },
+      closePackage: {
+        closePackageId: "close-package-1",
+        reportPackId: "report-pack-2026-05",
+        retainedManifestId: "manifest-1",
+        retainedManifestRoute: "/reporting/evidence/manifest-1",
+        evidenceHash: "hash-1",
+        publishedAtUtc: "2026-06-01T04:30:00Z",
+        publishedBy: "controller-reviewer",
+        signOffRationale: "Close evidence reviewed.",
+        evidenceLinks: [],
+        checklistControlApprovals: []
+      },
+      accountingRecordSummary: {
+        ...closeWorkflow.accountingRecordSummary!,
+        isAuditReady: true,
+        completeCategoryCount: 2,
+        evidenceCategories: closeWorkflow.accountingRecordSummary!.evidenceCategories.map((category) => ({
+          ...category,
+          isComplete: true,
+          status: "Complete"
+        }))
+      },
+      blockers: []
+    };
+    const readyData: AccountingWorkspaceResponse = {
+      ...accountingWorkspace,
+      breakQueue: [],
+      reconciliationQueue: [],
+      controlCenter: {
+        ...accountingWorkspace.controlCenter!,
+        closeReadiness: "Ready",
+        alerts: [],
+        slaBreachCount: 0
+      }
+    };
+    const readyProvider: AccountingSystemProvider = {
+      ...accountingSystemProvider,
+      state: "Available",
+      statusLabel: "Available"
+    };
+    const readyGl: AccountingSystemReconciliationSummary = {
+      ...accountingSystemReconciliation,
+      breakCount: 0,
+      rows: accountingSystemReconciliation.rows.map((row) => ({ ...row, status: "Matched", variance: 0 }))
+    };
+    const readyCoverage: MultiAssetCoverageSummary = {
+      ...multiAssetCoverage,
+      assetClasses: multiAssetCoverage.assetClasses.map((assetClass) => ({
+        ...assetClass,
+        status: "Ready",
+        statusLabel: "Ready",
+        blockers: []
+      }))
+    };
+
+    const state = buildCloseCommandCenterViewState({
+      data: readyData,
+      workflow: readyWorkflow,
+      workflowLoading: false,
+      workflowError: null,
+      accountingSystemProviders: [readyProvider],
+      accountingSystemImport: null,
+      accountingSystemReconciliation: readyGl,
+      multiAssetCoverage: readyCoverage
+    });
+
+    expect(state).toMatchObject({
+      status: "ready",
+      statusLabel: "Ready",
+      statusTone: "success",
+      summary: "The close is ready: breaks, source evidence, approvals, valuations, providers, report pack, and sign-off are clear."
+    });
+    expect(state.metricRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "breaks", value: "0", tone: "success" }),
+      expect.objectContaining({ id: "source-files", value: "0", tone: "success" }),
+      expect.objectContaining({ id: "adjustments", value: "0", tone: "success" }),
+      expect.objectContaining({ id: "providers", value: "0", tone: "success" }),
+      expect.objectContaining({ id: "report-pack", value: "report-pack-2026-05", tone: "success" }),
+      expect.objectContaining({ id: "signoff", value: "Signed by controller-reviewer", tone: "success" })
+    ]));
+    expect(state.blockerRows).toEqual([]);
   });
 
   it("builds operational exception workbench state from reconciliation queues", () => {

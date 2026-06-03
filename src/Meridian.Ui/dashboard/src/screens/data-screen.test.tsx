@@ -17,6 +17,7 @@ import type {
   DataWorkspaceResponse,
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
+  ProviderReadinessSummary,
   ProviderSetupResult
 } from "@/types";
 
@@ -105,6 +106,93 @@ const successfulVerification: ProviderCredentialVerificationResult = {
   warnings: []
 };
 
+const providerReadiness: ProviderReadinessSummary = {
+  asOf: "2026-06-02T16:50:00Z",
+  status: "Blocked",
+  totalProviders: 2,
+  readyProviders: 1,
+  reviewProviders: 0,
+  degradedProviders: 0,
+  blockedProviders: 1,
+  summary: "1 provider blocks dependent workflows.",
+  recommendedAction: "Repair Plaid credentials before routing accounting evidence workflows.",
+  providers: [
+    {
+      providerId: "plaid",
+      displayName: "Plaid",
+      capability: "Data",
+      status: "Blocked",
+      credentialState: "Missing",
+      credentialSource: "None",
+      verificationState: "NotVerified",
+      connectionHealth: "Warning",
+      isEnabled: true,
+      isConnected: false,
+      fallbackActive: false,
+      degradationScore: null,
+      lastVerifiedAt: null,
+      lastSuccessfulAt: null,
+      lastFailureAt: null,
+      lastError: "Sandbox client credentials have not been configured.",
+      maskedKeyPreview: null,
+      environment: "sandbox",
+      externalAccountId: null,
+      affectedWorkflows: ["Accounting evidence", "Brokerage sync"],
+      recommendedAction: "Connect Plaid sandbox credentials before bank-account evidence can be retained.",
+      actionHref: "/data/providers",
+      evidence: [
+        {
+          kind: "Credential",
+          label: "Credential",
+          status: "Blocked",
+          detail: "Required Plaid client fields are missing."
+        }
+      ],
+      recoveryActions: [
+        {
+          actionId: "provider.plaid.open-setup",
+          label: "Open setup",
+          target: "/data/providers",
+          requiresMutation: false
+        }
+      ]
+    },
+    {
+      providerId: "polygon",
+      displayName: "Polygon.io",
+      capability: "Data",
+      status: "Ready",
+      credentialState: "Verified",
+      credentialSource: "LocalEncryptedStore",
+      verificationState: "Verified",
+      connectionHealth: "Healthy",
+      isEnabled: true,
+      isConnected: true,
+      fallbackActive: false,
+      degradationScore: 0.08,
+      lastVerifiedAt: "2026-06-02T16:40:00Z",
+      lastSuccessfulAt: "2026-06-02T16:45:00Z",
+      lastFailureAt: null,
+      lastError: null,
+      maskedKeyPreview: "pk_live_****7F3A",
+      environment: "paper",
+      externalAccountId: null,
+      affectedWorkflows: ["Import", "Validate", "Backfill"],
+      recommendedAction: "No provider readiness action required.",
+      actionHref: "/settings#provider-polygon",
+      evidence: [],
+      recoveryActions: [
+        {
+          actionId: "provider.polygon.verify",
+          label: "Verify credentials",
+          target: "/api/providers/polygon/verify",
+          requiresMutation: true
+        }
+      ]
+    }
+  ]
+};
+
 describe("DataScreen", () => {
   it("renders an accessible route-aware loading panel when bootstrap data is unavailable", () => {
     renderWithRouter(<DataScreen data={null} />, { initialEntries: ["/data/backfills"] });
@@ -166,6 +254,26 @@ describe("DataScreen", () => {
     expect(within(exportDetail).queryByText("research pack")).not.toBeInTheDocument();
     expect(within(exportDetail).getByText("Next action")).toBeInTheDocument();
     expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
+  });
+
+  it("renders shared provider readiness and the next action for each provider", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <DataScreen data={data} providerConnections={[polygonConnection]} providerReadiness={providerReadiness} />,
+      { initialEntries: ["/data/providers"] }
+    );
+
+    expect(screen.getByText(/1 provider blocks dependent workflows/i)).toBeInTheDocument();
+    expect(screen.getByText(/Next action: Repair Plaid credentials/i)).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Provider health" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Next Action" })).toBeInTheDocument();
+    const plaidRow = screen.getByRole("row", { name: /Inspect provider Plaid/i });
+    expect(plaidRow).toHaveClass("bg-danger/5");
+    expect(within(plaidRow).getByText("Blocked")).toBeInTheDocument();
+    expect(within(plaidRow).getByText("Open setup")).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Diagnostics" }));
+    expect(screen.getByRole("region", { name: /provider detail for Plaid/i }))
+      .toHaveTextContent("Required Plaid client fields are missing.");
   });
 
   it("renders explicit empty guidance when provider, backfill, and export arrays are empty", () => {

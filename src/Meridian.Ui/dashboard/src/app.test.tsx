@@ -57,6 +57,7 @@ function mockWorkstationData(overrides: Partial<WorkstationDataSnapshot>) {
     reporting: null,
     brokerageConnection: null,
     providerConnections: null,
+    providerReadiness: null,
     providerRoutingConnections: null,
     providerRoutingBindings: null,
     providerRoutingTrustSnapshots: null,
@@ -610,7 +611,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/security-master"] });
 
     await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
-    expect(screen.getByLabelText("Accounting workspace, current route, Review")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByLabelText("Accounting workspace, active section, Review")).toBeInTheDocument();
   });
 
   it("announces route changes and moves focus to the workbench", async () => {

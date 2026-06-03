@@ -31,10 +31,17 @@ public sealed partial class WorkstationEndpointsTests
             "closeReadiness");
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "DirectLoan" &&
-            row.ReconciliationSignals["breaks"].Contains("loan schedule", StringComparison.OrdinalIgnoreCase));
+            row.ReconciliationSignals["breaks"].Contains("loan schedule", StringComparison.OrdinalIgnoreCase) &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "LoanScheduleEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "CommitmentCovenantEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "PaydownObligationLedger"));
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "CustomAsset" &&
-            row.EvidenceRequirements.Any(static requirement => requirement.Category == "Governance"));
+            row.EvidenceRequirements.Any(static requirement => requirement.Category == "Governance") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "AssetProfileLineage") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "ServicerTrusteeEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "StructuredValuationEvidence") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "ObligationCloseEvidence"));
         payload.AssetClasses.Should().OnlyContain(static row =>
             row.DrillThroughTargets.Any(static target => target.TargetType == "SecurityMasterPassport") &&
             row.DrillThroughTargets.Any(static target => target.TargetType == "ProviderEvidence") &&

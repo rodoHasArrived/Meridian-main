@@ -22,6 +22,8 @@ import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import {
   buildAccountingLoadingViewState,
+  buildCloseCommandCenterViewState,
+  buildAccountingToolingWorkbenchViewState,
   resolveAccountingWorkstream,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useAccountingConfigurationViewModel,
@@ -51,6 +53,9 @@ import type {
   SecurityOpenLotReadModelViewState,
   SecurityOpenLotRowViewModel,
   SecuritySearchResultRowViewModel,
+  AccountingToolingWorkbenchViewState,
+  CloseCommandCenterViewState,
+  AccountingToolingTone,
   TradingParametersViewState
 } from "@/screens/accounting-screen.view-model";
 import type {
@@ -1014,6 +1019,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
   const [accountingSystemLoading, setAccountingSystemLoading] = useState(false);
   const [accountingSystemError, setAccountingSystemError] = useState<string | null>(null);
+  const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
+  const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
+  const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
   const [activeTaskView, setActiveTaskView] = useState<AccountingTaskViewId>(() => (
     typeof window === "undefined" ? "overview" : resolveAccountingTaskViewId(window.location.hash)
   ));
@@ -1149,6 +1157,36 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     void refreshAccountingSystem(false);
   }, []);
 
+  const refreshCloseWorkflow = async () => {
+    if (!data) {
+      setCloseWorkflow(null);
+      return;
+    }
+
+    setCloseWorkflowLoading(true);
+    setCloseWorkflowError(null);
+    try {
+      const rows = await getOperationsContinuityWorkflows();
+      const selected = [...rows].sort((left, right) => right.updatedAtUtc.localeCompare(left.updatedAtUtc))[0] ?? null;
+      if (!selected) {
+        setCloseWorkflow(null);
+        return;
+      }
+
+      const workflow = await getOperationsContinuityWorkflow(selected.workflowId);
+      setCloseWorkflow(workflow);
+    } catch (error) {
+      setCloseWorkflow(null);
+      setCloseWorkflowError(formatApprovalError(error, "Close workflow detail could not be loaded."));
+    } finally {
+      setCloseWorkflowLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshCloseWorkflow();
+  }, [data]);
+
   if (!data) {
     const loading = buildAccountingLoadingViewState(pathname);
     return (
@@ -1192,6 +1230,39 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     hasSelectedReconciliation: Boolean(selectedReconciliation),
     configurationStatusLabel: configuration.statusLabel
   });
+  const accountingTooling = useMemo(
+    () => buildAccountingToolingWorkbenchViewState({
+      data,
+      workstream,
+      selectedReconciliation,
+      trialBalanceView: reconciliation.trialBalanceView,
+      reportingView: reporting,
+      configurationStatusLabel: configuration.statusLabel
+    }),
+    [configuration.statusLabel, data, reconciliation.trialBalanceView, reporting, selectedReconciliation, workstream]
+  );
+  const closeCommandCenter = useMemo(
+    () => buildCloseCommandCenterViewState({
+      data,
+      workflow: closeWorkflow,
+      workflowLoading: closeWorkflowLoading,
+      workflowError: closeWorkflowError,
+      accountingSystemProviders,
+      accountingSystemImport,
+      accountingSystemReconciliation,
+      multiAssetCoverage
+    }),
+    [
+      accountingSystemImport,
+      accountingSystemProviders,
+      accountingSystemReconciliation,
+      closeWorkflow,
+      closeWorkflowError,
+      closeWorkflowLoading,
+      data,
+      multiAssetCoverage
+    ]
+  );
 
   return (
     <div className="space-y-8">
@@ -1253,6 +1324,11 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           </nav>
         </div>
       </section>
+
+      <CloseCommandCenterPanel
+        view={closeCommandCenter}
+        onRefresh={() => void refreshCloseWorkflow()}
+      />
 
       {multiAssetCoveragePanel ? (
         <Card className="panel-surface" role="region" aria-label="Multi-asset accounting coverage">
@@ -1326,6 +1402,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         error={accountingSystemError}
         onRefresh={() => void refreshAccountingSystem(true)}
       />
+
+      <AccountingToolingWorkbench view={accountingTooling} />
 
       <WorkspaceFilterBar
         label="Accounting task navigator"
@@ -3081,6 +3159,118 @@ function ReconciliationQueueSummaryCard({ view }: { view: ReconciliationQueuePan
   );
 }
 
+function CloseCommandCenterPanel({
+  view,
+  onRefresh
+}: {
+  view: CloseCommandCenterViewState;
+  onRefresh: () => void;
+}) {
+  return (
+    <section id="close-command-center" className="workspace-section-band" aria-labelledby="close-command-center-heading">
+      <span className="sr-only" aria-live="polite">{view.liveRegionText}</span>
+      <div className="workspace-section-subheader">
+        <div className="min-w-0">
+          <p className="eyebrow-label">Controller close</p>
+          <h3 id="close-command-center-heading" className="workspace-section-title">{view.title}</h3>
+          <p className="workspace-section-summary">{view.description}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
+          <Button type="button" size="sm" variant="outline" disabled={view.status === "loading"} busy={view.status === "loading"} busyLabel="Refreshing close command center" onClick={onRefresh}>
+            <RefreshCcw className={cn("h-3.5 w-3.5", view.status === "loading" && "animate-spin")} aria-hidden="true" />
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      <Card className={cn("panel-surface", accountingToolingBorderClass(view.statusTone))} role="region" aria-label={view.ariaLabel}>
+        <CardHeader>
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.35fr)]">
+            <div className="min-w-0">
+              <CardTitle className="flex items-center gap-2 text-base">
+                {view.statusTone === "success" ? (
+                  <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
+                ) : (
+                  <AlertCircle className={cn("h-4 w-4", view.statusTone === "danger" ? "text-danger" : "text-warning")} aria-hidden="true" />
+                )}
+                {view.periodLabel}
+              </CardTitle>
+              <CardDescription className="mt-2">{view.summary}</CardDescription>
+            </div>
+            <div className="grid gap-2 text-sm">
+              <AccountingValue label="Fund account" value={view.fundAccountLabel} />
+              <AccountingValue label="Updated" value={view.updatedLabel} />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {view.loadingText ? <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p> : null}
+          {view.errorText ? (
+            <div role="alert" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+              {view.errorText}
+            </div>
+          ) : null}
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {view.metricRows.map((metric) => {
+              const body = (
+                <div className={cn("h-full rounded-md border bg-secondary/20 px-3 py-3", accountingToolingBorderClass(metric.tone))}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 text-xs font-semibold uppercase text-muted-foreground">{metric.label}</div>
+                    <Badge variant={accountingToolingBadgeVariant(metric.tone)}>{metric.value}</Badge>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
+                </div>
+              );
+
+              return metric.href ? (
+                <Link key={metric.id} to={metric.href} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" aria-label={`Open ${metric.label} detail`}>
+                  {body}
+                </Link>
+              ) : (
+                <div key={metric.id}>{body}</div>
+              );
+            })}
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
+            <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Blocking and at-risk items</div>
+              {view.blockerRows.length > 0 ? (
+                <div role="list" className="mt-3 space-y-2" aria-label="Close command center blockers">
+                  {view.blockerRows.map((item) => (
+                    <div key={item.id} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(item.tone))}>
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <span className="font-semibold text-foreground">{item.label}</span>
+                        <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.tone === "danger" ? "Blocker" : "Review"}</Badge>
+                      </div>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.detail}</p>
+                      {item.href ? <Link to={item.href} className="mt-2 inline-block text-xs font-medium text-primary hover:underline">Open evidence</Link> : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">No blocking or at-risk close items are surfaced.</p>
+              )}
+            </div>
+            <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Close actions</div>
+              <div className="mt-3 grid gap-2">
+                {view.actionRows.map((action) => (
+                  <Button key={action.id} asChild variant={action.tone === "success" ? "outline" : "default"} size="sm">
+                    <Link to={action.href} aria-label={action.ariaLabel}>{action.label}</Link>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
 function OperationalExceptionWorkbenchPanel({ view }: { view: OperationalExceptionWorkbenchViewState }) {
   return (
     <section id="accounting-exceptions" className="workspace-section-band" aria-labelledby="accounting-exceptions-heading">
@@ -3335,6 +3525,122 @@ function buildAccountingTaskMapCards({
       tone: workstream === "configure" ? "primary" : "muted"
     }
   ];
+}
+
+function AccountingToolingWorkbench({ view }: { view: AccountingToolingWorkbenchViewState }) {
+  return (
+    <section id="accounting-tooling" className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]" aria-label={view.ariaLabel}>
+      <span className="sr-only" aria-live="polite">{view.liveRegionText}</span>
+      <Card className="panel-surface">
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">Tooling</div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Table2 className="h-4 w-4 text-primary" />
+                {view.title}
+              </CardTitle>
+              <CardDescription className="mt-2">{view.description}</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            {view.summaryTiles.map((tile) => (
+              <div key={tile.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(tile.tone))}>
+                <div className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{tile.label}</div>
+                <div className="mt-2 break-words font-mono text-sm text-foreground">{tile.value}</div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{tile.detail}</p>
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-2 md:grid-cols-5" aria-label="Accounting tooling sequence">
+            {view.steps.map((step) => {
+              const content = (
+                <>
+                  <div className="flex min-h-[4rem] flex-col items-start gap-2">
+                    <div className="min-w-0 text-sm font-semibold leading-5 text-foreground">{step.label}</div>
+                    <Badge variant={accountingToolingBadgeVariant(step.statusTone)}>{step.statusLabel}</Badge>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{step.description}</p>
+                </>
+              );
+
+              return step.href.startsWith("#") ? (
+                <a key={step.id} href={step.href} aria-label={step.ariaLabel} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 hover:bg-secondary/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                  {content}
+                </a>
+              ) : (
+                <Link key={step.id} to={step.href} aria-label={step.ariaLabel} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 hover:bg-secondary/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                  {content}
+                </Link>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="panel-surface" role="region" aria-label={view.customReportSetup.title}>
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">Reports</div>
+              <CardTitle className="text-base">{view.customReportSetup.title}</CardTitle>
+              <CardDescription className="mt-2">{view.customReportSetup.description}</CardDescription>
+            </div>
+            <Badge variant={accountingToolingBadgeVariant(view.customReportSetup.statusTone)}>
+              {view.customReportSetup.statusLabel}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+            <div className="text-sm font-semibold text-foreground">{view.customReportSetup.selectedProfileLabel}</div>
+            <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{view.customReportSetup.selectedProfileDetail}</div>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {view.customReportSetup.rows.map((row) => (
+              <div key={row.id} className={cn("rounded border px-2 py-2", accountingToolingBorderClass(row.tone))}>
+                <div className="text-xs text-muted-foreground">{row.label}</div>
+                <div className="mt-1 break-words font-mono text-xs text-foreground">{row.value}</div>
+              </div>
+            ))}
+          </div>
+          <a
+            href={view.customReportSetup.actionHref}
+            aria-label={view.customReportSetup.actionAriaLabel}
+            className="inline-flex rounded-sm border border-primary/40 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            {view.customReportSetup.actionLabel}
+          </a>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
+function accountingToolingBadgeVariant(tone: AccountingToolingTone): "default" | "outline" | "success" | "warning" | "danger" {
+  if (tone === "success" || tone === "warning" || tone === "danger") {
+    return tone;
+  }
+
+  return "outline";
+}
+
+function accountingToolingBorderClass(tone: AccountingToolingTone): string {
+  if (tone === "success") {
+    return "border-success/30 bg-success/10";
+  }
+
+  if (tone === "warning") {
+    return "border-warning/35 bg-warning/10";
+  }
+
+  if (tone === "danger") {
+    return "border-danger/35 bg-danger/10";
+  }
+
+  return "border-border/70 bg-secondary/20";
 }
 
 function AccountingTaskMap({ label, cards }: { label: string; cards: AccountingTaskMapCard[] }) {

@@ -9,6 +9,7 @@ import {
   getOperationsApprovalPolicyMatrix,
   getOperationsCloseCalendar,
   getProviderConnections,
+  getProviderReadiness,
   getProviderRoutingBindings,
   getProviderRoutingConnections,
   getProviderRoutingTrustSnapshots,
@@ -42,6 +43,7 @@ import type {
   MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderReadinessSummary,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
@@ -71,6 +73,7 @@ interface WorkstationDataState {
   reporting: ReportingWorkspaceResponse | null;
   brokerageConnection: BrokerageConnectionStatus | null;
   providerConnections: ProviderConnectionRow[] | null;
+  providerReadiness: ProviderReadinessSummary | null;
   providerRoutingConnections: ProviderRoutingConnection[] | null;
   providerRoutingBindings: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] | null;
@@ -107,6 +110,7 @@ const initialState: WorkstationDataState = {
   reporting: null,
   brokerageConnection: null,
   providerConnections: null,
+  providerReadiness: null,
   providerRoutingConnections: null,
   providerRoutingBindings: null,
   providerRoutingTrustSnapshots: null,
@@ -213,6 +217,7 @@ export function useWorkstationData() {
       reporting,
       brokerageConnection,
       providerConnections,
+      providerReadiness,
       providerRoutingConnections,
       providerRoutingBindings,
       providerRoutingTrustSnapshots,
@@ -237,6 +242,7 @@ export function useWorkstationData() {
       getReportingWorkspace(requestOptions),
       getAlpacaConnectionStatus(requestOptions),
       getProviderConnections(requestOptions),
+      getProviderReadiness(requestOptions),
       getProviderRoutingConnections(requestOptions),
       getProviderRoutingBindings(requestOptions),
       getProviderRoutingTrustSnapshots(requestOptions),
@@ -296,6 +302,7 @@ export function useWorkstationData() {
       reporting: readWorkspace(["reporting"], reporting),
       brokerageConnection: readWorkspace(["portfolio"], brokerageConnection),
       providerConnections: readWorkspace(["settings", "data"], providerConnections),
+      providerReadiness: readWorkspace(["settings", "data"], providerReadiness),
       providerRoutingConnections: readWorkspace(["settings"], providerRoutingConnections),
       providerRoutingBindings: readWorkspace(["settings"], providerRoutingBindings),
       providerRoutingTrustSnapshots: readWorkspace(["settings"], providerRoutingTrustSnapshots),
@@ -414,8 +421,9 @@ export function useWorkstationData() {
     token.safeSetState(setState, (current) => ({ ...current, providerRoutingRefreshing: true }));
 
     try {
-      const [providerConnections, routingConnections, routingBindings, trustSnapshots] = await Promise.allSettled([
+      const [providerConnections, providerReadiness, routingConnections, routingBindings, trustSnapshots] = await Promise.allSettled([
         getProviderConnections({ signal: token.signal }),
+        getProviderReadiness({ signal: token.signal }),
         getProviderRoutingConnections({ signal: token.signal }),
         getProviderRoutingBindings({ signal: token.signal }),
         getProviderRoutingTrustSnapshots({ signal: token.signal })
@@ -435,6 +443,12 @@ export function useWorkstationData() {
           next = { ...next, providerConnections: providerConnections.value };
         } else {
           refreshErrors.push(formatRequestError(providerConnections.reason, "Provider connection refresh failed."));
+        }
+
+        if (providerReadiness.status === "fulfilled") {
+          next = { ...next, providerReadiness: providerReadiness.value };
+        } else {
+          refreshErrors.push(formatRequestError(providerReadiness.reason, "Provider readiness refresh failed."));
         }
 
         if (routingConnections.status === "fulfilled") {

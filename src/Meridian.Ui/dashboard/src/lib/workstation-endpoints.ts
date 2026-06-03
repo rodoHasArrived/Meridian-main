@@ -152,7 +152,8 @@ export const BACKFILL_API_ENDPOINTS = {
 export const PROVIDER_API_ENDPOINTS = {
   configure: "/api/providers/configure",
   status: "/api/providers/status",
-  connections: "/api/providers/connections"
+  connections: "/api/providers/connections",
+  readiness: "/api/providers/readiness"
 } as const;
 
 export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {

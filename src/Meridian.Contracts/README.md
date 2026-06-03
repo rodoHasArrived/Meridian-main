@@ -202,9 +202,12 @@ The same workstation contract file owns the multi-asset operational coverage DTO
 `MultiAssetClassCoverageDto`, `MultiAssetEvidenceRequirementDto`, and
 `MultiAssetReadinessBlockerDto`. Each asset-class row also carries
 `MultiAssetDrillThroughTargetDto` entries for Security Master passport/profile, provider evidence,
-reconciliation casework, ledger mapping/evidence, and close readiness. Browser, WPF, and shared
-endpoint clients should render those rows as supplied instead of recalculating asset-class
-readiness, ledger coverage, reconciliation status, or close blockers locally.
+reconciliation casework, ledger mapping/evidence, and close readiness. Private-credit `DirectLoan`
+rows can also carry loan-schedule, commitment/covenant, and paydown/obligation targets, while
+structured/private `CustomAsset` rows can carry profile-lineage, servicer/trustee, valuation/NAV,
+and obligation close-readiness targets. Browser, WPF, and shared endpoint clients should render
+those rows as supplied instead of recalculating asset-class readiness, ledger coverage,
+reconciliation status, or close blockers locally.
 
 Brokerage sync activity payloads are fund-account scoped under `Workstation/BrokerageSyncDtos.cs`.
 Keep readiness and work-item decisions on `WorkstationBrokerageSyncStatusDto` and reserve

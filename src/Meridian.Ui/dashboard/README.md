@@ -176,6 +176,11 @@ Provider setup also projects the design-document Data & Integration flow from it
 `Connect Source`, `Acquire Data`, `Validate Data`, `Normalize Data`, `Store Data`, and `Publish Data`.
 React renders that flow as status copy only; credential validation, routing, storage, and publication
 state remain server/shared-service responsibilities.
+The Data provider cockpit consumes the shared `/api/providers/readiness` model as its primary
+command-center source, then enriches rows with existing provider connection, routing, trust, and
+workspace evidence. React renders provider health, broken credential state, degradation/fallback
+evidence, and the next recovery action from that shared model instead of recalculating provider
+readiness locally.
 The app shell workflow-continuity dock now also projects the design-document primary operator
 workflow as a browser-wide strip: `Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and
 `Report`. Route-specific trails such as Market Data To Paper, Research To Paper, or Accounting Closeout remain intact,
@@ -186,6 +191,14 @@ The browser `AccountingScreen` renders the same Financial Operations lane in-scr
 existing ledger, reconciliation, security coverage, and reporting evidence panels. Retained
 `Governance*` view-model, DTO, endpoint, and test fixture names are compatibility seams only; new
 browser component routing should use Accounting naming.
+The Accounting entry screen now includes a CFO / Controller close command center that derives
+ready, blocked, and at-risk close posture from the latest operations-continuity workflow, retained
+accounting-record evidence, reconciliation breaks, approvals, external GL provider warnings,
+multi-asset valuation readiness, report-pack readiness, and close-package sign-off state.
+The Accounting screen also projects an Accounting tooling workbench from existing shared payloads:
+configuration readiness, reconciliation queue state, selected ledger run, trial-balance status, and
+custom report-profile setup are summarized without adding browser-local accounting rules or export
+lifecycle state.
 Workspace navigation and command-palette root commands canonicalize caller-provided workspace
 metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, `Reporting`,
 `Strategy`, `Data`, and `Settings`. Legacy root labels such as `Research`, `Governance`, and

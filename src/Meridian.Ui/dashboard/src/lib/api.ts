@@ -61,6 +61,7 @@ import type {
   ProviderCredentialMutationResult,
   ProviderCredentialUpsertRequest,
   ProviderCredentialVerificationResult,
+  ProviderReadinessSummary,
   ProviderRoutePreviewRequest,
   ProviderRoutePreviewResponse,
   ProviderRoutingBinding,
@@ -1648,6 +1649,10 @@ export function getAlpacaConnectionStatus(options: ApiRequestOptions = {}) {
 
 export function getProviderConnections(options: ApiRequestOptions = {}) {
   return getJson<ProviderConnectionRow[]>(PROVIDER_API_ENDPOINTS.connections, options);
+}
+
+export function getProviderReadiness(options: ApiRequestOptions = {}) {
+  return getJson<ProviderReadinessSummary>(PROVIDER_API_ENDPOINTS.readiness, options);
 }
 
 export function putProviderCredentials(

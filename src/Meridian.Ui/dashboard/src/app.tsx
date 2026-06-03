@@ -96,6 +96,7 @@ function AppShell() {
     reporting,
     brokerageConnection,
     providerConnections,
+    providerReadiness,
     providerRoutingConnections,
     providerRoutingBindings,
     providerRoutingTrustSnapshots,
@@ -377,6 +378,7 @@ function AppShell() {
                     <DataScreen
                       data={data}
                       providerConnections={providerConnections}
+                      providerReadiness={providerReadiness}
                       providerRoutingConnections={providerRoutingConnections}
                       providerRoutingBindings={providerRoutingBindings}
                       providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}

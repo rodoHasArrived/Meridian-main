@@ -74,10 +74,47 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     public int SelectedTabIndex { get => _selectedTabIndex; set => SetProperty(ref _selectedTabIndex, value); }
 }
 
+public sealed class FundReconciliationMatchCandidateRow : BindableBase
+{
+    private bool _isSelected;
+
+    public FundReconciliationMatchCandidateRow(
+        string rowKey,
+        string checkLabel,
+        string sourceLabel,
+        string amountText,
+        string asOfText,
+        string statusLabel,
+        string reason,
+        bool isHighlighted)
+    {
+        RowKey = rowKey;
+        CheckLabel = checkLabel;
+        SourceLabel = sourceLabel;
+        AmountText = amountText;
+        AsOfText = asOfText;
+        StatusLabel = statusLabel;
+        Reason = reason;
+        IsHighlighted = isHighlighted;
+    }
+
+    public string RowKey { get; }
+    public string CheckLabel { get; }
+    public string SourceLabel { get; }
+    public string AmountText { get; }
+    public string AsOfText { get; }
+    public string StatusLabel { get; }
+    public string Reason { get; }
+    public bool IsHighlighted { get; }
+    public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
+}
+
 public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
 {
     public ObservableCollection<FundReconciliationBreakQueueRow> BreakQueueItems { get; } = [];
     public ObservableCollection<FundReconciliationRunRow> RunItems { get; } = [];
+    public ObservableCollection<FundReconciliationMatchCandidateRow> EntryRows { get; } = [];
+    public ObservableCollection<FundReconciliationMatchCandidateRow> SourceDataRows { get; } = [];
     public ObservableCollection<FundReconciliationCheckDetailRow> ExceptionRows { get; } = [];
     public ObservableCollection<FundReconciliationCheckDetailRow> AllCheckRows { get; } = [];
     public ObservableCollection<FundReconciliationSecurityCoverageRow> SecurityCoverageRows { get; } = [];
@@ -143,6 +180,7 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     private string _detailBreaksText = "0";
     private string _detailBreakAmountText = "-";
     private string _detailSecurityIssuesText = "0";
+    private string _matchSelectionText = "Select at least one ledger entry and one source-data row to match.";
     private string _breakQueueEmptyStateText = "No strategy-run breaks are queued for this fund.";
     private string _nextBestActionText = "Select a break to view the recommended next action.";
     private string _blockerReasonText = "No blocker is selected.";
@@ -189,6 +227,7 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     public string DetailBreaksText { get => _detailBreaksText; set => SetProperty(ref _detailBreaksText, value); }
     public string DetailBreakAmountText { get => _detailBreakAmountText; set => SetProperty(ref _detailBreakAmountText, value); }
     public string DetailSecurityIssuesText { get => _detailSecurityIssuesText; set => SetProperty(ref _detailSecurityIssuesText, value); }
+    public string MatchSelectionText { get => _matchSelectionText; set => SetProperty(ref _matchSelectionText, value); }
     public string BreakQueueEmptyStateText { get => _breakQueueEmptyStateText; set => SetProperty(ref _breakQueueEmptyStateText, value); }
     public string NextBestActionText { get => _nextBestActionText; set => SetProperty(ref _nextBestActionText, value); }
     public string BlockerReasonText { get => _blockerReasonText; set => SetProperty(ref _blockerReasonText, value); }

@@ -168,6 +168,13 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
         row.EvidenceRequirements.Should().Contain(requirement =>
             requirement.Category == "ProviderEvidence" &&
             requirement.Label.Contains("Unfunded commitment", StringComparison.OrdinalIgnoreCase));
+        row.DrillThroughTargets.Select(static target => target.TargetType).Should().Contain(
+            "LoanScheduleEvidence",
+            "CommitmentCovenantEvidence",
+            "PaydownObligationLedger");
+        row.DrillThroughTargets.Should().Contain(target =>
+            target.TargetType == "PaydownObligationLedger" &&
+            target.Source == "LoanAccountingProjector");
         row.LedgerClassification["classification"].Should().Contain("unfunded commitment obligation");
         row.ReconciliationSignals["retainedEvidence"].Should().Contain("Borrower notice commitment schedule");
     }
@@ -202,6 +209,15 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             blocker.Source == "ProviderEvidence" &&
             blocker.Severity == "Review" &&
             blocker.Message.Contains("Servicer report", StringComparison.OrdinalIgnoreCase));
+        row.DrillThroughTargets.Select(static target => target.TargetType).Should().Contain(
+            "AssetProfileLineage",
+            "ServicerTrusteeEvidence",
+            "StructuredValuationEvidence",
+            "ObligationCloseEvidence");
+        row.DrillThroughTargets.Should().Contain(target =>
+            target.TargetType == "ObligationCloseEvidence" &&
+            target.Status == "ReviewRequired" &&
+            target.Source == "FundAccountCloseReadinessService");
         row.ReconciliationSignals["breaks"].Should().Contain("obligation");
     }
 

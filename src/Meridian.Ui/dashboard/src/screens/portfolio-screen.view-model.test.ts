@@ -104,8 +104,8 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
   entity: "portfolio",
   asOfUtc: "2026-06-02T00:00:00Z",
   metrics: [
-    { id: "multi-asset-classes", label: "Asset classes", value: "3", delta: "covered", tone: "default" },
-    { id: "multi-asset-review", label: "Review required", value: "2", delta: "evidence gaps", tone: "warning" }
+    { id: "multi-asset-classes", label: "Asset classes", value: "4", delta: "covered", tone: "default" },
+    { id: "multi-asset-review", label: "Review required", value: "3", delta: "evidence gaps", tone: "warning" }
   ],
   assetClasses: [
     {
@@ -150,6 +150,33 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
       reconciliationSignals: { breaks: "principal, accrued interest, market value" }
     },
     {
+      assetClass: "DirectLoan",
+      displayName: "Private credit / loans",
+      status: "ReviewRequired",
+      statusLabel: "Review required",
+      summary: "Private-credit coverage requires retained borrower, commitment, covenant, paydown, and obligation evidence.",
+      evidenceRequirements: [
+        { requirementId: "DirectLoan:security-master-identifiers", label: "Identifiers", category: "SecurityMaster", status: "Ready", evidenceRoute: "/api/workstation/security-master/securities", required: true },
+        { requirementId: "DirectLoan:provider-evidence", label: "Provider evidence", category: "ProviderEvidence", status: "ReviewRequired", evidenceRoute: "/api/workstation/data-operations", required: true },
+        { requirementId: "DirectLoan:ledger-classification", label: "Ledger classification", category: "Ledger", status: "Ready", evidenceRoute: "/api/workstation/accounting", required: true }
+      ],
+      blockers: [
+        { code: "DirectLoan:provider-evidence-review", severity: "Review", message: "Private credit needs loan schedule, unfunded commitment, covenant, paydown, and obligation evidence.", source: "ProviderEvidence", evidenceRoute: "/api/workstation/portfolio/multi-asset-coverage" }
+      ],
+      drillThroughTargets: [
+        { targetId: "DirectLoan:security-master-passport", targetType: "SecurityMasterPassport", label: "Security Master passport/profile", route: "/api/workstation/security-master/securities", evidenceLink: "loan://passport/acme", status: "Ready", source: "SecurityMaster" },
+        { targetId: "DirectLoan:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://loan/acme", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "DirectLoan:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/workstation/reconciliation/runs", evidenceLink: "case://loan-schedule-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "DirectLoan:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: "ledger://loan/acme", status: "Ready", source: "LedgerPeriodPostingGuard" },
+        { targetId: "DirectLoan:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: null, status: "ReviewRequired", source: "FundAccountCloseReadinessService" },
+        { targetId: "DirectLoan:loan-schedule-evidence", targetType: "LoanScheduleEvidence", label: "Loan schedule and borrower notices", route: "/api/workstation/data-operations", evidenceLink: "provider://loan/acme", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "DirectLoan:commitment-covenant-evidence", targetType: "CommitmentCovenantEvidence", label: "Commitment, unfunded commitment, and covenant evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://loan/acme", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "DirectLoan:paydown-obligation-ledger", targetType: "PaydownObligationLedger", label: "Paydown and obligation ledger support", route: "/api/workstation/accounting", evidenceLink: "ledger://loan/acme", status: "Ready", source: "LoanAccountingProjector" }
+      ],
+      ledgerClassification: { classification: "Loan receivable / unfunded commitment obligation" },
+      reconciliationSignals: { breaks: "loan schedule, commitment, paydown, obligation" }
+    },
+    {
       assetClass: "CustomAsset",
       displayName: "MBS / ABS / CLO / CMBS / private assets",
       status: "ReviewRequired",
@@ -167,7 +194,11 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
         { targetId: "CustomAsset:provider-evidence", targetType: "ProviderEvidence", label: "Provider evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://custom/profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
         { targetId: "CustomAsset:reconciliation-case", targetType: "ReconciliationCase", label: "Reconciliation break/case", route: "/api/reconciliation/runs", evidenceLink: "case://custom-profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
         { targetId: "CustomAsset:ledger-mapping", targetType: "LedgerMapping", label: "Ledger mapping/evidence", route: "/api/fund-structure/ledger-mapping-assignments", evidenceLink: null, status: "Ready", source: "LedgerPeriodPostingGuard" },
-        { targetId: "CustomAsset:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", evidenceLink: "close://custom-profile", status: "ReviewRequired", source: "FundAccountCloseReadinessService" }
+        { targetId: "CustomAsset:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", evidenceLink: "close://custom-profile", status: "ReviewRequired", source: "FundAccountCloseReadinessService" },
+        { targetId: "CustomAsset:profile-lineage", targetType: "AssetProfileLineage", label: "Approved profile lineage", route: "/api/security-master/asset-profiles", evidenceLink: "profile://custom/private-credit", status: "Ready", source: "SecurityAssetProfileGovernanceService" },
+        { targetId: "CustomAsset:servicer-trustee-evidence", targetType: "ServicerTrusteeEvidence", label: "Servicer, trustee, warehouse, and factor evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://custom/profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:valuation-nav-evidence", targetType: "StructuredValuationEvidence", label: "NAV, dealer pricing, capital call, and distribution evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://custom/profile-gap", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
+        { targetId: "CustomAsset:obligation-close-evidence", targetType: "ObligationCloseEvidence", label: "Obligation schedule and close-readiness evidence", route: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", evidenceLink: "close://custom-profile", status: "ReviewRequired", source: "FundAccountCloseReadinessService" }
       ],
       ledgerClassification: { classification: "Profile-derived classification" },
       reconciliationSignals: { breaks: "custom-profile evidence" }
@@ -444,15 +475,16 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting, multiAssetCoverage });
     const customAssetRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "CustomAsset");
     const fixedIncomeRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "FixedIncome");
+    const directLoanRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "DirectLoan");
 
-    expect(vm.multiAssetCoveragePanel?.statusLabel).toBe("2 review");
-    expect(vm.multiAssetCoveragePanel?.rows).toHaveLength(3);
+    expect(vm.multiAssetCoveragePanel?.statusLabel).toBe("3 review");
+    expect(vm.multiAssetCoveragePanel?.rows).toHaveLength(4);
     expect(vm.multiAssetCoveragePanel?.groups.map((group) => ({
       id: group.id,
       label: group.label,
       summary: group.summary
     }))).toEqual([
-      { id: "review", label: "Review required", summary: "2 asset classes" },
+      { id: "review", label: "Review required", summary: "3 asset classes" },
       { id: "ready", label: "Ready", summary: "1 asset class" }
     ]);
     expect(fixedIncomeRow).toMatchObject({
@@ -463,6 +495,30 @@ describe("buildPortfolioScreenViewModel", () => {
       readinessDetail: "Degraded: 1/2 evidence targets ready with no blockers.",
       primaryEvidenceRoute: "/api/workstation/data-operations"
     });
+    expect(directLoanRow).toMatchObject({
+      displayName: "Private credit / loans",
+      statusLabel: "Review required",
+      evidenceLabel: "2/3 ready",
+      ledgerLabel: "Loan receivable / unfunded commitment obligation",
+      readinessGroupId: "review",
+      readinessDetail: "Review required: 2/3 evidence targets ready with 1 blocker.",
+      primaryEvidenceRoute: "/api/workstation/data-operations"
+    });
+    expect(directLoanRow?.drillThroughTargets.map((target) => ({
+      type: target.type,
+      href: target.href,
+      statusLabel: target.statusLabel,
+      source: target.source
+    }))).toEqual([
+      { type: "SecurityMasterPassport", href: "/api/workstation/security-master/securities", statusLabel: "Ready", source: "SecurityMaster" },
+      { type: "ProviderEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required", source: "ProviderLedgerReconciliation" },
+      { type: "ReconciliationCase", href: "/api/workstation/reconciliation/runs", statusLabel: "Review required", source: "ProviderLedgerReconciliation" },
+      { type: "LedgerMapping", href: "/api/fund-structure/ledger-mapping-assignments", statusLabel: "Ready", source: "LedgerPeriodPostingGuard" },
+      { type: "CloseReadiness", href: "/api/workstation/portfolio/multi-asset-coverage", statusLabel: "Review required", source: "FundAccountCloseReadinessService" },
+      { type: "LoanScheduleEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required", source: "ProviderLedgerReconciliation" },
+      { type: "CommitmentCovenantEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required", source: "ProviderLedgerReconciliation" },
+      { type: "PaydownObligationLedger", href: "/api/workstation/accounting", statusLabel: "Ready", source: "LoanAccountingProjector" }
+    ]);
     expect(customAssetRow).toMatchObject({
       displayName: "MBS / ABS / CLO / CMBS / private assets",
       statusLabel: "Review required",
@@ -505,11 +561,15 @@ describe("buildPortfolioScreenViewModel", () => {
       { type: "ProviderEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required" },
       { type: "ReconciliationCase", href: "/api/reconciliation/runs", statusLabel: "Review required" },
       { type: "LedgerMapping", href: "/api/fund-structure/ledger-mapping-assignments", statusLabel: "Ready" },
-      { type: "CloseReadiness", href: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", statusLabel: "Review required" }
+      { type: "CloseReadiness", href: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", statusLabel: "Review required" },
+      { type: "AssetProfileLineage", href: "/api/security-master/asset-profiles", statusLabel: "Ready" },
+      { type: "ServicerTrusteeEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required" },
+      { type: "StructuredValuationEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required" },
+      { type: "ObligationCloseEvidence", href: "/api/fund-accounts/00000000-0000-0000-0000-000000000001/close-readiness", statusLabel: "Review required" }
     ]);
     expect(vm.multiAssetCoveragePanel?.evidenceRouteLabel).toBe("GET /api/workstation/portfolio/multi-asset-coverage");
     expect(vm.multiAssetCoveragePanel?.asOfLabel).toBe("As of 2026-06-02T00:00:00Z");
-    expect(vm.multiAssetCoveragePanel?.blockerMessages[0]).toContain("Retained provider evidence is required.");
+    expect(vm.multiAssetCoveragePanel?.blockerMessages).toContainEqual(expect.stringContaining("Retained provider evidence is required."));
   });
 
   it("surfaces selected-run portfolio and ledger continuity blockers", () => {

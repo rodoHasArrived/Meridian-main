@@ -60,32 +60,41 @@ export interface WorkspaceNavViewModel {
 
 export type WorkspaceNavStatusTone = "live" | "review" | "paper" | "preview" | "setup";
 
-const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: string }[]>> = {
+type WorkspaceSubrouteDefinition = { label: string; route: string; match?: "exact" | "prefix" };
+
+const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinition[]>> = {
   trading: [
+    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.trading, match: "exact" },
     { label: "Orders", route: WORKSTATION_ROUTE_CATALOG.tradingOrders },
     { label: "Positions", route: WORKSTATION_ROUTE_CATALOG.tradingPositions },
     { label: "Risk", route: WORKSTATION_ROUTE_CATALOG.tradingRisk },
     { label: "Readiness", route: WORKSTATION_ROUTE_CATALOG.tradingReadiness }
   ],
   portfolio: [
+    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.portfolio, match: "exact" },
     { label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution },
     { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync },
     { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice }
   ],
   accounting: [
+    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.accounting, match: "exact" },
     { label: "Continuity", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
+    { label: "Entity setup", route: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup },
     { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accountingLedger },
     { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation },
     { label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions },
     { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
-    { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals }
+    { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals },
+    { label: "Configure", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure }
   ],
   reporting: [
+    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
     { label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.reportingEvidence },
     { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.reportingExports }
   ],
   strategy: [
+    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.strategy, match: "exact" },
     { label: "Designer", route: WORKSTATION_ROUTE_CATALOG.strategyDesigner },
     { label: "Formula Workbench", route: WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench },
     { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall },
@@ -94,6 +103,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
     { label: "Quant Lab", route: WORKSTATION_ROUTE_CATALOG.strategyQuantLab }
   ],
   data: [
+    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, match: "exact" },
     { label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders },
     { label: "Watchlist", route: WORKSTATION_ROUTE_CATALOG.dataWatchlist },
     { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
@@ -101,8 +111,11 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, { label: string; route: 
     { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills }
   ],
   settings: [
+    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.settings, match: "exact" },
     { label: "Preferences", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences },
-    { label: "Integrations", route: WORKSTATION_ROUTE_CATALOG.settingsIntegrations }
+    { label: "Integrations", route: WORKSTATION_ROUTE_CATALOG.settingsIntegrations },
+    { label: "Provider setup", route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup },
+    { label: "Diagnostics", route: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints }
   ]
 };
 
@@ -121,25 +134,24 @@ export function buildWorkspaceNavViewModel(
     const active = isWorkspacePathActive(pathname, workspace.key);
     const statusTone = workspaceStatusTone(workspace.status);
     const workspaceCanonicalRoute = workspacePath(workspace.key);
+    const exactWorkspaceActive = isExactRouteActive(pathname, workspaceCanonicalRoute);
     const workspaceRoute = appendOperatingScopeToRoute(workspaceCanonicalRoute, operatingScope);
     const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
     const rawSubRoutes = WORKSPACE_SUBROUTES[workspace.key] ?? [];
-    const subItems: WorkspaceNavSubItemViewModel[] = active
-      ? rawSubRoutes.map((sub) => {
-          const subActive = isSubRouteActive(pathname, sub.route);
-          const subRoute = appendOperatingScopeToRoute(sub.route, operatingScope);
-          const subScopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
-          return {
-            label: sub.label,
-            route: subRoute,
-            active: subActive,
-            ariaCurrent: subActive ? "page" : undefined,
-            ariaLabel: subActive
-              ? `${sub.label}, current page${formatPreservedScopeAriaSuffix(subScopeSummary)}`
-              : `Open ${sub.label}${formatPreservedScopeAriaSuffix(subScopeSummary)}`
-          };
-        })
-      : [];
+    const subItems: WorkspaceNavSubItemViewModel[] = rawSubRoutes.map((sub) => {
+      const subActive = isSubRouteActive(pathname, sub.route, sub.match);
+      const subRoute = appendOperatingScopeToRoute(sub.route, operatingScope);
+      const subScopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
+      return {
+        label: sub.label,
+        route: subRoute,
+        active: subActive,
+        ariaCurrent: subActive ? "page" : undefined,
+        ariaLabel: subActive
+          ? `${sub.label}, current page${formatPreservedScopeAriaSuffix(subScopeSummary)}`
+          : `Open ${sub.label}${formatPreservedScopeAriaSuffix(subScopeSummary)}`
+      };
+    });
 
     return {
       key: workspace.key,
@@ -149,9 +161,11 @@ export function buildWorkspaceNavViewModel(
       statusTone,
       route: workspaceRoute,
       active,
-      ariaCurrent: active ? "page" : undefined,
+      ariaCurrent: exactWorkspaceActive ? "page" : undefined,
       ariaLabel: active
-        ? `${workspace.label} workspace, current route, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
+        ? exactWorkspaceActive
+          ? `${workspace.label} workspace, current route, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
+          : `${workspace.label} workspace, active section, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
         : `Open ${workspace.label} workspace, ${workspace.status}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
       subItems
     };
@@ -197,7 +211,7 @@ function buildContextItems(
   operatingScope: ReturnType<typeof buildOperatingScopeFromSearch>
 ): WorkspaceNavSubItemViewModel[] {
   return (WORKSPACE_SUBROUTES[workspaceKey] ?? []).map((sub) => {
-    const active = isSubRouteActive(pathname, sub.route);
+    const active = isSubRouteActive(pathname, sub.route, sub.match);
     const route = appendOperatingScopeToRoute(sub.route, operatingScope);
     const scopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
     return {
@@ -254,10 +268,20 @@ function workspaceContextDescription(workspaceKey: WorkspaceKey): string {
   }
 }
 
-function isSubRouteActive(pathname: string, route: string): boolean {
+function isSubRouteActive(pathname: string, route: string, match: "exact" | "prefix" = "prefix"): boolean {
+  if (match === "exact") {
+    return isExactRouteActive(pathname, route);
+  }
+
   const clean = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/";
   const cleanRoute = route.replace(/\/+$/, "") || "/";
   return clean === cleanRoute || clean.startsWith(`${cleanRoute}/`);
+}
+
+function isExactRouteActive(pathname: string, route: string): boolean {
+  const clean = pathname.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/";
+  const cleanRoute = route.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/";
+  return clean === cleanRoute;
 }
 
 function workspaceStatusTone(status: string): WorkspaceNavStatusTone {

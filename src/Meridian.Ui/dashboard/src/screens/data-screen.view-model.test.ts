@@ -49,6 +49,7 @@ import type {
   DataProviderRecord,
   DataWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderReadinessSummary,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot
@@ -202,6 +203,101 @@ const polygonTrustSnapshot: ProviderRoutingTrustSnapshot = {
   isCertificationFresh: true,
   signals: ["fallback-active"],
   decision: null
+};
+
+const providerReadiness: ProviderReadinessSummary = {
+  asOf: "2026-06-02T16:50:00Z",
+  status: "Blocked",
+  totalProviders: 2,
+  readyProviders: 1,
+  reviewProviders: 0,
+  degradedProviders: 0,
+  blockedProviders: 1,
+  summary: "1 provider blocks dependent workflows.",
+  recommendedAction: "Repair Plaid credentials before routing accounting evidence workflows.",
+  providers: [
+    {
+      providerId: "plaid",
+      displayName: "Plaid",
+      capability: "Data",
+      status: "Blocked",
+      credentialState: "Missing",
+      credentialSource: "None",
+      verificationState: "NotVerified",
+      connectionHealth: "Warning",
+      isEnabled: true,
+      isConnected: false,
+      fallbackActive: false,
+      degradationScore: null,
+      lastVerifiedAt: null,
+      lastSuccessfulAt: null,
+      lastFailureAt: null,
+      lastError: "Sandbox client credentials have not been configured.",
+      maskedKeyPreview: null,
+      environment: "sandbox",
+      externalAccountId: null,
+      affectedWorkflows: ["Accounting evidence", "Brokerage sync"],
+      recommendedAction: "Connect Plaid sandbox credentials before bank-account evidence can be retained.",
+      actionHref: "/data/providers",
+      evidence: [
+        {
+          kind: "Credential",
+          label: "Credential",
+          status: "Blocked",
+          detail: "Required Plaid client fields are missing."
+        }
+      ],
+      recoveryActions: [
+        {
+          actionId: "provider.plaid.open-setup",
+          label: "Open setup",
+          target: "/data/providers",
+          requiresMutation: false
+        }
+      ]
+    },
+    {
+      providerId: "polygon",
+      displayName: "Polygon.io",
+      capability: "Data",
+      status: "Ready",
+      credentialState: "Verified",
+      credentialSource: "LocalEncryptedStore",
+      verificationState: "Verified",
+      connectionHealth: "Healthy",
+      isEnabled: true,
+      isConnected: true,
+      fallbackActive: false,
+      degradationScore: 0.08,
+      lastVerifiedAt: "2026-06-02T16:40:00Z",
+      lastSuccessfulAt: "2026-06-02T16:45:00Z",
+      lastFailureAt: null,
+      lastError: null,
+      maskedKeyPreview: "pk_live_****7F3A",
+      environment: "paper",
+      externalAccountId: null,
+      affectedWorkflows: ["Import", "Validate", "Backfill"],
+      recommendedAction: "No provider readiness action required.",
+      actionHref: "/settings#provider-polygon",
+      evidence: [
+        {
+          kind: "Connection",
+          label: "Connection",
+          status: "Ready",
+          detail: "Connected with 12 active subscriptions and 18 ms average latency.",
+          observedAt: "2026-06-02T16:45:00Z"
+        }
+      ],
+      recoveryActions: [
+        {
+          actionId: "provider.polygon.verify",
+          label: "Verify credentials",
+          target: "/api/providers/polygon/verify",
+          requiresMutation: true
+        }
+      ]
+    }
+  ]
 };
 
 describe("data-screen view model", () => {
@@ -712,6 +808,35 @@ describe("data-screen view model", () => {
       id: "backfill-test",
       status: "pending",
       statusLabel: "Placeholder"
+    }));
+  });
+
+  it("uses shared provider readiness as the command-center row source", () => {
+    const providerSection = buildProviderSection(
+      providers,
+      "provider-row-plaid",
+      {
+        providerReadiness,
+        providerConnections: [polygonConnection]
+      },
+      "diagnostics"
+    );
+
+    expect(providerSection.statusLabel).toBe("1 blocked");
+    expect(providerSection.statusTone).toBe("danger");
+    expect(providerSection.readinessSummary).toContain("Repair Plaid credentials");
+    expect(providerSection.rows.map((row) => row.provider)).toEqual(["Plaid", "Polygon.io"]);
+    expect(providerSection.rows[0]).toMatchObject({
+      provider: "Plaid",
+      status: "Blocked",
+      credentialText: "Missing",
+      actionLabel: "Open setup",
+      recommendedActionText: "Connect Plaid sandbox credentials before bank-account evidence can be retained."
+    });
+    expect(providerSection.selectedDetail?.diagnostics).toContainEqual(expect.objectContaining({
+      label: "Credential",
+      status: "fail",
+      detail: "Required Plaid client fields are missing."
     }));
   });
 

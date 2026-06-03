@@ -15,6 +15,9 @@ import type {
   DataWorkspaceResponse,
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
+  ProviderReadinessRow,
+  ProviderReadinessStatus,
+  ProviderReadinessSummary,
   ProviderKind,
   ProviderKindMeta,
   PlaidInstitution,
@@ -135,6 +138,7 @@ export interface ProviderSetupLifecycleServices {
 
 export interface DataOperationsProviderEvidence {
   providerConnections?: ProviderConnectionRow[] | null;
+  providerReadiness?: ProviderReadinessSummary | null;
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
@@ -186,6 +190,7 @@ export interface DataOperationsExportSectionState extends DataOperationsSectionS
 export interface DataOperationsProviderSectionState extends DataOperationsSectionState<DataOperationsProviderRow> {
   title: string;
   subtitle: string;
+  readinessSummary: string;
   statusLabel: string;
   statusTone: "success" | "warning" | "danger";
   commandActions: DataOperationsProviderCommandActionState[];
@@ -921,7 +926,7 @@ export function useDataViewModel(
       data,
       selectedBackfill?.jobId ?? null,
       workstream,
-      selectedProviderRowId,
+      selectedProviderId,
       selectedExport?.exportId ?? null,
       providerEvidence,
       selectedProviderTab,
@@ -1662,22 +1667,33 @@ export function buildProviderSection(
   const selectedRowId = selectedRecord ? buildProviderCenterRowId(selectedRecord) : null;
   const rows = records.map((record) => buildProviderRow(record, selectedRowId));
   const selectedDetail = buildSelectedProviderDetail(records, selectedRowId, selectedTab, verifyAction);
-  const blockedCount = rows.filter((row) => row.statusTone === "danger").length;
-  const warningCount = rows.filter((row) => row.statusTone === "warning").length;
+  const blockedCount = evidence.providerReadiness?.blockedProviders ?? rows.filter((row) => row.status === "Blocked").length;
+  const degradedCount = evidence.providerReadiness?.degradedProviders ?? rows.filter((row) => row.status === "Degraded").length;
+  const reviewCount = evidence.providerReadiness?.reviewProviders ?? rows.filter((row) => row.statusTone === "warning").length;
   const verifiedCount = rows.filter((row) => row.credentialText === "Verified" || row.credentialText === "Not required").length;
   const statusLabel = rows.length === 0
     ? "No providers"
     : blockedCount > 0
       ? `${blockedCount} blocked`
-      : warningCount > 0
-        ? `${warningCount} need review`
+      : degradedCount > 0
+        ? `${degradedCount} degraded`
+        : reviewCount > 0
+          ? `${reviewCount} need review`
         : "Continuity ready";
+  const statusTone = rows.length === 0
+    ? "warning"
+    : blockedCount > 0 || degradedCount > 0
+      ? "danger"
+      : reviewCount > 0
+        ? "warning"
+        : "success";
 
   return {
     title: "Provider Management",
     subtitle: "Configure, verify, monitor, and route market-data and brokerage providers used by Meridian.",
+    readinessSummary: buildProviderReadinessSummaryText(evidence.providerReadiness, rows.length),
     statusLabel,
-    statusTone: rows.length === 0 ? "warning" : blockedCount > 0 ? "danger" : warningCount > 0 ? "warning" : "success",
+    statusTone,
     commandActions: [
       {
         id: "add",
@@ -1763,25 +1779,42 @@ export function buildProviderRow(
   const record = isProviderCenterRecord(provider) ? provider : buildProviderCenterRecordFromWorkspace(provider);
   const rowId = buildProviderCenterRowId(record);
   const providerRecord = record.workspaceProvider;
-  const connection = record.connection;
+  const connection = resolveProviderConnection(record);
+  const readiness = record.readiness;
   const trust = record.trustSnapshot;
   const bindings = record.bindings;
   const latencyText = formatProviderValue(providerRecord?.latency, connection ? formatLastGoodProviderResponse(connection) : "Latency not reported");
-  const trustScoreText = trust ? `${Math.round(trust.score)}% · ${trust.healthStatus}` : formatProviderValue(providerRecord?.trustScore, "Trust score not reported");
-  const signalSourceText = trust?.signals.length ? trust.signals.join(", ") : formatProviderValue(providerRecord?.signalSource, "Signal source not reported");
-  const reasonCodeText = formatProviderValue(providerRecord?.reasonCode, record.routingConnection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
-  const recommendedActionText = record.routingConnection
-    ? providerRoutingRecommendedAction(record.routingConnection, trust, bindings, record.routingConnection.enabled)
-    : connection
-      ? connection.recommendedAction
-    : formatProviderValue(providerRecord?.recommendedAction, "No operator action reported");
-  const gateImpactText = formatProviderValue(providerRecord?.gateImpact, providerGateImpactText(record.routingConnection, trust));
+  const trustScoreText = trust
+    ? `${Math.round(trust.score)}% · ${trust.healthStatus}`
+    : readiness?.degradationScore !== null && readiness?.degradationScore !== undefined
+      ? `${Math.round((1 - readiness.degradationScore) * 100)}% · readiness`
+      : formatProviderValue(providerRecord?.trustScore, "Trust score not reported");
+  const signalSourceText = readiness?.evidence.length
+    ? readiness.evidence.map((item) => item.label).join(", ")
+    : trust?.signals.length
+      ? trust.signals.join(", ")
+      : formatProviderValue(providerRecord?.signalSource, "Signal source not reported");
+  const reasonCodeText = readiness
+    ? `READINESS_${readiness.status.toUpperCase()}`
+    : formatProviderValue(providerRecord?.reasonCode, record.routingConnection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
+  const recommendedActionText = readiness?.recommendedAction
+    ?? (record.routingConnection
+      ? providerRoutingRecommendedAction(record.routingConnection, trust, bindings, record.routingConnection.enabled)
+      : connection
+        ? connection.recommendedAction
+        : formatProviderValue(providerRecord?.recommendedAction, "No operator action reported"));
+  const gateImpactText = readiness?.affectedWorkflows.length
+    ? `Impacts ${readiness.affectedWorkflows.join(", ")}.`
+    : formatProviderValue(providerRecord?.gateImpact, providerGateImpactText(record.routingConnection, trust));
   const selected = rowId === selectedProviderId;
   const status = resolveProviderDisplayStatus(record);
   const statusTone = resolveProviderStatusTone(status);
   const credentialText = connection ? providerCredentialLabel(connection.credentialState) : "Not reported";
   const verificationText = connection ? providerVerificationLabel(connection.verificationState) : providerRoutingVerificationLabel(record.routingConnection, trust);
   const affectedWorkflows = resolveProviderWorkflows(record);
+  const primaryAction = readiness?.recoveryActions.find((action) => !action.disabledReason)
+    ?? readiness?.recoveryActions[0]
+    ?? null;
 
   return {
     providerId: record.providerId,
@@ -1795,12 +1828,12 @@ export function buildProviderRow(
     verificationText,
     lastSuccessfulText: formatLastGoodProviderResponse(connection),
     affectedWorkflowsText: affectedWorkflows.join(", "),
-    actionLabel: connection?.providerId === "alpaca" ? "Manage Alpaca" : "View Details",
-    actionHref: connection?.actionHref || `/settings#provider-${record.providerId}-connection`,
+    actionLabel: primaryAction?.label ?? (connection?.providerId === "alpaca" ? "Manage Alpaca" : "View Details"),
+    actionHref: primaryAction?.target ?? connection?.actionHref ?? readiness?.actionHref ?? `/settings#provider-${record.providerId}-connection`,
     latencyText,
     trustScoreText,
     signalSourceText,
-    note: providerRecord?.note ?? recommendedActionText,
+    note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported",
     statusTone,
     trustFields: [
       {
@@ -1890,7 +1923,7 @@ export function buildSelectedProviderDetail(
       selected: selectedTab === tab,
       ariaControls: `${DATA_PROVIDER_DETAIL_PANEL_ID}-${tab}`
     })),
-    verifyAction: selected.connection ? verifyAction : {
+    verifyAction: resolveProviderConnection(selected) ? verifyAction : {
       ...verifyAction,
       disabled: true,
       disabledReason: "This provider row does not have a credential connection record yet.",
@@ -1907,6 +1940,7 @@ export interface DataOperationsProviderCenterRecord {
   displayName: string;
   workspaceProvider: DataProviderRecord | null;
   connection: ProviderConnectionRow | null;
+  readiness: ProviderReadinessRow | null;
   routingConnection: ProviderRoutingConnection | null;
   bindings: ProviderRoutingBinding[];
   trustSnapshot: ProviderRoutingTrustSnapshot | null;
@@ -1920,10 +1954,13 @@ function buildProviderCenterRecords(
   providers: DataProviderRecord[],
   evidence: DataOperationsProviderEvidence
 ): DataOperationsProviderCenterRecord[] {
+  const readinessRows = evidence.providerReadiness?.providers ?? [];
   const providerConnections = evidence.providerConnections ?? [];
   const routingConnections = evidence.providerRoutingConnections ?? [];
   const routingBindings = evidence.providerRoutingBindings ?? [];
   const trustSnapshots = evidence.providerRoutingTrustSnapshots ?? [];
+  const matchedReadiness = new Set<string>();
+  const matchedConnections = new Set<string>();
   const matchedWorkspace = new Set<string>();
   const matchedRouting = new Set<string>();
   const workspaceByProviderId = new Map(
@@ -1931,9 +1968,50 @@ function buildProviderCenterRecords(
       .filter((provider) => Boolean(provider.providerId))
       .map((provider) => [normalizeProviderToken(provider.providerId ?? ""), provider] as const)
   );
+  const connectionByProviderId = new Map(
+    providerConnections.map((connection) => [normalizeProviderToken(connection.providerId), connection] as const)
+  );
 
-  const records = providerConnections.map((connection) => {
-    const workspaceProvider = workspaceByProviderId.get(normalizeProviderToken(connection.providerId))
+  const records = readinessRows.map((readiness) => {
+    const readinessKey = normalizeProviderToken(readiness.providerId);
+    matchedReadiness.add(readinessKey);
+    const connection = connectionByProviderId.get(readinessKey) ?? null;
+    if (connection) {
+      matchedConnections.add(normalizeProviderToken(connection.providerId));
+    }
+
+    const workspaceProvider = workspaceByProviderId.get(readinessKey)
+      ?? (connection ? findWorkspaceProviderForConnection(connection, providers) : findWorkspaceProviderForReadiness(readiness, providers));
+    if (workspaceProvider) {
+      matchedWorkspace.add(normalizeProviderToken(workspaceProvider.providerId ?? workspaceProvider.provider));
+    }
+
+    const routingConnection = connection
+      ? findRoutingConnectionForProviderConnection(connection, routingConnections)
+      : findRoutingConnectionForReadiness(readiness, routingConnections);
+    if (routingConnection) {
+      matchedRouting.add(normalizeProviderToken(routingConnection.connectionId));
+    }
+
+    return buildProviderCenterRecord({
+      providerId: readiness.providerId,
+      displayName: readiness.displayName,
+      workspaceProvider,
+      connection,
+      readiness,
+      routingConnection,
+      routingBindings,
+      trustSnapshots
+    });
+  });
+
+  for (const connection of providerConnections) {
+    const connectionKey = normalizeProviderToken(connection.providerId);
+    if (matchedConnections.has(connectionKey) || matchedReadiness.has(connectionKey)) {
+      continue;
+    }
+
+    const workspaceProvider = workspaceByProviderId.get(connectionKey)
       ?? findWorkspaceProviderForConnection(connection, providers);
     if (workspaceProvider) {
       matchedWorkspace.add(normalizeProviderToken(workspaceProvider.providerId ?? workspaceProvider.provider));
@@ -1944,16 +2022,17 @@ function buildProviderCenterRecords(
       matchedRouting.add(normalizeProviderToken(routingConnection.connectionId));
     }
 
-    return buildProviderCenterRecord({
+    records.push(buildProviderCenterRecord({
       providerId: connection.providerId,
       displayName: connection.displayName,
       workspaceProvider,
       connection,
+      readiness: null,
       routingConnection,
       routingBindings,
       trustSnapshots
-    });
-  });
+    }));
+  }
 
   for (const provider of providers) {
     const providerKey = normalizeProviderToken(provider.providerId ?? provider.provider);
@@ -1969,6 +2048,7 @@ function buildProviderCenterRecords(
         displayName: routingConnection.displayName,
         workspaceProvider: null,
         connection: null,
+        readiness: null,
         routingConnection,
         routingBindings,
         trustSnapshots
@@ -1984,6 +2064,7 @@ function buildProviderCenterRecord({
   displayName,
   workspaceProvider,
   connection,
+  readiness,
   routingConnection,
   routingBindings,
   trustSnapshots
@@ -1992,6 +2073,7 @@ function buildProviderCenterRecord({
   displayName: string;
   workspaceProvider: DataProviderRecord | null;
   connection: ProviderConnectionRow | null;
+  readiness: ProviderReadinessRow | null;
   routingConnection: ProviderRoutingConnection | null;
   routingBindings: ProviderRoutingBinding[];
   trustSnapshots: ProviderRoutingTrustSnapshot[];
@@ -2002,6 +2084,7 @@ function buildProviderCenterRecord({
     displayName,
     workspaceProvider,
     connection,
+    readiness,
     routingConnection,
     bindings: routingBindings.filter((binding) => normalizeProviderToken(binding.connectionId) === normalizeProviderToken(connectionId)),
     trustSnapshot: trustSnapshots.find((snapshot) => normalizeProviderToken(snapshot.connectionId) === normalizeProviderToken(connectionId)) ?? null
@@ -2014,6 +2097,7 @@ function buildProviderCenterRecordFromWorkspace(provider: DataProviderRecord): D
     displayName: provider.displayName ?? provider.provider,
     workspaceProvider: provider,
     connection: provider.connectionSummary ?? null,
+    readiness: null,
     routingConnection: null,
     bindings: [],
     trustSnapshot: null
@@ -2037,12 +2121,47 @@ function findWorkspaceProviderForConnection(
   }) ?? null;
 }
 
+function findWorkspaceProviderForReadiness(
+  readiness: ProviderReadinessRow,
+  providers: DataProviderRecord[]
+): DataProviderRecord | null {
+  const providerId = normalizeProviderToken(readiness.providerId);
+  const displayName = normalizeProviderToken(readiness.displayName);
+  return providers.find((provider) => {
+    const directId = normalizeProviderToken(provider.providerId ?? "");
+    if (directId.length > 0 && directId === providerId) {
+      return true;
+    }
+
+    const normalized = normalizeProviderToken(provider.displayName ?? provider.provider);
+    return normalized === providerId || normalized === displayName || normalized.includes(providerId) || providerId.includes(normalized);
+  }) ?? null;
+}
+
 function findRoutingConnectionForProviderConnection(
   connection: ProviderConnectionRow,
   routingConnections: ProviderRoutingConnection[]
 ): ProviderRoutingConnection | null {
   const providerId = normalizeProviderToken(connection.providerId);
   const displayName = normalizeProviderToken(connection.displayName);
+  return routingConnections.find((routingConnection) => {
+    const connectionId = normalizeProviderToken(routingConnection.connectionId);
+    const familyId = normalizeProviderToken(routingConnection.providerFamilyId);
+    const routingName = normalizeProviderToken(routingConnection.displayName);
+    return connectionId === providerId ||
+      familyId === providerId ||
+      routingName === displayName ||
+      connectionId.includes(providerId) ||
+      providerId.includes(familyId);
+  }) ?? null;
+}
+
+function findRoutingConnectionForReadiness(
+  readiness: ProviderReadinessRow,
+  routingConnections: ProviderRoutingConnection[]
+): ProviderRoutingConnection | null {
+  const providerId = normalizeProviderToken(readiness.providerId);
+  const displayName = normalizeProviderToken(readiness.displayName);
   return routingConnections.find((routingConnection) => {
     const connectionId = normalizeProviderToken(routingConnection.connectionId);
     const familyId = normalizeProviderToken(routingConnection.providerFamilyId);
@@ -2078,7 +2197,42 @@ function buildProviderCenterRowId(record: DataOperationsProviderCenterRecord): s
   return buildProviderRowId(record.connection?.providerId ?? record.providerId ?? record.routingConnection?.connectionId ?? record.displayName);
 }
 
+function resolveProviderConnection(record: DataOperationsProviderCenterRecord): ProviderConnectionRow | null {
+  if (record.connection) {
+    return record.connection;
+  }
+
+  return record.readiness ? providerConnectionFromReadiness(record.readiness) : null;
+}
+
+function providerConnectionFromReadiness(readiness: ProviderReadinessRow): ProviderConnectionRow {
+  return {
+    providerId: readiness.providerId,
+    displayName: readiness.displayName,
+    capability: readiness.capability,
+    credentialState: readiness.credentialState,
+    credentialSource: readiness.credentialSource,
+    verificationState: readiness.verificationState,
+    health: readiness.connectionHealth,
+    fallbackActive: readiness.fallbackActive,
+    lastVerifiedAt: readiness.lastVerifiedAt,
+    lastSuccessfulAt: readiness.lastSuccessfulAt,
+    lastFailureAt: readiness.lastFailureAt,
+    lastError: readiness.lastError,
+    maskedKeyPreview: readiness.maskedKeyPreview,
+    environment: readiness.environment,
+    externalAccountId: readiness.externalAccountId,
+    affectedWorkflows: readiness.affectedWorkflows,
+    recommendedAction: readiness.recommendedAction,
+    actionHref: readiness.actionHref
+  };
+}
+
 function resolveProviderDisplayStatus(record: DataOperationsProviderCenterRecord): DataOperationsProviderStatus {
+  if (record.readiness) {
+    return dataProviderStatusFromReadiness(record.readiness.status);
+  }
+
   if (record.connection) {
     switch (record.connection.health) {
       case "Healthy":
@@ -2101,13 +2255,29 @@ function resolveProviderDisplayStatus(record: DataOperationsProviderCenterRecord
   return record.workspaceProvider?.status ?? "Warning";
 }
 
+function dataProviderStatusFromReadiness(status: ProviderReadinessStatus): DataOperationsProviderStatus {
+  switch (status) {
+    case "Ready":
+      return "Healthy";
+    case "Blocked":
+      return "Blocked";
+    case "Degraded":
+      return "Degraded";
+    default:
+      return "Warning";
+  }
+}
+
 function resolveProviderCapability(record: DataOperationsProviderCenterRecord): string {
-  if (record.connection) {
-    switch (record.connection.capability) {
+  const connection = resolveProviderConnection(record);
+  if (connection) {
+    switch (connection.capability) {
       case "DataAndBrokerage":
         return "Data + Brokerage";
       case "Brokerage":
         return "Brokerage";
+      case "AccountingSystem":
+        return "Accounting System";
       default:
         return "Data";
     }
@@ -2122,8 +2292,9 @@ function resolveProviderCapability(record: DataOperationsProviderCenterRecord): 
 }
 
 function resolveProviderWorkflows(record: DataOperationsProviderCenterRecord): string[] {
-  if (record.connection?.affectedWorkflows.length) {
-    return record.connection.affectedWorkflows;
+  const connection = resolveProviderConnection(record);
+  if (connection?.affectedWorkflows.length) {
+    return connection.affectedWorkflows;
   }
 
   if (record.workspaceProvider?.connectionSummary?.affectedWorkflows?.length) {
@@ -2169,13 +2340,33 @@ function buildProviderSummaryCards(
   ];
 }
 
+function buildProviderReadinessSummaryText(
+  readiness: ProviderReadinessSummary | null | undefined,
+  rowCount: number
+): string {
+  if (!readiness) {
+    return rowCount > 0
+      ? "Provider readiness is assembled from connection, routing, and workspace evidence while the shared readiness summary is unavailable."
+      : "Provider readiness will appear after the shared provider setup, validation, degradation, and evidence data loads.";
+  }
+
+  const counts = [
+    `${readiness.readyProviders} ready`,
+    `${readiness.reviewProviders} review`,
+    `${readiness.degradedProviders} degraded`,
+    `${readiness.blockedProviders} blocked`
+  ].join(" / ");
+  return `${readiness.summary} ${counts}. Next action: ${readiness.recommendedAction}`;
+}
+
 function buildProviderOverviewFields(
   record: DataOperationsProviderCenterRecord,
   row: DataOperationsProviderRow
 ): DataOperationsDetailField[] {
-  const connection = record.connection;
+  const connection = resolveProviderConnection(record);
   const workspaceRouting = record.workspaceProvider?.routingSummary;
-  return [
+  const fields: DataOperationsDetailField[] = [
+    { id: "readiness", label: "Provider readiness", value: record.readiness?.status ?? row.status },
     { id: "health", label: "Current health", value: row.status },
     { id: "capability", label: "Capability", value: row.capability },
     {
@@ -2201,13 +2392,23 @@ function buildProviderOverviewFields(
     { id: "workflows", label: "Affected workflows", value: row.affectedWorkflowsText },
     { id: "trust-score", label: "Trust score", value: row.trustScoreText }
   ];
+
+  if (record.readiness?.degradationScore !== null && record.readiness?.degradationScore !== undefined) {
+    fields.push({
+      id: "degradation-score",
+      label: "Degradation score",
+      value: `${Math.round(record.readiness.degradationScore * 100)}%`
+    });
+  }
+
+  return fields;
 }
 
 function buildProviderCredentialFieldsForDetail(
   record: DataOperationsProviderCenterRecord,
   row: DataOperationsProviderRow
 ): DataOperationsDetailField[] {
-  const connection = record.connection;
+  const connection = resolveProviderConnection(record);
   return [
     { id: "credential-source", label: "Credential source", value: connection ? providerCredentialSourceLabel(connection.credentialSource) : "Routing API only" },
     { id: "credential-state", label: "Credential state", value: row.credentialText },
@@ -2224,7 +2425,20 @@ function buildProviderDiagnostics(record: DataOperationsProviderCenterRecord): D
     return record.workspaceProvider.diagnostics;
   }
 
-  const connection = record.connection;
+  if (record.readiness?.evidence.length) {
+    return record.readiness.evidence.map((item, index) => ({
+      id: `readiness-${item.kind.toLowerCase()}-${index}`,
+      label: item.label,
+      status: diagnosticStatusFromReadiness(item.status),
+      statusLabel: providerReadinessStatusLabel(item.status),
+      detail: [
+        item.detail,
+        item.observedAt ? `Observed ${formatProviderUtcMinute(item.observedAt)}.` : null
+      ].filter(Boolean).join(" ")
+    }));
+  }
+
+  const connection = resolveProviderConnection(record);
   const hasCredentialRecord = Boolean(connection);
   const credentialPass = connection?.credentialState === "Verified" || connection?.credentialState === "NotRequired" || connection?.credentialState === "Configured";
   const verificationPass = connection?.verificationState === "Verified" || connection?.verificationState === "NotRequired";
@@ -2280,7 +2494,7 @@ function buildProviderDiagnosticsEmptyState(record: DataOperationsProviderCenter
     return null;
   }
 
-  if (record.connection || record.trustSnapshot) {
+  if (record.readiness || resolveProviderConnection(record) || record.trustSnapshot) {
     return null;
   }
 
@@ -2357,6 +2571,34 @@ function providerCredentialLabel(value: ProviderConnectionRow["credentialState"]
       return "Not required";
     default:
       return splitProviderSetupPascalCase(value);
+  }
+}
+
+function diagnosticStatusFromReadiness(status: ProviderReadinessStatus): DataOperationsProviderDiagnosticRow["status"] {
+  switch (status) {
+    case "Ready":
+      return "pass";
+    case "Blocked":
+      return "fail";
+    case "Degraded":
+      return "warning";
+    default:
+      return "pending";
+  }
+}
+
+function providerReadinessStatusLabel(status: ProviderReadinessStatus): string {
+  switch (status) {
+    case "Ready":
+      return "Ready";
+    case "Review":
+      return "Review";
+    case "Degraded":
+      return "Degraded";
+    case "Blocked":
+      return "Blocked";
+    default:
+      return "Unknown";
   }
 }
 

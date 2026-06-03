@@ -56,6 +56,7 @@ import type {
 } from "@/screens/data-screen.view-model";
 import type {
   ProviderConnectionRow,
+  ProviderReadinessSummary,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot
@@ -64,6 +65,7 @@ import type {
 interface DataScreenProps {
   data: DataWorkspaceResponse | null;
   providerConnections?: ProviderConnectionRow[] | null;
+  providerReadiness?: ProviderReadinessSummary | null;
   providerRoutingConnections?: ProviderRoutingConnection[] | null;
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
@@ -124,6 +126,15 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
     id: "gate",
     label: "Workflows",
     render: (provider) => <span className="text-xs leading-5 text-muted-foreground">{provider.affectedWorkflowsText}</span>
+  },
+  {
+    id: "action",
+    label: "Next Action",
+    render: (provider) => (
+      <span className="block max-w-[15rem] truncate text-xs font-medium text-foreground" title={provider.recommendedActionText}>
+        {provider.actionLabel}
+      </span>
+    )
   }
 ];
 
@@ -210,6 +221,7 @@ const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
 export function DataScreen({
   data,
   providerConnections = null,
+  providerReadiness = null,
   providerRoutingConnections = null,
   providerRoutingBindings = null,
   providerRoutingTrustSnapshots = null,
@@ -225,6 +237,7 @@ export function DataScreen({
   );
   const providerEvidence = useMemo(() => ({
     providerConnections,
+    providerReadiness,
     providerRoutingConnections,
     providerRoutingBindings,
     providerRoutingTrustSnapshots,
@@ -233,6 +246,7 @@ export function DataScreen({
   }), [
     onProviderRoutingRefresh,
     providerConnections,
+    providerReadiness,
     providerRoutingBindings,
     providerRoutingConnections,
     providerRoutingRefreshing,
@@ -343,6 +357,9 @@ export function DataScreen({
                 <CardDescription className="mt-2">
                   Provider health, credential verification, routing, and fallback posture. {vm.providerSection.subtitle}
                 </CardDescription>
+                <p className="mt-2 max-w-3xl text-xs leading-5 text-muted-foreground">
+                  {vm.providerSection.readinessSummary}
+                </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
