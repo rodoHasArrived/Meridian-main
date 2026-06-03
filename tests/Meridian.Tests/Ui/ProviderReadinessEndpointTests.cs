@@ -160,4 +160,38 @@ public sealed class ProviderReadinessEndpointTests
         public Task RecordTransferAsync(PlaidTransferResult result, CancellationToken ct = default)
             => Task.CompletedTask;
     }
+
+    private sealed class ProviderConnectionEnvironmentScope : IDisposable
+    {
+        private static readonly string[] Names =
+        [
+            AlpacaCredentialEnvironment.KeyIdName,
+            AlpacaCredentialEnvironment.SecretKeyName,
+            "PLAID_CLIENT_ID",
+            "PLAID_SECRET",
+            "PLAID_SANDBOX_SECRET",
+            "PLAID_DEVELOPMENT_SECRET"
+        ];
+
+        private readonly Dictionary<string, string?> _original = new(StringComparer.Ordinal);
+
+        private ProviderConnectionEnvironmentScope()
+        {
+            foreach (var name in Names)
+            {
+                _original[name] = Environment.GetEnvironmentVariable(name);
+                Environment.SetEnvironmentVariable(name, null);
+            }
+        }
+
+        public static ProviderConnectionEnvironmentScope Clear() => new();
+
+        public void Dispose()
+        {
+            foreach (var (name, value) in _original)
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+        }
+    }
 }

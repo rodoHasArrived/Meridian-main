@@ -57,11 +57,12 @@ public sealed class ProviderReadinessService
             var providerMetrics = FindMetrics(metrics, providerId, source);
             var degradationScore = scorer?.GetScore(providerId).CompositeScore;
             var isEnabled = source?.Enabled ?? connection is not null || descriptor is not null;
-            var isConnected = providerMetrics?.IsConnected
-                ?? connection?.Health is ProviderContinuityHealthDto.Healthy
-                ?? false;
-            var fallbackActive = connection?.FallbackActive
-                ?? providerMetrics is { IsConnected: false, ConnectionFailures: > 0 };
+            var isConnected = providerMetrics is not null
+                ? providerMetrics.IsConnected
+                : connection?.Health is ProviderContinuityHealthDto.Healthy;
+            var fallbackActive = connection is not null
+                ? connection.FallbackActive
+                : providerMetrics is { IsConnected: false, ConnectionFailures: > 0 };
             var status = ResolveReadinessStatus(connection, isEnabled, isConnected, fallbackActive, degradationScore);
 
             rows.Add(new ProviderReadinessRowDto(

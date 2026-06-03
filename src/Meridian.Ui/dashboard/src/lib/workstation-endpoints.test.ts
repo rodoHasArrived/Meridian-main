@@ -30,6 +30,7 @@ import {
   coveredCallRunStatusEndpoint,
   coveredCallRunsEndpoint,
   exportPreviewEndpoint,
+  reportPackEvidenceBundleEndpoint,
   executionAuditEndpoint,
   executionManualOverrideClearEndpoint,
   executionOrderCancelEndpoint,
@@ -340,7 +341,10 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(EXPORT_API_ENDPOINTS.analysis).toBe("/api/export/analysis");
     expect(EXPORT_API_ENDPOINTS.reportPacks).toBe("/api/fund-structure/report-packs");
+    expect(EXPORT_API_ENDPOINTS.reportPackEvidenceBundle).toBe("/api/fund-structure/report-packs/{reportId}/evidence-bundle");
     expect(exportPreviewEndpoint("audit pack")).toBe("/api/export/preview?profile=audit+pack");
+    expect(reportPackEvidenceBundleEndpoint("report / 1")).toBe("/api/fund-structure/report-packs/report%20%2F%201/evidence-bundle");
+    expect(reportPackEvidenceBundleEndpoint()).toBe("/api/fund-structure/report-packs/{reportId}/evidence-bundle");
   });
 
   it("builds security-master and reconciliation endpoint families from shared roots", () => {

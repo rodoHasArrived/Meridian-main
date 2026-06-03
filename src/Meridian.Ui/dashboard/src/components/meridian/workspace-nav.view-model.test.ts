@@ -115,6 +115,7 @@ describe("workspace nav view model", () => {
       "/accounting/operations-continuity",
       "/accounting/ledger",
       "/accounting/reconciliation",
+      "/accounting/exceptions",
       "/accounting/security-master",
       "/accounting/approvals"
     ]);

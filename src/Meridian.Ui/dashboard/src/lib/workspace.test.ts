@@ -49,6 +49,7 @@ describe("workspace metadata", () => {
     expect(workstationRoute("portfolioFamilyOffice")).toBe("/portfolio/family-office");
     expect(workstationRoute("accountingOperationsContinuity")).toBe("/accounting/operations-continuity");
     expect(workstationRoute("accountingEntitySetup")).toBe("/accounting/entity-setup");
+    expect(workstationRoute("accountingExceptions")).toBe("/accounting/exceptions");
     expect(workstationRoute("settingsAlpacaProviderSetup")).toBe("/settings#alpaca-provider-setup");
     expect(workstationRouteWithQuery("dataQuotes", { symbol: "BRK/B", provider: "Alpaca", empty: null })).toBe(
       "/data/quotes?symbol=BRK%2FB&provider=Alpaca"
@@ -113,6 +114,7 @@ describe("workspace metadata", () => {
     expect(workflowTargetPath("RunRisk", "trading")).toBe("/trading/readiness");
     expect(workflowTargetPath("OperationsContinuity", "accounting")).toBe("/accounting/operations-continuity");
     expect(workflowTargetPath("OperationsClose", "accounting")).toBe("/accounting/operations-continuity");
+    expect(workflowTargetPath("FundExceptionWorkbench", "accounting")).toBe("/accounting/exceptions");
     expect(workflowTargetPath("FundReconciliation", "accounting")).toBe("/accounting/reconciliation");
     expect(workflowTargetPath("FundTrialBalance", "accounting")).toBe("/accounting/ledger");
     expect(workflowTargetPath("FundAuditTrail", "accounting")).toBe("/accounting");
@@ -137,6 +139,7 @@ describe("workspace metadata", () => {
       "EvidenceWorkbench",
       "FundAccountingConfigure",
       "FundAuditTrail",
+      "FundExceptionWorkbench",
       "FundReconciliation",
       "FundReportPack",
       "FundStructureSetup",

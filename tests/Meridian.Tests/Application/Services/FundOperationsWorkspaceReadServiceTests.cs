@@ -593,6 +593,73 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     }
 
     [Fact]
+    public async Task ExportReportPackEvidenceBundleAsync_WritesManifestProvenanceApprovalsAndSourceLinks()
+    {
+        var fundProfileId = $"fund-report-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-bundle-001",
+            strategyId: "bundle-1",
+            strategyName: "Bundle Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Bundle Fund"));
+
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var repository = CreateReportPackRepository(tempRoot);
+            var service = CreateReportPackService(accountService, strategyRepository, repository);
+            var snapshot = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "controller",
+                AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+                CorrelationId: "corr-bundle-001",
+                ExpectedSchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion));
+
+            var bundle = await service.ExportReportPackEvidenceBundleAsync(
+                snapshot.ReportId,
+                "audit-lead");
+
+            bundle.Should().NotBeNull();
+            bundle!.ReportId.Should().Be(snapshot.ReportId);
+            bundle.ExportedBy.Should().Be("audit-lead");
+            bundle.Manifest.Should().BeEquivalentTo(snapshot);
+            bundle.Provenance.SourceSnapshotHash.Should().Be(snapshot.Provenance.SourceSnapshotHash);
+            bundle.ManifestPath.Should().EndWith("/manifest.json");
+            bundle.ProvenancePath.Should().EndWith("/provenance.json");
+            bundle.Approvals.Select(static approval => approval.ToStatus)
+                .Should()
+                .ContainInOrder(GovernanceReportPackStatusDto.Generated, GovernanceReportPackStatusDto.ReviewRequired);
+            bundle.SourceLinks.Should().Contain(link =>
+                link.SourceType == "run" &&
+                link.SourceId == "run-bundle-001" &&
+                link.Route == UiApiRoutes.WithParam(UiApiRoutes.RunsContinuity, "runId", "run-bundle-001"));
+            bundle.Artifacts.Should().BeEquivalentTo(snapshot.Artifacts);
+            bundle.BundleArtifact.Should().NotBeNull();
+            bundle.BundleArtifact!.ArtifactKind.Should().Be("evidence-bundle");
+            bundle.BundleArtifact.Format.Should().Be(GovernanceReportArtifactFormatDto.Json);
+
+            var bundlePath = ResolveArtifactPath(tempRoot, bundle.BundleArtifact);
+            File.Exists(bundlePath).Should().BeTrue(bundlePath);
+            var bundleJson = await File.ReadAllTextAsync(bundlePath);
+            bundleJson.Should().Contain("\"manifest\"");
+            bundleJson.Should().Contain("\"provenance\"");
+            bundleJson.Should().Contain("\"approvals\"");
+            bundleJson.Should().Contain("\"sourceLinks\"");
+            bundleJson.Should().Contain(snapshot.Provenance.SourceSnapshotHash);
+            Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(bundlePath)))
+                .ToLowerInvariant()
+                .Should()
+                .Be(bundle.BundleArtifact.ChecksumSha256);
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
     public async Task ReportPackRepository_WithInvalidSnapshot_UsesCanonicalReportPackValidationWording()
     {
         var fundProfileId = $"fund-report-{Guid.NewGuid():N}";

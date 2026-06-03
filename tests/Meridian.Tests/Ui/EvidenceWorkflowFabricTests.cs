@@ -1721,6 +1721,12 @@ public sealed class EvidenceWorkflowFabricTests
 
         public Task<FundReportPackSnapshotDto?> FindLatestByRunIdAsync(string runId, CancellationToken ct = default)
             => Task.FromResult<FundReportPackSnapshotDto?>(null);
+
+        public Task<FundReportPackEvidenceBundleDto> SaveEvidenceBundleAsync(
+            FundReportPackSnapshotDto snapshot,
+            FundReportPackEvidenceBundleDto bundle,
+            CancellationToken ct = default)
+            => Task.FromResult(bundle);
     }
 
     private sealed class StubSecurityMasterConflictService(IReadOnlyList<SecurityMasterConflict> conflicts)
