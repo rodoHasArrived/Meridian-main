@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
@@ -13,6 +14,7 @@ public sealed partial class FundLedgerViewModel
 
     private FundReconciliationDetailModel? _currentReconciliationDetail;
     private CancellationTokenSource? _reconciliationDetailCts;
+    private readonly List<FundReconciliationMatchCandidateRow> _reconciliationMatchRowsWithSubscriptions = [];
 
     private bool _isApplyingReconciliationSelection;
     private bool _isReconciliationRefreshInFlight;
@@ -22,6 +24,10 @@ public sealed partial class FundLedgerViewModel
     public ObservableCollection<FundReconciliationBreakQueueRow> ReconciliationBreakQueueItems => ReconciliationSection.BreakQueueItems;
 
     public ObservableCollection<FundReconciliationRunRow> ReconciliationRunItems => ReconciliationSection.RunItems;
+
+    public ObservableCollection<FundReconciliationMatchCandidateRow> ReconciliationEntryRows => ReconciliationSection.EntryRows;
+
+    public ObservableCollection<FundReconciliationMatchCandidateRow> ReconciliationSourceDataRows => ReconciliationSection.SourceDataRows;
 
     public ObservableCollection<FundReconciliationCheckDetailRow> ReconciliationExceptionRows => ReconciliationSection.ExceptionRows;
 
@@ -345,6 +351,12 @@ public sealed partial class FundLedgerViewModel
         private set => SetReconciliationSectionProperty(ReconciliationSection.DetailSecurityIssuesText, text => ReconciliationSection.DetailSecurityIssuesText = text, value);
     }
 
+    public string ReconciliationMatchSelectionText
+    {
+        get => ReconciliationSection.MatchSelectionText;
+        private set => SetReconciliationSectionProperty(ReconciliationSection.MatchSelectionText, text => ReconciliationSection.MatchSelectionText = text, value);
+    }
+
     public string ReconciliationBreakQueueEmptyStateText
     {
         get => ReconciliationSection.BreakQueueEmptyStateText;
@@ -434,6 +446,18 @@ public sealed partial class FundLedgerViewModel
         !_isReconciliationActionInFlight &&
         !string.IsNullOrWhiteSpace(ReconciliationOperatorText) &&
         !string.IsNullOrWhiteSpace(ReconciliationNoteText);
+
+    public bool HasReconciliationMatchCandidates =>
+        ReconciliationEntryRows.Count > 0 ||
+        ReconciliationSourceDataRows.Count > 0;
+
+    public bool CanMatchSelectedReconciliationItems =>
+        SupportsSelectedBreakActions &&
+        SelectedBreakQueueItem?.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview &&
+        !_isReconciliationActionInFlight &&
+        !string.IsNullOrWhiteSpace(ReconciliationOperatorText) &&
+        ReconciliationEntryRows.Any(static row => row.IsSelected) &&
+        ReconciliationSourceDataRows.Any(static row => row.IsSelected);
 
     public bool CanDismissSelectedBreak => CanResolveSelectedBreak;
 
@@ -539,6 +563,26 @@ public sealed partial class FundLedgerViewModel
                 ReconciliationNoteText.Trim(),
                 token),
             "Break resolved and audit note captured.",
+            ct);
+    }
+
+    public async Task MatchSelectedReconciliationItemsAsync(CancellationToken ct = default)
+    {
+        if (!CanMatchSelectedReconciliationItems || SelectedBreakQueueItem is null)
+        {
+            ReconciliationActionFeedbackText = "Match needs an operator plus at least one selected ledger entry and source-data row.";
+            return;
+        }
+
+        var resolutionNote = BuildSelectedMatchResolutionNote();
+        await ExecuteBreakQueueActionAsync(
+            SelectedBreakQueueItem,
+            (breakRow, token) => _fundReconciliationWorkbenchService.ResolveAsync(
+                breakRow,
+                ReconciliationOperatorText.Trim(),
+                resolutionNote,
+                token),
+            "Selected ledger entries and source data marked reconciled.",
             ct);
     }
 
@@ -789,6 +833,7 @@ public sealed partial class FundLedgerViewModel
         SynchronizeCollection(ReconciliationSection.AllCheckRows, detail.AllCheckRows);
         SynchronizeCollection(ReconciliationSection.SecurityCoverageRows, detail.SecurityCoverageRows);
         SynchronizeCollection(ReconciliationSection.AuditRows, detail.AuditRows);
+        SynchronizeReconciliationMatchCandidates(detail);
 
         UpdateReconciliationOperatorGuidance();
         NotifyReconciliationDerivedStateChanged();
@@ -812,6 +857,7 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailSecurityIssuesText = "0";
         ReconciliationSection.ExceptionRows.Clear();
         ReconciliationSection.AllCheckRows.Clear();
+        ClearReconciliationMatchCandidates();
         ReconciliationSection.SecurityCoverageRows.Clear();
         ReconciliationSection.AuditRows.Clear();
         NotifyReconciliationDerivedStateChanged();
@@ -840,6 +886,7 @@ public sealed partial class FundLedgerViewModel
             ReconciliationSection.RunItems.Clear();
             ReconciliationSection.ExceptionRows.Clear();
             ReconciliationSection.AllCheckRows.Clear();
+            ClearReconciliationMatchCandidates();
             ReconciliationSection.SecurityCoverageRows.Clear();
             ReconciliationSection.AuditRows.Clear();
             ReconciliationSection.CalibrationProfiles.Clear();
@@ -883,6 +930,7 @@ public sealed partial class FundLedgerViewModel
     private void DisposeReconciliationWorkbench()
     {
         CancelReconciliationDetailLoad();
+        ClearReconciliationMatchCandidates();
     }
 
     private void CancelReconciliationDetailLoad()
@@ -1010,11 +1058,149 @@ public sealed partial class FundLedgerViewModel
         RaisePropertyChanged(nameof(SupportsSelectedBreakActions));
         RaisePropertyChanged(nameof(CanStartReviewSelectedBreak));
         RaisePropertyChanged(nameof(CanResolveSelectedBreak));
+        RaisePropertyChanged(nameof(HasReconciliationMatchCandidates));
+        RaisePropertyChanged(nameof(CanMatchSelectedReconciliationItems));
         RaisePropertyChanged(nameof(CanDismissSelectedBreak));
         RaisePropertyChanged(nameof(CanOpenSelectedReconciliationAccountWorkflow));
         RaisePropertyChanged(nameof(HasReconciliationDetail));
         RaisePropertyChanged(nameof(IsReconciliationBusy));
         OpenSelectedReconciliationAccountWorkflowCommand.NotifyCanExecuteChanged();
+    }
+
+    private void SynchronizeReconciliationMatchCandidates(FundReconciliationDetailModel detail)
+    {
+        ClearReconciliationMatchCandidates();
+
+        var sourceRows = detail.ExceptionRows.Count > 0 ? detail.ExceptionRows : detail.AllCheckRows;
+        var entryRows = sourceRows
+            .Select(row => new FundReconciliationMatchCandidateRow(
+                row.RowKey + ":entry",
+                row.CheckLabel,
+                ResolveEntrySourceLabel(row.SourceLabel),
+                row.ExpectedAmountText,
+                row.ExpectedAsOfText,
+                row.StatusLabel,
+                row.Reason,
+                row.IsHighlighted))
+            .ToArray();
+        var sourceDataRows = sourceRows
+            .Select(row => new FundReconciliationMatchCandidateRow(
+                row.RowKey + ":source",
+                row.CheckLabel,
+                ResolveSourceDataLabel(row.SourceLabel),
+                row.ActualAmountText,
+                row.ActualAsOfText,
+                row.StatusLabel,
+                row.Reason,
+                row.IsHighlighted))
+            .ToArray();
+
+        foreach (var row in entryRows)
+        {
+            ReconciliationSection.EntryRows.Add(row);
+            SubscribeReconciliationMatchCandidate(row);
+        }
+
+        foreach (var row in sourceDataRows)
+        {
+            ReconciliationSection.SourceDataRows.Add(row);
+            SubscribeReconciliationMatchCandidate(row);
+        }
+
+        UpdateReconciliationMatchSelectionText();
+    }
+
+    private void ClearReconciliationMatchCandidates()
+    {
+        foreach (var row in _reconciliationMatchRowsWithSubscriptions)
+        {
+            row.PropertyChanged -= OnReconciliationMatchCandidatePropertyChanged;
+        }
+
+        _reconciliationMatchRowsWithSubscriptions.Clear();
+        ReconciliationSection.EntryRows.Clear();
+        ReconciliationSection.SourceDataRows.Clear();
+        UpdateReconciliationMatchSelectionText();
+    }
+
+    private void SubscribeReconciliationMatchCandidate(FundReconciliationMatchCandidateRow row)
+    {
+        row.PropertyChanged += OnReconciliationMatchCandidatePropertyChanged;
+        _reconciliationMatchRowsWithSubscriptions.Add(row);
+    }
+
+    private void OnReconciliationMatchCandidatePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (string.Equals(e.PropertyName, nameof(FundReconciliationMatchCandidateRow.IsSelected), StringComparison.Ordinal))
+        {
+            UpdateReconciliationMatchSelectionText();
+            NotifyReconciliationDerivedStateChanged();
+        }
+    }
+
+    private void UpdateReconciliationMatchSelectionText()
+    {
+        var entryCount = ReconciliationSection.EntryRows.Count(static row => row.IsSelected);
+        var sourceDataCount = ReconciliationSection.SourceDataRows.Count(static row => row.IsSelected);
+
+        ReconciliationMatchSelectionText = HasReconciliationMatchCandidates
+            ? $"{entryCount:N0} ledger entry row(s) and {sourceDataCount:N0} source-data row(s) selected."
+            : "No reconciliation rows are available to match for the current selection.";
+    }
+
+    private string BuildSelectedMatchResolutionNote()
+    {
+        var entrySummary = BuildSelectedMatchRowSummary(ReconciliationSection.EntryRows);
+        var sourceDataSummary = BuildSelectedMatchRowSummary(ReconciliationSection.SourceDataRows);
+        var generatedNote = $"Matched ledger entry selection ({entrySummary}) to source-data selection ({sourceDataSummary}).";
+        return string.IsNullOrWhiteSpace(ReconciliationNoteText)
+            ? generatedNote
+            : $"{ReconciliationNoteText.Trim()} {generatedNote}";
+    }
+
+    private static string BuildSelectedMatchRowSummary(IEnumerable<FundReconciliationMatchCandidateRow> rows)
+    {
+        var selected = rows
+            .Where(static row => row.IsSelected)
+            .Select(static row => $"{row.CheckLabel} {row.AmountText}")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return selected.Length == 0 ? "none" : string.Join("; ", selected);
+    }
+
+    private static string ResolveEntrySourceLabel(string sourceLabel)
+    {
+        if (string.IsNullOrWhiteSpace(sourceLabel))
+        {
+            return "Ledger";
+        }
+
+        var arrowIndex = sourceLabel.IndexOf('\u2192');
+        if (arrowIndex > 0)
+        {
+            return sourceLabel[..arrowIndex].Trim();
+        }
+
+        return sourceLabel.Contains("ledger", StringComparison.OrdinalIgnoreCase)
+            ? sourceLabel
+            : "Ledger";
+    }
+
+    private static string ResolveSourceDataLabel(string sourceLabel)
+    {
+        if (string.IsNullOrWhiteSpace(sourceLabel))
+        {
+            return "Source data";
+        }
+
+        var arrowIndex = sourceLabel.IndexOf('\u2192');
+        if (arrowIndex >= 0 && arrowIndex < sourceLabel.Length - 1)
+        {
+            return sourceLabel[(arrowIndex + 1)..].Trim();
+        }
+
+        return sourceLabel;
     }
 
     private void UpdateReconciliationEmptyStateText(int filteredBreakCount, int filteredRunCount)

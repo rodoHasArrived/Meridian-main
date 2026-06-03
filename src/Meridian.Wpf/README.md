@@ -54,6 +54,10 @@ note, audit event, pending close sign-off posture, and contract-owned "Explain t
 visible in the retained detail panel. The WPF queue projection carries the same source systems,
 probable cause, ledger impact, suggested next action, and evidence links as the browser Accounting
 detail so desktop operators do not rebuild reconciliation narratives locally.
+The retained reconciliation detail also exposes a Match Items tab with side-by-side selectable
+ledger-entry and source-data grids; the desktop view model keeps those checkbox selections as
+presentation state and submits matched items through the same shared resolve endpoint with an
+audit-note summary.
 Shared close-workflow target tags stay explicit in desktop routing: `OperationsContinuity` and
 `OperationsClose` are WPF aliases for the Fund Operations page, with navigation parameters that
 land on the overview and report-pack readiness tabs while the browser resolves both tags to

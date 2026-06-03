@@ -43,6 +43,11 @@ public partial class FundLedgerPage : Page
         await RunReconciliationOperationAsync(ct => _viewModel.ResolveSelectedBreakAsync(ct));
     }
 
+    private async void OnMatchSelectedReconciliationItemsClick(object sender, RoutedEventArgs e)
+    {
+        await RunReconciliationOperationAsync(ct => _viewModel.MatchSelectedReconciliationItemsAsync(ct));
+    }
+
     private async void OnDismissBreakClick(object sender, RoutedEventArgs e)
     {
         await RunReconciliationOperationAsync(ct => _viewModel.DismissSelectedBreakAsync(ct));

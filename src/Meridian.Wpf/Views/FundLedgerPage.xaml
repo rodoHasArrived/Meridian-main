@@ -1390,6 +1390,88 @@
                                                 Grid.Row="3"
                                                 SelectedIndex="{Binding SelectedReconciliationDetailTabIndex, Mode=TwoWay}"
                                                 TabIndex="30">
+                                        <TabItem Header="Match Items">
+                                            <Grid Margin="0,8,0,0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="12" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Row="0"
+                                                           Grid.Column="0"
+                                                           Text="Ledger Entries"
+                                                           Style="{StaticResource CardHeaderStyle}"
+                                                           Margin="0,0,0,8" />
+                                                <TextBlock Grid.Row="0"
+                                                           Grid.Column="2"
+                                                           Text="Source Data"
+                                                           Style="{StaticResource CardHeaderStyle}"
+                                                           Margin="0,0,0,8" />
+
+                                                <DataGrid x:Name="ReconciliationEntryMatchGrid"
+                                                          Grid.Row="1"
+                                                          Grid.Column="0"
+                                                          ItemsSource="{Binding ReconciliationEntryRows}"
+                                                          AutoGenerateColumns="False"
+                                                          CanUserAddRows="False"
+                                                          HeadersVisibility="Column"
+                                                          BorderThickness="0"
+                                                          Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                          RowStyle="{StaticResource HighlightedReconciliationRowStyle}"
+                                                          TabIndex="31">
+                                                    <DataGrid.Columns>
+                                                        <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="44" />
+                                                        <DataGridTextColumn Header="Entry" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="Source" Binding="{Binding SourceLabel}" Width="110" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="Amount" Binding="{Binding AmountText}" Width="105" ElementStyle="{StaticResource RightAlignedCellStyle}" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="As Of" Binding="{Binding AsOfText}" Width="130" IsReadOnly="True" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+
+                                                <GridSplitter Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource BorderSubtleBrush}" />
+
+                                                <DataGrid x:Name="ReconciliationSourceMatchGrid"
+                                                          Grid.Row="1"
+                                                          Grid.Column="2"
+                                                          ItemsSource="{Binding ReconciliationSourceDataRows}"
+                                                          AutoGenerateColumns="False"
+                                                          CanUserAddRows="False"
+                                                          HeadersVisibility="Column"
+                                                          BorderThickness="0"
+                                                          Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                          RowStyle="{StaticResource HighlightedReconciliationRowStyle}"
+                                                          TabIndex="32">
+                                                    <DataGrid.Columns>
+                                                        <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="44" />
+                                                        <DataGridTextColumn Header="Source Row" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="Source" Binding="{Binding SourceLabel}" Width="110" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="Amount" Binding="{Binding AmountText}" Width="105" ElementStyle="{StaticResource RightAlignedCellStyle}" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="As Of" Binding="{Binding AsOfText}" Width="130" IsReadOnly="True" />
+                                                    </DataGrid.Columns>
+                                                </DataGrid>
+
+                                                <DockPanel Grid.Row="2" Grid.ColumnSpan="3" Margin="0,12,0,0">
+                                                    <Button DockPanel.Dock="Right"
+                                                            Content="Match As Reconciled"
+                                                            Click="OnMatchSelectedReconciliationItemsClick"
+                                                            IsEnabled="{Binding CanMatchSelectedReconciliationItems}"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            Margin="12,0,0,0"
+                                                            TabIndex="33"
+                                                            AutomationProperties.AutomationId="ReconciliationMatchSelectedItemsButton" />
+                                                    <TextBlock Text="{Binding ReconciliationMatchSelectionText}"
+                                                               Style="{StaticResource CardDescriptionStyle}"
+                                                               VerticalAlignment="Center"
+                                                               TextWrapping="Wrap" />
+                                                </DockPanel>
+                                            </Grid>
+                                        </TabItem>
                                         <TabItem Header="Exceptions">
                                             <DataGrid x:Name="ReconciliationExceptionsGrid"
                                                       ItemsSource="{Binding ReconciliationExceptionRows}"
@@ -1399,7 +1481,7 @@
                                                       BorderThickness="0"
                                                       Background="{StaticResource ConsoleBackgroundLightBrush}"
                                                       RowStyle="{StaticResource HighlightedReconciliationRowStyle}"
-                                                      TabIndex="31">
+                                                      TabIndex="34">
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Check" Binding="{Binding CheckLabel}" Width="*" />
                                                     <DataGridTextColumn Header="Category" Binding="{Binding CategoryLabel}" Width="130" />
@@ -1421,7 +1503,7 @@
                                                       BorderThickness="0"
                                                       Background="{StaticResource ConsoleBackgroundLightBrush}"
                                                       RowStyle="{StaticResource HighlightedReconciliationRowStyle}"
-                                                      TabIndex="32">
+                                                      TabIndex="35">
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Check" Binding="{Binding CheckLabel}" Width="*" />
                                                     <DataGridTextColumn Header="Category" Binding="{Binding CategoryLabel}" Width="130" />
@@ -1442,7 +1524,7 @@
                                                       HeadersVisibility="Column"
                                                       BorderThickness="0"
                                                       Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                                      TabIndex="33">
+                                                      TabIndex="36">
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="140" />
                                                     <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="120" />
@@ -1459,7 +1541,7 @@
                                                       HeadersVisibility="Column"
                                                       BorderThickness="0"
                                                       Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                                      TabIndex="34">
+                                                      TabIndex="37">
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Timestamp" Binding="{Binding TimestampText}" Width="150" />
                                                     <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="180" />
