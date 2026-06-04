@@ -126,7 +126,7 @@ public sealed record FundReportingProfileDto(
 public sealed record FundReportingSummaryDto(
     int ProfileCount,
     IReadOnlyList<string> RecommendedProfiles,
-    IReadOnlyList<string> ReportPackTargets,
+    IReadOnlyList<WorkstationReportPackDistributionPayload> ReportPackDistributions,
     IReadOnlyList<FundReportingProfileDto> Profiles,
     string Summary,
     IReadOnlyList<ReportPackWorkflowRecordDto>? WorkflowRecords = null);
@@ -518,9 +518,66 @@ public enum ReportPackWorkflowStateDto
 
 public sealed record VersionedReportTemplateIdDto(string Name, int Version);
 public sealed record ReportTemplateParameterDefinitionDto(string Name, bool Required);
-public sealed record ReportTemplateDefinitionDto(VersionedReportTemplateIdDto TemplateId, string DisplayName, IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters);
+public sealed record ReportTemplateDefinitionDto(
+    VersionedReportTemplateIdDto TemplateId,
+    string DisplayName,
+    IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters,
+    IReadOnlyList<string>? Sections = null);
 public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto TemplateId, IReadOnlyDictionary<string, string> Parameters);
 public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportTemplateLifecycleStatusDto>))]
+public enum ReportTemplateLifecycleStatusDto
+{
+    Draft = 0,
+    InReview = 1,
+    Approved = 2,
+    Rejected = 3,
+    Superseded = 4
+}
+
+public sealed record ReportTemplateAuditEventDto(
+    DateTimeOffset At,
+    string Actor,
+    string Action,
+    ReportTemplateLifecycleStatusDto FromStatus,
+    ReportTemplateLifecycleStatusDto ToStatus,
+    string? Note = null);
+
+public sealed record ReportTemplateGovernanceRecordDto(
+    ReportTemplateDefinitionDto Definition,
+    ReportTemplateLifecycleStatusDto Status,
+    string Family,
+    bool IsBuiltIn,
+    bool IsLatestApproved,
+    string CreatedBy,
+    DateTimeOffset CreatedAt,
+    string UpdatedBy,
+    DateTimeOffset UpdatedAt,
+    IReadOnlyList<string> ValidationIssues,
+    IReadOnlyList<ReportTemplateAuditEventDto> AuditTrail,
+    string? SubmittedBy = null,
+    DateTimeOffset? SubmittedAt = null,
+    string? ApprovedBy = null,
+    DateTimeOffset? ApprovedAt = null,
+    string? RejectedBy = null,
+    DateTimeOffset? RejectedAt = null,
+    string? DecisionRationale = null,
+    string? ApprovalReference = null,
+    VersionedReportTemplateIdDto? BasedOnTemplateId = null);
+
+public sealed record ReportTemplateDraftRequestDto(
+    string Name,
+    string DisplayName,
+    IReadOnlyList<string> Sections,
+    IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters,
+    string? Family = null,
+    int? BasedOnVersion = null,
+    string? Rationale = null);
+
+public sealed record ReportTemplateDecisionRequestDto(
+    string Rationale,
+    string? ApprovalReference = null);
 
 public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
 public sealed record ReportPackEvidenceLinkDto(string EvidenceId, string Label, string? Route, string Source, DateTimeOffset? CapturedAtUtc = null);

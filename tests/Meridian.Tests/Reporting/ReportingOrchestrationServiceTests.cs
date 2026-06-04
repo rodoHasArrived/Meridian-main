@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Reporting;
+using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Reporting;
 
@@ -87,6 +89,29 @@ public sealed class ReportingOrchestrationServiceTests
         failed.AttemptCount.Should().Be(2);
         failed.FailureReason.Should().Be("renderer unavailable");
         sut.GetAudit(failed.RunId).Count(e => e.Action == "RunRetry" || e.Action == "RunFailed").Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ExecuteAndTransitionApproval_PersistsManifestAndAuditTrailToRunStore()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"), "reporting-runs");
+        var store = new FileReportingRunStore(new ReportingRunStoreOptions(root), NullLogger<FileReportingRunStore>.Instance);
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow, store);
+        var contract = new ReportingJobContract("job-persist", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.Scheduled, 0, "scheduler", FixedNow, ScheduleId: "sched-investor");
+
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+        (await sut.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.InReview, "reviewer", "Reviewer", "ready", CancellationToken.None)).Should().BeTrue();
+
+        var reloaded = new FileReportingRunStore(new ReportingRunStoreOptions(root), NullLogger<FileReportingRunStore>.Instance);
+        reloaded.GetManifest(manifest.RunId)!.Status.Should().Be(ReportingRunStatus.InReview);
+        reloaded.GetManifest(manifest.RunId)!.ScheduleId.Should().Be("sched-investor");
+        reloaded.GetAudit(manifest.RunId).Select(static entry => entry.Action).Should().ContainInOrder("RunGenerated", "ApprovalTransition");
+        reloaded.ListRuns().Should().ContainSingle(run => run.Manifest.RunId == manifest.RunId);
+
+        var restarted = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow.AddMinutes(1), reloaded);
+        (await restarted.TransitionApprovalAsync(manifest.RunId, ReportingRunStatus.Approved, "ops", "OperationsLead", "approved after restart", CancellationToken.None)).Should().BeTrue();
+        reloaded.GetManifest(manifest.RunId)!.Status.Should().Be(ReportingRunStatus.Approved);
+        reloaded.GetAudit(manifest.RunId).Select(static entry => entry.Action).Should().ContainInOrder("RunGenerated", "ApprovalTransition", "ApprovalTransition");
     }
 
     private sealed class FailingOnceRenderer : IReportingSectionRenderer

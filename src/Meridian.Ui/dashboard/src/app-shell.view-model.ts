@@ -8,6 +8,7 @@ import {
   workspaceForPath,
   workspacePath
 } from "@/lib/workspace";
+import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
 import packageJson from "../package.json";
 import type {
   DataBackfillRecord,
@@ -1533,10 +1534,11 @@ function buildGovernedReportContinuityStatus({ payload }: WorkflowContinuityStat
     return { label: "Waiting", tone: "pending" };
   }
 
-  const targetCount = reporting.reporting?.reportPackTargets?.length ?? 0;
-  return targetCount > 0
-    ? { label: `${targetCount} packs`, tone: "ready" }
-    : { label: "Needs target", tone: "review" };
+  const distributions = getReportPackDistributions(reporting.reporting);
+  const pendingCount = countPendingReportPackDistributions(reporting.reporting);
+  return distributions.length > 0
+    ? { label: pendingCount > 0 ? `${pendingCount} pending` : `${distributions.length} recipients`, tone: pendingCount > 0 ? "review" : "ready" }
+    : { label: "Needs recipient", tone: "review" };
 }
 
 interface OperatorFocusCandidate extends AppShellOperatorFocusItem {
@@ -1971,12 +1973,12 @@ function buildReportingFocusItems({ payload }: WorkflowContinuityStatusContext):
     return [];
   }
 
-  const targetCount = reporting.reporting?.reportPackTargets?.length ?? 0;
-  return targetCount === 0
+  const distributions = getReportPackDistributions(reporting.reporting);
+  return distributions.length === 0
     ? [buildOperatorFocusCandidate({
-        id: "reporting:missing-report-pack-target",
-        label: "Report-pack target missing",
-        detail: "No governed report-pack targets are loaded for approval-ready output review.",
+        id: "reporting:missing-report-pack-distribution",
+        label: "Report-pack recipient missing",
+        detail: "No governed report-pack distribution recipients are loaded for approval-ready output review.",
         route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
         workspaceLabel: "Reporting",
         actionLabel: "Open report packs",
@@ -2613,17 +2615,19 @@ function buildReportingLinkedContextItem(
     });
   }
 
-  const packCount = reporting.reporting?.reportPackTargets?.length ?? 0;
+  const distributions = getReportPackDistributions(reporting.reporting);
+  const pendingCount = countPendingReportPackDistributions(reporting.reporting);
+  const packCount = distributions.length;
   return buildLinkedContextItem({
     id: "reporting-evidence",
     label: "Evidence packet",
     detail: packCount > 0
-      ? `${formatCount(packCount, "report target")} can carry ${symbol} context into governed review.`
-      : `No report-pack target is loaded while reviewing ${symbol}.`,
+      ? `${formatCount(packCount, "report recipient")} can carry ${symbol} context into governed review; ${formatCount(pendingCount, "distribution")} pending.`
+      : `No report-pack recipient is loaded while reviewing ${symbol}.`,
     route,
     workspaceLabel: "Reporting",
-    statusLabel: packCount > 0 ? "Packet ready" : "Needs target",
-    tone: packCount > 0 ? "ready" : "review"
+    statusLabel: packCount > 0 ? (pendingCount > 0 ? "Pending distribution" : "Packet ready") : "Needs recipient",
+    tone: packCount > 0 && pendingCount === 0 ? "ready" : "review"
   });
 }
 

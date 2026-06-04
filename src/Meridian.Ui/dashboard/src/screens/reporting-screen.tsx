@@ -1,5 +1,5 @@
 import { type KeyboardEvent, useEffect, useRef } from "react";
-import { FileText, Landmark, Network } from "lucide-react";
+import { FileText, Landmark, Network, PencilLine } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -168,11 +168,26 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
               <div key={template.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-foreground">{template.name}</span>
-                  <Badge variant="outline">{template.family}</Badge>
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant={template.statusVariant}>{template.statusLabel}</Badge>
+                    <Badge variant="outline">{template.sourceLabel}</Badge>
+                    <Badge variant="outline">{template.family}</Badge>
+                  </span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {template.version} · {template.sectionSummary} · <span className="font-mono">{template.id}</span>
                 </p>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="min-w-0 flex-1 text-xs leading-5 text-muted-foreground">
+                    {template.approvalSummary}
+                  </p>
+                  <Button asChild variant="outline" size="sm">
+                    <a href={template.authoringHref} target="_blank" rel="noreferrer" aria-label={template.actionAriaLabel}>
+                      <PencilLine className="h-4 w-4" aria-hidden="true" />
+                      {template.actionLabel}
+                    </a>
+                  </Button>
+                </div>
               </div>
             ))}
           </CardContent>
@@ -195,6 +210,54 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                   {run.family} · {run.trigger} · {run.lineageSummary} · {run.auditSummary}
                 </p>
                 {run.failureReason ? <p className="mt-1 text-xs text-warning">{run.failureReason}</p> : null}
+                {run.hasDrilldownLinks ? (
+                  <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${run.id} drilldown links`}>
+                    {run.drilldownLinks.map((link) => link.isBrowserNavigable ? (
+                      <a
+                        key={link.id}
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={link.ariaLabel}
+                        className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground hover:bg-secondary/55 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      >
+                        <Badge variant="outline">{link.kind}</Badge>
+                        <span className="truncate">{link.label}</span>
+                      </a>
+                    ) : (
+                      <span
+                        key={link.id}
+                        role="group"
+                        aria-label={link.ariaLabel}
+                        className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground"
+                      >
+                        <Badge variant="outline">{link.kind}</Badge>
+                        <span className="truncate">{link.label}</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {run.hasNextActions ? (
+                  <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${run.id} next actions`}>
+                    {run.nextActions.map((action) => (
+                      <span
+                        key={action.id}
+                        role="group"
+                        aria-label={action.ariaLabel}
+                        title={action.disabledReason ?? `${action.method} ${action.href}`}
+                        className={cn(
+                          "inline-flex min-w-0 items-center gap-1.5 rounded-sm border px-2 py-1 text-[11px]",
+                          action.isEnabled
+                            ? "border-primary/35 bg-primary/10 text-primary"
+                            : "border-border/60 bg-secondary/20 text-muted-foreground"
+                        )}
+                      >
+                        <Badge variant="outline">{action.method}</Badge>
+                        <span className="truncate">{action.label}</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             )) : (
               <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
@@ -236,6 +299,37 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
               className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary"
             >
               {vm.workflowTaskPanel.selectedSummary}
+            </div>
+            <div
+              role="region"
+              aria-label={vm.workflowTaskPanel.publicationReview.regionLabel}
+              className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h4 className="text-sm font-semibold text-foreground">{vm.workflowTaskPanel.publicationReview.title}</h4>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {vm.workflowTaskPanel.publicationReview.description}
+                  </p>
+                </div>
+                <Badge variant={vm.workflowTaskPanel.publicationReview.statusVariant}>
+                  {vm.workflowTaskPanel.publicationReview.statusLabel}
+                </Badge>
+              </div>
+              <p className="mt-3 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-foreground">
+                {vm.workflowTaskPanel.publicationReview.summaryText}
+              </p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {vm.workflowTaskPanel.publicationReview.fields.map((field) => (
+                  <div key={field.label} className="rounded-md border border-border/70 bg-background/40 px-3 py-2">
+                    <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">{field.label}</span>
+                    <span className={cn("mt-1 block break-all font-mono text-xs", field.className)}>{field.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3">
+                <Badge variant="outline">{vm.workflowTaskPanel.publicationReview.evidenceSummary}</Badge>
+              </div>
             </div>
             <div
               role="region"
@@ -366,7 +460,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <div className="eyebrow-label">Targets</div>
+                <div className="eyebrow-label">Recipients</div>
                 {vm.workflowTaskPanel.hasTargets ? (
                   <div role="list" aria-label={vm.workflowTaskPanel.targetsLabel} className="mt-2 grid gap-2">
                     {vm.workflowTaskPanel.targets.map((target) => (
@@ -376,7 +470,15 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                         aria-label={target.ariaLabel}
                         className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2"
                       >
-                        <span className="font-mono text-sm text-foreground">{target.label}</span>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-sm font-semibold text-foreground">{target.label}</span>
+                          <Badge variant={target.stateLabel.includes("Pending") || target.stateLabel === "Blocked" ? "warning" : "outline"}>
+                            {target.stateLabel}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                          {target.channel} · {target.ownerLabel} · {target.pendingSummary}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -491,7 +593,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
               Evidence and distribution
             </CardTitle>
             <CardDescription>
-              Export profiles stay tied to accounting evidence, loader posture, and governed delivery targets.
+              Export profiles stay tied to accounting evidence, loader posture, and governed distribution recipients.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-3">
@@ -501,7 +603,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             />
             <ReportingHighlight
               title="Pack routing"
-              description="Report-pack targets map the same evidence to board, audit, and compliance distribution lanes."
+              description="Report-pack distribution records show the recipient, delivery channel, and pending work."
             />
             <ReportingHighlight
               title="Review posture"
@@ -512,8 +614,8 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
         <Card className="panel-surface-strong text-foreground">
           <CardHeader>
-            <div className="eyebrow-label">Pack targets</div>
-            <CardTitle>Report-pack targets</CardTitle>
+            <div className="eyebrow-label">Distribution</div>
+            <CardTitle>Report-pack recipients</CardTitle>
             <CardDescription>{vm.packTargetsSummary}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-foreground/85">
@@ -533,13 +635,27 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     key={target.id}
                     role="listitem"
                     aria-label={target.ariaLabel}
-                    className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-background/20 px-3 py-2"
+                    className="rounded-md border border-border/70 bg-background/20 px-3 py-2"
                   >
-                    <span className="inline-flex items-center gap-2">
-                      <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                      <span className="font-mono capitalize text-foreground">{target.label}</span>
-                    </span>
-                    <Badge variant="outline">Target</Badge>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <span className="inline-flex min-w-0 items-start gap-2">
+                        <FileText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-foreground">{target.label}</span>
+                          <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                            {target.recipientRole} · {target.channel}
+                          </span>
+                        </span>
+                      </span>
+                      <Badge variant={target.stateLabel.includes("Pending") || target.stateLabel === "Blocked" ? "warning" : "outline"}>
+                        {target.pendingItemsLabel}
+                      </Badge>
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{target.pendingSummary}</p>
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      <span>Owner: {target.ownerLabel}</span>
+                      <span>Due: {target.dueLabel}</span>
+                    </div>
                   </div>
                 ))}
               </div>

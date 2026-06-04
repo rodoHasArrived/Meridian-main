@@ -94,6 +94,19 @@ retained manifest path, retained evidence links, report-line provenance, create 
 requests, explicit `Rejected` state support, explicit review-state rejection requests with reason,
 actor/role, and optional evidence-link metadata, and restatement requests with approver,
 prior-version, changed-line, and evidence-link metadata.
+Workstation Reporting run rows carry typed drilldown links and next-action references so browser
+and WPF clients can distinguish open evidence routes from reference-only approval, publication, and
+restatement actions without parsing artifact strings.
+Workstation and fund-operations reporting summaries expose `reportPackDistributions` as
+recipient-level distribution records instead of static `reportPackTargets` strings. Clients should
+render recipient, role, channel, owner, state, due time, pending item count, and pending summary so
+operators can see who receives each package and what is still waiting on approval, publication, or
+delivery.
+Report template contracts now also carry the governed authoring lifecycle for built-in and custom
+template versions: draft requests, review submission, approval/rejection decisions, immutable
+built-in markers, latest-approved posture, validation issues, approval references, and audit events.
+Keep those template lifecycle fields shared so Reporting, browser, WPF, and endpoint tests use the
+same version-approval vocabulary instead of maintaining client-local template state.
 Pilot readiness contracts also carry W4 acceptance evidence categories and roles so acceptance proof
 can be distinguished from evidence-vault manifest/export support in serialized artifacts.
 Report-line provenance carries the reported value plus run, source-session, ledger-entry,

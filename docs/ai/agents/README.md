@@ -13,6 +13,9 @@ active WPF operator work, and visible navigation limited to `Trading`, `Portfoli
 `Reporting`, `Strategy`, `Data`, and `Settings` on top of strong provider, storage, execution,
 ledger, and MCP foundations.
 
+When an agent lane needs validator, route, handoff-packet, or maintenance-script selection, load
+[`../tooling/README.md`](../tooling/README.md) instead of rediscovering command lanes from scratch.
+
 ---
 
 ## Orientation Layer
@@ -123,6 +126,12 @@ Choose the CoS runtime path when the task crosses multiple subsystems, requires 
 or operator sign-off, or needs a structured briefing with trace/evidence retention. See
 `tools/chief-of-staff-runtime/runtime.py` and the operator runbook guidance in `docs/operators/README.md`.
 
+Coordinator agents should assign one narrow concern, a compact file set, and a validation owner to
+each specialist lane. Specialist agents should load only the required context for that lane, return
+the `required context` vs `optional context` split from
+[`../agent-handoff-checklist.md`](../agent-handoff-checklist.md), and record rerun triggers before
+handoff so downstream agents do not repeat discovery or validation without cause.
+
 ## AI Contract Coverage
 
 - Repo navigation: `../navigation/README.md`, `../generated/repo-navigation.md`
@@ -132,10 +141,13 @@ or operator sign-off, or needs a structured briefing with trace/evidence retenti
   do not hand-edit docs under `docs/ai/generated/` or generator outputs in `docs/generated/`.
 - Agent orchestration: `docs/ai/parallel-task-manifest-template.md`, `docs/ai/agent-handoff-checklist.md`,
   and `.codex/agents/` profiles for cross-lane routing
+- Tooling and validators: prefer [`../tooling/README.md`](../tooling/README.md) for script choice,
+  route artifacts, and maintenance lanes instead of copying command catalogs into agent prompts
 - Parallel workflow: keep lane scopes disjoint in the manifest and record handoff expectations before merge
 - Token/context management: choose a mode in `docs/ai/work-modes.md` and summarize context scope in handoff packets
 - Validation: `python build/scripts/docs/check-ai-inventory.py --summary`, `python build/scripts/docs/check-codex-skills.py --summary`,
-  `python build/scripts/docs/validate-skill-packages.py`, and `python build/scripts/docs/check-ai-contract-drift.py ...` when surfaces change
+  `python build/scripts/docs/validate-skill-packages.py`, `python build/scripts/docs/check-ai-handoff.py --strict`,
+  and `python build/scripts/docs/check-ai-contract-drift.py ...` when surfaces change
 - Documentation ownership: `../documentation-ownership.md` and `../assistant-workflow-contract.md`
 
 ### Agent Design Pattern Selection
@@ -161,4 +173,4 @@ or operator sign-off, or needs a structured briefing with trace/evidence retenti
 
 ---
 
-_Last Updated: 2026-05-28_
+_Last Updated: 2026-06-03_

@@ -30,6 +30,15 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         provider.GetRequiredService<StrategyDesignStoreOptions>().RootDirectory
             .Should()
             .Be(Path.Combine(configuredDataRoot, "strategies", "designer"));
+        provider.GetRequiredService<ReportingRunStoreOptions>().RootDirectory
+            .Should()
+            .Be(Path.Combine(configuredDataRoot, "workstation", "reporting", "runs"));
+        provider.GetRequiredService<ReportPackWorkflowRecordStoreOptions>().SnapshotPath
+            .Should()
+            .Be(Path.Combine(configuredDataRoot, "workstation", "reporting", "report-pack-workflows.json"));
+        provider.GetRequiredService<ReportTemplateGovernanceStoreOptions>().SnapshotPath
+            .Should()
+            .Be(Path.Combine(configuredDataRoot, "workstation", "reporting", "report-templates.json"));
     }
 
     [Fact]

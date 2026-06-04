@@ -31,16 +31,48 @@ const reporting: GovernanceReportingSummary = {
       dataDictionary: false
     }
   ],
-  reportPackTargets: ["board", "audit"],
+  reportPackDistributions: [
+    {
+      distributionId: "board-reporting-committee",
+      recipient: "Board reporting committee",
+      recipientRole: "Board",
+      channel: "Board portal",
+      state: "Pending approval",
+      pendingItems: 1,
+      pendingSummary: "1 report pack still needs approval before Board reporting committee delivery.",
+      owner: "fund-controller",
+      dueAtUtc: "2026-05-03T20:00:00Z",
+      lastSentAtUtc: null,
+      route: "/reporting/report-packs?recipient=board"
+    },
+    {
+      distributionId: "compliance-archive",
+      recipient: "Compliance archive",
+      recipientRole: "Compliance",
+      channel: "Retained evidence vault",
+      state: "No package queued",
+      pendingItems: 0,
+      pendingSummary: "No governed report pack is queued for Compliance archive.",
+      owner: "compliance-reviewer",
+      dueAtUtc: null,
+      lastSentAtUtc: null,
+      route: "/reporting/evidence?subject=report-pack"
+    }
+  ],
   summary: "2 export profiles available.",
   templates: [
-    {
-      templateId: "investor-monthly-statement",
-      family: "InvestorStatement",
-      name: "Investor Monthly Statement",
-      version: "1.0.0",
-      sections: ["cover", "performance"]
-    }
+      {
+        templateId: "investor-monthly-statement",
+        family: "InvestorStatement",
+        name: "Investor Monthly Statement",
+        version: "1.0.0",
+        sections: ["cover", "performance"],
+        lifecycleStatus: "Approved",
+        isBuiltIn: true,
+        isLatestApproved: true,
+        approvalSummary: "Built-in approved template for InvestorStatement.",
+        authoringRoute: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
+      }
   ],
   recentRuns: [
     {
@@ -54,7 +86,39 @@ const reporting: GovernanceReportingSummary = {
       lineageLinkedSections: 2,
       artifacts: ["manifest.json"],
       auditActions: ["RunGenerated", "ApprovalTransition"],
-      failureReason: null
+      failureReason: null,
+      drilldownLinks: [
+        {
+          id: "investor-monthly-statement-20260501:evidence",
+          kind: "evidence",
+          label: "Evidence bundle",
+          href: "/api/fund-structure/report-packs/report-1/evidence-bundle",
+          method: "GET",
+          isBrowserNavigable: true,
+          source: "ReportPackWorkflow"
+        },
+        {
+          id: "investor-monthly-statement-20260501:audit",
+          kind: "audit",
+          label: "Approval audit trail",
+          href: "reporting-run://investor-monthly-statement-20260501/audit",
+          method: "GET",
+          isBrowserNavigable: false,
+          source: "ReportingOrchestration"
+        }
+      ],
+      nextActions: [
+        {
+          id: "investor-monthly-statement-20260501:approve",
+          kind: "approval",
+          label: "Approve reporting run",
+          href: "reporting-run://investor-monthly-statement-20260501/approval/approve",
+          method: "POST",
+          isEnabled: true,
+          disabledReason: null,
+          isBrowserNavigable: false
+        }
+      ]
     }
   ]
 };
@@ -127,7 +191,22 @@ const restatedReporting: GovernanceReportingSummary = {
           reconciliationRunId: null
         }
       ],
-      publication: null
+      publication: {
+        manifestId: "manifest-restated-1",
+        retainedManifestPath: "vault/report-packs/manifest-restated-1.json",
+        evidenceHash: "sha256:restated123",
+        signedOffBy: "reporting-ops",
+        signedOffAt: "2026-05-28T15:20:00Z",
+        evidenceLinks: [
+          {
+            evidenceId: "publication-evidence-1",
+            label: "Publication manifest",
+            route: "/reporting/manifests/manifest-restated-1",
+            source: "reporting",
+            capturedAtUtc: "2026-05-28T15:20:00Z"
+          }
+        ]
+      }
     }
   ]
 };
@@ -185,14 +264,20 @@ describe("useReportingScreenViewModel", () => {
     expect(csvRow?.badges.some((b) => b.label === "Loader")).toBe(true);
   });
 
-  it("surfaces pack targets", () => {
+  it("surfaces report-pack distribution recipients", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
     expect(result.current.hasPackTargets).toBe(true);
-    expect(result.current.packTargets.map((target) => target.label)).toEqual(["board", "audit"]);
-    expect(result.current.packTargets[0].ariaLabel).toBe("board report-pack target");
+    expect(result.current.packTargets.map((target) => target.label)).toEqual(["Board reporting committee", "Compliance archive"]);
+    expect(result.current.packTargets[0]).toMatchObject({
+      channel: "Board portal",
+      stateLabel: "Pending approval",
+      pendingItemsLabel: "1 pending",
+      pendingSummary: "1 report pack still needs approval before Board reporting committee delivery."
+    });
+    expect(result.current.packTargets[0].ariaLabel).toBe("Board reporting committee report-pack distribution: 1 report pack still needs approval before Board reporting committee delivery.");
     expect(result.current.packTargetsEmptyState).toEqual({
-      text: "No report-pack targets loaded. Configure governed targets in the accounting policy before approving this packet.",
-      ariaLabel: "No report-pack targets loaded"
+      text: "No report-pack recipients loaded. Configure distribution records before approving this packet.",
+      ariaLabel: "No report-pack recipients loaded"
     });
   });
 
@@ -205,14 +290,46 @@ describe("useReportingScreenViewModel", () => {
         name: "Investor Monthly Statement",
         family: "InvestorStatement",
         version: "1.0.0",
-        sectionSummary: "2 sections"
+        sectionSummary: "2 sections",
+        statusLabel: "Approved",
+        statusVariant: "success",
+        sourceLabel: "Built-in",
+        approvalSummary: "Built-in approved template for InvestorStatement.",
+        authoringHref: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1",
+        actionLabel: "Draft revision",
+        actionAriaLabel: "Draft a revision of Investor Monthly Statement"
       }
     ]);
     expect(result.current.runStatusRows[0]).toMatchObject({
       id: "investor-monthly-statement-20260501",
       status: "InReview",
       lineageSummary: "2/2 sections linked",
-      auditSummary: "RunGenerated → ApprovalTransition"
+      auditSummary: "RunGenerated → ApprovalTransition",
+      hasDrilldownLinks: true,
+      hasNextActions: true,
+      drilldownLinks: [
+        expect.objectContaining({
+          kind: "evidence",
+          label: "Evidence bundle",
+          interactionLabel: "Open",
+          ariaLabel: "GET /api/fund-structure/report-packs/report-1/evidence-bundle for Evidence bundle"
+        }),
+        expect.objectContaining({
+          kind: "audit",
+          label: "Approval audit trail",
+          interactionLabel: "Reference",
+          ariaLabel: "Reference-only GET reporting-run://investor-monthly-statement-20260501/audit for Approval audit trail"
+        })
+      ],
+      nextActions: [
+        expect.objectContaining({
+          kind: "approval",
+          label: "Approve reporting run",
+          method: "POST",
+          interactionLabel: "Reference",
+          ariaLabel: "POST reporting-run://investor-monthly-statement-20260501/approval/approve for Approve reporting run"
+        })
+      ]
     });
     expect(result.current.hasRunStatusRows).toBe(true);
   });
@@ -224,7 +341,7 @@ describe("useReportingScreenViewModel", () => {
       regionLabel: "Report-pack approval task",
       title: "Report-pack approval",
       statusLabel: "Evidence review",
-      targetsLabel: "Report-pack approval targets",
+      targetsLabel: "Report-pack distribution recipients",
       hasTargets: true,
       profileListLabel: "Report-pack export profiles",
       hasProfiles: true,
@@ -246,7 +363,10 @@ describe("useReportingScreenViewModel", () => {
       statusBadgeLabel: "Gated",
       statusBadgeAriaLabel: "Excel export analysis is gated by missing evidence"
     });
-    expect(result.current.workflowTaskPanel?.targets.map((target) => target.label)).toEqual(["board", "audit"]);
+    expect(result.current.workflowTaskPanel?.targets.map((target) => target.label)).toEqual([
+      "Board reporting committee",
+      "Compliance archive"
+    ]);
     expect(result.current.workflowTaskPanel?.profiles.map((profile) => profile.readinessLabel)).toEqual([
       "Dictionary only",
       "Loader only"
@@ -352,6 +472,25 @@ describe("useReportingScreenViewModel", () => {
         evidenceHref: "/reporting/evidence?subject=pricing"
       })
     ]);
+  });
+
+  it("projects report-pack publication metadata from shared backend fields", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(restatedReporting, undefined, "/reporting/report-packs"));
+
+    expect(result.current.workflowTaskPanel?.publicationReview).toMatchObject({
+      regionLabel: "Report-pack publication review",
+      title: "Publication review",
+      statusLabel: "Restated",
+      statusVariant: "success",
+      summaryText: "manifest-restated-1 signed off by reporting-ops at 2026-05-28T15:20:00Z.",
+      evidenceSummary: "1 evidence link"
+    });
+    expect(result.current.workflowTaskPanel?.publicationReview.fields).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: "Signed off by", value: "reporting-ops" }),
+      expect.objectContaining({ label: "Evidence hash", value: "sha256:restated123" }),
+      expect.objectContaining({ label: "Manifest path", value: "vault/report-packs/manifest-restated-1.json" }),
+      expect.objectContaining({ label: "Publication time", value: "2026-05-28T15:20:00Z" })
+    ]));
   });
 
   it("builds an empty restatement review state when no restated workflow record is loaded", () => {
@@ -471,10 +610,10 @@ describe("useReportingScreenViewModel", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(emptyReporting, undefined, "/reporting/report-packs"));
 
     expect(result.current.workflowTaskPanel).toMatchObject({
-      statusLabel: "Targets missing",
+      statusLabel: "Recipients missing",
       hasTargets: false,
-      targetsEmptyText: "No report-pack targets loaded. Configure governed targets before approving this packet.",
-      targetsEmptyAriaLabel: "No report-pack approval targets",
+      targetsEmptyText: "No report-pack recipients loaded. Configure distribution records before approving this packet.",
+      targetsEmptyAriaLabel: "No report-pack distribution recipients",
       hasProfiles: false,
       profilesEmptyText: "No export profiles are configured. Add a governed profile before report-pack approval.",
       profilesEmptyAriaLabel: "No report-pack export profiles"
@@ -509,18 +648,18 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.packTargetCountLabel).toBe("2");
     expect(result.current.workbenchChips).toEqual([
       { label: "Profiles", value: "2 profiles" },
-      { label: "Pack targets", value: "2" },
+      { label: "Recipients", value: "2" },
       { label: "Recommended", value: "1" },
       { label: "Export route", value: "/api/export/analysis" }
     ]);
     expect(result.current.queueChips).toEqual([
       { label: "Visible", value: "2 of 2" },
       { label: "Recommended", value: "1" },
-      { label: "Targets", value: "2" },
+      { label: "Recipients", value: "2" },
       { label: "List", value: "Export profiles" }
     ]);
     expect(result.current.packTargetChips).toEqual([
-      { label: "Visible", value: "2" },
+      { label: "Recipients", value: "2" },
       { label: "Inspector", value: "No profile selected" }
     ]);
     expect(result.current.workbenchActions).toEqual([
@@ -958,7 +1097,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.hasRows).toBe(false);
     expect(result.current.statusDetail).toContain("unavailable");
     expect(result.current.queueChips.find((chip) => chip.label === "Recommended")?.value).toBe("0");
-    expect(result.current.packTargetChips.find((chip) => chip.label === "Visible")?.value).toBe("0");
+    expect(result.current.packTargetChips.find((chip) => chip.label === "Recipients")?.value).toBe("0");
     expect(result.current.loadingState).toEqual({
       role: "status",
       ariaBusy: true,

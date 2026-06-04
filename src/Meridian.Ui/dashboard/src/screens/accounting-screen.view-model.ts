@@ -29,6 +29,7 @@ import {
   workflowTargetPath
 } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { formatReportPackRecipientList, getReportPackDistributions } from "@/lib/reporting-distributions";
 import type {
   AccountingBasisKind,
   AccountingConfigurationWorkspace,
@@ -1061,54 +1062,6 @@ export interface AccountingTrialBalanceViewState {
 }
 
 export type AccountingToolingTone = "default" | "success" | "warning" | "danger";
-
-export interface AccountingToolingSummaryTileViewModel {
-  id: string;
-  label: string;
-  value: string;
-  detail: string;
-  tone: AccountingToolingTone;
-}
-
-export interface AccountingToolingStepViewModel {
-  id: string;
-  label: string;
-  description: string;
-  statusLabel: string;
-  statusTone: AccountingToolingTone;
-  href: string;
-  ariaLabel: string;
-}
-
-export interface AccountingCustomReportSetupRowViewModel {
-  id: string;
-  label: string;
-  value: string;
-  tone: AccountingToolingTone;
-}
-
-export interface AccountingCustomReportSetupViewModel {
-  title: string;
-  description: string;
-  selectedProfileLabel: string;
-  selectedProfileDetail: string;
-  statusLabel: string;
-  statusTone: AccountingToolingTone;
-  rows: AccountingCustomReportSetupRowViewModel[];
-  actionLabel: string;
-  actionHref: string;
-  actionAriaLabel: string;
-}
-
-export interface AccountingToolingWorkbenchViewState {
-  title: string;
-  description: string;
-  ariaLabel: string;
-  summaryTiles: AccountingToolingSummaryTileViewModel[];
-  steps: AccountingToolingStepViewModel[];
-  customReportSetup: AccountingCustomReportSetupViewModel;
-  liveRegionText: string;
-}
 
 export type CloseCommandCenterStatus = "ready" | "at-risk" | "blocked" | "loading";
 
@@ -3870,7 +3823,7 @@ export function buildAccountingReportingViewState({
   const rows = visibleProfiles.map((profile) => buildReportingProfileRow(profile, recommendedProfiles, profile.id === selectedId));
   const selectedRow = rows.find((profile) => profile.id === selectedId) ?? null;
   const selectedProfile = selectedRow ? buildReportingProfileDetail(selectedRow) : null;
-  const targetSummary = formatReportPackTargets(reporting?.reportPackTargets ?? []);
+  const targetSummary = formatReportPackRecipientList(reporting);
   const hiddenProfileCount = Math.max(profileCount - rows.length, 0);
   const visibleCountLabel = hiddenProfileCount > 0
     ? `Showing ${rows.length} of ${profileCount} profiles.`
@@ -4076,7 +4029,6 @@ export function buildCloseCommandCenterViewState({
       href: null
     })))
   ].slice(0, 8);
-
   return {
     title: "CFO / Controller close command center",
     description: "Controller-facing period readiness, close blockers, evidence gaps, provider warnings, report-pack readiness, and sign-off status from shared Accounting read models.",
@@ -4289,202 +4241,6 @@ function buildCloseCommandCenterSummary(
   }
 
   return `The close is at risk with ${formatCount(activeRows.length, "watch item")} across the command center.`;
-}
-
-export function buildAccountingToolingWorkbenchViewState({
-  data,
-  workstream,
-  selectedReconciliation,
-  trialBalanceView,
-  reportingView,
-  configurationStatusLabel
-}: {
-  data: AccountingWorkspaceResponse;
-  workstream: AccountingWorkstream;
-  selectedReconciliation: AccountingWorkspaceResponse["reconciliationQueue"][number] | null;
-  trialBalanceView: AccountingTrialBalanceViewState;
-  reportingView: AccountingReportingViewState;
-  configurationStatusLabel: string;
-}): AccountingToolingWorkbenchViewState {
-  const openBreakCount = data.breakQueue.filter((item) => isOpenAccountingBreakStatus(item.status)).length;
-  const selectedRunLabel = selectedReconciliation?.runId ?? "No run selected";
-  const reportProfileCount = data.reporting.profileCount;
-  const targetCount = data.reporting.reportPackTargets.length;
-  const trialBalanceLineCount = trialBalanceView.basisOptions.reduce((total, option) => total + option.rowCount, 0);
-  const trialBalanceStatusLabel = buildTrialBalanceToolingStatusLabel(trialBalanceView, trialBalanceLineCount);
-  const trialBalanceTone = trialBalanceView.state === "error"
-    ? "danger"
-    : trialBalanceView.state === "empty"
-      ? "warning"
-      : trialBalanceView.state === "loading"
-        ? "default"
-        : "success";
-  const reportingTone: AccountingToolingTone = reportProfileCount > 0 && targetCount > 0 ? "success" : reportProfileCount > 0 ? "warning" : "danger";
-  const ledgerTone: AccountingToolingTone = selectedReconciliation
-    ? selectedReconciliation.openBreakCount > 0 || selectedReconciliation.reconciliationStatus === "BreaksOpen"
-      ? "warning"
-      : "success"
-    : "warning";
-
-  return {
-    title: "Accounting tooling workbench",
-    description: "One operator surface for accounting setup, reconciliation, ledger review, trial balance, and custom report configuration.",
-    ariaLabel: "Accounting tooling workbench",
-    summaryTiles: [
-      {
-        id: "reconciliation",
-        label: "Reconciliation",
-        value: formatCount(openBreakCount, "open break"),
-        detail: `${formatCount(data.reconciliationQueue.length, "run")} in the Accounting queue.`,
-        tone: openBreakCount > 0 ? "warning" : "success"
-      },
-      {
-        id: "ledger",
-        label: "Ledger",
-        value: selectedRunLabel,
-        detail: selectedReconciliation
-          ? `${selectedReconciliation.strategyName} is selected for ledger and audit drill-through.`
-          : "Select a reconciliation run to load ledger and trial-balance evidence.",
-        tone: ledgerTone
-      },
-      {
-        id: "trial-balance",
-        label: "Trial balance",
-        value: trialBalanceStatusLabel,
-        detail: `${accountingBasisDisplayName(trialBalanceView.selectedBasis)} basis is active for account review.`,
-        tone: trialBalanceTone
-      },
-      {
-        id: "report-setup",
-        label: "Report setups",
-        value: formatCount(reportProfileCount, "profile"),
-        detail: `${formatCount(targetCount, "report-pack target")} configured for custom output setup.`,
-        tone: reportingTone
-      }
-    ],
-    steps: [
-      {
-        id: "configure",
-        label: "Configure accounting",
-        description: "Define basis, templates, mappings, and activation readiness before ledger use.",
-        statusLabel: configurationStatusLabel,
-        statusTone: normalizeToolingStatusTone(configurationStatusLabel),
-        href: WORKSTATION_ROUTE_CATALOG.accountingConfigure,
-        ariaLabel: "Open configurable accounting setup"
-      },
-      {
-        id: "reconcile",
-        label: "Run reconciliation",
-        description: "Match imported statements, queue breaks, and keep case evidence attached.",
-        statusLabel: openBreakCount > 0 ? `${openBreakCount} open` : "Balanced",
-        statusTone: openBreakCount > 0 ? "warning" : "success",
-        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
-        ariaLabel: "Open accounting reconciliation"
-      },
-      {
-        id: "ledger",
-        label: "Review ledger",
-        description: "Inspect run ledger, source event ids, approval ids, and audit packet routes.",
-        statusLabel: selectedRunLabel,
-        statusTone: ledgerTone,
-        href: WORKSTATION_ROUTE_CATALOG.accountingLedger,
-        ariaLabel: "Open accounting ledger review"
-      },
-      {
-        id: "trial-balance",
-        label: "Gain trial balance",
-        description: "Switch accounting basis and inspect account-level evidence before report handoff.",
-        statusLabel: trialBalanceStatusLabel,
-        statusTone: trialBalanceTone,
-        href: "#trial-balance-title",
-        ariaLabel: "Jump to the trial balance panel"
-      },
-      {
-        id: "reports",
-        label: "Configure reports",
-        description: "Pick report profiles, verify dictionaries and loader scripts, then run governed exports.",
-        statusLabel: formatCount(reportProfileCount, "profile"),
-        statusTone: reportingTone,
-        href: "#accounting-reporting",
-        ariaLabel: "Jump to custom report setup"
-      }
-    ],
-    customReportSetup: buildCustomReportSetupViewState(reportingView, data.reporting.reportPackTargets, reportingTone),
-    liveRegionText: `${workstream} accounting tooling selected. ${trialBalanceStatusLabel}. ${formatCount(reportProfileCount, "report setup")} available.`
-  };
-}
-
-function buildCustomReportSetupViewState(
-  reportingView: AccountingReportingViewState,
-  reportPackTargets: string[],
-  statusTone: AccountingToolingTone
-): AccountingCustomReportSetupViewModel {
-  const profile = reportingView.selectedProfile;
-  const detailRows = profile?.fields ?? [];
-  const format = detailRows.find((row) => row.label === "Format")?.value ?? "Not selected";
-  const target = detailRows.find((row) => row.label === "Target")?.value ?? "Not selected";
-  const dataDictionary = detailRows.find((row) => row.label === "Data dictionary")?.value ?? "Missing";
-  const loaderScript = detailRows.find((row) => row.label === "Loader script")?.value ?? "Not configured";
-  const recommendation = detailRows.find((row) => row.label === "Recommendation")?.value ?? "No recommended profile selected";
-  const targetSummary = reportPackTargets.length > 0 ? reportPackTargets.join(", ") : "No report-pack targets";
-
-  return {
-    title: "Custom report setup",
-    description: "Selected report profiles stay close to ledger evidence so packet setup can be checked before export.",
-    selectedProfileLabel: profile?.title ?? "No report profile selected",
-    selectedProfileDetail: profile?.subtitle ?? "Load reporting metadata before configuring custom report output.",
-    statusLabel: reportingView.exportCanRun ? "Ready to export" : "Setup blocked",
-    statusTone,
-    rows: [
-      { id: "format", label: "Format", value: format, tone: format === "Not selected" ? "warning" : "success" },
-      { id: "target", label: "Target", value: target, tone: target === "Not selected" ? "warning" : "success" },
-      { id: "dictionary", label: "Data dictionary", value: dataDictionary, tone: dataDictionary === "Included" ? "success" : "warning" },
-      { id: "loader", label: "Loader script", value: loaderScript, tone: loaderScript === "Available" ? "success" : "default" },
-      { id: "targets", label: "Report-pack targets", value: targetSummary, tone: reportPackTargets.length > 0 ? "success" : "warning" },
-      { id: "recommendation", label: "Recommendation", value: recommendation, tone: recommendation.startsWith("Recommended") ? "success" : "default" }
-    ],
-    actionLabel: reportingView.exportCanRun ? reportingView.exportButtonLabel : "Select report setup",
-    actionHref: "#accounting-reporting",
-    actionAriaLabel: reportingView.exportCanRun
-      ? reportingView.exportAriaLabel
-      : reportingView.exportDisabledReason ?? "Select a report setup before export"
-  };
-}
-
-function buildTrialBalanceToolingStatusLabel(
-  view: AccountingTrialBalanceViewState,
-  totalLineCount: number
-): string {
-  if (view.state === "error") {
-    return "Error";
-  }
-
-  if (view.state === "loading") {
-    return "Loading";
-  }
-
-  if (view.state === "empty") {
-    return "No lines";
-  }
-
-  return formatCount(totalLineCount, "line");
-}
-
-function normalizeToolingStatusTone(value: string): AccountingToolingTone {
-  const normalized = value.trim().toLowerCase();
-  if (normalized.includes("active") || normalized.includes("ready") || normalized.includes("valid")) {
-    return "success";
-  }
-
-  if (normalized.includes("blocked") || normalized.includes("error") || normalized.includes("failed")) {
-    return "danger";
-  }
-
-  if (normalized.includes("warning") || normalized.includes("pending") || normalized.includes("review")) {
-    return "warning";
-  }
-
-  return "default";
 }
 
 function isOpenAccountingBreakStatus(status: string): boolean {
@@ -5005,14 +4761,6 @@ function trialBalanceBasisTone(basis: AccountingBasisKind): AccountingTrialBalan
     default:
       return "outline";
   }
-}
-
-function formatReportPackTargets(targets: string[]): string {
-  if (targets.length === 0) {
-    return "No report-pack targets configured.";
-  }
-
-  return `Targets: ${targets.join(", ")}.`;
 }
 
 function cashFlowContextLabel(workstream: AccountingWorkstream): string {

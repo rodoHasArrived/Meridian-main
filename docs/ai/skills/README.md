@@ -8,6 +8,10 @@ Shared skill policy, cross-provider safety rules, and alignment checks live in
 Codex-specific execution gates, current skill validation, and repo-local skill maintenance live in
 [`../codex/README.md`](../codex/README.md).
 
+When a skill lane needs validator, route, handoff-packet, or maintenance-script selection, load
+[`../tooling/README.md`](../tooling/README.md) before widening repository context or repeating
+discovery.
+
 ---
 
 ## Package Contract
@@ -73,9 +77,13 @@ Shared grounding files:
   change the generator/input and run regeneration commands in `../assistant-workflow-contract.md`.
 - Agent orchestration: use `../parallel-task-manifest-template.md` and `../agent-handoff-checklist.md`
   for coordinated skill usage across >1 lane.
+- Tooling and validators: use [`../tooling/README.md`](../tooling/README.md) to choose the narrowest
+  script, validator, route artifact, or maintenance lane for the skill batch.
 - Parallel workflow: disambiguate ownership by lane and keep touched skill surfaces non-overlapping.
-- Token/context management: use `../work-modes.md` and keep validation evidence paths in each manifest packet.
-- Validation: `check-ai-inventory`, `check-codex-skills`, `validate-skill-packages`, and `git diff --check`
+- Token/context management: use `../work-modes.md`, keep required vs optional context explicit in
+  handoff packets, and record validation reuse or rerun triggers before switching lanes.
+- Validation: `check-ai-inventory`, `check-codex-skills`, `validate-skill-packages`,
+  `check-ai-handoff --strict`, and `git diff --check`
   for skills/docs-only batches.
 - Documentation ownership: [`../../documentation-ownership.md`](../../documentation-ownership.md)
 
@@ -147,4 +155,4 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 
 ---
 
-_Last Updated: 2026-05-28_
+_Last Updated: 2026-06-03_

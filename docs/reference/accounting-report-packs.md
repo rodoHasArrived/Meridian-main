@@ -34,6 +34,34 @@ Each package contains:
 
 The API returns relative artifact paths rooted below `governance-report-packs`; it does not return download URLs. The folder and contract name are retained storage compatibility identifiers, not visible workspace taxonomy.
 
+Reporting production state is also persisted under the workstation data root:
+
+```text
+%LocalAppData%\Meridian\workstation\reporting\runs\reporting-runs.json
+%LocalAppData%\Meridian\workstation\reporting\report-templates.json
+%LocalAppData%\Meridian\workstation\reporting\report-pack-workflows.json
+```
+
+`reporting-runs.json` stores generic Reporting run manifests and audit trails produced by
+`ReportingOrchestrationService`. `report-templates.json` stores custom template governance records
+created by the shared template registry; built-in templates are seeded as immutable approved records
+when the registry starts. `report-pack-workflows.json` stores governed report-pack workflow records
+after create, submit, approve, publish, reject, restate, and archive mutations.
+`ReportPackRunReadService` merges both stores into `WorkstationReportingPayload.RecentRuns` so
+browser and WPF Reporting workspaces show persisted run/workflow state instead of static sample
+rows. Each recent run also carries typed `drilldownLinks` and `nextActions`: links identify
+manifest, audit, evidence-bundle, ledger-provenance, publication, and restatement references, while
+actions identify the next approval, publication, restatement, or archive operation with method,
+route, enabled state, and browser-navigability metadata.
+The same read model exposes `Templates` from the shared template registry. Template rows include
+template id, family, display name, version, sections, lifecycle status, built-in/custom source,
+latest-approved posture, approval summary, and the authoring route so Reporting clients do not keep
+browser- or WPF-local template state.
+The same payload exposes `reportPackDistributions` recipient records instead of static
+report-pack target strings. Each distribution record names the recipient, role, channel, owner,
+state, due time, route, pending item count, and pending summary so operators can see who receives
+packages and what approval, publication, or delivery work is still outstanding.
+
 ---
 
 ## Schema Contract
@@ -63,6 +91,12 @@ Audit-pack readiness is additive on schema version `1`. Older manifests that do 
 | `GET` | `/api/fund-structure/report-packs?fundProfileId=<id>&limit=<n>` | Lists newest generated packages for a fund. |
 | `GET` | `/api/fund-structure/report-packs/{reportId}` | Returns a persisted manifest by report id, or `404`. |
 | `GET` | `/api/fund-structure/report-packs/{reportId}/ledger-provenance` | Returns drilldown for a retained report-pack ledger amount. |
+| `GET` | `/api/fund-structure/reporting/templates?includeSuperseded=<bool>` | Lists shared template governance records. |
+| `POST` | `/api/fund-structure/reporting/templates/drafts` | Creates a custom draft template version. |
+| `POST` | `/api/fund-structure/reporting/templates/{templateName}/versions/{version}/submit` | Submits a draft or rejected template for review. |
+| `POST` | `/api/fund-structure/reporting/templates/{templateName}/versions/{version}/approve` | Approves an in-review template version. |
+| `POST` | `/api/fund-structure/reporting/templates/{templateName}/versions/{version}/reject` | Rejects an in-review template version. |
+| `POST` | `/api/fund-structure/reporting/templates/render` | Renders an approved template version with supplied parameters. |
 
 Validation:
 
@@ -71,6 +105,46 @@ Validation:
 - empty or unsupported `formats` returns `400`
 - unknown `reportId` returns `404`
 - empty fund data still generates a package and carries warnings in the manifest
+- template draft and decision routes require an authenticated actor and reporting workflow permission
+- drafts cannot be submitted while validation issues remain, and only in-review template versions can be approved or rejected
+- the render route only resolves approved template versions
+
+---
+
+## Reporting Template Lifecycle
+
+Shared report templates use `ReportTemplateGovernanceRecordDto` so Reporting, browser, WPF, and
+endpoint tests share one version-approval vocabulary.
+
+Lifecycle states:
+
+- `Draft`
+- `InReview`
+- `Approved`
+- `Rejected`
+- `Superseded`
+
+Important fields:
+
+- `definition`
+- `status`
+- `family`
+- `isBuiltIn`
+- `isLatestApproved`
+- `createdBy`
+- `updatedBy`
+- `validationIssues`
+- `auditTrail`
+- `submittedBy`
+- `approvedBy`
+- `rejectedBy`
+- `decisionRationale`
+- `approvalReference`
+- `basedOnTemplateId`
+
+Built-in templates are approved immutable seed records. Custom drafts are persisted to
+`report-templates.json`; approving a custom version marks prior approved custom versions for the
+same template as no longer latest, while built-in history remains readable.
 
 ---
 
@@ -204,6 +278,9 @@ Missing categories are returned as warnings where evidence is absent. Audit-read
 - Contracts: `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs`
 - Accounting-record contracts: `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs`
 - Service orchestration: `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs`
+- Reporting run read model: `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs`
+- Generic run store: `src/Meridian.Ui.Shared/Services/ReportingRunStore.cs`
+- Template registry and workflow record stores: `src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs`
 - Local repository: `src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs`
 - Ledger drilldown: `src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs`
 - XLSX writer: `src/Meridian.Storage/Export/XlsxWorkbookWriter.cs`

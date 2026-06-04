@@ -307,7 +307,7 @@ const noReportPackGovernance: AccountingWorkspaceResponse = {
     recommendedProfiles: [],
     profiles: [],
     reportPackTargets: [],
-    summary: "No governed report-pack targets are configured."
+    summary: "No governed report-pack recipients are configured."
   }
 };
 
@@ -347,7 +347,7 @@ describe("operator readiness console view model", () => {
     expect(state.providerTrustRows.some((row) => row.label === "DK1 provider trust")).toBe(true);
     expect(state.reconciliationRows[0]).toEqual(expect.objectContaining({ id: "run-1:cash", level: "blocked" }));
     expect(state.promotionRows.some((row) => row.label === "Promotion checklist")).toBe(true);
-    expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "Targets present", level: "ready" }));
+    expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "Recipients present", level: "ready" }));
     expect(state.apiSources.map((source) => source.endpoint)).toContain("/api/workstation/operator/inbox");
     expect(state.apiSources.map((source) => source.id)).toEqual(expect.arrayContaining([
       "strategy-runs",
@@ -1179,7 +1179,7 @@ describe("operator readiness console view model", () => {
       label: "Open report packs",
       route: "/reporting/report-packs"
     }));
-    expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "No targets", level: "review" }));
+    expect(state.reportPackFacts[0]).toEqual(expect.objectContaining({ value: "No recipients", level: "review" }));
   });
 
   it("keeps mirrored run-handoff identity and route metadata in operator work items", () => {

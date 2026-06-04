@@ -7,7 +7,6 @@ import {
   buildAccountingCashFlowViewState,
   buildAccountingLoadingViewState,
   buildAccountingReportingViewState,
-  buildAccountingToolingWorkbenchViewState,
   buildCloseCommandCenterViewState,
   buildAccountingTrialBalanceViewState,
   buildSecurityScheduleRows,
@@ -822,155 +821,6 @@ describe("accounting-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
-  });
-
-  it("builds the accounting tooling workbench across setup, reconciliation, ledger, trial balance, and report setup", () => {
-    const reportingSummary = {
-      profileCount: 2,
-      recommendedProfiles: ["board"],
-      reportPackTargets: ["board", "audit"],
-      summary: "2 export/reporting profiles are available for Accounting and Reporting workflows.",
-      profiles: [
-        {
-          id: "board",
-          name: "Board packet",
-          targetTool: "Board",
-          format: "Markdown",
-          description: "Owner sign-off packet.",
-          loaderScript: true,
-          dataDictionary: true
-        },
-        {
-          id: "excel",
-          name: "Excel",
-          targetTool: "Excel",
-          format: "Xlsx",
-          description: "Board-ready workbook export.",
-          loaderScript: false,
-          dataDictionary: true
-        }
-      ]
-    };
-    const reportingView = buildAccountingReportingViewState({
-      reporting: reportingSummary,
-      selectedProfileId: "board"
-    });
-    const trialBalanceView = buildAccountingTrialBalanceViewState({
-      runId: "run-42",
-      rows: trialBalanceLines,
-      selectedRowId: null,
-      loading: false,
-      error: null
-    });
-    const state = buildAccountingToolingWorkbenchViewState({
-      data: {
-        metrics: [],
-        reconciliationQueue,
-        breakQueue,
-        cashFlow: {
-          totalCash: 120000,
-          totalLedgerCash: 120500,
-          netVariance: 500,
-          totalFinancing: 1400,
-          runsWithCashSignals: 4,
-          runsWithCashVariance: 1,
-          tone: "warning",
-          summary: "Cash-flow coverage is available."
-        },
-        reporting: reportingSummary
-      },
-      workstream: "ledger",
-      selectedReconciliation: reconciliationQueue[0],
-      trialBalanceView,
-      reportingView,
-      configurationStatusLabel: "Ready"
-    });
-
-    expect(state.summaryTiles).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "reconciliation", value: "1 open break", tone: "warning" }),
-      expect.objectContaining({ id: "ledger", value: "run-42", tone: "warning" }),
-      expect.objectContaining({ id: "trial-balance", value: "2 lines", tone: "success" }),
-      expect.objectContaining({ id: "report-setup", value: "2 profiles", tone: "success" })
-    ]));
-    expect(state.steps.map((step) => step.label)).toEqual([
-      "Configure accounting",
-      "Run reconciliation",
-      "Review ledger",
-      "Gain trial balance",
-      "Configure reports"
-    ]);
-    expect(state.customReportSetup).toMatchObject({
-      selectedProfileLabel: "Selected reporting profile - Board packet",
-      selectedProfileDetail: "MARKDOWN - Board",
-      statusLabel: "Ready to export",
-      statusTone: "success",
-      actionLabel: "Run reporting export"
-    });
-    expect(state.customReportSetup.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "format", value: "MARKDOWN", tone: "success" }),
-      expect.objectContaining({ id: "targets", value: "board, audit", tone: "success" })
-    ]));
-    expect(state.liveRegionText).toContain("ledger accounting tooling selected");
-  });
-
-  it("surfaces blocked custom report setup when no profiles are loaded", () => {
-    const reportingSummary = {
-      profileCount: 0,
-      recommendedProfiles: [],
-      reportPackTargets: [],
-      profiles: [],
-      summary: "No profiles loaded."
-    };
-    const reportingView = buildAccountingReportingViewState({
-      reporting: reportingSummary,
-      selectedProfileId: null
-    });
-    const trialBalanceView = buildAccountingTrialBalanceViewState({
-      runId: null,
-      rows: [],
-      selectedRowId: null,
-      loading: false,
-      error: null
-    });
-    const state = buildAccountingToolingWorkbenchViewState({
-      data: {
-        metrics: [],
-        reconciliationQueue: [],
-        breakQueue: [],
-        cashFlow: {
-          totalCash: 0,
-          totalLedgerCash: 0,
-          netVariance: 0,
-          totalFinancing: 0,
-          runsWithCashSignals: 0,
-          runsWithCashVariance: 0,
-          tone: "default",
-          summary: "No cash-flow coverage loaded."
-        },
-        reporting: reportingSummary
-      },
-      workstream: "reporting",
-      selectedReconciliation: null,
-      trialBalanceView,
-      reportingView,
-      configurationStatusLabel: "Pending review"
-    });
-
-    expect(state.summaryTiles).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "ledger", value: "No run selected", tone: "warning" }),
-      expect.objectContaining({ id: "trial-balance", value: "No lines", tone: "warning" }),
-      expect.objectContaining({ id: "report-setup", value: "0 profiles", tone: "danger" })
-    ]));
-    expect(state.customReportSetup).toMatchObject({
-      selectedProfileLabel: "No report profile selected",
-      statusLabel: "Setup blocked",
-      statusTone: "danger",
-      actionLabel: "Select report setup"
-    });
-    expect(state.customReportSetup.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "format", value: "Not selected", tone: "warning" }),
-      expect.objectContaining({ id: "targets", value: "No report-pack targets", tone: "warning" })
-    ]));
   });
 
   it("derives a blocked controller close command center from workflow and provider signals", () => {
@@ -2840,7 +2690,7 @@ describe("accounting-screen view model", () => {
     });
 
     expect(state.countLabel).toBe("2 profiles");
-    expect(state.targetSummary).toBe("Targets: board, audit.");
+    expect(state.targetSummary).toBe("Board, Audit");
     expect(state.rows[1]).toMatchObject({
       id: "board",
       isSelected: true,

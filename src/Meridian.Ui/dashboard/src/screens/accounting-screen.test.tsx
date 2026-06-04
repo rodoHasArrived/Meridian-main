@@ -524,17 +524,6 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen();
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Financial Operations workflow" })).toHaveTextContent(
-      "Receive Activity -> Match Records -> Resolve Exceptions -> Approve Results -> Produce Evidence"
-    );
-    expect(screen.getByRole("link", { name: "Receive Activity, current financial operations step" })).toHaveAttribute(
-      "href",
-      "/accounting/ledger"
-    );
-    expect(screen.getByRole("link", { name: "Open Produce Evidence, financial operations step" })).toHaveAttribute(
-      "href",
-      "/reporting/evidence"
-    );
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Accounting reconciliation workstream" })).toHaveAttribute(
       "href",
@@ -585,10 +574,6 @@ describe("AccountingScreen", () => {
   it("renders reconciliation strong panels with view-model presentation state", async () => {
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    expect(screen.getByRole("link", { name: "Match Records, current financial operations step" })).toHaveAttribute(
-      "href",
-      "/accounting/reconciliation"
-    );
     expect(screen.getAllByRole("table", { name: "Reconciliation runs" })).toHaveLength(1);
     expect(screen.queryByRole("link", { name: "Open Accounting reconciliation workstream" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
@@ -608,10 +593,6 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/exceptions");
 
-    expect(screen.getByRole("link", { name: "Resolve Exceptions, current financial operations step" })).toHaveAttribute(
-      "href",
-      "/accounting/exceptions"
-    );
     expect(screen.getAllByRole("heading", { name: "Operational exception workbench" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("Paper Index Mean Reversion / AmountMismatch");
     expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("2 comments");
@@ -928,13 +909,13 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(reportingData, "/reporting");
 
     expect(screen.getByText("Report packet posture")).toBeInTheDocument();
-    expect(screen.getByText(/Targets: board, audit\./)).toBeInTheDocument();
+    expect(screen.getAllByText(/Board, Audit/).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Inspect reporting profile Excel for Excel Xlsx" })).toHaveAttribute("aria-pressed", "true");
 
     await user.click(screen.getByRole("button", { name: "Inspect reporting profile Board packet for Board Markdown" }));
 
-    expect(screen.getByText("Selected reporting profile - Board packet")).toBeInTheDocument();
-    expect(screen.getByText("MARKDOWN - Board")).toBeInTheDocument();
+    expect(screen.getAllByText("Selected reporting profile - Board packet").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("MARKDOWN - Board").length).toBeGreaterThan(0);
     expect(screen.getByText("Dictionary missing")).toBeInTheDocument();
     expect(screen.getAllByText("Loader script").length).toBeGreaterThan(0);
 

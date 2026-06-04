@@ -124,6 +124,32 @@ rules. The shared W4 acceptance filter keeps governed report-pack acceptance evi
 evidence-vault manifest/export support so pilot readiness cannot mark W4 done from support
 artifacts alone, and pilot artifacts should pass through that filter before serialization so the
 `GovernedReportPack` stage gate reflects the shared acceptance/support split. The shared
+report template registry now seeds built-in Reporting templates as approved immutable records and
+exposes shared list, draft, submit, approve, reject, and render routes under
+`/api/fund-structure/reporting/templates*`. Draft versions cannot render until approved, invalid
+drafts cannot enter review, and approving a new version marks earlier approved records as no longer
+latest without mutating built-in history. Custom draft and approval records are retained under the
+resolved workstation data root at `workstation/reporting/report-templates.json`, so template
+authoring state survives host restart. Browser and WPF clients should render that shared template
+state instead of treating built-in templates as the full authoring workflow. `ReportPackRunReadService`
+uses the same registry list when it is registered, so Reporting payloads include custom template
+drafts, in-review records, approvals, and latest-approved status alongside built-in templates.
+Generic Reporting orchestration runs and governed report-pack workflow records also share one
+operator read model here. `FileReportingRunStore` persists `ReportingOutputManifest` plus audit
+trail snapshots for scheduled/ad-hoc Reporting runs, `FileReportPackWorkflowRecordStore` persists
+report-pack workflow records after create, submit, approve, publish, reject, restate, and archive
+mutations, and `ReportPackRunReadService` projects both sources into the shared
+`WorkstationReportingPayload`. Browser and WPF Reporting surfaces should consume those recent-run
+rows for true template, schedule, attempt, approval, publication, evidence-bundle, restatement, and
+drilldown status instead of reintroducing fixture rows in workstation bootstrap payloads.
+Those recent-run rows also include typed drilldown links and next-action references for evidence,
+approval submission/review, publication, release review, restatement, and archival work so clients
+can render clickable routes while preserving reference-only POST/action metadata.
+The same read model emits `reportPackDistributions` recipient records instead of static
+report-pack target strings. Browser and WPF clients should show recipient, role, channel, owner,
+state, due date, and pending summary from those records so operators can see who receives each
+package and what distribution work is pending.
+The shared
 fund-operations workspace read service carries the active Operations Continuity accounting-record
 summary on the governance lifecycle projection so Fund Ledger report-pack handoff can render the
 same evidence categories, readiness count, and route hints as the browser continuity detail without

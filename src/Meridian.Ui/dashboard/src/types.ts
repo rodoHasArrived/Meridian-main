@@ -2229,6 +2229,11 @@ export interface ReportingTemplateMetadata {
   name: string;
   version: string;
   sections: string[];
+  lifecycleStatus?: string;
+  isBuiltIn?: boolean;
+  isLatestApproved?: boolean;
+  approvalSummary?: string;
+  authoringRoute?: string;
 }
 
 export interface ReportingRunStatusProjection {
@@ -2243,6 +2248,43 @@ export interface ReportingRunStatusProjection {
   artifacts: string[];
   auditActions: string[];
   failureReason: string | null;
+  drilldownLinks?: ReportingRunDrilldownLink[];
+  nextActions?: ReportingRunNextAction[];
+}
+
+export interface ReportingRunDrilldownLink {
+  id: string;
+  kind: string;
+  label: string;
+  href: string;
+  method: string;
+  isBrowserNavigable: boolean;
+  source: string;
+}
+
+export interface ReportingRunNextAction {
+  id: string;
+  kind: string;
+  label: string;
+  href: string;
+  method: string;
+  isEnabled: boolean;
+  disabledReason: string | null;
+  isBrowserNavigable: boolean;
+}
+
+export interface ReportPackDistributionRecord {
+  distributionId: string;
+  recipient: string;
+  recipientRole: string;
+  channel: string;
+  state: string;
+  pendingItems: number;
+  pendingSummary: string;
+  owner: string;
+  dueAtUtc: string | null;
+  lastSentAtUtc: string | null;
+  route: string;
 }
 
 export interface ReportingWorkflowEvidenceLink {
@@ -2291,10 +2333,11 @@ export interface ReportingWorkflowLineProvenance {
 }
 
 export interface ReportingWorkflowPublication {
-  channel: string;
-  publishedAt: string | null;
-  publishedBy: string | null;
-  manifestRoute: string | null;
+  manifestId: string;
+  retainedManifestPath: string;
+  evidenceHash: string;
+  signedOffBy: string;
+  signedOffAt: string;
   evidenceLinks: ReportingWorkflowEvidenceLink[] | null;
 }
 
@@ -2319,7 +2362,8 @@ export interface AccountingReportingSummary {
   profileCount: number;
   recommendedProfiles: string[];
   profiles: AccountingReportingProfile[];
-  reportPackTargets: string[];
+  reportPackDistributions?: ReportPackDistributionRecord[];
+  reportPackTargets?: string[];
   summary: string;
   templates?: ReportingTemplateMetadata[];
   recentRuns?: ReportingRunStatusProjection[];

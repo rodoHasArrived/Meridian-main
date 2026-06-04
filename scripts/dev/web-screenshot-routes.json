@@ -151,7 +151,9 @@
       ],
       "waitForTexts": [
         "Open Breaks",
-        "Intraday Vol Carry",
+        "Operations control center",
+        "CFO / Controller close command center",
+        "Critical cash variance breached SLA for run-42.",
         "QuickBooks fixture evidence"
       ]
     },
@@ -170,6 +172,7 @@
       "waitForTexts": [
         "Open Breaks",
         "Intraday Vol Carry",
+        "Statement runs",
         "QuickBooks fixture evidence"
       ]
     },
@@ -188,6 +191,7 @@
       "waitForTexts": [
         "Open Breaks",
         "Intraday Vol Carry",
+        "Security Master",
         "QuickBooks fixture evidence"
       ]
     },
@@ -204,8 +208,9 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Open Breaks",
-        "Intraday Vol Carry",
+        "Approval queue",
+        "Close approvals",
+        "Report-pack readiness",
         "QuickBooks fixture evidence"
       ]
     },
@@ -228,6 +233,25 @@
       ]
     },
     {
+      "id": "W03E",
+      "name": "web-accounting-exceptions",
+      "path": "/accounting/exceptions",
+      "docLabel": "Accounting \u2014 Exceptions",
+      "waitForText": "Operational exception workbench",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest"
+      ],
+      "waitForTexts": [
+        "Case queue",
+        "Critical cash variance breached SLA for run-42.",
+        "run-42:cash",
+        "Approval gate"
+      ]
+    },
+    {
       "id": "W04",
       "name": "web-reporting-workspace",
       "path": "/reporting",
@@ -237,8 +261,10 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Report Packs",
-        "Board-ready workbook export."
+        "Governed report templates",
+        "Report run audit and lineage",
+        "Board Close Pack",
+        "report-run-board-202605"
       ]
     },
     {
@@ -251,8 +277,10 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Report Packs",
-        "Board-ready workbook export."
+        "Report-pack recipients",
+        "Publication review",
+        "Restatement changed lines",
+        "Board reporting committee"
       ]
     },
     {
@@ -279,8 +307,11 @@
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Report Packs",
-        "Board-ready workbook export."
+        "Governed export workbench",
+        "Investor PDF",
+        "Report run audit and lineage",
+        "Report-pack recipients",
+        "report-run-board-202605"
       ]
     },
     {

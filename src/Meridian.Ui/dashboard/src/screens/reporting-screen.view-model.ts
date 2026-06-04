@@ -4,6 +4,7 @@ import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint, reportPackEvidenceBundleEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { getReportPackDistributions } from "@/lib/reporting-distributions";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
@@ -18,6 +19,24 @@ export type ReportingExportStatusClassName =
   | "border-border/70 bg-secondary/25 text-muted-foreground"
   | "border-success/30 bg-success/10 text-success"
   | "border-danger/35 bg-danger/10 text-danger";
+
+const formatReportPackDistributionDue = (dueAtUtc: string | null): string => {
+  if (!dueAtUtc) {
+    return "No due date";
+  }
+
+  const due = new Date(dueAtUtc);
+  if (Number.isNaN(due.getTime())) {
+    return dueAtUtc;
+  }
+
+  return due.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+};
 
 export interface ReportingProfileBadge {
   label: string;
@@ -93,6 +112,14 @@ export interface ReportingExportServices {
 export interface ReportingPackTargetRow {
   id: string;
   label: string;
+  recipientRole: string;
+  channel: string;
+  stateLabel: string;
+  pendingItemsLabel: string;
+  pendingSummary: string;
+  ownerLabel: string;
+  dueLabel: string;
+  href: string;
   ariaLabel: string;
 }
 
@@ -112,6 +139,13 @@ export interface ReportingTemplateRow {
   family: string;
   version: string;
   sectionSummary: string;
+  statusLabel: string;
+  statusVariant: Exclude<ReportingBadgeVariant, "default">;
+  sourceLabel: string;
+  approvalSummary: string;
+  authoringHref: string;
+  actionLabel: string;
+  actionAriaLabel: string;
 }
 
 export interface ReportingRunStatusRow {
@@ -123,6 +157,35 @@ export interface ReportingRunStatusRow {
   lineageSummary: string;
   auditSummary: string;
   failureReason: string | null;
+  drilldownLinks: ReportingRunLinkRow[];
+  nextActions: ReportingRunActionRow[];
+  hasDrilldownLinks: boolean;
+  hasNextActions: boolean;
+}
+
+export interface ReportingRunLinkRow {
+  id: string;
+  kind: string;
+  label: string;
+  href: string;
+  method: string;
+  source: string;
+  isBrowserNavigable: boolean;
+  interactionLabel: "Open" | "Reference";
+  ariaLabel: string;
+}
+
+export interface ReportingRunActionRow {
+  id: string;
+  kind: string;
+  label: string;
+  href: string;
+  method: string;
+  isEnabled: boolean;
+  disabledReason: string | null;
+  isBrowserNavigable: boolean;
+  interactionLabel: "Open" | "Reference";
+  ariaLabel: string;
 }
 
 export interface ReportingWorkbenchAction {
@@ -181,6 +244,17 @@ export interface ReportingRestatementReviewPanel {
   emptyText: string;
 }
 
+export interface ReportingPublicationReviewPanel {
+  regionLabel: string;
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusVariant: Exclude<ReportingBadgeVariant, "default">;
+  summaryText: string;
+  fields: ReportingDetailField[];
+  evidenceSummary: string;
+}
+
 export interface ReportingWorkflowTaskPanel {
   regionLabel: string;
   eyebrow: string;
@@ -214,6 +288,7 @@ export interface ReportingWorkflowTaskPanel {
   backendLinksLabel: string;
   backendPanelId: string;
   backendLinks: ReportingWorkflowBackendLink[];
+  publicationReview: ReportingPublicationReviewPanel;
   restatementReview: ReportingRestatementReviewPanel;
 }
 
@@ -385,8 +460,8 @@ export function useReportingScreenViewModel(
       selectedProfile: null,
       packTargets: [],
       hasPackTargets: false,
-      packTargetsSummary: "No report-pack targets configured.",
-      packTargetsListLabel: "Report-pack targets",
+      packTargetsSummary: "No report-pack recipients configured.",
+      packTargetsListLabel: "Report-pack distribution recipients",
       packTargetsEmptyState: buildPackTargetsEmptyState(),
       workflowTaskPanel: null,
       loadingState: buildLoadingState(pathname),
@@ -458,16 +533,26 @@ export function useReportingScreenViewModel(
     : null;
 
   const countLabel = `${profiles.length} profile${profiles.length === 1 ? "" : "s"}`;
-  const packCount = reporting.reportPackTargets.length;
+  const distributions = getReportPackDistributions(reporting);
+  const packCount = distributions.length;
+  const pendingDistributionCount = distributions.filter((distribution) => distribution.pendingItems > 0).length;
   const packTargetCountLabel = String(packCount);
   const recommendedCountLabel = String(reporting.recommendedProfiles.length);
   const visibleCountLabel = `${rows.length} of ${profiles.length}`;
   const statusTitle = selectedProfileData ? `${selectedProfileData.name} selected` : "No profile selected";
   const listLabel = "Export profiles";
-  const packTargets: ReportingPackTargetRow[] = reporting.reportPackTargets.map((target) => ({
-    id: target,
-    label: target,
-    ariaLabel: `${target} report-pack target`
+  const packTargets: ReportingPackTargetRow[] = distributions.map((distribution) => ({
+    id: distribution.distributionId,
+    label: distribution.recipient,
+    recipientRole: distribution.recipientRole,
+    channel: distribution.channel,
+    stateLabel: distribution.state,
+    pendingItemsLabel: `${distribution.pendingItems} pending`,
+    pendingSummary: distribution.pendingSummary,
+    ownerLabel: distribution.owner,
+    dueLabel: formatReportPackDistributionDue(distribution.dueAtUtc),
+    href: distribution.route,
+    ariaLabel: `${distribution.recipient} report-pack distribution: ${distribution.pendingSummary}`
   }));
   const workflowTaskPanel = buildWorkflowTaskPanel({
     reporting,
@@ -514,9 +599,9 @@ export function useReportingScreenViewModel(
     hasPackTargets: packCount > 0,
     packTargetsSummary:
       packCount > 0
-        ? `${packCount} report-pack target${packCount === 1 ? "" : "s"} configured.`
-        : "No report-pack targets configured.",
-    packTargetsListLabel: "Report-pack targets",
+        ? `${packCount} report-pack recipient${packCount === 1 ? "" : "s"} configured; ${pendingDistributionCount} pending.`
+        : "No report-pack recipients configured.",
+    packTargetsListLabel: "Report-pack distribution recipients",
     packTargetsEmptyState: buildPackTargetsEmptyState(),
     workflowTaskPanel,
     loadingState: buildLoadingState(pathname),
@@ -556,13 +641,49 @@ export function buildRestatementReviewPanel(records: ReportingWorkflowRecord[] =
       buildReportingDetailField("Prior version", selected?.restatement?.priorVersionReportId ?? "None", selected?.restatement?.priorVersionReportId ? "default" : "muted"),
       buildReportingDetailField("Changed lines", String(changedLines.length), changedLines.length > 0 ? "warning" : "muted"),
       buildReportingDetailField("Audit actions", String(selected?.auditTrail.length ?? 0), selected?.auditTrail.length ? "default" : "muted"),
-      buildReportingDetailField("Publication", selected?.publication?.channel ?? (selected ? "Publication pending" : "No publication"), selected?.publication ? "success" : "muted")
+      buildReportingDetailField("Publication", selected?.publication?.manifestId ?? (selected ? "Publication pending" : "No publication"), selected?.publication ? "success" : "muted")
     ],
     changedLinesLabel: "Restatement changed lines",
     changedLines: changedLines.map((line, index) => buildRestatementChangedLineRow(line, index)),
     hasChangedLines: changedLines.length > 0,
     evidenceSummary: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     emptyText: "No changed report lines require restatement review."
+  };
+}
+
+export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] = []): ReportingPublicationReviewPanel {
+  const publishedRecords = records.filter((record) => record.publication);
+  const selected = [...publishedRecords]
+    .sort((left, right) => {
+      const leftTime = left.publication?.signedOffAt ?? left.updatedAt;
+      const rightTime = right.publication?.signedOffAt ?? right.updatedAt;
+      return rightTime.localeCompare(leftTime);
+    })[0] ?? null;
+  const publication = selected?.publication ?? null;
+  const evidenceCount = publication?.evidenceLinks?.length ?? 0;
+  const signedOffBy = publication?.signedOffBy?.trim() || "signer pending";
+  const publicationTime = publication?.signedOffAt?.trim() || "Publication time pending";
+
+  return {
+    regionLabel: "Report-pack publication review",
+    title: "Publication review",
+    description: "Signed-off publication metadata stays aligned with the shared backend report-pack DTO.",
+    statusLabel: selected?.state ?? "No publication",
+    statusVariant: selected ? "success" : "outline",
+    summaryText: publication
+      ? `${publication.manifestId} signed off by ${signedOffBy} at ${publicationTime}.`
+      : "No report-pack publication record is loaded for this approval packet.",
+    fields: [
+      buildReportingDetailField("Workflow records", String(records.length), records.length > 0 ? "default" : "muted"),
+      buildReportingDetailField("Published records", String(publishedRecords.length), publishedRecords.length > 0 ? "success" : "muted"),
+      buildReportingDetailField("Report ID", selected?.reportId ?? "None", selected ? "default" : "muted"),
+      buildReportingDetailField("Signed off by", signedOffBy, publication ? "success" : "muted"),
+      buildReportingDetailField("Evidence hash", publication?.evidenceHash ?? "None", publication?.evidenceHash ? "success" : "muted"),
+      buildReportingDetailField("Manifest path", publication?.retainedManifestPath ?? "None", publication?.retainedManifestPath ? "default" : "muted"),
+      buildReportingDetailField("Publication time", publicationTime, publication ? "default" : "muted"),
+      buildReportingDetailField("Evidence links", String(evidenceCount), evidenceCount > 0 ? "success" : "muted")
+    ],
+    evidenceSummary: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
   };
 }
 
@@ -594,21 +715,133 @@ function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTem
     name: template.name,
     family: template.family,
     version: template.version,
-    sectionSummary: `${template.sections.length} section${template.sections.length === 1 ? "" : "s"}`
+    sectionSummary: `${template.sections.length} section${template.sections.length === 1 ? "" : "s"}`,
+    statusLabel: template.lifecycleStatus ?? "Approved",
+    statusVariant: templateStatusVariant(template.lifecycleStatus),
+    sourceLabel: template.isBuiltIn === false ? "Custom" : "Built-in",
+    approvalSummary: template.approvalSummary ?? (
+      template.isBuiltIn === false
+        ? "Custom template approval metadata is pending."
+        : "Built-in approved template."
+    ),
+    authoringHref: template.authoringRoute ?? `/api/fund-structure/reporting/templates/${template.templateId}/versions/${template.version}`,
+    actionLabel: template.isBuiltIn === false ? "Review version" : "Draft revision",
+    actionAriaLabel: template.isBuiltIn === false
+      ? `Review ${template.name} template version`
+      : `Draft a revision of ${template.name}`
   }));
 }
 
+function templateStatusVariant(status?: string): Exclude<ReportingBadgeVariant, "default"> {
+  if (status === "Approved") {
+    return "success";
+  }
+
+  if (status === "Draft" || status === "InReview") {
+    return "warning";
+  }
+
+  return "outline";
+}
+
 function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunStatusRow[] {
-  return runs.map((run) => ({
-    id: run.runId,
-    templateId: run.templateId,
-    family: run.family,
-    status: run.status,
-    trigger: run.trigger,
-    lineageSummary: `${run.lineageLinkedSections}/${run.sectionCount} sections linked`,
-    auditSummary: run.auditActions.length > 0 ? run.auditActions.join(" → ") : "No audit actions",
-    failureReason: run.failureReason
+  return runs.map((run) => {
+    const drilldownLinks = buildRunLinkRows(run);
+    const nextActions = buildRunActionRows(run);
+
+    return {
+      id: run.runId,
+      templateId: run.templateId,
+      family: run.family,
+      status: run.status,
+      trigger: run.trigger,
+      lineageSummary: `${run.lineageLinkedSections}/${run.sectionCount} sections linked`,
+      auditSummary: run.auditActions.length > 0 ? run.auditActions.join(" → ") : "No audit actions",
+      failureReason: run.failureReason,
+      drilldownLinks,
+      nextActions,
+      hasDrilldownLinks: drilldownLinks.length > 0,
+      hasNextActions: nextActions.length > 0
+    };
+  });
+}
+
+function buildRunLinkRows(run: ReportingRunStatusProjection): ReportingRunLinkRow[] {
+  const typedLinks = run.drilldownLinks ?? [];
+  if (typedLinks.length > 0) {
+    return typedLinks.map((link) => ({
+      id: link.id,
+      kind: link.kind,
+      label: link.label,
+      href: link.href,
+      method: link.method,
+      source: link.source,
+      isBrowserNavigable: link.isBrowserNavigable,
+      interactionLabel: link.isBrowserNavigable ? "Open" : "Reference",
+      ariaLabel: link.isBrowserNavigable
+        ? `${link.method} ${link.href} for ${link.label}`
+        : `Reference-only ${link.method} ${link.href} for ${link.label}`
+    }));
+  }
+
+  return run.artifacts.map((artifact, index) => ({
+    id: `${run.runId}-artifact-${index}`,
+    kind: "artifact",
+    label: artifactLabel(artifact),
+    href: artifact,
+    method: "GET",
+    source: run.family,
+    isBrowserNavigable: artifact.startsWith("/"),
+    interactionLabel: artifact.startsWith("/") ? "Open" : "Reference",
+    ariaLabel: artifact.startsWith("/")
+      ? `GET ${artifact} for ${artifactLabel(artifact)}`
+      : `Reference-only artifact ${artifact}`
   }));
+}
+
+function buildRunActionRows(run: ReportingRunStatusProjection): ReportingRunActionRow[] {
+  return (run.nextActions ?? []).map((action) => ({
+    id: action.id,
+    kind: action.kind,
+    label: action.label,
+    href: action.href,
+    method: action.method,
+    isEnabled: action.isEnabled,
+    disabledReason: action.disabledReason,
+    isBrowserNavigable: action.isBrowserNavigable,
+    interactionLabel: action.isBrowserNavigable ? "Open" : "Reference",
+    ariaLabel: action.isEnabled
+      ? `${action.method} ${action.href} for ${action.label}`
+      : `${action.label} unavailable${action.disabledReason ? `: ${action.disabledReason}` : ""}`
+  }));
+}
+
+function artifactLabel(artifact: string): string {
+  if (artifact.startsWith("/api/fund-structure/report-packs/") && artifact.includes("/evidence-bundle")) {
+    return "Evidence bundle";
+  }
+
+  if (artifact.startsWith("/api/fund-structure/report-packs/") && artifact.includes("/ledger-provenance")) {
+    return "Ledger provenance";
+  }
+
+  if (artifact.startsWith("publication-manifest:")) {
+    return "Publication manifest";
+  }
+
+  if (artifact.startsWith("restatement:")) {
+    return "Restatement";
+  }
+
+  if (artifact.startsWith("schedule:")) {
+    return "Schedule source";
+  }
+
+  if (artifact.startsWith("evidence:")) {
+    return "Evidence reference";
+  }
+
+  return "Artifact";
 }
 
 function buildLoadingState(pathname: string): ReportingLoadingState {
@@ -629,8 +862,8 @@ function buildLoadingState(pathname: string): ReportingLoadingState {
 
 function buildPackTargetsEmptyState(): ReportingPackTargetsEmptyState {
   return {
-    text: "No report-pack targets loaded. Configure governed targets in the accounting policy before approving this packet.",
-    ariaLabel: "No report-pack targets loaded"
+    text: "No report-pack recipients loaded. Configure distribution records before approving this packet.",
+    ariaLabel: "No report-pack recipients loaded"
   };
 }
 
@@ -657,7 +890,7 @@ function buildWorkbenchChips(
 ): ReportingChipViewModel[] {
   return [
     { label: "Profiles", value: countLabel },
-    { label: "Pack targets", value: packTargetCountLabel },
+    { label: "Recipients", value: packTargetCountLabel },
     { label: "Recommended", value: recommendedCountLabel },
     { label: "Export route", value: EXPORT_API_ENDPOINTS.analysis }
   ];
@@ -672,7 +905,7 @@ function buildQueueChips(
   return [
     { label: "Visible", value: visibleCountLabel },
     { label: "Recommended", value: recommendedCountLabel },
-    { label: "Targets", value: packTargetCountLabel },
+    { label: "Recipients", value: packTargetCountLabel },
     { label: "List", value: listLabel }
   ];
 }
@@ -682,7 +915,7 @@ function buildPackTargetChips(
   statusTitle: string
 ): ReportingChipViewModel[] {
   return [
-    { label: "Visible", value: packTargetCountLabel },
+    { label: "Recipients", value: packTargetCountLabel },
     { label: "Inspector", value: statusTitle }
   ];
 }
@@ -711,7 +944,7 @@ function buildWorkflowTaskPanel({
     packTargets.length === 0 ? "warning" : readyProfiles > 0 ? "success" : "muted";
   const statusLabel =
     packTargets.length === 0
-      ? "Targets missing"
+      ? "Recipients missing"
       : readyProfiles > 0
         ? "Approval-ready"
         : "Evidence review";
@@ -722,21 +955,21 @@ function buildWorkflowTaskPanel({
     eyebrow: "Workflow task",
     title: "Report-pack approval",
     description:
-      "Review loaded report-pack targets, pick the export profile that carries the packet evidence, then preview or run the backend export before approval.",
+      "Review report-pack recipients, pick the export profile that carries the packet evidence, then preview or run the backend export before approval.",
     statusLabel,
     statusTone,
     statusVariant: workflowStatusVariant(statusTone),
     chips: [
-      { label: "Targets", value: String(packTargets.length) },
+      { label: "Recipients", value: String(packTargets.length) },
       { label: "Profiles", value: String(reporting.profiles.length) },
       { label: "Ready profiles", value: String(readyProfiles) },
       { label: "Backend", value: EXPORT_API_ENDPOINTS.reportPacks }
     ],
-    targetsLabel: "Report-pack approval targets",
+    targetsLabel: "Report-pack distribution recipients",
     targets: packTargets,
     hasTargets: packTargets.length > 0,
-    targetsEmptyText: "No report-pack targets loaded. Configure governed targets before approving this packet.",
-    targetsEmptyAriaLabel: "No report-pack approval targets",
+    targetsEmptyText: "No report-pack recipients loaded. Configure distribution records before approving this packet.",
+    targetsEmptyAriaLabel: "No report-pack distribution recipients",
     profileListLabel: "Report-pack export profiles",
     profileKeyboardHelpId: REPORT_PACK_PROFILE_KEYBOARD_HELP_ID,
     profileKeyboardHelpText: "Use arrow keys, Home, and End to move between report-pack profiles.",
@@ -787,6 +1020,7 @@ function buildWorkflowTaskPanel({
     actionsEmptyAriaLabel: "No selected report-pack export actions",
     backendLinksLabel: "Report-pack backend endpoints",
     backendPanelId: REPORT_PACK_PROFILE_BACKEND_ID,
+    publicationReview: buildPublicationReviewPanel(reporting.workflowRecords ?? []),
     restatementReview: buildRestatementReviewPanel(reporting.workflowRecords ?? []),
     backendLinks: [
       buildWorkflowBackendLink({

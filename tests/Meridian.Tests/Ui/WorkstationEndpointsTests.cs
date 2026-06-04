@@ -5666,9 +5666,17 @@ public sealed partial class WorkstationEndpointsTests
         var reportingSection = reporting.RootElement.GetProperty("reporting");
         reportingSection.GetProperty("profileCount").GetInt32().Should().BeGreaterThan(0);
         reportingSection.GetProperty("summary").GetString().Should().Contain("profiles are available");
-        reportingSection.GetProperty("reportPackTargets").EnumerateArray()
-            .Select(t => t.GetString())
-            .Should().Contain("board").And.Contain("investor").And.Contain("compliance");
+        reportingSection.TryGetProperty("reportPackTargets", out _).Should().BeFalse();
+        var distributions = reportingSection.GetProperty("reportPackDistributions").EnumerateArray().ToArray();
+        distributions.Should().NotBeEmpty();
+        distributions.Select(distribution => distribution.GetProperty("recipient").GetString())
+            .Should().Contain("Board reporting committee").And.Contain("Investor relations").And.Contain("Compliance archive");
+        distributions.Should().AllSatisfy(distribution =>
+        {
+            distribution.GetProperty("channel").GetString().Should().NotBeNullOrWhiteSpace();
+            distribution.GetProperty("state").GetString().Should().NotBeNullOrWhiteSpace();
+            distribution.GetProperty("pendingSummary").GetString().Should().NotBeNullOrWhiteSpace();
+        });
 
         var profiles = reportingSection.GetProperty("profiles").EnumerateArray().ToArray();
         profiles.Should().NotBeEmpty();

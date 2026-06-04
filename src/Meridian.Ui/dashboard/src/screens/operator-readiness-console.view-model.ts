@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
+import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type {
@@ -813,14 +814,17 @@ function buildReportPackFacts(reportingPayload: ReportingWorkspaceResponse | nul
     }];
   }
 
+  const distributions = getReportPackDistributions(reporting);
+  const pendingDistributions = countPendingReportPackDistributions(reporting);
+
   return [
     {
       id: "report-pack",
       label: "Report-pack readiness",
-      value: reporting.reportPackTargets.length > 0 ? "Targets present" : "No targets",
+      value: distributions.length > 0 ? "Recipients present" : "No recipients",
       detail: reporting.summary,
-      meta: `${reporting.profileCount} profiles - ${reporting.reportPackTargets.join(", ") || "no targets"}`,
-      level: reporting.profileCount > 0 && reporting.reportPackTargets.length > 0 ? "ready" : "review"
+      meta: `${reporting.profileCount} profiles - ${distributions.map((distribution) => distribution.recipient).join(", ") || "no recipients"} - ${pendingDistributions} pending`,
+      level: reporting.profileCount > 0 && distributions.length > 0 && pendingDistributions === 0 ? "ready" : "review"
     },
     {
       id: "reporting-profiles",
@@ -965,8 +969,8 @@ function buildCockpitGateRows({
       label: "Report pack approval ready",
       fallbackValue: reportPackReviewCount === 0 ? "Ready" : `${reportPackReviewCount} review`,
       fallbackDetail: reportPackReviewCount === 0
-        ? "Governed report-pack targets and recommended profiles are available."
-        : "Report-pack targets or recommended profiles are incomplete.",
+        ? "Governed report-pack recipients and recommended profiles are available."
+        : "Report-pack recipients or recommended profiles are incomplete.",
       fallbackMeta: reportPackFacts[0]?.meta ?? "Reporting payload unavailable",
       fallbackLevel: reportPackReviewCount === 0 ? "ready" : "review",
       action: {
@@ -1497,7 +1501,8 @@ function buildMetrics({
   reporting: ReportingWorkspaceResponse | null;
 }): ReadinessConsoleMetricBase[] {
   const activeSession = readiness?.activeSession;
-  const reportTargets = reporting?.reporting.reportPackTargets.length ?? 0;
+  const reportDistributions = getReportPackDistributions(reporting?.reporting);
+  const pendingReportDistributions = countPendingReportPackDistributions(reporting?.reporting);
 
   return [
     {
@@ -1543,10 +1548,10 @@ function buildMetrics({
     },
     {
       id: "report-packs",
-      label: "Report-pack targets",
-      value: String(reportTargets),
-      detail: "Governed output targets available from Reporting.",
-      level: reportTargets > 0 ? "ready" : "review"
+      label: "Report-pack recipients",
+      value: String(reportDistributions.length),
+      detail: `${pendingReportDistributions} report-pack distributions pending.`,
+      level: reportDistributions.length > 0 && pendingReportDistributions === 0 ? "ready" : "review"
     }
   ];
 }

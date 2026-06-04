@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Application.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Contracts.Auth;
 using Meridian.Ui.Shared.Endpoints;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Ui;
 
@@ -127,6 +129,177 @@ public sealed class ReportPackWorkflowServiceTests
 
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("Report pack publication requires sign-off, evidence hash, and retained manifest metadata.");
+    }
+
+    [Fact]
+    public void TemplateRegistry_CreateSubmitApproveRevision_TracksVersionApprovalAndBlocksDraftRender()
+    {
+        var svc = new ReportTemplateRegistryService();
+
+        svc.List().Should().Contain(record =>
+            record.Definition.TemplateId.Name == "investor-monthly-statement" &&
+            record.Status == ReportTemplateLifecycleStatusDto.Approved &&
+            record.IsBuiltIn);
+
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "investor-monthly-statement",
+                "Investor Monthly Statement v2",
+                ["cover", "performance", "positions", "fees"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "InvestorStatement",
+                BasedOnVersion: 1,
+                Rationale: "Add management fee detail"),
+            "report.author");
+
+        draft.Status.Should().Be(ReportTemplateLifecycleStatusDto.Draft);
+        draft.Definition.TemplateId.Version.Should().Be(2);
+        draft.BasedOnTemplateId.Should().Be(new VersionedReportTemplateIdDto("investor-monthly-statement", 1));
+        draft.ValidationIssues.Should().BeEmpty();
+        svc.Get(draft.Definition.TemplateId).Should().BeNull();
+
+        var submitted = svc.Submit(draft.Definition.TemplateId, "report.author", "ready for controller review");
+        var approved = svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved fee disclosure", "APP-TPL-2"),
+            "controller.admin");
+
+        submitted.Status.Should().Be(ReportTemplateLifecycleStatusDto.InReview);
+        approved.Status.Should().Be(ReportTemplateLifecycleStatusDto.Approved);
+        approved.IsLatestApproved.Should().BeTrue();
+        approved.ApprovalReference.Should().Be("APP-TPL-2");
+        approved.AuditTrail.Select(entry => entry.Action).Should().ContainInOrder("draft", "submit", "approve");
+
+        var builtIn = svc.List(includeSuperseded: true).Single(record =>
+            record.Definition.TemplateId == new VersionedReportTemplateIdDto("investor-monthly-statement", 1));
+        builtIn.Status.Should().Be(ReportTemplateLifecycleStatusDto.Approved);
+        builtIn.IsLatestApproved.Should().BeFalse();
+
+        var rendered = svc.Render(new RenderReportTemplateRequestDto(
+            approved.Definition.TemplateId,
+            new Dictionary<string, string> { ["period"] = "2026-05" }));
+        rendered.MissingRequiredParameters.Should().BeEmpty();
+        rendered.RenderedContent.Should().Contain("sections=cover,fees,performance,positions");
+    }
+
+    [Fact]
+    public void TemplateRegistry_InvalidDraft_CannotSubmitForApproval()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "custom-board-pack",
+                "Custom Board Pack",
+                [],
+                [],
+                Rationale: "Missing section setup"),
+            "report.author");
+
+        Action act = () => svc.Submit(draft.Definition.TemplateId, "report.author");
+
+        draft.ValidationIssues.Should().Contain("At least one report section is required.");
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Template custom-board-pack@v1 is not ready for review: At least one report section is required.");
+    }
+
+    [Fact]
+    public void TemplateRegistry_ReloadsCustomDraftsAndApprovedRevisionsFromStore()
+    {
+        var snapshotPath = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"), "report-templates.json");
+        var store = new FileReportTemplateGovernanceStore(
+            new ReportTemplateGovernanceStoreOptions(snapshotPath),
+            NullLogger<FileReportTemplateGovernanceStore>.Instance);
+        var svc = new ReportTemplateRegistryService(store);
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "investor-monthly-statement",
+                "Investor Monthly Statement v2",
+                ["cover", "performance", "positions", "fees"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "InvestorStatement",
+                BasedOnVersion: 1,
+                Rationale: "Add fee disclosure"),
+            "report.author");
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Approved", "APP-TPL-2"),
+            "controller.admin");
+
+        var reloaded = new ReportTemplateRegistryService(store);
+        var records = reloaded.List(includeSuperseded: true);
+
+        records.Should().Contain(record =>
+            record.Definition.TemplateId == new VersionedReportTemplateIdDto("investor-monthly-statement", 2) &&
+            record.Status == ReportTemplateLifecycleStatusDto.Approved &&
+            record.ApprovalReference == "APP-TPL-2");
+        records.Should().Contain(record =>
+            record.Definition.TemplateId == new VersionedReportTemplateIdDto("investor-monthly-statement", 1) &&
+            record.IsBuiltIn &&
+            !record.IsLatestApproved);
+        reloaded.Render(new RenderReportTemplateRequestDto(
+                new VersionedReportTemplateIdDto("investor-monthly-statement", 2),
+                new Dictionary<string, string> { ["period"] = "2026-05" }))
+            .RenderedContent.Should().Contain("fees");
+    }
+
+    [Fact]
+    public async Task Endpoint_TemplateDraftSubmitApprove_ListExposesGovernedLifecycle()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
+        var client = app.GetTestClient();
+        var draftRequest = new ReportTemplateDraftRequestDto(
+            "investor-monthly-statement",
+            "Investor Monthly Statement v2",
+            ["cover", "performance", "positions", "fees"],
+            [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+            Family: "InvestorStatement",
+            BasedOnVersion: 1,
+            Rationale: "Add fee disclosure");
+
+        var draftResponse = await client.PostAsJsonAsync("/api/fund-structure/reporting/templates/drafts", draftRequest, ServerJsonOptions);
+        draftResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var draft = await draftResponse.Content.ReadFromJsonAsync<ReportTemplateGovernanceRecordDto>(ServerJsonOptions);
+        draft.Should().NotBeNull();
+        draft!.Status.Should().Be(ReportTemplateLifecycleStatusDto.Draft);
+
+        var renderDraftResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/render",
+            new RenderReportTemplateRequestDto(draft.Definition.TemplateId, new Dictionary<string, string> { ["period"] = "2026-05" }),
+            ServerJsonOptions);
+        renderDraftResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var submitResponse = await client.PostAsJsonAsync(
+            $"/api/fund-structure/reporting/templates/{draft.Definition.TemplateId.Name}/versions/{draft.Definition.TemplateId.Version}/submit",
+            new ReportTemplateDecisionRequestDto("Ready for controller review"),
+            ServerJsonOptions);
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var submitted = await submitResponse.Content.ReadFromJsonAsync<ReportTemplateGovernanceRecordDto>(ServerJsonOptions);
+        submitted.Should().NotBeNull();
+        submitted!.Status.Should().Be(ReportTemplateLifecycleStatusDto.InReview);
+
+        var approveResponse = await client.PostAsJsonAsync(
+            $"/api/fund-structure/reporting/templates/{draft.Definition.TemplateId.Name}/versions/{draft.Definition.TemplateId.Version}/approve",
+            new ReportTemplateDecisionRequestDto("Controller approved fee disclosure", "APP-TPL-2"),
+            ServerJsonOptions);
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var approved = await approveResponse.Content.ReadFromJsonAsync<ReportTemplateGovernanceRecordDto>(ServerJsonOptions);
+        approved.Should().NotBeNull();
+        approved!.Status.Should().Be(ReportTemplateLifecycleStatusDto.Approved);
+        approved.ApprovalReference.Should().Be("APP-TPL-2");
+
+        var listResponse = await client.GetAsync("/api/fund-structure/reporting/templates?includeSuperseded=true");
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var records = await listResponse.Content.ReadFromJsonAsync<List<ReportTemplateGovernanceRecordDto>>(ServerJsonOptions);
+        records.Should().NotBeNull();
+        records!.Should().Contain(record =>
+            record.Definition.TemplateId == new VersionedReportTemplateIdDto("investor-monthly-statement", 2) &&
+            record.Status == ReportTemplateLifecycleStatusDto.Approved &&
+            !record.IsBuiltIn);
+        records.Should().Contain(record =>
+            record.Definition.TemplateId == new VersionedReportTemplateIdDto("investor-monthly-statement", 1) &&
+            record.IsBuiltIn &&
+            !record.IsLatestApproved);
     }
 
     [Fact]
@@ -307,6 +480,211 @@ public sealed class ReportPackWorkflowServiceTests
         line.ReconciliationOutcome.Should().Be("matched");
         line.ApprovalId.Should().Be("approval-1");
         published.State.Should().Be(ReportPackWorkflowStateDto.Published);
+    }
+
+    [Fact]
+    public void WorkflowStore_ReloadsPublishedAndRestatedReportPackRecords()
+    {
+        var snapshotPath = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"), "report-pack-workflows.json");
+        var store = new FileReportPackWorkflowRecordStore(
+            new ReportPackWorkflowRecordStoreOptions(snapshotPath),
+            NullLogger<FileReportPackWorkflowRecordStore>.Instance);
+        var svc = new ReportPackWorkflowService(store);
+        var approved = CreateApprovedPack(
+            svc,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+        var published = svc.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+
+        var restated = svc.Restate(
+            published.ReportId,
+            "approver",
+            "approver",
+            "NAV_CORRECTION",
+            "controller",
+            published.ReportId,
+            [
+                new ReportPackChangedLineDto(
+                    "trial-balance.cash",
+                    "100.00",
+                    "101.00",
+                    [new ReportPackEvidenceLinkDto("cash-restatement-1", "Cash restatement", "/evidence/cash-restatement-1", "reporting")])
+            ]);
+
+        var reloaded = new ReportPackWorkflowService(store);
+        var record = reloaded.ListRecords().Should().ContainSingle(item => item.ReportId == published.ReportId).Subject;
+        record.State.Should().Be(ReportPackWorkflowStateDto.Restated);
+        record.Version.Should().Be(restated.Version);
+        record.Publication!.ManifestId.Should().Be("manifest-1");
+        record.Restatement!.ReasonCode.Should().Be("NAV_CORRECTION");
+        record.AuditTrail.Select(static entry => entry.Action).Should().ContainInOrder("create", "inreview", "approved", "published", "restated");
+    }
+
+    [Fact]
+    public async Task ReportPackRunReadService_UnifiesGenericRunsAndGovernedWorkflowRecords()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var runStore = new FileReportingRunStore(
+            new ReportingRunStoreOptions(Path.Combine(root, "reporting-runs")),
+            NullLogger<FileReportingRunStore>.Instance);
+        var orchestration = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => new DateTimeOffset(2026, 5, 3, 12, 0, 0, TimeSpan.Zero),
+            runStore);
+        var manifest = await orchestration.ExecuteAsync(
+            new ReportingJobContract(
+                "sched-shadow",
+                "shadow-nav-daily-pack",
+                new DateOnly(2026, 5, 3),
+                ReportingRunTrigger.Scheduled,
+                0,
+                "scheduler",
+                new DateTimeOffset(2026, 5, 3, 12, 0, 0, TimeSpan.Zero),
+                ScheduleId: "sched-shadow"),
+            CancellationToken.None);
+
+        var workflow = new ReportPackWorkflowService();
+        var approved = CreateApprovedPack(
+            workflow,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+        var published = workflow.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+        workflow.Restate(
+            published.ReportId,
+            "approver",
+            "approver",
+            "NAV_CORRECTION",
+            "controller",
+            published.ReportId,
+            [
+                new ReportPackChangedLineDto(
+                    "trial-balance.cash",
+                    "100.00",
+                    "101.00",
+                    [new ReportPackEvidenceLinkDto("cash-restatement-1", "Cash restatement", "/evidence/cash-restatement-1", "reporting")])
+            ]);
+
+        var payload = new ReportPackRunReadService(new DefaultReportingTemplateCatalog(), runStore, workflow).BuildPayload();
+
+        payload.RecentRuns.Select(static run => run.RunId).Should().Contain(manifest.RunId);
+        payload.RecentRuns.Select(static run => run.RunId).Should().NotContain("investor-monthly-statement-20260501");
+        payload.RecentRuns.Select(static run => run.RunId).Should().NotContain("shadow-nav-daily-pack-20260503");
+        var genericRun = payload.RecentRuns.Single(run => run.RunId == manifest.RunId);
+        genericRun.Artifacts.Should().Contain("schedule:sched-shadow");
+        genericRun.DrilldownLinks.Should().Contain(link =>
+            link.Kind == "schedule" &&
+            link.Href == "schedule:sched-shadow" &&
+            !link.IsBrowserNavigable);
+        genericRun.NextActions.Should().Contain(action =>
+            action.Kind == "approval-submit" &&
+            action.Method == "POST" &&
+            action.IsEnabled);
+        var workflowRun = payload.RecentRuns.Single(run => run.RunId == $"report-pack:{published.ReportId:D}");
+        workflowRun.Family.Should().Be("GovernedReportPack");
+        workflowRun.Status.Should().Be(ReportPackWorkflowStateDto.Restated.ToString());
+        workflowRun.Artifacts.Should().Contain(item => item.Contains("/evidence-bundle", StringComparison.OrdinalIgnoreCase));
+        workflowRun.Artifacts.Should().Contain("publication-manifest:manifest-1");
+        workflowRun.Artifacts.Should().Contain("restatement:NAV_CORRECTION");
+        workflowRun.Artifacts.Should().Contain("/evidence/cash-restatement-1");
+        workflowRun.DrilldownLinks.Should().Contain(link =>
+            link.Kind == "evidence" &&
+            link.Label == "Evidence bundle" &&
+            link.IsBrowserNavigable);
+        workflowRun.DrilldownLinks.Should().Contain(link =>
+            link.Kind == "publication-evidence" &&
+            link.Label == "Line evidence" &&
+            link.Href == "/evidence/ledger-evidence-1");
+        workflowRun.DrilldownLinks.Should().Contain(link =>
+            link.Kind == "restatement-evidence" &&
+            link.Label == "Cash restatement" &&
+            link.Href == "/evidence/cash-restatement-1");
+        workflowRun.NextActions.Should().ContainSingle(action =>
+            action.Kind == "archive" &&
+            action.Method == "POST" &&
+            action.Href.EndsWith($"/reporting/packs/{published.ReportId:D}/archive", StringComparison.Ordinal));
+        workflowRun.AuditActions.Should().Contain("published");
+        workflowRun.AuditActions.Should().Contain("restated");
+        payload.ReportPackDistributions.Should().NotBeEmpty();
+        payload.ReportPackDistributions.Should().AllSatisfy(distribution =>
+        {
+            distribution.Recipient.Should().NotBeNullOrWhiteSpace();
+            distribution.Channel.Should().NotBeNullOrWhiteSpace();
+            distribution.PendingSummary.Should().Contain(distribution.Recipient);
+        });
+        payload.ReportPackDistributions.Should().Contain(distribution =>
+            distribution.Recipient == "Board reporting committee" &&
+            distribution.State == "Pending delivery" &&
+            distribution.PendingItems == 1);
+    }
+
+    [Fact]
+    public void ReportPackRunReadService_ListsRegistryTemplateDraftsAndApprovals()
+    {
+        var registry = new ReportTemplateRegistryService();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "custom-board-pack",
+                "Custom Board Pack",
+                ["cover", "exposures"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "BoardPack",
+                Rationale: "Controller-specific exposure section"),
+            "report.author");
+        var revision = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "investor-monthly-statement",
+                "Investor Monthly Statement v2",
+                ["cover", "performance", "positions", "fees"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "InvestorStatement",
+                BasedOnVersion: 1,
+                Rationale: "Add fee disclosure"),
+            "report.author");
+        registry.Submit(revision.Definition.TemplateId, "report.author", "ready for controller review");
+        registry.Approve(
+            revision.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved fee disclosure", "APP-TPL-2"),
+            "controller.admin");
+
+        var payload = new ReportPackRunReadService(
+            new DefaultReportingTemplateCatalog(),
+            templateRegistry: registry).BuildPayload();
+
+        payload.Templates.Should().Contain(template =>
+            template.TemplateId == draft.Definition.TemplateId.Name &&
+            template.Version == "1" &&
+            template.LifecycleStatus == ReportTemplateLifecycleStatusDto.Draft.ToString() &&
+            !template.IsBuiltIn &&
+            !template.IsLatestApproved &&
+            template.AuthoringRoute == "/api/fund-structure/reporting/templates/custom-board-pack/versions/1");
+        payload.Templates.Should().Contain(template =>
+            template.TemplateId == "investor-monthly-statement" &&
+            template.Version == "2" &&
+            template.Family == "InvestorStatement" &&
+            template.LifecycleStatus == ReportTemplateLifecycleStatusDto.Approved.ToString() &&
+            !template.IsBuiltIn &&
+            template.IsLatestApproved &&
+            template.ApprovalSummary.Contains("APP-TPL-2", StringComparison.Ordinal));
+        payload.Templates.Should().Contain(template =>
+            template.TemplateId == "investor-monthly-statement" &&
+            template.Version == "1" &&
+            template.IsBuiltIn &&
+            !template.IsLatestApproved);
     }
 
     [Fact]
@@ -644,6 +1022,7 @@ public sealed class ReportPackWorkflowServiceTests
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ReportTemplateRegistryService>();
         builder.Services.AddSingleton<ReportPackWorkflowService>();
 
         var app = builder.Build();

@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +22,6 @@ import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import {
   buildAccountingLoadingViewState,
   buildCloseCommandCenterViewState,
-  buildAccountingToolingWorkbenchViewState,
   resolveAccountingWorkstream,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useAccountingConfigurationViewModel,
@@ -53,7 +51,6 @@ import type {
   SecurityOpenLotReadModelViewState,
   SecurityOpenLotRowViewModel,
   SecuritySearchResultRowViewModel,
-  AccountingToolingWorkbenchViewState,
   CloseCommandCenterViewState,
   AccountingToolingTone,
   TradingParametersViewState
@@ -364,53 +361,6 @@ const focusCopy: Record<string, { title: string; description: string }> = {
     description: "Report packs, governed exports, and loader artifacts stay tied to accounting evidence."
   }
 };
-
-type FinancialOperationsStepId =
-  | "receive-activity"
-  | "match-records"
-  | "resolve-exceptions"
-  | "approve-results"
-  | "produce-evidence";
-
-interface FinancialOperationsStep {
-  id: FinancialOperationsStepId;
-  label: string;
-  description: string;
-  href: string;
-}
-
-const financialOperationsSteps: FinancialOperationsStep[] = [
-  {
-    id: "receive-activity",
-    label: "Receive Activity",
-    description: "Source activity, ledger context, security coverage, and account records arrive in Accounting.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingLedger
-  },
-  {
-    id: "match-records",
-    label: "Match Records",
-    description: "Ledger, cash, security, and position records are matched through reconciliation runs.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
-  },
-  {
-    id: "resolve-exceptions",
-    label: "Resolve Exceptions",
-    description: "Open breaks, comments, evidence, and sign-off blockers stay visible for resolution.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingExceptions
-  },
-  {
-    id: "approve-results",
-    label: "Approve Results",
-    description: "Close readiness, approvals, and retained audit decisions are captured before release.",
-    href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
-  },
-  {
-    id: "produce-evidence",
-    label: "Produce Evidence",
-    description: "Approved close evidence is packaged into retained audit packets and report-ready outputs.",
-    href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
-  }
-];
 
 const accountingSystemStatusVariant = {
   Matched: "success",
@@ -1022,9 +972,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
-  const [activeTaskView, setActiveTaskView] = useState<AccountingTaskViewId>(() => (
-    typeof window === "undefined" ? "overview" : resolveAccountingTaskViewId(window.location.hash)
-  ));
   const identity = securityMaster.identityView;
   const selectedSecurityEntry = securityMaster.selectedSecurityId
     ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
@@ -1123,16 +1070,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     }
   ];
 
-  useEffect(() => {
-    const updateActiveTaskView = () => {
-      setActiveTaskView(resolveAccountingTaskViewId(window.location.hash));
-    };
-
-    updateActiveTaskView();
-    window.addEventListener("hashchange", updateActiveTaskView);
-    return () => window.removeEventListener("hashchange", updateActiveTaskView);
-  }, []);
-
   const refreshAccountingSystem = async (persistPreview = false) => {
     setAccountingSystemLoading(true);
     setAccountingSystemError(null);
@@ -1206,41 +1143,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   }
 
   const focus = focusCopy[workstream];
-  const activeFinancialOperationsStep = resolveActiveFinancialOperationsStep(pathname);
   const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
-  const accountingTaskFields = [
-    { id: "workstream", label: "Workstream", value: workstream },
-    { id: "queue", label: "Queue", value: String(data.reconciliationQueue.length) },
-    { id: "breaks", label: "Breaks", value: String(data.breakQueue.length) },
-    { id: "profiles", label: "Profiles", value: String(data.reporting.profileCount) }
-  ];
-  const visibleAccountingTaskViews = getAccountingTaskViewsForWorkstream(workstream);
-  const accountingTaskTabs = visibleAccountingTaskViews.map((view) => ({
-    id: view.id,
-    label: view.label,
-    selected: activeTaskView === view.id,
-    panelId: view.sectionId,
-    href: view.href
-  }));
-  const accountingTaskMapCards = buildAccountingTaskMapCards({
-    workstream,
-    breakCount: data.breakQueue.length,
-    runCount: data.reconciliationQueue.length,
-    profileCount: data.reporting.profileCount,
-    hasSelectedReconciliation: Boolean(selectedReconciliation),
-    configurationStatusLabel: configuration.statusLabel
-  });
-  const accountingTooling = useMemo(
-    () => buildAccountingToolingWorkbenchViewState({
-      data,
-      workstream,
-      selectedReconciliation,
-      trialBalanceView: reconciliation.trialBalanceView,
-      reportingView: reporting,
-      configurationStatusLabel: configuration.statusLabel
-    }),
-    [configuration.statusLabel, data, reconciliation.trialBalanceView, reporting, selectedReconciliation, workstream]
-  );
   const closeCommandCenter = useMemo(
     () => buildCloseCommandCenterViewState({
       data,
@@ -1284,44 +1187,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           <AccountingChip label="Queue" value={String(data.reconciliationQueue.length)} />
           <AccountingChip label="Breaks" value={String(data.breakQueue.length)} />
           <AccountingChip label="Profiles" value={String(data.reporting.profileCount)} />
-        </div>
-      </section>
-
-      <section
-        role="region"
-        aria-label="Financial Operations workflow"
-        className="panel-surface px-4 py-4"
-      >
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-          <div className="min-w-0">
-            <div className="eyebrow-label">Financial Operations Flow</div>
-            <h3 className="mt-1 text-base font-semibold text-foreground">
-              {"Receive Activity -> Match Records -> Resolve Exceptions -> Approve Results -> Produce Evidence"}
-            </h3>
-          </div>
-          <nav className="workflow-continuity-steps xl:max-w-[64rem]" aria-label="Financial Operations steps">
-            {financialOperationsSteps.map((step) => {
-              const active = step.id === activeFinancialOperationsStep;
-              return (
-                <Link
-                  key={step.id}
-                  to={step.href}
-                  aria-current={active ? "step" : undefined}
-                  aria-label={active
-                    ? `${step.label}, current financial operations step`
-                    : `Open ${step.label}, financial operations step`}
-                  className={cn(
-                    "workflow-continuity-step focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                    active ? "workflow-continuity-step-active workflow-continuity-step-review" : "workflow-continuity-step-pending"
-                  )}
-                >
-                  <span className="workflow-continuity-step-label">{step.label}</span>
-                  <span className="workflow-continuity-step-description">{step.description}</span>
-                  <span className="workflow-continuity-step-status">{active ? "Current" : "Available"}</span>
-                </Link>
-              );
-            })}
-          </nav>
         </div>
       </section>
 
@@ -1401,25 +1266,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         loading={accountingSystemLoading}
         error={accountingSystemError}
         onRefresh={() => void refreshAccountingSystem(true)}
-      />
-
-      <AccountingToolingWorkbench view={accountingTooling} />
-
-      <WorkspaceFilterBar
-        label="Accounting task navigator"
-        searchLabel="Accounting tasks"
-        searchValue={accountingTaskViews.find((view) => view.id === activeTaskView)?.label ?? "Overview"}
-        fields={accountingTaskFields}
-        actions={
-          <WorkspaceTabStrip
-            label="Accounting sub-task screens"
-            tabs={accountingTaskTabs}
-          />
-        }
-      />
-      <AccountingTaskMap
-        label="Accounting page organization"
-        cards={accountingTaskMapCards}
       />
 
       {workstream === "configure" ? (
@@ -3105,26 +2951,6 @@ function TradingParametersPanel({ view }: { view: TradingParametersViewState }) 
   );
 }
 
-function resolveActiveFinancialOperationsStep(pathname: string): FinancialOperationsStepId {
-  if (pathname.startsWith(WORKSTATION_ROUTE_CATALOG.reporting)) {
-    return "produce-evidence";
-  }
-
-  if (pathname.startsWith(WORKSTATION_ROUTE_CATALOG.accountingApprovals)) {
-    return "approve-results";
-  }
-
-  if (pathname.startsWith(WORKSTATION_ROUTE_CATALOG.accountingExceptions)) {
-    return "resolve-exceptions";
-  }
-
-  if (pathname.startsWith(WORKSTATION_ROUTE_CATALOG.accountingReconciliation)) {
-    return "match-records";
-  }
-
-  return "receive-activity";
-}
-
 function ReconciliationQueueSummaryCard({ view }: { view: ReconciliationQueuePanelViewState }) {
   return (
     <Card className="panel-surface">
@@ -3387,238 +3213,6 @@ function AccountingHighlight({
   );
 }
 
-type AccountingTaskViewId =
-  | "overview"
-  | "posture"
-  | "exceptions"
-  | "ledger"
-  | "reporting"
-  | "security-master"
-  | "approvals"
-  | "actions"
-  | "history"
-  | "configure";
-
-interface AccountingTaskView {
-  id: AccountingTaskViewId;
-  label: string;
-  href: string;
-  sectionId: string;
-}
-
-type AccountingTaskMapTone = "primary" | "supporting" | "muted";
-
-interface AccountingTaskMapCard {
-  id: string;
-  label: string;
-  value: string;
-  detail: string;
-  href: string;
-  tone: AccountingTaskMapTone;
-}
-
-const accountingTaskViews: AccountingTaskView[] = [
-  { id: "overview", label: "Overview", href: "#accounting-overview", sectionId: "accounting-overview" },
-  { id: "posture", label: "Close Posture", href: "#accounting-posture", sectionId: "accounting-posture" },
-  { id: "exceptions", label: "Exceptions", href: "#accounting-exceptions", sectionId: "accounting-exceptions" },
-  { id: "ledger", label: "Ledger Review", href: "#trial-balance-title", sectionId: "trial-balance-title" },
-  { id: "reporting", label: "Reports", href: "#accounting-reporting", sectionId: "accounting-reporting" },
-  { id: "security-master", label: "Security Master", href: "#security-master-search", sectionId: "security-master-search" },
-  { id: "approvals", label: "Approvals", href: "#accounting-approvals", sectionId: "accounting-approvals" },
-  { id: "actions", label: "Actions", href: "#accounting-actions", sectionId: "accounting-actions" },
-  { id: "history", label: "History", href: "#accounting-history", sectionId: "accounting-history" },
-  { id: "configure", label: "Configure", href: "#accounting-configure-heading", sectionId: "accounting-configure-heading" }
-];
-
-const accountingTaskViewsByWorkstream: Record<AccountingWorkstream, AccountingTaskViewId[]> = {
-  ledger: ["overview", "posture", "ledger", "reporting", "history"],
-  reconciliation: ["overview", "posture", "exceptions", "actions", "history", "reporting"],
-  exceptions: ["overview", "exceptions", "actions", "history", "approvals", "reporting"],
-  reporting: ["overview", "reporting", "posture", "ledger"],
-  "security-master": ["overview", "security-master", "posture", "reporting"],
-  approvals: ["overview", "approvals", "posture", "history", "reporting"],
-  configure: ["overview", "configure", "posture", "reporting"]
-};
-
-function resolveAccountingTaskViewId(hash: string): AccountingTaskViewId {
-  const normalizedHash = hash.replace(/^#/, "");
-  return accountingTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
-}
-
-function getAccountingTaskViewsForWorkstream(workstream: AccountingWorkstream): AccountingTaskView[] {
-  const ids = accountingTaskViewsByWorkstream[workstream];
-  return ids
-    .map((id) => accountingTaskViews.find((view) => view.id === id))
-    .filter((view): view is AccountingTaskView => Boolean(view));
-}
-
-function buildAccountingTaskMapCards({
-  workstream,
-  breakCount,
-  runCount,
-  profileCount,
-  hasSelectedReconciliation,
-  configurationStatusLabel
-}: {
-  workstream: AccountingWorkstream;
-  breakCount: number;
-  runCount: number;
-  profileCount: number;
-  hasSelectedReconciliation: boolean;
-  configurationStatusLabel: string;
-}): AccountingTaskMapCard[] {
-  return [
-    {
-      id: "close",
-      label: "Close Posture",
-      value: `${runCount} runs`,
-      detail: "Metrics, cash-flow evidence, and operations control center.",
-      href: "#accounting-posture",
-      tone: workstream === "ledger" || workstream === "reporting" ? "primary" : "supporting"
-    },
-    {
-      id: "exceptions",
-      label: "Exceptions",
-      value: `${breakCount} breaks`,
-      detail: "Statement runs, open breaks, detail evidence, and resolution queue.",
-      href: workstream === "exceptions" || workstream === "reconciliation" ? "#accounting-exceptions" : WORKSTATION_ROUTE_CATALOG.accountingExceptions,
-      tone: workstream === "exceptions" || workstream === "reconciliation" ? "primary" : "supporting"
-    },
-    {
-      id: "ledger",
-      label: "Ledger Review",
-      value: hasSelectedReconciliation ? "Selected run" : "No run",
-      detail: "Trial balance, basis bridge, transaction preview, and ledger impact.",
-      href: workstream === "ledger" ? "#trial-balance-title" : WORKSTATION_ROUTE_CATALOG.accountingLedger,
-      tone: workstream === "ledger" ? "primary" : "supporting"
-    },
-    {
-      id: "reports",
-      label: "Reports",
-      value: `${profileCount} profiles`,
-      detail: "Report profiles, export readiness, and retained evidence handoff.",
-      href: "#accounting-reporting",
-      tone: workstream === "reporting" ? "primary" : "supporting"
-    },
-    {
-      id: "security-master",
-      label: "Security Master",
-      value: workstream === "security-master" ? "Active" : "Available",
-      detail: "Search, identity, conflicts, schedules, lots, and trading parameters.",
-      href: workstream === "security-master" ? "#security-master-search" : WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
-      tone: workstream === "security-master" ? "primary" : "supporting"
-    },
-    {
-      id: "approvals",
-      label: "Approvals",
-      value: workstream === "approvals" ? "Active" : "Available",
-      detail: "Approval queue, signer blockers, evidence, actions, and audit trail.",
-      href: workstream === "approvals" ? "#accounting-approvals" : WORKSTATION_ROUTE_CATALOG.accountingApprovals,
-      tone: workstream === "approvals" ? "primary" : "supporting"
-    },
-    {
-      id: "configure",
-      label: "Configure",
-      value: configurationStatusLabel,
-      detail: "Basis, mapping, validation, and audit readiness before activation.",
-      href: workstream === "configure" ? "#accounting-configure-heading" : WORKSTATION_ROUTE_CATALOG.accountingConfigure,
-      tone: workstream === "configure" ? "primary" : "muted"
-    }
-  ];
-}
-
-function AccountingToolingWorkbench({ view }: { view: AccountingToolingWorkbenchViewState }) {
-  return (
-    <section id="accounting-tooling" className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]" aria-label={view.ariaLabel}>
-      <span className="sr-only" aria-live="polite">{view.liveRegionText}</span>
-      <Card className="panel-surface">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="eyebrow-label">Tooling</div>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Table2 className="h-4 w-4 text-primary" />
-                {view.title}
-              </CardTitle>
-              <CardDescription className="mt-2">{view.description}</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-            {view.summaryTiles.map((tile) => (
-              <div key={tile.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(tile.tone))}>
-                <div className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{tile.label}</div>
-                <div className="mt-2 break-words font-mono text-sm text-foreground">{tile.value}</div>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">{tile.detail}</p>
-              </div>
-            ))}
-          </div>
-          <div className="grid gap-2 md:grid-cols-5" aria-label="Accounting tooling sequence">
-            {view.steps.map((step) => {
-              const content = (
-                <>
-                  <div className="flex min-h-[4rem] flex-col items-start gap-2">
-                    <div className="min-w-0 text-sm font-semibold leading-5 text-foreground">{step.label}</div>
-                    <Badge variant={accountingToolingBadgeVariant(step.statusTone)}>{step.statusLabel}</Badge>
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{step.description}</p>
-                </>
-              );
-
-              return step.href.startsWith("#") ? (
-                <a key={step.id} href={step.href} aria-label={step.ariaLabel} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 hover:bg-secondary/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-                  {content}
-                </a>
-              ) : (
-                <Link key={step.id} to={step.href} aria-label={step.ariaLabel} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 hover:bg-secondary/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
-                  {content}
-                </Link>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="panel-surface" role="region" aria-label={view.customReportSetup.title}>
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="eyebrow-label">Reports</div>
-              <CardTitle className="text-base">{view.customReportSetup.title}</CardTitle>
-              <CardDescription className="mt-2">{view.customReportSetup.description}</CardDescription>
-            </div>
-            <Badge variant={accountingToolingBadgeVariant(view.customReportSetup.statusTone)}>
-              {view.customReportSetup.statusLabel}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-            <div className="text-sm font-semibold text-foreground">{view.customReportSetup.selectedProfileLabel}</div>
-            <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{view.customReportSetup.selectedProfileDetail}</div>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {view.customReportSetup.rows.map((row) => (
-              <div key={row.id} className={cn("rounded border px-2 py-2", accountingToolingBorderClass(row.tone))}>
-                <div className="text-xs text-muted-foreground">{row.label}</div>
-                <div className="mt-1 break-words font-mono text-xs text-foreground">{row.value}</div>
-              </div>
-            ))}
-          </div>
-          <a
-            href={view.customReportSetup.actionHref}
-            aria-label={view.customReportSetup.actionAriaLabel}
-            className="inline-flex rounded-sm border border-primary/40 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          >
-            {view.customReportSetup.actionLabel}
-          </a>
-        </CardContent>
-      </Card>
-    </section>
-  );
-}
-
 function accountingToolingBadgeVariant(tone: AccountingToolingTone): "default" | "outline" | "success" | "warning" | "danger" {
   if (tone === "success" || tone === "warning" || tone === "danger") {
     return tone;
@@ -3641,55 +3235,6 @@ function accountingToolingBorderClass(tone: AccountingToolingTone): string {
   }
 
   return "border-border/70 bg-secondary/20";
-}
-
-function AccountingTaskMap({ label, cards }: { label: string; cards: AccountingTaskMapCard[] }) {
-  return (
-    <section aria-label={label} className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      {cards.map((card) => {
-        const content = (
-          <>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-sm font-semibold text-foreground">{card.label}</div>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">{card.detail}</p>
-              </div>
-              <span
-                className={cn(
-                  "shrink-0 rounded-sm border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em]",
-                  card.tone === "primary" ? "border-primary/35 bg-primary/10 text-primary" : "",
-                  card.tone === "supporting" ? "border-border/70 bg-secondary/30 text-muted-foreground" : "",
-                  card.tone === "muted" ? "border-border/60 bg-background text-muted-foreground" : ""
-                )}
-              >
-                {card.value}
-              </span>
-            </div>
-          </>
-        );
-        const className = cn(
-          "block rounded-lg border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-          card.tone === "primary" ? "border-primary/40 bg-primary/10 hover:bg-primary/15" : "",
-          card.tone === "supporting" ? "border-border/70 bg-secondary/25 hover:bg-secondary/40" : "",
-          card.tone === "muted" ? "border-border/60 bg-background/70 hover:bg-secondary/20" : ""
-        );
-
-        if (card.href.startsWith("#")) {
-          return (
-            <a key={card.id} href={card.href} className={className}>
-              {content}
-            </a>
-          );
-        }
-
-        return (
-          <Link key={card.id} to={card.href} className={className}>
-            {content}
-          </Link>
-        );
-      })}
-    </section>
-  );
 }
 
 function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {

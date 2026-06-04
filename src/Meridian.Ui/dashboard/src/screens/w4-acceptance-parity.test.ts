@@ -451,10 +451,11 @@ const reporting: GovernanceReportingSummary = {
         }
       ],
       publication: {
-        channel: "investor-portal",
-        publishedAt: "2026-05-28T15:20:00Z",
-        publishedBy: "reporting-ops",
-        manifestRoute: "/workstation/reporting/report-packs/report-published-2026-05/manifest",
+        manifestId: "manifest-report-published-2026-05",
+        retainedManifestPath: "/workstation/reporting/report-packs/report-published-2026-05/manifest",
+        evidenceHash: "sha256:report-published-2026-05",
+        signedOffBy: "reporting-ops",
+        signedOffAt: "2026-05-28T15:20:00Z",
         evidenceLinks: [
           {
             evidenceId: "publication-evidence",

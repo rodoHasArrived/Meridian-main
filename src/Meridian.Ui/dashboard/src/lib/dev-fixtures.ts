@@ -1047,8 +1047,48 @@ const fixtureAccountingWorkspace: AccountingWorkspaceResponse = {
         dataDictionary: true
       }
     ],
-    reportPackTargets: ["board"],
+    reportPackDistributions: [
+      {
+        distributionId: "board-reporting-committee",
+        recipient: "Board reporting committee",
+        recipientRole: "Board",
+        channel: "Board portal",
+        state: "Pending approval",
+        pendingItems: 1,
+        pendingSummary: "1 report pack still needs approval before Board reporting committee delivery.",
+        owner: "fund-controller",
+        dueAtUtc: "2026-05-03T20:00:00Z",
+        lastSentAtUtc: null,
+        route: "/reporting/report-packs?recipient=board"
+      }
+    ],
     summary: "4 export/reporting profiles are available for Accounting and Reporting workflows.",
+    templates: [
+      {
+        templateId: "investor-monthly-statement",
+        family: "InvestorStatement",
+        name: "Investor Monthly Statement",
+        version: "1.0.0",
+        sections: ["cover", "performance", "positions", "flows"],
+        lifecycleStatus: "Approved",
+        isBuiltIn: true,
+        isLatestApproved: true,
+        approvalSummary: "Built-in approved template for InvestorStatement.",
+        authoringRoute: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
+      },
+      {
+        templateId: "investor-monthly-statement",
+        family: "InvestorStatement",
+        name: "Investor Monthly Statement Draft",
+        version: "2",
+        sections: ["cover", "performance", "positions", "flows", "fees"],
+        lifecycleStatus: "InReview",
+        isBuiltIn: false,
+        isLatestApproved: false,
+        approvalSummary: "Custom v2 revision is waiting for controller approval.",
+        authoringRoute: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/2"
+      }
+    ],
     workflowRecords: [
       {
         reportId: "report-restated-demo",
@@ -1094,7 +1134,22 @@ const fixtureAccountingWorkspace: AccountingWorkspaceResponse = {
           evidenceLinks: null
         },
         lineProvenance: [],
-        publication: null
+        publication: {
+          manifestId: "manifest-restated-demo",
+          retainedManifestPath: "vault/report-packs/manifest-restated-demo.json",
+          evidenceHash: "sha256:restated-demo",
+          signedOffBy: "demo.publisher",
+          signedOffAt: "2026-05-28T15:20:00Z",
+          evidenceLinks: [
+            {
+              evidenceId: "publication-evidence-demo",
+              label: "Publication manifest",
+              route: "/reporting/manifests/manifest-restated-demo",
+              source: "reporting",
+              capturedAtUtc: "2026-05-28T15:20:00Z"
+            }
+          ]
+        }
       }
     ]
   }

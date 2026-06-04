@@ -92,6 +92,19 @@ public sealed record ReportingRunAuditEntry(
     string Actor,
     string Notes);
 
+public sealed record ReportingRunSnapshot(
+    ReportingOutputManifest Manifest,
+    IReadOnlyList<ReportingRunAuditEntry> AuditTrail,
+    DateTimeOffset UpdatedAtUtc);
+
+public interface IReportingRunStore
+{
+    IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25);
+    ReportingOutputManifest? GetManifest(string runId);
+    IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId);
+    Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList<ReportingRunAuditEntry> auditTrail, CancellationToken ct = default);
+}
+
 public sealed record ReportingApprovalDecision(
     ReportingApprovalAction Action,
     string Actor,

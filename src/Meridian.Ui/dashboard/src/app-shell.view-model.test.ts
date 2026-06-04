@@ -762,7 +762,7 @@ describe("app shell view model", () => {
       ["match-records", "Current / 2 breaks", "review"],
       ["resolve-exceptions", "Next / 2 breaks", "review"],
       ["approve-results", "2 breaks", "review"],
-      ["produce-evidence", "1 packs", "ready"]
+      ["produce-evidence", "1 recipients", "ready"]
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "match-records")?.ariaLabel)
       .toBe("Match Records, current workflow step, 2 breaks");

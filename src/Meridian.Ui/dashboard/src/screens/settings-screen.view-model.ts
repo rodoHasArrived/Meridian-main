@@ -1094,7 +1094,7 @@ const DIAGNOSTIC_ENDPOINTS: DiagnosticEndpointDefinition[] = [
     id: "reporting-workspace",
     label: "Reporting workspace",
     href: WORKSTATION_API_ENDPOINTS.reporting,
-    description: "Reporting profiles and governed report-pack targets.",
+    description: "Reporting profiles and governed report-pack recipients.",
     ariaLabel: "Open Reporting workspace diagnostic endpoint",
     workspaceKey: "reporting",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
@@ -1165,7 +1165,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceLabel: "Reporting",
     route: WORKSTATION_ROUTE_CATALOG.reporting,
     title: "Governed reports and exports",
-    description: "Reporting workspace posture, analysis exports, report-pack targets, data dictionaries, and approval lanes.",
+    description: "Reporting workspace posture, analysis exports, report-pack recipients, data dictionaries, and approval lanes.",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
     unavailableDetail: "Reporting workspace payload has not loaded.",
     endpoints: [

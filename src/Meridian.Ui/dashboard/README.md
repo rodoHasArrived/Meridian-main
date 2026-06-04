@@ -143,6 +143,20 @@ evidence packet distribution labels follow the same canonical root naming.
 The app-shell trading continuity title uses `Trading Controls` so cross-workspace recovery copy
 does not reintroduce `Governance` as a visible workspace label.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
+Those rows render typed drilldown links and next-action references from the shared payload, opening
+browser-safe evidence routes while showing approval, publication, restatement, and archive actions
+as explicit method-bearing references.
+Report-pack distribution UI consumes shared `reportPackDistributions` recipient records, not
+static target strings, so the browser surface shows recipient, channel, owner, pending item count,
+and pending summary for each governed package delivery lane.
+The Reporting report-pack task also renders publication metadata from the shared backend workflow
+record, including signed-off-by, evidence hash, retained manifest path, publication time, and
+retained evidence-link count instead of using browser-only publication aliases.
+The Reporting template panel also renders the shared template authoring lifecycle: built-in versus
+custom source, draft/in-review/approved state, latest-approved posture, approval summary, and the
+server-owned authoring route for drafting or reviewing a version. No-host fixtures include both an
+approved built-in template and an in-review custom revision so the browser surface demonstrates the
+version-approval workflow without adding browser-local lifecycle rules.
 Portfolio run drill-ins consume the shared attribution, equity-curve, cash-flow, and fill payloads
 and project browser view state for run comparison, realized/unrealized P&L bridge rows, and recent
 trade evidence. Keep those projections in the Portfolio view model so the React screen renders
@@ -185,20 +199,17 @@ The app shell workflow-continuity dock now also projects the design-document pri
 workflow as a browser-wide strip: `Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and
 `Report`. Route-specific trails such as Market Data To Paper, Research To Paper, or Accounting Closeout remain intact,
 while the primary strip anchors every workspace to the financial-operations flow.
-Accounting Closeout also exposes the design-document Financial Operations lane directly:
-`Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
-The browser `AccountingScreen` renders the same Financial Operations lane in-screen above the
-existing ledger, reconciliation, security coverage, and reporting evidence panels. Retained
-`Governance*` view-model, DTO, endpoint, and test fixture names are compatibility seams only; new
-browser component routing should use Accounting naming.
+Accounting Closeout keeps the design-document Financial Operations lane in the app-shell continuity
+dock while the browser `AccountingScreen` focuses on the owned ledger, reconciliation, approvals,
+exceptions, security coverage, and reporting evidence panels. Retained `Governance*` view-model, DTO,
+endpoint, and test fixture names are compatibility seams only; new browser component routing should
+use Accounting naming.
 The Accounting entry screen now includes a CFO / Controller close command center that derives
 ready, blocked, and at-risk close posture from the latest operations-continuity workflow, retained
 accounting-record evidence, reconciliation breaks, approvals, external GL provider warnings,
-multi-asset valuation readiness, report-pack readiness, and close-package sign-off state.
-The Accounting screen also projects an Accounting tooling workbench from existing shared payloads:
-configuration readiness, reconciliation queue state, selected ledger run, trial-balance status, and
-custom report-profile setup are summarized without adding browser-local accounting rules or export
-lifecycle state.
+multi-asset valuation readiness, report-pack readiness, and close-package sign-off state. React
+renders the shared status, metrics, blockers, and action rows without adding browser-local close
+rules.
 Workspace navigation and command-palette root commands canonicalize caller-provided workspace
 metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, `Reporting`,
 `Strategy`, `Data`, and `Settings`. Legacy root labels such as `Research`, `Governance`, and

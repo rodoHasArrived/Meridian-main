@@ -38,6 +38,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private readonly IReportingTemplateCatalog catalog;
     private readonly IReportingSectionRenderer renderer;
     private readonly Func<DateTimeOffset> utcNow;
+    private readonly IReportingRunStore? runStore;
     private readonly ConcurrentDictionary<string, ReportingOutputManifest> manifests = new();
     private readonly ConcurrentDictionary<string, object> auditLocks = new();
     private readonly ConcurrentDictionary<string, List<ReportingRunAuditEntry>> audits = new();
@@ -50,14 +51,16 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     public ReportingOrchestrationService(
         IReportingTemplateCatalog catalog,
         IReportingSectionRenderer renderer,
-        Func<DateTimeOffset> utcNow)
+        Func<DateTimeOffset> utcNow,
+        IReportingRunStore? runStore = null)
     {
         this.catalog = catalog;
         this.renderer = renderer;
         this.utcNow = utcNow;
+        this.runStore = runStore;
     }
 
-    public Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken)
+    public async Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(contract);
         if (contract.MaxRetries < 0)
@@ -94,7 +97,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
                 manifests[runId] = manifest;
                 AppendAudit(runId, "RunGenerated", contract.RequestedBy, $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}");
-                return Task.FromResult(manifest);
+                await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
+                return manifest;
             }
             catch (Exception ex) when (attempt <= contract.MaxRetries)
             {
@@ -117,6 +121,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     ex.Message);
                 manifests[runId] = failed;
                 AppendAudit(runId, "RunFailed", contract.RequestedBy, $"attempt={attempt}; error={ex.Message}");
+                await PersistAsync(failed, cancellationToken).ConfigureAwait(false);
                 throw new InvalidOperationException($"Reporting run failed after {attempt} attempts.", lastError);
             }
         }
@@ -153,13 +158,13 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     }
 
     public ReportingOutputManifest? GetManifest(string runId)
-        => manifests.TryGetValue(runId, out var manifest) ? manifest : null;
+        => manifests.TryGetValue(runId, out var manifest) ? manifest : runStore?.GetManifest(runId);
 
     public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId)
     {
         if (!audits.TryGetValue(runId, out var entries))
         {
-            return [];
+            return runStore?.GetAudit(runId) ?? [];
         }
 
         var auditLock = auditLocks.GetOrAdd(runId, static _ => new object());
@@ -169,30 +174,34 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         }
     }
 
-    public Task<bool> TransitionApprovalAsync(string runId, ReportingRunStatus target, string actor, string role, string notes, CancellationToken cancellationToken)
+    public async Task<bool> TransitionApprovalAsync(string runId, ReportingRunStatus target, string actor, string role, string notes, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!manifests.TryGetValue(runId, out var current))
+        var current = GetManifest(runId);
+        if (current is null)
         {
-            return Task.FromResult(false);
+            return false;
         }
 
         if (!IsTransitionAllowed(current.Status, target))
         {
             AppendAudit(runId, "ApprovalDenied", actor, $"from={current.Status}; target={target}; role={role}; notes={notes}");
-            return Task.FromResult(false);
+            await PersistAsync(current, cancellationToken).ConfigureAwait(false);
+            return false;
         }
 
         if (AllowedRoles.TryGetValue(target, out var roles) && !roles.Contains(role, StringComparer.OrdinalIgnoreCase))
         {
             AppendAudit(runId, "ApprovalDenied", actor, $"target={target}; role={role}; notes={notes}");
-            return Task.FromResult(false);
+            await PersistAsync(current, cancellationToken).ConfigureAwait(false);
+            return false;
         }
 
         var updated = current with { Status = target };
         manifests[runId] = updated;
         AppendAudit(runId, "ApprovalTransition", actor, $"{current.Status}->{target}; role={role}; notes={notes}");
-        return Task.FromResult(true);
+        await PersistAsync(updated, cancellationToken).ConfigureAwait(false);
+        return true;
     }
 
     private static bool IsTransitionAllowed(ReportingRunStatus from, ReportingRunStatus to)
@@ -206,13 +215,18 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
     private void AppendAudit(string runId, string action, string actor, string notes)
     {
-        var queue = audits.GetOrAdd(runId, static _ => []);
+        var queue = audits.GetOrAdd(runId, id => runStore?.GetAudit(id).ToList() ?? []);
         var auditLock = auditLocks.GetOrAdd(runId, static _ => new object());
         lock (auditLock)
         {
             queue.Add(new ReportingRunAuditEntry(runId, utcNow(), action, actor, notes));
         }
     }
+
+    private Task PersistAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken)
+        => runStore is null
+            ? Task.CompletedTask
+            : runStore.SaveAsync(manifest, GetAudit(manifest.RunId), cancellationToken);
 
     private static string BuildRunId(ReportingJobContract contract)
         => $"{contract.JobId}-{contract.AsOfDate:yyyyMMdd}";

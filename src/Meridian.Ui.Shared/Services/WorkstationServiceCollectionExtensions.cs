@@ -4,6 +4,7 @@ using Meridian.Application.Backtesting;
 using Meridian.Application.Compliance;
 using Meridian.Application.FundStructure;
 using Meridian.Application.OperationsContinuity;
+using Meridian.Application.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
@@ -163,8 +164,34 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
         services.TryAddSingleton<ReportPackValidationService>();
+        services.TryAddSingleton<IReportingTemplateCatalog, DefaultReportingTemplateCatalog>();
+        services.TryAddSingleton<ReportingRunStoreOptions>(sp =>
+            new ReportingRunStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "runs")));
+        services.TryAddSingleton<IReportingRunStore>(sp =>
+            new FileReportingRunStore(
+                sp.GetRequiredService<ReportingRunStoreOptions>(),
+                sp.GetRequiredService<ILogger<FileReportingRunStore>>()));
+        services.TryAddSingleton<ReportPackWorkflowRecordStoreOptions>(sp =>
+            new ReportPackWorkflowRecordStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "report-pack-workflows.json")));
+        services.TryAddSingleton<IReportPackWorkflowRecordStore>(sp =>
+            new FileReportPackWorkflowRecordStore(
+                sp.GetRequiredService<ReportPackWorkflowRecordStoreOptions>(),
+                sp.GetRequiredService<ILogger<FileReportPackWorkflowRecordStore>>()));
+        services.TryAddSingleton<ReportTemplateGovernanceStoreOptions>(sp =>
+            new ReportTemplateGovernanceStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "report-templates.json")));
+        services.TryAddSingleton<IReportTemplateGovernanceStore>(sp =>
+            new FileReportTemplateGovernanceStore(
+                sp.GetRequiredService<ReportTemplateGovernanceStoreOptions>(),
+                sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
         services.TryAddSingleton<ReportTemplateRegistryService>();
         services.TryAddSingleton<ReportPackWorkflowService>();
+        services.TryAddSingleton<IReportingOrchestrationService>(sp =>
+            new ReportingOrchestrationService(
+                sp.GetRequiredService<IReportingTemplateCatalog>(),
+                new DeterministicReportingSectionRenderer(),
+                () => DateTimeOffset.UtcNow,
+                sp.GetRequiredService<IReportingRunStore>()));
+        services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
         {

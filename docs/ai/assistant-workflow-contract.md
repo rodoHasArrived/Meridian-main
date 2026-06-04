@@ -33,7 +33,7 @@ The current repository evidence supports these AI surfaces:
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/`, `.claude/plugins/` | Claude agent definitions, portable skill packages, checked-in plugin packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
-| AI automation workflows | `.github/workflows/documentation.yml`, `.github/workflows/README.md`, archived workflow names `prompt-generation.yml`, `reusable-ai-analysis.yml`, `skill-evals.yml` | Checked-in automation lanes for documentation validation plus documented historical AI workflow names that now route to active local scripts or archive notes |
+| AI automation workflows | `.github/workflows/documentation.yml`, `.github/workflows/copilot-setup-steps.yml`, `.github/workflows/README.md`, archived workflow names `prompt-generation.yml`, `reusable-ai-analysis.yml`, `skill-evals.yml` | Checked-in automation lanes for documentation validation and Copilot bootstrap guidance plus documented historical AI workflow names that now route to active local scripts or archive notes |
 | Workflow guidance | `.github/workflows/README.md`, `docs/engineering/README.md`, `make/ai.mk` | Current build, test, publish, and maintenance workflow guidance |
 | Reusable prompt templates | `.github/prompts/`, `docs/prompts/`, `docs/ai/prompts/README.md` | Model-agnostic prompts for Copilot Chat, Claude Code, ChatGPT, automation runs, and manual assistant sessions |
 | Local AI maintenance tooling | `scripts/ai/`, `build/scripts/ai/`, `tools/codex/`, `make/ai.mk` | Provider-agnostic maintenance lanes, local AI setup/cleanup helpers, scoped deterministic edit tooling, and Codex-specific quality scans |
@@ -80,6 +80,8 @@ Before behavior changes, run this sequence:
   `docs/status/ai-handoff-packet.json` as the handoff artifact.
 - Route schema v2 requires `modelRouteId`, validation floor, validation scripts, required telemetry,
   and escalation triggers so routing, handoff, and CI evidence remain connected.
+- Coordinators should assign one narrow concern and explicit file ownership per specialist lane, and
+  specialists should load only the required context for that scoped lane before asking for more.
 
 ### Token and Context Management
 
@@ -98,6 +100,7 @@ Use `tooling/README.md` when the next question is "which script or validator sho
 - Record inspected files per lane before widening scope so another agent does not repeat the same discovery pass without need.
 - Every lane handoff must separate `required context` from `optional context` and record whether validation evidence was reused or rerun.
 - Treat assumptions as first-class handoff data: list open assumptions explicitly so downstream lanes do not mistake them for validated facts.
+- Record a validation owner and rerun triggers in the handoff packet or shared manifest before lane transfer.
 
 ### Validation Procedure
 
@@ -297,7 +300,7 @@ When editing `src/**`, assistants must:
 | AI prompt generation and evaluation | `build/scripts/docs/generate-prompts.py`, skill `evals/` folders, `.codex/skills/*/scripts/run_evals.py` | CI-derived prompt files, local eval reports, and archived workflow notes |
 | Local AI maintenance scripts and Codex tools | `docs/ai/tooling/README.md`, `scripts/ai/*.sh`, `build/scripts/ai/*.py`, `tools/codex/*.ps1`, `make/ai.mk` | `make ai-maintenance-*`, `make ai-audit*`, Codex desktop quality reports, scoped edit planning/apply lanes, and local AI setup/cleanup lanes |
 | Assistant entrypoints and provider config | `AGENTS.md`, `CLAUDE.md`, `.codex/config.toml`, `.codex/environments/`, `.claude/settings.json`, `.claude/settings.local.json`, `.github/copilot-instructions.md` | AI inventory drift checker, root shims, provider-specific startup/config flows |
-| AI automation workflows | `.github/workflows/documentation.yml`, `.github/workflows/README.md`, archived workflow names `prompt-generation.yml`, `reusable-ai-analysis.yml`, `skill-evals.yml` | Shared CI automation surface plus documented historical workflow names that now route to active local scripts or archive notes |
+| AI automation workflows | `.github/workflows/documentation.yml`, `.github/workflows/copilot-setup-steps.yml`, `.github/workflows/README.md`, archived workflow names `prompt-generation.yml`, `reusable-ai-analysis.yml`, `skill-evals.yml` | Shared CI automation surface plus Copilot bootstrap workflow and documented historical workflow names that now route to active local scripts or archive notes |
 | Optional IDE/provider assistant entrypoints | `build/scripts/docs/check-ai-inventory.py`, this contract, `docs/ai/README.md` | Cursor, Windsurf, Continue, Cline, Roo, or Gemini files only when a real repo usage path is added |
 
 ---

@@ -577,8 +577,8 @@
         "summary": "Cash-flow coverage available for 4 runs; 1 run needs variance review."
       },
       "reporting": {
-        "profileCount": 4,
-        "recommendedProfiles": ["excel"],
+        "profileCount": 3,
+        "recommendedProfiles": ["excel", "investor-pdf"],
         "profiles": [
           {
             "id": "excel",
@@ -588,10 +588,266 @@
             "description": "Board-ready workbook export.",
             "loaderScript": false,
             "dataDictionary": true
+          },
+          {
+            "id": "python-pandas",
+            "name": "Python / Pandas",
+            "targetTool": "Python",
+            "format": "Parquet",
+            "description": "Strategy pack for quant analyst review.",
+            "loaderScript": true,
+            "dataDictionary": false
+          },
+          {
+            "id": "investor-pdf",
+            "name": "Investor PDF",
+            "targetTool": "Reporting Portal",
+            "format": "Pdf",
+            "description": "Investor-facing statement packet with retained evidence hash.",
+            "loaderScript": false,
+            "dataDictionary": true
           }
         ],
-        "reportPackTargets": ["board"],
-        "summary": "4 export/reporting profiles available for controlled reporting workflows."
+        "reportPackDistributions": [
+          {
+            "distributionId": "board-reporting-committee",
+            "recipient": "Board reporting committee",
+            "recipientRole": "Board",
+            "channel": "Board portal",
+            "state": "Pending approval",
+            "pendingItems": 1,
+            "pendingSummary": "1 report pack still needs approval before Board reporting committee delivery.",
+            "owner": "fund-controller",
+            "dueAtUtc": "2026-05-03T20:00:00Z",
+            "lastSentAtUtc": null,
+            "route": "/reporting/report-packs?recipient=board"
+          },
+          {
+            "distributionId": "investor-relations-monthly",
+            "recipient": "Investor relations",
+            "recipientRole": "InvestorRelations",
+            "channel": "Secure email",
+            "state": "Ready",
+            "pendingItems": 0,
+            "pendingSummary": "Investor relations distribution is ready after evidence bundle validation.",
+            "owner": "reporting-ops",
+            "dueAtUtc": "2026-05-04T18:00:00Z",
+            "lastSentAtUtc": "2026-04-04T18:05:00Z",
+            "route": "/reporting/report-packs?recipient=investor-relations"
+          }
+        ],
+        "reportPackTargets": ["board", "strategy", "investor-relations"],
+        "summary": "3 governed export profiles are available with report-pack distribution, publication, and restatement evidence loaded.",
+        "templates": [
+          {
+            "templateId": "investor-monthly-statement",
+            "family": "InvestorStatement",
+            "name": "Investor Monthly Statement",
+            "version": "1.0.0",
+            "sections": ["cover", "performance", "positions", "flows"],
+            "lifecycleStatus": "Approved",
+            "isBuiltIn": true,
+            "isLatestApproved": true,
+            "approvalSummary": "Built-in approved template for InvestorStatement.",
+            "authoringRoute": "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
+          },
+          {
+            "templateId": "board-close-pack",
+            "family": "BoardPack",
+            "name": "Board Close Pack",
+            "version": "2",
+            "sections": ["close-summary", "reconciliation", "approval-log", "evidence-bundle", "distribution"],
+            "lifecycleStatus": "InReview",
+            "isBuiltIn": false,
+            "isLatestApproved": false,
+            "approvalSummary": "Controller-authored v2 package is waiting for reporting committee approval.",
+            "authoringRoute": "/api/fund-structure/reporting/templates/board-close-pack/versions/2"
+          }
+        ],
+        "recentRuns": [
+          {
+            "runId": "report-run-board-202605",
+            "templateId": "board-close-pack",
+            "family": "BoardPack",
+            "status": "AwaitingApproval",
+            "trigger": "CloseApproval",
+            "attemptCount": 2,
+            "sectionCount": 5,
+            "lineageLinkedSections": 5,
+            "artifacts": [
+              "/api/fund-structure/report-packs/report-restated-demo/evidence-bundle",
+              "publication-manifest:manifest-restated-demo",
+              "restatement:pricing-correction"
+            ],
+            "auditActions": ["Generated", "EvidenceBundled", "ControllerReviewed"],
+            "failureReason": null,
+            "drilldownLinks": [
+              {
+                "id": "evidence-bundle",
+                "kind": "Evidence",
+                "label": "Evidence bundle",
+                "href": "/api/fund-structure/report-packs/report-restated-demo/evidence-bundle",
+                "method": "GET",
+                "isBrowserNavigable": false,
+                "source": "ReportPackWorkflowService"
+              },
+              {
+                "id": "ledger-provenance",
+                "kind": "Ledger",
+                "label": "Ledger provenance",
+                "href": "/api/fund-structure/report-packs/report-restated-demo/ledger-provenance",
+                "method": "GET",
+                "isBrowserNavigable": false,
+                "source": "ReportingWorkflowService"
+              }
+            ],
+            "nextActions": [
+              {
+                "id": "approve-publication",
+                "kind": "Approval",
+                "label": "Approve publication",
+                "href": "/api/operations-continuity/workflows/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/approve",
+                "method": "POST",
+                "isEnabled": false,
+                "disabledReason": "Accounting approval is still pending.",
+                "isBrowserNavigable": false
+              }
+            ]
+          },
+          {
+            "runId": "report-run-investor-202605",
+            "templateId": "investor-monthly-statement",
+            "family": "InvestorStatement",
+            "status": "Published",
+            "trigger": "Scheduled",
+            "attemptCount": 1,
+            "sectionCount": 4,
+            "lineageLinkedSections": 4,
+            "artifacts": ["publication-manifest:manifest-investor-202605"],
+            "auditActions": ["Generated", "Published"],
+            "failureReason": null,
+            "drilldownLinks": [],
+            "nextActions": []
+          }
+        ],
+        "workflowRecords": [
+          {
+            "reportId": "report-restated-demo",
+            "fundProfileId": "demo-fund",
+            "fundAccountId": "demo-account",
+            "period": "2026-05",
+            "templateId": { "name": "monthly-board-pack", "version": 1 },
+            "state": "Restated",
+            "version": 2,
+            "createdAt": "2026-05-27T10:00:00Z",
+            "createdBy": "demo.reporter",
+            "updatedAt": "2026-05-28T12:00:00Z",
+            "auditTrail": [
+              {
+                "at": "2026-05-28T12:00:00Z",
+                "actor": "demo.approver",
+                "action": "restated",
+                "fromState": "Published",
+                "toState": "Restated",
+                "note": "pricing-correction"
+              }
+            ],
+            "restatement": {
+              "reasonCode": "pricing-correction",
+              "approver": "fund-controller",
+              "priorVersionReportId": "report-published-demo",
+              "changedLines": [
+                {
+                  "lineKey": "nav.total",
+                  "previousValue": "1250000",
+                  "currentValue": "1249500",
+                  "evidenceLinks": [
+                    {
+                      "evidenceId": "pricing-evidence-1",
+                      "label": "Pricing override",
+                      "route": "/reporting/evidence?subject=pricing-evidence-1",
+                      "source": "pricing",
+                      "capturedAtUtc": "2026-05-28T11:59:00Z"
+                    }
+                  ]
+                }
+              ],
+              "evidenceLinks": [
+                {
+                  "evidenceId": "restatement-review-1",
+                  "label": "Restatement approval memo",
+                  "route": "/reporting/evidence?subject=restatement-review-1",
+                  "source": "reporting",
+                  "capturedAtUtc": "2026-05-28T12:05:00Z"
+                }
+              ]
+            },
+            "lineProvenance": [
+              {
+                "lineKey": "nav.total",
+                "sourceKind": "LedgerTrialBalance",
+                "sourceId": "run-42",
+                "evidenceId": "pricing-evidence-1",
+                "runId": "run-42",
+                "ledgerEntryId": "ledger-entry-nav-total",
+                "reconciliationCaseId": "case-run-42-cash",
+                "reportValue": "1249500",
+                "sourceSessionId": "paper-dev-42",
+                "reconciliationRunId": "run-42"
+              }
+            ],
+            "publication": {
+              "manifestId": "manifest-restated-demo",
+              "retainedManifestPath": "vault/report-packs/manifest-restated-demo.json",
+              "evidenceHash": "sha256:restated-demo",
+              "signedOffBy": "demo.publisher",
+              "signedOffAt": "2026-05-28T15:20:00Z",
+              "evidenceLinks": [
+                {
+                  "evidenceId": "publication-evidence-demo",
+                  "label": "Publication manifest",
+                  "route": "/reporting/manifests/manifest-restated-demo",
+                  "source": "reporting",
+                  "capturedAtUtc": "2026-05-28T15:20:00Z"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "controlCenter": {
+        "closeReadiness": "At risk",
+        "portfolioFilterOptions": ["all-portfolios", "paper-index", "direct-lending"],
+        "accountFilterOptions": ["operating-cash", "public-investments", "trading-expenses"],
+        "blockerSeverityDistribution": [
+          { "severity": "Critical", "count": 1 },
+          { "severity": "Warning", "count": 2 }
+        ],
+        "agingCurves": [
+          { "bucket": "0-1d", "count": 2 },
+          { "bucket": "2-3d", "count": 1 },
+          { "bucket": "4d+", "count": 1 }
+        ],
+        "ownerWorkload": [
+          { "owner": "fund-controller", "openCount": 3 },
+          { "owner": "reporting-ops", "openCount": 1 }
+        ],
+        "slaBreachCount": 1,
+        "trendSnapshots": [
+          { "metric": "Open breaks", "value": 2, "trend": "+1 today" },
+          { "metric": "Pending approvals", "value": 1, "trend": "unchanged" },
+          { "metric": "Evidence gaps", "value": 5, "trend": "-2 today" },
+          { "metric": "Distribution blockers", "value": 1, "trend": "new" }
+        ],
+        "drillLinks": [
+          { "label": "Review exceptions", "href": "/accounting/exceptions" },
+          { "label": "Open approvals", "href": "/accounting/approvals" },
+          { "label": "Report evidence", "href": "/reporting/evidence" }
+        ],
+        "alerts": [
+          { "tone": "danger", "message": "Critical cash variance breached SLA for run-42." },
+          { "tone": "warning", "message": "Board report pack is pending controller approval." }
+        ]
       }
     },
     "/api/accounting-system/providers": [
@@ -792,8 +1048,8 @@
         "summary": "Cash-flow data available for governed export review."
       },
       "reporting": {
-        "profileCount": 4,
-        "recommendedProfiles": ["excel"],
+        "profileCount": 3,
+        "recommendedProfiles": ["excel", "investor-pdf"],
         "profiles": [
           {
             "id": "excel",
@@ -812,10 +1068,223 @@
             "description": "Strategy pack for quant analyst review.",
             "loaderScript": true,
             "dataDictionary": false
+          },
+          {
+            "id": "investor-pdf",
+            "name": "Investor PDF",
+            "targetTool": "Reporting Portal",
+            "format": "Pdf",
+            "description": "Investor-facing statement packet with retained evidence hash.",
+            "loaderScript": false,
+            "dataDictionary": true
           }
         ],
-        "reportPackTargets": ["board", "strategy"],
-        "summary": "4 export/reporting profiles available for governed export."
+        "reportPackDistributions": [
+          {
+            "distributionId": "board-reporting-committee",
+            "recipient": "Board reporting committee",
+            "recipientRole": "Board",
+            "channel": "Board portal",
+            "state": "Pending approval",
+            "pendingItems": 1,
+            "pendingSummary": "1 report pack still needs approval before Board reporting committee delivery.",
+            "owner": "fund-controller",
+            "dueAtUtc": "2026-05-03T20:00:00Z",
+            "lastSentAtUtc": null,
+            "route": "/reporting/report-packs?recipient=board"
+          },
+          {
+            "distributionId": "investor-relations-monthly",
+            "recipient": "Investor relations",
+            "recipientRole": "InvestorRelations",
+            "channel": "Secure email",
+            "state": "Ready",
+            "pendingItems": 0,
+            "pendingSummary": "Investor relations distribution is ready after evidence bundle validation.",
+            "owner": "reporting-ops",
+            "dueAtUtc": "2026-05-04T18:00:00Z",
+            "lastSentAtUtc": "2026-04-04T18:05:00Z",
+            "route": "/reporting/report-packs?recipient=investor-relations"
+          }
+        ],
+        "reportPackTargets": ["board", "strategy", "investor-relations"],
+        "summary": "3 governed export profiles are available with report-pack distribution, publication, and restatement evidence loaded.",
+        "templates": [
+          {
+            "templateId": "investor-monthly-statement",
+            "family": "InvestorStatement",
+            "name": "Investor Monthly Statement",
+            "version": "1.0.0",
+            "sections": ["cover", "performance", "positions", "flows"],
+            "lifecycleStatus": "Approved",
+            "isBuiltIn": true,
+            "isLatestApproved": true,
+            "approvalSummary": "Built-in approved template for InvestorStatement.",
+            "authoringRoute": "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
+          },
+          {
+            "templateId": "board-close-pack",
+            "family": "BoardPack",
+            "name": "Board Close Pack",
+            "version": "2",
+            "sections": ["close-summary", "reconciliation", "approval-log", "evidence-bundle", "distribution"],
+            "lifecycleStatus": "InReview",
+            "isBuiltIn": false,
+            "isLatestApproved": false,
+            "approvalSummary": "Controller-authored v2 package is waiting for reporting committee approval.",
+            "authoringRoute": "/api/fund-structure/reporting/templates/board-close-pack/versions/2"
+          }
+        ],
+        "recentRuns": [
+          {
+            "runId": "report-run-board-202605",
+            "templateId": "board-close-pack",
+            "family": "BoardPack",
+            "status": "AwaitingApproval",
+            "trigger": "CloseApproval",
+            "attemptCount": 2,
+            "sectionCount": 5,
+            "lineageLinkedSections": 5,
+            "artifacts": [
+              "/api/fund-structure/report-packs/report-restated-demo/evidence-bundle",
+              "publication-manifest:manifest-restated-demo",
+              "restatement:pricing-correction"
+            ],
+            "auditActions": ["Generated", "EvidenceBundled", "ControllerReviewed"],
+            "failureReason": null,
+            "drilldownLinks": [
+              {
+                "id": "evidence-bundle",
+                "kind": "Evidence",
+                "label": "Evidence bundle",
+                "href": "/api/fund-structure/report-packs/report-restated-demo/evidence-bundle",
+                "method": "GET",
+                "isBrowserNavigable": false,
+                "source": "ReportPackWorkflowService"
+              },
+              {
+                "id": "ledger-provenance",
+                "kind": "Ledger",
+                "label": "Ledger provenance",
+                "href": "/api/fund-structure/report-packs/report-restated-demo/ledger-provenance",
+                "method": "GET",
+                "isBrowserNavigable": false,
+                "source": "ReportingWorkflowService"
+              }
+            ],
+            "nextActions": [
+              {
+                "id": "approve-publication",
+                "kind": "Approval",
+                "label": "Approve publication",
+                "href": "/api/operations-continuity/workflows/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/approve",
+                "method": "POST",
+                "isEnabled": false,
+                "disabledReason": "Accounting approval is still pending.",
+                "isBrowserNavigable": false
+              }
+            ]
+          },
+          {
+            "runId": "report-run-investor-202605",
+            "templateId": "investor-monthly-statement",
+            "family": "InvestorStatement",
+            "status": "Published",
+            "trigger": "Scheduled",
+            "attemptCount": 1,
+            "sectionCount": 4,
+            "lineageLinkedSections": 4,
+            "artifacts": ["publication-manifest:manifest-investor-202605"],
+            "auditActions": ["Generated", "Published"],
+            "failureReason": null,
+            "drilldownLinks": [],
+            "nextActions": []
+          }
+        ],
+        "workflowRecords": [
+          {
+            "reportId": "report-restated-demo",
+            "fundProfileId": "demo-fund",
+            "fundAccountId": "demo-account",
+            "period": "2026-05",
+            "templateId": { "name": "monthly-board-pack", "version": 1 },
+            "state": "Restated",
+            "version": 2,
+            "createdAt": "2026-05-27T10:00:00Z",
+            "createdBy": "demo.reporter",
+            "updatedAt": "2026-05-28T12:00:00Z",
+            "auditTrail": [
+              {
+                "at": "2026-05-28T12:00:00Z",
+                "actor": "demo.approver",
+                "action": "restated",
+                "fromState": "Published",
+                "toState": "Restated",
+                "note": "pricing-correction"
+              }
+            ],
+            "restatement": {
+              "reasonCode": "pricing-correction",
+              "approver": "fund-controller",
+              "priorVersionReportId": "report-published-demo",
+              "changedLines": [
+                {
+                  "lineKey": "nav.total",
+                  "previousValue": "1250000",
+                  "currentValue": "1249500",
+                  "evidenceLinks": [
+                    {
+                      "evidenceId": "pricing-evidence-1",
+                      "label": "Pricing override",
+                      "route": "/reporting/evidence?subject=pricing-evidence-1",
+                      "source": "pricing",
+                      "capturedAtUtc": "2026-05-28T11:59:00Z"
+                    }
+                  ]
+                }
+              ],
+              "evidenceLinks": [
+                {
+                  "evidenceId": "restatement-review-1",
+                  "label": "Restatement approval memo",
+                  "route": "/reporting/evidence?subject=restatement-review-1",
+                  "source": "reporting",
+                  "capturedAtUtc": "2026-05-28T12:05:00Z"
+                }
+              ]
+            },
+            "lineProvenance": [
+              {
+                "lineKey": "nav.total",
+                "sourceKind": "LedgerTrialBalance",
+                "sourceId": "run-42",
+                "evidenceId": "pricing-evidence-1",
+                "runId": "run-42",
+                "ledgerEntryId": "ledger-entry-nav-total",
+                "reconciliationCaseId": "case-run-42-cash",
+                "reportValue": "1249500",
+                "sourceSessionId": "paper-dev-42",
+                "reconciliationRunId": "run-42"
+              }
+            ],
+            "publication": {
+              "manifestId": "manifest-restated-demo",
+              "retainedManifestPath": "vault/report-packs/manifest-restated-demo.json",
+              "evidenceHash": "sha256:restated-demo",
+              "signedOffBy": "demo.publisher",
+              "signedOffAt": "2026-05-28T15:20:00Z",
+              "evidenceLinks": [
+                {
+                  "evidenceId": "publication-evidence-demo",
+                  "label": "Publication manifest",
+                  "route": "/reporting/manifests/manifest-restated-demo",
+                  "source": "reporting",
+                  "capturedAtUtc": "2026-05-28T15:20:00Z"
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     "/api/workstation/data": {

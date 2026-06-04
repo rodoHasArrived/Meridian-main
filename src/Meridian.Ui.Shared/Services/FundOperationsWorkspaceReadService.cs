@@ -2053,7 +2053,7 @@ public sealed class FundOperationsWorkspaceReadService
         return new FundReportingSummaryDto(
             ProfileCount: profiles.Length,
             RecommendedProfiles: recommended,
-            ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
+            ReportPackDistributions: ReportPackRunReadService.BuildDistributionRecords(workflowRecords),
             Profiles: profiles,
             Summary: $"{profiles.Length} export/reporting profiles are available for Accounting and Reporting workflows.",
             WorkflowRecords: workflowRecords);

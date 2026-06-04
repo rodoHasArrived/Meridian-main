@@ -257,11 +257,35 @@ public sealed record WorkstationReportingTemplatePayload(
     string Family,
     string Name,
     string Version,
-    IReadOnlyList<string> Sections);
+    IReadOnlyList<string> Sections,
+    string LifecycleStatus = "Approved",
+    bool IsBuiltIn = true,
+    bool IsLatestApproved = true,
+    string ApprovalSummary = "Built-in approved template",
+    string AuthoringRoute = "/api/fund-structure/reporting/templates");
 
 /// <summary>
 /// Lightweight reporting run status with lineage and approval posture for operator surfaces.
 /// </summary>
+public sealed record WorkstationReportingRunLinkPayload(
+    string Id,
+    string Kind,
+    string Label,
+    string Href,
+    string Method,
+    bool IsBrowserNavigable,
+    string Source);
+
+public sealed record WorkstationReportingRunNextActionPayload(
+    string Id,
+    string Kind,
+    string Label,
+    string Href,
+    string Method,
+    bool IsEnabled,
+    string? DisabledReason,
+    bool IsBrowserNavigable);
+
 public sealed record WorkstationReportingRunPayload(
     string RunId,
     string TemplateId,
@@ -273,7 +297,25 @@ public sealed record WorkstationReportingRunPayload(
     int LineageLinkedSections,
     IReadOnlyList<string> Artifacts,
     IReadOnlyList<string> AuditActions,
-    string? FailureReason);
+    string? FailureReason,
+    IReadOnlyList<WorkstationReportingRunLinkPayload>? DrilldownLinks = null,
+    IReadOnlyList<WorkstationReportingRunNextActionPayload>? NextActions = null);
+
+/// <summary>
+/// Recipient-level distribution posture for governed report-pack output.
+/// </summary>
+public sealed record WorkstationReportPackDistributionPayload(
+    string DistributionId,
+    string Recipient,
+    string RecipientRole,
+    string Channel,
+    string State,
+    int PendingItems,
+    string PendingSummary,
+    string Owner,
+    DateTimeOffset? DueAtUtc,
+    DateTimeOffset? LastSentAtUtc,
+    string Route);
 
 /// <summary>
 /// Typed reporting summary embedded inside <see cref="WorkstationAccountingPayload"/>.
@@ -282,7 +324,7 @@ public sealed record WorkstationReportingPayload(
     int ProfileCount,
     IReadOnlyList<string> RecommendedProfiles,
     IReadOnlyList<WorkstationReportingProfilePayload> Profiles,
-    IReadOnlyList<string> ReportPackTargets,
+    IReadOnlyList<WorkstationReportPackDistributionPayload> ReportPackDistributions,
     string Summary,
     IReadOnlyList<WorkstationReportingTemplatePayload> Templates,
     IReadOnlyList<WorkstationReportingRunPayload> RecentRuns);

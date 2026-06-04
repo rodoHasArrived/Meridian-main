@@ -4674,6 +4674,7 @@ public static partial class WorkstationEndpoints
         var runs = allRuns.Take(6).ToArray();
         if (runs.Length == 0)
         {
+            var reporting = BuildReportingPayload(context.RequestServices);
             // PR-03: return typed DTO
             return new WorkstationAccountingPayload(
                 Metrics:
@@ -4688,8 +4689,8 @@ public static partial class WorkstationEndpoints
                 BreakQueue: Array.Empty<object>(),
                 Workspace: new WorkstationAccountingWorkspaceSummary(0, 0, 0, 0, 0),
                 CashFlow: BuildAccountingWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
-                Reporting: BuildReportingPayload(),
-                ControlCenter: BuildAccountingControlCenterPayload(Array.Empty<ReconciliationBreakQueueItem>(), BuildReportingPayload()),
+                Reporting: reporting,
+                ControlCenter: BuildAccountingControlCenterPayload(Array.Empty<ReconciliationBreakQueueItem>(), reporting),
                 KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
         }
 
@@ -4710,6 +4711,8 @@ public static partial class WorkstationEndpoints
             (detail?.Portfolio?.SecurityMissingCount ?? 0) > 0 ||
             (detail?.Ledger?.SecurityMissingCount ?? 0) > 0);
         var auditReadyRuns = runs.Count(static run => !string.IsNullOrWhiteSpace(run.AuditReference)) - runsWithBreaks;
+        var breakQueueItems = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false);
+        var reportingPayload = BuildReportingPayload(context.RequestServices);
 
         // PR-03: return typed DTO
         return new WorkstationAccountingPayload(
@@ -4735,10 +4738,8 @@ public static partial class WorkstationEndpoints
                 OpenBreaks: openBreaks,
                 SecurityIssues: runsWithSecurityIssues),
             CashFlow: BuildAccountingWorkspaceCashFlowSummary(details),
-            Reporting: BuildReportingPayload(),
-            ControlCenter: BuildAccountingControlCenterPayload(
-                await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false),
-                BuildReportingPayload()),
+            Reporting: reportingPayload,
+            ControlCenter: BuildAccountingControlCenterPayload(breakQueueItems, reportingPayload),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
@@ -4907,6 +4908,7 @@ public static partial class WorkstationEndpoints
                 RequiredSignoffRole: "Accounting analyst",
                 SignoffStatus: "in-review")
         };
+        var reporting = BuildReportingPayload();
         return new WorkstationAccountingPayload(
             Metrics: metricsCards,
             ReconciliationQueue: reconciliationQueue,
@@ -4923,8 +4925,8 @@ public static partial class WorkstationEndpoints
                 tone = "warning",
                 summary = "Cash-flow coverage is available for 9 runs; 1 run needs variance review."
             },
-            Reporting: BuildReportingPayload(),
-            ControlCenter: BuildAccountingControlCenterPayload(breakQueue.Cast<ReconciliationBreakQueueItem>().ToArray(), BuildReportingPayload()),
+            Reporting: reporting,
+            ControlCenter: BuildAccountingControlCenterPayload(breakQueue.Cast<ReconciliationBreakQueueItem>().ToArray(), reporting),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
@@ -6006,72 +6008,9 @@ public static partial class WorkstationEndpoints
         return ledgerCash.Value - portfolioCash.Value;
     }
 
-    private static WorkstationReportingPayload BuildReportingPayload()
-    {
-        var profiles = ExportProfile.GetBuiltInProfiles()
-            .Select(static profile => new WorkstationReportingProfilePayload(
-                Id: profile.Id,
-                Name: profile.Name,
-                TargetTool: profile.TargetTool,
-                Format: profile.Format.ToString(),
-                Description: profile.Description ?? string.Empty,
-                LoaderScript: profile.IncludeLoaderScript,
-                DataDictionary: profile.IncludeDataDictionary))
-            .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        var recommended = profiles
-            .Where(static profile => profile.Id is "excel" or "python-pandas" or "postgresql" or "arrow-feather")
-            .Select(static profile => profile.Id)
-            .ToArray();
-
-        var templates = new DefaultReportingTemplateCatalog()
-            .ListTemplates()
-            .Select(static template => new WorkstationReportingTemplatePayload(
-                template.TemplateId,
-                template.Family.ToString(),
-                template.Name,
-                template.Version,
-                template.Sections.ToArray()))
-            .ToArray();
-
-        var recentRuns = new[]
-        {
-            new WorkstationReportingRunPayload(
-                RunId: "investor-monthly-statement-20260501",
-                TemplateId: "investor-monthly-statement",
-                Family: ReportingTemplateFamily.InvestorStatement.ToString(),
-                Status: ReportingRunStatus.InReview.ToString(),
-                Trigger: ReportingRunTrigger.Scheduled.ToString(),
-                AttemptCount: 1,
-                SectionCount: 4,
-                LineageLinkedSections: 4,
-                Artifacts: ["investor-monthly-statement-20260501.manifest.json", "investor-monthly-statement-20260501.pdf"],
-                AuditActions: ["RunGenerated", "ApprovalTransition"],
-                FailureReason: null),
-            new WorkstationReportingRunPayload(
-                RunId: "shadow-nav-daily-pack-20260503",
-                TemplateId: "shadow-nav-daily-pack",
-                Family: ReportingTemplateFamily.ShadowNavPack.ToString(),
-                Status: ReportingRunStatus.Draft.ToString(),
-                Trigger: ReportingRunTrigger.Scheduled.ToString(),
-                AttemptCount: 2,
-                SectionCount: 4,
-                LineageLinkedSections: 4,
-                Artifacts: ["shadow-nav-daily-pack-20260503.manifest.json", "shadow-nav-daily-pack-20260503.pdf"],
-                AuditActions: ["RunRetry", "RunGenerated"],
-                FailureReason: null)
-        };
-
-        return new WorkstationReportingPayload(
-            ProfileCount: profiles.Length,
-            RecommendedProfiles: recommended,
-            Profiles: profiles,
-            ReportPackTargets: ["board", "investor", "compliance", "fund-ops"],
-            Summary: $"{profiles.Length} export/reporting profiles are available for Accounting and Reporting workflows.",
-            Templates: templates,
-            RecentRuns: recentRuns);
-    }
+    private static WorkstationReportingPayload BuildReportingPayload(IServiceProvider? services = null)
+        => services?.GetService<ReportPackRunReadService>()?.BuildPayload()
+           ?? ReportPackRunReadService.BuildFallbackPayload();
 
     private static object BuildAccountingControlCenterPayload(
         IReadOnlyList<ReconciliationBreakQueueItem> breakQueue,
@@ -6108,7 +6047,12 @@ public static partial class WorkstationEndpoints
                 new { metric = "Open critical breaks", value = criticalOpen, trend = criticalOpen > 0 ? "worsening" : "stable" },
                 new { metric = "Breaks in review", value = inReview, trend = inReview > 0 ? "improving" : "stable" },
                 new { metric = "Unassigned breaks", value = unowned, trend = unowned > 0 ? "worsening" : "stable" },
-                new { metric = "Report approvals pending", value = Math.Max(0, reporting.ReportPackTargets.Count - 1), trend = "stable" }
+                new
+                {
+                    metric = "Report distributions pending",
+                    value = reporting.ReportPackDistributions.Count(distribution => distribution.PendingItems > 0),
+                    trend = "stable"
+                }
             },
             drillLinks = new[] {
                 new { label = "Open close readiness", href = "/trading/readiness" },
@@ -6119,7 +6063,9 @@ public static partial class WorkstationEndpoints
             alerts = new[] {
                 criticalOpen > 0 ? new { tone = "danger", message = $"{criticalOpen} critical reconciliation breaks remain unresolved." } : null,
                 overdue > 0 ? new { tone = "danger", message = $"{overdue} reconciliation breaks are overdue for resolution." } : null,
-                reporting.ReportPackTargets.Count > 0 ? new { tone = "warning", message = "Publish-ready report targets detected; confirm approvals before distribution." } : null
+                reporting.ReportPackDistributions.Any(distribution => distribution.PendingItems > 0)
+                    ? new { tone = "warning", message = "Report-pack distribution recipients have pending approval, publication, or delivery work." }
+                    : null
             }.Where(item => item is not null).ToArray()
         };
     }
