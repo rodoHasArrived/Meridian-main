@@ -88,7 +88,8 @@ public sealed class PostgresDirectLendingCommandServiceTests
             queryService,
             new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
             new DirectLendingOptions { CurrentEventSchemaVersion = 3 },
-            assetOperations);
+            assetOperations,
+            BuildSecurityMasterQueryService());
 
         var result = await service.RequestProjectionAsync(
             loanId,
@@ -335,6 +336,60 @@ public sealed class PostgresDirectLendingCommandServiceTests
 
 
     [Fact]
+    public async Task CreateLoanAsync_WithAssetOperationsProjection_ShouldRejectForgedSecurityMasterReferenceBeforeStateSave()
+    {
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var baselineContract = BuildContract(loanId);
+        var forgedTerms = baselineContract.CurrentTerms with
+        {
+            SecurityMasterReference = new DirectLendingSecurityMasterReferenceDto(
+                SecurityId: Guid.Parse("11111111-2222-3333-4444-555555555555"),
+                Symbol: "FORGEDTERM26",
+                Provenance: "source:attacker;approved:true",
+                ApprovalReference: "sm-approval:attacker-controlled-ticket",
+                LedgerMappingReference: "ledger-map:forgedterm26-direct-lending",
+                Status: "Active")
+        };
+
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var assetOperations = Substitute.For<IAssetOperationsCommandService>();
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            Substitute.For<IDirectLendingQueryService>(),
+            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 },
+            assetOperations,
+            BuildSecurityMasterQueryService());
+
+        var act = () => service.CreateLoanAsync(new CreateLoanRequest(
+            loanId,
+            baselineContract.FacilityName,
+            baselineContract.Borrower,
+            baselineContract.EffectiveDate,
+            forgedTerms));
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .WithMessage("*no authoritative record exists*");
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default,
+            default,
+            default,
+            default!,
+            default!,
+            default!,
+            default,
+            default,
+            default!,
+            default!,
+            default,
+            default,
+            default);
+        await assetOperations.DidNotReceiveWithAnyArgs().UpsertProjectionAsync(default!, default!, default);
+    }
+
+
+    [Fact]
     public async Task PostDailyAccrualAsync_RejectsForgedSecurityMasterReferenceMissingFromAuthoritativeStore()
     {
         var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
@@ -427,7 +482,7 @@ public sealed class PostgresDirectLendingCommandServiceTests
     private static SecurityDetailDto BuildSecurityMasterDetail() =>
         new(
             SecurityId: Guid.Parse("99999999-9999-9999-9999-999999999999"),
-            AssetClass: "CustomAsset",
+            AssetClass: "DirectLoan",
             Status: SecurityStatusDto.Active,
             DisplayName: "Northwind Senior Term Loan",
             Currency: "USD",

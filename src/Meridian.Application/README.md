@@ -35,7 +35,10 @@ and UI presentation concerns in their owning layers.
   `DirectLendingSecurityMasterReferenceDto`; the projector re-resolves that reference through the
   authoritative Security Master query service and then stamps server-derived Security Master id,
   symbol, approval, provenance, active status, and direct-lending ledger-mapping evidence on central
-  ledger writes before the posting guard accepts direct-lending instrument lines.
+  ledger writes before the posting guard accepts direct-lending instrument lines. Direct-lending
+  Asset Operations projection publishing also fail-closes against that authoritative Security Master
+  lookup and only publishes for active `DirectLoan` records whose server-owned identifiers match the
+  loan terms reference, preventing servicing users from targeting arbitrary Security Master rows.
 - `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
   timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
   and approval close lanes. Approval and close commands enforce shared close-checklist control

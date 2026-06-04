@@ -2,9 +2,11 @@ using System.Text.Json;
 using Meridian.Application.AssetOperations;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.DirectLending.Aggregates;
 using Meridian.FSharp.DirectLendingInterop;
 using Meridian.Storage.DirectLending;
+using SecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Application.DirectLending;
 
@@ -16,6 +18,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     private readonly LoanAccountingProjector _loanAccountingProjector;
     private readonly DirectLendingOptions _options;
     private readonly IAssetOperationsCommandService? _assetOperationsCommandService;
+    private readonly SecurityMasterQueryService? _securityMasterQueryService;
 
     public PostgresDirectLendingCommandService(
         IDirectLendingStateStore stateStore,
@@ -23,7 +26,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         IDirectLendingQueryService queryService,
         LoanAccountingProjector loanAccountingProjector,
         DirectLendingOptions options,
-        IAssetOperationsCommandService? assetOperationsCommandService = null)
+        IAssetOperationsCommandService? assetOperationsCommandService = null,
+        SecurityMasterQueryService? securityMasterQueryService = null)
     {
         _stateStore = stateStore;
         _operationsStore = operationsStore;
@@ -31,6 +35,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         _loanAccountingProjector = loanAccountingProjector;
         _options = options;
         _assetOperationsCommandService = assetOperationsCommandService;
+        _securityMasterQueryService = securityMasterQueryService;
     }
 
     public async Task<DirectLendingCommandResult<LoanContractDetailDto>> CreateLoanAsync(CreateLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
@@ -564,6 +569,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return DirectLendingCommandResult<ProjectionRunDto>.Failure(DirectLendingErrorCode.Validation, "Projection requires at least one source event.");
         }
 
+        await ValidateAssetOperationsProjectionTargetAsync(stored.Contract, ct).ConfigureAwait(false);
+
         var existingRuns = await _operationsStore.GetProjectionRunsAsync(loanId, ct).ConfigureAwait(false);
         var latest = existingRuns.OrderByDescending(static x => x.GeneratedAt).FirstOrDefault();
         var asOf = projectionAsOf ?? DateOnly.FromDateTime(DateTime.UtcNow);
@@ -692,9 +699,14 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 null));
         }
 
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is not null)
+        {
+            await ValidateAssetOperationsProjectionTargetAsync(stored.Contract, ct).ConfigureAwait(false);
+        }
+
         var run = new ReconciliationRunDto(runId, loanId, latestProjection.ProjectionRunId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "Completed");
         var savedRun = await _operationsStore.SaveReconciliationRunAsync(run, results, exceptions, ct).ConfigureAwait(false);
-        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
         if (stored is not null)
         {
             await PublishAssetOperationsAsync(
@@ -1406,6 +1418,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         CancellationToken ct = default,
         DirectLendingPersistenceBatch? persistenceBatch = null)
     {
+        await ValidateAssetOperationsProjectionTargetAsync(contract, ct).ConfigureAwait(false);
+
         var eventMetadata = DirectLendingServiceSupport.CreateEventMetadata(metadata, "meridian.direct-lending");
         var eventId = Guid.NewGuid();
         var ledgerJournalEntries = await _loanAccountingProjector.ProjectAsync(
@@ -1443,6 +1457,98 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
 
         await PublishAssetOperationsAsync(contract, metadata, ct).ConfigureAwait(false);
     }
+
+
+    private async Task ValidateAssetOperationsProjectionTargetAsync(LoanContractDetailDto contract, CancellationToken ct)
+    {
+        if (_assetOperationsCommandService is null ||
+            contract.CurrentTerms.SecurityMasterReference is null)
+        {
+            return;
+        }
+
+        var reference = contract.CurrentTerms.SecurityMasterReference;
+        if (reference.SecurityId == Guid.Empty)
+        {
+            ThrowAssetOperationsValidation(
+                $"Direct-lending Asset Operations projection for loan '{contract.LoanId}' requires a resolved Security Master security id.");
+        }
+
+        if (_securityMasterQueryService is null)
+        {
+            ThrowAssetOperationsValidation(
+                $"Direct-lending Asset Operations projection for loan '{contract.LoanId}' requires an authoritative Security Master lookup before publishing.");
+        }
+
+        var security = await _securityMasterQueryService!.GetByIdAsync(reference.SecurityId, ct).ConfigureAwait(false);
+        if (security is null)
+        {
+            ThrowAssetOperationsValidation(
+                $"Direct-lending Asset Operations projection for loan '{contract.LoanId}' references Security Master security '{reference.SecurityId}' but no authoritative record exists.");
+        }
+
+        if (!string.Equals(security!.AssetClass, "DirectLoan", StringComparison.OrdinalIgnoreCase))
+        {
+            ThrowAssetOperationsValidation(
+                $"Direct-lending Asset Operations projection for loan '{contract.LoanId}' requires a DirectLoan Security Master record before publishing.");
+        }
+
+        if (security.Status != SecurityStatusDto.Active)
+        {
+            ThrowAssetOperationsValidation(
+                $"Direct-lending Asset Operations projection for loan '{contract.LoanId}' requires an active authoritative Security Master record before publishing.");
+        }
+
+        var requestedSymbol = NormalizeSecurityMasterSymbol(reference.Symbol);
+        if (requestedSymbol is null)
+        {
+            ThrowAssetOperationsValidation(
+                $"Direct-lending Asset Operations projection for loan '{contract.LoanId}' requires a Security Master symbol before publishing.");
+        }
+
+        if (!SecurityMasterRecordContainsSymbol(security, requestedSymbol))
+        {
+            ThrowAssetOperationsValidation(
+                $"Direct-lending Asset Operations projection for loan '{contract.LoanId}' Security Master symbol '{requestedSymbol}' does not match the authoritative Security Master record for '{reference.SecurityId}'.");
+        }
+    }
+
+    [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+    private static void ThrowAssetOperationsValidation(string message)
+        => throw new DirectLendingCommandException(
+            new DirectLendingCommandError(DirectLendingErrorCode.Validation, message));
+
+    private static bool SecurityMasterRecordContainsSymbol(SecurityDetailDto security, string symbol)
+    {
+        if (TokenMatches(security.DisplayName, symbol))
+        {
+            return true;
+        }
+
+        foreach (var identifier in security.Identifiers)
+        {
+            if (TokenMatches(identifier.Value, symbol) || TokenMatches(identifier.NormalizedValue, symbol))
+            {
+                return true;
+            }
+        }
+
+        foreach (var alias in security.Aliases)
+        {
+            if (alias.IsEnabled && TokenMatches(alias.AliasValue, symbol))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TokenMatches(string? value, string symbol)
+        => string.Equals(NormalizeSecurityMasterSymbol(value), symbol, StringComparison.OrdinalIgnoreCase);
+
+    private static string? NormalizeSecurityMasterSymbol(string? symbol)
+        => string.IsNullOrWhiteSpace(symbol) ? null : symbol.Trim().ToUpperInvariant();
 
     private async Task PublishAssetOperationsAsync(
         LoanContractDetailDto contract,
