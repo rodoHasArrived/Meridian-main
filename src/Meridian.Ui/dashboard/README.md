@@ -204,12 +204,28 @@ dock while the browser `AccountingScreen` focuses on the owned ledger, reconcili
 exceptions, security coverage, and reporting evidence panels. Retained `Governance*` view-model, DTO,
 endpoint, and test fixture names are compatibility seams only; new browser component routing should
 use Accounting naming.
+The Accounting ledger workstream includes a GL account inquiry surface: operators can filter
+trial-balance ledger rows by General Ledger account text, select a narrowed account row, inspect
+attached ledger-line support when the shared payload includes journal references, and open linked
+review packets, source events, journal references, and approval evidence without moving posting
+logic into React. Missing journal, source-event, or approval references remain explicit empty states
+instead of browser-derived support rows.
+The Accounting journal-entry workstream at `/accounting/journal-entries` is a thin browser surface
+over the shared manual journal entry workbench endpoints. React renders draft headers, GL account
+selection, selected-line Security Master search/picker results, line validation badges, typed source
+evidence attachments, save draft, validate, and submit approval commands from the shared DTOs while
+versioning, validation, persistence, evidence gating, and approval handoff remain server-owned.
 The Accounting entry screen now includes a CFO / Controller close command center that derives
 ready, blocked, and at-risk close posture from the latest operations-continuity workflow, retained
 accounting-record evidence, reconciliation breaks, approvals, external GL provider warnings,
 multi-asset valuation readiness, report-pack readiness, and close-package sign-off state. React
 renders the shared status, metrics, blockers, and action rows without adding browser-local close
-rules.
+rules. External GL provider warnings compare read-only provider evidence against Meridian-owned
+ledger truth; they must not make the external GL the source of ledger authority.
+During workstation bootstrap, the shell lets the Accounting route render its own actionable loading
+workspace. That loading view shows the route/workstream being prepared, the Accounting payload groups
+still loading, and links to continuity, entity setup, provider posture, and retained report evidence
+so operators are not left with only generic shell diagnostics.
 Workspace navigation and command-palette root commands canonicalize caller-provided workspace
 metadata to the design-document root set: `Trading`, `Portfolio`, `Accounting`, `Reporting`,
 `Strategy`, `Data`, and `Settings`. Legacy root labels such as `Research`, `Governance`, and

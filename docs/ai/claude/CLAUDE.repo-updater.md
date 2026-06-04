@@ -1,5 +1,9 @@
 # AI Repository Updater Guide
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 This document explains how an AI agent with shell access should use the `ai-repo-updater.py` script to systematically analyse and improve the Meridian repository.
 
 ## Overview

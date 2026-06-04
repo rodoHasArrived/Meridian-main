@@ -1,5 +1,6 @@
 using Meridian.Application.Config;
 using Meridian.Application.Accounts;
+using Meridian.Application.AssetOperations;
 using Meridian.Application.Auth;
 using Meridian.Application.Backtesting;
 using Meridian.Application.Banking;
@@ -26,6 +27,7 @@ using Meridian.Application.Services;
 using Meridian.Application.Treasury;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
@@ -38,6 +40,7 @@ using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.Storage;
+using Meridian.Storage.AssetOperations;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
 using Meridian.Application.Banking;
@@ -67,10 +70,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
         SecurityMasterStartup.EnsureEnvironmentDefaults();
+        AssetOperationsStartup.EnsureEnvironmentDefaults();
         DirectLendingStartup.EnsureEnvironmentDefaults();
         LedgerStartup.EnsureEnvironmentDefaults();
 
         var securityMasterOptions = CreateSecurityMasterOptions();
+        var assetOperationsOptions = CreateAssetOperationsOptions();
         var directLendingOptions = CreateDirectLendingOptions();
         var ledgerOptions = CreateLedgerOptions();
 
@@ -253,6 +258,13 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterConflictService, SecurityMasterConflictService>();
         }
 
+        if (AssetOperationsStartup.IsConfigured())
+        {
+            services.AddSingleton(assetOperationsOptions);
+            services.AddSingleton<AssetOperationsMigrationRunner>();
+            services.AddSingleton<IAssetOperationsProjectionStore, PostgresAssetOperationsProjectionStore>();
+        }
+
         // Register null/stub implementations as fallbacks when Security Master is not configured.
         // These ensure that ASP.NET Core Minimal API routing initialises correctly (unregistered
         // service parameters cause startup crashes) while returning sensible empty / error responses.
@@ -279,6 +291,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
+        services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
+        services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
 
         if (DirectLendingStartup.IsConfigured())
         {
@@ -494,14 +509,22 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
     private static DirectLendingOptions CreateDirectLendingOptions()
         => new()
         {
-            ConnectionString = Environment.GetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable) ?? string.Empty,
-            Schema = Environment.GetEnvironmentVariable(DirectLendingStartup.SchemaVariable) ?? DirectLendingStartup.DefaultSchema,
+            ConnectionString = DirectLendingStartup.GetEffectiveConnectionString(),
+            Schema = DirectLendingStartup.GetEffectiveSchema(),
             SnapshotIntervalVersions = ParseInt("MERIDIAN_DIRECT_LENDING_SNAPSHOT_INTERVAL", 50),
             CurrentEventSchemaVersion = ParseInt("MERIDIAN_DIRECT_LENDING_EVENT_SCHEMA_VERSION", 1),
             ProjectionEngineVersion = Environment.GetEnvironmentVariable("MERIDIAN_DIRECT_LENDING_PROJECTION_ENGINE_VERSION") ?? "dl-engine-v1",
             OutboxBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_BATCH_SIZE", 50),
             OutboxPollIntervalSeconds = ParseInt("MERIDIAN_DIRECT_LENDING_OUTBOX_POLL_SECONDS", 5),
-            ReplayBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_REPLAY_BATCH_SIZE", 250)
+            ReplayBatchSize = ParseInt("MERIDIAN_DIRECT_LENDING_REPLAY_BATCH_SIZE", 250),
+            RequireSecurityMasterReferenceForDurableWrites = ParseBool("MERIDIAN_DIRECT_LENDING_REQUIRE_SECURITY_MASTER_REFERENCE", false)
+        };
+
+    private static AssetOperationsOptions CreateAssetOperationsOptions()
+        => new()
+        {
+            ConnectionString = Environment.GetEnvironmentVariable(AssetOperationsStartup.ConnectionStringVariable) ?? string.Empty,
+            Schema = Environment.GetEnvironmentVariable(AssetOperationsStartup.SchemaVariable) ?? AssetOperationsStartup.DefaultSchema
         };
 
     private static LedgerJournalStoreOptions CreateLedgerOptions()

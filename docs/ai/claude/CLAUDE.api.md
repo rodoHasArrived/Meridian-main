@@ -1,5 +1,9 @@
 # CLAUDE.api.md — HTTP API & Application Services Reference
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 This sub-document covers the REST API endpoints and application service catalogue for Meridian.
 Load this when working on endpoints, API clients, monitoring services, backtesting, portfolio tracking, or strategy management.
 

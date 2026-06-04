@@ -93,6 +93,10 @@ Portfolio cockpit decision items include the shared multi-asset coverage route
 readiness, provider evidence, ledger coverage, reconciliation posture, close blockers, and
 contract-owned drill-through targets through the same read model used by the browser Portfolio and
 Accounting screens.
+The same cockpit now advertises the shared Asset Operations detail route
+`/api/workstation/assets/{securityId:guid}/operations`, pointing operators to the contract-owned
+`AssetOperationsDetailDto` subject, projected-cash-flow, reconciliation-result, and ledger-projection
+sections for any Security Master asset instead of rebuilding direct-lending-only drill-ins in WPF.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
 summary, including retained source records, normalized activity, reconciliation history, ledger
 evidence, approvals, report-pack lineage, export evidence, restatement lineage, measured
@@ -262,6 +266,8 @@ dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsT
 
 Keep WPF views declarative and move loading, disabled, preview, empty-state, and status-copy
 behavior into view models. Do not duplicate product logic that belongs in shared UI services.
+When telemetry, latency, order-flow, or preview data is unavailable, show an explicit unmeasured or
+unavailable state rather than seeded sample numbers or plausible-looking derived metrics.
 
 ## Related docs
 

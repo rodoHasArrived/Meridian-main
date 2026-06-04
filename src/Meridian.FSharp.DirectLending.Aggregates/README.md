@@ -18,6 +18,10 @@ This module contains functional aggregate calculations for direct lending and fu
 ## Layer responsibility
 
 It should keep direct-lending aggregate logic isolated from UI and application orchestration while remaining consumable by accounting and reporting workflows.
+Direct lending is modeled as private-credit depth inside the Security Master storage lane, not as
+an independent instrument master. Runtime persistence defaults to the Security Master connection
+and schema; direct-lending-specific connection variables are legacy overrides for isolated test
+databases or controlled migration windows.
 
 ## Key folders and files
 
@@ -27,6 +31,9 @@ It should keep direct-lending aggregate logic isolated from UI and application o
 ## Important workflows
 
 Use this module for direct-lending calculation changes and fund-structure aggregate behavior.
+When changing persistence-facing behavior, keep loan state, accrual, cash-flow, workflow audit,
+and servicer-report projections tied to Security Master identity and lineage so loan planning,
+servicing, and accounting evidence can reconcile through the same instrument source of truth.
 
 ## Diagrams
 

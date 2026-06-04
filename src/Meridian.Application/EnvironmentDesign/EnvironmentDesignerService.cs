@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Application.EnvironmentDesign;
 
@@ -1419,20 +1420,14 @@ public sealed partial class EnvironmentDesignerService :
             Directory.CreateDirectory(directory);
         }
 
-        var tempPath = $"{_persistencePath}.tmp";
         await _persistGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await File.WriteAllTextAsync(tempPath, json, ct).ConfigureAwait(false);
-            File.Move(tempPath, _persistencePath, overwrite: true);
+            await AtomicFileWriter.WriteAsync(_persistencePath, json, ct).ConfigureAwait(false);
         }
         finally
         {
             _persistGate.Release();
-            if (File.Exists(tempPath))
-            {
-                File.Delete(tempPath);
-            }
         }
     }
 

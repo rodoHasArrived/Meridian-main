@@ -3,6 +3,7 @@ import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
   activateAccountingConfiguration,
   getAccountingConfiguration,
+  getManualJournalEntryWorkbench,
   getCorporateActions,
   getReconciliationBreakQueue,
   getReconciliationCalibrationSummary,
@@ -17,10 +18,13 @@ import {
   getTradingParameters,
   runAnalysisExport,
   previewAccountingConfigurationTemplate,
+  saveManualJournalEntryDraft,
   resolveReconciliationBreak,
   resolveSecurityConflict,
   reviewReconciliationBreak,
-  searchSecurities
+  searchSecurities,
+  submitManualJournalEntryApproval,
+  validateManualJournalEntryDraft
 } from "@/lib/api";
 import {
   evidenceWorkbenchPath,
@@ -30,10 +34,22 @@ import {
 } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { formatReportPackRecipientList, getReportPackDistributions } from "@/lib/reporting-distributions";
+import {
+  buildCalibrationSummaryViewState,
+  type CalibrationProfileDetailViewModel,
+  type CalibrationProfileRowViewModel,
+  type CalibrationStatusIcon,
+  type CalibrationStatusTone,
+  type CalibrationSummaryMetricViewModel,
+  type CalibrationSummaryRefreshCommandViewModel,
+  type CalibrationSummaryViewModel,
+  type CalibrationSummaryViewState
+} from "./accounting-calibration-summary.view-model";
 import type {
   AccountingBasisKind,
   AccountingConfigurationWorkspace,
   AccountingJournalTemplatePreview,
+  AccountingTemplateLineSide,
   CorporateAction,
   ExportAnalysisResult,
   AccountingCashFlowSummary,
@@ -55,8 +71,13 @@ import type {
   ResolveConflictRequest,
   PreviewJournalTemplateRequest,
   ActivateAccountingConfigurationRequest,
+  ManualJournalEntryDraft,
+  ManualJournalEntryEvidenceAttachment,
+  ManualJournalEntryLine,
+  ManualJournalEntryWorkbench,
   ResolveReconciliationBreakRequest,
   ReviewReconciliationBreakRequest,
+  SaveManualJournalEntryDraftRequest,
   SecurityIdentityDrillIn,
   SecurityAliasEntry,
   SecurityIdentifierEntry,
@@ -66,10 +87,27 @@ import type {
   SecurityMasterOpenLotReadModel,
   SecurityMasterTrustSnapshot,
   StatementRunSummary,
-  TradingParameters
+  SubmitManualJournalEntryApprovalRequest,
+  TradingParameters,
+  ValidateManualJournalEntryDraftRequest
 } from "@/types";
 
-export type AccountingWorkstream = "ledger" | "configure" | "reconciliation" | "exceptions" | "security-master" | "approvals" | "reporting";
+export {
+  buildCalibrationSummaryViewState
+};
+
+export type {
+  CalibrationProfileDetailViewModel,
+  CalibrationProfileRowViewModel,
+  CalibrationStatusIcon,
+  CalibrationStatusTone,
+  CalibrationSummaryMetricViewModel,
+  CalibrationSummaryRefreshCommandViewModel,
+  CalibrationSummaryViewModel,
+  CalibrationSummaryViewState
+} from "./accounting-calibration-summary.view-model";
+
+export type AccountingWorkstream = "ledger" | "configure" | "journal-entries" | "reconciliation" | "exceptions" | "security-master" | "approvals" | "reporting";
 export type GovernanceWorkstream = AccountingWorkstream;
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
@@ -177,94 +215,6 @@ export interface AccountingConfigurationViewModel {
   emptyText: string;
   refresh: () => Promise<void>;
   previewFirstTemplate: () => Promise<void>;
-}
-
-export type CalibrationStatusTone = "success" | "warning" | "danger";
-export type CalibrationStatusIcon = "check" | "alert";
-
-export interface CalibrationSummaryMetricViewModel {
-  id: string;
-  label: string;
-  value: number;
-  tone: "default" | "warning";
-  ariaLabel: string;
-}
-
-export interface CalibrationProfileRowViewModel {
-  toleranceProfileId: string;
-  exceptionRoute: string;
-  highestSeverity: string;
-  maxToleranceBandLabel: string;
-  totalBreakCount: number;
-  openBreakCount: number;
-  inReviewBreakCount: number;
-  resolvedBreakCount: number;
-  pendingSignoffCount: number;
-  signedOffCount: number;
-  lastUpdatedLabel: string;
-  ariaLabel: string;
-  selectAriaLabel: string;
-  detailPanelId: string;
-  isSelected: boolean;
-}
-
-export interface CalibrationProfileDetailFieldViewModel {
-  label: string;
-  value: string;
-}
-
-export interface CalibrationProfileDetailViewModel {
-  id: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  statusLabel: string;
-  statusTone: "success" | "warning" | "danger";
-  ariaLabel: string;
-  fields: CalibrationProfileDetailFieldViewModel[];
-}
-
-export interface CalibrationSummaryRefreshCommandViewModel {
-  label: string;
-  ariaLabel: string;
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface CalibrationSummaryViewState {
-  status: ReconciliationCalibrationStatus;
-  statusLabel: string;
-  statusTone: CalibrationStatusTone;
-  statusIcon: CalibrationStatusIcon;
-  statusTextClassName: string;
-  statusBannerClassName: string;
-  summary: string;
-  asOfLabel: string;
-  totalBreakCount: number;
-  openBreakCount: number;
-  criticalOpenBreakCount: number;
-  pendingSignoffCount: number;
-  signedOffCount: number;
-  missingMetadataCount: number;
-  metricRows: CalibrationSummaryMetricViewModel[];
-  profileRows: CalibrationProfileRowViewModel[];
-  hasProfiles: boolean;
-  profilesLabel: string;
-  tableAriaLabel: string;
-  emptyText: string;
-  detailPanelId: string;
-  selectedProfileId: string | null;
-  selectedProfile: CalibrationProfileDetailViewModel | null;
-  refreshCommand: CalibrationSummaryRefreshCommandViewModel;
-  errorText: string | null;
-  errorDetails: string[];
-  loadingText: string | null;
-  statusAnnouncement: string;
-}
-
-export interface CalibrationSummaryViewModel extends CalibrationSummaryViewState {
-  selectProfile: (profileId: string) => void;
-  refresh: () => void;
 }
 
 export interface CorporateActionRowViewModel extends CorporateAction {
@@ -794,6 +744,73 @@ export interface ReconciliationQueuePanelViewState {
   rows: ReconciliationQueueRunRowViewModel[];
 }
 
+export interface ManualJournalEntryWorkbenchServices {
+  getWorkbench: () => Promise<ManualJournalEntryWorkbench>;
+  searchSecurities: (query: string) => Promise<SecurityMasterEntry[]>;
+  saveDraft: (request: SaveManualJournalEntryDraftRequest) => Promise<ManualJournalEntryDraft>;
+  validateDraft: (request: ValidateManualJournalEntryDraftRequest) => Promise<ManualJournalEntryDraft>;
+  submitApproval: (request: SubmitManualJournalEntryApprovalRequest) => Promise<ManualJournalEntryDraft>;
+}
+
+export interface ManualJournalLineValidationBadge {
+  id: string;
+  label: string;
+  message: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
+export interface ManualJournalEvidenceAttachmentDraft {
+  displayName: string;
+  uri: string;
+  evidenceKind: string;
+  sourceSystem: string;
+  lineId: string | null;
+  description: string;
+}
+
+export interface ManualJournalEntryWorkbenchViewModel {
+  title: string;
+  description: string;
+  loading: boolean;
+  errorText: string | null;
+  statusLabel: string;
+  draft: ManualJournalEntryDraft;
+  drafts: ManualJournalEntryDraft[];
+  accountOptions: { value: string; label: string }[];
+  selectedLineId: string;
+  securitySearchQuery: string;
+  securitySearchResults: SecurityMasterEntry[];
+  securitySearchBusy: boolean;
+  securitySearchErrorText: string | null;
+  securitySearchStatusText: string;
+  attachmentDraft: ManualJournalEvidenceAttachmentDraft;
+  totalsLabel: string;
+  imbalanceLabel: string;
+  validationIssues: AccountingConfigurationIssueViewModel[];
+  saveBusy: boolean;
+  validateBusy: boolean;
+  submitBusy: boolean;
+  canSubmit: boolean;
+  submitDisabledReason: string | null;
+  refresh: () => Promise<void>;
+  updateHeader: (field: keyof Pick<ManualJournalEntryDraft, "memo" | "currency" | "fundProfileId" | "entityId" | "fundNodeId" | "periodId">, value: string) => void;
+  selectDraft: (journalEntryId: string) => void;
+  selectLine: (lineId: string) => void;
+  updateLine: (lineId: string, patch: Partial<ManualJournalEntryLine>) => void;
+  getLineBadges: (lineId: string) => ManualJournalLineValidationBadge[];
+  updateSecuritySearchQuery: (query: string) => void;
+  searchSecurityMaster: () => Promise<void>;
+  selectSecurity: (lineId: string, security: SecurityMasterEntry) => void;
+  clearSecurity: (lineId: string) => void;
+  addLine: (side: AccountingTemplateLineSide) => void;
+  updateAttachmentDraft: (patch: Partial<ManualJournalEvidenceAttachmentDraft>) => void;
+  addAttachment: () => void;
+  removeAttachment: (attachmentId: string) => void;
+  save: () => Promise<void>;
+  validate: () => Promise<void>;
+  submit: () => Promise<void>;
+}
+
 export interface OperationalExceptionWorkbenchMetricViewModel {
   id: string;
   label: string;
@@ -906,8 +923,29 @@ export interface AccountingLoadingViewState {
   ariaLive: "polite";
   titleId: string;
   detailId: string;
+  eyebrow: string;
   title: string;
   detail: string;
+  routeLabel: string;
+  workstreamLabel: string;
+  statusItemsLabel: string;
+  statusItems: AccountingLoadingStatusItemViewModel[];
+  actionsLabel: string;
+  actions: AccountingLoadingActionViewModel[];
+}
+
+export interface AccountingLoadingStatusItemViewModel {
+  id: string;
+  label: string;
+  detail: string;
+}
+
+export interface AccountingLoadingActionViewModel {
+  id: string;
+  label: string;
+  detail: string;
+  href: string;
+  ariaLabel: string;
 }
 
 export interface ReportingProfileBadgeViewModel {
@@ -1012,6 +1050,43 @@ export interface AccountingTrialBalanceDetailViewState {
   auditDrillThroughLabel: string;
   auditDrillThroughHref: string | null;
   approvalDrillThroughHref: string | null;
+  ledgerLinesTitle: string;
+  ledgerLinesDescription: string;
+  ledgerLines: AccountingLedgerLineViewModel[];
+  ledgerLinesEmptyText: string;
+  supportingDocumentsTitle: string;
+  supportingDocuments: AccountingSupportingDocumentViewModel[];
+  supportingDocumentsEmptyText: string;
+}
+
+export interface AccountingLedgerAccountFilterOption {
+  id: string;
+  label: string;
+  detail: string;
+  rowCount: number;
+  rowCountLabel: string;
+  isSelected: boolean;
+}
+
+export interface AccountingLedgerLineViewModel {
+  rowId: string;
+  journalEntryId: string;
+  description: string;
+  debitLabel: string;
+  creditLabel: string;
+  balanceLabel: string;
+  evidenceLabel: string;
+  evidenceHref: string | null;
+  approvalHref: string | null;
+  ariaLabel: string;
+}
+
+export interface AccountingSupportingDocumentViewModel {
+  id: string;
+  label: string;
+  detail: string;
+  href: string | null;
+  ariaLabel: string;
 }
 
 export interface AccountingBasisBridgeRowViewModel {
@@ -1044,6 +1119,12 @@ export interface AccountingTrialBalanceViewState {
   selectedBasis: AccountingBasisKind;
   basisOptions: AccountingTrialBalanceBasisOption[];
   basisBridge: AccountingBasisBridgeViewState;
+  accountFilterLabel: string;
+  accountFilterPlaceholder: string;
+  accountFilterValue: string;
+  accountFilterOptions: AccountingLedgerAccountFilterOption[];
+  filteredRowCountLabel: string;
+  clearAccountFilterLabel: string;
   state: AccountingTrialBalanceState;
   rows: AccountingTrialBalanceRowViewModel[];
   hasRows: boolean;
@@ -1132,7 +1213,6 @@ export type GovernanceBasisBridgeViewState = AccountingBasisBridgeViewState;
 export type GovernanceTrialBalanceViewState = AccountingTrialBalanceViewState;
 
 const DEFAULT_ACCOUNTING_BASIS: AccountingBasisKind = "Primary";
-const CALIBRATION_PROFILE_DETAIL_PANEL_ID = "calibration-profile-detail-panel";
 
 const ACCOUNTING_BASIS_OPTIONS: Array<Pick<AccountingTrialBalanceBasisOption, "id" | "label" | "description">> = [
   {
@@ -1188,6 +1268,14 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
   getConfiguration: () => getAccountingConfiguration(),
   previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
   activate: (request) => activateAccountingConfiguration(request)
+};
+
+const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchServices = {
+  getWorkbench: () => getManualJournalEntryWorkbench(),
+  searchSecurities: (query) => searchSecurities(query, 8, true),
+  saveDraft: (request) => saveManualJournalEntryDraft(request),
+  validateDraft: (request) => validateManualJournalEntryDraft(request),
+  submitApproval: (request) => submitManualJournalEntryApproval(request)
 };
 
 const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
@@ -1325,16 +1413,115 @@ export function useGovernanceCashFlowViewModel(
 export function buildAccountingLoadingViewState(pathname: string): AccountingLoadingViewState {
   const workspaceLabel = pathname.startsWith(WORKSTATION_ROUTE_CATALOG.reporting) ? "Reporting" : "Accounting";
   const slug = workspaceLabel.toLowerCase();
+  const workstream = workspaceLabel === "Accounting" ? resolveAccountingWorkstream(pathname) : "reporting";
+  const workstreamLabel = workstream === "security-master"
+    ? "Security Master"
+    : workstream.charAt(0).toUpperCase() + workstream.slice(1).replace("-", " ");
+  const accountingStatusItems: AccountingLoadingStatusItemViewModel[] = [
+    {
+      id: "ledger-reconciliation",
+      label: "Ledger and reconciliation",
+      detail: "Loading close metrics, reconciliation runs, open breaks, cash-flow evidence, and trial-balance rows."
+    },
+    {
+      id: "approvals-exceptions",
+      label: "Approvals and exceptions",
+      detail: "Preparing dedicated approval and exception workstreams from shared operations-continuity payloads."
+    },
+    {
+      id: "security-reporting",
+      label: "Security and reporting evidence",
+      detail: "Loading Security Master coverage, report profiles, external GL evidence, and retained report-pack context."
+    }
+  ];
+  const reportingStatusItems: AccountingLoadingStatusItemViewModel[] = [
+    {
+      id: "report-packs",
+      label: "Report packs",
+      detail: "Loading governed report-pack runs, retained manifests, and evidence-bundle readiness."
+    },
+    {
+      id: "approvals",
+      label: "Approval context",
+      detail: "Preparing accounting approval and exception handoffs for report evidence review."
+    },
+    {
+      id: "exports",
+      label: "Export setup",
+      detail: "Loading profile, recipient, dictionary, and loader-script state."
+    }
+  ];
+  const accountingActions: AccountingLoadingActionViewModel[] = [
+    {
+      id: "continuity",
+      label: "Open continuity",
+      detail: "Review close workflow gates while the workspace payload finishes loading.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
+      ariaLabel: "Open Accounting operations continuity while Accounting loads"
+    },
+    {
+      id: "entity-setup",
+      label: "Entity setup",
+      detail: "Configure fund structure, account context, and setup evidence.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup,
+      ariaLabel: "Open Accounting entity setup while Accounting loads"
+    },
+    {
+      id: "provider-posture",
+      label: "Provider posture",
+      detail: "Check source and provider diagnostics before relying on fresh close data.",
+      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
+      ariaLabel: "Open Data provider posture while Accounting loads"
+    },
+    {
+      id: "report-evidence",
+      label: "Report evidence",
+      detail: "Open retained report-pack evidence for close and audit review.",
+      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+      ariaLabel: "Open Reporting evidence while Accounting loads"
+    }
+  ];
+  const reportingActions: AccountingLoadingActionViewModel[] = [
+    {
+      id: "report-evidence",
+      label: "Report evidence",
+      detail: "Open retained report-pack evidence and manifests.",
+      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+      ariaLabel: "Open Reporting evidence while Reporting loads"
+    },
+    {
+      id: "approvals",
+      label: "Accounting approvals",
+      detail: "Review close approvals linked to reporting release.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+      ariaLabel: "Open Accounting approvals while Reporting loads"
+    },
+    {
+      id: "exceptions",
+      label: "Exceptions",
+      detail: "Review exception evidence that may block report release.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingExceptions,
+      ariaLabel: "Open Accounting exceptions while Reporting loads"
+    }
+  ];
+
   return {
     role: "status",
     ariaBusy: true,
     ariaLive: "polite",
     titleId: `${slug}-workspace-loading-title`,
     detailId: `${slug}-workspace-loading-detail`,
+    eyebrow: `${workspaceLabel} bootstrap`,
     title: `Loading ${workspaceLabel}`,
     detail: workspaceLabel === "Reporting"
       ? "Waiting for report-pack, governed export, and approval summaries from the workstation bootstrap payload."
-      : "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload."
+      : "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload.",
+    routeLabel: pathname,
+    workstreamLabel,
+    statusItemsLabel: `${workspaceLabel} payloads loading`,
+    statusItems: workspaceLabel === "Reporting" ? reportingStatusItems : accountingStatusItems,
+    actionsLabel: `${workspaceLabel} actions available while loading`,
+    actions: workspaceLabel === "Reporting" ? reportingActions : accountingActions
   };
 }
 
@@ -2182,6 +2369,385 @@ export function useSecurityMasterViewModel(
   };
 }
 
+export function useManualJournalEntryWorkbenchViewModel(
+  active: boolean,
+  services: ManualJournalEntryWorkbenchServices = defaultManualJournalEntryWorkbenchServices
+): ManualJournalEntryWorkbenchViewModel {
+  const [workbench, setWorkbench] = useState<ManualJournalEntryWorkbench | null>(null);
+  const [draft, setDraft] = useState<ManualJournalEntryDraft>(() => createManualJournalEntryDraft());
+  const [selectedLineId, setSelectedLineId] = useState(draft.lines[0]?.lineId ?? "line-1");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<ApiErrorDisplay | null>(null);
+  const [saveBusy, setSaveBusy] = useState(false);
+  const [validateBusy, setValidateBusy] = useState(false);
+  const [submitBusy, setSubmitBusy] = useState(false);
+  const [securitySearchQuery, setSecuritySearchQuery] = useState("");
+  const [securitySearchResults, setSecuritySearchResults] = useState<SecurityMasterEntry[]>([]);
+  const [securitySearchBusy, setSecuritySearchBusy] = useState(false);
+  const [securitySearchError, setSecuritySearchError] = useState<ApiErrorDisplay | null>(null);
+  const [attachmentDraft, setAttachmentDraft] = useState<ManualJournalEvidenceAttachmentDraft>(() => createManualJournalAttachmentDraft());
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const next = await services.getWorkbench();
+      setWorkbench(next);
+      const selected = next.drafts[0] ?? createManualJournalEntryDraft(next.fundProfileId, next.ledgerBookId ?? null);
+      setDraft(selected);
+      setSelectedLineId(selected.lines[0]?.lineId ?? "line-1");
+    } catch (err) {
+      setError(describeApiError(err, "Manual journal entry workbench could not load."));
+    } finally {
+      setLoading(false);
+    }
+  }, [services]);
+
+  useEffect(() => {
+    if (!active) {
+      return;
+    }
+
+    void refresh();
+  }, [active, refresh]);
+
+  const accountOptions = useMemo(
+    () => (workbench?.chartOfAccounts ?? [])
+      .filter((account) => !account.isArchived)
+      .map((account) => ({
+        value: account.path,
+        label: `${account.path} - ${account.accountName}`
+      })),
+    [workbench]
+  );
+
+  const applyServerDraft = useCallback((next: ManualJournalEntryDraft) => {
+    setDraft(next);
+    setSelectedLineId(next.lines[0]?.lineId ?? selectedLineId);
+    setWorkbench((current) => current
+      ? {
+        ...current,
+        drafts: [next, ...current.drafts.filter((item) => item.journalEntryId !== next.journalEntryId)]
+      }
+      : current);
+  }, [selectedLineId]);
+
+  const updateHeader = useCallback<ManualJournalEntryWorkbenchViewModel["updateHeader"]>((field, value) => {
+    setDraft((current) => ({ ...current, [field]: value }));
+  }, []);
+
+  const updateLine = useCallback<ManualJournalEntryWorkbenchViewModel["updateLine"]>((lineId, patch) => {
+    setDraft((current) => ({
+      ...current,
+      lines: current.lines.map((line) => line.lineId === lineId ? { ...line, ...patch } : line)
+    }));
+  }, []);
+
+  const searchSecurityMaster = useCallback(async () => {
+    const query = securitySearchQuery.trim();
+    if (query.length < 2) {
+      setSecuritySearchResults([]);
+      setSecuritySearchError(null);
+      return;
+    }
+
+    setSecuritySearchBusy(true);
+    setSecuritySearchError(null);
+    try {
+      setSecuritySearchResults(await services.searchSecurities(query));
+    } catch (err) {
+      setSecuritySearchError(describeApiError(err, "Security Master search failed."));
+      setSecuritySearchResults([]);
+    } finally {
+      setSecuritySearchBusy(false);
+    }
+  }, [securitySearchQuery, services]);
+
+  const selectSecurity = useCallback<ManualJournalEntryWorkbenchViewModel["selectSecurity"]>((lineId, security) => {
+    updateLine(lineId, {
+      securityId: security.securityId,
+      securityDisplayName: security.displayName
+    });
+    setSecuritySearchQuery(security.displayName);
+    setSecuritySearchResults([]);
+  }, [updateLine]);
+
+  const clearSecurity = useCallback<ManualJournalEntryWorkbenchViewModel["clearSecurity"]>((lineId) => {
+    updateLine(lineId, {
+      securityId: null,
+      securityDisplayName: null
+    });
+  }, [updateLine]);
+
+  const addLine = useCallback((side: AccountingTemplateLineSide) => {
+    const line = createManualJournalEntryLine(side, draft.currency, accountOptions[0]?.value ?? "");
+    setDraft((current) => ({ ...current, lines: [...current.lines, line] }));
+    setSelectedLineId(line.lineId);
+  }, [accountOptions, draft.currency]);
+
+  const updateAttachmentDraft = useCallback<ManualJournalEntryWorkbenchViewModel["updateAttachmentDraft"]>((patch) => {
+    setAttachmentDraft((current) => ({ ...current, ...patch }));
+  }, []);
+
+  const addAttachment = useCallback(() => {
+    const displayName = attachmentDraft.displayName.trim();
+    const uri = attachmentDraft.uri.trim();
+    if (!displayName || !uri) {
+      return;
+    }
+
+    const attachment: ManualJournalEntryEvidenceAttachment = {
+      attachmentId: newClientId(),
+      displayName,
+      uri,
+      evidenceKind: attachmentDraft.evidenceKind.trim() || "SourceDocument",
+      sourceSystem: attachmentDraft.sourceSystem.trim() || "ManualUpload",
+      addedAtUtc: new Date().toISOString(),
+      addedBy: "browser-user",
+      lineId: attachmentDraft.lineId,
+      description: attachmentDraft.description.trim() || null
+    };
+    setDraft((current) => ({
+      ...current,
+      evidenceAttachments: [...(current.evidenceAttachments ?? []), attachment],
+      evidenceLinks: Array.from(new Set([...(current.evidenceLinks ?? []), uri]))
+    }));
+    setAttachmentDraft(createManualJournalAttachmentDraft());
+  }, [attachmentDraft]);
+
+  const removeAttachment = useCallback<ManualJournalEntryWorkbenchViewModel["removeAttachment"]>((attachmentId) => {
+    setDraft((current) => {
+      const nextAttachments = (current.evidenceAttachments ?? []).filter((item) => item.attachmentId !== attachmentId);
+      const retainedUris = new Set(nextAttachments.map((item) => item.uri));
+      return {
+        ...current,
+        evidenceAttachments: nextAttachments,
+        evidenceLinks: current.evidenceLinks.filter((link) => retainedUris.has(link) || !(current.evidenceAttachments ?? []).some((item) => item.uri === link))
+      };
+    });
+  }, []);
+
+  const selectDraft = useCallback((journalEntryId: string) => {
+    const selected = workbench?.drafts.find((item) => item.journalEntryId === journalEntryId);
+    if (!selected) {
+      return;
+    }
+
+    setDraft(selected);
+    setSelectedLineId(selected.lines[0]?.lineId ?? selectedLineId);
+  }, [selectedLineId, workbench?.drafts]);
+
+  const validate = useCallback(async () => {
+    setValidateBusy(true);
+    setError(null);
+    try {
+      applyServerDraft(await services.validateDraft({ draft, actor: "browser-user", correlationId: "manual-je-validate" }));
+    } catch (err) {
+      setError(describeApiError(err, "Manual journal entry validation failed."));
+    } finally {
+      setValidateBusy(false);
+    }
+  }, [applyServerDraft, draft, services]);
+
+  const save = useCallback(async () => {
+    setSaveBusy(true);
+    setError(null);
+    try {
+      applyServerDraft(await services.saveDraft({ draft, actor: "browser-user", correlationId: "manual-je-save" }));
+    } catch (err) {
+      setError(describeApiError(err, "Manual journal entry draft could not be saved."));
+    } finally {
+      setSaveBusy(false);
+    }
+  }, [applyServerDraft, draft, services]);
+
+  const submit = useCallback(async () => {
+    setSubmitBusy(true);
+    setError(null);
+    try {
+      applyServerDraft(await services.submitApproval({
+        journalEntryId: draft.journalEntryId,
+        fundProfileId: draft.fundProfileId,
+        actor: "browser-user",
+        version: draft.version,
+        correlationId: "manual-je-submit"
+      }));
+    } catch (err) {
+      setError(describeApiError(err, "Manual journal entry could not be submitted for approval."));
+    } finally {
+      setSubmitBusy(false);
+    }
+  }, [applyServerDraft, draft, services]);
+
+  const validationIssues = draft.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+    id: `${issue.code}-${index}`,
+    label: issue.code,
+    message: issue.message,
+    detail: issue.suggestedAction ?? issue.targetId ?? "Review the journal entry.",
+    tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
+  }));
+  const getLineBadges = useCallback<ManualJournalEntryWorkbenchViewModel["getLineBadges"]>((lineId) => {
+    const line = draft.lines.find((item) => item.lineId === lineId);
+    const serverIssues = draft.validationIssues
+      .filter((issue) => issue.targetId === lineId)
+      .map<ManualJournalLineValidationBadge>((issue) => ({
+        id: `${lineId}-${issue.code}`,
+        label: issue.severity === "Critical" ? "Blocked" : issue.severity,
+        message: issue.message,
+        tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
+      }));
+    if (!line) {
+      return serverIssues;
+    }
+
+    const localBadges: ManualJournalLineValidationBadge[] = [];
+    if (!line.accountPath) {
+      localBadges.push({ id: `${lineId}-account-local`, label: "GL missing", message: "Select a GL account.", tone: "warning" });
+    }
+    if (line.amount <= 0) {
+      localBadges.push({ id: `${lineId}-amount-local`, label: "Amount", message: "Enter a positive amount.", tone: "warning" });
+    }
+    if (line.securityId) {
+      localBadges.push({ id: `${lineId}-security-local`, label: "Security", message: line.securityDisplayName ?? line.securityId, tone: "success" });
+    }
+    if ((draft.evidenceAttachments ?? []).some((item) => item.lineId === lineId) || line.evidenceLink) {
+      localBadges.push({ id: `${lineId}-evidence-local`, label: "Evidence", message: "Line support is linked.", tone: "success" });
+    }
+
+    return [...serverIssues, ...localBadges];
+  }, [draft.evidenceAttachments, draft.lines, draft.validationIssues]);
+  const hasEvidence = (draft.evidenceLinks?.length ?? 0) > 0 || (draft.evidenceAttachments?.length ?? 0) > 0;
+  const canSubmit = draft.validationIssues.every((issue) => issue.severity !== "Critical") && Math.abs(draft.imbalance) === 0 && draft.lines.length >= 2 && hasEvidence;
+  const securitySearchStatusText = securitySearchBusy
+    ? "Searching Security Master."
+    : securitySearchError?.summary ?? (securitySearchResults.length > 0
+      ? `${securitySearchResults.length} Security Master matches.`
+      : securitySearchQuery.trim().length >= 2
+        ? "No Security Master matches loaded."
+        : "Enter at least two characters to search Security Master.");
+
+  return {
+    title: "Manual journal entry workbench",
+    description: "Author controller-owned journal entries with GL account picks, line-level Security Master attribution, balancing validation, draft save, and approval submission.",
+    loading,
+    errorText: error?.summary ?? null,
+    statusLabel: `${draft.status} v${draft.version}`,
+    draft,
+    drafts: workbench?.drafts ?? [],
+    accountOptions,
+    selectedLineId,
+    securitySearchQuery,
+    securitySearchResults,
+    securitySearchBusy,
+    securitySearchErrorText: securitySearchError?.summary ?? null,
+    securitySearchStatusText,
+    attachmentDraft,
+    totalsLabel: `Debits ${formatCurrency(draft.totalDebits)} / Credits ${formatCurrency(draft.totalCredits)}`,
+    imbalanceLabel: `Imbalance ${formatCurrency(draft.imbalance)}`,
+    validationIssues,
+    saveBusy,
+    validateBusy,
+    submitBusy,
+    canSubmit,
+    submitDisabledReason: canSubmit ? null : "Resolve critical validation issues, balance debits to credits, and attach source evidence before approval submission.",
+    refresh,
+    updateHeader,
+    selectDraft,
+    selectLine: setSelectedLineId,
+    updateLine,
+    getLineBadges,
+    updateSecuritySearchQuery: setSecuritySearchQuery,
+    searchSecurityMaster,
+    selectSecurity,
+    clearSecurity,
+    addLine,
+    updateAttachmentDraft,
+    addAttachment,
+    removeAttachment,
+    save,
+    validate,
+    submit
+  };
+}
+
+function createManualJournalEntryDraft(
+  fundProfileId = "default-fund",
+  ledgerBookId: string | null = null
+): ManualJournalEntryDraft {
+  const now = new Date().toISOString();
+  const currency = "USD";
+  return {
+    journalEntryId: newClientId(),
+    status: "Draft",
+    fundProfileId,
+    ledgerBookId,
+    accountingBasis: DEFAULT_ACCOUNTING_BASIS,
+    accountingDate: now.slice(0, 10),
+    periodId: null,
+    entityId: null,
+    fundNodeId: null,
+    currency,
+    memo: "Manual close adjustment",
+    preparedBy: "browser-user",
+    createdAtUtc: now,
+    updatedAtUtc: now,
+    version: 0,
+    lines: [
+      createManualJournalEntryLine("Debit", currency, ""),
+      createManualJournalEntryLine("Credit", currency, "")
+    ],
+    evidenceLinks: [],
+    evidenceAttachments: [],
+    validationIssues: [],
+    totalDebits: 0,
+    totalCredits: 0,
+    imbalance: 0,
+    approvalId: null,
+    submittedAtUtc: null,
+    submittedBy: null
+  };
+}
+
+function createManualJournalAttachmentDraft(): ManualJournalEvidenceAttachmentDraft {
+  return {
+    displayName: "",
+    uri: "",
+    evidenceKind: "SourceDocument",
+    sourceSystem: "ManualUpload",
+    lineId: null,
+    description: ""
+  };
+}
+
+function createManualJournalEntryLine(
+  side: AccountingTemplateLineSide,
+  currency: string,
+  accountPath: string
+): ManualJournalEntryLine {
+  return {
+    lineId: newClientId(),
+    side,
+    amount: 0,
+    currency,
+    accountPath,
+    entityId: null,
+    fundAllocationId: null,
+    securityId: null,
+    securityDisplayName: null,
+    taxLotId: null,
+    description: null,
+    evidenceLink: null
+  };
+}
+
+function newClientId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `manual-je-${Date.now()}-${Math.round(Math.random() * 1_000_000)}`;
+}
+
 export function useAccountingReconciliationViewModel(
   data: AccountingWorkspaceResponse | null,
   workstream: AccountingWorkstream,
@@ -2197,6 +2763,7 @@ export function useAccountingReconciliationViewModel(
   const [trialBalance, setTrialBalance] = useState<LedgerTrialBalanceLine[]>([]);
   const [selectedTrialBalanceRowId, setSelectedTrialBalanceRowId] = useState<string | null>(null);
   const [selectedAccountingBasis, setSelectedAccountingBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
+  const [ledgerAccountFilter, setLedgerAccountFilter] = useState("");
   const [trialBalanceLoading, setTrialBalanceLoading] = useState(false);
   const [trialBalanceError, setTrialBalanceError] = useState<ApiErrorDisplay | null>(null);
   const [calibrationSummary, setCalibrationSummary] = useState<ReconciliationCalibrationSummary | null>(null);
@@ -2462,13 +3029,18 @@ export function useAccountingReconciliationViewModel(
       rows: trialBalance,
       selectedRowId: selectedTrialBalanceRowId,
       selectedBasis: selectedAccountingBasis,
+      accountFilter: ledgerAccountFilter,
       loading: trialBalanceLoading,
       error: trialBalanceError
     }),
-    [selectedAccountingBasis, selectedReconciliation?.runId, selectedTrialBalanceRowId, trialBalance, trialBalanceError, trialBalanceLoading]
+    [ledgerAccountFilter, selectedAccountingBasis, selectedReconciliation?.runId, selectedTrialBalanceRowId, trialBalance, trialBalanceError, trialBalanceLoading]
   );
   const selectAccountingBasis = useCallback((basis: AccountingBasisKind) => {
     setSelectedAccountingBasis(basis);
+    setSelectedTrialBalanceRowId(null);
+  }, []);
+  const updateLedgerAccountFilter = useCallback((value: string) => {
+    setLedgerAccountFilter(value);
     setSelectedTrialBalanceRowId(null);
   }, []);
   const calibrationViewState = useMemo(
@@ -2630,6 +3202,7 @@ export function useAccountingReconciliationViewModel(
     trialBalanceView,
     selectTrialBalanceRow: setSelectedTrialBalanceRowId,
     selectAccountingBasis,
+    updateLedgerAccountFilter,
     breakAction,
     selectBreak: setSelectedBreakId,
     assignBreak,
@@ -2719,6 +3292,10 @@ export function resolveAccountingWorkstream(pathname: string): AccountingWorkstr
 
   if (pathname.includes("/configure")) {
     return "configure";
+  }
+
+  if (pathname.includes("/journal-entries")) {
+    return "journal-entries";
   }
 
   if (pathname.includes("/reconciliation")) {
@@ -4362,6 +4939,7 @@ export function buildAccountingTrialBalanceViewState({
   rows,
   selectedRowId,
   selectedBasis = DEFAULT_ACCOUNTING_BASIS,
+  accountFilter = "",
   loading,
   error
 }: {
@@ -4369,18 +4947,22 @@ export function buildAccountingTrialBalanceViewState({
   rows: LedgerTrialBalanceLine[];
   selectedRowId?: string | null;
   selectedBasis?: AccountingBasisKind | null;
+  accountFilter?: string | null;
   loading: boolean;
   error: string | ApiErrorDisplay | null;
 }): AccountingTrialBalanceViewState {
   const detailPanelId = "trial-balance-account-detail";
   const runLabel = runId ?? "selected run";
   const resolvedBasis = normalizeAccountingBasis(selectedBasis);
+  const normalizedAccountFilter = normalizeLedgerAccountFilter(accountFilter);
   const normalizedRows = rows.map(normalizeTrialBalanceLine);
   const basisOptions = buildTrialBalanceBasisOptions(normalizedRows, resolvedBasis);
   const bridge = buildBasisBridgeViewState(normalizedRows, resolvedBasis, runLabel);
-  const rawRows = normalizedRows
+  const basisRows = normalizedRows
     .filter((line) => line.accountingBasis === resolvedBasis)
     .map((line) => buildTrialBalanceRow(line, detailPanelId));
+  const accountFilterOptions = buildLedgerAccountFilterOptions(basisRows, normalizedAccountFilter);
+  const rawRows = basisRows.filter((row) => ledgerAccountRowMatchesFilter(row, normalizedAccountFilter));
   const hasRows = rawRows.length > 0;
   const resolvedSelectedRowId = rawRows.some((row) => row.rowId === selectedRowId)
     ? selectedRowId ?? null
@@ -4412,20 +4994,30 @@ export function buildAccountingTrialBalanceViewState({
     selectedBasis: resolvedBasis,
     basisOptions,
     basisBridge: bridge,
+    accountFilterLabel: "Filter by General Ledger account",
+    accountFilterPlaceholder: "Account name, account id, type, symbol, or security",
+    accountFilterValue: accountFilter ?? "",
+    accountFilterOptions,
+    filteredRowCountLabel: buildLedgerAccountFilteredCountLabel(rawRows.length, basisRows.length, normalizedAccountFilter),
+    clearAccountFilterLabel: "Clear GL account filter",
     state,
     rows: viewRows,
     hasRows,
     selectedRowId: resolvedSelectedRowId,
     detailPanelId,
-    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel) : null,
+    selectedDetail: selectedRow ? buildTrialBalanceDetail(selectedRow, runLabel, runId) : null,
     detailEmptyTitle: "No account selected",
     detailEmptyText: hasRows
       ? "Select an account line to inspect balance evidence for report handoff."
-      : "Trial-balance account detail appears after ledger rows load.",
+      : normalizedAccountFilter
+        ? `No ${accountingBasisDisplayName(resolvedBasis)} ledger accounts match "${accountFilter ?? ""}". Clear the filter or search another GL account.`
+        : "Trial-balance account detail appears after ledger rows load.",
     detailEmptyAriaLabel: "No trial-balance account selected",
     loadingText,
     emptyTitle: "No trial balance lines",
-    emptyDetail: `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
+    emptyDetail: normalizedAccountFilter && basisRows.length > 0
+      ? `No ${accountingBasisDisplayName(resolvedBasis)} ledger accounts match "${accountFilter ?? ""}". Clear the GL account filter or search another account.`
+      : `Meridian did not return account-balance rows for ${runLabel}. Select another reconciliation run or refresh ledger evidence before report handoff.`,
     errorText,
     errorDetails: normalizedError?.details ?? [],
     statusAnnouncement: buildTrialBalanceAnnouncement({ runLabel, state, rowCount: viewRows.length, loading, errorText })
@@ -4483,9 +5075,90 @@ function buildTrialBalanceRow(
   };
 }
 
+function normalizeLedgerAccountFilter(value: string | null | undefined): string {
+  return (value ?? "").trim().toLocaleLowerCase();
+}
+
+function ledgerAccountRowMatchesFilter(
+  row: AccountingTrialBalanceRowViewModel,
+  normalizedFilter: string
+): boolean {
+  if (!normalizedFilter) {
+    return true;
+  }
+
+  const searchable = [
+    row.accountLabel,
+    row.accountTypeLabel,
+    row.financialAccountId,
+    row.symbol,
+    row.security?.displayName,
+    row.security?.primaryIdentifier
+  ]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .join(" ")
+    .toLocaleLowerCase();
+
+  return searchable.includes(normalizedFilter);
+}
+
+function buildLedgerAccountFilterOptions(
+  rows: AccountingTrialBalanceRowViewModel[],
+  normalizedFilter: string
+): AccountingLedgerAccountFilterOption[] {
+  const grouped = new Map<string, { row: AccountingTrialBalanceRowViewModel; count: number }>();
+  for (const row of rows) {
+    const key = [
+      row.accountLabel.toLocaleLowerCase(),
+      row.financialAccountId?.toLocaleLowerCase() ?? "",
+      row.accountTypeLabel.toLocaleLowerCase()
+    ].join("|");
+    const existing = grouped.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      grouped.set(key, { row, count: 1 });
+    }
+  }
+
+  return [...grouped.values()]
+    .sort((left, right) => left.row.accountLabel.localeCompare(right.row.accountLabel))
+    .slice(0, 8)
+    .map(({ row, count }) => {
+      const detail = [
+        row.financialAccountId ?? "Unassigned",
+        row.accountTypeLabel,
+        row.basisLabel
+      ].join(" / ");
+      const normalizedLabel = [row.accountLabel, row.financialAccountId ?? "", row.accountTypeLabel].join(" ").toLocaleLowerCase();
+
+      return {
+        id: row.rowId,
+        label: row.accountLabel,
+        detail,
+        rowCount: count,
+        rowCountLabel: count === 1 ? "1 row" : `${count} rows`,
+        isSelected: normalizedFilter.length > 0 && normalizedLabel.includes(normalizedFilter)
+      };
+    });
+}
+
+function buildLedgerAccountFilteredCountLabel(
+  filteredCount: number,
+  totalCount: number,
+  normalizedFilter: string
+): string {
+  if (!normalizedFilter) {
+    return totalCount === 1 ? "1 GL account row" : `${totalCount} GL account rows`;
+  }
+
+  return `${filteredCount.toLocaleString()} of ${totalCount.toLocaleString()} GL account rows`;
+}
+
 function buildTrialBalanceDetail(
   line: AccountingTrialBalanceRowViewModel,
-  runLabel: string
+  runLabel: string,
+  runId: string | null
 ): AccountingTrialBalanceDetailViewState {
   const securityLabel = line.security?.displayName?.trim()
     || line.security?.primaryIdentifier?.trim()
@@ -4497,8 +5170,16 @@ function buildTrialBalanceDetail(
 
   const sourceEventIds = readSourceEventIds(line);
   const approvalIds = readStringArrayField(line, "approvalIds");
+  const sourceJournalEntryIds = readSourceJournalEntryIds(line);
   const firstSourceEventId = sourceEventIds[0] ?? null;
   const firstApprovalId = approvalIds[0] ?? null;
+  const firstJournalEntryId = sourceJournalEntryIds[0] ?? null;
+  const auditDrillThroughHref = firstSourceEventId
+    ? `/accounting/audit?sourceEventId=${encodeURIComponent(firstSourceEventId)}`
+    : null;
+  const approvalDrillThroughHref = firstApprovalId
+    ? `/accounting/approvals?approvalId=${encodeURIComponent(firstApprovalId)}`
+    : null;
 
   return {
     eyebrow: "Trial-balance detail",
@@ -4516,14 +5197,121 @@ function buildTrialBalanceDetail(
       { label: "Entries", value: line.entryCountLabel },
       { label: "Financial account", value: financialAccountId },
       { label: "Security", value: securityLabel },
+      { label: "Journal entries", value: sourceJournalEntryIds.length > 0 ? sourceJournalEntryIds.join(", ") : "No journal entry references linked" },
       { label: "Source events", value: sourceEventIds.length > 0 ? sourceEventIds.join(", ") : "No source events linked" },
       { label: "Approvals", value: approvalIds.length > 0 ? approvalIds.join(", ") : "No approvals linked" },
       { label: "Run", value: runLabel }
     ],
     auditDrillThroughLabel: firstSourceEventId ? `Open source event ${firstSourceEventId}` : "No source-event drill-through available",
-    auditDrillThroughHref: firstSourceEventId ? `/accounting/audit?sourceEventId=${encodeURIComponent(firstSourceEventId)}` : null,
-    approvalDrillThroughHref: firstApprovalId ? `/accounting/approvals?approvalId=${encodeURIComponent(firstApprovalId)}` : null
+    auditDrillThroughHref,
+    approvalDrillThroughHref,
+    ledgerLinesTitle: "Ledger lines for selected account",
+    ledgerLinesDescription: firstJournalEntryId
+      ? `Journal support linked to ${line.accountLabel} for ${runLabel}.`
+      : `Account-level ledger inquiry for ${line.accountLabel}; journal-entry ids appear when the ledger payload includes posting references.`,
+    ledgerLines: buildLedgerLineRows(line, sourceJournalEntryIds, sourceEventIds, approvalDrillThroughHref),
+    ledgerLinesEmptyText: "No ledger line support is attached to this account row yet.",
+    supportingDocumentsTitle: "Supporting documentation",
+    supportingDocuments: buildSupportingDocumentRows({
+      line,
+      runId,
+      sourceEventIds,
+      approvalIds,
+      sourceJournalEntryIds
+    }),
+    supportingDocumentsEmptyText: "No source documents, approvals, or review packet links are attached to this GL account yet."
   };
+}
+
+function buildLedgerLineRows(
+  line: AccountingTrialBalanceRowViewModel,
+  sourceJournalEntryIds: string[],
+  sourceEventIds: string[],
+  approvalHref: string | null
+): AccountingLedgerLineViewModel[] {
+  if (sourceJournalEntryIds.length === 0) {
+    return [];
+  }
+
+  const debit = line.balance >= 0 ? line.balance : 0;
+  const credit = line.balance < 0 ? Math.abs(line.balance) : 0;
+  const evidenceLabel = sourceEventIds.length > 0
+    ? `Source ${sourceEventIds[0]}`
+    : "No source event linked";
+  const evidenceHref = sourceEventIds[0]
+    ? `/accounting/audit?sourceEventId=${encodeURIComponent(sourceEventIds[0])}`
+    : null;
+
+  return sourceJournalEntryIds.map((journalEntryId, index) => ({
+    rowId: `${line.rowId}-journal-${index}`,
+    journalEntryId,
+    description: `${line.accountLabel} ${line.accountTypeLabel.toLocaleLowerCase()} activity`,
+    debitLabel: formatCurrency(debit),
+    creditLabel: formatCurrency(credit),
+    balanceLabel: line.balanceLabel,
+    evidenceLabel,
+    evidenceHref,
+    approvalHref,
+    ariaLabel: `${line.accountLabel} journal ${journalEntryId}. Debit ${formatCurrency(debit)}. Credit ${formatCurrency(credit)}. Balance ${line.balanceLabel}. ${evidenceLabel}.`
+  }));
+}
+
+function buildSupportingDocumentRows({
+  line,
+  runId,
+  sourceEventIds,
+  approvalIds,
+  sourceJournalEntryIds
+}: {
+  line: AccountingTrialBalanceRowViewModel;
+  runId: string | null;
+  sourceEventIds: string[];
+  approvalIds: string[];
+  sourceJournalEntryIds: string[];
+}): AccountingSupportingDocumentViewModel[] {
+  const rows: AccountingSupportingDocumentViewModel[] = [];
+
+  if (runId) {
+    rows.push({
+      id: `${line.rowId}-review-packet`,
+      label: "Run review packet",
+      detail: `Ledger, reconciliation, and evidence packet for ${runId}.`,
+      href: getRunReviewPacketPath(runId),
+      ariaLabel: `Open run review packet for ${line.accountLabel}`
+    });
+  }
+
+  for (const sourceEventId of sourceEventIds) {
+    rows.push({
+      id: `${line.rowId}-source-${sourceEventId}`,
+      label: `Source event ${sourceEventId}`,
+      detail: "Source transaction, provider activity, or retained event evidence.",
+      href: `/accounting/audit?sourceEventId=${encodeURIComponent(sourceEventId)}`,
+      ariaLabel: `Open source event ${sourceEventId} for ${line.accountLabel}`
+    });
+  }
+
+  for (const journalEntryId of sourceJournalEntryIds) {
+    rows.push({
+      id: `${line.rowId}-journal-${journalEntryId}`,
+      label: `Journal entry ${journalEntryId}`,
+      detail: "Posting support and ledger entry lineage.",
+      href: `/accounting/ledger?journalEntryId=${encodeURIComponent(journalEntryId)}`,
+      ariaLabel: `Open journal entry ${journalEntryId} for ${line.accountLabel}`
+    });
+  }
+
+  for (const approvalId of approvalIds) {
+    rows.push({
+      id: `${line.rowId}-approval-${approvalId}`,
+      label: `Approval ${approvalId}`,
+      detail: "Controller approval and maker/checker evidence.",
+      href: `/accounting/approvals?approvalId=${encodeURIComponent(approvalId)}`,
+      ariaLabel: `Open approval ${approvalId} for ${line.accountLabel}`
+    });
+  }
+
+  return rows;
 }
 
 function readStringArrayField(value: unknown, fieldName: string): string[] {
@@ -4545,6 +5333,14 @@ function readSourceEventIds(value: unknown): string[] {
   return uniqueStrings([
     ...readStringArrayField(value, "sourceEventIds"),
     ...readStringScalarField(value, "sourceEventId")
+  ]);
+}
+
+function readSourceJournalEntryIds(value: unknown): string[] {
+  return uniqueStrings([
+    ...readStringArrayField(value, "sourceJournalEntryIds"),
+    ...readStringScalarField(value, "sourceJournalEntryId"),
+    ...readStringArrayField(value, "journalEntryIds")
   ]);
 }
 
@@ -5112,258 +5908,6 @@ function buildReconciliationBreakStatusAnnouncement({
   }
 
   return `${breakCount} reconciliation ${breakCount === 1 ? "break" : "breaks"} loaded.`;
-}
-
-export function buildCalibrationSummaryViewState(
-  summary: ReconciliationCalibrationSummary | null,
-  loading: boolean,
-  error: string | ApiErrorDisplay | null,
-  selectedProfileId: string | null = null
-): CalibrationSummaryViewState {
-  const normalizedError = normalizeApiErrorDisplay(error);
-  const errorText = normalizedError?.summary ?? null;
-  const statusTone = calibrationStatusTone(summary?.status ?? null);
-  const profiles = summary?.profiles ?? [];
-  const effectiveSelectedProfileId = selectedProfileId && profiles.some((profile) => profile.toleranceProfileId === selectedProfileId)
-    ? selectedProfileId
-    : profiles[0]?.toleranceProfileId ?? null;
-  const profileRows = profiles.map((profile) => buildCalibrationProfileRow(profile, effectiveSelectedProfileId));
-  const selectedProfileRow = profileRows.find((profile) => profile.toleranceProfileId === effectiveSelectedProfileId) ?? null;
-  const metricRows = buildCalibrationSummaryMetrics(summary);
-
-  return {
-    status: summary?.status ?? "Ready",
-    statusLabel: calibrationStatusLabel(summary?.status ?? null, loading),
-    statusTone,
-    statusIcon: statusTone === "success" ? "check" : "alert",
-    statusTextClassName: calibrationStatusTextClass(statusTone),
-    statusBannerClassName: calibrationStatusBannerClass(statusTone),
-    summary: summary?.summary ?? "",
-    asOfLabel: summary?.asOf ? formatSecurityDate(summary.asOf) : "—",
-    totalBreakCount: summary?.totalBreakCount ?? 0,
-    openBreakCount: summary?.openBreakCount ?? 0,
-    criticalOpenBreakCount: summary?.criticalOpenBreakCount ?? 0,
-    pendingSignoffCount: summary?.pendingSignoffCount ?? 0,
-    signedOffCount: summary?.signedOffCount ?? 0,
-    missingMetadataCount: summary?.missingCalibrationMetadataCount ?? 0,
-    metricRows,
-    profileRows,
-    hasProfiles: profileRows.length > 0,
-    profilesLabel: profileRows.length === 1 ? "1 tolerance profile" : `${profileRows.length} tolerance profiles`,
-    tableAriaLabel: "Tolerance profile health by reconciliation route",
-    emptyText: loading
-      ? "Loading tolerance profiles..."
-      : errorText
-        ? "Tolerance profiles are unavailable until the calibration summary reloads."
-        : "No tolerance profiles loaded. Run provider calibration before accepting reconciliation readiness.",
-    detailPanelId: CALIBRATION_PROFILE_DETAIL_PANEL_ID,
-    selectedProfileId: selectedProfileRow?.toleranceProfileId ?? null,
-    selectedProfile: selectedProfileRow ? buildCalibrationProfileDetail(selectedProfileRow) : null,
-    refreshCommand: buildCalibrationSummaryRefreshCommand(loading, errorText),
-    errorText,
-    errorDetails: normalizedError?.details ?? [],
-    loadingText: loading ? "Loading calibration summary..." : null,
-    statusAnnouncement: errorText
-      ? `Calibration summary error: ${errorText}`
-      : loading
-        ? "Loading calibration summary."
-        : summary
-          ? `Calibration status: ${calibrationStatusLabel(summary.status, false)}. ${summary.summary}`
-          : ""
-  };
-}
-
-function buildCalibrationSummaryRefreshCommand(
-  loading: boolean,
-  errorText: string | null
-): CalibrationSummaryRefreshCommandViewModel {
-  if (loading) {
-    return {
-      label: "Refreshing...",
-      ariaLabel: "Calibration summary refresh is already running",
-      disabled: true,
-      disabledReason: "Calibration summary refresh is already running."
-    };
-  }
-
-  return {
-    label: errorText ? "Retry calibration summary" : "Refresh calibration",
-    ariaLabel: errorText ? "Retry calibration summary load" : "Refresh calibration summary",
-    disabled: false,
-    disabledReason: null
-  };
-}
-
-function buildCalibrationSummaryMetrics(
-  summary: ReconciliationCalibrationSummary | null
-): CalibrationSummaryMetricViewModel[] {
-  const totalBreakCount = summary?.totalBreakCount ?? 0;
-  const openBreakCount = summary?.openBreakCount ?? 0;
-  const criticalOpenBreakCount = summary?.criticalOpenBreakCount ?? 0;
-  const pendingSignoffCount = summary?.pendingSignoffCount ?? 0;
-  const signedOffCount = summary?.signedOffCount ?? 0;
-  const missingMetadataCount = summary?.missingCalibrationMetadataCount ?? 0;
-
-  return [
-    buildCalibrationSummaryMetric("total", "Total breaks", totalBreakCount, false),
-    buildCalibrationSummaryMetric("open", "Open", openBreakCount, openBreakCount > 0),
-    buildCalibrationSummaryMetric("critical-open", "Critical open", criticalOpenBreakCount, criticalOpenBreakCount > 0),
-    buildCalibrationSummaryMetric("pending-signoff", "Pending sign-off", pendingSignoffCount, pendingSignoffCount > 0),
-    buildCalibrationSummaryMetric("signed-off", "Signed off", signedOffCount, false),
-    buildCalibrationSummaryMetric("missing-metadata", "Missing metadata", missingMetadataCount, missingMetadataCount > 0)
-  ];
-}
-
-function buildCalibrationSummaryMetric(
-  id: string,
-  label: string,
-  value: number,
-  warn: boolean
-): CalibrationSummaryMetricViewModel {
-  return {
-    id,
-    label,
-    value,
-    tone: warn ? "warning" : "default",
-    ariaLabel: `${label}: ${value}`
-  };
-}
-
-function buildCalibrationProfileRow(
-  profile: ReconciliationCalibrationSummary["profiles"][number],
-  selectedProfileId: string | null
-): CalibrationProfileRowViewModel {
-  const isSelected = profile.toleranceProfileId === selectedProfileId;
-  const statusLabel = calibrationProfileStatusLabel(profile);
-
-  return {
-    toleranceProfileId: profile.toleranceProfileId,
-    exceptionRoute: profile.exceptionRoute,
-    highestSeverity: profile.highestSeverity,
-    maxToleranceBandLabel: profile.maxToleranceBand === null ? "Policy default" : formatCurrency(profile.maxToleranceBand),
-    totalBreakCount: profile.totalBreakCount,
-    openBreakCount: profile.openBreakCount,
-    inReviewBreakCount: profile.inReviewBreakCount,
-    resolvedBreakCount: profile.resolvedBreakCount,
-    pendingSignoffCount: profile.pendingSignoffCount,
-    signedOffCount: profile.signedOffCount,
-    lastUpdatedLabel: formatSecurityDate(profile.lastUpdatedAt),
-    ariaLabel: `Profile ${profile.toleranceProfileId}: ${profile.openBreakCount} open, ${profile.pendingSignoffCount} pending sign-off, severity ${profile.highestSeverity}`,
-    selectAriaLabel: `Inspect tolerance profile ${profile.toleranceProfileId}: ${statusLabel}`,
-    detailPanelId: CALIBRATION_PROFILE_DETAIL_PANEL_ID,
-    isSelected
-  };
-}
-
-function buildCalibrationProfileDetail(
-  profile: CalibrationProfileRowViewModel
-): CalibrationProfileDetailViewModel {
-  const statusLabel = calibrationProfileStatusLabel(profile);
-  const statusTone = calibrationProfileStatusTone(profile);
-
-  return {
-    id: `${CALIBRATION_PROFILE_DETAIL_PANEL_ID}-${toDomId(profile.toleranceProfileId)}`,
-    title: `Selected tolerance profile - ${profile.toleranceProfileId}`,
-    subtitle: `${profile.exceptionRoute} route - ${profile.highestSeverity} severity`,
-    description: `${statusLabel}. ${formatCount(profile.totalBreakCount, "break")} tracked for this exception route, with ${formatCount(profile.openBreakCount, "open break")} and ${formatCount(profile.pendingSignoffCount, "pending sign-off")}.`,
-    statusLabel,
-    statusTone,
-    ariaLabel: `Tolerance profile detail for ${profile.toleranceProfileId}`,
-    fields: [
-      { label: "Tolerance band", value: profile.maxToleranceBandLabel },
-      { label: "Total breaks", value: String(profile.totalBreakCount) },
-      { label: "Open", value: String(profile.openBreakCount) },
-      { label: "In review", value: String(profile.inReviewBreakCount) },
-      { label: "Resolved", value: String(profile.resolvedBreakCount) },
-      { label: "Pending sign-off", value: String(profile.pendingSignoffCount) },
-      { label: "Signed off", value: String(profile.signedOffCount) },
-      { label: "Last updated", value: profile.lastUpdatedLabel }
-    ]
-  };
-}
-
-function calibrationProfileStatusLabel(
-  profile: Pick<CalibrationProfileRowViewModel, "highestSeverity" | "openBreakCount" | "pendingSignoffCount">
-): string {
-  if (profile.highestSeverity.toLowerCase() === "critical" || profile.openBreakCount > 0) {
-    return "Operator review required";
-  }
-
-  if (profile.pendingSignoffCount > 0) {
-    return "Pending sign-off";
-  }
-
-  return "Within tolerance";
-}
-
-function calibrationProfileStatusTone(
-  profile: Pick<CalibrationProfileRowViewModel, "highestSeverity" | "openBreakCount" | "pendingSignoffCount">
-): CalibrationProfileDetailViewModel["statusTone"] {
-  if (profile.highestSeverity.toLowerCase() === "critical") {
-    return "danger";
-  }
-
-  if (profile.openBreakCount > 0 || profile.pendingSignoffCount > 0) {
-    return "warning";
-  }
-
-  return "success";
-}
-
-function calibrationStatusTone(status: ReconciliationCalibrationStatus | null): CalibrationStatusTone {
-  if (status === "Ready") {
-    return "success";
-  }
-
-  if (status === "Blocked") {
-    return "danger";
-  }
-
-  return "warning";
-}
-
-function calibrationStatusTextClass(tone: CalibrationStatusTone): string {
-  if (tone === "success") {
-    return "text-success";
-  }
-
-  if (tone === "danger") {
-    return "text-danger";
-  }
-
-  return "text-warning";
-}
-
-function calibrationStatusBannerClass(tone: CalibrationStatusTone): string {
-  if (tone === "success") {
-    return "border-success/30 bg-success/5";
-  }
-
-  if (tone === "danger") {
-    return "border-danger/30 bg-danger/5";
-  }
-
-  return "border-warning/30 bg-warning/5";
-}
-
-function calibrationStatusLabel(status: ReconciliationCalibrationStatus | null, loading: boolean): string {
-  if (loading) {
-    return "Loading...";
-  }
-
-  if (status === "Ready") {
-    return "Ready";
-  }
-
-  if (status === "Blocked") {
-    return "Blocked";
-  }
-
-  if (status === "ReviewRequired") {
-    return "Review required";
-  }
-
-  return "Unknown";
 }
 
 export function resolveSecurityScheduleEvents(securityId: string | null): SecurityCashFlowScheduleEvent[] {

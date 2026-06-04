@@ -1,5 +1,9 @@
 # CLAUDE.fsharp.md - F# Domain Library Guide
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 This document provides guidance for AI assistants working with the F# domain library in Meridian.
 
 > **Domain naming standard:** All new F# types in `Meridian.FSharp.Domain` must conform to the

@@ -91,7 +91,9 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().NotContain(sd => sd.ServiceType == typeof(ILedgerJournalStore));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IOperationsContinuityTransactionalCommitStore));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IDirectLendingStateStore));
-        services.Should().NotContain(sd => sd.ServiceType == typeof(IDirectLendingService));
+        services.Should().NotContain(sd =>
+            sd.ServiceType == typeof(IDirectLendingService) &&
+            sd.ImplementationType == typeof(PostgresDirectLendingService));
         services.Should().Contain(sd => sd.ServiceType == typeof(IDomainProjectionReconciliationJob));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(ProjectionReconciliationHostedService));
@@ -179,6 +181,34 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             sd.ImplementationType == typeof(DirectLendingOutboxDispatcher));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(DailyAccrualWorker));
+    }
+
+    [Fact]
+    public void Register_AddsDirectLendingServicesInsideSecurityMasterStorage_WhenOnlySecurityMasterIsConfigured()
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearGovernancePersistenceEnvironment();
+        const string securityMasterConnectionString = "Host=sm-db;Port=5432;Database=security;Username=postgres;Password=secret";
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, securityMasterConnectionString);
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, "security_master_ops");
+        Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(DirectLendingStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(LedgerStartup.SchemaVariable, null);
+
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(DirectLendingOptions));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IDirectLendingStateStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(DirectLendingMigrationRunner));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IDirectLendingService));
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<DirectLendingOptions>();
+        options.ConnectionString.Should().Be(securityMasterConnectionString);
+        options.Schema.Should().Be("security_master_ops");
     }
 
     [Fact]

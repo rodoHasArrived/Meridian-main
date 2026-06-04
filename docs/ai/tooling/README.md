@@ -22,6 +22,7 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 | Emit a compact handoff packet from route evidence | `build/scripts/docs/handoff-packet-generator.py` | `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json` |
 | Check handoff packet schema and validation floor | `build/scripts/docs/check-handoff-packet-schema.py`, `build/scripts/docs/check-validation-floor.py`, `build/scripts/docs/check-mode-escalation.py` | Run the matching `docs/status/*` checks after route or handoff changes |
 | Refresh repo-navigation artifacts | `build/scripts/docs/generate-ai-navigation.py` | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary` |
+| Validate only AI-doc lifecycle metadata without repo-wide docs noise | `build/scripts/docs/validate-docs-structure.py` | `python build/scripts/docs/validate-docs-structure.py --top-level ai --summary` |
 | Apply deterministic scoped text edits | `build/scripts/ai/ai-edit-tool.py` | Preview with `plan`, then apply the saved plan |
 | Build token-capped orientation packs | `build/scripts/ai/context-budget.py` | `python build/scripts/ai/context-budget.py --task "<task>" --target-file <path> --summary` |
 | Run broader AI maintenance audits | `build/scripts/ai-repo-updater.py`, `make/ai.mk`, `scripts/ai/*.sh` | Pick the narrowest `audit`, `verify`, or maintenance lane |
@@ -71,6 +72,7 @@ Use these for multi-agent, parallel, or route-aware work:
   - Fast docs-link hygiene after AI-doc changes.
 - `build/scripts/docs/validate-docs-structure.py`
   - Detects documentation tree drift for active lanes.
+  - Use `--top-level ai` for narrow AI-doc lifecycle checks when repo-wide migration warnings are not relevant to the current batch.
 
 ### Scoped Edit And Maintenance Helpers
 

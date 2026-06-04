@@ -28,7 +28,8 @@ still lives in `../assistant-workflow-contract.md`.
 10. For AI/documentation updates:
     1) update `assistant-workflow-contract.md` when shared rules change,
     2) run `check-ai-inventory.py` / `check-codex-skills.py`,
-    3) avoid direct edits to `docs/ai/generated/*` unless refreshing generation.
+    3) run `validate-docs-structure.py --top-level ai --summary` for narrow AI-doc metadata/structure proof,
+    4) avoid direct edits to `docs/ai/generated/*` unless refreshing generation.
 11. For AI tooling or validator changes, read [`../tooling/README.md`](../tooling/README.md)
     before choosing scripts or broader maintenance lanes.
 12. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
@@ -52,6 +53,8 @@ Load only enough context to route and validate the task.
 | AI docs change | `../assistant-workflow-contract.md`, this page, `README.md` | Host-specific mirrors unless shared policy changes |
 | WPF task | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Broad WPF suites before focused filters |
 | Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests | WPF validation unless shared contracts changed |
+
+AI-doc proof lane defaults: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `python3 build/scripts/docs/repair-links.py --summary`, `git diff --check`
 
 ## Dirty Worktree Protocol
 
@@ -78,7 +81,7 @@ Load only enough context to route and validate the task.
 - Agent orchestration: start lane planning with `../parallel-task-manifest-template.md` when multiple skills/surfaces are in scope.
 - Parallel development workflows: keep each lane scoped to unique path sets and document handoff boundaries.
 - Token/context management: load only startup checks then escalate context only by phase; use one lane at a time.
-- Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `git diff --check`
+- Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
 - Documentation ownership: `../../documentation-ownership.md`, `../assistant-workflow-contract.md`
 
 ## Task-To-Proof Matrix

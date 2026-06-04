@@ -3,6 +3,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Application.Monitoring;
 
@@ -70,7 +71,7 @@ public sealed class StatusWriter : IAsyncDisposable
 
         var json = JsonSerializer.Serialize(payload, JsonOptions);
 
-        await File.WriteAllTextAsync(_path, json, ct);
+        await AtomicFileWriter.WriteAsync(_path, json, ct).ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()

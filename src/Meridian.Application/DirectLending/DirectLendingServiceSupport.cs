@@ -55,6 +55,13 @@ internal static class DirectLendingServiceSupport
         return null;
     }
 
+    public static DirectLendingCommandError? ValidateSecurityMasterReferenceRequired(DirectLendingTermsDto terms)
+        => terms.SecurityMasterReference is null || terms.SecurityMasterReference.SecurityId == Guid.Empty
+            ? new DirectLendingCommandError(
+                DirectLendingErrorCode.Validation,
+                "Direct lending durable writes require a Security Master reference when MERIDIAN_DIRECT_LENDING_REQUIRE_SECURITY_MASTER_REFERENCE is enabled.")
+            : null;
+
     public static DirectLendingCommandError? EnsureActive(LoanContractDetailDto contract)
         => contract.Status == LoanStatus.Active
             ? null

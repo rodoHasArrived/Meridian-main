@@ -24,6 +24,9 @@ This layer persists durable state and evidence. It should expose storage seams w
 - `Archival/` - write-ahead log and archive package support.
 - `Interfaces/` and `Sinks/` - storage sink contracts and implementations.
 - `Replay/`, `Ledger/`, and `SecurityMaster/` - durable domain-specific stores.
+- `AssetOperations/` - generic Postgres projections for Security Master-keyed operational
+  terms, lifecycle, cash-flow, actual-activity, reconciliation, ledger, evidence, workflow audit,
+  and readiness read models.
 - `FundAccounts/` - account definitions, balance snapshots, statement batches, reconciliation
   results, and account readiness persistence. Balance snapshots include optional realized and
   unrealized P&L columns for provider-ledger shadow-book comparison evidence.
@@ -59,11 +62,26 @@ ledger schema. `ILedgerJournalStore` owns durable FIFO/LIFO/HIFO/SpecificId poli
 open-lot balances for a ledger book/account, while relief projection, approval workflow, and
 tax-reporting exports remain outside the storage layer.
 
+Direct-lending persistence is part of the Security Master storage lane by default. If
+`MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` is configured, direct-lending state, event, accrual,
+cash-transaction, allocation, fee, projected-cash-flow, workflow-audit, journal, reconciliation,
+servicer-report, outbox, and checkpoint tables use the effective Security Master connection and
+schema unless a legacy `MERIDIAN_DIRECT_LENDING_*` override is explicitly supplied. The direct-lending
+SQL files remain packaged under `DirectLending/Migrations` for source ownership, but Security Master
+readiness runs inherited direct-lending migrations on the default host path.
+
 Direct-lending state persistence can include projected ledger journals in the same database
 transaction as the loan event append. `PostgresDirectLendingStateStore.SaveAsync` accepts
 `LedgerJournalEntryWrite` records and appends them through `ITransactionalLedgerJournalStore` with
 the active `NpgsqlConnection` and serializable transaction, so a failed ledger append rolls back the
 loan state/event/projection/outbox write as one unit.
+
+Asset Operations persistence is intentionally separate from `security_master`: the default schema
+is `asset_operations`, configured by `MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING` and
+`MERIDIAN_ASSET_OPERATIONS_SCHEMA`. Tables are generic projection tables keyed by non-null
+`security_id` and retain optional `source_domain`, `source_entity_id`, and JSONB payloads so
+Direct Lending, bonds, and later asset classes can publish read models without moving servicing or
+accounting command tables into Security Master storage.
 
 ## Diagrams
 

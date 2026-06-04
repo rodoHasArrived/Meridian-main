@@ -12,6 +12,7 @@ using Meridian.Contracts.Etl;
 using Meridian.Contracts.Pipeline;
 using Meridian.Domain.Events;
 using Meridian.Storage;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Etl;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Packaging;
@@ -35,7 +36,7 @@ public sealed class EtlJobDefinitionStore : IEtlJobDefinitionStore
         var path = GetPath(definition.JobId);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var json = JsonSerializer.Serialize(definition, _jsonOptions);
-        await File.WriteAllTextAsync(path, json, ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(path, json, ct).ConfigureAwait(false);
     }
 
     public async Task<EtlJobDefinition?> GetAsync(string jobId, CancellationToken ct = default)

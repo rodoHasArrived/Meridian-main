@@ -1,5 +1,9 @@
 # Repository Structure
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 Full annotated file tree for Meridian (1,313 source files: 1,262 C# + 51 F#).
 
 > Use `Glob` or `Grep` for navigation rather than scanning this tree manually.

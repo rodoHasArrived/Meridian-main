@@ -80,7 +80,8 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Bbgid,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ],
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.FixedIncome),
         new(
             AssetClass: "FxSpot",
             SupportsCashflowScheduleByDefault: false,
@@ -231,7 +232,8 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.PermId,
                 SecurityIdentifierKind.Lei,
                 SecurityIdentifierKind.ProviderSymbol
-            ]),
+            ],
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.DirectLending),
         new(
             AssetClass: "Commodity",
             SupportsCashflowScheduleByDefault: false,
@@ -298,6 +300,9 @@ public static class SecurityAssetClassCatalog
 
     public static IReadOnlyList<SecurityIdentifierKind> GetPreferredIdentifierKinds(string? assetClass)
         => GetOrDefault(assetClass).PreferredIdentifierKinds;
+
+    public static IReadOnlyList<string> GetAssetOperationsCapabilities(string? assetClass)
+        => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;
 }
 
 public sealed record SecurityAssetClassDescriptor(
@@ -305,4 +310,44 @@ public sealed record SecurityAssetClassDescriptor(
     bool SupportsCashflowScheduleByDefault,
     bool UsesFaceValueLots,
     bool SupportsBasicCreateWorkflow,
-    IReadOnlyList<SecurityIdentifierKind> PreferredIdentifierKinds);
+    IReadOnlyList<SecurityIdentifierKind> PreferredIdentifierKinds,
+    IReadOnlyList<string>? AssetOperationsCapabilities = null);
+
+public static class AssetOperationsCapabilitySet
+{
+    public static readonly IReadOnlyList<string> IdentityOnly =
+    [
+        "Identity",
+        "TermsHistory",
+        "Evidence",
+        "Readiness"
+    ];
+
+    public static readonly IReadOnlyList<string> FixedIncome =
+    [
+        "Identity",
+        "TermsHistory",
+        "LifecycleState",
+        "ProjectedCashFlows",
+        "ActualActivity",
+        "Reconciliation",
+        "LedgerProjection",
+        "Evidence",
+        "WorkflowAudit",
+        "Readiness"
+    ];
+
+    public static readonly IReadOnlyList<string> DirectLending =
+    [
+        "Identity",
+        "TermsHistory",
+        "LifecycleState",
+        "ProjectedCashFlows",
+        "ActualActivity",
+        "Reconciliation",
+        "LedgerProjection",
+        "Evidence",
+        "WorkflowAudit",
+        "Readiness"
+    ];
+}

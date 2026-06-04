@@ -1,4 +1,5 @@
 using Meridian.Storage.SecurityMaster;
+using Meridian.Storage.DirectLending;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -41,5 +42,34 @@ internal static class SecurityMasterStartup
 
         Task.Run(() => migrationRunner.EnsureMigratedAsync()).GetAwaiter().GetResult();
         logger?.LogInformation("Security Master schema is ready.");
+
+        EnsureInheritedDirectLendingDatabaseReady(serviceProvider, logger);
+    }
+
+    private static void EnsureInheritedDirectLendingDatabaseReady(IServiceProvider serviceProvider, ILogger? logger)
+    {
+        if (DirectLendingStartup.HasDedicatedConfiguration())
+        {
+            logger?.LogDebug(
+                "Skipping inherited Direct Lending migrations because {ConnectionStringVariable} is explicitly configured.",
+                DirectLendingStartup.ConnectionStringVariable);
+            return;
+        }
+
+        DirectLendingStartup.EnsureEnvironmentDefaults();
+        if (!DirectLendingStartup.IsConfigured())
+        {
+            return;
+        }
+
+        var migrationRunner = serviceProvider.GetService<DirectLendingMigrationRunner>();
+        if (migrationRunner is null)
+        {
+            logger?.LogDebug("Direct Lending migration runner is not registered for the Security Master storage lane.");
+            return;
+        }
+
+        Task.Run(() => migrationRunner.EnsureMigratedAsync()).GetAwaiter().GetResult();
+        logger?.LogInformation("Direct Lending persistence is ready under the Security Master schema.");
     }
 }

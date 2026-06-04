@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
 using Meridian.Application.Ledger;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
@@ -14,6 +15,97 @@ namespace Meridian.Tests.Application.DirectLending;
 
 public sealed class PostgresDirectLendingCommandServiceTests
 {
+    [Fact]
+    public async Task RequestProjectionAsync_PublishesSecurityMasterBackedAssetOperationsProjection()
+    {
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var commandId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var contract = BuildContract(loanId);
+        var servicing = BuildServicing(loanId);
+        AssetOperationsProjectionDto? capturedProjection = null;
+        AssetOperationsWriteApprovalDto? capturedApproval = null;
+
+        var operationsStore = Substitute.For<IDirectLendingOperationsStore>();
+        operationsStore.GetProjectionRunsAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns([]);
+        operationsStore.SaveProjectionRunAsync(
+                Arg.Any<ProjectionRunDto>(),
+                Arg.Any<IReadOnlyList<ProjectedCashFlowDto>>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => call.ArgAt<ProjectionRunDto>(0));
+        operationsStore.GetCashTransactionsAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns([]);
+        operationsStore.GetReconciliationRunsAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, contract, servicing));
+        queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(
+            [
+                new LoanEventLineageDto(
+                    Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+                    7,
+                    "loan.daily-accrual-posted",
+                    3,
+                    new DateOnly(2026, 3, 24),
+                    DateTimeOffset.Parse("2026-03-24T00:00:00Z"),
+                    "{}",
+                    null,
+                    null,
+                    commandId,
+                    "unit-test",
+                    false)
+            ]);
+
+        var assetOperations = Substitute.For<IAssetOperationsCommandService>();
+        assetOperations.UpsertProjectionAsync(
+                Arg.Any<AssetOperationsProjectionDto>(),
+                Arg.Any<AssetOperationsWriteApprovalDto>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                capturedProjection = call.ArgAt<AssetOperationsProjectionDto>(0);
+                capturedApproval = call.ArgAt<AssetOperationsWriteApprovalDto>(1);
+                return Task.FromResult(new AssetOperationsDetailDto(
+                    capturedProjection.Subject,
+                    capturedProjection.TermsHistory,
+                    capturedProjection.LifecycleEvents,
+                    capturedProjection.CashFlowProjectionRuns,
+                    capturedProjection.ProjectedCashFlows,
+                    capturedProjection.ActualActivity,
+                    capturedProjection.ReconciliationRuns,
+                    capturedProjection.ReconciliationResults,
+                    capturedProjection.LedgerProjections,
+                    capturedProjection.Readiness,
+                    capturedProjection.WorkflowAudit));
+            });
+
+        var service = new PostgresDirectLendingCommandService(
+            Substitute.For<IDirectLendingStateStore>(),
+            operationsStore,
+            queryService,
+            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 },
+            assetOperations);
+
+        var result = await service.RequestProjectionAsync(
+            loanId,
+            new DateOnly(2026, 6, 30),
+            new DirectLendingCommandMetadataDto(commandId, null, null, "unit-test", false));
+
+        result.IsSuccess.Should().BeTrue();
+        capturedProjection.Should().NotBeNull();
+        capturedProjection!.Subject.SecurityId.Should().Be(Guid.Parse("99999999-9999-9999-9999-999999999999"));
+        capturedProjection.Subject.AssetClass.Should().Be("DirectLoan");
+        capturedProjection.ProjectedCashFlows.Should().Contain(static flow => flow.FlowType == "Interest");
+        capturedProjection.LedgerProjections.Should().ContainSingle(static row => row.SourceDomain == "LoanAccountingProjector");
+        capturedApproval.Should().NotBeNull();
+        capturedApproval!.ApprovalReference.Should().Be(commandId.ToString("D"));
+        capturedApproval.Actor.Should().Be("unit-test");
+    }
+
     [Fact]
     public async Task PostDailyAccrualAsync_PassesProjectedLedgerEntriesToStateStoreWithEventLineage()
     {
@@ -94,6 +186,71 @@ public sealed class PostgresDirectLendingCommandServiceTests
     }
 
     [Fact]
+    public async Task AddCollateralAsync_PersistsServicingStateInsteadOfReturningPostgresNoOp()
+    {
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var contract = BuildContract(loanId);
+        var servicing = BuildServicing(loanId);
+        LoanServicingStateDto? savedServicing = null;
+        string? savedEventType = null;
+
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        stateStore.SaveAsync(
+                loanId,
+                expectedVersion: 7,
+                nextVersion: 8,
+                Arg.Any<LoanContractDetailDto>(),
+                Arg.Any<LoanServicingStateDto>(),
+                Arg.Any<string>(),
+                eventSchemaVersion: 3,
+                effectiveDate: new DateOnly(2026, 4, 1),
+                Arg.Any<JsonDocument>(),
+                Arg.Any<DirectLendingEventWriteMetadata>(),
+                Arg.Any<DirectLendingPersistenceBatch?>(),
+                Arg.Any<IReadOnlyList<LedgerJournalEntryWrite>?>(),
+                Arg.Any<Guid>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask)
+            .AndDoes(call =>
+            {
+                savedServicing = call.ArgAt<LoanServicingStateDto>(4);
+                savedEventType = call.ArgAt<string>(5);
+            });
+
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, contract, servicing));
+
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            queryService,
+            new LoanAccountingProjector(null, new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var result = await service.AddCollateralAsync(
+            loanId,
+            new AddCollateralRequest(
+                CollateralType.RealEstate,
+                "Phoenix industrial property",
+                650_000m,
+                CurrencyCode.USD,
+                new DateOnly(2026, 4, 1)));
+
+        result.IsSuccess.Should().BeTrue();
+        savedEventType.Should().Be("loan.collateral-added");
+        savedServicing.Should().NotBeNull();
+        savedServicing!.Collateral.Should().ContainSingle(collateral =>
+            collateral.Description == "Phoenix industrial property" &&
+            collateral.EstimatedValue == 650_000m);
+        savedServicing.ServicingRevision.Should().Be(8);
+        savedServicing.RevisionHistory.Should().ContainSingle(revision =>
+            revision.RevisionNumber == 8 &&
+            revision.RevisionSourceType == "CollateralAdded");
+        result.Value.Should().BeEquivalentTo(savedServicing);
+    }
+
+    [Fact]
     public async Task PostDailyAccrualAsync_BlocksLedgerProjectionWithoutSecurityMasterReference()
     {
         var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
@@ -118,6 +275,48 @@ public sealed class PostgresDirectLendingCommandServiceTests
 
         await act.Should().ThrowAsync<DirectLendingCommandException>()
             .WithMessage("*requires a Security Master reference before posting*");
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default,
+            default,
+            default,
+            default!,
+            default!,
+            default!,
+            default,
+            default,
+            default!,
+            default!,
+            default,
+            default,
+            default);
+    }
+
+    [Fact]
+    public async Task CreateLoanAsync_WithSecurityMasterReferenceRequirement_ShouldRejectNewDurableLoanWithoutSecurityId()
+    {
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            queryService,
+            new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions
+            {
+                CurrentEventSchemaVersion = 3,
+                RequireSecurityMasterReferenceForDurableWrites = true
+            });
+        var contract = BuildContract(Guid.NewGuid(), includeSecurityMasterReference: false);
+
+        var result = await service.CreateLoanAsync(new CreateLoanRequest(
+            Guid.NewGuid(),
+            contract.FacilityName,
+            contract.Borrower,
+            contract.EffectiveDate,
+            contract.CurrentTerms));
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error!.Message.Should().Contain("Security Master reference");
         await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
             default,
             default,

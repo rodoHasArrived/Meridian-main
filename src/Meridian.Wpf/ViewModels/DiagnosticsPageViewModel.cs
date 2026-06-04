@@ -275,7 +275,7 @@ public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
     }
 
     /// <summary>
-    /// Refreshes latency metrics from the latency service or uses sample values.
+    /// Refreshes latency metrics from the latency service, leaving metrics unmeasured when unavailable.
     /// </summary>
     private void RefreshLatencyMetrics()
     {
@@ -290,22 +290,20 @@ public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
             }
             catch
             {
-                // If service fails, use placeholder values
-                UsePlaceholderLatencies();
+                UseUnavailableLatencies();
             }
         }
         else
         {
-            // No latency service available; use sample colocation values
-            UsePlaceholderLatencies();
+            UseUnavailableLatencies();
         }
     }
 
-    private void UsePlaceholderLatencies()
+    private void UseUnavailableLatencies()
     {
-        P50Ms = "0.80";
-        P95Ms = "2.10";
-        P99Ms = "5.30";
+        P50Ms = "--";
+        P95Ms = "--";
+        P99Ms = "--";
     }
 
     private void PopulateSystemInfo()

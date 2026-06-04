@@ -25,6 +25,8 @@ or provider implementations.
 ## Key folders and files
 
 - `Workstation/` - workstation and operator workflow DTOs.
+- `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
+  and query/command service contracts.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
 - Contract DTO files - shared payloads consumed across host, UI services, desktop, and dashboard.
@@ -215,8 +217,8 @@ The same workstation contract file owns the multi-asset operational coverage DTO
 `MultiAssetClassCoverageDto`, `MultiAssetEvidenceRequirementDto`, and
 `MultiAssetReadinessBlockerDto`. Each asset-class row also carries
 `MultiAssetDrillThroughTargetDto` entries for Security Master passport/profile, provider evidence,
-reconciliation casework, ledger mapping/evidence, and close readiness. Private-credit `DirectLoan`
-rows can also carry loan-schedule, commitment/covenant, and paydown/obligation targets, while
+reconciliation casework, ledger mapping/evidence, Asset Operations detail, and close readiness.
+Private-credit `DirectLoan` rows can also carry loan-schedule, commitment/covenant, and paydown/obligation targets, while
 structured/private `CustomAsset` rows can carry profile-lineage, servicer/trustee, valuation/NAV,
 and obligation close-readiness targets. Browser, WPF, and shared endpoint clients should render
 those rows as supplied instead of recalculating asset-class readiness, ledger coverage,

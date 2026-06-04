@@ -3,11 +3,13 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
+using Meridian.Application.AssetOperations;
 using Meridian.Application.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.StrategyEngine;
@@ -405,6 +407,17 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationPortfolioMultiAssetCoverage")
         .Produces<MultiAssetCoverageSummaryDto>(200);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationAssetOperations), async (Guid securityId, HttpContext context) =>
+        {
+            var payload = await BuildAssetOperationsPayloadAsync(context, securityId).ConfigureAwait(false);
+            return payload is null
+                ? Results.NotFound()
+                : Results.Json(payload, jsonOptions);
+        })
+        .WithName("GetWorkstationAssetOperations")
+        .Produces<AssetOperationsDetailDto>(200)
+        .Produces(404);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
             Guid? fundAccountId,
@@ -1280,6 +1293,11 @@ public static partial class WorkstationEndpoints
             }
 
             var detail = await service.RunAsync(request, context.RequestAborted).ConfigureAwait(false);
+            if (detail is not null)
+            {
+                await PublishProviderLedgerBreakQueueAsync(context.RequestServices, detail, context.RequestAborted).ConfigureAwait(false);
+            }
+
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
@@ -1469,6 +1487,11 @@ public static partial class WorkstationEndpoints
 
             var trustedRequest = request with { Actor = currentUser };
             var detail = await service.ReconcileStatementRunAsync(runId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            if (detail is not null)
+            {
+                await PublishStatementBreakQueueAsync(context.RequestServices, service, context.RequestAborted).ConfigureAwait(false);
+            }
+
             return detail is null ? Results.NotFound() : Results.Json(detail, jsonOptions);
         })
         .WithName("ReconcileStatementRun")
@@ -1545,7 +1568,6 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
@@ -1554,7 +1576,6 @@ public static partial class WorkstationEndpoints
 
         group.MapGet("/reconciliation/break-queue/{breakId}", async (string breakId, HttpContext context) =>
         {
-            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
             {
@@ -1571,7 +1592,6 @@ public static partial class WorkstationEndpoints
         group.MapGet("/reconciliation/calibration-summary", async (HttpContext context) =>
         {
             var asOf = DateTimeOffset.UtcNow;
-            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var items = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false);
             var summary = BuildReconciliationCalibrationSummary(items, asOf);
             return Results.Json(summary, jsonOptions);
@@ -1581,7 +1601,6 @@ public static partial class WorkstationEndpoints
 
         group.MapGet("/reconciliation/break-queue/{breakId}/audit", async (string breakId, HttpContext context) =>
         {
-            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
             if (repository is null)
             {
@@ -3455,7 +3474,6 @@ public static partial class WorkstationEndpoints
     {
         try
         {
-            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var reconciliationBreaks = await GetBreakQueueItemsAsync(
                 context.RequestServices,
                 status: null,
@@ -4659,6 +4677,15 @@ public static partial class WorkstationEndpoints
         return await service
             .GetCoverageAsync(fundAccountId, entity, assetClass, context.RequestAborted)
             .ConfigureAwait(false);
+    }
+
+    private static async Task<AssetOperationsDetailDto?> BuildAssetOperationsPayloadAsync(
+        HttpContext context,
+        Guid securityId)
+    {
+        var service = context.RequestServices.GetService<IAssetOperationsQueryService>()
+            ?? new AssetOperationsReadService();
+        return await service.GetOperationsAsync(securityId, context.RequestAborted).ConfigureAwait(false);
     }
 
     private static async Task<WorkstationAccountingPayload> BuildAccountingPayloadAsync(HttpContext context)
@@ -6618,6 +6645,44 @@ public static partial class WorkstationEndpoints
             ToleranceBand: Math.Max(250m, Math.Round(variance * 0.02m, 2)),
             RequiredSignoffRole: "Operations reviewer",
             SignoffStatus: "pending-signoff");
+    }
+
+    private static async Task PublishProviderLedgerBreakQueueAsync(
+        IServiceProvider services,
+        ReconciliationRunDetail detail,
+        CancellationToken ct)
+    {
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        var readService = services.GetService<StrategyRunReadService>();
+        if (repository is null || readService is null)
+        {
+            return;
+        }
+
+        var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+        var run = runs.FirstOrDefault(candidate =>
+            string.Equals(candidate.RunId, detail.Summary.RunId, StringComparison.OrdinalIgnoreCase));
+        if (run is null)
+        {
+            return;
+        }
+
+        await SeedBreakQueueAsync(repository, [run], [detail], ct).ConfigureAwait(false);
+    }
+
+    private static async Task PublishStatementBreakQueueAsync(
+        IServiceProvider services,
+        IReconciliationApiService statementService,
+        CancellationToken ct)
+    {
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        if (repository is null)
+        {
+            return;
+        }
+
+        var statementBreaks = await statementService.ListOpenStatementBreaksAsync(ct).ConfigureAwait(false);
+        await SeedStatementBreakQueueAsync(repository, statementBreaks, ct).ConfigureAwait(false);
     }
 
     private static async Task EnsureBreakQueueSeededAsync(IServiceProvider services, CancellationToken ct)

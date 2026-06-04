@@ -2,7 +2,7 @@
 
 **Status:** draft
 **Owner:** core-team
-**Last updated:** 2026-06-01
+**Reviewed:** 2026-06-04
 
 ## Purpose
 
@@ -46,28 +46,23 @@ flowchart TD
 ## Refinement Opportunities
 
 1. Deterministic lane classifier
-- Add a small `prompt-route-linter` script that maps prompt intent to lane + skill + minimum validation floor.
-- Output a machine-readable preflight (JSON) for consistency across Codex/Claude/Copilot.
+- Implemented via `prompt-route-linter.py`; keep route rules compact and reuse the emitted JSON instead of repeating prompt classification in each host.
 
 2. Skill trigger confidence scoring
 - Add `confidence` and `fallback_skill` metadata to skill manifests.
 - If confidence is below threshold, force `meridian-repo-navigation` before specialist routing.
 
 3. Handoff packet auto-generation
-- Generate handoff packets directly from changed files + executed commands + pass/fail outcomes.
-- Reduce token cost and remove format drift between lanes.
+- Implemented via `handoff-packet-generator.py`; keep packet inputs compact and prefer emitted artifacts over ad hoc natural-language handoffs.
 
 4. Validation floor enforcement
-- Introduce a lightweight guard script to prevent finalization when required validation for selected lane was skipped.
-- Example: docs lane requires `git diff --check`; AI lane requires inventory/skills checks.
+- Implemented via `check-validation-floor.py`; keep route metadata aligned so lane-specific proof requirements remain machine-checkable.
 
 5. Mode escalation policy as code
-- Encode escalation triggers (cross-lane edits, policy files touched, repeated validation failures) into a checker.
-- Auto-suggest `Standard` or `Deep Review` before risky implementation.
+- Implemented via `check-mode-escalation.py`; keep escalation triggers explicit in route rules instead of re-deriving them per host.
 
 6. Cross-host policy drift prevention
-- Extend existing contract-drift checks to assert parity for skill-routing semantics, not only policy JSON.
-- Catch host-specific routing divergence early.
+- Implemented via `check-ai-contract-drift.py` and `check-ai-routing-parity.py`; keep host docs and route semantics aligned through the shared validators.
 
 7. Evidence quality scoring
 - Add a post-run score for outputs: acceptance criteria coverage, validation completeness, risk specificity.
@@ -77,10 +72,12 @@ flowchart TD
 - Stamp generated AI docs/manifests with source inputs + command hash + timestamp.
 - Makes regeneration and audit trails immediate.
 
-## Suggested Minimal Pilot
+## Current Baseline
 
-1. Build `prompt-route-linter` with lane + validation-floor output.
-2. Build `handoff-packet-generator` from git diff + command log.
-3. Add one CI lane that fails on missing validation floor for AI/docs tasks.
+The current Codex routing baseline already includes:
 
-These three changes improve routing consistency, delegation clarity, and evidence quality with low implementation risk.
+1. `prompt-route-linter.py` for lane, mode, telemetry, and validation-floor preflight.
+2. `handoff-packet-generator.py` for compact route-aware handoff artifacts.
+3. `check-validation-floor.py`, `check-mode-escalation.py`, and `check-ai-routing-parity.py` for route/validation guardrails.
+
+Near-term follow-up should focus on higher-signal additions such as skill confidence metadata, evidence quality scoring, and generated-artifact provenance, not rebuilding the existing routing baseline.

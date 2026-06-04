@@ -1,5 +1,9 @@
 # Historical AI Instructions Sync Workflow
 
+**Status:** historical
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 This page preserves the behavior of the retired AI instructions sync workflow for traceability.
 It is not an active operating runbook.
 

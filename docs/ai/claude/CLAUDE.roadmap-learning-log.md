@@ -1,5 +1,9 @@
 # Roadmap Learning Log
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 Running log of roadmap items studied on the `claude/continue-roadmap-learning-*` branches. Each entry captures what was read, what the current code evidence actually says, and what the next learning session should pick up.
 
 Source-of-truth for active wave status is [`docs/roadmap/README.md`](../../roadmap/README.md) plus the generated roadmap register in [`docs/roadmap/generated/`](../../roadmap/generated/); this file only records what was learned at the time, not current planning commitments.

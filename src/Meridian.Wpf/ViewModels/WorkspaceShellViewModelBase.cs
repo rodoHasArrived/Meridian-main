@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Commands;
@@ -33,6 +34,7 @@ public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
 public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
     private const string MultiAssetCoverageRoute = UiApiRoutes.WorkstationPortfolioMultiAssetCoverage;
+    private const string AssetOperationsRoute = UiApiRoutes.WorkstationAssetOperations;
 
     public IReadOnlyList<WorkspaceQueueItem> CockpitDecisionItems { get; } =
     [
@@ -107,6 +109,19 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
             SecondaryActionId = "FundAuditTrail",
             SecondaryActionLabel = "Audit",
             AutomationName = "Portfolio multi-asset reconciliation coverage decision"
+        },
+        new()
+        {
+            Title = "Asset operations detail",
+            Detail = $"Drill into {nameof(AssetOperationsDetailDto.Subject)}, {nameof(AssetOperationsDetailDto.ProjectedCashFlows)}, {nameof(AssetOperationsDetailDto.ReconciliationResults)}, and {nameof(AssetOperationsDetailDto.LedgerProjections)} through {AssetOperationsRoute}.",
+            StatusLabel = "Security operations",
+            CountLabel = "Drill-in",
+            Tone = WorkspaceTone.Info,
+            PrimaryActionId = "FundPortfolio",
+            PrimaryActionLabel = "Open Portfolio",
+            SecondaryActionId = "FundAuditTrail",
+            SecondaryActionLabel = "Evidence",
+            AutomationName = "Portfolio asset operations detail decision"
         },
         new()
         {

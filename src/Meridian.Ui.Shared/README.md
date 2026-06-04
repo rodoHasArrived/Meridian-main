@@ -59,10 +59,12 @@ transfer gating server-owned so browser and WPF clients do not handle Plaid acce
 duplicate bank evidence ingestion rules.
 Accounting-system endpoints are also registered as a shared endpoint group from `UiApiRoutes`.
 `AccountingSystemIntegrationService` lists GL providers, previews the fixture QuickBooks import,
-retains the latest import in process, and compares external trial-balance evidence with Meridian
-ledger totals when the ledger store is available. Posting/export remains disabled in the shared
-service until an adapter capability explicitly supports it, so browser and WPF clients inherit the
-same read-only reconciliation posture.
+retains the latest import in process, and compares external trial-balance evidence against
+Meridian-owned ledger truth when the ledger store is available. Meridian remains the source of all
+ledger truth; external GL imports are evidence and reconciliation inputs, not override authority.
+Posting/export remains disabled in the shared service until an adapter capability explicitly
+supports publishing Meridian-owned ledger entries, so browser and WPF clients inherit the same
+read-only reconciliation posture.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
@@ -264,8 +266,10 @@ projection. It joins Security Master validation/profile posture, required provid
 ledger classification, reconciliation evidence categories, and close-readiness blockers into a
 single read model for browser and WPF clients. Coverage rows include contract-owned drill-through
 targets for Security Master passport/profile, provider evidence, reconciliation break/case, ledger
-mapping/evidence, and close readiness so clients can navigate without maintaining local routing
-rules. Missing retained provider inputs remain review-required or blocked rows; clients must not
+mapping/evidence, Asset Operations detail, and close readiness so clients can navigate without
+maintaining local routing rules. `/api/workstation/assets/{securityId}/operations` returns the
+shared Security Master-keyed operations detail for loans, bonds, and later asset classes instead of
+surface-specific read models. Missing retained provider inputs remain review-required or blocked rows; clients must not
 mark asset classes ready with UI-local checks. The shared read model treats private-credit
 commitments, unfunded commitments, paydowns, covenant notices, and obligation schedules as
 `DirectLoan` provider evidence. Governed structured/private assets remain profile-backed
@@ -426,6 +430,12 @@ open-break count, and signoff posture server-derived for browser and WPF account
 `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` aggregate those
 closed-period summaries across a selected book, fund, node, accounting basis, and date range for
 regulatory, investor, and internal reporting surfaces.
+Manual journal entry workbench routes under `/api/ledger/journal-entry-workbench*` persist draft
+and submitted approval records under the resolved workstation data root. The shared service
+validates GL account, balance, currency, Security Master, typed evidence attachments, and version
+state before save or approval submission. Draft save remains permissive for in-progress work, but
+approval submission requires retained source evidence so browser and WPF clients do not present
+process-local accounting work as durable ledger evidence.
 Closed Operations Continuity workflow detail payloads include the governed close-package
 publication manifest metadata produced by the close command: signer, sign-off rationale, retained
 manifest id/route, evidence hash, report pack id, linked evidence, and checklist approvals.

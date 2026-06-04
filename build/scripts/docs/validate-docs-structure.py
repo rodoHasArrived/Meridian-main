@@ -17,6 +17,7 @@ Usage:
     python3 validate-docs-structure.py
     python3 validate-docs-structure.py --docs-dir /path/to/docs
     python3 validate-docs-structure.py --strict   # treat warnings as errors
+    python3 validate-docs-structure.py --top-level ai --summary
 """
 
 import argparse
@@ -90,6 +91,15 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--docs-dir", default="docs", help="Path to docs directory (default: docs)")
     p.add_argument("--summary", action="store_true", help="Accepted for compatibility; output is already summarized")
     p.add_argument("--strict", action="store_true", help="Treat warnings as errors")
+    p.add_argument(
+        "--top-level",
+        action="append",
+        default=[],
+        help=(
+            "Limit lifecycle front-matter checks to one or more top-level docs folders "
+            "(for example: --top-level ai). In scoped mode, global taxonomy checks are skipped."
+        ),
+    )
     p.add_argument("--github-actions", action="store_true",
                    help="Emit GitHub Actions annotation format")
     return p.parse_args()
@@ -192,6 +202,8 @@ def check_front_matter(docs_dir: Path, github_actions: bool, strict: bool) -> li
         for md_file in sorted(subdir.rglob("*.md")):
             if md_file.name.lower() in {r.lower() for r in README_EXEMPT_FILES}:
                 continue
+            if any(part in GENERATED_DIRS for part in md_file.relative_to(docs_dir).parts):
+                continue
 
             content = md_file.read_text(encoding="utf-8", errors="replace")
             rel = md_file.relative_to(docs_dir.parent)
@@ -218,6 +230,72 @@ def check_front_matter(docs_dir: Path, github_actions: bool, strict: bool) -> li
     return issues
 
 
+def resolve_top_level_scope(docs_dir: Path, names: list[str], github_actions: bool) -> tuple[list[Path], list[str]]:
+    """Resolve requested top-level folders for scoped front-matter checks."""
+    errors: list[str] = []
+    scoped_dirs: list[Path] = []
+    seen: set[str] = set()
+
+    for raw_name in names:
+        name = raw_name.strip().strip("/\\")
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        scope_dir = docs_dir / name
+        if not scope_dir.is_dir():
+            msg = f"Requested top-level docs folder docs/{name}/ does not exist."
+            emit("error", str(scope_dir), msg, github_actions)
+            errors.append(msg)
+            continue
+        scoped_dirs.append(scope_dir)
+
+    return scoped_dirs, errors
+
+
+def check_front_matter_in_dirs(
+    docs_dir: Path,
+    markdown_dirs: list[Path],
+    github_actions: bool,
+    strict: bool,
+) -> list[str]:
+    """
+    Check that hand-authored markdown files in the provided directories have lifecycle front matter.
+    Returns list of warning/error messages.
+    """
+    issues = []
+    today = date.today()
+
+    for subdir in sorted(markdown_dirs):
+        for md_file in sorted(subdir.rglob("*.md")):
+            if md_file.name.lower() in {r.lower() for r in README_EXEMPT_FILES}:
+                continue
+            if any(part in GENERATED_DIRS for part in md_file.relative_to(docs_dir).parts):
+                continue
+
+            content = md_file.read_text(encoding="utf-8", errors="replace")
+            rel = md_file.relative_to(docs_dir.parent)
+
+            for field in ENCOURAGED_FIELDS:
+                value = extract_field(content, field)
+                if value is None:
+                    msg = f"Missing front-matter field '**{field}:**' in {rel}"
+                    emit("warning", str(rel), msg, github_actions)
+                    issues.append(msg)
+                elif field == "Reviewed":
+                    try:
+                        reviewed_date = datetime.strptime(value, "%Y-%m-%d").date()
+                        age = (today - reviewed_date).days
+                        if age > STALE_DAYS:
+                            msg = (f"Stale document in {rel}: "
+                                   f"'Reviewed: {value}' is {age} days old (threshold: {STALE_DAYS})")
+                            emit("warning", str(rel), msg, github_actions)
+                            issues.append(msg)
+                    except ValueError:
+                        pass
+
+    return issues
+
+
 def main() -> int:
     args = parse_args()
     docs_dir = Path(args.docs_dir)
@@ -229,38 +307,62 @@ def main() -> int:
     print(f"Validating docs structure in: {docs_dir.resolve()}")
     print()
 
-    # ── Check 1: README presence ──────────────────────────────────────────
-    print("Check 1: README.md present in every top-level subdirectory")
-    readme_errors = check_readme_exists(docs_dir, args.github_actions)
-    if not readme_errors:
-        print("  OK All subdirectories have README.md")
-    print()
+    scoped_dirs: list[Path] = []
+    scope_errors: list[str] = []
+    if args.top_level:
+        scoped_dirs, scope_errors = resolve_top_level_scope(docs_dir, args.top_level, args.github_actions)
+        scope_labels = ", ".join(path.name for path in scoped_dirs) if scoped_dirs else ", ".join(args.top_level)
+        print(f"Scoped lifecycle validation for: {scope_labels}")
+        print()
 
-    # ── Check 1b: Canonical rebuild model ────────────────────────────────
-    print("Check 1b: Canonical documentation rebuild folders are present")
-    canonical_warnings = check_canonical_model(docs_dir, args.github_actions)
-    if not canonical_warnings:
-        print("  OK Canonical rebuild folders are present")
-    else:
-        print(f"  Found {len(canonical_warnings)} canonical-model warning(s) — see above for details.")
-    print()
+    readme_errors: list[str] = []
+    canonical_warnings: list[str] = []
+    top_level_errors: list[str] = []
+    top_level_warnings: list[str] = []
 
-    # ── Check 1c: Top-level taxonomy guard ───────────────────────────────
-    print("Check 1c: Top-level docs folders match the rebuild model")
-    top_level_errors, top_level_warnings = check_top_level_model(docs_dir, args.github_actions)
-    if not top_level_errors and not top_level_warnings:
-        print("  OK Top-level docs folders are canonical")
+    if args.top_level:
+        if scope_errors:
+            print(f"  Found {len(scope_errors)} scope error(s) — see above for details.")
+            print()
+        else:
+            print("Scoped mode skips global top-level README and taxonomy checks.")
+            print()
     else:
-        print(
-            f"  Found {len(top_level_errors)} top-level folder error(s), "
-            f"{len(top_level_warnings)} migration warning(s) — see above for details."
-        )
-    print()
+        # ── Check 1: README presence ──────────────────────────────────────────
+        print("Check 1: README.md present in every top-level subdirectory")
+        readme_errors = check_readme_exists(docs_dir, args.github_actions)
+        if not readme_errors:
+            print("  OK All subdirectories have README.md")
+        print()
+
+        # ── Check 1b: Canonical rebuild model ────────────────────────────────
+        print("Check 1b: Canonical documentation rebuild folders are present")
+        canonical_warnings = check_canonical_model(docs_dir, args.github_actions)
+        if not canonical_warnings:
+            print("  OK Canonical rebuild folders are present")
+        else:
+            print(f"  Found {len(canonical_warnings)} canonical-model warning(s) — see above for details.")
+        print()
+
+        # ── Check 1c: Top-level taxonomy guard ───────────────────────────────
+        print("Check 1c: Top-level docs folders match the rebuild model")
+        top_level_errors, top_level_warnings = check_top_level_model(docs_dir, args.github_actions)
+        if not top_level_errors and not top_level_warnings:
+            print("  OK Top-level docs folders are canonical")
+        else:
+            print(
+                f"  Found {len(top_level_errors)} top-level folder error(s), "
+                f"{len(top_level_warnings)} migration warning(s) — see above for details."
+            )
+        print()
 
     # ── Check 2: Front-matter lifecycle fields ────────────────────────────
     print("Check 2: Lifecycle front-matter fields (Status, Owner, Reviewed)")
     print("         Note: These are encouraged, not required — warnings only.")
-    fm_issues = check_front_matter(docs_dir, args.github_actions, args.strict)
+    if args.top_level:
+        fm_issues = check_front_matter_in_dirs(docs_dir, scoped_dirs, args.github_actions, args.strict)
+    else:
+        fm_issues = check_front_matter(docs_dir, args.github_actions, args.strict)
     if not fm_issues:
         print("  OK All checked files have lifecycle front matter")
     else:
@@ -268,7 +370,7 @@ def main() -> int:
     print()
 
     # ── Summary ───────────────────────────────────────────────────────────
-    has_errors = bool(readme_errors or top_level_errors)
+    has_errors = bool(readme_errors or top_level_errors or scope_errors)
     has_warnings = bool(fm_issues or canonical_warnings or top_level_warnings)
 
     if args.strict and has_warnings:
@@ -276,7 +378,7 @@ def main() -> int:
 
     if has_errors:
         print(
-            f"FAILED: {len(readme_errors) + len(top_level_errors)} error(s), "
+            f"FAILED: {len(readme_errors) + len(top_level_errors) + len(scope_errors)} error(s), "
             f"{len(fm_issues) + len(canonical_warnings) + len(top_level_warnings)} warning(s)"
         )
         return 1

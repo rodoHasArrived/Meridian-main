@@ -895,6 +895,12 @@ public sealed class PostgresFundStructureService : IFundStructureService
         ArgumentNullException.ThrowIfNull(query);
         ct.ThrowIfCancellationRequested();
 
+        _policy.ValidateCashFlowQuery(query);
+        if (!await CashFlowScopeTargetExistsAsync(query, ct).ConfigureAwait(false))
+        {
+            return null;
+        }
+
         var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
         var projector = new InMemoryFundStructureService(
             _fundAccountService,
@@ -914,6 +920,28 @@ public sealed class PostgresFundStructureService : IFundStructureService
             snap.LinkedAccountIds.ToList());
 
         return await projector.GetCashFlowViewAsync(query, ct).ConfigureAwait(false);
+    }
+
+    private async Task<bool> CashFlowScopeTargetExistsAsync(GovernanceCashFlowQuery query, CancellationToken ct)
+    {
+        return query.ScopeKind switch
+        {
+            GovernanceCashFlowScopeKindDto.Organization when query.OrganizationId.HasValue
+                => await _store.GetOrganizationAsync(query.OrganizationId.Value, ct).ConfigureAwait(false) is not null,
+            GovernanceCashFlowScopeKindDto.Business when query.BusinessId.HasValue
+                => await _store.GetBusinessAsync(query.BusinessId.Value, ct).ConfigureAwait(false) is not null,
+            GovernanceCashFlowScopeKindDto.Client when query.ClientId.HasValue
+                => await _store.GetClientAsync(query.ClientId.Value, ct).ConfigureAwait(false) is not null,
+            GovernanceCashFlowScopeKindDto.Fund when query.FundId.HasValue
+                => await _store.GetFundAsync(query.FundId.Value, ct).ConfigureAwait(false) is not null,
+            GovernanceCashFlowScopeKindDto.Sleeve when query.SleeveId.HasValue
+                => await _store.GetSleeveAsync(query.SleeveId.Value, ct).ConfigureAwait(false) is not null,
+            GovernanceCashFlowScopeKindDto.Vehicle when query.VehicleId.HasValue
+                => await _store.GetVehicleAsync(query.VehicleId.Value, ct).ConfigureAwait(false) is not null,
+            GovernanceCashFlowScopeKindDto.InvestmentPortfolio when query.InvestmentPortfolioId.HasValue
+                => await _store.GetInvestmentPortfolioAsync(query.InvestmentPortfolioId.Value, ct).ConfigureAwait(false) is not null,
+            _ => true
+        };
     }
 
     // ── Snapshot helpers ──────────────────────────────────────────────────────

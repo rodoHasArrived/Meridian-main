@@ -116,6 +116,12 @@ and UI presentation concerns in their owning layers.
   profile-backed `CustomAsset` rows, where servicer/trustee reports, warehouse tapes, NAV, capital
   calls, distributions, obligation schedules, and valuation approvals are treated as retained
   provider evidence before close readiness can become complete.
+- `AssetOperations/` - Security Master-keyed asset operations read/projection services. Published
+  projections from the dedicated Asset Operations store take precedence, while bonds can derive a
+  first read-through detail from fixed-income Security Master reference data. Direct Lending
+  projections are adapted into the shared terms, lifecycle, cash-flow, activity, reconciliation,
+  ledger, evidence, workflow-audit, and readiness model through the shared builder instead of
+  moving loan servicing or command tables into Security Master.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. The PostgreSQL-backed service now supports the same shared
   governance cash-flow projection path as the local JSON/in-memory service, using stored

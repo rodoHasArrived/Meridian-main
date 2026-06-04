@@ -1,5 +1,9 @@
 # CLAUDE.storage.md - Storage System Guide
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 This document provides guidance for AI assistants working with the storage system in Meridian.
 
 ---

@@ -521,6 +521,34 @@ public static class DirectLendingEndpoints
         .AddEndpointFilter(requireManageDirectLending)
         .RequirePermission(UserPermission.ManageDirectLending);
 
+        group.MapPost("/{loanId:guid}/prepayment-penalty", async (Guid loanId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            if (!TryBindCommand<ChargePrepaymentPenaltyRequest>(body, jsonOptions, context, out var request, out var metadata, out var error))
+            {
+                return Results.Problem(error, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var servicing = await service.ChargePrepaymentPenaltyAsync(loanId, request!, metadata, context.RequestAborted).ConfigureAwait(false);
+                return servicing is null ? Results.NotFound() : Results.Json(servicing, jsonOptions);
+            }
+            catch (DirectLendingCommandException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .Produces<LoanServicingStateDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .AddEndpointFilter(requireManageDirectLending)
+        .RequirePermission(UserPermission.ManageDirectLending);
+
         group.MapPost("/{loanId:guid}/projections", async (Guid loanId, JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);

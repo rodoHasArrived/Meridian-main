@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text.RegularExpressions;
+using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Copy;
 
 namespace Meridian.Wpf.Tests.Copy;
@@ -53,6 +54,25 @@ public sealed class WorkspaceCopyCatalogTests
         typeof(WorkspaceCopyCatalog.Research).ShouldBeHiddenCompatibilityAlias();
         typeof(WorkspaceCopyCatalog.DataOperations).ShouldBeHiddenCompatibilityAlias();
         typeof(WorkspaceCopyCatalog.Governance).ShouldBeHiddenCompatibilityAlias();
+    }
+
+    [Fact]
+    public void VisibleWorkspaceDescriptors_ShouldFollowSharedWorkspaceCatalogOrderAndLabels()
+    {
+        var descriptors = new[]
+        {
+            WorkspaceCopyCatalog.Trading.Descriptor,
+            WorkspaceCopyCatalog.Portfolio.Descriptor,
+            WorkspaceCopyCatalog.Accounting.Descriptor,
+            WorkspaceCopyCatalog.Reporting.Descriptor,
+            WorkspaceCopyCatalog.Strategy.Descriptor,
+            WorkspaceCopyCatalog.Data.Descriptor,
+            WorkspaceCopyCatalog.Settings.Descriptor
+        };
+
+        descriptors.Select(descriptor => (descriptor.Id, descriptor.Title))
+            .Should()
+            .Equal(WorkstationWorkspaceCatalog.RootWorkspaces.Select(workspace => (workspace.Key, workspace.Label)));
     }
 }
 

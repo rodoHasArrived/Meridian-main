@@ -1,12 +1,12 @@
 # Ledger Architecture
 
-Meridian uses a **double-entry accounting ledger** to provide an independent, auditable record of all financial movements produced by backtesting runs and live strategy execution. This document explains the layered design, key types, and the relationship between the C# engine and the F# validation/reconciliation layer.
+Meridian uses a **double-entry accounting ledger** to provide the source of all ledger truth and an independent, auditable record of financial movements produced by backtesting runs, fund-operations workflows, and live strategy execution. This document explains the layered design, key types, and the relationship between the C# engine and the F# validation/reconciliation layer.
 
 ---
 
 ## Why a ledger?
 
-The portfolio state produced by `SimulatedPortfolio` and `PaperTradingPortfolio` answers the question *"what do we hold right now?"*. The ledger answers the complementary question *"how did we get here, and does the accounting add up?"*
+The portfolio state produced by `SimulatedPortfolio` and `PaperTradingPortfolio` answers the question *"what do we hold right now?"*. The Meridian ledger answers the complementary question *"how did we get here, and does the accounting add up?"* External GL imports are reconciliation evidence against this ledger truth, not the authority that overwrites it.
 
 Every fill, commission, interest accrual, dividend, and corporate-action adjustment is recorded as a balanced journal entry (debits = credits). This means:
 

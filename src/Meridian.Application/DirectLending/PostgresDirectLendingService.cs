@@ -141,29 +141,31 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
     public Task<LoanPortfolioSummaryDto> GetPortfolioSummaryAsync(CancellationToken ct = default)
         => _queryService.GetPortfolioSummaryAsync(ct);
 
-    // Collateral management — not yet persisted in Postgres; use in-memory fallback
-    public Task<LoanServicingStateDto?> AddCollateralAsync(Guid loanId, AddCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
-        => Task.FromResult<LoanServicingStateDto?>(null);
+    public async Task<LoanServicingStateDto?> AddCollateralAsync(Guid loanId, AddCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.AddCollateralAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
-    public Task<LoanServicingStateDto?> RemoveCollateralAsync(Guid loanId, RemoveCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
-        => Task.FromResult<LoanServicingStateDto?>(null);
+    public async Task<LoanServicingStateDto?> RemoveCollateralAsync(Guid loanId, RemoveCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.RemoveCollateralAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
-    public Task<LoanServicingStateDto?> UpdateCollateralValueAsync(Guid loanId, UpdateCollateralValueRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
-        => Task.FromResult<LoanServicingStateDto?>(null);
+    public async Task<LoanServicingStateDto?> UpdateCollateralValueAsync(Guid loanId, UpdateCollateralValueRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.UpdateCollateralValueAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
-    public Task<IReadOnlyList<CollateralDto>> GetCollateralAsync(Guid loanId, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<CollateralDto>>(Array.Empty<CollateralDto>());
+    public async Task<IReadOnlyList<CollateralDto>> GetCollateralAsync(Guid loanId, CancellationToken ct = default)
+    {
+        var servicing = await _queryService.GetServicingStateAsync(loanId, ct).ConfigureAwait(false);
+        return servicing?.Collateral ?? [];
+    }
 
-    public Task<LoanServicingStateDto?> TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
-        => Task.FromResult<LoanServicingStateDto?>(null);
+    public async Task<LoanServicingStateDto?> TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.TransitionLoanStatusAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
-    public Task<LoanServicingStateDto?> TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
-        => Task.FromResult<LoanServicingStateDto?>(null);
+    public async Task<LoanServicingStateDto?> TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.TogglePikAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
-    public Task<LoanContractDetailDto?> RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
-        => Task.FromResult<LoanContractDetailDto?>(null);
+    public async Task<LoanContractDetailDto?> RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.RestructureLoanAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
-    public Task<LoanServicingStateDto?> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
-        => Task.FromResult<LoanServicingStateDto?>(null);
+    public async Task<LoanServicingStateDto?> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.AmortizeDiscountPremiumAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 }
 

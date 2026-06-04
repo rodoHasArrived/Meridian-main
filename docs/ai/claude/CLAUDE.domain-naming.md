@@ -1,5 +1,9 @@
 # CLAUDE.domain-naming.md — Meridian Domain Naming Standard
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 > **Scope:** All F# and C# code in `Meridian.FSharp`, `Meridian.Contracts`, `Meridian.Application`,
 > and any layer that models financial instruments, security master, reference data, or market
 > structure entities.

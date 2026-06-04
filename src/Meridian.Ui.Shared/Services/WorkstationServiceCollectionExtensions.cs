@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.AssetOperations;
 using Meridian.Application.Auth;
 using Meridian.Application.Backtesting;
 using Meridian.Application.Compliance;
@@ -11,6 +12,8 @@ using Meridian.Application.UI;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Plaid;
@@ -20,6 +23,7 @@ using Meridian.Infrastructure.Adapters.QuickBooks;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage;
+using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Services;
 using Meridian.Strategies.Interfaces;
@@ -119,6 +123,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
+        services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
+        services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
         services.TryAddSingleton<ISecurityMasterOperationalReadinessService, SecurityMasterOperationalReadinessService>();
         services.TryAddSingleton<IMultiAssetCoverageReadService, MultiAssetCoverageReadService>();
         services.TryAddSingleton<LedgerReadService>();
@@ -238,6 +245,18 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ISecurityMasterAccountingEventService, SecurityMasterAccountingEventService>();
         services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
             new SecurityMasterAccountingEventSourceAdapter(sp.GetService<ContractSecurityMasterQueryService>()));
+        services.TryAddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
+        services.TryAddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
+            new FileManualJournalEntryDraftStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
+        services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
+            new ManualJournalEntryWorkbenchService(
+                sp.GetRequiredService<IManualJournalEntryDraftStore>(),
+                sp.GetRequiredService<IAccountingConfigurationService>(),
+                sp.GetRequiredService<IAccountingActionAuditStore>(),
+                sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();

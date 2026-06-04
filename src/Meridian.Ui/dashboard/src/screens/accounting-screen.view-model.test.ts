@@ -34,11 +34,13 @@ import {
   resolveSecurityScheduleEvents,
   resolveAccountingWorkstream,
   resolveSelectedReconciliation,
+  useManualJournalEntryWorkbenchViewModel,
   useAccountingReconciliationViewModel,
   useSecurityMasterViewModel
 } from "@/screens/accounting-screen.view-model";
 import type {
   AccountingReconciliationServices,
+  ManualJournalEntryWorkbenchServices,
   SecurityCashFlowScheduleEvent,
   SecurityMasterDrillInServices,
   SecurityMasterServices
@@ -49,6 +51,8 @@ import type {
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
+  ManualJournalEntryDraft,
+  ManualJournalEntryWorkbench,
   LedgerTrialBalanceLine,
   MultiAssetCoverageSummary,
   OperationsContinuityWorkflow,
@@ -519,7 +523,10 @@ const trialBalanceLines: LedgerTrialBalanceLine[] = [
     financialAccountId: "acct-cash",
     balance: 120500,
     entryCount: 12,
-    security: null
+    security: null,
+    sourceJournalEntryId: "je-cash-1",
+    sourceEventIds: ["evt-cash-1"],
+    approvalIds: ["approval-cash-1"]
   },
   {
     accountName: "Financing payable",
@@ -805,6 +812,58 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
   ]
 };
 
+const manualJournalDraft: ManualJournalEntryDraft = {
+  journalEntryId: "manual-je-1",
+  status: "Draft",
+  fundProfileId: "fund-alpha",
+  ledgerBookId: "book-alpha",
+  accountingBasis: "Primary",
+  accountingDate: "2026-06-30",
+  periodId: "2026-06",
+  entityId: "entity-master",
+  fundNodeId: "fund-alpha",
+  currency: "USD",
+  memo: "Manual close adjustment",
+  preparedBy: "browser-user",
+  createdAtUtc: "2026-06-30T00:00:00Z",
+  updatedAtUtc: "2026-06-30T00:00:00Z",
+  version: 1,
+  lines: [
+    { lineId: "line-debit", side: "Debit", amount: 100, currency: "USD", accountPath: "Assets:Cash", securityId: null, securityDisplayName: null, description: "Cash debit" },
+    { lineId: "line-credit", side: "Credit", amount: 100, currency: "USD", accountPath: "Income:Interest", securityId: null, securityDisplayName: null, description: "Interest income credit" }
+  ],
+  evidenceLinks: [],
+  evidenceAttachments: [],
+  validationIssues: [
+    {
+      code: "manual-je.account-missing",
+      severity: "Critical",
+      message: "GL account was not found.",
+      targetId: "line-debit",
+      suggestedAction: "Choose an active GL account."
+    }
+  ],
+  totalDebits: 100,
+  totalCredits: 100,
+  imbalance: 0,
+  approvalId: null,
+  submittedAtUtc: null,
+  submittedBy: null
+};
+
+const manualJournalWorkbench: ManualJournalEntryWorkbench = {
+  fundProfileId: "fund-alpha",
+  ledgerBookId: "book-alpha",
+  loadedAtUtc: "2026-06-30T00:00:00Z",
+  ledgerBooks: [],
+  chartOfAccounts: [
+    { nodeId: "cash", path: "Assets:Cash", accountName: "Cash", accountType: "Asset", isArchived: false },
+    { nodeId: "interest-income", path: "Income:Interest", accountName: "Interest Income", accountType: "Revenue", isArchived: false }
+  ],
+  drafts: [manualJournalDraft],
+  auditTrail: []
+};
+
 describe("accounting-screen view model", () => {
   it("derives the accounting workstream and selected reconciliation run", () => {
     expect(resolveAccountingWorkstream("/accounting/security-master")).toBe("security-master");
@@ -821,6 +880,55 @@ describe("accounting-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("builds manual journal line badges, Security Master picks, and evidence attachments", async () => {
+    const savedDraft = {
+      ...manualJournalDraft,
+      validationIssues: [],
+      evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/source-doc"],
+      evidenceAttachments: [{
+        attachmentId: "source-doc-1",
+        displayName: "Source support",
+        evidenceKind: "SourceDocument",
+        uri: "/api/workstation/evidence/subjects/accounting-record/source-doc",
+        sourceSystem: "EvidenceVault",
+        addedAtUtc: "2026-06-30T00:00:00Z",
+        addedBy: "browser-user",
+        lineId: "line-debit",
+        description: null
+      }]
+    } satisfies ManualJournalEntryDraft;
+    const services: ManualJournalEntryWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(manualJournalWorkbench),
+      searchSecurities: vi.fn().mockResolvedValue([securityResult]),
+      saveDraft: vi.fn().mockResolvedValue(savedDraft),
+      validateDraft: vi.fn().mockResolvedValue(savedDraft),
+      submitApproval: vi.fn().mockResolvedValue({ ...savedDraft, status: "Submitted" })
+    };
+
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.draft.journalEntryId).toBe("manual-je-1"));
+
+    expect(result.current.getLineBadges("line-debit").map((badge) => badge.label)).toContain("Blocked");
+
+    act(() => result.current.updateSecuritySearchQuery("AAPL"));
+    await act(async () => {
+      await result.current.searchSecurityMaster();
+    });
+    act(() => result.current.selectSecurity("line-debit", securityResult));
+    expect(result.current.draft.lines[0].securityDisplayName).toBe("Apple Inc.");
+    expect(result.current.getLineBadges("line-debit").map((badge) => badge.label)).toContain("Security");
+
+    act(() => result.current.updateAttachmentDraft({
+      displayName: "Source support",
+      uri: "/api/workstation/evidence/subjects/accounting-record/source-doc",
+      lineId: "line-debit"
+    }));
+    act(() => result.current.addAttachment());
+    expect(result.current.draft.evidenceAttachments).toHaveLength(1);
+    expect(result.current.draft.evidenceLinks).toContain("/api/workstation/evidence/subjects/accounting-record/source-doc");
+    expect(result.current.getLineBadges("line-debit").map((badge) => badge.label)).toContain("Evidence");
   });
 
   it("derives a blocked controller close command center from workflow and provider signals", () => {
@@ -1133,14 +1241,29 @@ describe("accounting-screen view model", () => {
       titleId: "accounting-workspace-loading-title",
       detailId: "accounting-workspace-loading-detail",
       title: "Loading Accounting",
-      detail: "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload."
+      detail: "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries from the workstation bootstrap payload.",
+      routeLabel: "/accounting/reconciliation",
+      workstreamLabel: "Reconciliation",
+      statusItemsLabel: "Accounting payloads loading"
     });
+    expect(buildAccountingLoadingViewState("/accounting/reconciliation").statusItems.map((item) => item.id)).toEqual([
+      "ledger-reconciliation",
+      "approvals-exceptions",
+      "security-reporting"
+    ]);
+    expect(buildAccountingLoadingViewState("/accounting/reconciliation").actions.map((action) => action.href)).toEqual([
+      "/accounting/operations-continuity",
+      "/accounting/entity-setup",
+      "/data/providers",
+      "/reporting/evidence"
+    ]);
 
     expect(buildAccountingLoadingViewState("/reporting")).toMatchObject({
       titleId: "reporting-workspace-loading-title",
       detailId: "reporting-workspace-loading-detail",
       title: "Loading Reporting",
-      detail: "Waiting for report-pack, governed export, and approval summaries from the workstation bootstrap payload."
+      detail: "Waiting for report-pack, governed export, and approval summaries from the workstation bootstrap payload.",
+      workstreamLabel: "Reporting"
     });
   });
 
@@ -1612,6 +1735,9 @@ describe("accounting-screen view model", () => {
       description: "Primary basis ledger balances for run-42 grouped by account type. Values are basis per configured policy until accountant review.",
       tableLabel: "Primary trial balance lines for run-42",
       selectedBasis: "Primary",
+      accountFilterLabel: "Filter by General Ledger account",
+      accountFilterValue: "",
+      filteredRowCountLabel: "2 GL account rows",
       state: "ready",
       hasRows: true,
       statusAnnouncement: "2 trial balance lines loaded for run-42."
@@ -1641,8 +1767,31 @@ describe("accounting-screen view model", () => {
       subtitle: "Asset · acct-cash",
       statusLabel: "Debit / asset",
       statusVariant: "success",
-      ariaLabel: "Trial-balance detail for Cash"
+      ariaLabel: "Trial-balance detail for Cash",
+      ledgerLinesTitle: "Ledger lines for selected account",
+      supportingDocumentsTitle: "Supporting documentation"
     });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Journal entries", value: "je-cash-1" },
+      { label: "Source events", value: "evt-cash-1" },
+      { label: "Approvals", value: "approval-cash-1" }
+    ]));
+    expect(state.selectedDetail?.ledgerLines).toEqual([
+      expect.objectContaining({
+        journalEntryId: "je-cash-1",
+        debitLabel: "$120,500",
+        creditLabel: "$0",
+        evidenceLabel: "Source evt-cash-1",
+        evidenceHref: "/accounting/audit?sourceEventId=evt-cash-1",
+        approvalHref: "/accounting/approvals?approvalId=approval-cash-1"
+      })
+    ]);
+    expect(state.selectedDetail?.supportingDocuments).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: "Run review packet", href: "/api/workstation/runs/run-42/review-packet" }),
+      expect.objectContaining({ label: "Source event evt-cash-1", href: "/accounting/audit?sourceEventId=evt-cash-1" }),
+      expect.objectContaining({ label: "Journal entry je-cash-1", href: "/accounting/ledger?journalEntryId=je-cash-1" }),
+      expect.objectContaining({ label: "Approval approval-cash-1", href: "/accounting/approvals?approvalId=approval-cash-1" })
+    ]));
     expect(state.rows[1]).toMatchObject({
       balanceLabel: "-$500",
       balanceTone: "danger",
@@ -1661,6 +1810,45 @@ describe("accounting-screen view model", () => {
       statusLabel: "Credit / payable",
       statusVariant: "danger"
     });
+    expect(selectedFinancing.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Journal entries", value: "No journal entry references linked" },
+      { label: "Source events", value: "No source events linked" },
+      { label: "Approvals", value: "No approvals linked" }
+    ]));
+    expect(selectedFinancing.selectedDetail?.ledgerLines).toEqual([]);
+    expect(selectedFinancing.selectedDetail?.ledgerLinesEmptyText).toBe("No ledger line support is attached to this account row yet.");
+  });
+
+  it("filters ledger account inquiry rows by General Ledger account text", () => {
+    const state = buildAccountingTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      accountFilter: "financing",
+      loading: false,
+      error: null
+    });
+
+    expect(state.accountFilterValue).toBe("financing");
+    expect(state.filteredRowCountLabel).toBe("1 of 2 GL account rows");
+    expect(state.rows).toHaveLength(1);
+    expect(state.rows[0]).toMatchObject({
+      accountLabel: "Financing payable",
+      rowId: "Primary-Financing payable-Liability-acct-financing",
+      isExpanded: true
+    });
+    expect(state.selectedDetail?.title).toBe("Financing payable");
+
+    const empty = buildAccountingTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      accountFilter: "management fee",
+      loading: false,
+      error: null
+    });
+
+    expect(empty.rows).toHaveLength(0);
+    expect(empty.hasRows).toBe(false);
+    expect(empty.emptyDetail).toContain("No Primary ledger accounts match \"management fee\"");
   });
 
   it("adds source-event and approval drill-through details to legacy and array trial-balance selections", () => {

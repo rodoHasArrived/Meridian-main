@@ -30,6 +30,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
         services.TryAddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        services.TryAddSingleton<IManualJournalEntryDraftStore, InMemoryManualJournalEntryDraftStore>();
+        services.TryAddSingleton<IManualJournalEntryWorkbenchService, ManualJournalEntryWorkbenchService>();
         services.AddTransient<AccountingCloseViewModel>();
     }
 

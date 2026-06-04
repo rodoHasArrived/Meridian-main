@@ -109,7 +109,7 @@ Use this lane-specific order for AI-lane or cross-lane work:
 1. If the task touches navigation or agent inventories:
    - `python build/scripts/docs/check-ai-inventory.py --summary`
    - `python build/scripts/docs/check-codex-skills.py --summary`
-   - `python build/scripts/docs/validate-docs-structure.py --summary` (to catch folder drift)
+   - `python build/scripts/docs/validate-docs-structure.py --top-level ai --summary` (for narrow AI-doc lifecycle/structure checks)
 2. If task changes any AI mirror policy or shared contract files:
    - `python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json`
 3. If task changes handoff, parallel-lane, or work-mode guidance:
@@ -227,7 +227,7 @@ Use this matrix to satisfy rebuild acceptance criteria for AI-lane updates:
 | AI inventory consistency | Run `python build/scripts/docs/check-ai-inventory.py --summary` and `python build/scripts/docs/check-codex-skills.py --summary` whenever any AI entrypoint, host shim, agent index, or tool mapping changes. |
 | Contract drift control | Run `python build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json` when shared policy or host mirrors are edited. |
 | Codex route and handoff guardrails | Run `prompt-route-linter.py`, `handoff-packet-generator.py`, `check-handoff-packet-schema.py`, `check-validation-floor.py`, `check-mode-escalation.py`, and `check-ai-routing-parity.py` when Codex routing, handoff, or validation-floor behavior changes. |
-| Link and structure hygiene | Run `python build/scripts/docs/repair-links.py --summary` and `python build/scripts/docs/validate-docs-structure.py --summary` for any docs surface edit. |
+| Link and structure hygiene | Run `python build/scripts/docs/repair-links.py --summary` and `python build/scripts/docs/validate-docs-structure.py --top-level ai --summary` for AI-doc edits; use the repo-wide validator only when global docs taxonomy changes are in scope. |
 | Archive migration audit | Update migration mapping entries in relevant canonical `docs/*/README.md` files and archive indexes when retiring high-traffic legacy paths. |
 
 Use this section for rebuild planning: every AI request that changes docs or agent behavior must explicitly classify scope as canonical, source-material, generated, or archive and align to this contract.

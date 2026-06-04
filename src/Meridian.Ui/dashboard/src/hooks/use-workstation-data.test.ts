@@ -13,6 +13,7 @@ import type {
   ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderReadinessSummary,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
@@ -31,6 +32,7 @@ vi.mock("@/lib/api", () => ({
   getAccountingWorkspace: vi.fn(),
   getAlpacaConnectionStatus: vi.fn(),
   getProviderConnections: vi.fn(),
+  getProviderReadiness: vi.fn(),
   getProviderRoutingBindings: vi.fn(),
   getProviderRoutingConnections: vi.fn(),
   getProviderRoutingTrustSnapshots: vi.fn(),
@@ -69,6 +71,7 @@ const requests: Record<string, Deferred<unknown>[]> = {
   portfolio: [],
   portfolioMultiAssetCoverage: [],
   providerConnections: [],
+  providerReadiness: [],
   providerRoutingBindings: [],
   providerRoutingConnections: [],
   providerRoutingTrustSnapshots: [],
@@ -103,6 +106,7 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getReportingWorkspace).mockImplementation(() => track<ReportingWorkspaceResponse>("reporting"));
     vi.mocked(api.getAlpacaConnectionStatus).mockImplementation(() => track<BrokerageConnectionStatus>("brokerageConnection"));
     vi.mocked(api.getProviderConnections).mockImplementation(() => track<ProviderConnectionRow[]>("providerConnections"));
+    vi.mocked(api.getProviderReadiness).mockImplementation(() => track<ProviderReadinessSummary>("providerReadiness"));
     vi.mocked(api.getProviderRoutingConnections).mockImplementation(() => track<ProviderRoutingConnection[]>("providerRoutingConnections"));
     vi.mocked(api.getProviderRoutingBindings).mockImplementation(() => track<ProviderRoutingBinding[]>("providerRoutingBindings"));
     vi.mocked(api.getProviderRoutingTrustSnapshots).mockImplementation(() => track<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots"));
@@ -213,6 +217,7 @@ describe("useWorkstationData", () => {
       resolveRequest<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
       resolveRequest<BrokerageConnectionStatus>("brokerageConnection", 0, { marker: "brokerage" } as unknown as BrokerageConnectionStatus);
       resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("session-expired"));
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
       resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
       resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
@@ -310,6 +315,7 @@ describe("useWorkstationData", () => {
 
     await act(async () => {
       resolveRequest<ProviderConnectionRow[]>("providerConnections", 1, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", 1, buildProviderReadiness("routing-refresh"));
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 1, [
         {
           connectionId: "provider-alpaca-paper",
@@ -379,6 +385,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(2));
     await act(async () => {
       resolveRequest<ProviderConnectionRow[]>("providerConnections", 1, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", 1, buildProviderReadiness("routing-success"));
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 1, [
         {
           connectionId: "provider-polygon",
@@ -408,6 +415,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(3));
     await act(async () => {
       rejectRequest("providerConnections", 2, new Error("Provider connections timed out."));
+      rejectRequest("providerReadiness", 2, new Error("Provider readiness timed out."));
       rejectRequest("providerRoutingConnections", 2, new Error("Routing connections timed out."));
       rejectRequest("providerRoutingBindings", 2, new Error("Routing bindings timed out."));
       rejectRequest("providerRoutingTrustSnapshots", 2, new Error("Trust snapshots timed out."));
@@ -516,6 +524,7 @@ describe("useWorkstationData", () => {
       resolveRequest<ReportingWorkspaceResponse>("reporting", 0, { marker: "reporting" } as unknown as ReportingWorkspaceResponse);
       rejectRequest("brokerageConnection", 0, new Error("Alpaca connection status failed."));
       resolveRequest<ProviderConnectionRow[]>("providerConnections", 0, []);
+      resolveRequest<ProviderReadinessSummary>("providerReadiness", 0, buildProviderReadiness("partial-failure"));
       resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", 0, []);
       resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", 0, []);
       resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", 0, []);
@@ -714,6 +723,7 @@ function resolveRefreshBatchWithIndexes({
   resolveRequest<ReportingWorkspaceResponse>("reporting", defaultIndex, { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);
   resolveRequest<BrokerageConnectionStatus>("brokerageConnection", defaultIndex, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
   resolveRequest<ProviderConnectionRow[]>("providerConnections", defaultIndex, []);
+  resolveRequest<ProviderReadinessSummary>("providerReadiness", defaultIndex, buildProviderReadiness(marker));
   resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", defaultIndex, []);
   resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", defaultIndex, []);
   resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", defaultIndex, []);
@@ -741,6 +751,21 @@ function rejectRequest(key: keyof typeof requests, index: number, reason: unknow
   }
 
   request.reject(reason);
+}
+
+function buildProviderReadiness(marker: string): ProviderReadinessSummary {
+  return {
+    asOf: "2026-01-01T00:00:00Z",
+    status: "Ready",
+    totalProviders: 0,
+    readyProviders: 0,
+    reviewProviders: 0,
+    degradedProviders: 0,
+    blockedProviders: 0,
+    summary: `${marker} provider readiness`,
+    recommendedAction: "No provider action required.",
+    providers: []
+  };
 }
 
 async function flushAsync() {

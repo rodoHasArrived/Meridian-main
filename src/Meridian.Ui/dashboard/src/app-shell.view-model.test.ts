@@ -127,6 +127,23 @@ describe("app shell view model", () => {
     });
   });
 
+  it("lets Accounting render a route-level loading workspace during bootstrap", () => {
+    const state = buildAppShellViewState({
+      pathname: "/accounting",
+      loading: true,
+      error: null,
+      workspaceErrors: {},
+      payload: emptyPayload
+    });
+
+    expect(state.activeWorkspace.label).toBe("Accounting");
+    expect(state.canRenderRoutes).toBe(true);
+    expect(state.statusPanel).toMatchObject({
+      id: "workstation-shell-status-loading",
+      tone: "loading"
+    });
+  });
+
   it("builds a shell trust strip from session, fixture, and provider posture", () => {
     const state = buildAppShellViewState({
       pathname: "/data/providers",

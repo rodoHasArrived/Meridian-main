@@ -1,5 +1,9 @@
 # CLAUDE.testing.md - Testing Guide
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 This document provides guidance for AI assistants working with tests in Meridian.
 
 ---

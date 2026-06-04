@@ -1,5 +1,9 @@
 # Codex Route Cards
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 Use these cards after the generated repo-navigation map identifies a subsystem. They are a compact
 Codex-facing view of owner projects, first docs, likely entrypoints, and validation lanes.
 

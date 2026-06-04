@@ -1,49 +1,12 @@
 import type { LegacyWorkspaceKey, WorkspaceKey, WorkspaceSummary } from "@/types";
+import { WORKSPACE_DEFINITIONS } from "./workspace-catalog.generated";
 
-export const WORKSPACES: WorkspaceSummary[] = [
-  {
-    key: "trading",
-    label: "Trading",
-    description: "Paper cockpit readiness, sessions, orders, positions, replay, and promotion evidence.",
-    status: "Review"
-  },
-  {
-    key: "portfolio",
-    label: "Portfolio",
-    description: "Portfolio exposure, positions, attribution, fills, and run-level equity continuity.",
-    status: "Preview"
-  },
-  {
-    key: "accounting",
-    label: "Accounting",
-    description: "Ledger, cash-flow, reconciliation, Security Master coverage, and fund-account evidence.",
-    status: "Review"
-  },
-  {
-    key: "reporting",
-    label: "Reporting",
-    description: "Report packs, governed exports, loader scripts, data dictionaries, and approval posture.",
-    status: "Review"
-  },
-  {
-    key: "strategy",
-    label: "Strategy",
-    description: "Backtest runs, comparisons, run diffing, and paper-promotion review.",
-    status: "Paper"
-  },
-  {
-    key: "data",
-    label: "Data",
-    description: "Provider posture, backfill queues, symbol readiness, and data-quality handoffs.",
-    status: "Live"
-  },
-  {
-    key: "settings",
-    label: "Settings",
-    description: "Operator session context, shell preferences, integrations, and workstation setup checks.",
-    status: "Setup"
-  }
-];
+export const WORKSPACES: WorkspaceSummary[] = WORKSPACE_DEFINITIONS.map((workspace) => ({
+  key: workspace.key as WorkspaceKey,
+  label: workspace.label,
+  description: workspace.description,
+  status: workspace.status
+}));
 
 export const LEGACY_WORKSPACE_ALIASES: Record<LegacyWorkspaceKey, WorkspaceKey> = {
   overview: "trading",
@@ -67,6 +30,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingEntitySetup: "/accounting/entity-setup",
   accountingLedger: "/accounting/ledger",
+  accountingJournalEntries: "/accounting/journal-entries",
   accountingReconciliation: "/accounting/reconciliation",
   accountingExceptions: "/accounting/exceptions",
   accountingSecurityMaster: "/accounting/security-master",
@@ -129,6 +93,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
   FundReportPack: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
   FundTrialBalance: WORKSTATION_ROUTE_CATALOG.accountingLedger,
+  FundJournalEntryWorkbench: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries,
   GovernanceShell: WORKSTATION_ROUTE_CATALOG.accounting,
   PortfolioFamilyOffice: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
   PortfolioShell: WORKSTATION_ROUTE_CATALOG.portfolio,

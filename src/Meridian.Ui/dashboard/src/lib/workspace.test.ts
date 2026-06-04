@@ -140,6 +140,7 @@ describe("workspace metadata", () => {
       "FundAccountingConfigure",
       "FundAuditTrail",
       "FundExceptionWorkbench",
+      "FundJournalEntryWorkbench",
       "FundReconciliation",
       "FundReportPack",
       "FundStructureSetup",

@@ -512,12 +512,8 @@ public sealed class OrderBookViewModel : BindableBase, IPageActivationLifetime, 
             });
         }
 
-        // Seed a plausible demo cumulative delta.
-        var demoNetBuy = _random.Next(-5000, 5001);
-        CumulativeDeltaPositive = demoNetBuy >= 0;
-        CumulativeDeltaText = demoNetBuy >= 0
-            ? $"+{FormatSize(demoNetBuy)}"
-            : $"-{FormatSize(Math.Abs(demoNetBuy))}";
+        CumulativeDeltaPositive = true;
+        CumulativeDeltaText = "--";
 
         NoTradesVisible = false;
     }

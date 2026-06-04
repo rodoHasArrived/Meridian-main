@@ -140,7 +140,7 @@ public sealed class AccountingSystemIntegrationService
             meridianTotals.Values.Sum(static row => row.Debit),
             meridianTotals.Values.Sum(static row => row.Credit),
             PostingEnabled: false,
-            PostingDisabledReason: "External GL posting/export is disabled until the provider-neutral evidence and reconciliation path is proven.",
+            PostingDisabledReason: "Meridian is the source of all ledger truth; external GL posting/export is disabled until an approved adapter publishes Meridian-owned ledger entries.",
             rows,
             latest.Summary.EvidenceReferences);
     }
@@ -201,7 +201,7 @@ public sealed class AccountingSystemIntegrationService
             provider.Capabilities.SupportsTrialBalance,
             provider.Capabilities.SupportsPosting,
             "Ready for fixture import",
-            "Read-only external GL import and reconciliation are available for contract-first validation.",
+            "Read-only external GL import and reconciliation compare provider evidence against Meridian-owned ledger truth.",
             provider.Capabilities.EvidenceKinds);
 
     private static AccountingSystemReconciliationStatusDto ResolveStatus(
@@ -227,10 +227,10 @@ public sealed class AccountingSystemIntegrationService
     private static string BuildDetail(AccountingSystemReconciliationStatusDto status, decimal variance)
         => status switch
         {
-            AccountingSystemReconciliationStatusDto.Matched => "External GL and Meridian ledger totals match within tolerance.",
-            AccountingSystemReconciliationStatusDto.MissingExternal => "Meridian ledger has activity that is absent from the external GL import.",
-            AccountingSystemReconciliationStatusDto.MissingMeridian => "External GL has activity that is absent from Meridian ledger evidence.",
-            AccountingSystemReconciliationStatusDto.Variance => $"External GL and Meridian ledger net totals differ by {variance:0.00}.",
+            AccountingSystemReconciliationStatusDto.Matched => "External GL evidence matches Meridian-owned ledger totals within tolerance.",
+            AccountingSystemReconciliationStatusDto.MissingExternal => "Meridian-owned ledger truth has activity that is absent from the external GL import.",
+            AccountingSystemReconciliationStatusDto.MissingMeridian => "External GL evidence is absent from Meridian-owned ledger truth and requires review before close.",
+            AccountingSystemReconciliationStatusDto.Variance => $"External GL evidence and Meridian-owned ledger truth net totals differ by {variance:0.00}.",
             _ => "Review required before close evidence can rely on this row."
         };
 

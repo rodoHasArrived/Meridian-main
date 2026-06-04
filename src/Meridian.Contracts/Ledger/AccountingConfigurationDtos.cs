@@ -25,6 +25,16 @@ public enum AccountingTemplateLineSideDto
     Credit = 1
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ManualJournalEntryStatusDto>))]
+public enum ManualJournalEntryStatusDto
+{
+    Draft = 0,
+    NeedsFix = 1,
+    Submitted = 2,
+    Approved = 3,
+    Rejected = 4
+}
+
 public sealed record ChartOfAccountsNodeDto(
     string NodeId,
     string Path,
@@ -138,6 +148,87 @@ public sealed record AccountingJournalTemplatePreviewDto(
     IReadOnlyList<AccountingJournalPreviewLineDto> Lines,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
 
+public sealed record ManualJournalEntryLineDto(
+    string LineId,
+    AccountingTemplateLineSideDto Side,
+    decimal Amount,
+    string Currency,
+    string AccountPath,
+    string? EntityId = null,
+    string? FundAllocationId = null,
+    Guid? SecurityId = null,
+    string? SecurityDisplayName = null,
+    string? TaxLotId = null,
+    string? Description = null,
+    string? EvidenceLink = null);
+
+public sealed record ManualJournalEntryEvidenceAttachmentDto(
+    string AttachmentId,
+    string DisplayName,
+    string EvidenceKind,
+    string Uri,
+    string SourceSystem,
+    DateTimeOffset AddedAtUtc,
+    string AddedBy,
+    string? LineId = null,
+    string? Description = null);
+
+public sealed record ManualJournalEntryDraftDto(
+    Guid JournalEntryId,
+    ManualJournalEntryStatusDto Status,
+    string FundProfileId,
+    Guid? LedgerBookId,
+    AccountingBasisKindDto AccountingBasis,
+    DateOnly AccountingDate,
+    string? PeriodId,
+    string? EntityId,
+    string? FundNodeId,
+    string Currency,
+    string Memo,
+    string PreparedBy,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    int Version,
+    IReadOnlyList<ManualJournalEntryLineDto> Lines,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    IReadOnlyList<ManualJournalEntryEvidenceAttachmentDto>? EvidenceAttachments = null,
+    decimal TotalDebits = 0m,
+    decimal TotalCredits = 0m,
+    decimal Imbalance = 0m,
+    string? ApprovalId = null,
+    DateTimeOffset? SubmittedAtUtc = null,
+    string? SubmittedBy = null);
+
+public sealed record ManualJournalEntryWorkbenchDto(
+    string FundProfileId,
+    Guid? LedgerBookId,
+    DateTimeOffset LoadedAtUtc,
+    IReadOnlyList<LedgerBookDto> LedgerBooks,
+    IReadOnlyList<ChartOfAccountsNodeDto> ChartOfAccounts,
+    IReadOnlyList<ManualJournalEntryDraftDto> Drafts,
+    IReadOnlyList<AccountingActionAuditEventDto> AuditTrail);
+
+public sealed record SaveManualJournalEntryDraftRequest(
+    ManualJournalEntryDraftDto Draft,
+    string Actor,
+    string? CorrelationId = null,
+    IReadOnlyList<string>? EvidenceLinks = null);
+
+public sealed record ValidateManualJournalEntryDraftRequest(
+    ManualJournalEntryDraftDto Draft,
+    string Actor,
+    string? CorrelationId = null);
+
+public sealed record SubmitManualJournalEntryApprovalRequest(
+    Guid JournalEntryId,
+    string FundProfileId,
+    string Actor,
+    int Version,
+    string? Notes = null,
+    string? CorrelationId = null,
+    IReadOnlyList<string>? EvidenceLinks = null);
+
 public sealed record ActivateAccountingConfigurationRequest(
     string FundProfileId,
     string Actor,
@@ -176,6 +267,41 @@ public interface IAccountingConfigurationService
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
         CancellationToken ct = default);
+}
+
+public interface IManualJournalEntryWorkbenchService
+{
+    Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
+        string? fundProfileId = null,
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default);
+
+    Task<ManualJournalEntryDraftDto> SaveDraftAsync(
+        SaveManualJournalEntryDraftRequest request,
+        CancellationToken ct = default);
+
+    Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
+        ValidateManualJournalEntryDraftRequest request,
+        CancellationToken ct = default);
+
+    Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
+        SubmitManualJournalEntryApprovalRequest request,
+        CancellationToken ct = default);
+}
+
+public interface IManualJournalEntryDraftStore
+{
+    Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(
+        string fundProfileId,
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default);
+
+    Task<ManualJournalEntryDraftDto?> GetAsync(
+        string fundProfileId,
+        Guid journalEntryId,
+        CancellationToken ct = default);
+
+    Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);
 }
 
 public interface IAccountingConfigurationStore

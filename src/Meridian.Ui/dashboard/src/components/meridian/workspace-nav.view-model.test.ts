@@ -124,6 +124,7 @@ describe("workspace nav view model", () => {
       "/accounting/operations-continuity",
       "/accounting/entity-setup",
       "/accounting/ledger",
+      "/accounting/journal-entries",
       "/accounting/reconciliation",
       "/accounting/exceptions",
       "/accounting/security-master",

@@ -2154,6 +2154,144 @@ export interface MultiAssetCoverageSummary {
   drillThroughRoutes: Record<string, string>;
 }
 
+export interface AssetOperationSubject {
+  securityId: string;
+  assetClass: string;
+  displayName: string;
+  primaryIdentifier: string | null;
+  operationalProfile: string[];
+}
+
+export interface AssetTermsVersion {
+  termsVersionId: string;
+  securityId: string;
+  versionNumber: number;
+  termsHash: string;
+  effectiveDate: string;
+  recordedAt: string;
+  sourceDomain: string;
+  sourceEntityId: string;
+  summary: string;
+}
+
+export interface AssetLifecycleEvent {
+  lifecycleEventId: string;
+  securityId: string;
+  eventType: string;
+  eventStatus: string;
+  effectiveDate: string;
+  recordedAt: string;
+  sourceDomain: string;
+  sourceEntityId: string;
+  notes: string | null;
+}
+
+export interface AssetCashFlowProjectionRun {
+  projectionRunId: string;
+  securityId: string;
+  projectionAsOf: string;
+  engineVersion: string;
+  status: string;
+  generatedAt: string;
+  sourceDomain: string;
+  sourceEntityId: string;
+}
+
+export interface AssetProjectedCashFlow {
+  projectedCashFlowId: string;
+  projectionRunId: string;
+  securityId: string;
+  sequenceNumber: number;
+  flowType: string;
+  dueDate: string;
+  amount: number;
+  currency: string;
+  status: string;
+  sourceDomain: string;
+  sourceEntityId: string;
+}
+
+export interface AssetActualActivity {
+  activityId: string;
+  securityId: string;
+  activityType: string;
+  effectiveDate: string;
+  settlementDate: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  sourceDomain: string;
+  sourceEntityId: string;
+  evidenceReference: string | null;
+}
+
+export interface AssetReconciliationRun {
+  reconciliationRunId: string;
+  securityId: string;
+  projectionRunId: string | null;
+  status: string;
+  requestedAt: string;
+  completedAt: string | null;
+  sourceDomain: string;
+  sourceEntityId: string;
+}
+
+export interface AssetReconciliationResult {
+  reconciliationResultId: string;
+  reconciliationRunId: string;
+  securityId: string;
+  matchStatus: string;
+  expectedAmount: number | null;
+  actualAmount: number | null;
+  varianceAmount: number | null;
+  expectedDate: string | null;
+  actualDate: string | null;
+  notes: string[];
+  sourceDomain: string;
+  sourceEntityId: string;
+}
+
+export interface AssetLedgerProjection {
+  ledgerProjectionId: string;
+  securityId: string;
+  projectionType: string;
+  accountingDate: string;
+  ledgerBasis: string;
+  status: string;
+  debitAmount: number;
+  creditAmount: number;
+  currency: string;
+  sourceDomain: string;
+  sourceEntityId: string;
+  ledgerReference: string | null;
+}
+
+export interface AssetOperationsReadiness {
+  securityId: string;
+  status: string;
+  capabilities: string[];
+  readyCapabilities: string[];
+  missingCapabilities: string[];
+  blockers: string[];
+  evaluatedAt: string;
+  sourceDomain: string;
+  sourceEntityId: string;
+}
+
+export interface AssetOperationsDetail {
+  subject: AssetOperationSubject;
+  termsHistory: AssetTermsVersion[];
+  lifecycleEvents: AssetLifecycleEvent[];
+  cashFlowProjectionRuns: AssetCashFlowProjectionRun[];
+  projectedCashFlows: AssetProjectedCashFlow[];
+  actualActivity: AssetActualActivity[];
+  reconciliationRuns: AssetReconciliationRun[];
+  reconciliationResults: AssetReconciliationResult[];
+  ledgerProjections: AssetLedgerProjection[];
+  readiness: AssetOperationsReadiness;
+  workflowAudit: AssetLifecycleEvent[];
+}
+
 
 export interface StatementRunSummary {
   runId: string;
@@ -2780,6 +2918,7 @@ export type AccountingBasisKind = "Primary" | "Gaap" | "Cash" | "Tax" | "Statuto
 export type AccountingConfigurationStatus = "Draft" | "Active" | "Archived";
 export type AccountingConfigurationValidationSeverity = "Info" | "Warning" | "Critical";
 export type AccountingTemplateLineSide = "Debit" | "Credit";
+export type ManualJournalEntryStatus = "Draft" | "NeedsFix" | "Submitted" | "Approved" | "Rejected";
 
 export interface LedgerBook {
   ledgerBookId: string;
@@ -2888,6 +3027,94 @@ export interface AccountingJournalTemplatePreview {
   totalCredits: number;
   lines: AccountingJournalPreviewLine[];
   validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export interface ManualJournalEntryLine {
+  lineId: string;
+  side: AccountingTemplateLineSide;
+  amount: number;
+  currency: string;
+  accountPath: string;
+  entityId?: string | null;
+  fundAllocationId?: string | null;
+  securityId?: string | null;
+  securityDisplayName?: string | null;
+  taxLotId?: string | null;
+  description?: string | null;
+  evidenceLink?: string | null;
+}
+
+export interface ManualJournalEntryEvidenceAttachment {
+  attachmentId: string;
+  displayName: string;
+  evidenceKind: string;
+  uri: string;
+  sourceSystem: string;
+  addedAtUtc: string;
+  addedBy: string;
+  lineId?: string | null;
+  description?: string | null;
+}
+
+export interface ManualJournalEntryDraft {
+  journalEntryId: string;
+  status: ManualJournalEntryStatus;
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  accountingBasis: AccountingBasisKind;
+  accountingDate: string;
+  periodId?: string | null;
+  entityId?: string | null;
+  fundNodeId?: string | null;
+  currency: string;
+  memo: string;
+  preparedBy: string;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  version: number;
+  lines: ManualJournalEntryLine[];
+  evidenceLinks: string[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+  evidenceAttachments?: ManualJournalEntryEvidenceAttachment[] | null;
+  totalDebits: number;
+  totalCredits: number;
+  imbalance: number;
+  approvalId?: string | null;
+  submittedAtUtc?: string | null;
+  submittedBy?: string | null;
+}
+
+export interface ManualJournalEntryWorkbench {
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  loadedAtUtc: string;
+  ledgerBooks: LedgerBook[];
+  chartOfAccounts: ChartOfAccountsNode[];
+  drafts: ManualJournalEntryDraft[];
+  auditTrail: AccountingActionAuditEvent[];
+}
+
+export interface SaveManualJournalEntryDraftRequest {
+  draft: ManualJournalEntryDraft;
+  actor: string;
+  correlationId?: string | null;
+  evidenceLinks?: string[] | null;
+}
+
+export interface ValidateManualJournalEntryDraftRequest {
+  draft: ManualJournalEntryDraft;
+  actor: string;
+  correlationId?: string | null;
+}
+
+export interface SubmitManualJournalEntryApprovalRequest {
+  journalEntryId: string;
+  fundProfileId: string;
+  actor: string;
+  version: number;
+  notes?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: string[] | null;
 }
 
 export interface PreviewJournalTemplateRequest {

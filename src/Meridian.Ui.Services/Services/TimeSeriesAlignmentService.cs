@@ -325,42 +325,10 @@ public sealed class TimeSeriesAlignmentService
             };
         }
 
-        // Return mock preview
-        var days = options.ToDate.HasValue && options.FromDate.HasValue
-            ? (options.ToDate.Value.DayNumber - options.FromDate.Value.DayNumber)
-            : 7;
-        var symbolCount = options.Symbols?.Count ?? 3;
-        var intervalsPerDay = GetIntervalsPerDay(options.Interval, options.MarketHoursOnly);
-
         return new AlignmentPreview
         {
-            Success = true,
-            TotalSourceRecords = symbolCount * days * 500000,
-            ExpectedOutputRecords = symbolCount * days * intervalsPerDay,
-            ExpectedGaps = (int)(symbolCount * days * intervalsPerDay * 0.02),
-            EstimatedFileSizeBytes = symbolCount * days * intervalsPerDay * 100,
-            IntervalCount = days * intervalsPerDay
-        };
-    }
-
-    private static int GetIntervalsPerDay(TimeSeriesInterval interval, bool marketHoursOnly)
-    {
-        var tradingMinutes = marketHoursOnly ? 390 : 1440; // 6.5 hours vs 24 hours
-
-        return interval switch
-        {
-            TimeSeriesInterval.Second1 => tradingMinutes * 60,
-            TimeSeriesInterval.Second5 => tradingMinutes * 12,
-            TimeSeriesInterval.Second10 => tradingMinutes * 6,
-            TimeSeriesInterval.Second30 => tradingMinutes * 2,
-            TimeSeriesInterval.Minute1 => tradingMinutes,
-            TimeSeriesInterval.Minute5 => tradingMinutes / 5,
-            TimeSeriesInterval.Minute15 => tradingMinutes / 15,
-            TimeSeriesInterval.Minute30 => tradingMinutes / 30,
-            TimeSeriesInterval.Hour1 => marketHoursOnly ? 7 : 24,
-            TimeSeriesInterval.Hour4 => marketHoursOnly ? 2 : 6,
-            TimeSeriesInterval.Daily => 1,
-            _ => tradingMinutes
+            Success = false,
+            Error = response.ErrorMessage ?? "Alignment preview unavailable"
         };
     }
 

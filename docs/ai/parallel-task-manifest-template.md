@@ -1,5 +1,9 @@
 # Parallel AI Task Manifest Template
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 Use this template when two or more agents/lanes run in parallel on one request.
 
 ## Manifest

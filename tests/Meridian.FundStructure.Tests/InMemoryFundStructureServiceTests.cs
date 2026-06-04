@@ -1023,6 +1023,27 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task PostgresFundStructureService_GetCashFlowViewAsync_MissingScopedIdAvoidsFullSnapshotLoad()
+    {
+        var store = new FakeFundStructureStore();
+        var service = new PostgresFundStructureService(
+            store,
+            new InMemoryFundAccountService(),
+            new FundStructurePolicyService());
+
+        var view = await service.GetCashFlowViewAsync(new GovernanceCashFlowQuery(
+            GovernanceCashFlowScopeKindDto.Organization,
+            OrganizationId: Guid.NewGuid(),
+            HistoricalDays: 7,
+            ForecastDays: 7,
+            BucketDays: 7));
+
+        Assert.Null(view);
+        Assert.Equal(1, store.PointReadCount);
+        Assert.Equal(0, store.FullSnapshotReadCount);
+    }
+
+    [Fact]
     public async Task GetCashFlowViewAsync_Account_UsesBalanceTrendFallbackWhenProjectedEntriesAreMissing()
     {
         var fixture = await CreateHybridFixtureAsync();
@@ -1824,6 +1845,9 @@ public sealed class InMemoryFundStructureServiceTests
         private readonly Dictionary<Guid, OwnershipLinkDto> _ownershipLinks = new();
         private readonly Dictionary<Guid, FundStructureAssignmentDto> _assignments = new();
 
+        public int PointReadCount { get; private set; }
+        public int FullSnapshotReadCount { get; private set; }
+
         public Task UpsertOrganizationAsync(OrganizationSummaryDto dto, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
@@ -1834,6 +1858,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<OrganizationSummaryDto?> GetOrganizationAsync(Guid organizationId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            PointReadCount++;
             _organizations.TryGetValue(organizationId, out var organization);
             return Task.FromResult(organization);
         }
@@ -1841,6 +1866,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<OrganizationSummaryDto>> GetAllOrganizationsAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<OrganizationSummaryDto>>(_organizations.Values.ToList());
         }
 
@@ -1854,6 +1880,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<BusinessSummaryDto?> GetBusinessAsync(Guid businessId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            PointReadCount++;
             _businesses.TryGetValue(businessId, out var business);
             return Task.FromResult(business);
         }
@@ -1861,6 +1888,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<BusinessSummaryDto>> GetAllBusinessesAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<BusinessSummaryDto>>(_businesses.Values.ToList());
         }
 
@@ -1874,6 +1902,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<ClientSummaryDto?> GetClientAsync(Guid clientId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            PointReadCount++;
             _clients.TryGetValue(clientId, out var client);
             return Task.FromResult(client);
         }
@@ -1881,6 +1910,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<ClientSummaryDto>> GetAllClientsAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<ClientSummaryDto>>(_clients.Values.ToList());
         }
 
@@ -1894,6 +1924,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<FundSummaryDto?> GetFundAsync(Guid fundId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            PointReadCount++;
             _funds.TryGetValue(fundId, out var fund);
             return Task.FromResult(fund);
         }
@@ -1901,6 +1932,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<FundSummaryDto>> GetAllFundsAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<FundSummaryDto>>(_funds.Values.ToList());
         }
 
@@ -1914,6 +1946,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<SleeveSummaryDto?> GetSleeveAsync(Guid sleeveId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            PointReadCount++;
             _sleeves.TryGetValue(sleeveId, out var sleeve);
             return Task.FromResult(sleeve);
         }
@@ -1921,6 +1954,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<SleeveSummaryDto>> GetAllSleevesAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<SleeveSummaryDto>>(_sleeves.Values.ToList());
         }
 
@@ -1934,6 +1968,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<VehicleSummaryDto?> GetVehicleAsync(Guid vehicleId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            PointReadCount++;
             _vehicles.TryGetValue(vehicleId, out var vehicle);
             return Task.FromResult(vehicle);
         }
@@ -1941,6 +1976,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<VehicleSummaryDto>> GetAllVehiclesAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<VehicleSummaryDto>>(_vehicles.Values.ToList());
         }
 
@@ -1954,6 +1990,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<LegalEntitySummaryDto?> GetLegalEntityAsync(Guid entityId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            PointReadCount++;
             _entities.TryGetValue(entityId, out var entity);
             return Task.FromResult(entity);
         }
@@ -1961,6 +1998,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<LegalEntitySummaryDto>> GetAllLegalEntitiesAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<LegalEntitySummaryDto>>(_entities.Values.ToList());
         }
 
@@ -1974,6 +2012,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<InvestmentPortfolioSummaryDto?> GetInvestmentPortfolioAsync(Guid portfolioId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            PointReadCount++;
             _investmentPortfolios.TryGetValue(portfolioId, out var portfolio);
             return Task.FromResult(portfolio);
         }
@@ -1981,6 +2020,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<InvestmentPortfolioSummaryDto>> GetAllInvestmentPortfoliosAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<InvestmentPortfolioSummaryDto>>(_investmentPortfolios.Values.ToList());
         }
 
@@ -1994,6 +2034,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<OwnershipLinkDto>> GetAllOwnershipLinksAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<OwnershipLinkDto>>(_ownershipLinks.Values.ToList());
         }
 
@@ -2007,6 +2048,7 @@ public sealed class InMemoryFundStructureServiceTests
         public Task<IReadOnlyList<FundStructureAssignmentDto>> GetAllAssignmentsAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<FundStructureAssignmentDto>>(_assignments.Values.ToList());
         }
 

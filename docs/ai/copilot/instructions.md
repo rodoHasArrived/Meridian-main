@@ -1,5 +1,8 @@
 # Meridian Copilot Guide
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
 **Last Updated:** 2026-05-20
 
 This file is the Copilot-specific companion to the shared Meridian AI guidance. Keep it short:

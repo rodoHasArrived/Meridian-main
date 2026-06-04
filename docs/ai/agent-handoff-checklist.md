@@ -1,5 +1,9 @@
 # AI Agent Handoff and Cost-Efficiency Checklist
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 Use this checklist for tasks that involve multiple agents, skill lanes, or handoffs across Codex,
 Claude, Copilot, MCP clients, or local maintenance scripts.
 

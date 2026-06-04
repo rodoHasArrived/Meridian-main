@@ -39,6 +39,7 @@ import type {
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
   AccountingWorkspaceResponse,
+  AssetOperationsDetail,
   ReportingWorkspaceResponse,
   InvestmentAccountingTransactionLabPreview,
   InvestmentAccountingTransactionLabRequest,
@@ -150,7 +151,12 @@ import type {
   PlaidInstitutionSearchResult,
   RolePermissionCatalog,
   RolePermissionProfileUpsertRequest,
-  RolePermissionProfileUpsertResult
+  RolePermissionProfileUpsertResult,
+  ManualJournalEntryDraft,
+  ManualJournalEntryWorkbench,
+  SaveManualJournalEntryDraftRequest,
+  SubmitManualJournalEntryApprovalRequest,
+  ValidateManualJournalEntryDraftRequest
 } from "@/types";
 import {
   AUTH_API_ENDPOINTS,
@@ -244,6 +250,7 @@ import {
   workstationEvidenceGraphEndpoint,
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
+  workstationAssetOperationsEndpoint,
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
@@ -793,6 +800,31 @@ export function getAccountingWorkspace(options: ApiRequestOptions = {}) {
 
 export function getAccountingConfiguration(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfiguration, options);
+}
+
+export function getManualJournalEntryWorkbench(options: ApiRequestOptions = {}) {
+  return getJson<ManualJournalEntryWorkbench>(WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench, options);
+}
+
+export function saveManualJournalEntryDraft(
+  request: SaveManualJournalEntryDraftRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ManualJournalEntryDraft>(WORKSTATION_API_ENDPOINTS.manualJournalEntryDrafts, request, options);
+}
+
+export function validateManualJournalEntryDraft(
+  request: ValidateManualJournalEntryDraftRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ManualJournalEntryDraft>(WORKSTATION_API_ENDPOINTS.manualJournalEntryValidate, request, options);
+}
+
+export function submitManualJournalEntryApproval(
+  request: SubmitManualJournalEntryApprovalRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ManualJournalEntryDraft>(WORKSTATION_API_ENDPOINTS.manualJournalEntrySubmitApproval, request, options);
 }
 
 export function getAccountingSystemProviders(options: ApiRequestOptions = {}) {
@@ -1641,6 +1673,10 @@ export function getPortfolioWorkspace(options: ApiRequestOptions = {}) {
 
 export function getPortfolioMultiAssetCoverage(options: ApiRequestOptions = {}) {
   return getJson<MultiAssetCoverageSummary>(WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage, options);
+}
+
+export function getAssetOperations(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<AssetOperationsDetail>(workstationAssetOperationsEndpoint(securityId), options);
 }
 
 export function getAlpacaConnectionStatus(options: ApiRequestOptions = {}) {

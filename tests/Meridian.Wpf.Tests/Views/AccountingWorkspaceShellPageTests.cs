@@ -216,7 +216,11 @@ public sealed class AccountingWorkspaceShellPageTests
             Reporting: new FundReportingSummaryDto(
                 ProfileCount: 2,
                 RecommendedProfiles: ["Board"],
-                ReportPackTargets: ["Board Pack", "Operations Pack"],
+                ReportPackDistributions:
+                [
+                    new WorkstationReportPackDistributionPayload("board-pack", "Board Pack", "Board", "Email", "Pending", 1, "Board pack pending approval.", "Controller", null, null, "/reporting/board-pack"),
+                    new WorkstationReportPackDistributionPayload("operations-pack", "Operations Pack", "Operations", "Portal", "Ready", 0, "Operations pack ready.", "Controller", null, null, "/reporting/operations-pack")
+                ],
                 Profiles: [],
                 Summary: "Two governance profiles ready."));
         var workflow = new WorkspaceWorkflowSummary(
@@ -341,7 +345,7 @@ public sealed class AccountingWorkspaceShellPageTests
             CashFinancing: new CashFinancingSummary("USD", 100m, 0m, 0m, 0m, 0m, 0m, 100m, 0m, 100m, 100m, 100m, []),
             Reconciliation: new ReconciliationSummary(1, 0, 0m, []),
             Nav: new FundNavAttributionSummaryDto("USD", 100m, 1, 1, 0, 0, []),
-            Reporting: new FundReportingSummaryDto(1, ["excel"], ["board"], [], "ready"),
+            Reporting: new FundReportingSummaryDto(1, ["excel"], [ReportPackDistribution("board")], [], "ready"),
             Governance: new GovernanceLifecycleProjectionDto(
                 DecisionPosture: "Reconciliation decisions are cleared in shared lifecycle state.",
                 SignoffPosture: "Sign-off is submitted and awaiting reviewer decision in shared lifecycle.",
@@ -445,8 +449,22 @@ public sealed class AccountingWorkspaceShellPageTests
             CashFinancing: new CashFinancingSummary("USD", 100m, 0m, 0m, 0m, 0m, 0m, 100m, 0m, 100m, 100m, 100m, []),
             Reconciliation: new ReconciliationSummary(1, 0, 0m, []),
             Nav: new FundNavAttributionSummaryDto("USD", 100m, 1, 1, 0, 0, []),
-            Reporting: new FundReportingSummaryDto(1, ["board"], ["Board Pack"], [], "ready"));
+            Reporting: new FundReportingSummaryDto(1, ["board"], [ReportPackDistribution("Board Pack")], [], "ready"));
     }
+
+    private static WorkstationReportPackDistributionPayload ReportPackDistribution(string recipient)
+        => new(
+            DistributionId: recipient,
+            Recipient: recipient,
+            RecipientRole: "Operations",
+            Channel: "Portal",
+            State: "Ready",
+            PendingItems: 0,
+            PendingSummary: "Ready.",
+            Owner: "Controller",
+            DueAtUtc: null,
+            LastSentAtUtc: null,
+            Route: "/reporting");
 
     private static string GetRepositoryFilePath(string relativePath)
     {

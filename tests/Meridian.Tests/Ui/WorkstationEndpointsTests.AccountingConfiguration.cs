@@ -120,10 +120,107 @@ public sealed partial class WorkstationEndpointsTests
         audit.Should().Contain(item => item.Actor == "ops-user" && item.CorrelationId == "endpoint-activate");
     }
 
+    [Fact]
+    public async Task ManualJournalEntryWorkbenchEndpoints_SaveValidateAndSubmitDraft()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                FundProfileId: "fund-alpha",
+                Node: new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"),
+                Actor: "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                FundProfileId: "fund-alpha",
+                Node: new ChartOfAccountsNodeDto("interest-income", "Income:Interest", "Interest Income", "Revenue"),
+                Actor: "browser-user"),
+            ServerJsonOptions);
+        var draft = ManualJournalEntryDraft();
+
+        using var validateResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryValidate,
+            new ValidateManualJournalEntryDraftRequest(draft, "browser-user"),
+            ServerJsonOptions);
+        using var saveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryDrafts,
+            new SaveManualJournalEntryDraftRequest(draft, "browser-user", CorrelationId: "manual-je-save"),
+            ServerJsonOptions);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+        using var submitResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntrySubmitApproval,
+            new SubmitManualJournalEntryApprovalRequest(
+                saved!.JournalEntryId,
+                saved.FundProfileId,
+                "controller",
+                saved.Version,
+                CorrelationId: "manual-je-submit"),
+            ServerJsonOptions);
+        using var workbenchResponse = await client.GetAsync($"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId=fund-alpha");
+
+        validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        workbenchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var submitted = await submitResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+        var workbench = await workbenchResponse.Content.ReadFromJsonAsync<ManualJournalEntryWorkbenchDto>(ServerJsonOptions);
+        submitted!.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        submitted.ApprovalId.Should().NotBeNullOrWhiteSpace();
+        workbench!.Drafts.Should().ContainSingle(item => item.JournalEntryId == submitted.JournalEntryId);
+        workbench.AuditTrail.Select(item => item.Action).Should().Contain("manual-je.submit-approval");
+    }
+
     private static void RegisterAccountingConfigurationServices(IServiceCollection services)
     {
         services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
         services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
         services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        services.AddSingleton<IManualJournalEntryDraftStore, InMemoryManualJournalEntryDraftStore>();
+        services.AddSingleton<IManualJournalEntryWorkbenchService, ManualJournalEntryWorkbenchService>();
+    }
+
+    private static ManualJournalEntryDraftDto ManualJournalEntryDraft()
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new ManualJournalEntryDraftDto(
+            Guid.NewGuid(),
+            ManualJournalEntryStatusDto.Draft,
+            "fund-alpha",
+            Guid.NewGuid(),
+            AccountingBasisKindDto.Primary,
+            new DateOnly(2026, 6, 30),
+            "2026-06",
+            "entity-master",
+            "fund-alpha",
+            "USD",
+            "Manual close adjustment",
+            "browser-user",
+            now,
+            now,
+            0,
+            Lines:
+            [
+                new ManualJournalEntryLineDto("debit-cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash", SecurityId: Guid.NewGuid()),
+                new ManualJournalEntryLineDto("credit-income", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Income:Interest")
+            ],
+            EvidenceLinks: [],
+            ValidationIssues: [],
+            EvidenceAttachments:
+            [
+                new ManualJournalEntryEvidenceAttachmentDto(
+                    "endpoint-source-doc",
+                    "Endpoint JE support",
+                    "SourceDocument",
+                    "/api/workstation/evidence/subjects/accounting-record/manual-je-endpoint",
+                    "EvidenceVault",
+                    now,
+                    "browser-user")
+            ]);
     }
 }

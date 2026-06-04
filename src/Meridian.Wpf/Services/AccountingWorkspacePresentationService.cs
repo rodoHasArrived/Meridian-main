@@ -98,7 +98,7 @@ internal static class AccountingWorkspacePresentationService
         return
         [
             new WorkspaceQueueItem { Title = "Portfolio and cash reporting", Detail = $"Cash, financing, NAV, and portfolio-linked reporting can be reviewed without leaving Accounting. {reporting.ProfileCount} reporting/export profile(s) are already available through the shared workspace summary.", StatusLabel = "Ready", CountLabel = $"{cash.TotalCash:C0}", Tone = WorkspaceTone.Info, PrimaryActionId = "FundCashFinancing", PrimaryActionLabel = "Open Reporting", SecondaryActionId = "FundPortfolio", SecondaryActionLabel = "Portfolio" },
-            new WorkspaceQueueItem { Title = "Board and operator handoff", Detail = $"Keep reporting, trial-balance, audit references, and {string.Join(", ", reporting.ReportPackTargets)} pack targets together before approvals or exports leave the workstation.", StatusLabel = "Review", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundReportPack", PrimaryActionLabel = "Open Report Pack", SecondaryActionId = "FundAuditTrail", SecondaryActionLabel = "Audit" }
+            new WorkspaceQueueItem { Title = "Board and operator handoff", Detail = $"Keep reporting, trial-balance, audit references, and {BuildReportPackTargetLabel(reporting)} pack targets together before approvals or exports leave the workstation.", StatusLabel = "Review", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundReportPack", PrimaryActionLabel = "Open Report Pack", SecondaryActionId = "FundAuditTrail", SecondaryActionLabel = "Audit" }
         ];
     }
 
@@ -457,12 +457,12 @@ internal static class AccountingWorkspacePresentationService
 
     private static string BuildReportPackTargetLabel(FundReportingSummaryDto reporting)
     {
-        if (reporting.ReportPackTargets.Count == 0)
+        if (reporting.ReportPackDistributions.Count == 0)
         {
             return "board and operator packs";
         }
 
-        return string.Join(", ", reporting.ReportPackTargets);
+        return string.Join(", ", reporting.ReportPackDistributions.Select(static distribution => distribution.Recipient));
     }
 
     private static FinancialOperationsWorkflowStep CreateFinancialOperationsWorkflowStep(

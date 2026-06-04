@@ -2852,13 +2852,13 @@ public sealed partial class WorkstationEndpointsTests
         var runId = $"run-inbox-break-{Guid.NewGuid():N}";
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
-        var reconciliation = await app.Services
-            .GetRequiredService<IReconciliationRunService>()
-            .RunAsync(new ReconciliationRunRequest(runId));
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest(runId));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var reconciliation = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         reconciliation.Should().NotBeNull();
 
-        var inbox = await app
-            .GetTestClient()
+        var inbox = await client
             .GetFromJsonAsync<OperatorInboxDto>(
                 "/api/workstation/operator/inbox",
                 ServerJsonOptions);
@@ -3785,11 +3785,12 @@ public sealed partial class WorkstationEndpointsTests
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
 
-        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
-        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest(runId));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var reconciliation = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         reconciliation.Should().NotBeNull();
 
-        var client = app.GetTestClient();
         var response = await client.GetAsync("/api/workstation/reconciliation/break-queue");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -3814,14 +3815,38 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_BreakQueueRoute_ShouldSeedStatementBreaksOnceWithSourceMetadata()
+    public async Task MapWorkstationEndpoints_BreakQueueRead_ShouldNotSeedStatementBreaks()
     {
+        var service = new StubReconciliationApiService();
         await using var app = await CreateAppAsync(services =>
         {
-            services.AddSingleton<IReconciliationApiService>(new StubReconciliationApiService());
+            services.AddSingleton<IReconciliationApiService>(service);
+        });
+
+        var queue = await app.GetTestClient().GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
+            UiApiRoutes.ReconciliationBreakQueue,
+            ServerJsonOptions);
+
+        queue.Should().NotBeNull();
+        queue.Should().BeEmpty();
+        service.ListOpenStatementBreaksCallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_StatementReconcile_ShouldPublishStatementBreaksOnceWithSourceMetadata()
+    {
+        var service = new StubReconciliationApiService();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationApiService>(service);
         });
 
         var client = app.GetTestClient();
+        var reconcile = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationStatementRunReconcile, "runId", "statement-run-1"),
+            new StatementRunReconcileRequestDto(Actor: "browser-spoof", Reason: "publish statement breaks"));
+        reconcile.StatusCode.Should().Be(HttpStatusCode.OK);
+
         var first = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
             UiApiRoutes.ReconciliationBreakQueue,
             ServerJsonOptions);
@@ -3831,6 +3856,7 @@ public sealed partial class WorkstationEndpointsTests
 
         first.Should().NotBeNull();
         second.Should().NotBeNull();
+        service.ListOpenStatementBreaksCallCount.Should().Be(1);
         second!.Should().ContainSingle(item =>
             item.SourceType == "statement" &&
             item.SourceSystem == "statement-reconciliation" &&
@@ -3869,13 +3895,13 @@ public sealed partial class WorkstationEndpointsTests
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
 
-        var reconciliation = await app.Services
-            .GetRequiredService<IReconciliationRunService>()
-            .RunAsync(new ReconciliationRunRequest(runId));
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest(runId));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var reconciliation = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         reconciliation.Should().NotBeNull();
 
-        var summary = await app
-            .GetTestClient()
+        var summary = await client
             .GetFromJsonAsync<ReconciliationCalibrationSummaryDto>(
                 UiApiRoutes.ReconciliationCalibrationSummary,
                 ServerJsonOptions);
@@ -3915,12 +3941,12 @@ public sealed partial class WorkstationEndpointsTests
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
 
-        var reconciliation = await app.Services
-            .GetRequiredService<IReconciliationRunService>()
-            .RunAsync(new ReconciliationRunRequest(runId));
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationRuns, new ReconciliationRunRequest(runId));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var reconciliation = await createResponse.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         reconciliation.Should().NotBeNull();
 
-        var client = app.GetTestClient();
         var queue = await client.GetFromJsonAsync<List<ReconciliationBreakQueueItem>>(
             UiApiRoutes.ReconciliationBreakQueue,
             ServerJsonOptions);
@@ -7788,6 +7814,7 @@ public sealed partial class WorkstationEndpointsTests
         public List<StatementRunCreateDto> CreatedRequests { get; } = [];
         public List<string> ReconciledRunIds { get; } = [];
         public List<(string RunId, StatementRunReconcileRequestDto Request)> ReconciledRequests { get; } = [];
+        public int ListOpenStatementBreaksCallCount { get; private set; }
 
         public Task<IReadOnlyList<StatementImportSummaryDto>> ListImportsAsync(CancellationToken ct = default)
         {
@@ -7878,6 +7905,7 @@ public sealed partial class WorkstationEndpointsTests
         public Task<IReadOnlyList<StatementBreakDto>> ListOpenStatementBreaksAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            ListOpenStatementBreaksCallCount++;
             var run = BuildRunDto(StatementRun.RunId, StatementRun.Status);
             var statementBreak = run.Breaks!.Single() with
             {

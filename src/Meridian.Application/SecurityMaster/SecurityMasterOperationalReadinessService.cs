@@ -179,6 +179,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                 ["reconciliation"] = UiApiRoutes.ReconciliationRuns,
                 ["ledgerMapping"] = UiApiRoutes.FundStructureLedgerMappingAssignments,
                 ["closeReadiness"] = UiApiRoutes.FundAccountCloseReadiness,
+                ["assetOperations"] = UiApiRoutes.WorkstationAssetOperations,
                 ["coverage"] = UiApiRoutes.WorkstationPortfolioMultiAssetCoverage
             }));
     }
@@ -335,6 +336,10 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
             ?? UiApiRoutes.WorkstationPortfolioMultiAssetCoverage;
         var closeStatus = EvaluateTargetStatus(evidence, "CloseReadiness") ??
                           (blockers.Count == 0 ? "Ready" : "ReviewRequired");
+        var operationsStatus = requirements.Any(static requirement =>
+                !string.Equals(requirement.Status, "Ready", StringComparison.OrdinalIgnoreCase))
+            ? "ReviewRequired"
+            : "Ready";
 
         var targets = new List<MultiAssetDrillThroughTargetDto>
         {
@@ -377,7 +382,15 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                 closeRoute,
                 BestEvidenceLink(evidence, "CloseReadiness"),
                 closeStatus,
-                "FundAccountCloseReadinessService")
+                "FundAccountCloseReadinessService"),
+            new(
+                $"{spec.AssetClass}:asset-operations",
+                "AssetOperations",
+                "Asset operations detail",
+                UiApiRoutes.WorkstationAssetOperations,
+                BestEvidenceLink(evidence, "SecurityMaster") ?? BestEvidenceLink(evidence, "ProviderEvidence"),
+                operationsStatus,
+                "AssetOperationsReadService")
         };
 
         AddAssetClassDepthTargets(targets, spec, requirements, evidence, providerRoute, ledgerRoute, closeRoute);

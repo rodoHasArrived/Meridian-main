@@ -350,6 +350,7 @@ public static class UiApiRoutes
     public const string ReferenceDataBondAccrualConvention = "/api/reference-data/bonds/{securityId:guid}/accrual-convention";
     public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
     public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
+    public const string WorkstationAssetOperations = "/api/workstation/assets/{securityId:guid}/operations";
     public const string ReferenceDataOptionContract = "/api/reference-data/options/contracts/{contractSymbol}";
     public const string ReferenceDataOptionSeries = "/api/reference-data/options/series/{optionChainId}";
     public const string ReferenceDataOptionUnderlyingLinkage = "/api/reference-data/options/contracts/{contractSymbol}/underlying-linkage";
@@ -645,6 +646,10 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPreview = "/api/ledger/accounting-configuration/preview";
     public const string LedgerAccountingConfigurationActivate = "/api/ledger/accounting-configuration/activate";
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
+    public const string LedgerManualJournalEntryWorkbench = "/api/ledger/journal-entry-workbench";
+    public const string LedgerManualJournalEntryDrafts = "/api/ledger/journal-entry-workbench/drafts";
+    public const string LedgerManualJournalEntryValidate = "/api/ledger/journal-entry-workbench/validate";
+    public const string LedgerManualJournalEntrySubmitApproval = "/api/ledger/journal-entry-workbench/submit-approval";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";

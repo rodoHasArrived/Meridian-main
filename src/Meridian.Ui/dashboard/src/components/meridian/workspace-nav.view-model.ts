@@ -81,6 +81,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Continuity", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
     { label: "Entity setup", route: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup },
     { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accountingLedger },
+    { label: "Journal entries", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries },
     { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation },
     { label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions },
     { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },

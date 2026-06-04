@@ -32,6 +32,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         detail.Summary.ChartAccountCount.Should().BeGreaterThan(0);
         detail.Summary.JournalEntryCount.Should().BeGreaterThan(0);
         detail.Summary.TrialBalanceLineCount.Should().BeGreaterThan(0);
+        detail.Summary.Warnings.Should().Contain(warning => warning.Contains("source of all ledger truth", StringComparison.OrdinalIgnoreCase));
         detail.Summary.Warnings.Should().Contain(warning => warning.Contains("posting/export is disabled", StringComparison.OrdinalIgnoreCase));
         detail.JournalEntries.Should().OnlyContain(entry => entry.TotalDebits == entry.TotalCredits);
     }
@@ -45,6 +46,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         var summary = await service.ReconcileLatestAsync("quickbooks-fixture");
 
         summary.PostingEnabled.Should().BeFalse();
+        summary.PostingDisabledReason.Should().Contain("source of all ledger truth");
         summary.PostingDisabledReason.Should().Contain("disabled");
         summary.Rows.Should().NotBeEmpty();
         summary.Rows.Should().OnlyContain(row => row.Status == AccountingSystemReconciliationStatusDto.MissingMeridian);

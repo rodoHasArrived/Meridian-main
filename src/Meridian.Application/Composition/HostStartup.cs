@@ -62,6 +62,7 @@ public sealed class HostStartup : IAsyncDisposable
         InitializeHttpClientFactory(serviceProvider, log);
         LedgerStartup.EnsureDatabaseReady(serviceProvider);
         SecurityMasterStartup.EnsureDatabaseReady(serviceProvider);
+        AssetOperationsStartup.EnsureDatabaseReady(serviceProvider);
 
         return new HostStartup(serviceProvider, options, log);
     }

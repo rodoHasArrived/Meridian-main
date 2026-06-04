@@ -1,5 +1,9 @@
 # CLAUDE.actions.md - GitHub Actions & CI/CD Guide
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
+
 This guide covers the current Meridian GitHub Actions surface. Keep it aligned with
 `.github/workflows/README.md` and `docs/engineering/README.md`.
 

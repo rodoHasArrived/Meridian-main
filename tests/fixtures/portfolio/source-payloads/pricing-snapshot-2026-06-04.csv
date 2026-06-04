@@ -1,0 +1,9 @@
+security_id,price_type,market_value,currency,source
+22222222-2222-4222-8222-000000000001,MarketValue,341250,USD,Fixture Pricing Provider
+22222222-2222-4222-8222-000000000002,MarketValue,259875,USD,Fixture Pricing Provider
+22222222-2222-4222-8222-000000000003,MarketValue,218500,USD,Fixture Pricing Provider
+33333333-3333-4333-8333-000000000001,MarketValue,198800,USD,Fixture Pricing Provider
+33333333-3333-4333-8333-000000000002,MarketValue,148950,USD,Fixture Pricing Provider
+44444444-4444-4444-8444-000000000001,MarketValue,123750,USD,Fixture Pricing Provider
+44444444-4444-4444-8444-000000000002,MarketValue,94500,USD,Fixture Pricing Provider
+55555555-5555-4555-8555-000000000001,MarketValue,78000,USD,Fixture Pricing Provider

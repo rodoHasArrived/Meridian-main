@@ -3,6 +3,7 @@ using Meridian.Application.Composition;
 
 namespace Meridian.Tests.Application.Composition;
 
+[Collection("Sequential")]
 public sealed class SecurityMasterStartupTests : IDisposable
 {
     private readonly string? _originalConnectionString;

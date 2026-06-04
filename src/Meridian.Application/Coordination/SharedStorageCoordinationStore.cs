@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.Config;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Application.Coordination;
 
@@ -231,10 +232,7 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
 
     private static async Task WriteLeaseFileAsync(string leasePath, LeaseRecord lease, CancellationToken ct)
     {
-        var tempPath = leasePath + ".tmp";
         var json = JsonSerializer.Serialize(lease, JsonOptions);
-
-        await File.WriteAllTextAsync(tempPath, json, ct).ConfigureAwait(false);
-        File.Move(tempPath, leasePath, true);
+        await AtomicFileWriter.WriteAsync(leasePath, json, ct).ConfigureAwait(false);
     }
 }

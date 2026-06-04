@@ -1,5 +1,8 @@
 # AI Known Errors and Prevention Checklist
 
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-06-04
 **Last Updated:** 2026-05-20
 
 This file tracks repeated AI-agent mistakes so future agents can avoid introducing the same failures.

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Wpf.Copy;
 
@@ -19,14 +20,14 @@ public static class WorkspaceCopyCatalog
 
     public static class Trading
     {
-        public const string WorkspaceId = "trading";
+        public const string WorkspaceId = WorkstationWorkspaceCatalog.TradingKey;
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
-            "Trading",
-            "Live readiness, order flow, execution, and risk-aware monitoring.",
-            "Operate trading workflows with paper/live separation and audit reachability.",
-            "Live | Orders | Risk",
-            "Trading Desk");
+            WorkstationWorkspaceCatalog.TradingLabel,
+            WorkstationWorkspaceCatalog.TradingDesktopDescription,
+            WorkstationWorkspaceCatalog.TradingDesktopSummary,
+            WorkstationWorkspaceCatalog.TradingDesktopTileSummary,
+            WorkstationWorkspaceCatalog.TradingDesktopShellDisplayName);
 
         public const string ShellTitle = "Trading Desk";
         public const string ShellSubtitle = "Risk-aware trading shell for live readiness, blotter review, safe staging, and docked execution detail.";
@@ -35,14 +36,14 @@ public static class WorkspaceCopyCatalog
 
     public static class Portfolio
     {
-        public const string WorkspaceId = "portfolio";
+        public const string WorkspaceId = WorkstationWorkspaceCatalog.PortfolioKey;
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
-            "Portfolio",
-            "Account, aggregate, fund, lending, and portfolio import review.",
-            "Review account and fund exposure with import and lending workflows nearby.",
-            "Accounts | Exposure | Import",
-            "Portfolio Workspace");
+            WorkstationWorkspaceCatalog.PortfolioLabel,
+            WorkstationWorkspaceCatalog.PortfolioDesktopDescription,
+            WorkstationWorkspaceCatalog.PortfolioDesktopSummary,
+            WorkstationWorkspaceCatalog.PortfolioDesktopTileSummary,
+            WorkstationWorkspaceCatalog.PortfolioDesktopShellDisplayName);
 
         public const string ShellTitle = "Portfolio Workspace";
         public const string ShellSubtitle = "Account, aggregate, fund, lending, and import workflows for portfolio review.";
@@ -50,14 +51,14 @@ public static class WorkspaceCopyCatalog
 
     public static class Accounting
     {
-        public const string WorkspaceId = "accounting";
+        public const string WorkspaceId = WorkstationWorkspaceCatalog.AccountingKey;
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
-            "Accounting",
-            "Ledger, cash, banking, reconciliation, trial balance, and audit review.",
-            "Operate accounting, reconciliation, cash, banking, and audit evidence from one area.",
-            "Ledger | Cash | Audit",
-            "Accounting Workspace");
+            WorkstationWorkspaceCatalog.AccountingLabel,
+            WorkstationWorkspaceCatalog.AccountingDesktopDescription,
+            WorkstationWorkspaceCatalog.AccountingDesktopSummary,
+            WorkstationWorkspaceCatalog.AccountingDesktopTileSummary,
+            WorkstationWorkspaceCatalog.AccountingDesktopShellDisplayName);
 
         public const string ShellTitle = "Accounting Workspace";
         public const string ShellSubtitleNoFund = "Fund-aware accounting shell for ledger, reconciliation, trial balance, and audit readiness.";
@@ -66,14 +67,14 @@ public static class WorkspaceCopyCatalog
 
     public static class Reporting
     {
-        public const string WorkspaceId = "reporting";
+        public const string WorkspaceId = WorkstationWorkspaceCatalog.ReportingKey;
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
-            "Reporting",
-            "Report packs, dashboards, analysis export, and reusable export presets.",
-            "Prepare reporting outputs and analysis handoffs from a focused workspace.",
-            "Packs | Dashboard | Export",
-            "Reporting Workspace");
+            WorkstationWorkspaceCatalog.ReportingLabel,
+            WorkstationWorkspaceCatalog.ReportingDesktopDescription,
+            WorkstationWorkspaceCatalog.ReportingDesktopSummary,
+            WorkstationWorkspaceCatalog.ReportingDesktopTileSummary,
+            WorkstationWorkspaceCatalog.ReportingDesktopShellDisplayName);
 
         public const string ShellTitle = "Reporting Workspace";
         public const string ShellSubtitle = "Report packs, dashboards, and analysis export workflows.";
@@ -81,14 +82,14 @@ public static class WorkspaceCopyCatalog
 
     public static class Strategy
     {
-        public const string WorkspaceId = "strategy";
+        public const string WorkspaceId = WorkstationWorkspaceCatalog.StrategyKey;
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
-            "Strategy",
-            "Backtest studio, run comparison, charts, scripting, and replay flows.",
-            "Operate model exploration with docked run, portfolio, and promotion context.",
-            "Runs | Compare | Scripts",
-            "Strategy Studio");
+            WorkstationWorkspaceCatalog.StrategyLabel,
+            WorkstationWorkspaceCatalog.StrategyDesktopDescription,
+            WorkstationWorkspaceCatalog.StrategyDesktopSummary,
+            WorkstationWorkspaceCatalog.StrategyDesktopTileSummary,
+            WorkstationWorkspaceCatalog.StrategyDesktopShellDisplayName);
 
         public const string ShellTitle = "Strategy Workspace";
         public const string ShellSubtitle = "Market briefing, run studio, and promotion-aware strategy workflow.";
@@ -97,14 +98,14 @@ public static class WorkspaceCopyCatalog
 
     public static class Data
     {
-        public const string WorkspaceId = "data";
+        public const string WorkspaceId = WorkstationWorkspaceCatalog.DataKey;
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
-            "Data",
-            "Providers, ingestion, storage, schedules, quality, and data products.",
-            "Operate collection queues, freshness checks, storage, and exports from one workspace.",
-            "Providers | Storage | Quality",
-            "Data Workspace");
+            WorkstationWorkspaceCatalog.DataLabel,
+            WorkstationWorkspaceCatalog.DataDesktopDescription,
+            WorkstationWorkspaceCatalog.DataDesktopSummary,
+            WorkstationWorkspaceCatalog.DataDesktopTileSummary,
+            WorkstationWorkspaceCatalog.DataDesktopShellDisplayName);
 
         public const string ShellTitle = "Data Workspace";
         public const string ShellSubtitle = "Provider freshness, backfill pressure, storage health, and export job visibility in one operator shell.";
@@ -115,14 +116,14 @@ public static class WorkspaceCopyCatalog
 
     public static class Settings
     {
-        public const string WorkspaceId = "settings";
+        public const string WorkspaceId = WorkstationWorkspaceCatalog.SettingsKey;
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
-            "Settings",
-            "Preferences, credentials, diagnostics, services, alerts, help, and setup.",
-            "Manage workstation configuration, support, notifications, diagnostics, and setup.",
-            "Prefs | Health | Help",
-            "Settings Workspace");
+            WorkstationWorkspaceCatalog.SettingsLabel,
+            WorkstationWorkspaceCatalog.SettingsDesktopDescription,
+            WorkstationWorkspaceCatalog.SettingsDesktopSummary,
+            WorkstationWorkspaceCatalog.SettingsDesktopTileSummary,
+            WorkstationWorkspaceCatalog.SettingsDesktopShellDisplayName);
 
         public const string ShellTitle = "Settings Workspace";
         public const string ShellSubtitle = "Workstation configuration, diagnostics, support, and operator setup.";

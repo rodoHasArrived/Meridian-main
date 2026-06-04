@@ -357,6 +357,7 @@ export function buildAppShellViewState({
   const failedItems = buildShellFailureItems(workspaceErrors, workflowError);
   const hasAnyPayload = Object.values(payload).some(Boolean);
   const bootstrapFailed = !loading && !hasAnyPayload;
+  const canRenderRoutes = !bootstrapFailed && (!loading || activeWorkspace.key === "accounting");
 
   return {
     activeWorkspace,
@@ -366,7 +367,7 @@ export function buildAppShellViewState({
       failedItems,
       bootstrapFailed
     }),
-    canRenderRoutes: !loading && !bootstrapFailed,
+    canRenderRoutes,
     routeFocus: buildRouteFocusState(pathname, search, hash, activeWorkspace),
     trustStrip: buildTrustStripState({
       loading,

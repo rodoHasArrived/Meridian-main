@@ -374,7 +374,7 @@ modules:
     layer: FSharp
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Functional aggregate calculations for direct lending and fund-structure workflows.
+    purpose: Functional aggregate calculations for Security Master-backed direct lending and fund-structure workflows.
     readme: src/Meridian.FSharp.DirectLending.Aggregates/README.md
     roadmap_items:
       - W4-RECON-001

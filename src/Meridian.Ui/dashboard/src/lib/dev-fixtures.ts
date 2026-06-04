@@ -26,6 +26,7 @@ import type {
   OperationsCloseCalendar,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  LedgerTrialBalanceLine,
   LedgerMappingWorkbench,
   OperatorOverridesDto,
   PaperSessionDetail,
@@ -1792,7 +1793,7 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
     supportsTrialBalance: true,
     supportsPosting: false,
     statusLabel: "Ready for fixture import",
-    statusDetail: "Read-only external GL import and reconciliation are available for contract-first validation.",
+    statusDetail: "Read-only external GL import and reconciliation compare provider evidence against Meridian-owned ledger truth.",
     evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
   },
   {
@@ -1825,7 +1826,7 @@ const fixtureAccountingSystemImport: AccountingSystemImportDetail = {
     journalEntryCount: 2,
     trialBalanceLineCount: 4,
     evidenceReferences: ["quickbooks-fixture:chart-of-accounts", "quickbooks-fixture:journal", "quickbooks-fixture:trial-balance"],
-    warnings: ["External posting/export is disabled for the contract-first slice."]
+    warnings: ["Meridian remains the source of all ledger truth; external posting/export is disabled for the contract-first evidence lane."]
   },
   chartAccounts: [
     { externalAccountId: "qbo-1000", accountCode: "Assets:Cash:Operating", displayName: "Operating Cash", accountType: "Asset", currency: "USD", isActive: true, parentExternalAccountId: null, evidenceRef: "quickbooks-fixture:account:qbo-1000" },
@@ -1870,7 +1871,7 @@ const fixtureAccountingSystemReconciliation: AccountingSystemReconciliationSumma
   totalMeridianDebits: 0,
   totalMeridianCredits: 0,
   postingEnabled: false,
-  postingDisabledReason: "External GL posting/export is disabled until the provider-neutral evidence and reconciliation path is proven.",
+  postingDisabledReason: "Meridian is the source of all ledger truth; external GL posting/export is disabled until an approved adapter publishes Meridian-owned ledger entries.",
   evidenceReferences: fixtureAccountingSystemImport.summary.evidenceReferences,
   rows: fixtureAccountingSystemImport.trialBalance.map((row) => ({
     rowId: `gl-recon-${row.externalAccountId}`,
@@ -1883,7 +1884,7 @@ const fixtureAccountingSystemReconciliation: AccountingSystemReconciliationSumma
     meridianDebit: 0,
     meridianCredit: 0,
     variance: row.debit - row.credit,
-    detail: "External GL has activity that is absent from Meridian ledger evidence.",
+    detail: "External GL evidence is absent from Meridian-owned ledger truth and requires review before close.",
     evidenceRef: row.evidenceRef
   }))
 };
@@ -2988,6 +2989,33 @@ const fixtureOperationsCloseCalendar: OperationsCloseCalendar = {
   ]
 };
 
+const fixtureLedgerTrialBalance: LedgerTrialBalanceLine[] = [
+  {
+    accountName: "Cash",
+    accountType: "Asset",
+    symbol: null,
+    financialAccountId: "acct-cash",
+    balance: 120500,
+    entryCount: 12,
+    security: null,
+    sourceJournalEntryId: "je-cash-1",
+    sourceEventIds: ["evt-cash-1"],
+    approvalIds: ["approval-cash-1"]
+  },
+  {
+    accountName: "Financing payable",
+    accountType: "Liability",
+    symbol: null,
+    financialAccountId: "acct-financing",
+    balance: -500,
+    entryCount: 2,
+    security: null,
+    sourceJournalEntryId: "je-financing-1",
+    sourceEventIds: ["evt-financing-1"],
+    approvalIds: ["approval-financing-1"]
+  }
+];
+
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
@@ -3026,6 +3054,7 @@ const fixtures = {
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importPreview]: fixtureAccountingSystemImport,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importLatest]: fixtureAccountingSystemImport,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest]: fixtureAccountingSystemReconciliation,
+  "/api/workstation/runs/run-42/ledger/trial-balance": fixtureLedgerTrialBalance,
   "/api/workstation/governance": fixtureAccountingWorkspace,
   [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,

@@ -1,0 +1,4 @@
+account_id,transaction_date,description,amount,currency,external_reference
+aaaaaaaa-aaaa-4aaa-8aaa-000000000104,2026-06-04,Loan payment batch sweep,46450,USD,bank-fixture-payments-001
+aaaaaaaa-aaaa-4aaa-8aaa-000000000104,2026-06-04,Term loan funding wire,-500000,USD,bank-fixture-wire-500k
+aaaaaaaa-aaaa-4aaa-8aaa-000000000104,2026-06-04,Structured credit remittance,8665,USD,bank-fixture-mbs-remit-001

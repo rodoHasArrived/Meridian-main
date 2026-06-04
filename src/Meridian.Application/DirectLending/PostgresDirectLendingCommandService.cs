@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Meridian.Application.AssetOperations;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.FSharp.DirectLending.Aggregates;
 using Meridian.FSharp.DirectLendingInterop;
@@ -13,19 +15,22 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     private readonly IDirectLendingQueryService _queryService;
     private readonly LoanAccountingProjector _loanAccountingProjector;
     private readonly DirectLendingOptions _options;
+    private readonly IAssetOperationsCommandService? _assetOperationsCommandService;
 
     public PostgresDirectLendingCommandService(
         IDirectLendingStateStore stateStore,
         IDirectLendingOperationsStore operationsStore,
         IDirectLendingQueryService queryService,
         LoanAccountingProjector loanAccountingProjector,
-        DirectLendingOptions options)
+        DirectLendingOptions options,
+        IAssetOperationsCommandService? assetOperationsCommandService = null)
     {
         _stateStore = stateStore;
         _operationsStore = operationsStore;
         _queryService = queryService;
         _loanAccountingProjector = loanAccountingProjector;
         _options = options;
+        _assetOperationsCommandService = assetOperationsCommandService;
     }
 
     public async Task<DirectLendingCommandResult<LoanContractDetailDto>> CreateLoanAsync(CreateLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
@@ -36,6 +41,14 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         if (validationError is not null)
         {
             return new DirectLendingCommandResult<LoanContractDetailDto>(null, validationError);
+        }
+        if (_options.RequireSecurityMasterReferenceForDurableWrites)
+        {
+            validationError = DirectLendingServiceSupport.ValidateSecurityMasterReferenceRequired(request.Terms);
+            if (validationError is not null)
+            {
+                return new DirectLendingCommandResult<LoanContractDetailDto>(null, validationError);
+            }
         }
 
         var loanId = request.LoanId.GetValueOrDefault(Guid.NewGuid());
@@ -82,6 +95,14 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         if (validationError is not null)
         {
             return new DirectLendingCommandResult<LoanContractDetailDto>(null, validationError);
+        }
+        if (_options.RequireSecurityMasterReferenceForDurableWrites)
+        {
+            validationError = DirectLendingServiceSupport.ValidateSecurityMasterReferenceRequired(request.Terms);
+            if (validationError is not null)
+            {
+                return new DirectLendingCommandResult<LoanContractDetailDto>(null, validationError);
+            }
         }
 
         var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
@@ -563,7 +584,13 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             DateTimeOffset.UtcNow);
 
         var flows = BuildProjectedFlows(stored.Contract, stored.Servicing, runId, asOf);
-        await _operationsStore.SaveProjectionRunAsync(run, flows, ct).ConfigureAwait(false);
+        var savedRun = await _operationsStore.SaveProjectionRunAsync(run, flows, ct).ConfigureAwait(false);
+        await PublishAssetOperationsAsync(
+            stored.Contract,
+            metadata,
+            ct,
+            projectionRun: savedRun,
+            projectedFlows: flows).ConfigureAwait(false);
         return DirectLendingCommandResult<ProjectionRunDto>.Success(run);
     }
 
@@ -666,7 +693,18 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         }
 
         var run = new ReconciliationRunDto(runId, loanId, latestProjection.ProjectionRunId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "Completed");
-        await _operationsStore.SaveReconciliationRunAsync(run, results, exceptions, ct).ConfigureAwait(false);
+        var savedRun = await _operationsStore.SaveReconciliationRunAsync(run, results, exceptions, ct).ConfigureAwait(false);
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is not null)
+        {
+            await PublishAssetOperationsAsync(
+                stored.Contract,
+                metadata,
+                ct,
+                reconciliationRun: savedRun,
+                reconciliationResults: results).ConfigureAwait(false);
+        }
+
         return DirectLendingCommandResult<ReconciliationRunDto>.Success(run);
     }
 
@@ -838,6 +876,380 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> AddCollateralAsync(Guid loanId, AddCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var collateral = new CollateralDto(
+            Guid.NewGuid(),
+            request.CollateralType,
+            request.Description,
+            request.EstimatedValue,
+            request.Currency,
+            request.AppraisalDate);
+
+        var servicing = AddRevision(
+            stored.Servicing with
+            {
+                Collateral = [.. (stored.Servicing.Collateral ?? []), collateral]
+            },
+            "CollateralAdded",
+            request.AppraisalDate,
+            $"Added collateral {collateral.CollateralId}");
+
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            Collateral = collateral
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            servicing,
+            eventType: "loan.collateral-added",
+            effectiveDate: request.AppraisalDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
+    }
+
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> RemoveCollateralAsync(Guid loanId, RemoveCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var existing = stored.Servicing.Collateral ?? [];
+        if (existing.Count == 0 || existing.All(c => c.CollateralId != request.CollateralId))
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Success(stored.Servicing);
+        }
+
+        var effectiveDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var servicing = AddRevision(
+            stored.Servicing with
+            {
+                Collateral = existing.Where(c => c.CollateralId != request.CollateralId).ToArray()
+            },
+            "CollateralRemoved",
+            effectiveDate,
+            request.Reason);
+
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.CollateralId,
+            request.Reason
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            servicing,
+            eventType: "loan.collateral-removed",
+            effectiveDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
+    }
+
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> UpdateCollateralValueAsync(Guid loanId, UpdateCollateralValueRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var existing = stored.Servicing.Collateral ?? [];
+        if (existing.Count == 0 || existing.All(c => c.CollateralId != request.CollateralId))
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Success(stored.Servicing);
+        }
+
+        var servicing = AddRevision(
+            stored.Servicing with
+            {
+                Collateral = existing
+                    .Select(c => c.CollateralId == request.CollateralId
+                        ? c with { EstimatedValue = request.NewEstimatedValue, AppraisalDate = request.NewAppraisalDate }
+                        : c)
+                    .ToArray()
+            },
+            "CollateralValueUpdated",
+            request.NewAppraisalDate,
+            $"Revalued collateral {request.CollateralId}");
+
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.CollateralId,
+            request.NewEstimatedValue,
+            request.NewAppraisalDate
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            servicing,
+            eventType: "loan.collateral-value-updated",
+            effectiveDate: request.NewAppraisalDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
+    }
+
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var contract = stored.Contract with { Status = request.NewStatus };
+        var servicing = AddRevision(
+            stored.Servicing with { Status = request.NewStatus },
+            "StatusTransition",
+            request.EffectiveDate,
+            request.Reason);
+
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.NewStatus,
+            request.Reason,
+            request.EffectiveDate
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            contract,
+            servicing,
+            eventType: "loan.status-transitioned",
+            effectiveDate: request.EffectiveDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
+    }
+
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var servicing = AddRevision(
+            stored.Servicing with { IsPikToggled = request.EnablePik },
+            "PikToggle",
+            request.EffectiveDate,
+            request.Reason ?? (request.EnablePik ? "PIK enabled" : "PIK disabled"));
+
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.EnablePik,
+            request.EffectiveDate,
+            request.Reason
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            servicing,
+            eventType: "loan.pik-toggled",
+            effectiveDate: request.EffectiveDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
+    }
+
+    public async Task<DirectLendingCommandResult<LoanContractDetailDto>> RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanContractDetailDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var termsVersions = stored.Contract.TermsVersions.ToList();
+        var currentTerms = stored.Contract.CurrentTerms;
+        var currentTermsVersion = stored.Contract.CurrentTermsVersion;
+        if (request.NewTerms is not null)
+        {
+            var validationError = DirectLendingServiceSupport.ValidateTerms(request.NewTerms);
+            if (validationError is not null)
+            {
+                return new DirectLendingCommandResult<LoanContractDetailDto>(null, validationError);
+            }
+
+            if (_options.RequireSecurityMasterReferenceForDurableWrites)
+            {
+                validationError = DirectLendingServiceSupport.ValidateSecurityMasterReferenceRequired(request.NewTerms);
+                if (validationError is not null)
+                {
+                    return new DirectLendingCommandResult<LoanContractDetailDto>(null, validationError);
+                }
+            }
+
+            currentTermsVersion = termsVersions.Count == 0
+                ? 1
+                : termsVersions.Max(static version => version.VersionNumber) + 1;
+            currentTerms = request.NewTerms;
+            termsVersions.Add(DirectLendingServiceSupport.CreateTermsVersion(
+                currentTermsVersion,
+                request.NewTerms,
+                "loan.restructured",
+                request.Reason,
+                DateTimeOffset.UtcNow));
+        }
+
+        var haircutAmount = Math.Max(0m, request.HaircutAmount ?? 0m);
+        var principalOutstanding = Math.Max(0m, stored.Servicing.Balances.PrincipalOutstanding - haircutAmount);
+        var contract = stored.Contract with
+        {
+            Status = LoanStatus.Workout,
+            CurrentTermsVersion = currentTermsVersion,
+            CurrentTerms = currentTerms,
+            TermsVersions = termsVersions
+                .OrderBy(static item => item.VersionNumber)
+                .ToArray()
+        };
+        var servicing = AddRevision(
+            stored.Servicing with
+            {
+                Status = LoanStatus.Workout,
+                Balances = stored.Servicing.Balances with { PrincipalOutstanding = principalOutstanding }
+            },
+            "Restructuring",
+            request.EffectiveDate,
+            request.Reason);
+
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.RestructuringType,
+            request.Reason,
+            request.EffectiveDate,
+            request.NewTerms,
+            HaircutAmount = haircutAmount,
+            PrincipalHaircut = haircutAmount
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            contract,
+            servicing,
+            eventType: "loan.restructured",
+            effectiveDate: request.EffectiveDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanContractDetailDto>.Success(contract);
+    }
+
+    public async Task<DirectLendingCommandResult<LoanServicingStateDto>> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        if (stored is null)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
+        }
+
+        var remainingDays = stored.Contract.CurrentTerms.MaturityDate.DayNumber - request.AccrualDate.DayNumber;
+        if (remainingDays <= 0)
+        {
+            return DirectLendingCommandResult<LoanServicingStateDto>.Success(stored.Servicing);
+        }
+
+        var discountAmortization = DirectLendingInterop.CalculateStraightLineAmortization(
+            stored.Servicing.UnamortizedDiscount,
+            remainingDays);
+        var premiumAmortization = DirectLendingInterop.CalculateStraightLineAmortization(
+            stored.Servicing.UnamortizedPremium,
+            remainingDays);
+
+        var servicing = AddRevision(
+            stored.Servicing with
+            {
+                UnamortizedDiscount = Math.Max(0m, stored.Servicing.UnamortizedDiscount - discountAmortization),
+                UnamortizedPremium = Math.Max(0m, stored.Servicing.UnamortizedPremium - premiumAmortization)
+            },
+            "DiscountPremiumAmortization",
+            request.AccrualDate,
+            $"Amortized discount={discountAmortization:F4} premium={premiumAmortization:F4}");
+
+        using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
+        {
+            loanId,
+            request.AccrualDate,
+            DiscountAmortization = discountAmortization,
+            PremiumAmortization = premiumAmortization,
+            discountAmort = discountAmortization,
+            premiumAmort = premiumAmortization
+        });
+
+        await SaveAsync(
+            loanId,
+            stored.AggregateVersion,
+            stored.AggregateVersion + 1,
+            stored.Contract,
+            servicing,
+            eventType: "loan.discount-premium-amortized",
+            effectiveDate: request.AccrualDate,
+            payload,
+            metadata,
+            ct: ct).ConfigureAwait(false);
+
+        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
+    }
+
     public async Task<DirectLendingCommandResult<IReadOnlyList<LoanAggregateSnapshotDto>>> RebuildAllAsync(CancellationToken ct = default)
     {
         var loanIds = await _operationsStore.GetLoanIdsAsync(ct).ConfigureAwait(false);
@@ -863,6 +1275,25 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             ct).ConfigureAwait(false);
 
         return DirectLendingCommandResult<IReadOnlyList<LoanAggregateSnapshotDto>>.Success(rebuilt);
+    }
+
+    private static LoanServicingStateDto AddRevision(
+        LoanServicingStateDto servicing,
+        string sourceType,
+        DateOnly effectiveDate,
+        string notes)
+    {
+        var revisionNumber = servicing.ServicingRevision + 1;
+        return servicing with
+        {
+            ServicingRevision = revisionNumber,
+            RevisionHistory = DirectLendingServiceSupport.PrependRevision(
+                servicing.RevisionHistory,
+                revisionNumber,
+                sourceType,
+                effectiveDate,
+                notes)
+        };
     }
 
     private static IReadOnlyList<DirectLendingPaymentAllocationWrite> BuildPaymentAllocations(Guid loanId, Guid cashTransactionId, MixedPaymentResolutionDto resolution)
@@ -1009,5 +1440,89 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             ledgerJournalEntries,
             eventId,
             ct).ConfigureAwait(false);
+
+        await PublishAssetOperationsAsync(contract, metadata, ct).ConfigureAwait(false);
     }
+
+    private async Task PublishAssetOperationsAsync(
+        LoanContractDetailDto contract,
+        DirectLendingCommandMetadataDto? metadata,
+        CancellationToken ct,
+        ProjectionRunDto? projectionRun = null,
+        IReadOnlyList<ProjectedCashFlowDto>? projectedFlows = null,
+        ReconciliationRunDto? reconciliationRun = null,
+        IReadOnlyList<ReconciliationResultDto>? reconciliationResults = null)
+    {
+        if (_assetOperationsCommandService is null ||
+            contract.CurrentTerms.SecurityMasterReference is null)
+        {
+            return;
+        }
+
+        var projections = await _operationsStore.GetProjectionRunsAsync(contract.LoanId, ct).ConfigureAwait(false);
+        if (projectionRun is not null &&
+            projections.All(run => run.ProjectionRunId != projectionRun.ProjectionRunId))
+        {
+            projections = [.. projections, projectionRun];
+        }
+
+        var flowMap = new Dictionary<Guid, IReadOnlyList<ProjectedCashFlowDto>>();
+        foreach (var run in projections)
+        {
+            if (projectionRun is not null &&
+                projectedFlows is not null &&
+                run.ProjectionRunId == projectionRun.ProjectionRunId)
+            {
+                flowMap[run.ProjectionRunId] = projectedFlows;
+                continue;
+            }
+
+            flowMap[run.ProjectionRunId] = await _operationsStore
+                .GetProjectedCashFlowsAsync(run.ProjectionRunId, ct)
+                .ConfigureAwait(false);
+        }
+
+        var cashTransactions = await _operationsStore.GetCashTransactionsAsync(contract.LoanId, ct).ConfigureAwait(false);
+        var reconciliationRuns = await _operationsStore.GetReconciliationRunsAsync(contract.LoanId, ct).ConfigureAwait(false);
+        if (reconciliationRun is not null &&
+            reconciliationRuns.All(run => run.ReconciliationRunId != reconciliationRun.ReconciliationRunId))
+        {
+            reconciliationRuns = [.. reconciliationRuns, reconciliationRun];
+        }
+
+        var reconciliationResultMap = new Dictionary<Guid, IReadOnlyList<ReconciliationResultDto>>();
+        foreach (var run in reconciliationRuns)
+        {
+            if (reconciliationRun is not null &&
+                reconciliationResults is not null &&
+                run.ReconciliationRunId == reconciliationRun.ReconciliationRunId)
+            {
+                reconciliationResultMap[run.ReconciliationRunId] = reconciliationResults;
+                continue;
+            }
+
+            reconciliationResultMap[run.ReconciliationRunId] = await _operationsStore
+                .GetReconciliationResultsAsync(run.ReconciliationRunId, ct)
+                .ConfigureAwait(false);
+        }
+
+        var projection = AssetOperationsProjectionBuilder.FromDirectLending(
+            contract,
+            projections,
+            flowMap,
+            cashTransactions,
+            reconciliationRuns,
+            reconciliationResultMap);
+
+        await _assetOperationsCommandService
+            .UpsertProjectionAsync(projection, BuildAssetOperationsApproval(metadata), ct)
+            .ConfigureAwait(false);
+    }
+
+    private static AssetOperationsWriteApprovalDto BuildAssetOperationsApproval(DirectLendingCommandMetadataDto? metadata)
+        => new(
+            metadata?.SourceSystem ?? "meridian.direct-lending",
+            metadata?.CommandId?.ToString("D") ?? "direct-lending-command",
+            "Publish Direct Lending state into the shared Security Master Asset Operations projection.",
+            DateTimeOffset.UtcNow);
 }

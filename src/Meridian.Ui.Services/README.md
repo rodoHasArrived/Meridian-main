@@ -32,6 +32,10 @@ contracts aligned with shared UI models and compatibility gates.
 ## Important workflows
 
 Reporting status projections translate application report manifests into operator read models with template family, approval status, retry attempt, artifact, audit, and section lineage counts. Keep these projections aligned with browser and WPF Reporting surfaces so both shells show the same generated-run state.
+Preview and estimate services must fail closed when the API cannot return source-backed numbers.
+Do not return synthetic successful counts, latency values, sample sizes, or alignment metrics from
+UI-service fallbacks; callers should see an unavailable/error state instead of plausible-looking
+operational data.
 
 Use this module when changing workstation endpoint behavior, operator workflow read models,
 readiness projections, or UI-service orchestration consumed by browser and WPF clients.

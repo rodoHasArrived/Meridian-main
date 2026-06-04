@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import { AccountingScreen } from "@/screens/accounting-screen";
-import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type {
   CorporateAction,
   AccountingWorkspaceResponse,
@@ -11,6 +11,8 @@ import type {
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  ManualJournalEntryDraft,
+  ManualJournalEntryWorkbench,
   SecurityMasterConflict,
   SecurityMasterTrustSnapshot
 } from "@/types";
@@ -19,7 +21,28 @@ vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
     ...actual,
-    searchSecurities: vi.fn().mockResolvedValue([]),
+    searchSecurities: vi.fn().mockResolvedValue([
+      {
+        securityId: "22222222-2222-2222-2222-222222222222",
+        displayName: "Apple Inc.",
+        status: "Active",
+        classification: {
+          assetClass: "Equity",
+          subType: "CommonStock",
+          primaryIdentifierKind: "Ticker",
+          primaryIdentifierValue: "AAPL"
+        },
+        economicDefinition: {
+          currency: "USD",
+          version: 1,
+          effectiveFrom: "2026-01-01T00:00:00Z",
+          effectiveTo: null,
+          subType: "CommonStock",
+          assetFamily: "Equity",
+          issuerType: "Corporate"
+        }
+      }
+    ]),
     getSecurityIdentity: vi.fn().mockResolvedValue(null),
     getOperatorOverrides: vi.fn().mockResolvedValue({
       securityId: "sec-1",
@@ -56,6 +79,10 @@ vi.mock("@/lib/api", async () => {
     previewAccountingSystemImport: vi.fn(),
     getLatestAccountingSystemImport: vi.fn().mockResolvedValue(null),
     getLatestAccountingSystemReconciliation: vi.fn().mockResolvedValue(null),
+    getManualJournalEntryWorkbench: vi.fn(),
+    saveManualJournalEntryDraft: vi.fn(),
+    validateManualJournalEntryDraft: vi.fn(),
+    submitManualJournalEntryApproval: vi.fn(),
     getCorporateActions: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflows: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflow: vi.fn(),
@@ -497,7 +524,10 @@ const trialBalanceLines: LedgerTrialBalanceLine[] = [
     financialAccountId: "acct-cash",
     balance: 120500,
     entryCount: 12,
-    security: null
+    security: null,
+    sourceJournalEntryId: "je-cash-1",
+    sourceEventIds: ["evt-cash-1"],
+    approvalIds: ["approval-cash-1"]
   },
   {
     accountName: "Financing payable",
@@ -510,6 +540,62 @@ const trialBalanceLines: LedgerTrialBalanceLine[] = [
   }
 ];
 
+const manualJournalDraft: ManualJournalEntryDraft = {
+  journalEntryId: "manual-je-1",
+  status: "Draft",
+  fundProfileId: "fund-alpha",
+  ledgerBookId: "book-alpha",
+  accountingBasis: "Primary",
+  accountingDate: "2026-06-30",
+  periodId: "2026-06",
+  entityId: "entity-master",
+  fundNodeId: "fund-alpha",
+  currency: "USD",
+  memo: "Manual close adjustment",
+  preparedBy: "browser-user",
+  createdAtUtc: "2026-06-30T00:00:00Z",
+  updatedAtUtc: "2026-06-30T00:00:00Z",
+  version: 1,
+  lines: [
+    { lineId: "line-debit", side: "Debit", amount: 100, currency: "USD", accountPath: "Assets:Cash", securityId: "11111111-1111-1111-1111-111111111111", securityDisplayName: "Microsoft Corp.", description: "Security-linked cash debit" },
+    { lineId: "line-credit", side: "Credit", amount: 100, currency: "USD", accountPath: "Income:Interest", securityId: null, description: "Interest income credit" }
+  ],
+  evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+  evidenceAttachments: [
+    {
+      attachmentId: "source-doc-1",
+      displayName: "Controller support package",
+      evidenceKind: "SourceDocument",
+      uri: "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+      sourceSystem: "EvidenceVault",
+      addedAtUtc: "2026-06-30T00:00:00Z",
+      addedBy: "browser-user",
+      lineId: "line-debit",
+      description: null
+    }
+  ],
+  validationIssues: [],
+  totalDebits: 100,
+  totalCredits: 100,
+  imbalance: 0,
+  approvalId: null,
+  submittedAtUtc: null,
+  submittedBy: null
+};
+
+const manualJournalWorkbench: ManualJournalEntryWorkbench = {
+  fundProfileId: "fund-alpha",
+  ledgerBookId: "book-alpha",
+  loadedAtUtc: "2026-06-30T00:00:00Z",
+  ledgerBooks: [],
+  chartOfAccounts: [
+    { nodeId: "cash", path: "Assets:Cash", accountName: "Cash", accountType: "Asset", isArchived: false },
+    { nodeId: "interest-income", path: "Income:Interest", accountName: "Interest Income", accountType: "Revenue", isArchived: false }
+  ],
+  drafts: [manualJournalDraft],
+  auditTrail: []
+};
+
 async function renderAccountingScreen(
   screenData: AccountingWorkspaceResponse = data,
   initialEntry = "/accounting"
@@ -520,6 +606,43 @@ async function renderAccountingScreen(
 }
 
 describe("AccountingScreen", () => {
+  it("renders actionable Accounting loading work while workstation payloads bootstrap", async () => {
+    renderWithRouter(<AccountingScreen data={null} />, { initialEntries: ["/accounting/reconciliation"] });
+    await waitForAsyncEffects();
+
+    expect(screen.getByRole("status", { name: "Loading Accounting" })).toHaveTextContent(
+      "Waiting for ledger, reconciliation, cash-flow, and Security Master summaries"
+    );
+    expect(screen.getByRole("group", { name: "Route /accounting/reconciliation" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Workstream Reconciliation" })).toBeInTheDocument();
+    expect(screen.getByText("Ledger and reconciliation")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Accounting operations continuity while Accounting loads" })).toHaveAttribute(
+      "href",
+      "/accounting/operations-continuity"
+    );
+    expect(screen.getByRole("link", { name: "Open Data provider posture while Accounting loads" })).toHaveAttribute(
+      "href",
+      "/data/providers"
+    );
+  });
+
+  it("transitions from Accounting bootstrap loading to loaded content without changing hook order", async () => {
+    const { rerender } = renderWithRouter(<AccountingScreen data={null} />, { initialEntries: ["/accounting"] });
+    await waitForAsyncEffects();
+
+    expect(screen.getByRole("status", { name: "Loading Accounting" })).toBeInTheDocument();
+
+    rerender(
+      <TestMemoryRouter initialEntries={["/accounting"]}>
+        <AccountingScreen data={data} />
+      </TestMemoryRouter>
+    );
+    await waitForAsyncEffects();
+
+    expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
+    expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
+  });
+
   it("renders reconciliation, cash-flow, and reporting summaries", async () => {
     await renderAccountingScreen();
 
@@ -539,6 +662,49 @@ describe("AccountingScreen", () => {
     expect(screen.getByLabelText("Cash-flow status Variance review. Net variance $500.")).toHaveTextContent("Variance review");
     expect(screen.getByLabelText("Runs with variance: 1")).toHaveTextContent("1");
     expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
+  });
+
+  it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal entry workbench");
+    expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Manual close adjustment")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Microsoft Corp./ })).toBeInTheDocument();
+    expect(screen.getByText("Controller support package")).toBeInTheDocument();
+    expect(screen.getAllByText("Security").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();
+    expect(api.getManualJournalEntryWorkbench).toHaveBeenCalled();
+  });
+
+  it("selects Security Master results and adds source evidence on the manual journal entry workbench", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [{
+        ...manualJournalDraft,
+        lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? { ...line, securityId: null, securityDisplayName: null } : line),
+        evidenceLinks: [],
+        evidenceAttachments: []
+      }]
+    });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    await user.type(screen.getByPlaceholderText("Ticker, ISIN, CUSIP, FIGI, name"), "AAPL");
+    await user.click(screen.getByRole("button", { name: "Search Security Master" }));
+    await user.click(await screen.findByRole("button", { name: /Apple Inc./ }));
+    expect(screen.getByRole("button", { name: /Apple Inc./ })).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("Label"), "Trade blotter");
+    await user.type(screen.getByLabelText("Route or path"), "/api/workstation/evidence/subjects/accounting-record/trade-blotter");
+    await user.click(screen.getByRole("button", { name: "Attach" }));
+
+    expect(screen.getByText("Trade blotter")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();
   });
 
   it("renders approvals as a dedicated workstream and posts approval decisions", async () => {
@@ -770,13 +936,35 @@ describe("AccountingScreen", () => {
     expect(cashRow).toHaveAttribute("aria-expanded", "true");
     expect(cashRow).toHaveAttribute("aria-controls", "trial-balance-account-detail");
     expect(screen.getByRole("region", { name: "Trial-balance detail for Cash" })).toHaveTextContent("$120,500");
+    expect(screen.getByLabelText("Filter by General Ledger account")).toHaveValue("");
+    expect(screen.getByText("2 GL account rows")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Ledger lines for selected account" })).toHaveTextContent("je-cash-1");
+    expect(screen.getByRole("link", { name: "Open source event evt-cash-1 for Cash" })).toHaveAttribute(
+      "href",
+      "/accounting/audit?sourceEventId=evt-cash-1"
+    );
+    expect(screen.getByRole("link", { name: "Open journal entry je-cash-1 for Cash" })).toHaveAttribute(
+      "href",
+      "/accounting/ledger?journalEntryId=je-cash-1"
+    );
+    expect(screen.getByRole("link", { name: "Open approval approval-cash-1 for Cash" })).toHaveAttribute(
+      "href",
+      "/accounting/approvals?approvalId=approval-cash-1"
+    );
     expect(financingRow).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByText("-$500")).toHaveClass("text-danger");
 
-    await user.click(financingRow);
+    await user.type(screen.getByLabelText("Filter by General Ledger account"), "financing");
+
+    expect(screen.getByText("1 of 2 GL account rows")).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "Inspect trial-balance account Cash for Asset" })).not.toBeInTheDocument();
+    const filteredFinancingRow = screen.getByRole("row", { name: "Inspect trial-balance account Financing payable for Liability" });
+    expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
+
+    await user.click(filteredFinancingRow);
 
     expect(screen.getByRole("region", { name: "Trial-balance detail for Financing payable" })).toHaveTextContent("Credit / payable");
-    expect(financingRow).toHaveAttribute("aria-selected", "true");
+    expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
   });
 
   it("renders a useful trial-balance empty state instead of a blank table", async () => {

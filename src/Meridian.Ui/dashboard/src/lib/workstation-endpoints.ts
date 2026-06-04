@@ -1,73 +1,80 @@
+import { UI_API_ROUTES } from "./ui-api-routes.generated";
+
 export const WORKSTATION_API_ENDPOINTS = {
-  systemStatus: "/api/status",
-  session: "/api/workstation/session",
-  strategy: "/api/workstation/strategy",
-  strategyBriefing: "/api/workstation/strategy/briefing",
-  trading: "/api/workstation/trading",
-  tradingReadiness: "/api/workstation/trading/readiness",
-  operatorInbox: "/api/workstation/operator/inbox",
-  portfolio: "/api/workstation/portfolio",
-  portfolioSummary: "/api/workstation/portfolio/summary",
-  portfolioMultiAssetCoverage: "/api/workstation/portfolio/multi-asset-coverage",
-  data: "/api/workstation/data",
-  accounting: "/api/workstation/accounting",
-  accountingConfiguration: "/api/ledger/accounting-configuration",
-  accountingConfigurationChart: "/api/ledger/accounting-configuration/chart",
-  accountingConfigurationTemplates: "/api/ledger/accounting-configuration/templates",
-  accountingConfigurationPostingRules: "/api/ledger/accounting-configuration/posting-rules",
-  accountingConfigurationPreview: "/api/ledger/accounting-configuration/preview",
-  accountingConfigurationActivate: "/api/ledger/accounting-configuration/activate",
-  accountingConfigurationAudit: "/api/ledger/accounting-configuration/audit",
-  reporting: "/api/workstation/reporting",
-  workflowSummary: "/api/workstation/workflow-summary",
-  featureCapabilities: "/api/workstation/settings/feature-capabilities",
+  systemStatus: UI_API_ROUTES.Status,
+  session: UI_API_ROUTES.WorkstationSession,
+  strategy: UI_API_ROUTES.WorkstationStrategy,
+  strategyBriefing: UI_API_ROUTES.WorkstationStrategyBriefing,
+  trading: UI_API_ROUTES.WorkstationTrading,
+  tradingReadiness: UI_API_ROUTES.WorkstationTradingReadiness,
+  operatorInbox: UI_API_ROUTES.WorkstationOperatorInbox,
+  portfolio: UI_API_ROUTES.WorkstationPortfolio,
+  portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
+  portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
+  assetOperations: "/api/workstation/assets",
+  data: UI_API_ROUTES.WorkstationData,
+  accounting: UI_API_ROUTES.WorkstationAccounting,
+  accountingConfiguration: UI_API_ROUTES.LedgerAccountingConfiguration,
+  accountingConfigurationChart: UI_API_ROUTES.LedgerAccountingConfigurationChart,
+  accountingConfigurationTemplates: UI_API_ROUTES.LedgerAccountingConfigurationTemplates,
+  accountingConfigurationPostingRules: UI_API_ROUTES.LedgerAccountingConfigurationPostingRules,
+  accountingConfigurationPreview: UI_API_ROUTES.LedgerAccountingConfigurationPreview,
+  accountingConfigurationActivate: UI_API_ROUTES.LedgerAccountingConfigurationActivate,
+  accountingConfigurationAudit: UI_API_ROUTES.LedgerAccountingConfigurationAudit,
+  manualJournalEntryWorkbench: UI_API_ROUTES.LedgerManualJournalEntryWorkbench,
+  manualJournalEntryDrafts: UI_API_ROUTES.LedgerManualJournalEntryDrafts,
+  manualJournalEntryValidate: UI_API_ROUTES.LedgerManualJournalEntryValidate,
+  manualJournalEntrySubmitApproval: UI_API_ROUTES.LedgerManualJournalEntrySubmitApproval,
+  reporting: UI_API_ROUTES.WorkstationReporting,
+  workflowSummary: UI_API_ROUTES.WorkstationWorkflowSummary,
+  featureCapabilities: UI_API_ROUTES.WorkstationFeatureCapabilities,
   workflowLibrary: "/api/workstation/workflows",
   workflowPresets: "/api/workstation/workflows/presets",
-  operationsContinuity: "/api/workstation/operations/continuity",
-  operationsContinuityApprovalPolicyMatrix: "/api/workstation/operations/continuity/approval-policy-matrix",
-  operationsContinuityApprovalPolicyRules: "/api/workstation/operations/continuity/approval-policy-rules",
-  operationsContinuityCloseCalendar: "/api/workstation/operations/continuity/close-calendar",
-  operationsContinuityCloseCalendarItems: "/api/workstation/operations/continuity/close-calendar-items",
+  operationsContinuity: UI_API_ROUTES.OperationsContinuity,
+  operationsContinuityApprovalPolicyMatrix: UI_API_ROUTES.OperationsContinuityApprovalPolicyMatrix,
+  operationsContinuityApprovalPolicyRules: UI_API_ROUTES.OperationsContinuityApprovalPolicyRules,
+  operationsContinuityCloseCalendar: UI_API_ROUTES.OperationsContinuityCloseCalendar,
+  operationsContinuityCloseCalendarItems: UI_API_ROUTES.OperationsContinuityCloseCalendarItems,
   chiefOfStaff: "/api/workstation/chief-of-staff",
-  runHistory: "/api/workstation/runs/history",
+  runHistory: UI_API_ROUTES.RunHistory,
   runTimeline: "/api/workstation/runs/timeline",
   runSweeps: "/api/workstation/runs/sweeps",
-  evidenceSubjects: "/api/workstation/evidence/subjects",
+  evidenceSubjects: UI_API_ROUTES.WorkstationEvidenceSubjects,
   evidenceVaultSearch: "/api/workstation/evidence/vault/search",
-  evidenceTemplates: "/api/workstation/evidence/templates"
+  evidenceTemplates: UI_API_ROUTES.WorkstationEvidenceTemplates
 } as const;
 
 export const AUTH_API_ENDPOINTS = {
-  roles: "/api/auth/roles",
-  roleProfiles: "/api/auth/role-profiles"
+  roles: UI_API_ROUTES.AuthApiRoles,
+  roleProfiles: UI_API_ROUTES.AuthApiRoleProfiles
 } as const;
 
 export const FUND_STRUCTURE_API_ENDPOINTS = {
-  setupDraftValidate: "/api/fund-structure/setup-drafts/validate",
-  setupDraftCreate: "/api/fund-structure/setup-drafts/create",
+  setupDraftValidate: UI_API_ROUTES.FundStructureSetupDraftValidate,
+  setupDraftCreate: UI_API_ROUTES.FundStructureSetupDraftCreate,
   ledgerMappingWorkbench: "/api/fund-structure/ledger-mapping-view",
-  ledgerMappingAssignments: "/api/fund-structure/ledger-mapping-assignments",
+  ledgerMappingAssignments: UI_API_ROUTES.FundStructureLedgerMappingAssignments,
   transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview"
 } as const;
 
 export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
-  runLedger: "/api/workstation/runs/{runId}/ledger",
-  runContinuity: "/api/workstation/runs/{runId}/continuity",
-  runReviewPacket: "/api/workstation/runs/{runId}/review-packet",
-  runReconciliation: "/api/workstation/runs/{runId}/reconciliation"
+  runLedger: UI_API_ROUTES.RunsLedger,
+  runContinuity: UI_API_ROUTES.RunsContinuity,
+  runReviewPacket: UI_API_ROUTES.RunsReviewPacket,
+  runReconciliation: UI_API_ROUTES.RunsReconciliation
 } as const;
 
 export const EXECUTION_API_ENDPOINTS = {
-  ordersSubmit: "/api/execution/orders/submit",
+  ordersSubmit: UI_API_ROUTES.ExecutionOrderSubmit,
   ordersCancelAll: "/api/execution/orders/cancel-all",
-  positionsActionClose: "/api/execution/positions/actions/close",
-  sessions: "/api/execution/sessions",
-  sessionsCreate: "/api/execution/sessions/create",
-  audit: "/api/execution/audit",
-  controls: "/api/execution/controls",
-  defaultPositionLimit: "/api/execution/controls/position-limits/default",
+  positionsActionClose: UI_API_ROUTES.ExecutionPositionActionClose,
+  sessions: UI_API_ROUTES.ExecutionSessions,
+  sessionsCreate: UI_API_ROUTES.ExecutionSessionCreate,
+  audit: UI_API_ROUTES.ExecutionAudit,
+  controls: UI_API_ROUTES.ExecutionControls,
+  defaultPositionLimit: UI_API_ROUTES.ExecutionControlsDefaultPositionLimit,
   symbolPositionLimits: "/api/execution/controls/position-limits",
-  manualOverrides: "/api/execution/controls/manual-overrides"
+  manualOverrides: UI_API_ROUTES.ExecutionControlsManualOverrides
 } as const;
 
 export const RISK_API_ENDPOINTS = {
@@ -80,24 +87,24 @@ export const REPLAY_API_ENDPOINTS = {
 } as const;
 
 export const PROMOTION_API_ENDPOINTS = {
-  approve: "/api/promotion/approve",
+  approve: UI_API_ROUTES.PromotionApprove,
   evaluate: "/api/promotion/evaluate",
-  reject: "/api/promotion/reject",
-  history: "/api/promotion/history"
+  reject: UI_API_ROUTES.PromotionReject,
+  history: UI_API_ROUTES.PromotionHistory
 } as const;
 
 export const PORTFOLIO_API_ENDPOINTS = {
-  aggregate: "/api/portfolio/aggregate",
-  exposure: "/api/portfolio/exposure",
+  aggregate: UI_API_ROUTES.PortfolioAggregate,
+  exposure: UI_API_ROUTES.PortfolioExposure,
   household: "/api/portfolio/household"
 } as const;
 
 export const EXPORT_API_ENDPOINTS = {
-  analysis: "/api/export/analysis",
-  formats: "/api/export/formats",
-  preview: "/api/export/preview",
-  reportPacks: "/api/fund-structure/report-packs",
-  reportPackEvidenceBundle: "/api/fund-structure/report-packs/{reportId}/evidence-bundle"
+  analysis: UI_API_ROUTES.ExportAnalysis,
+  formats: UI_API_ROUTES.ExportFormats,
+  preview: UI_API_ROUTES.ExportPreview,
+  reportPacks: UI_API_ROUTES.FundReportPacks,
+  reportPackEvidenceBundle: UI_API_ROUTES.FundReportPackEvidenceBundle
 } as const;
 
 export const BROKERAGE_CONNECTION_API_ENDPOINTS = {
@@ -123,37 +130,37 @@ export const STRATEGY_ENGINE_API_ENDPOINTS = {
 } as const;
 
 export const SECURITY_MASTER_API_ENDPOINTS = {
-  base: "/api/security-master",
-  assetProfiles: "/api/security-master/asset-profiles",
-  assetProfileDrafts: "/api/security-master/asset-profiles/drafts",
-  assetProfileApprove: "/api/security-master/asset-profiles/approve",
-  assetProfileRollback: "/api/security-master/asset-profiles/rollback",
-  workstationSecurities: "/api/workstation/security-master/securities",
-  workstationConflictsBulkResolve: "/api/workstation/security-master/conflicts/bulk-resolve"
+  base: UI_API_ROUTES.SecurityMasterCreate,
+  assetProfiles: UI_API_ROUTES.SecurityMasterAssetProfiles,
+  assetProfileDrafts: UI_API_ROUTES.SecurityMasterAssetProfileDrafts,
+  assetProfileApprove: UI_API_ROUTES.SecurityMasterAssetProfileApprove,
+  assetProfileRollback: UI_API_ROUTES.SecurityMasterAssetProfileRollback,
+  workstationSecurities: UI_API_ROUTES.WorkstationSecurityMasterSearch,
+  workstationConflictsBulkResolve: UI_API_ROUTES.WorkstationSecurityMasterBulkResolveConflicts
 } as const;
 
 export const RECONCILIATION_API_ENDPOINTS = {
-  runs: "/api/workstation/reconciliation/runs",
-  statementRuns: "/api/workstation/reconciliation/statement-runs",
-  statementExceptions: "/api/workstation/reconciliation/statement-exceptions",
-  breakQueue: "/api/workstation/reconciliation/break-queue",
-  calibrationSummary: "/api/workstation/reconciliation/calibration-summary"
+  runs: UI_API_ROUTES.ReconciliationRuns,
+  statementRuns: UI_API_ROUTES.ReconciliationStatementRuns,
+  statementExceptions: UI_API_ROUTES.ReconciliationStatementExceptions,
+  breakQueue: UI_API_ROUTES.ReconciliationBreakQueue,
+  calibrationSummary: UI_API_ROUTES.ReconciliationCalibrationSummary
 } as const;
 
 export const BACKFILL_API_ENDPOINTS = {
-  checkpoints: "/api/backfill/checkpoints",
-  checkpointsResumable: "/api/backfill/checkpoints/resumable",
-  checkpointsValidation: "/api/backfill/checkpoints/validation",
-  progress: "/api/backfill/progress",
-  run: "/api/backfill/run",
-  runPreview: "/api/backfill/run/preview"
+  checkpoints: UI_API_ROUTES.BackfillCheckpoints,
+  checkpointsResumable: UI_API_ROUTES.BackfillCheckpointsResumable,
+  checkpointsValidation: UI_API_ROUTES.BackfillCheckpointsValidation,
+  progress: UI_API_ROUTES.BackfillProgress,
+  run: UI_API_ROUTES.BackfillRun,
+  runPreview: UI_API_ROUTES.BackfillRunPreview
 } as const;
 
 export const PROVIDER_API_ENDPOINTS = {
-  configure: "/api/providers/configure",
-  status: "/api/providers/status",
-  connections: "/api/providers/connections",
-  readiness: "/api/providers/readiness"
+  configure: UI_API_ROUTES.ProviderConfigure,
+  status: UI_API_ROUTES.ProviderStatus,
+  connections: UI_API_ROUTES.ProviderConnections,
+  readiness: UI_API_ROUTES.ProviderReadiness
 } as const;
 
 export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
@@ -170,51 +177,51 @@ export const PLAID_API_ENDPOINTS = {
 } as const;
 
 export const PROVIDER_ROUTING_API_ENDPOINTS = {
-  connections: "/api/provider-routing/connections",
-  bindings: "/api/provider-routing/bindings",
-  trustSnapshots: "/api/provider-routing/trust-snapshots",
-  preview: "/api/provider-routing/preview"
+  connections: UI_API_ROUTES.ProviderRoutingConnections,
+  bindings: UI_API_ROUTES.ProviderRoutingBindings,
+  trustSnapshots: UI_API_ROUTES.ProviderRoutingTrustSnapshots,
+  preview: UI_API_ROUTES.ProviderRoutingPreview
 } as const;
 
 export const SYMBOL_API_ENDPOINTS = {
-  symbols: "/api/symbols",
-  statistics: "/api/symbols/statistics",
-  search: "/api/symbols/search",
-  add: "/api/symbols/add",
-  bulkAdd: "/api/symbols/bulk-add"
+  symbols: UI_API_ROUTES.Symbols,
+  statistics: UI_API_ROUTES.SymbolsStatistics,
+  search: UI_API_ROUTES.SymbolsSearch,
+  add: UI_API_ROUTES.SymbolsAdd,
+  bulkAdd: UI_API_ROUTES.SymbolsBulkAdd
 } as const;
 
 export const QUALITY_API_ENDPOINTS = {
-  dashboard: "/api/quality/dashboard",
-  gaps: "/api/quality/gaps",
-  anomalies: "/api/quality/anomalies",
-  completeness: "/api/quality/completeness"
+  dashboard: UI_API_ROUTES.QualityDashboard,
+  gaps: UI_API_ROUTES.QualityGaps,
+  anomalies: UI_API_ROUTES.QualityAnomalies,
+  completeness: UI_API_ROUTES.QualityCompleteness
 } as const;
 
 export const MARKET_DATA_API_ENDPOINTS = {
   quotes: "/api/data/quotes",
   trades: "/api/data/trades",
   orderbook: "/api/data/orderbook",
-  quotesSnapshot: "/api/data/quotes-snapshot",
-  historical: "/api/historical"
+  quotesSnapshot: UI_API_ROUTES.DataQuotesSnapshot,
+  historical: UI_API_ROUTES.HistoricalData
 } as const;
 
 export const QUANT_API_ENDPOINTS = {
-  templates: "/api/quant/templates",
-  parameters: "/api/quant/parameters",
-  run: "/api/quant/run"
+  templates: UI_API_ROUTES.QuantTemplates,
+  parameters: UI_API_ROUTES.QuantParameters,
+  run: UI_API_ROUTES.QuantRun
 } as const;
 
 export const COVERED_CALL_API_ENDPOINTS = {
-  runs: "/api/strategies/covered-call/runs",
-  chainPreview: "/api/strategies/covered-call/chain-preview",
+  runs: UI_API_ROUTES.CoveredCallRuns,
+  chainPreview: UI_API_ROUTES.CoveredCallChainPreview,
   runStatus: coveredCallRunStatusEndpoint,
   runResult: coveredCallRunResultEndpoint,
   runCancel: coveredCallRunCancelEndpoint
 } as const;
 
 export const CONFIG_API_ENDPOINTS = {
-  config: "/api/config"
+  config: UI_API_ROUTES.Config
 } as const;
 
 export type BrokerageConnectionProvider = "alpaca" | "robinhood";
@@ -232,11 +239,11 @@ export function brokerageConnectionConnectEndpoint(provider: BrokerageConnection
 }
 
 export function providerCredentialEndpoint(providerId: string): string {
-  return `/api/providers/${pathSegment(providerId, "providerId")}/credentials`;
+  return routeWithParam(UI_API_ROUTES.ProviderCredentialMutation, "providerId", providerId);
 }
 
 export function providerVerifyEndpoint(providerId: string): string {
-  return `/api/providers/${pathSegment(providerId, "providerId")}/verify`;
+  return routeWithParam(UI_API_ROUTES.ProviderCredentialVerify, "providerId", providerId);
 }
 
 export function workstationTradingReadinessEndpoint(fundAccountId?: string): string {
@@ -295,27 +302,27 @@ export function workstationOperationsContinuityEndpoint(options: {
 }
 
 export function workstationOperationsContinuityDetailEndpoint(workflowId: string): string {
-  return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}/${pathSegment(workflowId, "workflowId")}`;
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityById, "workflowId", workflowId);
 }
 
 export function workstationOperationsContinuityApprovalApproveEndpoint(workflowId: string): string {
-  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/approval/approve`;
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityApprovalApprove, "workflowId", workflowId);
 }
 
 export function workstationOperationsContinuityApprovalRejectEndpoint(workflowId: string): string {
-  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/approval/reject`;
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityApprovalReject, "workflowId", workflowId);
 }
 
 export function workstationOperationsContinuityTimelineEndpoint(workflowId: string): string {
-  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/timeline`;
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityTimeline, "workflowId", workflowId);
 }
 
 export function workstationOperationsContinuityBreaksEndpoint(workflowId: string): string {
-  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/breaks`;
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityBreaks, "workflowId", workflowId);
 }
 
 export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId: string): string {
-  return `${workstationOperationsContinuityDetailEndpoint(workflowId)}/ledger-preview`;
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityLedgerPreview, "workflowId", workflowId);
 }
 
 export function workstationOperationsContinuityCloseCalendarEndpoint(options: {
@@ -352,7 +359,7 @@ export function workstationChiefOfStaffHealthEndpoint(): string {
 }
 
 export function workstationRunLedgerEndpoint(runId: string): string {
-  return `${workstationRunBaseEndpoint(runId)}/ledger`;
+  return routeWithParam(UI_API_ROUTES.RunsLedger, "runId", runId);
 }
 
 export function workstationRunLedgerJournalEndpoint(runId: string, options: { from?: string; to?: string } = {}): string {
@@ -360,19 +367,19 @@ export function workstationRunLedgerJournalEndpoint(runId: string, options: { fr
 }
 
 export function workstationRunContinuityEndpoint(runId: string): string {
-  return `${workstationRunBaseEndpoint(runId)}/continuity`;
+  return routeWithParam(UI_API_ROUTES.RunsContinuity, "runId", runId);
 }
 
 export function workstationRunReviewPacketEndpoint(runId: string, fundAccountId?: string): string {
-  return `${workstationRunBaseEndpoint(runId)}/review-packet${queryString({ fundAccountId })}`;
+  return `${routeWithParam(UI_API_ROUTES.RunsReviewPacket, "runId", runId)}${queryString({ fundAccountId })}`;
 }
 
 export function workstationRunReconciliationEndpoint(runId: string): string {
-  return `${workstationRunBaseEndpoint(runId)}/reconciliation`;
+  return routeWithParam(UI_API_ROUTES.RunsReconciliation, "runId", runId);
 }
 
 export function workstationRunReconciliationHistoryEndpoint(runId: string): string {
-  return `${workstationRunReconciliationEndpoint(runId)}/history`;
+  return routeWithParam(UI_API_ROUTES.RunsReconciliationHistory, "runId", runId);
 }
 
 export function workstationRunHistoryEndpoint(options: { mode?: string; status?: string; limit?: number } = {}): string {
@@ -394,19 +401,35 @@ export function workstationEvidenceSubjectBaseEndpoint(subjectKind: string, subj
 }
 
 export function workstationEvidencePacketEndpoint(subjectKind: string, subjectId: string): string {
-  return `${workstationEvidenceSubjectBaseEndpoint(subjectKind, subjectId)}/packet`;
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.WorkstationEvidenceSubjectPacket, "subjectKind", subjectKind),
+    "subjectId",
+    subjectId
+  );
 }
 
 export function workstationEvidenceGraphEndpoint(subjectKind: string, subjectId: string): string {
-  return `${workstationEvidenceSubjectBaseEndpoint(subjectKind, subjectId)}/graph`;
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.WorkstationEvidenceSubjectGraph, "subjectKind", subjectKind),
+    "subjectId",
+    subjectId
+  );
 }
 
 export function workstationEvidenceValidateEndpoint(subjectKind: string, subjectId: string): string {
-  return `${workstationEvidenceSubjectBaseEndpoint(subjectKind, subjectId)}/validate`;
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.WorkstationEvidenceSubjectValidate, "subjectKind", subjectKind),
+    "subjectId",
+    subjectId
+  );
 }
 
 export function workstationEvidenceExportManifestEndpoint(subjectKind: string, subjectId: string): string {
-  return `${workstationEvidenceSubjectBaseEndpoint(subjectKind, subjectId)}/export-manifest`;
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.WorkstationEvidenceSubjectExportManifest, "subjectKind", subjectKind),
+    "subjectId",
+    subjectId
+  );
 }
 
 export function coveredCallRunsEndpoint(limit?: number): string {
@@ -418,23 +441,23 @@ export function coveredCallRunEndpoint(runId: string): string {
 }
 
 export function coveredCallRunStatusEndpoint(runId: string): string {
-  return `${coveredCallRunEndpoint(runId)}/status`;
+  return routeWithParam(UI_API_ROUTES.CoveredCallRunStatus, "runId", runId);
 }
 
 export function coveredCallRunResultEndpoint(runId: string): string {
-  return `${coveredCallRunEndpoint(runId)}/result`;
+  return routeWithParam(UI_API_ROUTES.CoveredCallRunResult, "runId", runId);
 }
 
 export function coveredCallRunCancelEndpoint(runId: string): string {
-  return `${coveredCallRunEndpoint(runId)}/cancel`;
+  return routeWithParam(UI_API_ROUTES.CoveredCallRunCancel, "runId", runId);
 }
 
 export function promotionEvaluateEndpoint(runId: string): string {
-  return `${PROMOTION_API_ENDPOINTS.evaluate}/${pathSegment(runId, "runId")}`;
+  return routeWithParam(UI_API_ROUTES.PromotionEvaluate, "runId", runId);
 }
 
 export function executionOrderCancelEndpoint(orderId: string): string {
-  return `/api/execution/orders/${pathSegment(orderId, "orderId")}/cancel`;
+  return routeWithParam(UI_API_ROUTES.ExecutionOrderCancel, "orderId", orderId);
 }
 
 export function executionPositionCloseEndpoint(): string {
@@ -442,15 +465,15 @@ export function executionPositionCloseEndpoint(): string {
 }
 
 export function executionSessionEndpoint(sessionId: string): string {
-  return `${EXECUTION_API_ENDPOINTS.sessions}/${pathSegment(sessionId, "sessionId")}`;
+  return routeWithParam(UI_API_ROUTES.ExecutionSessionById, "sessionId", sessionId);
 }
 
 export function executionSessionCloseEndpoint(sessionId: string): string {
-  return `${executionSessionEndpoint(sessionId)}/close`;
+  return routeWithParam(UI_API_ROUTES.ExecutionSessionClose, "sessionId", sessionId);
 }
 
 export function executionSessionReplayEndpoint(sessionId: string): string {
-  return `${executionSessionEndpoint(sessionId)}/replay`;
+  return routeWithParam(UI_API_ROUTES.ExecutionSessionReplay, "sessionId", sessionId);
 }
 
 export function executionAuditEndpoint(take = 20): string {
@@ -458,11 +481,11 @@ export function executionAuditEndpoint(take = 20): string {
 }
 
 export function executionManualOverrideClearEndpoint(overrideId: string): string {
-  return `${EXECUTION_API_ENDPOINTS.manualOverrides}/${pathSegment(overrideId, "overrideId")}/clear`;
+  return routeWithParam(UI_API_ROUTES.ExecutionControlsManualOverrideClear, "overrideId", overrideId);
 }
 
 export function executionSymbolPositionLimitEndpoint(symbol: string): string {
-  return `${EXECUTION_API_ENDPOINTS.symbolPositionLimits}/${pathSegment(symbol, "symbol")}`;
+  return routeWithParam(UI_API_ROUTES.ExecutionControlsSymbolPositionLimit, "symbol", symbol);
 }
 
 export function replayFilesEndpoint(symbol?: string): string {
@@ -483,7 +506,7 @@ export function exportPreviewEndpoint(profile?: string): string {
 
 export function reportPackEvidenceBundleEndpoint(reportId?: string): string {
   return reportId
-    ? EXPORT_API_ENDPOINTS.reportPackEvidenceBundle.replace("{reportId}", pathSegment(reportId, "reportId"))
+    ? routeWithParam(UI_API_ROUTES.FundReportPackEvidenceBundle, "reportId", reportId)
     : EXPORT_API_ENDPOINTS.reportPackEvidenceBundle;
 }
 
@@ -513,31 +536,31 @@ export function replaySessionActionEndpoint(
 }
 
 export function workstationRunCompareEndpoint(): string {
-  return `${workstationRunRootEndpoint()}/compare`;
+  return UI_API_ROUTES.RunsCompare;
 }
 
 export function workstationRunDiffEndpoint(): string {
-  return `${workstationRunRootEndpoint()}/diff`;
+  return UI_API_ROUTES.RunsDiff;
 }
 
 export function workstationRunAttributionEndpoint(runId: string): string {
-  return `${workstationRunBaseEndpoint(runId)}/attribution`;
+  return routeWithParam(UI_API_ROUTES.RunsAttribution, "runId", runId);
 }
 
 export function workstationRunFillsEndpoint(runId: string, symbol?: string): string {
-  return `${workstationRunBaseEndpoint(runId)}/fills${queryString({ symbol })}`;
+  return `${routeWithParam(UI_API_ROUTES.RunsFills, "runId", runId)}${queryString({ symbol })}`;
 }
 
 export function workstationRunEquityCurveEndpoint(runId: string): string {
-  return `${workstationRunBaseEndpoint(runId)}/equity-curve`;
+  return routeWithParam(UI_API_ROUTES.RunsEquityCurve, "runId", runId);
 }
 
 export function portfolioRunCashFlowsEndpoint(runId: string): string {
-  return `/api/portfolio/${pathSegment(runId, "runId")}/cash-flows`;
+  return routeWithParam(UI_API_ROUTES.PortfolioCashFlows, "runId", runId);
 }
 
 export function workstationRunLedgerTrialBalanceEndpoint(runId: string, accountType?: string): string {
-  return `${workstationRunLedgerEndpoint(runId)}/trial-balance${queryString({ accountType })}`;
+  return `${routeWithParam(UI_API_ROUTES.RunsLedgerTrialBalance, "runId", runId)}${queryString({ accountType })}`;
 }
 
 export function workstationSecurityMasterSearchEndpoint(options: {
@@ -549,7 +572,11 @@ export function workstationSecurityMasterSearchEndpoint(options: {
 }
 
 export function workstationSecurityMasterEntryEndpoint(securityId: string): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.workstationSecurities}/${pathSegment(securityId, "securityId")}`;
+  return routeWithParam(UI_API_ROUTES.WorkstationSecurityMasterById, "securityId", securityId);
+}
+
+export function workstationAssetOperationsEndpoint(securityId: string): string {
+  return routeWithParam(UI_API_ROUTES.WorkstationAssetOperations, "securityId", securityId);
 }
 
 export function workstationSecurityMasterIdentityEndpoint(securityId: string): string {
@@ -557,19 +584,19 @@ export function workstationSecurityMasterIdentityEndpoint(securityId: string): s
 }
 
 export function workstationSecurityMasterHistoryEndpoint(securityId: string): string {
-  return `${workstationSecurityMasterEntryEndpoint(securityId)}/history`;
+  return routeWithParam(UI_API_ROUTES.WorkstationSecurityMasterHistory, "securityId", securityId);
 }
 
 export function workstationSecurityMasterEconomicDefinitionEndpoint(securityId: string): string {
-  return `${workstationSecurityMasterEntryEndpoint(securityId)}/economic-definition`;
+  return routeWithParam(UI_API_ROUTES.WorkstationSecurityMasterEconomicDefinition, "securityId", securityId);
 }
 
 export function workstationSecurityMasterTrustSnapshotEndpoint(securityId: string): string {
-  return `${workstationSecurityMasterEntryEndpoint(securityId)}/trust-snapshot`;
+  return routeWithParam(UI_API_ROUTES.WorkstationSecurityMasterTrustSnapshot, "securityId", securityId);
 }
 
 export function workstationSecurityMasterInstrumentPassportEndpoint(securityId: string): string {
-  return `${workstationSecurityMasterEntryEndpoint(securityId)}/passport`;
+  return routeWithParam(UI_API_ROUTES.WorkstationSecurityMasterInstrumentPassport, "securityId", securityId);
 }
 
 export function securityMasterEntryEndpoint(): string {
@@ -585,7 +612,7 @@ export function securityMasterAssetProfilesEndpoint(): string {
 }
 
 export function securityMasterAssetProfileLineageEndpoint(profileId: string): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.assetProfiles}/${pathSegment(profileId, "profileId")}/lineage`;
+  return routeWithParam(UI_API_ROUTES.SecurityMasterAssetProfileLineage, "profileId", profileId);
 }
 
 export function securityMasterAssetProfileDraftsEndpoint(): string {
@@ -601,31 +628,31 @@ export function securityMasterAssetProfileRollbackEndpoint(): string {
 }
 
 export function securityMasterAliasUpsertEndpoint(): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.base}/aliases/upsert`;
+  return UI_API_ROUTES.SecurityMasterAliasesUpsert;
 }
 
 export function securityMasterCorporateActionsEndpoint(securityId: string): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.base}/${pathSegment(securityId, "securityId")}/corporate-actions`;
+  return routeWithParam(UI_API_ROUTES.SecurityMasterCorporateActions, "securityId", securityId);
 }
 
 export function securityMasterTradingParametersEndpoint(securityId: string): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.base}/${pathSegment(securityId, "securityId")}/trading-parameters`;
+  return routeWithParam(UI_API_ROUTES.SecurityMasterTradingParameters, "securityId", securityId);
 }
 
 export function securityMasterOperatorOverridesEndpoint(securityId: string): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.base}/${pathSegment(securityId, "securityId")}/operator-overrides`;
+  return routeWithParam(UI_API_ROUTES.SecurityMasterOperatorOverrides, "securityId", securityId);
 }
 
 export function securityMasterConflictsEndpoint(): string {
-  return `${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`;
+  return UI_API_ROUTES.SecurityMasterConflicts;
 }
 
 export function securityMasterConflictResolveEndpoint(conflictId: string): string {
-  return `${securityMasterConflictsEndpoint()}/${pathSegment(conflictId, "conflictId")}/resolve`;
+  return routeWithParam(UI_API_ROUTES.SecurityMasterConflictResolve, "conflictId", conflictId);
 }
 
 export function reconciliationRunEndpoint(reconciliationRunId: string): string {
-  return `${RECONCILIATION_API_ENDPOINTS.runs}/${pathSegment(reconciliationRunId, "reconciliationRunId")}`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationRunById, "reconciliationRunId", reconciliationRunId);
 }
 
 export function reconciliationStatementRunsEndpoint(): string {
@@ -633,7 +660,7 @@ export function reconciliationStatementRunsEndpoint(): string {
 }
 
 export function reconciliationStatementRunEndpoint(runId: string): string {
-  return `${RECONCILIATION_API_ENDPOINTS.statementRuns}/${pathSegment(runId, "runId")}`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationStatementRunById, "runId", runId);
 }
 
 export function reconciliationStatementExceptionsEndpoint(): string {
@@ -645,79 +672,83 @@ export function reconciliationBreakQueueEndpoint(options: { status?: string; fun
 }
 
 export function reconciliationBreakEndpoint(breakId: string): string {
-  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/${pathSegment(breakId, "breakId")}`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakQueueById, "breakId", breakId);
 }
 
 export function reconciliationBreakAuditEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/audit`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakAudit, "breakId", breakId);
 }
 
 export function reconciliationBreakReviewEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/review`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakReview, "breakId", breakId);
 }
 
 export function reconciliationBreakResolveEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/resolve`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakResolve, "breakId", breakId);
 }
 
 export function reconciliationBreakAssignEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/assign`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakAssign, "breakId", breakId);
 }
 
 export function reconciliationBreakTransitionEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/transition`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakTransition, "breakId", breakId);
 }
 
 export function reconciliationBreakCommentsEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/comments`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakComments, "breakId", breakId);
 }
 
 export function reconciliationBreakCommentEndpoint(breakId: string, commentId: string): string {
-  return `${reconciliationBreakCommentsEndpoint(breakId)}/${pathSegment(commentId, "commentId")}`;
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.ReconciliationBreakComment, "breakId", breakId),
+    "commentId",
+    commentId
+  );
 }
 
 export function reconciliationBreakRootCauseEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/root-cause`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakRootCause, "breakId", breakId);
 }
 
 export function reconciliationBreakResolutionEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/resolution`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakResolution, "breakId", breakId);
 }
 
 export function reconciliationBreakSignOffEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/sign-off`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakSignOff, "breakId", breakId);
 }
 
 export function reconciliationBreakReopenEndpoint(breakId: string): string {
-  return `${reconciliationBreakEndpoint(breakId)}/reopen`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakReopen, "breakId", breakId);
 }
 
 export function reconciliationBreakBulkDryRunEndpoint(): string {
-  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/dry-run`;
+  return UI_API_ROUTES.ReconciliationBreakBulkDryRun;
 }
 
 export function reconciliationBreakBulkExecuteEndpoint(): string {
-  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/execute`;
+  return UI_API_ROUTES.ReconciliationBreakBulkExecute;
 }
 
 export function reconciliationBreakBulkStatusEndpoint(bulkActionId: string): string {
-  return `${RECONCILIATION_API_ENDPOINTS.breakQueue}/bulk/${pathSegment(bulkActionId, "bulkActionId")}`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakBulkStatus, "bulkActionId", bulkActionId);
 }
 
 export function reconciliationBreakBulkResultEndpoint(bulkActionId: string): string {
-  return `${reconciliationBreakBulkStatusEndpoint(bulkActionId)}/result`;
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakBulkResult, "bulkActionId", bulkActionId);
 }
 
 export function backfillCheckpointEndpoint(jobId: string): string {
-  return `${BACKFILL_API_ENDPOINTS.checkpoints}/${pathSegment(jobId, "jobId")}`;
+  return routeWithParam(UI_API_ROUTES.BackfillCheckpointById, "jobId", jobId);
 }
 
 export function backfillCheckpointPendingEndpoint(jobId: string): string {
-  return `${backfillCheckpointEndpoint(jobId)}/pending`;
+  return routeWithParam(UI_API_ROUTES.BackfillCheckpointPending, "jobId", jobId);
 }
 
 export function backfillCheckpointResumeEndpoint(jobId: string): string {
-  return `${backfillCheckpointEndpoint(jobId)}/resume`;
+  return routeWithParam(UI_API_ROUTES.BackfillCheckpointResume, "jobId", jobId);
 }
 
 export function providerEndpoint(providerId: string): string {
@@ -741,19 +772,19 @@ export function symbolEndpoint(symbol: string): string {
 }
 
 export function symbolRemoveEndpoint(symbol: string): string {
-  return `${symbolEndpoint(symbol)}/remove`;
+  return routeWithParam(UI_API_ROUTES.SymbolRemove, "symbol", symbol);
 }
 
 export function symbolArchiveEndpoint(symbol: string): string {
-  return `${symbolEndpoint(symbol)}/archive`;
+  return routeWithParam(UI_API_ROUTES.SymbolArchive, "symbol", symbol);
 }
 
 export function qualityAnomalyAcknowledgeEndpoint(anomalyId: string): string {
-  return `${QUALITY_API_ENDPOINTS.anomalies}/${pathSegment(anomalyId, "anomalyId")}/acknowledge`;
+  return routeWithParam(UI_API_ROUTES.QualityAnomaliesAcknowledge, "anomalyId", anomalyId);
 }
 
 export function marketDataQuoteEndpoint(symbol: string): string {
-  return `${MARKET_DATA_API_ENDPOINTS.quotes}/${pathSegment(symbol, "symbol")}`;
+  return routeWithParam(UI_API_ROUTES.DataQuotes, "symbol", symbol);
 }
 
 export function marketDataTradesEndpoint(symbol: string, limit = 25): string {
@@ -791,6 +822,16 @@ function pathSegment(value: string, name: string): string {
   }
 
   return encodeURIComponent(trimmed);
+}
+
+function routeWithParam(route: string, paramName: string, value: string): string {
+  const encodedValue = pathSegment(value, paramName);
+  const simplePlaceholder = `{${paramName}}`;
+  if (route.includes(simplePlaceholder)) {
+    return route.replace(simplePlaceholder, encodedValue);
+  }
+
+  return route.replace(new RegExp(`\\{${paramName}:[^}]+\\}`, "g"), encodedValue);
 }
 
 function queryString(params: Record<string, string | number | boolean | readonly string[] | null | undefined>): string {

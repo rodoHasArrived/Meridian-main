@@ -99,6 +99,7 @@ import {
   workstationChiefOfStaffSessionsEndpoint,
   workstationChiefOfStaffTraceExportEndpoint,
   workstationOperatorInboxEndpoint,
+  workstationAssetOperationsEndpoint,
   workstationOperationsContinuityBreaksEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
@@ -142,6 +143,7 @@ describe("workstation API endpoint catalog", () => {
       trading: "/api/workstation/trading",
       tradingReadiness: "/api/workstation/trading/readiness",
       portfolio: "/api/workstation/portfolio",
+      assetOperations: "/api/workstation/assets",
       data: "/api/workstation/data",
       accounting: "/api/workstation/accounting",
       reporting: "/api/workstation/reporting",
@@ -159,6 +161,12 @@ describe("workstation API endpoint catalog", () => {
       evidenceVaultSearch: "/api/workstation/evidence/vault/search",
       evidenceTemplates: "/api/workstation/evidence/templates"
     });
+  });
+
+  it("builds security-id scoped Asset Operations endpoints", () => {
+    expect(workstationAssetOperationsEndpoint("security / 1")).toBe(
+      "/api/workstation/assets/security%20%2F%201/operations"
+    );
   });
 
   it("builds account-scoped operator inbox endpoints without changing the base contract", () => {

@@ -104,7 +104,7 @@ public sealed class QuickBooksFixtureAccountingProvider : IAccountingSystemProvi
             Warnings:
             [
                 "Fixture data is read-only and does not represent a live QuickBooks Online company.",
-                "External posting/export is disabled for the contract-first slice."
+                "Meridian remains the source of all ledger truth; external posting/export is disabled for the contract-first evidence lane."
             ]);
 
         return Task.FromResult(new AccountingSystemImportDetailDto(summary, chart, journal, trialBalance));

@@ -40,28 +40,7 @@ public sealed class LoanAccountingProjector
         LedgerPostingKindDto postingKind = LedgerPostingKindDto.Originating,
         LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null)
     {
-        if (_journalStore is null)
-        {
-            throw new DirectLendingCommandException(
-                new DirectLendingCommandError(
-                    DirectLendingErrorCode.Validation,
-                    "Ledger journal store is required for direct-lending ledger-impacting events."));
-        }
-
         var accountingDate = effectiveDate ?? contract.EffectiveDate;
-        var period = await ResolvePostingPeriodAsync(accountingDate, postingKind, ct).ConfigureAwait(false);
-        if (period is null)
-        {
-            throw new DirectLendingCommandException(
-                new DirectLendingCommandError(
-                    DirectLendingErrorCode.Validation,
-                    $"No ledger accounting period accepts {postingKind} posting date '{accountingDate:yyyy-MM-dd}'."));
-        }
-
-        var policy = await _accountingPolicyService
-            .ResolvePolicyAsync(new AccountingPolicyQuery(AccountingBasisKindDto.Primary, accountingDate), ct)
-            .ConfigureAwait(false);
-
         var journalEntryId = Guid.NewGuid();
         var timestamp = new DateTimeOffset(accountingDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var currency = contract.CurrentTerms.BaseCurrency.ToString();
@@ -172,6 +151,27 @@ public sealed class LoanAccountingProjector
         {
             return [];
         }
+
+        if (_journalStore is null)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    "Ledger journal store is required for direct-lending ledger-impacting events."));
+        }
+
+        var period = await ResolvePostingPeriodAsync(accountingDate, postingKind, ct).ConfigureAwait(false);
+        if (period is null)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"No ledger accounting period accepts {postingKind} posting date '{accountingDate:yyyy-MM-dd}'."));
+        }
+
+        var policy = await _accountingPolicyService
+            .ResolvePolicyAsync(new AccountingPolicyQuery(AccountingBasisKindDto.Primary, accountingDate), ct)
+            .ConfigureAwait(false);
 
         var securityLineage = await ResolveSecurityMasterPostingLineageAsync(securityReference, eventType, ct).ConfigureAwait(false);
         instrumentSymbol = securityLineage.Symbol;

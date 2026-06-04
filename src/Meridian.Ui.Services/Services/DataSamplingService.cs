@@ -256,14 +256,10 @@ public sealed class DataSamplingService
             };
         }
 
-        // Return mock estimate if API unavailable
         return new SampleEstimate
         {
-            Success = true,
-            TotalSourceRecords = 1000000,
-            EstimatedSampleSize = options.SampleSize ?? (long)((options.SamplePercent ?? 10) * 10000),
-            EstimatedFileSizeBytes = (options.SampleSize ?? 100000) * 150,
-            EstimatedDurationSeconds = 5
+            Success = false,
+            Error = response.ErrorMessage ?? "Sampling estimate unavailable"
         };
     }
 

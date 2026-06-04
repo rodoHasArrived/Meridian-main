@@ -1,4 +1,4 @@
-import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards } from "lucide-react";
+import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
@@ -26,6 +26,7 @@ import {
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useAccountingConfigurationViewModel,
   useAccountingCashFlowViewModel,
+  useManualJournalEntryWorkbenchViewModel,
   useAccountingReconciliationViewModel,
   useAccountingReportingViewModel,
   useReconciliationResolveDialogViewModel,
@@ -37,6 +38,7 @@ import type {
   CalibrationSummaryViewModel,
   AccountingWorkstream,
   AccountingConfigurationViewModel,
+  ManualJournalEntryWorkbenchViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
@@ -340,6 +342,10 @@ const focusCopy: Record<string, { title: string; description: string }> = {
     title: "Configurable accounting setup",
     description: "Books, chart accounts, journal templates, posting rules, validation, and action audit evidence are prepared before activation."
   },
+  "journal-entries": {
+    title: "Journal entry workbench",
+    description: "Manual journal entry drafts, line-level Security Master attribution, GL account picks, balancing validation, and approval submission stay endpoint-backed."
+  },
   reconciliation: {
     title: "Reconciliation queue",
     description: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting."
@@ -400,7 +406,7 @@ function AccountingSystemReconciliationPanel({
               QuickBooks fixture evidence
             </CardTitle>
             <CardDescription className="mt-2">
-              External accounting-system records are imported as evidence for comparison with Meridian ledger records; posting remains disabled.
+              External accounting-system records are imported as read-only evidence against Meridian-owned ledger truth; posting back to the external GL remains disabled.
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -963,6 +969,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel();
+  const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries");
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);
   const [accountingSystemImport, setAccountingSystemImport] = useState<AccountingSystemImportDetail | null>(null);
@@ -1124,28 +1131,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     void refreshCloseWorkflow();
   }, [data]);
 
-  if (!data) {
-    const loading = buildAccountingLoadingViewState(pathname);
-    return (
-      <Card
-        role={loading.role}
-        aria-busy={loading.ariaBusy}
-        aria-live={loading.ariaLive}
-        aria-labelledby={loading.titleId}
-        aria-describedby={loading.detailId}
-      >
-        <CardHeader>
-          <CardTitle id={loading.titleId}>{loading.title}</CardTitle>
-          <CardDescription id={loading.detailId}>{loading.detail}</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  const focus = focusCopy[workstream];
-  const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
   const closeCommandCenter = useMemo(
-    () => buildCloseCommandCenterViewState({
+    () => data ? buildCloseCommandCenterViewState({
       data,
       workflow: closeWorkflow,
       workflowLoading: closeWorkflowLoading,
@@ -1154,7 +1141,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       accountingSystemImport,
       accountingSystemReconciliation,
       multiAssetCoverage
-    }),
+    }) : null,
     [
       accountingSystemImport,
       accountingSystemProviders,
@@ -1166,6 +1153,65 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       multiAssetCoverage
     ]
   );
+
+  if (!data) {
+    const loading = buildAccountingLoadingViewState(pathname);
+    return (
+      <Card
+        className="panel-surface-strong"
+        role={loading.role}
+        aria-busy={loading.ariaBusy}
+        aria-live={loading.ariaLive}
+        aria-labelledby={loading.titleId}
+        aria-describedby={loading.detailId}
+      >
+        <CardHeader>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <div className="eyebrow-label">{loading.eyebrow}</div>
+              <CardTitle id={loading.titleId} className="mt-2 text-base">{loading.title}</CardTitle>
+              <CardDescription id={loading.detailId} className="mt-2">{loading.detail}</CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <AccountingChip label="Route" value={loading.routeLabel} />
+              <AccountingChip label="Workstream" value={loading.workstreamLabel} />
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.38fr)]">
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">{loading.statusItemsLabel}</div>
+              <div role="list" className="mt-3 grid gap-2 md:grid-cols-3">
+                {loading.statusItems.map((item) => (
+                  <div key={item.id} role="listitem" className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
+                    <div className="text-sm font-semibold text-foreground">{item.label}</div>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">{loading.actionsLabel}</div>
+              <div className="mt-3 grid gap-2">
+                {loading.actions.map((action) => (
+                  <Button key={action.id} asChild size="sm" variant="outline" className="h-auto justify-start py-2 text-left">
+                    <Link to={action.href} aria-label={action.ariaLabel}>
+                      <span className="min-w-0">
+                        <span className="block font-semibold">{action.label}</span>
+                        <span className="mt-1 block text-xs font-normal leading-5 text-muted-foreground">{action.detail}</span>
+                      </span>
+                    </Link>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  const focus = focusCopy[workstream];
+  const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
 
   return (
     <div className="space-y-8">
@@ -1270,6 +1316,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
       {workstream === "configure" ? (
         <AccountingConfigurationPanel view={configuration} />
+      ) : null}
+
+      {workstream === "journal-entries" ? (
+        <ManualJournalEntryWorkbenchPanel view={journalEntries} />
       ) : null}
 
       {workstream === "approvals" ? (
@@ -1656,6 +1706,55 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   </Button>
                 ))}
               </div>
+              <div className="mb-4 rounded-md border border-border/70 bg-secondary/15 p-3">
+                <label htmlFor="ledger-account-filter" className="text-xs font-semibold uppercase text-muted-foreground">
+                  {reconciliation.trialBalanceView.accountFilterLabel}
+                </label>
+                <div className="mt-2 flex flex-col gap-2 lg:flex-row lg:items-center">
+                  <div className="relative min-w-0 flex-1">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                    <input
+                      id="ledger-account-filter"
+                      type="search"
+                      value={reconciliation.trialBalanceView.accountFilterValue}
+                      onChange={(event) => reconciliation.updateLedgerAccountFilter(event.target.value)}
+                      placeholder={reconciliation.trialBalanceView.accountFilterPlaceholder}
+                      className="min-h-10 w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs text-muted-foreground">{reconciliation.trialBalanceView.filteredRowCountLabel}</span>
+                    {reconciliation.trialBalanceView.accountFilterValue.trim() ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => reconciliation.updateLedgerAccountFilter("")}
+                      >
+                        {reconciliation.trialBalanceView.clearAccountFilterLabel}
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+                {reconciliation.trialBalanceView.accountFilterOptions.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="General Ledger account shortcuts">
+                    {reconciliation.trialBalanceView.accountFilterOptions.map((option) => (
+                      <Button
+                        key={option.id}
+                        type="button"
+                        size="sm"
+                        variant={option.isSelected ? "secondary" : "outline"}
+                        aria-pressed={option.isSelected}
+                        aria-label={`${option.label}, ${option.detail}, ${option.rowCountLabel}`}
+                        onClick={() => reconciliation.updateLedgerAccountFilter(option.label)}
+                      >
+                        <span className="truncate">{option.label}</span>
+                        <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
+                      </Button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
               {reconciliation.trialBalanceView.hasRows ? (
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
                   <DenseDataTable
@@ -1698,6 +1797,78 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                               <Link to={reconciliation.trialBalanceView.selectedDetail.approvalDrillThroughHref}>Open approval evidence</Link>
                             </Button>
                           ) : null}
+                        </div>
+                        <div className="mt-4 rounded-md border border-border/70 bg-background/60 p-3">
+                          <h3 className="text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.selectedDetail.ledgerLinesTitle}</h3>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">{reconciliation.trialBalanceView.selectedDetail.ledgerLinesDescription}</p>
+                          {reconciliation.trialBalanceView.selectedDetail.ledgerLines.length > 0 ? (
+                            <div className="mt-3 space-y-2" role="list" aria-label={reconciliation.trialBalanceView.selectedDetail.ledgerLinesTitle}>
+                              {reconciliation.trialBalanceView.selectedDetail.ledgerLines.map((line) => (
+                                <div key={line.rowId} role="listitem" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={line.ariaLabel}>
+                                  <div className="flex items-start justify-between gap-3">
+                                    <span className="min-w-0">
+                                      <span className="block truncate text-sm font-semibold text-foreground">{line.description}</span>
+                                      <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{line.journalEntryId}</span>
+                                    </span>
+                                    <Badge variant="outline">{line.balanceLabel}</Badge>
+                                  </div>
+                                  <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                                    <span className="font-mono">Debit {line.debitLabel}</span>
+                                    <span className="font-mono">Credit {line.creditLabel}</span>
+                                  </div>
+                                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                                    {line.evidenceHref ? (
+                                      <Link className="text-primary underline-offset-2 hover:underline" to={line.evidenceHref}>
+                                        {line.evidenceLabel}
+                                      </Link>
+                                    ) : (
+                                      <span className="text-muted-foreground">{line.evidenceLabel}</span>
+                                    )}
+                                    {line.approvalHref ? (
+                                      <Link className="text-primary underline-offset-2 hover:underline" to={line.approvalHref}>
+                                        Approval evidence
+                                      </Link>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p role="status" className="mt-3 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-muted-foreground">
+                              {reconciliation.trialBalanceView.selectedDetail.ledgerLinesEmptyText}
+                            </p>
+                          )}
+                        </div>
+                        <div className="mt-4 rounded-md border border-border/70 bg-background/60 p-3">
+                          <h3 className="text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.selectedDetail.supportingDocumentsTitle}</h3>
+                          {reconciliation.trialBalanceView.selectedDetail.supportingDocuments.length > 0 ? (
+                            <div className="mt-3 space-y-2" role="list" aria-label={reconciliation.trialBalanceView.selectedDetail.supportingDocumentsTitle}>
+                              {reconciliation.trialBalanceView.selectedDetail.supportingDocuments.map((document) => (
+                                <div key={document.id} role="listitem" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+                                  <div className="text-sm font-semibold text-foreground">
+                                    {document.href ? (
+                                      document.href.startsWith("/accounting") ? (
+                                        <Link className="text-primary underline-offset-2 hover:underline" to={document.href} aria-label={document.ariaLabel}>
+                                          {document.label}
+                                        </Link>
+                                      ) : (
+                                        <a className="text-primary underline-offset-2 hover:underline" href={document.href} target="_blank" rel="noreferrer" aria-label={document.ariaLabel}>
+                                          {document.label}
+                                        </a>
+                                      )
+                                    ) : (
+                                      document.label
+                                    )}
+                                  </div>
+                                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{document.detail}</p>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p role="status" className="mt-3 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-muted-foreground">
+                              {reconciliation.trialBalanceView.selectedDetail.supportingDocumentsEmptyText}
+                            </p>
+                          )}
                         </div>
                       </>
                     </div>
@@ -3237,6 +3408,350 @@ function accountingToolingBorderClass(tone: AccountingToolingTone): string {
   return "border-border/70 bg-secondary/20";
 }
 
+function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalEntryWorkbenchViewModel["getLineBadges"]> }) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-1" aria-label="Line validation badges">
+      {badges.map((badge) => (
+        <span
+          key={badge.id}
+          title={badge.message}
+          className={cn(
+            "inline-flex max-w-full items-center rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-tight",
+            badge.tone === "danger"
+              ? "border-danger/30 bg-danger/10 text-danger"
+              : badge.tone === "warning"
+                ? "border-warning/30 bg-warning/10 text-warning"
+                : badge.tone === "success"
+                  ? "border-success/30 bg-success/10 text-success"
+                  : "border-border/70 bg-secondary/40 text-muted-foreground"
+          )}
+        >
+          {badge.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWorkbenchViewModel }) {
+  const selectedLine = view.draft.lines.find((line) => line.lineId === view.selectedLineId) ?? view.draft.lines[0] ?? null;
+
+  return (
+    <section className="workspace-section-band" aria-labelledby="manual-je-heading">
+      <div className="workspace-section-subheader">
+        <div className="min-w-0">
+          <p className="eyebrow-label">Manual journal entries</p>
+          <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
+          <p className="workspace-section-summary">{view.description}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={view.draft.status === "Submitted" ? "success" : view.draft.status === "NeedsFix" ? "warning" : "outline"} dot>
+            {view.statusLabel}
+          </Badge>
+          <Button size="sm" variant="outline" disabled={view.loading} onClick={() => void view.refresh()}>
+            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            Refresh
+          </Button>
+          <Button size="sm" variant="outline" busy={view.validateBusy} onClick={() => void view.validate()}>
+            Validate
+          </Button>
+          <Button size="sm" variant="outline" busy={view.saveBusy} onClick={() => void view.save()}>
+            Save draft
+          </Button>
+          <Button
+            size="sm"
+            busy={view.submitBusy}
+            disabled={!view.canSubmit}
+            disabledReason={view.submitDisabledReason}
+            onClick={() => void view.submit()}
+          >
+            Submit approval
+          </Button>
+        </div>
+      </div>
+
+      {view.errorText ? (
+        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+          {view.errorText}
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(15rem,0.32fr)_minmax(0,1fr)]">
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="text-base">Draft queue</CardTitle>
+            <CardDescription>Saved manual JE drafts and submitted approval records from the shared workbench API.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {view.drafts.length > 0 ? view.drafts.map((draft) => (
+              <button
+                key={draft.journalEntryId}
+                type="button"
+                className={cn(
+                  "w-full rounded-md border px-3 py-2 text-left text-sm transition hover:border-primary/50 hover:bg-primary/10",
+                  draft.journalEntryId === view.draft.journalEntryId ? "border-primary/60 bg-primary/10" : "border-border/70 bg-secondary/20"
+                )}
+                onClick={() => view.selectDraft(draft.journalEntryId)}
+              >
+                <span className="block font-semibold text-foreground">{draft.memo || "Untitled journal entry"}</span>
+                <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.status} / v{draft.version}</span>
+                <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.accountingDate} / {draft.currency}</span>
+              </button>
+            )) : (
+              <p role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
+                No saved drafts yet. Save the current entry to add it to the queue.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface">
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="text-base">Journal entry draft</CardTitle>
+                <CardDescription>Header context and line details are validated by the shared ledger API before approval.</CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <AccountingChip label="Totals" value={view.totalsLabel} />
+                <AccountingChip label="Balance" value={view.imbalanceLabel} />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              <label className="space-y-1 text-sm">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">Memo</span>
+                <input
+                  className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  value={view.draft.memo}
+                  onChange={(event) => view.updateHeader("memo", event.target.value)}
+                />
+              </label>
+              <label className="space-y-1 text-sm">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">Fund profile</span>
+                <input
+                  className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm"
+                  value={view.draft.fundProfileId}
+                  onChange={(event) => view.updateHeader("fundProfileId", event.target.value)}
+                />
+              </label>
+              <label className="space-y-1 text-sm">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">Currency</span>
+                <input
+                  className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm"
+                  value={view.draft.currency}
+                  onChange={(event) => view.updateHeader("currency", event.target.value.toUpperCase())}
+                />
+              </label>
+              <label className="space-y-1 text-sm">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">Entity</span>
+                <input className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" value={view.draft.entityId ?? ""} onChange={(event) => view.updateHeader("entityId", event.target.value)} />
+              </label>
+              <label className="space-y-1 text-sm">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">Fund node</span>
+                <input className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" value={view.draft.fundNodeId ?? ""} onChange={(event) => view.updateHeader("fundNodeId", event.target.value)} />
+              </label>
+              <label className="space-y-1 text-sm">
+                <span className="text-xs font-semibold uppercase text-muted-foreground">Period</span>
+                <input className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm" value={view.draft.periodId ?? ""} onChange={(event) => view.updateHeader("periodId", event.target.value)} />
+              </label>
+            </div>
+
+            <div className="overflow-x-auto rounded-md border border-border/70">
+              <table className="w-full min-w-[920px] text-sm">
+                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Side</th>
+                    <th className="px-3 py-2 text-left">Amount</th>
+                    <th className="px-3 py-2 text-left">GL account</th>
+                    <th className="px-3 py-2 text-left">Security Master</th>
+                    <th className="px-3 py-2 text-left">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {view.draft.lines.map((line) => {
+                    const badges = view.getLineBadges(line.lineId);
+                    return (
+                      <tr key={line.lineId} className={cn("border-t border-border/60 align-top", line.lineId === view.selectedLineId ? "bg-primary/10" : "bg-background/30")}>
+                        <td className="px-3 py-2">
+                          <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={line.side} onChange={(event) => view.updateLine(line.lineId, { side: event.target.value as typeof line.side })} onFocus={() => view.selectLine(line.lineId)}>
+                            <option value="Debit">Debit</option>
+                            <option value="Credit">Credit</option>
+                          </select>
+                          {badges.length > 0 ? <ManualJournalLineBadges badges={badges} /> : null}
+                        </td>
+                        <td className="px-3 py-2">
+                          <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" type="number" value={line.amount} onChange={(event) => view.updateLine(line.lineId, { amount: Number(event.target.value) })} onFocus={() => view.selectLine(line.lineId)} />
+                        </td>
+                        <td className="px-3 py-2">
+                          <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={line.accountPath} onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })} onFocus={() => view.selectLine(line.lineId)}>
+                            <option value="">Select GL account</option>
+                            {view.accountOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                          </select>
+                        </td>
+                        <td className="px-3 py-2">
+                          <button
+                            type="button"
+                            className="min-h-9 w-full rounded border border-border bg-background px-2 text-left text-xs"
+                            onClick={() => view.selectLine(line.lineId)}
+                          >
+                            <span className="block truncate font-semibold text-foreground">{line.securityDisplayName || "Choose security"}</span>
+                            <span className="block truncate font-mono text-[11px] text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
+                          </button>
+                        </td>
+                        <td className="px-3 py-2">
+                          <input className="min-h-9 w-full rounded border border-border bg-background px-2" value={line.description ?? ""} onChange={(event) => view.updateLine(line.lineId, { description: event.target.value })} onFocus={() => view.selectLine(line.lineId)} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => view.addLine("Debit")}>Add debit</Button>
+              <Button size="sm" variant="outline" onClick={() => view.addLine("Credit")}>Add credit</Button>
+            </div>
+
+            <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">Source evidence</h4>
+                  <p className="text-xs text-muted-foreground">Attach source support before approval submission.</p>
+                </div>
+                <Badge variant={(view.draft.evidenceAttachments?.length ?? 0) > 0 ? "success" : "warning"} dot>
+                  {(view.draft.evidenceAttachments?.length ?? 0)} attached
+                </Badge>
+              </div>
+              <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,0.22fr)_minmax(0,0.34fr)_minmax(0,0.18fr)_minmax(0,0.16fr)_auto]">
+                <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Label</span>
+                  <input className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.displayName} onChange={(event) => view.updateAttachmentDraft({ displayName: event.target.value })} />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Route or path</span>
+                  <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" value={view.attachmentDraft.uri} onChange={(event) => view.updateAttachmentDraft({ uri: event.target.value })} />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Kind</span>
+                  <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.evidenceKind} onChange={(event) => view.updateAttachmentDraft({ evidenceKind: event.target.value })}>
+                    <option value="SourceDocument">Source document</option>
+                    <option value="ApprovalSupport">Approval support</option>
+                    <option value="ReconciliationEvidence">Reconciliation</option>
+                    <option value="ValuationSupport">Valuation support</option>
+                  </select>
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Scope</span>
+                  <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.lineId ?? ""} onChange={(event) => view.updateAttachmentDraft({ lineId: event.target.value || null })}>
+                    <option value="">Header</option>
+                    {view.draft.lines.map((line) => <option key={line.lineId} value={line.lineId}>{line.side} {line.accountPath || line.lineId}</option>)}
+                  </select>
+                </label>
+                <div className="flex items-end">
+                  <Button size="sm" variant="outline" onClick={view.addAttachment}>
+                    <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
+                    Attach
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-3 grid gap-2 md:grid-cols-2">
+                {(view.draft.evidenceAttachments ?? []).length > 0 ? (view.draft.evidenceAttachments ?? []).map((attachment) => (
+                  <div key={attachment.attachmentId} className="flex items-start justify-between gap-3 rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-foreground">{attachment.displayName}</div>
+                      <div className="truncate font-mono text-xs text-muted-foreground">{attachment.uri}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{attachment.evidenceKind} / {attachment.lineId ? `Line ${attachment.lineId}` : "Header"}</div>
+                    </div>
+                    <Button size="icon" variant="ghost" aria-label={`Remove evidence ${attachment.displayName}`} onClick={() => view.removeAttachment(attachment.attachmentId)}>
+                      <X className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Button>
+                  </div>
+                )) : (
+                  <p className="rounded border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                    No source evidence is attached yet. Approval submission remains blocked until at least one evidence route or source document is linked.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)]">
+              <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
+                <h4 className="text-sm font-semibold text-foreground">Validation</h4>
+                <div className="mt-3 space-y-2">
+                  {view.validationIssues.length > 0 ? view.validationIssues.map((issue) => (
+                    <div key={issue.id} className={cn("rounded border px-3 py-2 text-sm", issue.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : issue.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "border-border/70 bg-background/50 text-muted-foreground")}>
+                      <div className="font-semibold">{issue.label}</div>
+                      <div className="mt-1">{issue.message}</div>
+                      <div className="mt-1 text-xs">{issue.detail}</div>
+                    </div>
+                  )) : (
+                    <p className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
+                      No validation issues are attached to this draft. Use Validate before approval submission.
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
+                <h4 className="text-sm font-semibold text-foreground">Selected line</h4>
+                {selectedLine ? (
+                  <div className="mt-3 space-y-3 text-sm">
+                    <dl className="grid gap-2">
+                      <div><dt className="text-xs text-muted-foreground">Line ID</dt><dd className="break-all font-mono">{selectedLine.lineId}</dd></div>
+                      <div><dt className="text-xs text-muted-foreground">GL account</dt><dd className="break-all font-mono">{selectedLine.accountPath || "Not selected"}</dd></div>
+                      <div><dt className="text-xs text-muted-foreground">Security</dt><dd className="break-all">{selectedLine.securityDisplayName || selectedLine.securityId || "No Security Master reference"}</dd></div>
+                    </dl>
+                    <div className="rounded border border-border/70 bg-background/50 p-2">
+                      <label className="space-y-1 text-sm">
+                        <span className="text-xs font-semibold uppercase text-muted-foreground">Security Master picker</span>
+                        <div className="flex gap-2">
+                          <input
+                            className="min-h-9 min-w-0 flex-1 rounded border border-border bg-background px-2"
+                            value={view.securitySearchQuery}
+                            placeholder="Ticker, ISIN, CUSIP, FIGI, name"
+                            onChange={(event) => view.updateSecuritySearchQuery(event.target.value)}
+                          />
+                          <Button size="icon" variant="outline" busy={view.securitySearchBusy} aria-label="Search Security Master" onClick={() => void view.searchSecurityMaster()}>
+                            <Search className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Button>
+                        </div>
+                      </label>
+                      <p role="status" className={cn("mt-2 text-xs", view.securitySearchErrorText ? "text-danger" : "text-muted-foreground")}>{view.securitySearchStatusText}</p>
+                      <div className="mt-2 space-y-2">
+                        {view.securitySearchResults.map((security) => (
+                          <button
+                            key={security.securityId}
+                            type="button"
+                            className="w-full rounded border border-border/70 bg-secondary/30 px-3 py-2 text-left hover:border-primary/50 hover:bg-primary/10"
+                            onClick={() => view.selectSecurity(selectedLine.lineId, security)}
+                          >
+                            <span className="block font-semibold text-foreground">{security.displayName}</span>
+                            <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{security.securityId} / {security.classification.assetClass} / {security.classification.primaryIdentifierValue}</span>
+                          </button>
+                        ))}
+                      </div>
+                      {selectedLine.securityId ? (
+                        <Button className="mt-2" size="sm" variant="ghost" onClick={() => view.clearSecurity(selectedLine.lineId)}>
+                          <X className="h-3.5 w-3.5" aria-hidden="true" />
+                          Clear security
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-muted-foreground">Select a line to inspect attribution.</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
 function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {
   return (
     <section className="workspace-section-band" aria-labelledby="accounting-configure-heading">
@@ -3418,7 +3933,7 @@ function AccountingValue({ label, value, tone, ariaLabel }: { label: string; val
 
 function AccountingChip({ label, value }: { label: string; value: string }) {
   return (
-    <span className="toolbar-chip">
+    <span className="toolbar-chip" role="group" aria-label={`${label} ${value}`}>
       <span className="text-muted-foreground">{label}</span>
       <span className="font-mono capitalize text-foreground">{value}</span>
     </span>
