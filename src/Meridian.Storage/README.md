@@ -6,86 +6,149 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-05-20
+last_reviewed: 2026-06-04
 ---
 
 # src/Meridian.Storage
 
 ## Purpose
 
-Storage owns WAL-backed persistence, archival packaging, storage catalogs, replay storage, ledger storage, and export support.
+`src/Meridian.Storage` is Meridian's record-keeping layer. When market data, accounting entries,
+loan events, exports, or operator evidence need to survive a restart, this project decides where and
+how those records are saved.
+
+Storage answers three questions:
+
+1. **Can we keep this record safely?** Durable writes go through guarded helpers before they become
+   evidence. A write-ahead log records the intended change first, so Meridian can recover or replay
+   the write after a crash. An atomic file writer writes a complete replacement file first, then
+   swaps it into place so readers do not see a half-written file.
+2. **Where can we find it later?** Catalog, lineage, quality, search, and replay services track
+   saved records so operators can locate them for audits, backtests, reconciliations, and reports.
+3. **Where is the data coming from?** Ledger, Security Master, fund-account, and asset-operation
+   stores keep source and approval details so accounting and investment-operation decisions can be
+   explained later.
 
 ## Layer responsibility
 
-This layer persists durable state and evidence. It should expose storage seams without owning application orchestration or UI presentation.
+Storage is responsible for saving, retrieving, and protecting records reliably. Other Meridian
+layers decide the user workflow and screen presentation; Storage supplies the durable records,
+lookup paths, and evidence trails those layers rely on.
 
 ## Key folders and files
 
-- `Archival/` - write-ahead log and archive package support.
-- `Interfaces/` and `Sinks/` - storage sink contracts and implementations.
-- `Replay/`, `Ledger/`, and `SecurityMaster/` - durable domain-specific stores.
-- `AssetOperations/` - generic Postgres projections for Security Master-keyed operational
-  terms, lifecycle, cash-flow, actual-activity, reconciliation, ledger, evidence, workflow audit,
-  and readiness read models.
-- `FundAccounts/` - account definitions, balance snapshots, statement batches, reconciliation
-  results, and account readiness persistence. Balance snapshots include optional realized and
-  unrealized P&L columns for provider-ledger shadow-book comparison evidence.
-- `Packaging/`, `Export/`, and `Maintenance/` - operational storage workflows.
+- `Archival/` - safety tools for file-backed records, including the write-ahead log and atomic file
+  writer.
+- `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
+- `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
+  that can play saved data back.
+- `Ledger/` - accounting journal storage, tax-lot policy inputs, and guardrails for instrument
+  postings.
+- `SecurityMaster/` - reference-data stores that identify securities and preserve provenance.
+- `DirectLending/` - direct-lending state, events, workflow audit, and transactional ledger handoff.
+- `AssetOperations/` - read-model projections for operational terms, lifecycle, cash flow,
+  reconciliation, readiness, and evidence views.
+- `FundAccounts/`, `Banking/`, and `FundStructure/` - fund accounts, balances, statements, banking
+  records, and fund-structure persistence.
+- `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
+  tiering, and scheduled cleanup.
 
 ## Important workflows
 
-Use this module for persistence, replay evidence, storage maintenance, package import/export, and durable operator evidence.
+### Market data and evidence
+
+Market data and evidence records enter through storage sinks. File-backed writes use the
+write-ahead log or atomic file helpers so a crash is less likely to leave a half-written record.
+Saved records feed replay, packaging, exports, catalog lookup, lineage checks, quality scoring, and
+maintenance jobs.
 
 Storage profile presets preserve existing persisted identifiers. The default profile ID remains
 `Research` for compatibility, while APIs and operator surfaces display that preset as `Strategy`
-for historical analysis, backtesting, and paper-validation preparation.
-Policy-driven lifecycle management is active through `StorageOptions.Tiering`,
-`StoragePolicyConfig`, `LifecyclePolicyEngine`, `TierMigrationService`, and scheduled maintenance.
-The `Archival` preset configures the hot, warm, cold, and archive tier pipeline for long-retention
-evidence while preserving compatibility with existing storage profile identifiers.
+for historical analysis, backtesting, and paper-validation preparation. The `Archival` preset keeps
+long-retention evidence moving through hot, warm, cold, and archive tiers.
 
-Ledger journal appends are fail-closed for instrument-bearing postings. Any journal line that
-targets securities, dividends, accrued interest, corporate actions, options, futures MTM, short
-securities, or a symbol-scoped ledger account must carry Security Master provenance plus approved
-lineage that includes active Security Master status and a ledger mapping reference tied to the
-resolved line symbol or Security Master id before `ILedgerJournalStore` accepts it. Instrument
-account lines must also carry an explicit line symbol, so entry-level Security Master metadata
-cannot mask an unattributed securities, receivable, option, futures, or short-position posting.
-Metadata-level instrument symbols are checked against the same lineage and mapping evidence as
-line-level symbols, so an entry cannot declare one symbol at the journal level while posting another
-instrument line.
-Until durable journal writes carry line-level Security Master ids, a single journal entry may not
-combine multiple instrument symbols behind one entry-level Security Master id.
+### Accounting and Security Master evidence
 
-Ledger tax-lot state is persisted as account-scoped policy records plus open-lot records in the
-ledger schema. `ILedgerJournalStore` owns durable FIFO/LIFO/HIFO/SpecificId policy lookup inputs and
-open-lot balances for a ledger book/account, while relief projection, approval workflow, and
-tax-reporting exports remain outside the storage layer.
+Ledger journal writes fail closed for instrument-bearing postings. In practice, this means Meridian
+will not save a securities, dividend, accrued-interest, corporate-action, option, futures, short, or
+symbol-scoped accounting line unless the line carries approved Security Master provenance and ledger
+mapping evidence for the same instrument. This prevents an accounting entry from claiming one
+symbol at the journal level while posting a different instrument line underneath it. Until durable
+journal writes carry line-level Security Master ids, one journal entry may not combine multiple
+instrument symbols behind one entry-level Security Master id.
 
-Direct-lending persistence is part of the Security Master storage lane by default. If
-`MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` is configured, direct-lending state, event, accrual,
-cash-transaction, allocation, fee, projected-cash-flow, workflow-audit, journal, reconciliation,
-servicer-report, outbox, and checkpoint tables use the effective Security Master connection and
-schema unless a legacy `MERIDIAN_DIRECT_LENDING_*` override is explicitly supplied. The direct-lending
-SQL files remain packaged under `DirectLending/Migrations` for source ownership, but Security Master
-readiness runs inherited direct-lending migrations on the default host path.
+Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
+schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;
+relief projection, approval workflow, and tax-reporting exports remain outside this project.
 
-Direct-lending state persistence can include projected ledger journals in the same database
-transaction as the loan event append. `PostgresDirectLendingStateStore.SaveAsync` accepts
-`LedgerJournalEntryWrite` records and appends them through `ITransactionalLedgerJournalStore` with
-the active `NpgsqlConnection` and serializable transaction, so a failed ledger append rolls back the
-loan state/event/projection/outbox write as one unit.
+### Direct lending and operational projections
 
-Asset Operations persistence is intentionally separate from `security_master`: the default schema
-is `asset_operations`, configured by `MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING` and
-`MERIDIAN_ASSET_OPERATIONS_SCHEMA`. Tables are generic projection tables keyed by non-null
-`security_id` and retain optional `source_domain`, `source_entity_id`, and JSONB payloads so
-Direct Lending, bonds, and later asset classes can publish read models without moving servicing or
-accounting command tables into Security Master storage.
+Direct-lending persistence normally shares the Security Master storage lane. When
+`MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` is configured, direct-lending state, events, accruals,
+cash transactions, allocations, fees, projected cash flows, workflow audit, journals, reconciliation
+records, servicer reports, outbox records, and checkpoints use that connection and schema unless a
+legacy `MERIDIAN_DIRECT_LENDING_*` override is explicitly supplied.
+
+Direct-lending saves can also include projected ledger journals in the same database transaction as
+the loan event append. If the ledger append fails, the loan state, event, projection, and outbox
+write roll back together instead of leaving the books and loan record out of sync.
+
+Asset Operations persistence stays separate from `security_master`. Its default schema is
+`asset_operations`, configured by `MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING` and
+`MERIDIAN_ASSET_OPERATIONS_SCHEMA`, so Direct Lending, bonds, and later asset classes can publish
+shared operational read models without moving servicing or accounting command tables into Security
+Master storage.
+
+## Glossary
+
+- **Atomic file write** - write a complete new file in a temporary location first, then swap it into
+  place in one step so readers never see a partial file.
+- **Lineage** - metadata that explains where a record came from and why it is trusted.
+- **Security Master** - Meridian's source of truth for identifying securities and financial
+  instruments.
+- **Tax lot** - the specific quantity of an instrument bought or sold at a known price and date.
+- **Write-ahead log (WAL)** - a crash-safety log that records intended changes before the final
+  storage file is updated, making recovery possible if the process stops mid-write.
 
 ## Diagrams
 
-See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
+The storage module participates in the repository-level `DIA-ASSURANCE-LOOP` in
+`docs/source/data/diagram-index.yml`. The diagrams below show the local storage flows in less
+technical terms.
+
+### How saved market data becomes reusable evidence
+
+```mermaid
+flowchart LR
+    newData[New market data or evidence arrives] --> intake[Storage intake decides how to save it]
+    intake --> safeFiles[Save files safely before exposing them]
+    safeFiles --> marketStore[Keep market data for later use]
+    safeFiles --> exportFiles[Create export and package files]
+    marketStore --> replay[Replay saved data for backtests and investigations]
+    exportFiles --> package[Package evidence for operators and reports]
+    marketStore --> catalog[Catalog what exists and where it came from]
+    exportFiles --> catalog
+    catalog --> cleanup[Retention and tiering keep storage manageable]
+```
+
+### How accounting and investment records stay tied together
+
+```mermaid
+flowchart TB
+    workflow[Operator or application workflow] --> security[Identify the instrument in Security Master]
+    workflow --> loan[Save direct-lending loan events]
+    workflow --> accounts[Save fund account and banking records]
+    workflow --> projections[Publish operational read models]
+
+    security --> proof[Lineage proves the instrument is trusted]
+    proof --> ledger[Ledger journal accepts the accounting entry]
+    loan --> transaction[Save loan and ledger changes together]
+    transaction --> ledger
+    ledger --> books[Accounting books and tax-lot records]
+    accounts --> books
+    projections --> reports[Reconciliation, readiness, and governed reports]
+    books --> reports
+```
 
 ## Roadmap traceability
 
