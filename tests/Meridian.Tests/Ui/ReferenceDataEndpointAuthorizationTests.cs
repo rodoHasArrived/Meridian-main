@@ -5,7 +5,7 @@ using FluentAssertions;
 using Meridian.Application.CryptoCurrency;
 using Meridian.Application.Deposits;
 using Meridian.Application.Futures;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.CryptoCurrency;
 using Meridian.Contracts.Deposits;
 using Meridian.Contracts.Futures;

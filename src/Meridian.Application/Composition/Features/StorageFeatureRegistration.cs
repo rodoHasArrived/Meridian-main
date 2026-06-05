@@ -1,7 +1,6 @@
 using Meridian.Application.Config;
 using Meridian.Application.Accounts;
 using Meridian.Application.AssetOperations;
-using Meridian.Application.Auth;
 using Meridian.Application.Backtesting;
 using Meridian.Application.Banking;
 using Meridian.Application.Commodities;
@@ -18,10 +17,11 @@ using Meridian.Application.FundOperationsPersistence;
 using Meridian.Application.FundStructure;
 using Meridian.Application.Futures;
 using Meridian.Application.FxSpot;
+using Meridian.Application.Identity;
 using Meridian.Application.MoneyMarketFunds;
 using Meridian.Application.Options;
-using Meridian.Application.OperationsContinuity;
-using Meridian.Application.Reconciliation;
+using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.Treasury;
@@ -39,6 +39,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Reconciliation;
+using Meridian.Identity;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.DirectLending;
@@ -118,6 +119,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 return new FileScopedAccessAssignmentStore(persistencePath);
             });
         }
+        services.TryAddSingleton<IAccessScopeLineageProvider, FundStructureAccessScopeLineageProvider>();
         services.TryAddSingleton<ScopedAccessService>();
         services.TryAddSingleton<IScopedAccessAssignmentService>(sp => sp.GetRequiredService<ScopedAccessService>());
         services.TryAddSingleton<IScopedAuthorizationService>(sp => sp.GetRequiredService<ScopedAccessService>());

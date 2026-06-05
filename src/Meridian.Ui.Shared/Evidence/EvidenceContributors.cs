@@ -1,5 +1,5 @@
 using Meridian.Contracts.Api;
-using Meridian.Application.OperationsContinuity;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;

@@ -17,7 +17,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;

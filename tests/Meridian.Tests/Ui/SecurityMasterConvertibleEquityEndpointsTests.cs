@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;

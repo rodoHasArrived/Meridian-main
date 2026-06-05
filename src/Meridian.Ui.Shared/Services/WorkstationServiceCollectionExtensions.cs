@@ -1,10 +1,9 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Application.AssetOperations;
-using Meridian.Application.Auth;
 using Meridian.Application.Backtesting;
 using Meridian.Application.Compliance;
 using Meridian.Application.FundStructure;
-using Meridian.Application.OperationsContinuity;
 using Meridian.Application.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
@@ -18,9 +17,12 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Plaid;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.AccountingSystem.QuickBooks;
+using Meridian.FinancialOperations.AccountingSystem;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Infrastructure.Adapters.Plaid;
-using Meridian.Infrastructure.Adapters.QuickBooks;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Identity;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
@@ -141,7 +143,10 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton<ProviderReadinessService>();
+        services.TryAddSingleton<IQuickBooksOnlineConnectionStore, QuickBooksOnlineProviderCredentialConnectionStore>();
+        services.AddHttpClient<IQuickBooksOnlineClient, QuickBooksOnlineHttpClient>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksOnlineAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>

@@ -9,7 +9,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;

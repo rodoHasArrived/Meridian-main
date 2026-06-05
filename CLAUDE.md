@@ -32,6 +32,11 @@ Meridian is a .NET 10 trading and fund-operations platform with:
   `docs/engineering/README.md`, and the [canonical design charter](docs/product/meridian-design-document.md).
   Use the roadmap registry (`docs/roadmap/README.md` and
   `docs/roadmap/data/*.yml`) for authoritative planning interpretation.
+- Keep product work centered on the W1-W5 operational record baseline: data confidence, retained
+  source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage,
+  and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first governance,
+  full payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and
+  other expansion lanes unless they directly strengthen that workflow.
 - Active operator UI work spans `src/Meridian.Ui/dashboard/` and `src/Meridian.Wpf/`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and

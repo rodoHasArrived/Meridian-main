@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-30
+last_reviewed: 2026-06-05
 ---
 
 # src/Meridian.Ui.Shared
@@ -33,9 +33,10 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links.
 
 Auth endpoints expose role-profile administration and scoped access assignment administration from
-the shared workstation host. `EndpointAuthorization` keeps the existing global role checks for
-compatibility and adds scoped authorization helpers so governance-core routes can require a
-permission on a specific organization, fund, portfolio, legal entity, or account.
+the shared workstation host while delegating identity state to `Meridian.Identity`. `EndpointAuthorization`
+keeps the existing global role checks for compatibility and adds scoped authorization helpers so
+governance-core routes can require a permission on a specific organization, fund, portfolio, legal
+entity, or account.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. `FamilyOfficeReadService` composes the family-office
@@ -58,13 +59,20 @@ keeps link-token creation, public-token exchange, item sync, webhook retention, 
 transfer gating server-owned so browser and WPF clients do not handle Plaid access tokens or
 duplicate bank evidence ingestion rules.
 Accounting-system endpoints are also registered as a shared endpoint group from `UiApiRoutes`.
-`AccountingSystemIntegrationService` lists GL providers, previews the fixture QuickBooks import,
-retains the latest import in process, and compares external trial-balance evidence against
-Meridian-owned ledger truth when the ledger store is available. Meridian remains the source of all
-ledger truth; external GL imports are evidence and reconciliation inputs, not override authority.
-Posting/export remains disabled in the shared service until an adapter capability explicitly
-supports publishing Meridian-owned ledger entries, so browser and WPF clients inherit the same
-read-only reconciliation posture.
+`Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
+providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
+company realm id config are present, falls back to `quickbooks-fixture` otherwise, retains the
+latest import in process, and compares external trial-balance evidence against Meridian-owned
+ledger truth when the ledger store is available. UI Shared maps the endpoint group and registers the
+Data Integration-owned credential-backed connection store; it does not own GL evidence reconciliation
+or QuickBooks credential-persistence mapping.
+The Data Integration-owned QuickBooks Online lane refreshes access through the server-side token
+exchange seam and imports chart-of-accounts, journal-entry, and trial-balance evidence as read-only
+reconciliation input.
+Meridian remains the source of all ledger truth; external GL imports are evidence and
+reconciliation inputs, not override authority. Posting/export remains disabled in the shared
+service until an adapter capability explicitly supports publishing Meridian-owned ledger entries,
+so browser and WPF clients inherit the same read-only reconciliation posture.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
@@ -393,14 +401,17 @@ client-local mapping or posting readiness rules. Ledger mapping assignment mutat
 authenticated operator with `ManageDirectLending` or `AdminMaintenance`, and audit attribution must
 come from the resolved session actor rather than client-supplied request fields.
 Auth endpoints expose `/api/auth/role-profiles` as the governed write path for custom authority
-profiles. The shared file-backed role-profile store persists profile grants under the storage root,
-merges custom profiles into `/api/auth/roles`, and feeds `UserProfileRegistry` so configured
-`roleProfileName` accounts use the stored permissions after login.
+profiles. The Identity-owned file-backed role-profile store persists profile grants under the
+storage root, merges custom profiles into `/api/auth/roles`, and feeds `UserProfileRegistry` so
+configured `roleProfileName` accounts use the stored permissions after login. Keep this module as
+the endpoint/read-model adapter; do not reintroduce session, profile, or role-profile persistence
+state here.
 Operations Continuity endpoints expose
 `/api/workstation/operations/continuity/approval-policy-matrix` as the shared configuration read
 model for approval governance. The endpoint is read-permission protected and returns the
 server-owned approval actions, required permissions, reviewer independence, report-pack, checklist,
-and audit-event metadata used by Settings, browser, and WPF surfaces.
+and audit-event metadata used by Settings, browser, and WPF surfaces. The policy service itself is
+owned by `src/Meridian.FinancialOperations`; this module only adapts it to workstation HTTP routes.
 `/api/workstation/operations/continuity/approval-policy-rules` is the admin-protected governed
 write path for approval-policy rule edits. It trusts the authenticated session actor over the
 browser payload, validates required approval counts and route shape, persists overrides through
@@ -410,11 +421,12 @@ correlation evidence.
 model with optional fund-account and period filters. It returns server-derived next due task,
 owner, readiness score, component breakdown, provider-freshness blocker, next-action,
 approval-count, and workflow route metadata so close calendars stay aligned with Operations
-Continuity rather than client-local date calculations.
+Continuity rather than client-local date calculations. The calendar service itself is owned by
+`src/Meridian.FinancialOperations`; this module only adapts it to workstation HTTP routes.
 `/api/workstation/operations/continuity/close-calendar-items` is the admin-protected governed
 write path for calendar owner and due-date configuration. It validates the target workflow and
 checklist task, trusts the authenticated session actor, persists the override through the
-application calendar service, and returns the updated calendar item plus audit event and
+Financial Operations calendar service, and returns the updated calendar item plus audit event and
 correlation evidence.
 `/api/workstation/operations/continuity/{workflowId}/close-readiness` exposes the same
 controller-facing readiness score used by workflow detail and close calendar payloads. It keeps

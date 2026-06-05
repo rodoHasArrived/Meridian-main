@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Meridian.Application.Banking;
 using Meridian.Application.Config.Credentials;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Application.FundAccounts;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.FundStructure;

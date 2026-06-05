@@ -50,6 +50,7 @@ describe("workspace metadata", () => {
     expect(workstationRoute("accountingOperationsContinuity")).toBe("/accounting/operations-continuity");
     expect(workstationRoute("accountingEntitySetup")).toBe("/accounting/entity-setup");
     expect(workstationRoute("accountingExceptions")).toBe("/accounting/exceptions");
+    expect(workstationRoute("reportingOperationsRecord")).toBe("/reporting/operations-record");
     expect(workstationRoute("settingsAlpacaProviderSetup")).toBe("/settings#alpaca-provider-setup");
     expect(workstationRouteWithQuery("dataQuotes", { symbol: "BRK/B", provider: "Alpaca", empty: null })).toBe(
       "/data/quotes?symbol=BRK%2FB&provider=Alpaca"

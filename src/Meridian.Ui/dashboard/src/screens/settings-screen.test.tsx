@@ -911,6 +911,64 @@ describe("SettingsScreen", () => {
     expect(screen.getAllByText(/Readiness checks/).length).toBeGreaterThan(0);
   });
 
+  it("saves QuickBooks Online OAuth company fields through inline setup", async () => {
+    const user = userEvent.setup();
+    apiMocks.putProviderCredentials.mockResolvedValue({ credentialState: "Configured", warnings: [] });
+    const quickBooksConnections: ProviderConnectionRow[] = [
+      ...providerConnections,
+      {
+        providerId: "quickbooks",
+        displayName: "QuickBooks Online",
+        capability: "AccountingSystem",
+        credentialState: "Missing",
+        credentialSource: "None",
+        verificationState: "NotVerified",
+        health: "Warning",
+        fallbackActive: false,
+        lastVerifiedAt: null,
+        lastSuccessfulAt: null,
+        lastFailureAt: null,
+        lastError: null,
+        maskedKeyPreview: null,
+        environment: "sandbox",
+        externalAccountId: null,
+        affectedWorkflows: ["External GL reconciliation"],
+        recommendedAction: "Add QuickBooks Online OAuth client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
+        actionHref: "/settings#provider-quickbooks-connection"
+      }
+    ];
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={quickBooksConnections}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Edit QuickBooks Online credentials" }));
+    await user.type(screen.getByLabelText("QuickBooks Online Client ID"), "qbo-client-id");
+    await user.type(screen.getByLabelText("QuickBooks Online Client secret"), "qbo-client-secret");
+    await user.type(screen.getByLabelText("QuickBooks Online Refresh token"), "qbo-refresh-token");
+    await user.type(screen.getByLabelText("QuickBooks Online Company realm ID"), "9130359087654321");
+    await user.type(screen.getByLabelText("QuickBooks Online Company name"), "Meridian-Dev");
+    await user.click(screen.getByRole("button", { name: "Save QuickBooks Online credentials" }));
+
+    expect(apiMocks.putProviderCredentials).toHaveBeenCalledWith(
+      "quickbooks",
+      expect.objectContaining({
+        credentials: expect.objectContaining({
+          ClientId: "qbo-client-id",
+          ClientSecret: "qbo-client-secret",
+          RefreshToken: "qbo-refresh-token",
+          RealmId: "9130359087654321",
+          CompanyName: "Meridian-Dev"
+        }),
+        environment: "sandbox"
+      })
+    );
+  });
+
   it("filters provider rows by search and risk filters", async () => {
     const user = userEvent.setup();
 

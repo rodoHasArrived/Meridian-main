@@ -132,14 +132,11 @@ accounting rules. Requests can now opt into `BooksBeforeBroker` preview mode, wh
 server-owned broker-staging readiness, required approvals, blockers, evidence ids, and expected
 broker action before any paper/live movement is routed.
 
-Auth contracts include the role and permission catalog plus custom role-profile upsert payloads.
-`ManageFundStructure` covers governance-impacting ownership lifecycle mutations so ReadOnly and
-analytics-only sessions cannot alter fund-structure relationship records. They also include scoped
-access assignment DTOs that bind a principal to a role or role profile over an organization,
-business, client, fund, portfolio, legal entity, vehicle, sleeve, account, or global scope with
-effective dates, versioning, and audit metadata. Keep role-profile and scoped access requests,
-result envelopes, and audit-event metadata in contracts so browser, desktop, and endpoint tests
-share the same authority-configuration vocabulary.
+Identity auth contracts moved to `src/Meridian.Identity/Contracts/Auth` and are published under
+`Meridian.Identity.Auth`. Role/profile, permission, scoped-access request/result, and audit-event
+payloads should stay Identity-owned so browser, desktop, endpoint, and F# policy consumers share
+the same authority-configuration vocabulary without keeping auth DTOs in the generic contracts
+project.
 
 Operations approval policy contracts include a shared approval policy matrix for close governance,
 governed approval-policy rule upsert requests, result envelopes, and audit-event metadata.

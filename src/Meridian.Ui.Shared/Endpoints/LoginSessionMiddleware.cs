@@ -1,4 +1,5 @@
-using Meridian.Contracts.Auth;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Net;
@@ -32,13 +33,13 @@ public sealed class LoginSessionMiddleware
     public const string CurrentUserKey = "CurrentUser";
 
     /// <summary>
-    /// Key for the authenticated user's <see cref="Meridian.Contracts.Auth.UserRole"/> stored in
+    /// Key for the authenticated user's <see cref="Meridian.Identity.Auth.UserRole"/> stored in
     /// <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
     /// </summary>
     public const string CurrentUserRoleKey = "CurrentUserRole";
 
     /// <summary>
-    /// Key for the authenticated user's <see cref="Meridian.Contracts.Auth.UserPermission"/> flags
+    /// Key for the authenticated user's <see cref="Meridian.Identity.Auth.UserPermission"/> flags
     /// stored in <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
     /// </summary>
     public const string CurrentUserPermissionsKey = "CurrentUserPermissions";

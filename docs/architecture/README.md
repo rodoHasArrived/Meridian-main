@@ -37,6 +37,8 @@ This directory contains documentation about the system's design, architectural d
 | [Overview](overview.md) | High-level system architecture |
 | [Project Structure](project-structure.md) | Maintained repository inventory and cleanup classification |
 | [Module Map](module-map.md) | Layer-oriented project map and dependency boundary quick reference |
+| [Design Document Adaptation](design-document-adaptation.md) | Executable adaptation contract for the design document's scope, contexts, modules, workspaces, screen inventory, and deferrals |
+| [Design Module Conformance](design-module-conformance.md) | Maps the design document's bounded-context modules to current source owners and staged extraction rules |
 | [MVVM Guidelines](mvvm-guidelines.md) | Browser workstation and WPF desktop view-model boundaries |
 | [Layer Boundaries](layer-boundaries.md) | Project dependency rules and enforcement |
 | [Storage Design](storage-design.md) | Tiered storage pipeline and WAL design |

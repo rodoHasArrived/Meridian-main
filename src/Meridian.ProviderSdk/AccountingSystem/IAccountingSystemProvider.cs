@@ -15,9 +15,27 @@ public interface IAccountingSystemProvider
         CancellationToken ct = default);
 }
 
+public interface IAccountingSystemConnectionMetadataProvider
+{
+    Task<AccountingSystemConnectionMetadataDto> GetConnectionMetadataAsync(CancellationToken ct = default);
+}
+
+public interface IAccountingSystemConnectionVerifier
+{
+    Task<AccountingSystemConnectionVerificationResult> VerifyConnectionAsync(CancellationToken ct = default);
+}
+
 public sealed record AccountingSystemProviderCapabilities(
     bool SupportsChartOfAccounts,
     bool SupportsJournalEntries,
     bool SupportsTrialBalance,
     bool SupportsPosting,
-    IReadOnlyList<string> EvidenceKinds);
+    IReadOnlyList<string> EvidenceKinds,
+    bool RequiresCredentials = false);
+
+public sealed record AccountingSystemConnectionVerificationResult(
+    bool Success,
+    string? ExternalCompanyId,
+    string? LastError,
+    DateTimeOffset? VerifiedAtUtc,
+    IReadOnlyList<string> Warnings);

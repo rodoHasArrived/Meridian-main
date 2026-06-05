@@ -6,7 +6,7 @@ using FluentAssertions;
 using Meridian.Application.Accounts;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.SecurityMaster;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;

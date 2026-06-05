@@ -6,8 +6,11 @@ using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
-using Meridian.Contracts.Auth;
+using Meridian.DataIntegration.Credentials;
+using Meridian.Contracts.AccountingSystem;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
+using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -129,6 +132,46 @@ public sealed class ProviderConnectionEndpointsTests
         result.CredentialSource.Should().Be(ProviderCredentialSourceDto.None);
     }
 
+    [Fact]
+    public async Task PostProviderVerify_DelegatesQuickBooksOnlineAccountingVerifier()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IAccountingSystemProvider>(sp =>
+                new FakeQuickBooksAccountingVerifier(sp.GetRequiredService<IProviderCredentialStore>()));
+        });
+
+        await app.GetTestClient().PutAsync(
+            "/api/providers/quickbooks/credentials",
+            JsonContent(new
+            {
+                credentials = new
+                {
+                    ClientId = "qbo-client-id",
+                    ClientSecret = "qbo-client-secret",
+                    RefreshToken = "qbo-refresh-token",
+                    RealmId = "9130359087654321",
+                    CompanyName = "Meridian-Dev"
+                },
+                environment = "sandbox"
+            }));
+
+        var response = await app.GetTestClient().PostAsync("/api/providers/quickbooks/verify", JsonContent(new { }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(response);
+        result.Success.Should().BeTrue();
+        result.VerificationState.Should().Be(ProviderVerificationStateDto.Verified);
+        result.ExternalAccountId.Should().Be("9130359087654321");
+
+        var rows = await ReadAsync<ProviderConnectionRowDto[]>(
+            await app.GetTestClient().GetAsync("/api/providers/connections"));
+        rows.Single(row => row.ProviderId == "quickbooks").Should().Match<ProviderConnectionRowDto>(row =>
+            row.CredentialState == ProviderCredentialStateDto.Verified &&
+            row.ExternalAccountId == "9130359087654321" &&
+            row.Capability == ProviderConnectionCapabilityDto.AccountingSystem);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ManageCredentials)
@@ -209,6 +252,52 @@ public sealed class ProviderConnectionEndpointsTests
     private sealed class StubHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
+    }
+
+    private sealed class FakeQuickBooksAccountingVerifier : IAccountingSystemProvider, IAccountingSystemConnectionVerifier
+    {
+        private readonly IProviderCredentialStore _credentialStore;
+
+        public FakeQuickBooksAccountingVerifier(IProviderCredentialStore credentialStore)
+        {
+            _credentialStore = credentialStore;
+        }
+
+        public string ProviderId => "quickbooks";
+
+        public string DisplayName => "QuickBooks Online";
+
+        public AccountingSystemProviderCapabilities Capabilities { get; } = new(
+            SupportsChartOfAccounts: true,
+            SupportsJournalEntries: true,
+            SupportsTrialBalance: true,
+            SupportsPosting: false,
+            EvidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"],
+            RequiresCredentials: true);
+
+        public Task<AccountingSystemImportDetailDto> ImportAsync(
+            AccountingSystemImportRequestDto request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException("Verification test does not import QuickBooks evidence.");
+
+        public async Task<AccountingSystemConnectionVerificationResult> VerifyConnectionAsync(CancellationToken ct = default)
+        {
+            await _credentialStore.RecordVerificationAsync(
+                new ProviderCredentialVerificationUpdate(
+                    "quickbooks",
+                    Success: true,
+                    ExternalAccountId: "9130359087654321",
+                    VerifiedAt: DateTimeOffset.UtcNow,
+                    Actor: "test-quickbooks-verifier"),
+                ct).ConfigureAwait(false);
+
+            return new AccountingSystemConnectionVerificationResult(
+                Success: true,
+                ExternalCompanyId: "9130359087654321",
+                LastError: null,
+                VerifiedAtUtc: DateTimeOffset.UtcNow,
+                Warnings: ["QuickBooks Online read-only token exchange succeeded."]);
+        }
     }
 
     private sealed class AlpacaEnvScope : IDisposable

@@ -1,6 +1,6 @@
 # Copilot Repository Instructions
 
-**Last Updated:** 2026-06-02
+**Last Updated:** 2026-06-04
 
 Use these instructions for every task in this repository to improve quality, reliability, and review speed.
 
@@ -23,6 +23,12 @@ For each task, follow this sequence:
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
 mobile-first workflows. Responsive browser validation may continue for the browser workstation.
+
+Keep product work centered on the W1-W5 operational record baseline: data confidence, retained
+source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage,
+and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first governance, full
+payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and other
+expansion lanes unless they directly strengthen that workflow.
 
 If the task request is ambiguous, document assumptions in the PR body.
 

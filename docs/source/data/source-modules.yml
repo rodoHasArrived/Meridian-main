@@ -471,6 +471,269 @@ modules:
     todos: []
     last_reviewed: 2026-05-20
 
+  - id: SRC-DESIGN-PLATFORM
+    path: src/Meridian.Platform
+    name: Meridian Platform design module
+    layer: Design Module
+    status: active
+    owner_lane: Runtime Host
+    purpose: Physical bounded-context module project for Platform ownership, composition, configuration, and runtime policy conformance.
+    readme: src/Meridian.Platform/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W5-ACCT-001
+    stage_gates:
+      - DataConfidence
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Platform/Meridian.Platform.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
+  - id: SRC-DESIGN-IDENTITY
+    path: src/Meridian.Identity
+    name: Meridian Identity design module
+    layer: Design Module
+    status: active
+    owner_lane: Identity and Access
+    purpose: Physical bounded-context module project for identity auth contracts, scoped access, role/profile, and session ownership conformance.
+    readme: src/Meridian.Identity/README.md
+    roadmap_items:
+      - W5-ACCT-001
+    stage_gates:
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Identity/Meridian.Identity.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~ScopedAccessServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --filter FullyQualifiedName~SensitiveActionPolicyTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
+  - id: SRC-DESIGN-ENTITIES
+    path: src/Meridian.Entities
+    name: Meridian Entities design module
+    layer: Design Module
+    status: active
+    owner_lane: Accounting and Ledger
+    purpose: Physical bounded-context module project for organizations, funds, accounts, entities, assignments, and hierarchy ownership conformance.
+    readme: src/Meridian.Entities/README.md
+    roadmap_items:
+      - W4-RECON-001
+      - W5-ACCT-001
+    stage_gates:
+      - PortfolioLedgerReview
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Entities/Meridian.Entities.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
+  - id: SRC-DESIGN-DATA-INTEGRATION
+    path: src/Meridian.DataIntegration
+    name: Meridian Data Integration design module
+    layer: Design Module
+    status: active
+    owner_lane: Data Confidence and Validation
+    purpose: Physical bounded-context module project for provider, ingestion, validation, source evidence, and publish-data ownership conformance.
+    readme: src/Meridian.DataIntegration/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W5-ACCT-001
+    stage_gates:
+      - DataConfidence
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.DataIntegration/Meridian.DataIntegration.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AccountingSystemIntegrationServiceTests|FullyQualifiedName~ProviderConnectionEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~QuickBooksOnlineProviderCredentialConnectionStoreTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OAuthTokenTests|FullyQualifiedName~CredentialStatusTests|FullyQualifiedName~CredentialTestingServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCredentialStoreTests|FullyQualifiedName~ProviderConnectionEndpointsTests|FullyQualifiedName~CredentialCompatibilityEndpointsTests|FullyQualifiedName~ProviderReadinessEndpointTests|FullyQualifiedName~ProviderRoutingEndpointsTests|FullyQualifiedName~ProviderFactoryCredentialContextTests|FullyQualifiedName~AlpacaBrokerageConnectionServiceTests|FullyQualifiedName~PlaidWorkstationServiceTests|FullyQualifiedName~BrokerageConnectionEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-05
+
+  - id: SRC-DESIGN-REFERENCE-DATA
+    path: src/Meridian.ReferenceData
+    name: Meridian Reference Data design module
+    layer: Design Module
+    status: active
+    owner_lane: Data Confidence and Validation
+    purpose: Physical bounded-context module project for Security Master, identifiers, classifications, reference projections, and data-governance ownership conformance.
+    readme: src/Meridian.ReferenceData/README.md
+    roadmap_items:
+      - W1-DATA-001
+      - W5-MULTIASSET-001
+    stage_gates:
+      - DataConfidence
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.ReferenceData/Meridian.ReferenceData.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
+  - id: SRC-DESIGN-INSTRUMENTS
+    path: src/Meridian.Instruments
+    name: Meridian Instruments design module
+    layer: Design Module
+    status: active
+    owner_lane: Accounting and Ledger
+    purpose: Physical bounded-context module project for instrument terms, contracts, obligations, classifications, and ledger-projection ownership conformance.
+    readme: src/Meridian.Instruments/README.md
+    roadmap_items:
+      - W4-RECON-001
+      - W5-MULTIASSET-001
+    stage_gates:
+      - PortfolioLedgerReview
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Instruments/Meridian.Instruments.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
+  - id: SRC-DESIGN-PORTFOLIO-RECORDS
+    path: src/Meridian.PortfolioRecords
+    name: Meridian Portfolio Records design module
+    layer: Design Module
+    status: active
+    owner_lane: Accounting and Ledger
+    purpose: Physical bounded-context module project for portfolio records, positions, activity, holdings, account records, and fund-operation ownership conformance.
+    readme: src/Meridian.PortfolioRecords/README.md
+    roadmap_items:
+      - W4-RECON-001
+      - W5-ACCT-001
+      - W5-MULTIASSET-001
+    stage_gates:
+      - PortfolioLedgerReview
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
+  - id: SRC-DESIGN-FINANCIAL-OPERATIONS
+    path: src/Meridian.FinancialOperations
+    name: Meridian Financial Operations design module
+    layer: Design Module
+    status: active
+    owner_lane: Accounting and Ledger
+    purpose: Physical bounded-context module project for reconciliation, accounting records, approvals, close workflows, casework, and operational-record ownership conformance.
+    readme: src/Meridian.FinancialOperations/README.md
+    roadmap_items:
+      - W4-RECON-001
+      - W5-ACCT-001
+    stage_gates:
+      - PortfolioLedgerReview
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityWorkflowServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy|FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StatementValidationServiceTests|FullyQualifiedName~StatementRepositoryTests|FullyQualifiedName~StatementReconciliationOrchestratorTests|FullyQualifiedName~StatementReconciliationContextAdapterTests|FullyQualifiedName~StatementMatchingEngineTests|FullyQualifiedName~CanonicalReconciliationMatchingEngineTests|FullyQualifiedName~StatementReconciliationServiceTests|FullyQualifiedName~StatementImportAndMatchingTests|FullyQualifiedName~StatementFixtureScenarioTests|FullyQualifiedName~StatementBreakClassifierTests|FullyQualifiedName~ReconciliationContractsTests|FullyQualifiedName~BrokerCustodianMatchingPipelineTests|FullyQualifiedName~ReconciliationApiServiceTests|FullyQualifiedName~StatementImportCommandsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AccountingSystemIntegrationServiceTests|FullyQualifiedName~ProviderConnectionEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-05
+
+  - id: SRC-DESIGN-WORKFLOW
+    path: src/Meridian.Workflow
+    name: Meridian Workflow design module
+    layer: Design Module
+    status: active
+    owner_lane: Workstation Shell and UX
+    purpose: Physical bounded-context module project for workflow definitions, operator actions, presets, continuity paths, and process ownership conformance.
+    readme: src/Meridian.Workflow/README.md
+    roadmap_items:
+      - W3-CONT-001
+      - W5-ACCT-001
+    stage_gates:
+      - ResearchContinuity
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Workflow/Meridian.Workflow.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
+  - id: SRC-DESIGN-AUDIT
+    path: src/Meridian.Audit
+    name: Meridian Audit design module
+    layer: Design Module
+    status: active
+    owner_lane: Accounting and Ledger
+    purpose: Physical bounded-context module project for evidence packets, audit hashes, retained manifests, lineage, and export-verification ownership conformance.
+    readme: src/Meridian.Audit/README.md
+    roadmap_items:
+      - W4-RPT-001
+      - W5-ACCT-001
+    stage_gates:
+      - GovernedReportPack
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Audit/Meridian.Audit.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
+  - id: SRC-DESIGN-REPORTING
+    path: src/Meridian.Reporting
+    name: Meridian Reporting design module
+    layer: Design Module
+    status: active
+    owner_lane: Workstation Shell and UX
+    purpose: Physical bounded-context module project for report packs, governed exports, publication, restatement, distribution, and reporting ownership conformance.
+    readme: src/Meridian.Reporting/README.md
+    roadmap_items:
+      - W4-RPT-001
+      - W5-ACCT-001
+    stage_gates:
+      - GovernedReportPack
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Reporting/Meridian.Reporting.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
+  - id: SRC-DESIGN-DOCUMENTS
+    path: src/Meridian.Documents
+    name: Meridian Documents design module
+    layer: Design Module
+    status: active
+    owner_lane: Accounting and Ledger
+    purpose: Physical bounded-context module project for retained document attachments, document evidence, manifests, and document-management ownership conformance.
+    readme: src/Meridian.Documents/README.md
+    roadmap_items:
+      - W4-RPT-001
+      - W5-ACCT-001
+    stage_gates:
+      - GovernedReportPack
+      - AccountingRecords
+    validation:
+      - dotnet build src/Meridian.Documents/Meridian.Documents.csproj /p:EnableWindowsTargeting=true
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    todos: []
+    last_reviewed: 2026-06-04
+
   - id: SRC-IBAPI-SMOKESTUB
     path: src/Meridian.IbApi.SmokeStub
     name: IB API smoke stub

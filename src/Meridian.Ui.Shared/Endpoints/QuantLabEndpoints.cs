@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
 using Microsoft.AspNetCore.Builder;

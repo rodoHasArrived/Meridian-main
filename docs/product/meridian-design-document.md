@@ -2,7 +2,7 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-02
+**Reviewed:** 2026-06-04
 **Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.15 extends the roadmap and source-module registry evidence with the v0.15 accounting records and operational evidence release package.
 
 ## 1. Product Vision
@@ -10,6 +10,8 @@
 Meridian is a modular, configurable financial operations platform for fund administrators, registered investment advisors, family offices, and other investment organizations. The platform helps financial operations professionals acquire, validate, reconcile, govern, analyze, forecast, and report on financial data through a single auditable workflow.
 
 Meridian should not initially try to replace every external system. Instead, it should become the operational system of record for validated workflows, evidence, reconciliations, decisions, and certified reporting outputs. For ledger records specifically, Meridian is the source of all ledger truth; external accounting systems contribute read-only evidence and reconciliation signals unless an approved publishing workflow explicitly exports Meridian-owned entries.
+
+The current product scope is deliberately narrower than the full long-term domain catalog. Active product work should strengthen data confidence, reconciliation, approvals, accounting records, retained evidence, and governed reporting before expanding Backtesting Studio, live trading, full payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, or other broad platform lanes.
 
 ### Core Vision Statement
 
@@ -23,6 +25,13 @@ The primary user hires Meridian to know:
 * Why it happened
 * Whether it can be trusted
 * What needs to be reviewed, approved, reconciled, paid, forecasted, or reported
+
+### Active Scope Gate
+
+A new capability belongs in the active product scope only when it helps an operator prove what
+happened, why it happened, whether it can be trusted, and what was reconciled, approved, recorded,
+or reported. Capabilities outside that operational record workflow remain deferred unless the
+roadmap registry explicitly moves them into scope.
 
 ---
 
@@ -162,7 +171,7 @@ Current implementation claims in this section are grounded in:
 
 ### Closed Baselines
 
-The roadmap registry marks W1-W4 as done, with green health and complete evidence posture:
+The roadmap registry marks W1-W5 as done, with green health and complete evidence posture:
 
 | Wave | Capability Baseline | Product Meaning |
 | --- | --- | --- |
@@ -172,16 +181,17 @@ The roadmap registry marks W1-W4 as done, with green health and complete evidenc
 | W3 | Research-to-paper continuity | Strategy research outputs, run comparison, and promotion evidence remain connected to downstream paper validation. |
 | W4 | Portfolio ledger reconciliation readiness | Reconciliation queue actions, ledger evidence, accounting casework, and close-lane sign-off are established preservation targets. |
 | W4 | Governed report pack readiness | Report packs carry approval, provenance, publication, restatement, export, and evidence-vault support. |
+| W5 | Accounting records and operational evidence | Source records, normalized activity, reconciliation cases, ledger evidence, approvals, documents, report packs, exports, and restatement lineage remain linked as audit-ready operational records. |
+| W5 | Multi-asset operational coverage proof lane | Security Master posture, provider evidence, ledger classification, reconciliation signals, and close-readiness blockers are exposed through shared browser and WPF read models. |
 
 ### Planned and Gated Baselines
 
-W5, W6, and W7 remain planned, not complete:
+W6 and W7 remain planned, not complete:
 
 | Wave | Planned Capability | Gate |
 | --- | --- | --- |
-| W5 | Accounting records and operational evidence | Source records, normalized activity, reconciliation cases, ledger evidence, approvals, documents, report packs, exports, and restatement lineage must remain linked as audit-ready operational records. |
-| W6 | Backtesting studio evidence loop | Backtesting Studio is deferred behind the accounting records package; backtest results must link to strategy lineage and operator-facing acceptance criteria before paper promotion expansion. |
-| W7 | Live-readiness governance | Live operation remains gated by trusted data, paper validation, reconciliation, governed reporting evidence, and v0.15 accounting record-keeping evidence. |
+| W6 | Backtesting studio evidence loop | Backtesting Studio is deferred behind the W1-W5 operational record baseline; backtest results must link to strategy lineage and operator-facing acceptance criteria before paper promotion expansion. |
+| W7 | Live-readiness governance | Live operation remains gated by trusted data, paper validation, reconciliation, approvals, governed reporting evidence, accounting records, and explicit governance sign-off. |
 
 ### Active Product Surfaces
 
@@ -239,7 +249,9 @@ Meridian should be organized around functional domains. These domains describe b
 
 ### Purpose
 
-Acquire, normalize, validate, and distribute data throughout Meridian.
+Acquire, normalize, validate, and distribute provider, file, and external-system data while retaining
+source evidence, confidence posture, and replayable lineage for Meridian's operational-record
+workflows.
 
 ### Core Flow
 
@@ -254,19 +266,24 @@ Connect Source
 
 ### Capabilities
 
-* Provider catalog
-* Provider onboarding
-* API ingestion
-* SFTP ingestion
-* File uploads
-* Email ingestion
-* Data mapping
-* Data transformation
-* Data validation
-* Data quality scoring
-* Deduplication
-* Lineage tracking
-* Import replay / backfill support
+* Provider catalog, readiness posture, and capability metadata
+* Provider onboarding, credential validation, and secret-safe setup
+* API ingestion for market, brokerage, bank, accounting-system, and reference data
+* Batch and document intake through SFTP, file uploads, and governed email attachment capture
+* Raw source capture with source-row references, source hashes, duplicate keys, and provenance
+* Mapping and transformation into canonical positions, transactions, balances, reference records, and provider events
+* Data validation, freshness checks, provider capability checks, and confidence scoring
+* Deduplication and replay-safe import job handling
+* Lineage tracking from source payload to normalized record, reconciliation case, ledger evidence, report line, and export
+* Import replay, backfill, and historical reprocessing with prior-version preservation
+* Shared publication into storage, accounting, reporting, strategy, audit, browser workstation, and WPF surfaces
+
+### Operating Requirements
+
+* UI surfaces must consume shared contracts and read models for provider posture, validation state, and publication status instead of owning provider-trust logic.
+* Missing, stale, or unsupported source evidence must create review-required or blocked states rather than plausible-looking operational data.
+* New provider work should start from ProviderSdk contracts and Infrastructure adapters, then publish through shared services before adding browser or WPF presentation.
+* Channel expansion is active-scope work only when it strengthens the W1-W5 operational record baseline: data confidence, retained evidence, reconciliation, approvals, accounting records, multi-asset coverage, or governed reports.
 
 ---
 
@@ -1399,6 +1416,14 @@ Meridian.Reporting
 Meridian.Documents
 ```
 
+These names are the bounded-context module target. Project adaptation is tracked through
+[`docs/architecture/design-document-adaptation.md`](../architecture/design-document-adaptation.md),
+with physical module conformance covered by
+[`docs/architecture/design-module-conformance.md`](../architecture/design-module-conformance.md).
+New implementation work should select the relevant bounded-context module first, then use those
+maps to choose the physical project, current source owner, contracts, UI surface, and validation
+lane.
+
 Each module should have:
 
 ```text
@@ -1925,9 +1950,9 @@ Uses `docs/roadmap/data/*.yml` as the durable source of delivery state, with the
 
 ### v0.15 Release Package: Accounting Records and Operational Evidence
 
-The v0.15 release delays Backtesting Studio and focuses on accounting, reconciliation, and record-keeping functionality. This makes Meridian stronger as the operational system of record before expanding research tooling or live-readiness surfaces.
+The v0.15 release package establishes W1-W5 as the near-term operational record baseline. It delays Backtesting Studio and focuses on accounting, reconciliation, approval, retained-evidence, and record-keeping functionality. This makes Meridian stronger as the operational system of record before expanding research tooling, live-readiness surfaces, full payment execution, forecasting, enterprise risk, client portal, no-code workflow design, mobile, or other broad platform lanes.
 
-v0.15 should deepen the `Accounting`, `Reporting`, `Portfolio`, and `Data` workspaces by connecting:
+v0.15 deepens the `Accounting`, `Reporting`, `Portfolio`, and `Data` workspaces by connecting:
 
 * retained source records
 * normalized transactions, positions, balances, and activity
@@ -1940,7 +1965,7 @@ v0.15 should deepen the `Accounting`, `Reporting`, `Portfolio`, and `Data` works
 
 The package should preserve the shared-first UI direction: browser and WPF surfaces consume shared contracts, endpoint read models, and services rather than inventing separate accounting state.
 
-Backtesting Studio remains valuable, but it moves behind this accounting records package so that strategy, paper, and later live-readiness work can rely on stronger books, audit, and reporting evidence.
+Backtesting Studio remains valuable, but it stays behind this accounting records package so that strategy, paper, and later live-readiness work can rely on stronger books, audit, and reporting evidence.
 
 ---
 
@@ -1950,7 +1975,7 @@ The foundational product slice remains:
 
 # Data Operations + Reconciliation Foundation
 
-This slice is no longer only a recommendation. It is the product baseline that W1-W4 have begun to prove through trusted data, paper validation, research continuity, ledger reconciliation, and governed reporting.
+This slice is no longer only a recommendation. It is the product baseline that W1-W5 prove through trusted data, paper validation, research continuity, ledger reconciliation, accounting records, approvals, multi-asset operational coverage, and governed reporting.
 
 ### Includes
 
@@ -1978,6 +2003,8 @@ Current repository evidence already covers:
 * Promotion review and research-to-paper continuity
 * Portfolio ledger reconciliation and close-lane casework
 * Governed report-pack approval, provenance, and export evidence
+* Accounting record summaries linking source data, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage
+* Multi-asset operational coverage with provider evidence, ledger classification, reconciliation signals, and close blockers
 * Shared browser and WPF workstation read models for operator workflows
 
 ### Remaining Expansion Work
@@ -1992,6 +2019,8 @@ The baseline does not yet imply completion of:
 * Full client portal
 * Full no-code workflow designer
 * Full live-trading readiness
+* Backtesting Studio beyond evidence-linking support
+* Mobile applications
 
 ### Why This Slice Works
 

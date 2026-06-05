@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.Integration.EndpointTests;

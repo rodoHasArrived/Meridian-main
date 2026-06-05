@@ -1,0 +1,167 @@
+schema:
+  id: meridian.design-module-conformance
+  version: "1.0.0"
+  minimum_validator_version: "1.0.0"
+
+design_source:
+  path: docs/product/meridian-design-document.md
+  section: "15. Recommended Architecture Style"
+
+conformance_mode: physical-module-projects
+notes:
+  - The design document names bounded-context modules.
+  - Every design module now has a physical project under src/.
+  - Every design module descriptor exposes its bounded context and required implementation facets.
+  - Existing implementation code remains in current owner projects until behavior-preserving extraction slices move it.
+  - New work should choose the design module first, then use the physical project and mapped current source owners.
+
+modules:
+  - name: Meridian.Platform
+    conformance: physical
+    physical_project: src/Meridian.Platform
+    primary_current_owner: Runtime Host
+    current_sources:
+      - src/Meridian
+      - src/Meridian.Core
+      - src/Meridian.Application
+      - src/Meridian.Storage
+    migration_next: Keep host, configuration, pipeline, storage policy, and composition changes behind published contracts before considering a physical Platform project.
+
+  - name: Meridian.Identity
+    conformance: physical
+    physical_project: src/Meridian.Identity
+    primary_current_owner: Meridian.Identity
+    current_sources:
+      - src/Meridian.Identity
+      - src/Meridian.Application
+      - src/Meridian.Ui.Shared
+      - src/Meridian.Wpf
+      - src/Meridian.Ui/dashboard
+    migration_next: Scoped-access services, stores, auth role/permission/scoped-access contracts, login sessions, user profiles, auth-mode resolution, and role-profile persistence now live in Meridian.Identity. Keep UI-service endpoint and middleware adapters thin while browser/WPF identity presentation is characterized.
+
+  - name: Meridian.Entities
+    conformance: physical
+    physical_project: src/Meridian.Entities
+    primary_current_owner: Accounting and Ledger
+    current_sources:
+      - src/Meridian.Application
+      - src/Meridian.Contracts
+      - src/Meridian.Storage
+      - src/Meridian.Ui.Shared
+    migration_next: Treat fund structure, legal entities, accounts, assignments, and hierarchy persistence as the entity module boundary until a dedicated project is extracted.
+
+  - name: Meridian.DataIntegration
+    conformance: physical
+    physical_project: src/Meridian.DataIntegration
+    primary_current_owner: Data Confidence and Validation
+    current_sources:
+      - src/Meridian.ProviderSdk
+      - src/Meridian.Infrastructure
+      - src/Meridian.Storage
+      - src/Meridian.Application
+      - src/Meridian.Ui.Shared
+      - src/Meridian.Ui/dashboard
+    migration_next: QuickBooks accounting-system fixture, online adapter, token exchange, connection verification, credential-backed connection store, read-only company evidence import, DTO mapping, provider credential catalog, encrypted provider credential store, credential status records, OAuth token records, verification metadata, and provider-environment normalization now live in Meridian.DataIntegration behind ProviderSdk and DataIntegration credential contracts. Continue moving provider adapters, ingestion, validation, and source evidence mapping out of layer-oriented infrastructure/application owners; avoid UI-local provider state.
+
+  - name: Meridian.ReferenceData
+    conformance: physical
+    physical_project: src/Meridian.ReferenceData
+    primary_current_owner: Data Confidence and Validation
+    current_sources:
+      - src/Meridian.Application
+      - src/Meridian.Contracts
+      - src/Meridian.Storage
+      - src/Meridian.FSharp.DirectLending.Aggregates
+      - src/Meridian.Ui.Shared
+    migration_next: Keep Security Master and reference projections source-owned by shared contracts and storage ports before extracting a physical ReferenceData project.
+
+  - name: Meridian.Instruments
+    conformance: physical
+    physical_project: src/Meridian.Instruments
+    primary_current_owner: Accounting and Ledger
+    current_sources:
+      - src/Meridian.Application
+      - src/Meridian.Contracts
+      - src/Meridian.FSharp
+      - src/Meridian.FSharp.DirectLending.Aggregates
+      - src/Meridian.FSharp.Ledger
+      - src/Meridian.Ledger
+      - src/Meridian.Storage
+    migration_next: Keep instrument terms, obligation models, Security Master classifications, and ledger projections in shared domain/ledger seams until the object model stabilizes.
+
+  - name: Meridian.PortfolioRecords
+    conformance: physical
+    physical_project: src/Meridian.PortfolioRecords
+    primary_current_owner: Accounting and Ledger
+    current_sources:
+      - src/Meridian.FinancialOperations
+      - src/Meridian.Application
+      - src/Meridian.Contracts
+      - src/Meridian.Ledger
+      - src/Meridian.Storage
+      - src/Meridian.Ui.Shared
+      - src/Meridian.Wpf
+      - src/Meridian.Ui/dashboard
+    migration_next: Keep positions, accounts, activity, holdings, cost basis, and fund-operation read models tied to shared contracts before extracting physical portfolio records.
+
+  - name: Meridian.FinancialOperations
+    conformance: physical
+    physical_project: src/Meridian.FinancialOperations
+    primary_current_owner: Accounting and Ledger
+    current_sources:
+      - src/Meridian.FinancialOperations
+      - src/Meridian.Application
+      - src/Meridian.Contracts
+      - src/Meridian.Ledger
+      - src/Meridian.FSharp.Ledger
+      - src/Meridian.Ui.Shared
+      - src/Meridian.Wpf
+      - src/Meridian.Ui/dashboard
+    migration_next: Operations Continuity aggregate, command workflow service, status derivation, repositories, audit hashing, Postgres workflow store, approval-policy matrix, close-calendar services, accounting-system GL import/reconciliation service, statement reconciliation services, statement-run workflow, validation, matching engines, break classification, decision journals, and reconciliation repositories now live in Meridian.FinancialOperations. Continue moving accounting records, approval/casework support, and remaining close/reconciliation adapters out of application/UI layers behind shared read models and ledger services.
+
+  - name: Meridian.Workflow
+    conformance: physical
+    physical_project: src/Meridian.Workflow
+    primary_current_owner: Workstation Shell and UX
+    current_sources:
+      - src/Meridian.Application
+      - src/Meridian.Contracts
+      - src/Meridian.Ui.Shared
+      - src/Meridian.Wpf
+      - src/Meridian.Ui/dashboard
+    migration_next: Keep workflow definitions, operator actions, presets, and continuity flows centralized in shared services and view models before project extraction.
+
+  - name: Meridian.Audit
+    conformance: physical
+    physical_project: src/Meridian.Audit
+    primary_current_owner: Accounting and Ledger
+    current_sources:
+      - src/Meridian.Application
+      - src/Meridian.Contracts
+      - src/Meridian.Storage
+      - src/Meridian.Ui.Shared
+    migration_next: Keep evidence packets, audit hashes, retained manifests, lineage, and export verification source-backed and fail closed.
+
+  - name: Meridian.Reporting
+    conformance: physical
+    physical_project: src/Meridian.Reporting
+    primary_current_owner: Workstation Shell and UX
+    current_sources:
+      - src/Meridian.Contracts
+      - src/Meridian.Ledger
+      - src/Meridian.Ui.Shared
+      - src/Meridian.Ui.Services
+      - src/Meridian.Wpf
+      - src/Meridian.Ui/dashboard
+    migration_next: Keep report packs, exports, publication, restatement, and distribution evidence in shared contracts and services consumed by both UI surfaces.
+
+  - name: Meridian.Documents
+    conformance: physical
+    physical_project: src/Meridian.Documents
+    primary_current_owner: Accounting and Ledger
+    current_sources:
+      - src/Meridian.Contracts
+      - src/Meridian.Storage
+      - src/Meridian.Ui.Shared
+      - src/Meridian.Ui.Services
+    migration_next: Keep retained document attachments and evidence manifests in the audit/reporting fabric until a dedicated document-management module is justified.

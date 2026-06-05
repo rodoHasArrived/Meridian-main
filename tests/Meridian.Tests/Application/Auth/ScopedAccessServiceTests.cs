@@ -1,9 +1,10 @@
 using FluentAssertions;
-using Meridian.Application.Auth;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
-using Meridian.Contracts.Auth;
+using Meridian.Application.Identity;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
+using Meridian.Identity;
 using Meridian.Testing;
 using Xunit;
 
@@ -22,7 +23,7 @@ public sealed class ScopedAccessServiceTests
         var fundStructure = new InMemoryFundStructureService(new InMemoryFundAccountService());
         var created = await CreateTwoFundStructureAsync(fundStructure);
         var store = new FileScopedAccessAssignmentStore(Path.Combine(artifacts.RootPath, "governance", "user-access-assignments.json"));
-        var service = new ScopedAccessService(store, fundStructure);
+        var service = new ScopedAccessService(store, new FundStructureAccessScopeLineageProvider(fundStructure));
 
         await service.CreateAsync(
             new UserAccessAssignmentCreateRequestDto(

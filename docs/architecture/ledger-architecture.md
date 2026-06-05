@@ -347,7 +347,7 @@ coverage issues, and classification map.
 
 ## Operations continuity workflow
 
-`OperationsContinuityWorkflow` is the shared application aggregate for the account-period
+`OperationsContinuityWorkflow` is the Financial Operations aggregate for the account-period
 operations lane. It is scoped to a fund account, accounting period, optional Security Master
 snapshot, and broker/custodian/bank source. The workflow models broker intake, Security Master,
 ledger posting, reconciliation, and approval as explicit gates. UI clients consume the derived
@@ -358,12 +358,12 @@ The implemented continuity slice provides:
 
 | Component | Responsibility |
 |-----------|----------------|
-| `OperationsContinuityWorkflowService` | Command-driven workflow transitions, optimistic version checks, audit writes, DTO projection |
-| `IOperationsContinuityRepository` | Workflow snapshot persistence; file-backed by default, or PostgreSQL-backed through `PostgresOperationsContinuityStore` when `MERIDIAN_LEDGER_CONNECTION_STRING` is configured |
+| `OperationsContinuityWorkflowService` | Financial Operations command-driven workflow transitions, optimistic version checks, audit writes, DTO projection |
+| `IOperationsContinuityRepository` | Financial Operations workflow snapshot persistence; file-backed by default, or PostgreSQL-backed through `PostgresOperationsContinuityStore` when `MERIDIAN_LEDGER_CONNECTION_STRING` is configured |
 | `IOperationsWorkflowAuditStore` | Append-only audit timeline with previous/current SHA-256 hash chaining |
-| `PostgresOperationsContinuityStore` | PostgreSQL implementation of `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, and `IOperationsContinuityTransactionalCommitStore`; successful ledger posts share the ledger journal transaction |
+| `PostgresOperationsContinuityStore` | Financial Operations PostgreSQL implementation of `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, and `IOperationsContinuityTransactionalCommitStore`; successful ledger posts share the ledger journal transaction |
 | `IOperationsContinuityTransactionalCommitStore` | Strict-atomicity commit seam for successful ledger posting: append journal, append workflow audit, and save workflow snapshot in one persistence boundary |
-| `OperationsStatusDerivationService` | Deterministic server-side overall status derivation from gate/sub-state posture |
+| `OperationsStatusDerivationService` | Financial Operations deterministic server-side overall status derivation from gate/sub-state posture |
 | `Meridian.Contracts.Workstation` operations DTOs | Shared browser/WPF read and command contracts |
 
 Every implemented transition writes an audit record before the workflow snapshot is saved. Audit

@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-06-02
+Snapshot date: 2026-06-04
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |

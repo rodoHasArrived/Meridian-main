@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
-using Meridian.Ui.Shared.Services;
+using Meridian.FinancialOperations.AccountingSystem;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -14,7 +14,7 @@ public static class AccountingSystemEndpoints
     {
         var group = app.MapGroup("").WithTags("Accounting System Providers");
 
-        group.MapGet(UiApiRoutes.AccountingSystemProviders, (
+        group.MapGet(UiApiRoutes.AccountingSystemProviders, async (
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
@@ -23,7 +23,8 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            return Results.Json(service.ListProviders(), jsonOptions);
+            var providers = await service.ListProvidersAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(providers, jsonOptions);
         })
         .WithName("ListAccountingSystemProviders")
         .Produces<IReadOnlyList<AccountingSystemProviderDto>>(StatusCodes.Status200OK);

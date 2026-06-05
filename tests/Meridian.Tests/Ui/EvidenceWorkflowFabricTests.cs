@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
-using Meridian.Application.OperationsContinuity;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Contracts.Configuration;
 using Xunit;
 
@@ -106,6 +107,42 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         descriptor.ResolvedActionHref.Should().Be("/settings#plaid-provider-setup");
         status.Environment.Should().Be(expectedEnvironment);
         status.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+    }
+
+    [Fact]
+    public async Task SaveAsync_QuickBooksStoresReadOnlyCompanyOAuthConfig()
+    {
+        var store = new FileProviderCredentialStore(_root);
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "qbo",
+            new Dictionary<string, string?>
+            {
+                ["ClientId"] = "qbo-client-id",
+                ["ClientSecret"] = "qbo-client-secret",
+                ["RefreshToken"] = "qbo-refresh-token",
+                ["RealmId"] = "9130359087654321",
+                ["CompanyName"] = "Meridian-Dev"
+            },
+            Environment: "live",
+            Actor: "test-operator"));
+
+        var descriptor = ProviderCredentialCatalog.Find("quickbooks-online");
+        var status = await store.GetStatusAsync("quickbooks");
+        var read = await store.ReadForProviderAsync("quickbooks");
+        var vaultText = await File.ReadAllTextAsync(store.VaultPath);
+
+        descriptor.Should().NotBeNull();
+        descriptor!.RequiresCredentials.Should().BeTrue();
+        descriptor.ResolvedActionHref.Should().Be("/settings#provider-quickbooks-connection");
+        status.Environment.Should().Be("production");
+        status.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+        status.MissingFields.Should().BeEmpty();
+        read.Should().NotBeNull();
+        read!.Get("RealmId").Should().Be("9130359087654321");
+        read.Get("CompanyName").Should().Be("Meridian-Dev");
+        vaultText.Should().NotContain("qbo-client-secret");
+        vaultText.Should().NotContain("qbo-refresh-token");
     }
 
     [Fact]

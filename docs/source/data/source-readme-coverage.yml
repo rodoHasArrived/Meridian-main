@@ -109,6 +109,66 @@ modules:
     readme: src/Meridian.Mcp/README.md
     status: covered
     last_reviewed: 2026-05-20
+  - module_id: SRC-DESIGN-PLATFORM
+    path: src/Meridian.Platform
+    readme: src/Meridian.Platform/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-IDENTITY
+    path: src/Meridian.Identity
+    readme: src/Meridian.Identity/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-ENTITIES
+    path: src/Meridian.Entities
+    readme: src/Meridian.Entities/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-DATA-INTEGRATION
+    path: src/Meridian.DataIntegration
+    readme: src/Meridian.DataIntegration/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-REFERENCE-DATA
+    path: src/Meridian.ReferenceData
+    readme: src/Meridian.ReferenceData/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-INSTRUMENTS
+    path: src/Meridian.Instruments
+    readme: src/Meridian.Instruments/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-PORTFOLIO-RECORDS
+    path: src/Meridian.PortfolioRecords
+    readme: src/Meridian.PortfolioRecords/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
+    path: src/Meridian.FinancialOperations
+    readme: src/Meridian.FinancialOperations/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-WORKFLOW
+    path: src/Meridian.Workflow
+    readme: src/Meridian.Workflow/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-AUDIT
+    path: src/Meridian.Audit
+    readme: src/Meridian.Audit/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-REPORTING
+    path: src/Meridian.Reporting
+    readme: src/Meridian.Reporting/README.md
+    status: covered
+    last_reviewed: 2026-06-04
+  - module_id: SRC-DESIGN-DOCUMENTS
+    path: src/Meridian.Documents
+    readme: src/Meridian.Documents/README.md
+    status: covered
+    last_reviewed: 2026-06-04
   - module_id: SRC-IBAPI-SMOKESTUB
     path: src/Meridian.IbApi.SmokeStub
     readme: src/Meridian.IbApi.SmokeStub/README.md

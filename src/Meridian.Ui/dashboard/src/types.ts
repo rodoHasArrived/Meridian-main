@@ -1562,6 +1562,20 @@ export interface AccountingSystemProvider {
   statusLabel: string;
   statusDetail: string;
   evidenceKinds: string[];
+  connection?: AccountingSystemConnectionMetadata | null;
+}
+
+export interface AccountingSystemConnectionMetadata {
+  providerId: string;
+  environment: string | null;
+  companyId: string | null;
+  companyName: string | null;
+  hasLocalConfig: boolean;
+  hasRefreshToken: boolean;
+  lastConnectedAtUtc: string | null;
+  statusLabel: string;
+  statusDetail: string;
+  missingFields: string[];
 }
 
 export interface AccountingSystemImportRequest {

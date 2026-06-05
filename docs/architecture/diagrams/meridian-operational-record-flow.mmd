@@ -1,0 +1,32 @@
+flowchart LR
+  RawSources["External raw sources<br/>custodian files, bank feeds, broker records, market data, accounting exports, PDFs, contracts, statements"]
+  ProviderModel["Provider adapter model<br/>connection, dataset, import run"]
+  RawEvidence["Raw source evidence<br/>preserved exactly as received"]
+  Normalized["Normalized operational records<br/>transactions, positions, cash, prices, contract terms"]
+  Validation["Validation and business rules<br/>mapping, freshness, exception checks, confidence scoring"]
+  ReviewGate["Review-required or blocked state<br/>when evidence is missing, stale, or unsupported"]
+  Reconciliation["Reconciliation cases<br/>source-to-source, expected-to-actual, internal-to-official"]
+  Approvals["Approval workflow<br/>operator sign-off, materiality controls, override evidence"]
+  SystemRecord["Approved Meridian system of record<br/>validated business records and ledger truth"]
+  AccountingRecords["Accounting records and ledger evidence<br/>journals, close support, adjustments, provenance"]
+  ReportPacks["Governed report packs<br/>frozen snapshots, publication, export, restatement lineage"]
+  AuditLineage["Lineage and audit trail<br/>source payload to record, case, ledger, report, export"]
+
+  RawSources --> ProviderModel
+  ProviderModel --> RawEvidence
+  RawEvidence --> Normalized
+  Normalized --> Validation
+  Validation -->|"accepted"| Reconciliation
+  Validation -->|"not trusted"| ReviewGate
+  ReviewGate -->|"resolved with evidence"| Reconciliation
+  Reconciliation --> Approvals
+  Approvals --> SystemRecord
+  SystemRecord --> AccountingRecords
+  SystemRecord --> ReportPacks
+
+  RawEvidence -.-> AuditLineage
+  Validation -.-> AuditLineage
+  Reconciliation -.-> AuditLineage
+  Approvals -.-> AuditLineage
+  AccountingRecords -.-> AuditLineage
+  ReportPacks -.-> AuditLineage

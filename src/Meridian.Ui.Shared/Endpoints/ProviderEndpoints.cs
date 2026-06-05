@@ -2,7 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared;
@@ -251,8 +251,8 @@ public static class ProviderEndpoints
 
         group.MapPost(UiApiRoutes.ProviderConfigure, async (
             HttpContext context,
-            ProviderSetupRequest req,
-            ProviderSetupService setupService) =>
+            [FromBody] ProviderSetupRequest req,
+            [FromServices] ProviderSetupService setupService) =>
         {
             if (!HasProviderSetupPermission(context, req))
             {
@@ -344,7 +344,7 @@ public static class ProviderEndpoints
         .Produces<ProviderComparisonResponse>(200);
 
         group.MapGet(UiApiRoutes.ProviderReadiness, async (
-            ProviderReadinessService service,
+            [FromServices] ProviderReadinessService service,
             CancellationToken ct) =>
         {
             var readiness = await service.GetReadinessAsync(ct).ConfigureAwait(false);

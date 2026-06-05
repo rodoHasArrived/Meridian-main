@@ -391,8 +391,13 @@ function AccountingSystemReconciliationPanel({
   error: string | null;
   onRefresh: () => void;
 }) {
-  const activeProvider = providers.find((provider) => provider.providerId === "quickbooks-fixture") ?? providers[0] ?? null;
-  const plannedProvider = providers.find((provider) => provider.providerId === "quickbooks");
+  const activeProvider = providers.find((provider) => provider.providerId === importDetail?.summary.providerId)
+    ?? providers.find((provider) => provider.providerId === "quickbooks" && provider.state === "Available")
+    ?? providers.find((provider) => provider.providerId === "quickbooks-fixture")
+    ?? providers[0]
+    ?? null;
+  const quickBooksProvider = providers.find((provider) => provider.providerId === "quickbooks");
+  const selectedCompanyLabel = activeProvider?.connection?.companyName ?? activeProvider?.connection?.companyId ?? null;
   const rows = reconciliation?.rows.slice(0, 5) ?? [];
 
   return (
@@ -403,15 +408,18 @@ function AccountingSystemReconciliationPanel({
             <div className="eyebrow-label">External GL reconciliation</div>
             <CardTitle className="mt-2 flex items-center gap-2 text-base">
               <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-              QuickBooks fixture evidence
+              {activeProvider ? `${activeProvider.displayName} evidence` : "External GL evidence"}
             </CardTitle>
             <CardDescription className="mt-2">
               External accounting-system records are imported as read-only evidence against Meridian-owned ledger truth; posting back to the external GL remains disabled.
             </CardDescription>
+            {selectedCompanyLabel ? (
+              <div className="mt-2 text-xs text-muted-foreground">Selected company: {selectedCompanyLabel}</div>
+            ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {activeProvider ? <Badge variant="success">{activeProvider.statusLabel}</Badge> : null}
-            {plannedProvider ? <Badge variant="outline">{plannedProvider.statusLabel}</Badge> : null}
+            {quickBooksProvider && quickBooksProvider !== activeProvider ? <Badge variant="outline">{quickBooksProvider.statusLabel}</Badge> : null}
             <Button size="sm" variant="outline" onClick={onRefresh} disabled={loading} busy={loading} busyLabel="Refreshing GL evidence">
               <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
               Refresh
@@ -1082,8 +1090,11 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     setAccountingSystemError(null);
     try {
       const providers = await getAccountingSystemProviders();
+      const selectedProviderId = providers.find((provider) => (
+        provider.providerId === "quickbooks" && provider.state === "Available"
+      ))?.providerId ?? "quickbooks-fixture";
       const importDetail = persistPreview
-        ? await previewAccountingSystemImport({ providerId: "quickbooks-fixture", persistPreview: true })
+        ? await previewAccountingSystemImport({ providerId: selectedProviderId, persistPreview: true })
         : await getLatestAccountingSystemImport();
       const reconciliationDetail = await getLatestAccountingSystemReconciliation();
       setAccountingSystemProviders(providers);

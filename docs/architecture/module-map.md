@@ -6,6 +6,12 @@
 
 This map gives maintainers a quick layer-oriented view of Meridian.
 
+For complete product design document adaptation, use
+[`design-document-adaptation.md`](design-document-adaptation.md). For the physical bounded-context
+module structure, use [`design-module-conformance.md`](design-module-conformance.md). Together they
+bridge design names such as `Meridian.FinancialOperations` to the current source projects listed
+below.
+
 ## Runtime Flow
 
 ```mermaid

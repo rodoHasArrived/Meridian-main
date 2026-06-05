@@ -1799,15 +1799,27 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
   {
     providerId: "quickbooks",
     displayName: "QuickBooks Online",
-    state: "Planned",
+    state: "Disabled",
     requiresCredentials: true,
     supportsChartOfAccounts: true,
     supportsJournalEntries: true,
     supportsTrialBalance: true,
     supportsPosting: false,
-    statusLabel: "OAuth adapter planned",
-    statusDetail: "Live QuickBooks Online OAuth and posting/export are outside the contract-first slice.",
-    evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
+    statusLabel: "Local config required",
+    statusDetail: "Add QuickBooks client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
+    evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"],
+    connection: {
+      providerId: "quickbooks",
+      environment: "sandbox",
+      companyId: null,
+      companyName: null,
+      hasLocalConfig: false,
+      hasRefreshToken: false,
+      lastConnectedAtUtc: null,
+      statusLabel: "Local config required",
+      statusDetail: "Add QuickBooks client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
+      missingFields: ["ClientId", "ClientSecret", "RefreshToken", "RealmId"]
+    }
   }
 ];
 

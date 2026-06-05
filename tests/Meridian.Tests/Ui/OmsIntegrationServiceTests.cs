@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Services.Services.Integrations;
 using Meridian.Ui.Shared.Contracts.Integrations;
 using Meridian.Ui.Shared.Endpoints;

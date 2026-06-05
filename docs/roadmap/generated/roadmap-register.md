@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-06-02
+Snapshot date: 2026-06-04
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -198,18 +198,18 @@ Closed in the 2026-05-29 W4 evidence slice through governed report-pack workflow
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-06-02 |
+| Last reviewed | 2026-06-04 |
 
 ### Current Summary
 
-Closed 2026-06-02. Accounting record summaries with all six evidence categories (source data, normalized activity, reconciliation cases, ledger evidence, approvals, report-pack lineage) are wired end-to-end through shared contracts, the shared workspace service, and both browser and WPF surfaces. Transaction Lab endpoint request wiring is complete with dashboard test coverage for success and failure paths. Close-package and provenance fields are shared contracts accessible through the full workflow and governance lifecycle projection.
+Closed 2026-06-02. Accounting record summaries with all six evidence categories (source data, normalized activity, reconciliation cases, ledger evidence, approvals, report-pack lineage) are wired end-to-end through shared contracts, the shared workspace service, and both browser and WPF surfaces. Transaction Lab endpoint request wiring is complete with dashboard test coverage for success and failure paths. Close-package and provenance fields are shared contracts accessible through the full workflow and governance lifecycle projection. This item anchors W1-W5 as the coherent near-term operational record baseline before Backtesting Studio, live-readiness, payments, forecasting, enterprise risk, portal, workflow-designer, mobile, or other expansion lanes.
 
 ### Exit Criteria
 
 - Accounting record summaries show retained source data, normalized transactions or positions, reconciliation case history, ledger evidence, approvals, and report-pack links.
 - Close-package status and audit/provenance timelines are operator-visible through shared read models consumed by browser and WPF surfaces where each surface participates.
 - Report-pack exports and restatements retain source evidence, approval state, and publication provenance.
-- Documentation identifies Backtesting Studio as deferred and v0.15 as the accounting records and operational evidence release package.
+- Documentation identifies W1-W5 as the coherent operational record baseline and defers Backtesting Studio, live-readiness, payments, forecasting, enterprise risk, portal, workflow-designer, mobile, and other expansion lanes unless they directly strengthen that baseline.
 
 ### Source Modules
 
@@ -257,17 +257,18 @@ Completed the first shared multi-asset operations proof lane by exposing Securit
 | Priority | medium |
 | Owner lane | Strategy Analytics |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-02 |
+| Last reviewed | 2026-06-04 |
 
 ### Current Summary
 
-Backtesting studio work is deferred behind the v0.15 accounting records and operational evidence package so Meridian first deepens its system-of-record posture for books, close, retained evidence, and audit-ready reporting.
+Backtesting Studio remains planned but deferred behind the W1-W5 operational record baseline. Near-term Strategy work should only proceed when it links research or backtest results into retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting instead of creating a broad research workbench.
 
 ### Exit Criteria
 
 - Backtest result evidence links to strategy lineage.
 - Operator-facing acceptance criteria are checklist-backed.
 - Source READMEs explain module ownership and test lanes.
+- Scope remains limited to evidence linkage and paper-validation support unless a later roadmap change promotes broader Studio scope.
 
 ### Source Modules
 
@@ -283,17 +284,18 @@ Backtesting studio work is deferred behind the v0.15 accounting records and oper
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-02 |
+| Last reviewed | 2026-06-04 |
 
 ### Current Summary
 
-Live-readiness remains gated by trusted data, paper validation, reconciliation, governed reporting evidence, and the v0.15 accounting records package.
+Live-readiness remains planned and gated by the W1-W5 operational record baseline: trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and explicit governance sign-off. Near-term live work stays paper-first and readiness-oriented, not live execution productization.
 
 ### Exit Criteria
 
 - Live action surfaces remain paper-first until acceptance gates are green.
 - Credential and provider checks stay secret-safe and read-only by default.
 - Governance sign-off is linked before any live-readiness claim.
+- Any live-readiness work strengthens operational evidence and approval posture before adding broker execution surface area.
 
 ### Source Modules
 

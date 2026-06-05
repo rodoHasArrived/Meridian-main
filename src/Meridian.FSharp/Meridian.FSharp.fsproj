@@ -81,6 +81,7 @@
   <ItemGroup>
     <PackageReference Include="FSharp.Core" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Identity\Meridian.Identity.csproj" />
     <ProjectReference Include="..\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
   </ItemGroup>

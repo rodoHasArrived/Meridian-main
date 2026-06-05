@@ -36,6 +36,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingSecurityMaster: "/accounting/security-master",
   accountingApprovals: "/accounting/approvals",
   reporting: "/reporting",
+  reportingOperationsRecord: "/reporting/operations-record",
   reportingReportPacks: "/reporting/report-packs",
   reportingEvidence: "/reporting/evidence",
   reportingExports: "/reporting/exports",

@@ -67,7 +67,7 @@ patterns:
   - "src/Meridian.Application/Treasury/**"
   - "src/Meridian.Contracts/Api/**"
   - "src/Meridian.Contracts/Archive/**"
-  - "src/Meridian.Contracts/Auth/**"
+  - "src/Meridian.Identity/Contracts/Auth/**"
   - "src/Meridian.Contracts/Banking/**"
   - "src/Meridian.Contracts/Catalog/**"
   - "src/Meridian.Contracts/CertificatesOfDeposit/**"

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.CryptoCurrency;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.CryptoCurrency;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

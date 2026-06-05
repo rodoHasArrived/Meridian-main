@@ -2,7 +2,7 @@ module Meridian.FSharp.Tests.SensitiveActionPolicyTests
 
 open Xunit
 open FsUnit.Xunit
-open Meridian.Contracts.Auth
+open Meridian.Identity.Auth
 open Meridian.FSharp.Operations
 
 let private input action role mfa secondary =

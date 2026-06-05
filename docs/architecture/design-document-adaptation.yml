@@ -1,0 +1,283 @@
+schema:
+  id: meridian.design-document-adaptation
+  version: "1.0.0"
+  minimum_validator_version: "1.0.0"
+
+design_source:
+  path: docs/product/meridian-design-document.md
+  version: "0.15"
+  sections:
+    - "6. Bounded Context Map"
+    - "7. Context Ownership Matrix"
+    - "8. Recommended MVP Contexts"
+    - "15. Recommended Architecture Style"
+    - "16. Tenancy Strategy"
+    - "17. Permission Strategy"
+    - "18. Workflow Strategy"
+    - "20. Integration Strategy"
+    - "21. Reporting Strategy"
+    - "22. Document Strategy"
+    - "25. Product Alignment Addendum"
+    - "26. Foundational Product Slice"
+
+adaptation_status: active
+adaptation_mode: executable-design-contract
+
+product_baseline:
+  scope: W1-W5 operational record baseline
+  canonical_workflow:
+    - Import
+    - Validate
+    - Reconcile
+    - Investigate
+    - Approve
+    - Report
+  foundation_flow:
+    - Controlled import
+    - Validation
+    - Reconciliation
+    - Review
+    - Approval
+    - Evidence
+    - Reporting
+  visible_root_workspaces:
+    - Trading
+    - Portfolio
+    - Accounting
+    - Reporting
+    - Strategy
+    - Data
+    - Settings
+  compatibility_groupings:
+    - Research
+    - Data Operations
+    - Governance
+  no_mobile_development_lane: true
+  shared_ui_surfaces:
+    - src/Meridian.Ui/dashboard
+    - src/Meridian.Wpf
+    - src/Meridian.Ui.Shared
+    - src/Meridian.Ui.Services
+
+module_requirements:
+  architecture_style: modular monolith with strict bounded-context boundaries
+  design_rule: Other modules may read through published APIs, views, or events, but they should not directly write another module's owned records.
+  required_facets:
+    - Domain model
+    - Application services
+    - Contracts / APIs
+    - Infrastructure
+    - UI components
+    - Tests
+  module_conformance_map: docs/architecture/design-module-conformance.yml
+
+design_modules:
+  - name: Meridian.Platform
+    bounded_context: Platform Runtime
+    physical_project: src/Meridian.Platform
+    role: Cross-cutting runtime host, composition, configuration, storage policy, and workstation hosting support.
+  - name: Meridian.Identity
+    bounded_context: Identity & Access
+    physical_project: src/Meridian.Identity
+    role: Users, roles, permissions, tenant access, authentication, authorization, and scoped access behavior.
+  - name: Meridian.Entities
+    bounded_context: Entity & Relationship
+    physical_project: src/Meridian.Entities
+    role: Legal entities, people, trusts, funds, SPVs, beneficiaries, and ownership relationships.
+  - name: Meridian.DataIntegration
+    bounded_context: Data Provider & Integration
+    physical_project: src/Meridian.DataIntegration
+    role: Providers, credentials references, import jobs, source metadata, file/API ingestion, provider health, and validation handoff.
+  - name: Meridian.ReferenceData
+    bounded_context: Reference Data
+    physical_project: src/Meridian.ReferenceData
+    role: Identifiers, classifications, currencies, calendars, ratings, taxonomies, and Security Master projections.
+  - name: Meridian.Instruments
+    bounded_context: Instrument, Contract & Obligation
+    physical_project: src/Meridian.Instruments
+    role: Financial instruments, terms, schedules, obligations, lifecycle events, and expected cash-flow support.
+  - name: Meridian.PortfolioRecords
+    bounded_context: Portfolio Records
+    physical_project: src/Meridian.PortfolioRecords
+    role: Holdings, positions, transactions, lots, cost basis, income activity, and corporate actions.
+  - name: Meridian.FinancialOperations
+    bounded_context: Financial Operations
+    physical_project: src/Meridian.FinancialOperations
+    role: Reconciliations, breaks, exceptions, operational reviews, adjustments, close checklists, and evidence packages.
+  - name: Meridian.Workflow
+    bounded_context: Workflow & Task
+    physical_project: src/Meridian.Workflow
+    role: Tasks, assignments, statuses, approvals, escalations, and SLA tracking.
+  - name: Meridian.Audit
+    bounded_context: Audit & Compliance
+    physical_project: src/Meridian.Audit
+    role: Audit events, control evidence, approval history, compliance checks, and retention policies.
+  - name: Meridian.Reporting
+    bounded_context: Reporting & Client Delivery
+    physical_project: src/Meridian.Reporting
+    role: Reports, dashboards, statements, client packages, investor packages, delivery history, export evidence, and restatement snapshots.
+  - name: Meridian.Documents
+    bounded_context: Document & Knowledge
+    physical_project: src/Meridian.Documents
+    role: Documents, attachments, versions, metadata, extracted text, evidence links, and search-index handoff.
+
+bounded_contexts:
+  - name: Identity & Access
+    stage: mvp
+    design_module: Meridian.Identity
+  - name: Entity & Relationship
+    stage: mvp
+    design_module: Meridian.Entities
+  - name: Data Provider & Integration
+    stage: mvp
+    design_module: Meridian.DataIntegration
+  - name: Reference Data
+    stage: mvp
+    design_module: Meridian.ReferenceData
+  - name: Instrument, Contract & Obligation
+    stage: mvp-limited
+    design_module: Meridian.Instruments
+  - name: Portfolio Records
+    stage: mvp
+    design_module: Meridian.PortfolioRecords
+  - name: Financial Operations
+    stage: mvp
+    design_module: Meridian.FinancialOperations
+  - name: Treasury & Payments
+    stage: deferred
+    design_module: Meridian.FinancialOperations
+    deferral_reason: Full treasury payment execution remains expansion work behind the W1-W5 operational record baseline.
+  - name: Alternative Assets
+    stage: deferred
+    design_module: Meridian.PortfolioRecords
+    deferral_reason: Full alternative asset operations remain expansion work; current coverage is multi-asset operational evidence and classification.
+  - name: Financing & Capital Structure
+    stage: deferred
+    design_module: Meridian.Instruments
+    deferral_reason: Complex capital stack modeling remains expansion work beyond the near-term operational record baseline.
+  - name: Planning & Forecasting
+    stage: deferred
+    design_module: Meridian.Reporting
+    deferral_reason: Full forecasting engines remain expansion work; current strategy/report evidence supports later planning.
+  - name: Research & Analytics
+    stage: deferred
+    design_module: Meridian.Workflow
+    deferral_reason: Backtesting Studio is delayed behind W1-W5; existing strategy evidence remains connected through shared workflow and reporting seams.
+  - name: Risk Management
+    stage: deferred
+    design_module: Meridian.Platform
+    deferral_reason: Enterprise risk remains expansion work; current pre-trade/paper readiness stays behind trading and platform seams.
+  - name: Workflow & Task
+    stage: mvp
+    design_module: Meridian.Workflow
+  - name: Audit & Compliance
+    stage: mvp
+    design_module: Meridian.Audit
+  - name: Reporting & Client Delivery
+    stage: mvp
+    design_module: Meridian.Reporting
+  - name: Document & Knowledge
+    stage: mvp
+    design_module: Meridian.Documents
+
+mvp_screen_inventory:
+  - name: Home Dashboard
+    workspace: Trading
+    bounded_context: Platform Runtime
+    evidence:
+      - src/Meridian.Ui/dashboard/src/app.tsx
+      - src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs
+  - name: Provider Center
+    workspace: Data
+    bounded_context: Data Provider & Integration
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Data/DataFeatureModule.cs
+  - name: Import Runs
+    workspace: Data
+    bounded_context: Data Provider & Integration
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Data/DataFeatureModule.cs
+  - name: Data Quality
+    workspace: Data
+    bounded_context: Data Provider & Integration
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Data/DataFeatureModule.cs
+  - name: Entity Directory
+    workspace: Accounting
+    bounded_context: Entity & Relationship
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs
+  - name: Account Directory
+    workspace: Portfolio
+    bounded_context: Portfolio Records
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Portfolio/PortfolioFeatureModule.cs
+  - name: Instrument / Contract Registry
+    workspace: Accounting
+    bounded_context: Instrument, Contract & Obligation
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Data/DataFeatureModule.cs
+  - name: Portfolio Records
+    workspace: Portfolio
+    bounded_context: Portfolio Records
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Portfolio/PortfolioFeatureModule.cs
+  - name: Reconciliation Workbench
+    workspace: Accounting
+    bounded_context: Financial Operations
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs
+  - name: Exception Queue
+    workspace: Accounting
+    bounded_context: Financial Operations
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs
+  - name: Workflow Tasks
+    workspace: Accounting
+    bounded_context: Workflow & Task
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs
+  - name: Audit Log
+    workspace: Reporting
+    bounded_context: Audit & Compliance
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Reporting/ReportingFeatureModule.cs
+  - name: Document Vault
+    workspace: Reporting
+    bounded_context: Document & Knowledge
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Reporting/ReportingFeatureModule.cs
+  - name: Reporting Packages
+    workspace: Reporting
+    bounded_context: Reporting & Client Delivery
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Reporting/ReportingFeatureModule.cs
+  - name: Administration Settings
+    workspace: Settings
+    bounded_context: Identity & Access
+    evidence:
+      - src/Meridian.Ui/dashboard/src/lib/workspace.ts
+      - src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs
+
+source_evidence:
+  shared_workspace_catalog: src/Meridian.Contracts/Workstation/WorkstationWorkspaceCatalog.cs
+  dashboard_workspace_catalog: src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts
+  dashboard_route_catalog: src/Meridian.Ui/dashboard/src/lib/workspace.ts
+  wpf_workspace_catalog: src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs
+  source_module_registry: docs/source/data/source-modules.yml
+  source_readme_registry: docs/source/data/source-readme-coverage.yml
+  design_module_conformance: docs/architecture/design-module-conformance.yml
+  module_map: docs/architecture/module-map.md

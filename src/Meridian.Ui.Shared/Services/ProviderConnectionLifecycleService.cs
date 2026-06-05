@@ -2,8 +2,10 @@ using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Monitoring;
 using Meridian.Contracts.Configuration;
+using Meridian.ProviderSdk.AccountingSystem;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -16,18 +18,21 @@ public sealed class ProviderConnectionLifecycleService
     private readonly IProviderCredentialStore _credentialStore;
     private readonly ConfigStore _configStore;
     private readonly IHttpClientFactory? _httpClientFactory;
+    private readonly IReadOnlyList<IAccountingSystemProvider> _accountingSystemProviders;
     private readonly ILogger<ProviderConnectionLifecycleService> _logger;
 
     public ProviderConnectionLifecycleService(
         IProviderCredentialStore credentialStore,
         ConfigStore configStore,
         ILogger<ProviderConnectionLifecycleService> logger,
-        IHttpClientFactory? httpClientFactory = null)
+        IHttpClientFactory? httpClientFactory = null,
+        IEnumerable<IAccountingSystemProvider>? accountingSystemProviders = null)
     {
         _credentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpClientFactory = httpClientFactory;
+        _accountingSystemProviders = accountingSystemProviders?.ToArray() ?? [];
     }
 
     public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsAsync(CancellationToken ct = default)
@@ -103,6 +108,23 @@ public sealed class ProviderConnectionLifecycleService
         if (descriptor.ProviderId.Equals("alpaca", StringComparison.OrdinalIgnoreCase))
         {
             return await VerifyAlpacaAsync(read, ct).ConfigureAwait(false);
+        }
+
+        var accountingVerification = _accountingSystemProviders
+            .FirstOrDefault(provider => string.Equals(provider.ProviderId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase))
+            as IAccountingSystemConnectionVerifier;
+        if (accountingVerification is not null)
+        {
+            var result = await accountingVerification.VerifyConnectionAsync(ct).ConfigureAwait(false);
+            return new ProviderCredentialVerificationResultDto(
+                descriptor.ProviderId,
+                result.Success,
+                result.Success ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.Failed,
+                result.Success ? ProviderContinuityHealthDto.Healthy : ProviderContinuityHealthDto.Blocked,
+                result.VerifiedAtUtc,
+                result.LastError,
+                result.ExternalCompanyId,
+                result.Warnings);
         }
 
         var verifiedAt = DateTimeOffset.UtcNow;

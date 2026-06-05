@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;

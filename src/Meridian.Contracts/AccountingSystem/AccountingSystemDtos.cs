@@ -40,7 +40,20 @@ public sealed record AccountingSystemProviderDto(
     bool SupportsPosting,
     string StatusLabel,
     string StatusDetail,
-    IReadOnlyList<string> EvidenceKinds);
+    IReadOnlyList<string> EvidenceKinds,
+    AccountingSystemConnectionMetadataDto? Connection = null);
+
+public sealed record AccountingSystemConnectionMetadataDto(
+    string ProviderId,
+    string? Environment,
+    string? CompanyId,
+    string? CompanyName,
+    bool HasLocalConfig,
+    bool HasRefreshToken,
+    DateTimeOffset? LastConnectedAtUtc,
+    string StatusLabel,
+    string StatusDetail,
+    IReadOnlyList<string> MissingFields);
 
 public sealed record AccountingSystemImportRequestDto(
     string? ProviderId = null,

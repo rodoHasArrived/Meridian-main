@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;

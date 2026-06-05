@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-06-02
+last_reviewed: 2026-06-05
 ---
 
 # src/Meridian.Infrastructure
@@ -51,6 +51,8 @@ The Plaid adapter family owns only vendor transport and file-backed connection p
 link-token, public-token exchange, balances, transaction sync, investments, identity, webhooks,
 and sandbox-transfer calls are mapped into contract DTOs before shared workstation services attach
 them to fund-account, treasury, reconciliation, or evidence workflows.
+QuickBooks Online accounting-system transport moved to `src/Meridian.DataIntegration` so provider
+ingestion and source-evidence mapping live in the physical Data Integration design module.
 Credential and connectivity checks in this layer must stay secret-safe and read-only by default:
 provider credential responses expose masked status only, file-backed vault payloads must not echo
 submitted secrets, and read-only brokerage sync adapters may fetch account, portfolio, activity,

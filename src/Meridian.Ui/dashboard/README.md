@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-02
+last_reviewed: 2026-06-05
 ---
 
 # src/Meridian.Ui/dashboard
@@ -146,6 +146,10 @@ Reporting workspace status rows consume shared template metadata and recent run 
 Those rows render typed drilldown links and next-action references from the shared payload, opening
 browser-safe evidence routes while showing approval, publication, restatement, and archive actions
 as explicit method-bearing references.
+The Reporting workspace also exposes `/reporting/operations-record` as the polished W1-W5 release
+path. It stays under the canonical Reporting root and projects the loaded Data provider posture,
+Operations Continuity accounting-record evidence, close-package state, and report-pack publication
+metadata into one fail-closed demo path from source data to accounting record to report pack.
 Report-pack distribution UI consumes shared `reportPackDistributions` recipient records, not
 static target strings, so the browser surface shows recipient, channel, owner, pending item count,
 and pending summary for each governed package delivery lane.
@@ -186,6 +190,10 @@ The provider setup dialog includes Plaid with client-id/secret labels and bank a
 and investment evidence capabilities. Treat Plaid as a server-owned account-evidence connector from
 the browser: React submits credentials through the shared provider setup API and links operators
 back to `/data/providers` rather than creating browser-local bank-link or market-data routing state.
+The Settings Provider Connection Center also captures QuickBooks Online client id, client secret,
+refresh token, company realm id, and optional company name through the same shared provider setup
+API. React never handles access-token exchange directly; the shared provider service uses that
+local config to mark the selected QuickBooks company ready for read-only GL evidence import.
 Provider setup also projects the design-document Data & Integration flow from its view model:
 `Connect Source`, `Acquire Data`, `Validate Data`, `Normalize Data`, `Store Data`, and `Publish Data`.
 React renders that flow as status copy only; credential validation, routing, storage, and publication
@@ -221,7 +229,9 @@ accounting-record evidence, reconciliation breaks, approvals, external GL provid
 multi-asset valuation readiness, report-pack readiness, and close-package sign-off state. React
 renders the shared status, metrics, blockers, and action rows without adding browser-local close
 rules. External GL provider warnings compare read-only provider evidence against Meridian-owned
-ledger truth; they must not make the external GL the source of ledger authority.
+ledger truth; they must not make the external GL the source of ledger authority. When QuickBooks
+Online local config is ready, the Accounting GL evidence panel previews the selected company
+instead of the deterministic fixture; without that config it remains on `quickbooks-fixture`.
 During workstation bootstrap, the shell lets the Accounting route render its own actionable loading
 workspace. That loading view shows the route/workstream being prepared, the Accounting payload groups
 still loading, and links to continuity, entity setup, provider posture, and retained report evidence

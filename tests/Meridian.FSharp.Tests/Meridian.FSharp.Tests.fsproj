@@ -52,6 +52,7 @@
     <ProjectReference Include="..\..\src\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp\Meridian.FSharp.fsproj" />
+    <ProjectReference Include="..\..\src\Meridian.Identity\Meridian.Identity.csproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp.DirectLending.Aggregates\Meridian.FSharp.DirectLending.Aggregates.fsproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp.Trading\Meridian.FSharp.Trading.fsproj" />
     <ProjectReference Include="..\..\src\Meridian.FSharp.Ledger\Meridian.FSharp.Ledger.fsproj" />

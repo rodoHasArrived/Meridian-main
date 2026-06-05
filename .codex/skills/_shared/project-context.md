@@ -1,6 +1,6 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-05-31
+> Last verified: 2026-06-04
 > Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`,
 > `docs/product/meridian-design-document.md`, and `docs/architecture/project-structure.md`
 
@@ -14,9 +14,14 @@ repeating the same facts in every `SKILL.md`.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
-- The current delivery focus is productization: turn those foundations into one evidence-backed
-  investment operations experience across `Trading`, `Portfolio`, `Accounting`, `Reporting`,
-  `Strategy`, `Data`, and `Settings`.
+- The current delivery focus is productization around the W1-W5 operational record baseline: data
+  confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset
+  operational coverage, and governed reports across `Trading`, `Portfolio`, `Accounting`,
+  `Reporting`, `Strategy`, `Data`, and `Settings`.
+- Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment
+  execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
+  client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work
+  directly strengthens that operational record workflow.
 - Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
 - `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
   workflows, launch automation, and desktop validation.

@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-05-22
 
-This page is the quickest way to review the current Meridian visual model. The editable source of truth remains the DOT files in [`docs/diagrams/`](../diagrams/README.md); this page curates the most useful rendered views for architecture work.
+This page is the quickest way to review the current Meridian visual model. The editable source of truth is split between DOT files in [`docs/diagrams/`](../diagrams/README.md) and registered Mermaid sources in [`docs/architecture/diagrams/`](diagrams/); this page curates the most useful views for architecture work.
 
 ## Core C4 Views
 
@@ -23,6 +23,16 @@ Shows the main deployable containers and major technology boundaries across pres
 ![C4 Level 3 Components](../diagrams/architecture/c4/c4-level3-components.svg)
 
 Shows the collector-runtime internals in more detail, including provider clients, domain collectors, pipeline, and storage sinks.
+
+## Design-Document Mermaid Sources
+
+These diagrams align the current design document with maintained architecture sources. They are registered in [`docs/source/data/diagram-index.yml`](../source/data/diagram-index.yml) so ownership, roadmap links, and update triggers stay explicit.
+
+| Diagram | Source | Shows |
+| --- | --- | --- |
+| Operational Record System Context | [`meridian-operational-record-context.mmd`](diagrams/meridian-operational-record-context.mmd) | Meridian's W1-W5 system boundary, user groups, active browser/WPF surfaces, shared UI seams, external providers, accounting systems, documents, identity, and report delivery channels. |
+| Operational Record Evidence Flow | [`meridian-operational-record-flow.mmd`](diagrams/meridian-operational-record-flow.mmd) | Source evidence through provider ingestion, normalization, validation, review gates, reconciliation, approvals, approved records, accounting evidence, report packs, and audit lineage. |
+| Bounded Context Ownership Map | [`meridian-bounded-context-ownership.mmd`](diagrams/meridian-bounded-context-ownership.mmd) | The design document's ownership boundaries and cross-context flow rule: consume published APIs, views, or events rather than writing another context's owned records. |
 
 ## Current Runtime And Product Views
 

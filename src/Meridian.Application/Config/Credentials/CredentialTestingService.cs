@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Meridian.DataIntegration.Credentials;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;

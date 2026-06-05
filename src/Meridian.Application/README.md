@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-02
+last_reviewed: 2026-06-05
 ---
 
 # src/Meridian.Application
@@ -36,9 +36,11 @@ and UI presentation concerns in their owning layers.
   authoritative Security Master query service and then stamps server-derived Security Master id,
   symbol, approval, provenance, active status, and direct-lending ledger-mapping evidence on central
   ledger writes before the posting guard accepts direct-lending instrument lines.
-- `OperationsContinuity/` - account-period continuity aggregate, command transitions, audit
-  timeline, and server-derived gate status for broker, Security Master, ledger, reconciliation,
-  and approval close lanes. Approval and close commands enforce shared close-checklist control
+- Financial Operations integration - application composition registers the
+  `Meridian.FinancialOperations.OperationsContinuity` services that now own account-period
+  continuity workflows, including the aggregate, command workflow service, status derivation,
+  repositories, audit hashing, and Postgres workflow store. The Financial Operations workflow
+  enforces shared close-checklist control
   approvals before the workflow can become ready for close or close against a report pack. Close
   commands also publish governed close-package metadata on the workflow, including signer,
   sign-off rationale, retained manifest id/route, evidence hash, report pack id, evidence links,
@@ -51,13 +53,14 @@ and UI presentation concerns in their owning layers.
   also accepts required and degraded provider capability gaps from the provider routing matrix:
   required balance, position, reconciliation, or account-scoped gaps block broker ingest, while
   quote-history, corporate-action, factor-schedule, or asset-class degradation moves broker ingest
-  to review-required and reduces close readiness until an operator resolves or accepts the gap. The approval
+  to review-required and reduces close readiness until an operator resolves or accepts the gap. The Financial Operations approval
   policy matrix service projects the
   same server-owned reviewer, permission, report-pack, checklist, and audit-event rules for
   configuration surfaces and accepts governed rule upserts with rationale, actor, correlation, and
-  storage-root persistence under `governance/operations-approval-policy-rules.json`. The close
-  calendar service projects each workflow's next due close task, owner, readiness score, component
-  breakdown, blocker codes, next actions, and approval counts from the workflow service instead of
+  storage-root persistence under `governance/operations-approval-policy-rules.json`. The Financial
+  Operations close calendar service consumes workflow reads through the module workflow service and
+  projects each workflow's next due close task, owner, readiness score, component
+  breakdown, blocker codes, next actions, and approval counts instead of
   client-local scheduling rules; governed owner/due-date overrides persist under
   `governance/operations-close-calendar-items.json` with actor, rationale, and correlation
   evidence. Ledger posting commands also enforce line-level Security Master symbol, identity,
@@ -76,21 +79,24 @@ and UI presentation concerns in their owning layers.
   timing, a 60-second target, missing evidence category keys, and warnings. Report-pack readiness is
   complete only after close-package publication evidence exists, so a ready report-pack id alone
   does not imply retained export, document, manifest, or restatement provenance.
-- `Reconciliation/` - statement reconciliation orchestration and broker/custodian intake that
-  validates canonical external statement files, creates durable reconciliation cases for unresolved
-  cash/activity rows, requires row currency equality before broker/custodian auto-match, appends
-  reconciliation decision journals through crash-safe copy-on-write JSONL writes, attaches
-  break explanations plus retained statement-row evidence, and owns the statement-run workflow that
-  persists canonical imports, open breaks, and case materialization for shared UI consumers.
+- Financial Operations reconciliation integration - application command handlers and composition
+  invoke `Meridian.FinancialOperations.Reconciliation` services for statement intake, validation,
+  matching, decision journals, and statement-run persistence. Reconciliation workflow state, match
+  rules, break classification, repository implementations, and durable case materialization are
+  owned by the Financial Operations design module rather than the application layer.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot
   supply the required feed.
-- `Config/Credentials/` - encrypted provider credential catalog and vault behavior. Plaid is a
-  governed provider family with client id/secret fields, sandbox/development/production
-  environment normalization, and browser Data provider setup support. Plaid setup is credential-only
-  in this layer: it stores client credentials in the encrypted vault and does not seed a market-data
-  `DataSourceConfig` or provider-routing binding.
+- `Config/Credentials/` - application-owned credential testing, OAuth refresh, legacy resolver
+  compatibility, and composition support. Provider credential descriptors, encrypted vault storage,
+  verification metadata, expiration/status records, OAuth token records, and provider-environment normalization now live in
+  `Meridian.DataIntegration.Credentials`. Plaid setup remains credential-only from the application
+  orchestration perspective: it stores client credentials through the Data Integration vault seam
+  and does not seed a market-data `DataSourceConfig` or provider-routing binding. QuickBooks Online
+  is cataloged by the Data Integration credential catalog as a credential-backed accounting-system
+  provider; token exchange and GL evidence reads stay in the Data Integration provider seam and
+  shared UI projection seam.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
@@ -133,12 +139,11 @@ and UI presentation concerns in their owning layers.
   amend, expire, or replacement graph mutations are persisted. Ledger mapping resolution stays
   server-side and reuses fund-structure assignments before falling back to account ledger
   references.
-- `Auth/` - scoped access assignment orchestration and authorization decisions that bind
-  role/profile permissions to global or fund-structure scopes. The local JSON store persists under
-  `governance/user-access-assignments.json` with atomic writes, while
-  `MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING` enables the Postgres-backed identity access store for
-  shared multi-instance deployments. Governed mutations use versioned assignment records so
-  concurrent Meridian instances fail closed instead of overwriting authority.
+- Identity integration - application code provides fund-structure lineage context to
+  `Meridian.Identity` scoped-access services. Scoped access assignments, auth role and permission
+  contracts, user profiles, login sessions, auth-mode resolution, role-profile persistence, local
+  JSON storage, and Postgres-backed scoped access persistence are owned by the Identity design
+  module rather than the application layer.
 - `EnvironmentDesign/` - local-first organization environment drafts, validation, publishing,
   rollback, and runtime projection. Lane defaults normalize legacy `Research`, `Data Operations`,
   and `Governance` workspace/page tags into the canonical operator roots (`Strategy`, `Data`, and

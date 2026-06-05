@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Microsoft.AspNetCore.TestHost;
 

@@ -2,7 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;

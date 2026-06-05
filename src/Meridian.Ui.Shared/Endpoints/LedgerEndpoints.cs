@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;

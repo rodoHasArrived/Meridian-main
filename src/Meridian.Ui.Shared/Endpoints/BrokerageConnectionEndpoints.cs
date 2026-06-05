@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;

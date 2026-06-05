@@ -68,3 +68,90 @@ diagrams:
     update_when:
       - Browser workstation route catalog, command palette, or local route resolution changes.
       - Trading readiness actions or PaperSession acceptance routing changes.
+  - id: DIA-OPERATIONAL-RECORD-CONTEXT
+    title: Operational record system context
+    source: docs/architecture/diagrams/meridian-operational-record-context.mmd
+    output: docs/architecture/assets/meridian-operational-record-context.svg
+    type: mermaid
+    modules:
+      - SRC-HOST
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-PROVIDER-SDK
+      - SRC-UI-SERVICES
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+      - SRC-DESIGN-IDENTITY
+      - SRC-DESIGN-DATA-INTEGRATION
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-DESIGN-AUDIT
+      - SRC-DESIGN-REPORTING
+      - SRC-DESIGN-DOCUMENTS
+    roadmap_items:
+      - W1-DATA-001
+      - W2-TRD-001
+      - W2-PROMO-001
+      - W3-CONT-001
+      - W4-RECON-001
+      - W4-RPT-001
+      - W5-ACCT-001
+      - W5-MASSET-001
+    update_when:
+      - Product system context, active operator surfaces, or external integration posture changes.
+      - The W1-W5 operational-record baseline changes.
+      - Visible root workstation navigation changes.
+  - id: DIA-OPERATIONAL-RECORD-FLOW
+    title: Operational record evidence flow
+    source: docs/architecture/diagrams/meridian-operational-record-flow.mmd
+    output: docs/architecture/assets/meridian-operational-record-flow.svg
+    type: mermaid
+    modules:
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-PROVIDER-SDK
+      - SRC-STORAGE
+      - SRC-LEDGER
+      - SRC-UI-SHARED
+      - SRC-DESIGN-DATA-INTEGRATION
+      - SRC-DESIGN-PORTFOLIO-RECORDS
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-DESIGN-WORKFLOW
+      - SRC-DESIGN-AUDIT
+      - SRC-DESIGN-REPORTING
+      - SRC-DESIGN-DOCUMENTS
+    roadmap_items:
+      - W1-DATA-001
+      - W4-RECON-001
+      - W4-RPT-001
+      - W5-ACCT-001
+      - W5-MASSET-001
+    update_when:
+      - Source-of-record layering, provider ingestion, validation, reconciliation, approval, ledger, or report-pack lineage changes.
+      - Missing-source or fail-closed evidence behavior changes.
+  - id: DIA-BOUNDED-CONTEXT-OWNERSHIP
+    title: Bounded context ownership map
+    source: docs/architecture/diagrams/meridian-bounded-context-ownership.mmd
+    output: docs/architecture/assets/meridian-bounded-context-ownership.svg
+    type: mermaid
+    modules:
+      - SRC-DESIGN-IDENTITY
+      - SRC-DESIGN-ENTITIES
+      - SRC-DESIGN-DATA-INTEGRATION
+      - SRC-DESIGN-REFERENCE-DATA
+      - SRC-DESIGN-INSTRUMENTS
+      - SRC-DESIGN-PORTFOLIO-RECORDS
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-DESIGN-WORKFLOW
+      - SRC-DESIGN-AUDIT
+      - SRC-DESIGN-REPORTING
+      - SRC-DESIGN-DOCUMENTS
+    roadmap_items:
+      - W1-DATA-001
+      - W4-RECON-001
+      - W4-RPT-001
+      - W5-ACCT-001
+      - W5-MASSET-001
+    update_when:
+      - The design document bounded-context map changes.
+      - Context ownership, module extraction, or cross-context write rules change.

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Maintenance;

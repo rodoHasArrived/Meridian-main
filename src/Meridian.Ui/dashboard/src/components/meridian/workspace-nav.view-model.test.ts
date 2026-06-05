@@ -151,6 +151,34 @@ describe("workspace nav view model", () => {
     });
   });
 
+  it("surfaces the operations-record release route under Reporting", () => {
+    const model = buildWorkspaceNavViewModel("/reporting/operations-record");
+    const reporting = model.items.find((item) => item.key === "reporting");
+
+    expect(model.items.map((item) => item.label)).toEqual([
+      "Trading",
+      "Portfolio",
+      "Accounting",
+      "Reporting",
+      "Strategy",
+      "Data",
+      "Settings"
+    ]);
+    expect(reporting?.subItems.map((item) => item.route)).toEqual([
+      "/reporting",
+      "/reporting/operations-record",
+      "/reporting/report-packs",
+      "/reporting/evidence",
+      "/reporting/exports"
+    ]);
+    expect(reporting?.subItems.find((item) => item.route === "/reporting/operations-record")).toMatchObject({
+      label: "Operations record",
+      active: true,
+      ariaCurrent: "page",
+      ariaLabel: "Operations record, current page"
+    });
+  });
+
   it("surfaces the implemented covered-call backtest route under Strategy", () => {
     const model = buildWorkspaceNavViewModel("/strategy/covered-call");
     const strategy = model.items.find((item) => item.key === "strategy");

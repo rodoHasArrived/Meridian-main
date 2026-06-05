@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-06-04
 
 This contract is the shared operating standard for AI-assisted development in Meridian. It applies
 to Codex, Claude, GitHub Copilot, MCP clients, reusable prompt templates, CI prompt generation, and
@@ -186,6 +186,11 @@ Every assistant and automation should use the same high-level flow:
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
    WPF names as legacy workspace aliases rather than new root workspaces.
+   Keep new product work centered on the W1-W5 operational record baseline: data confidence,
+   retained source evidence, reconciliation, approvals, accounting records, multi-asset operational
+   coverage, and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first
+   governance, full payments, forecasting, enterprise risk, client portal, no-code workflow design,
+   mobile, and other expansion lanes unless they directly strengthen that workflow.
    **No mobile development lane:** do not create mobile applications, mobile-specific product
    surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
    mobile-first workflows. Existing responsive browser checks may continue only as validation for
@@ -328,6 +333,8 @@ Use this checklist when changing any AI-related asset:
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and
       WPF desktop both consume shared contracts, and visible root workspaces remain limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+- [ ] Keep product guidance aligned to the W1-W5 operational record baseline; expansion lanes stay
+      deferred unless roadmap data moves them into active scope.
 - [ ] Keep the **No mobile development lane** policy mirrored in the root assistant entrypoints,
       Copilot guide, and shared Codex/Claude/Agent Skills project-context files so mobile clients are not
       proposed by one assistant while another follows the browser-workstation plan.

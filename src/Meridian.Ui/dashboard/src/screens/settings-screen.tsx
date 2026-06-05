@@ -78,7 +78,15 @@ interface SettingsScreenProps {
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
 }
 
-type ProviderInlineField = "apiKey" | "apiSecret" | "endpoint";
+type ProviderInlineField =
+  | "apiKey"
+  | "apiSecret"
+  | "endpoint"
+  | "ClientId"
+  | "ClientSecret"
+  | "RefreshToken"
+  | "RealmId"
+  | "CompanyName";
 type ProviderInlineBusyAction = "test" | "save" | "verify" | "clear" | null;
 
 interface LedgerMappingAssignmentState {
@@ -166,7 +174,7 @@ interface ProfileBackedSecurityState {
 interface ProviderInlineFieldDefinition {
   field: ProviderInlineField;
   label: string;
-  type: "password" | "url";
+  type: "password" | "url" | "text";
   placeholder: string;
   helpText: string;
   required: boolean;
@@ -220,6 +228,17 @@ const formReadinessTextClass = {
   warning: "text-warning",
   danger: "text-danger"
 } as const;
+
+const emptyProviderInlineValues: Record<ProviderInlineField, string> = {
+  apiKey: "",
+  apiSecret: "",
+  endpoint: "",
+  ClientId: "",
+  ClientSecret: "",
+  RefreshToken: "",
+  RealmId: "",
+  CompanyName: ""
+};
 
 const requirementToneClass = {
   success: "border-success/30 bg-success/10 text-success",
@@ -975,7 +994,7 @@ export function SettingsScreen({
         ...state,
         busyAction: null,
         dirty: false,
-        values: { apiKey: "", apiSecret: "", endpoint: "" },
+        values: { ...emptyProviderInlineValues },
         statusMessage: "Credentials cleared.",
         statusDetails: result.warnings ?? [],
         statusTone: "success",
@@ -4066,11 +4085,7 @@ function createProviderInlineState(row: {
 }): ProviderInlineState {
   return {
     editing: false,
-    values: {
-      apiKey: "",
-      apiSecret: "",
-      endpoint: ""
-    },
+    values: { ...emptyProviderInlineValues },
     environment: normalizeInlineEnvironment(row.environmentLabel),
     liveAcknowledged: false,
     dirty: false,
@@ -4116,11 +4131,43 @@ function buildProviderFieldDefinitions(row: { providerId: string; displayName: s
   if (normalizedId === "quickbooks") {
     return [
       {
-        field: "apiKey",
-        label: "OAuth placeholder",
+        field: "ClientId",
+        label: "Client ID",
         type: "password",
-        placeholder: "OAuth adapter planned",
-        helpText: "QuickBooks Online OAuth is planned; use the fixture provider for this slice.",
+        placeholder: "QUICKBOOKS_CLIENT_ID",
+        helpText: "Stored in Meridian's encrypted local provider vault.",
+        required: true
+      },
+      {
+        field: "ClientSecret",
+        label: "Client secret",
+        type: "password",
+        placeholder: "QUICKBOOKS_CLIENT_SECRET",
+        helpText: "Used only server-side for OAuth token refresh.",
+        required: true
+      },
+      {
+        field: "RefreshToken",
+        label: "Refresh token",
+        type: "password",
+        placeholder: "QUICKBOOKS_REFRESH_TOKEN",
+        helpText: "Token exchange refreshes read-only API access and stores rotated tokens locally.",
+        required: true
+      },
+      {
+        field: "RealmId",
+        label: "Company realm ID",
+        type: "text",
+        placeholder: "QUICKBOOKS_REALM_ID",
+        helpText: "Selects the QuickBooks Online company to read.",
+        required: true
+      },
+      {
+        field: "CompanyName",
+        label: "Company name",
+        type: "text",
+        placeholder: "Meridian-Dev",
+        helpText: "Optional display label for the selected QuickBooks company.",
         required: false
       }
     ];

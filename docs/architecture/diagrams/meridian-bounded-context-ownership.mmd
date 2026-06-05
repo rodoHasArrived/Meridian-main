@@ -1,0 +1,38 @@
+flowchart LR
+  Identity["Identity and Access<br/>users, roles, permissions, scoped authority"]
+  Entities["Entity and Relationship<br/>organizations, funds, SPVs, beneficiaries, ownership"]
+  DataIntegration["Data Provider and Integration<br/>providers, credentials references, imports, source metadata"]
+  ReferenceData["Reference Data<br/>identifiers, classifications, calendars, currencies, taxonomies"]
+  Instruments["Instrument, Contract, and Obligation<br/>terms, schedules, lifecycle events, expected cash flows"]
+  PortfolioRecords["Portfolio Records<br/>holdings, positions, transactions, lots, cost basis, income"]
+  FinancialOps["Financial Operations<br/>reconciliations, exceptions, reviews, close, evidence packages"]
+  Workflow["Workflow and Task<br/>assignments, approvals, escalations, SLA tracking"]
+  Audit["Audit and Compliance<br/>audit events, control evidence, approval history, retention"]
+  Reporting["Reporting and Client Delivery<br/>reports, dashboards, statements, packages, delivery history"]
+  Documents["Document and Knowledge<br/>documents, attachments, versions, evidence links, search"]
+  Guardrail["Boundary rule<br/>modules read published APIs, views, or events; they do not directly write another module's owned records"]
+
+  Identity -->|"scopes users and actions"| Workflow
+  Identity -->|"authorizes access"| Reporting
+  Entities -->|"tenant, fund, portfolio, account scope"| PortfolioRecords
+  Entities -->|"legal and ownership context"| FinancialOps
+  DataIntegration -->|"source records and provider posture"| ReferenceData
+  DataIntegration -->|"source activity and balances"| PortfolioRecords
+  DataIntegration -->|"source evidence"| FinancialOps
+  ReferenceData -->|"identifiers and classifications"| Instruments
+  ReferenceData -->|"canonical security references"| PortfolioRecords
+  Instruments -->|"contract terms and expected flows"| PortfolioRecords
+  PortfolioRecords -->|"positions and activity"| FinancialOps
+  FinancialOps -->|"review state and sign-off needs"| Workflow
+  Workflow -->|"approval decisions"| FinancialOps
+  FinancialOps -->|"approved records and evidence"| Reporting
+  Documents -->|"source attachments and supporting files"| FinancialOps
+  Documents -->|"report artifacts and packages"| Reporting
+  FinancialOps -->|"events and evidence"| Audit
+  Workflow -->|"approval history"| Audit
+  Reporting -->|"published snapshots and restatements"| Audit
+  Guardrail -.-> Identity
+  Guardrail -.-> DataIntegration
+  Guardrail -.-> PortfolioRecords
+  Guardrail -.-> FinancialOps
+  Guardrail -.-> Reporting

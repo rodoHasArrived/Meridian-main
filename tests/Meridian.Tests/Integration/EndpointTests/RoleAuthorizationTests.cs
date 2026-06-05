@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Testing;
 using Xunit;
@@ -181,7 +181,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
 
         try
         {
-            var registry = new Meridian.Ui.Shared.UserProfileRegistry();
+            var registry = new Meridian.Identity.UserProfileRegistry();
 
             var profile = registry.Authenticate("ledger-admin", "pw");
 
@@ -201,7 +201,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task RolePermissionProfileStore_Upsert_AddsCustomProfileToCatalogAndLookup()
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(RolePermissionProfileStore_Upsert_AddsCustomProfileToCatalogAndLookup));
-        var store = new Meridian.Ui.Shared.FileRolePermissionProfileStore(new StorageOptions { RootPath = artifacts.RootPath });
+        var store = new Meridian.Identity.FileRolePermissionProfileStore(new StorageOptions { RootPath = artifacts.RootPath });
 
         var result = await store.UpsertAsync(
             new RolePermissionProfileUpsertRequestDto(
@@ -226,7 +226,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public void UserProfileRegistry_MultiUser_RoleProfileNameLoadsStoredCustomPermissions()
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(UserProfileRegistry_MultiUser_RoleProfileNameLoadsStoredCustomPermissions));
-        var store = new Meridian.Ui.Shared.FileRolePermissionProfileStore(new StorageOptions { RootPath = artifacts.RootPath });
+        var store = new Meridian.Identity.FileRolePermissionProfileStore(new StorageOptions { RootPath = artifacts.RootPath });
         store.UpsertAsync(
             new RolePermissionProfileUpsertRequestDto(
                 ProfileName: "Ledger Reviewer",
@@ -245,7 +245,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
 
         try
         {
-            var registry = new Meridian.Ui.Shared.UserProfileRegistry(store);
+            var registry = new Meridian.Identity.UserProfileRegistry(store);
 
             var profile = registry.Authenticate("ledger-reviewer", "pw");
 
@@ -271,10 +271,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
             using var cookieClient = Fixture.CreateNoRedirectClient();
             var loginResp = await cookieClient.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
-            var sessionCookie = loginResp.Headers
-                .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(header => header.Value)
-                .First(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
+            var authCookies = ExtractAuthCookies(loginResp);
 
             using var createRequest = new HttpRequestMessage(HttpMethod.Post, "/api/auth/role-profiles")
             {
@@ -288,7 +285,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
                     Rationale: "Create scoped close-review authority.",
                     CorrelationId: "role-profile-test"))
             };
-            createRequest.Headers.Add("Cookie", sessionCookie);
+            createRequest.Headers.Add("Cookie", authCookies.CookieHeader);
+            createRequest.Headers.Add("X-CSRF-Token", authCookies.CsrfToken);
 
             var createResp = await cookieClient.SendAsync(createRequest);
 
@@ -344,10 +342,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         {
             using var cookieClient = Fixture.CreateNoRedirectClient();
             var loginResp = await cookieClient.PostAsJsonAsync("/api/auth/login", new { Username = "admin", Password = "pw" });
-            var sessionCookie = loginResp.Headers
-                .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(header => header.Value)
-                .First(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
+            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+            var authCookies = ExtractAuthCookies(loginResp);
 
             using var createRequest = new HttpRequestMessage(HttpMethod.Post, "/api/auth/role-profiles")
             {
@@ -360,7 +356,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
                     RequestedBy: "admin",
                     Rationale: "Reject bad permission."))
             };
-            createRequest.Headers.Add("Cookie", sessionCookie);
+            createRequest.Headers.Add("Cookie", authCookies.CookieHeader);
+            createRequest.Headers.Add("X-CSRF-Token", authCookies.CsrfToken);
 
             var createResp = await cookieClient.SendAsync(createRequest);
 
@@ -382,7 +379,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         Environment.SetEnvironmentVariable("MDC_USERS", null);
         try
         {
-            var registry = new Meridian.Ui.Shared.UserProfileRegistry();
+            var registry = new Meridian.Identity.UserProfileRegistry();
             registry.IsConfigured.Should().BeTrue();
 
             var profile = registry.Authenticate("admin", "pass1");
@@ -411,7 +408,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         Environment.SetEnvironmentVariable("MDC_PASSWORD", null);
         try
         {
-            var registry = new Meridian.Ui.Shared.UserProfileRegistry();
+            var registry = new Meridian.Identity.UserProfileRegistry();
             registry.IsConfigured.Should().BeTrue();
 
             var alice = registry.Authenticate("alice", "pass1");
@@ -435,7 +432,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
         try
         {
-            var registry = new Meridian.Ui.Shared.UserProfileRegistry();
+            var registry = new Meridian.Identity.UserProfileRegistry();
             var result = registry.Authenticate("alice", "wrong");
             result.Should().BeNull();
         }
@@ -454,7 +451,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         Environment.SetEnvironmentVariable("MDC_PASSWORD", "pass");
         try
         {
-            var registry = new Meridian.Ui.Shared.UserProfileRegistry();
+            var registry = new Meridian.Identity.UserProfileRegistry();
 
             // MDC_USERS takes precedence — legacy user should not authenticate
             registry.Authenticate("legacy", "pass").Should().BeNull();
@@ -620,5 +617,39 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         body!.Value.TryGetProperty("permissionNames", out var permissionNames).Should().BeTrue();
         return permissionNames.EnumerateArray().Select(permission => permission.GetString()!).ToArray();
     }
+
+    private static AuthCookies ExtractAuthCookies(HttpResponseMessage response)
+    {
+        var setCookies = response.Headers
+            .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(header => header.Value)
+            .ToArray();
+        var sessionCookie = ExtractCookieValue(setCookies, "mdc-session");
+        var csrfCookie = ExtractCookieValue(setCookies, "mdc-csrf");
+
+        sessionCookie.Should().NotBeNullOrWhiteSpace("a session cookie must be set after login");
+        csrfCookie.Should().NotBeNullOrWhiteSpace("a CSRF cookie must be set after login");
+
+        return new AuthCookies($"mdc-session={sessionCookie}; mdc-csrf={csrfCookie}", csrfCookie!);
+    }
+
+    private static string? ExtractCookieValue(IEnumerable<string> setCookies, string cookieName)
+    {
+        var prefix = cookieName + "=";
+        foreach (var setCookie in setCookies)
+        {
+            var segment = setCookie
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .FirstOrDefault(part => part.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+            if (segment is not null)
+            {
+                return segment[prefix.Length..];
+            }
+        }
+
+        return null;
+    }
+
+    private sealed record AuthCookies(string CookieHeader, string CsrfToken);
 
 }

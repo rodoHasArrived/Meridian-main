@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 

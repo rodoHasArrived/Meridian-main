@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Options;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Options;

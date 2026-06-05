@@ -2,7 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Config;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 // Import extension methods for DTO to domain conversion
 using Meridian.Ui.Shared;

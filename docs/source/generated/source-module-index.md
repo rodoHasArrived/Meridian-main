@@ -23,6 +23,18 @@ do_not_edit: true
 | `SRC-BACKTESTING-SDK` | Backtesting SDK | `src/Meridian.Backtesting.Sdk` | Backtesting SDK | active | Strategy Analytics | `src/Meridian.Backtesting.Sdk/README.md` |
 | `SRC-CONTRACTS` | Meridian contracts | `src/Meridian.Contracts` | Contracts | active | Contract Compatibility | `src/Meridian.Contracts/README.md` |
 | `SRC-CORE` | Meridian core | `src/Meridian.Core` | Core | active | Runtime Host | `src/Meridian.Core/README.md` |
+| `SRC-DESIGN-AUDIT` | Meridian Audit design module | `src/Meridian.Audit` | Design Module | active | Accounting and Ledger | `src/Meridian.Audit/README.md` |
+| `SRC-DESIGN-DATA-INTEGRATION` | Meridian Data Integration design module | `src/Meridian.DataIntegration` | Design Module | active | Data Confidence and Validation | `src/Meridian.DataIntegration/README.md` |
+| `SRC-DESIGN-DOCUMENTS` | Meridian Documents design module | `src/Meridian.Documents` | Design Module | active | Accounting and Ledger | `src/Meridian.Documents/README.md` |
+| `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `src/Meridian.Entities` | Design Module | active | Accounting and Ledger | `src/Meridian.Entities/README.md` |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `src/Meridian.FinancialOperations` | Design Module | active | Accounting and Ledger | `src/Meridian.FinancialOperations/README.md` |
+| `SRC-DESIGN-IDENTITY` | Meridian Identity design module | `src/Meridian.Identity` | Design Module | active | Identity and Access | `src/Meridian.Identity/README.md` |
+| `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `src/Meridian.Instruments` | Design Module | active | Accounting and Ledger | `src/Meridian.Instruments/README.md` |
+| `SRC-DESIGN-PLATFORM` | Meridian Platform design module | `src/Meridian.Platform` | Design Module | active | Runtime Host | `src/Meridian.Platform/README.md` |
+| `SRC-DESIGN-PORTFOLIO-RECORDS` | Meridian Portfolio Records design module | `src/Meridian.PortfolioRecords` | Design Module | active | Accounting and Ledger | `src/Meridian.PortfolioRecords/README.md` |
+| `SRC-DESIGN-REFERENCE-DATA` | Meridian Reference Data design module | `src/Meridian.ReferenceData` | Design Module | active | Data Confidence and Validation | `src/Meridian.ReferenceData/README.md` |
+| `SRC-DESIGN-REPORTING` | Meridian Reporting design module | `src/Meridian.Reporting` | Design Module | active | Workstation Shell and UX | `src/Meridian.Reporting/README.md` |
+| `SRC-DESIGN-WORKFLOW` | Meridian Workflow design module | `src/Meridian.Workflow` | Design Module | active | Workstation Shell and UX | `src/Meridian.Workflow/README.md` |
 | `SRC-DOMAIN` | Meridian domain | `src/Meridian.Domain` | Domain | active | Data Confidence and Validation | `src/Meridian.Domain/README.md` |
 | `SRC-EXECUTION` | Meridian execution | `src/Meridian.Execution` | Execution | active | Execution and Fund Accounts | `src/Meridian.Execution/README.md` |
 | `SRC-EXECUTION-SDK` | Execution SDK | `src/Meridian.Execution.Sdk` | Execution SDK | active | Execution and Fund Accounts | `src/Meridian.Execution.Sdk/README.md` |

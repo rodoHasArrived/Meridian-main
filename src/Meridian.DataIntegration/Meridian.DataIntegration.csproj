@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Meridian.DataIntegration</AssemblyName>
+    <RootNamespace>Meridian.DataIntegration</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
+    <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
+    <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,5 +1,5 @@
 using Meridian.Contracts.Workstation;
-using Meridian.Application.OperationsContinuity;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.DependencyInjection;
 

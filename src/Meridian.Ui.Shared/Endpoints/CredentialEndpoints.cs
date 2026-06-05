@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Config.Credentials;
-using Meridian.Contracts.Auth;
+using Meridian.DataIntegration.Credentials;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;

@@ -1,6 +1,6 @@
-using Meridian.Application.Auth;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
+using Meridian.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 

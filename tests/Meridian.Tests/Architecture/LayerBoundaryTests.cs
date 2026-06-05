@@ -33,7 +33,7 @@ public sealed class LayerBoundaryTests
             // Domain
             typeof(Meridian.Domain.Events.MarketEvent).Assembly,
             // Application
-            typeof(Meridian.Application.Reconciliation.StatementReconciliationService).Assembly,
+            typeof(Meridian.FinancialOperations.Reconciliation.StatementReconciliationService).Assembly,
             // UI shared/services
             typeof(Meridian.Ui.Shared.Services.ProviderLedgerReconciliationService).Assembly,
             typeof(Meridian.Ui.Services.Services.Reconciliation.ReconciliationApiService).Assembly,

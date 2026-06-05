@@ -1,4 +1,4 @@
-using Meridian.Application.OperationsContinuity;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage.Ledger;
 using Npgsql;
 using Testcontainers.PostgreSql;

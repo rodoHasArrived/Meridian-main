@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;

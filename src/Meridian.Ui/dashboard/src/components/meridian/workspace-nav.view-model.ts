@@ -90,6 +90,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
   ],
   reporting: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
+    { label: "Operations record", route: WORKSTATION_ROUTE_CATALOG.reportingOperationsRecord },
     { label: "Report packs", route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.reportingEvidence },
     { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.reportingExports }

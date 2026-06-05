@@ -9,7 +9,7 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Services;

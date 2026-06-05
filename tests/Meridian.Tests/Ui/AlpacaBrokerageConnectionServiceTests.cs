@@ -5,6 +5,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;

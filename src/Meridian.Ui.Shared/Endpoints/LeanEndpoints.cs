@@ -4,7 +4,7 @@ using Meridian.Backtesting.Sdk;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Ui.Shared;
 using Microsoft.AspNetCore.Builder;

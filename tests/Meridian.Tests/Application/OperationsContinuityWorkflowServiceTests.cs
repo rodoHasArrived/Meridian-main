@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.OperationsContinuity;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
@@ -2379,7 +2379,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
     {
         var source = ReadRepoFile(
             "src",
-            "Meridian.Application",
+            "Meridian.FinancialOperations",
             "OperationsContinuity",
             "PostgresOperationsContinuityStore.cs");
         var appendMethodStart = source.IndexOf(

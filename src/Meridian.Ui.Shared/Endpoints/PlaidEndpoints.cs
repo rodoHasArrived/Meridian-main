@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Plaid;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

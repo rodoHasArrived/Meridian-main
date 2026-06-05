@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;

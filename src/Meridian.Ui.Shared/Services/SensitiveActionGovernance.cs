@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.FSharp.Operations;
 
 namespace Meridian.Ui.Shared.Services;

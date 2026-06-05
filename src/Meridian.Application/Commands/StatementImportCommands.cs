@@ -1,4 +1,4 @@
-using Meridian.Application.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Application.ResultTypes;
 using Serilog;

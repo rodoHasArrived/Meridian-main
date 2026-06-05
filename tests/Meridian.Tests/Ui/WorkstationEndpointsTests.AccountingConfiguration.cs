@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.TestHost;

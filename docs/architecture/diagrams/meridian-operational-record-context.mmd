@@ -1,0 +1,48 @@
+flowchart LR
+  subgraph People["Customer organizations and users"]
+    Operators["Financial operations professionals<br/>fund admins, accountants, reconciliation analysts, data ops"]
+    Investors["Investment users<br/>portfolio managers and analysts"]
+    Governance["Governance stakeholders<br/>CFO, controller, compliance, auditors, trustees"]
+    Admins["Security and integration admins"]
+  end
+
+  subgraph Meridian["Meridian financial operations platform<br/>W1-W5 operational system of record"]
+    Browser["Browser workstation<br/>Trading, Portfolio, Accounting, Reporting, Strategy, Data, Settings"]
+    Desktop["WPF desktop workstation"]
+    SharedUi["Shared UI services, contracts, read models, and endpoints"]
+    OperationalCore["Operational record core<br/>data confidence, reconciliation, approvals, accounting records, retained evidence, governed reports"]
+    ContextModules["Bounded-context modules<br/>Identity, Entities, Data Integration, Reference Data, Instruments, Portfolio Records, Financial Operations, Workflow, Audit, Reporting, Documents"]
+    RecordStore["Approved system-of-record store<br/>validated records, ledger truth, lineage, frozen report snapshots"]
+    EvidenceTrail["Audit trail and evidence manifests"]
+
+    Browser --> SharedUi
+    Desktop --> SharedUi
+    SharedUi --> OperationalCore
+    OperationalCore --> ContextModules
+    ContextModules --> RecordStore
+    RecordStore --> SharedUi
+    OperationalCore --> EvidenceTrail
+  end
+
+  subgraph External["External systems and data sources"]
+    Providers["Provider feeds<br/>custodian, bank, broker, market data, fund administrator"]
+    Accounting["Accounting and GL systems<br/>read-only evidence and reconciliation signals"]
+    Documents["Documents and uploads<br/>PDFs, contracts, statements"]
+    IdentityProvider["Authentication and scoped access authority"]
+    Delivery["Report recipients and delivery channels<br/>clients, investors, board, auditors"]
+  end
+
+  Operators -->|"import, validate, reconcile, investigate, approve, report"| Browser
+  Operators -->|"desktop workflows"| Desktop
+  Investors -->|"review holdings, strategy, performance, paper readiness"| Browser
+  Governance -->|"approve, inspect evidence, review reports"| Browser
+  Admins -->|"configure providers, permissions, mappings"| Browser
+
+  Providers -->|"raw source records"| OperationalCore
+  Accounting -->|"accounting evidence"| OperationalCore
+  Documents -->|"attachments and source evidence"| OperationalCore
+  IdentityProvider -->|"users, roles, scopes"| SharedUi
+
+  OperationalCore -->|"governed exports only"| Accounting
+  RecordStore -->|"frozen report packs, audit packages, statements"| Delivery
+  EvidenceTrail -->|"evidence, approvals, retention, compliance review"| Governance

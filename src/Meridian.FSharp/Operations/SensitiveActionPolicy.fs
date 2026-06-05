@@ -1,7 +1,7 @@
 namespace Meridian.FSharp.Operations
 
 open System
-open Meridian.Contracts.Auth
+open Meridian.Identity.Auth
 
 [<CLIMutable>]
 type SensitiveActionPolicyInput =

@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Windows.Controls;
 using FluentAssertions;
 using Meridian.Application.FundAccounts;
-using Meridian.Application.OperationsContinuity;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;

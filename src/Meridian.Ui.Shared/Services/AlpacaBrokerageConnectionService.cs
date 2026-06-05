@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Workstation;
 using Microsoft.Extensions.Logging;

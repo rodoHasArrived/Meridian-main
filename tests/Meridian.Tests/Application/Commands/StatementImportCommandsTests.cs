@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
-using Meridian.Application.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.ResultTypes;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
@@ -75,7 +75,7 @@ public sealed class StatementImportCommandsTests
                 statementAdapter,
                 statementAdapter,
                 statementAdapter,
-                new Meridian.Application.Reconciliation.InMemoryStatementReconciliationCheckpointStore()));
+                new Meridian.FinancialOperations.Reconciliation.InMemoryStatementReconciliationCheckpointStore()));
 
         var originalOut = Console.Out;
         try

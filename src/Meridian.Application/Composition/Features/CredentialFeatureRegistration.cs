@@ -1,5 +1,6 @@
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Application.UI;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Contracts.StrategyEngine;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;

@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Meridian.Application.OperationsContinuity;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;

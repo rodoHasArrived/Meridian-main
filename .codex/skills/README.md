@@ -3,11 +3,11 @@
 This folder contains Meridian's repo-local Codex skills. These are the primary project-scoped
 skills for the current AI workflow and should stay aligned with Meridian's active desktop app
 operator UI direction, retained browser workstation support, fund-management/trading-platform
-scope, and no-mobile development policy.
+scope, W1-W5 operational record baseline, and no-mobile development policy.
 
 Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 `docs/roadmap/generated/ROADMAP_SUMMARY.md`, and `docs/ai/assistant-workflow-contract.md`:
-2026-06-01.
+2026-06-04.
 
 ## Current Skills
 
@@ -102,6 +102,11 @@ different work:
 - Treat `src/Meridian.Wpf/` as the active desktop app operator UI path. Keep
   `src/Meridian.Ui/dashboard/` and `/workstation/` as retained browser workstation surfaces unless
   the user explicitly asks for browser workstation work.
+- Keep skill descriptions and product examples centered on the W1-W5 operational record baseline:
+  data confidence, retained source evidence, reconciliation, approvals, accounting records,
+  multi-asset operational coverage, and governed reports. Treat Backtesting Studio, live-readiness,
+  full payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and
+  other broad expansion lanes as deferred unless roadmap data moves them into active scope.
 - Do not introduce mobile development guidance unless the roadmap or user explicitly reopens that
   lane.
 - Keep `agents/openai.yaml` synchronized with the skill text so Codex UI metadata stays current.

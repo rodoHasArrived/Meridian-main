@@ -3,7 +3,7 @@
 **Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-06-04
-**Last Updated:** 2026-05-20
+**Last Updated:** 2026-06-04
 
 This file is the Copilot-specific companion to the shared Meridian AI guidance. Keep it short:
 shared policy belongs in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md),
@@ -48,6 +48,12 @@ Meridian is a .NET 10 fund-management and trading platform. Active operator UI w
 [`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).
 Shared product behavior should land behind shared contracts, local/web API endpoints, or shared
 read models before either client composes it.
+
+Keep product work centered on the W1-W5 operational record baseline: data confidence, retained
+source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage,
+and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first governance, full
+payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and other
+expansion lanes unless they directly strengthen that workflow.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or

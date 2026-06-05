@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.OperationsContinuity;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Ui.Shared.Services;

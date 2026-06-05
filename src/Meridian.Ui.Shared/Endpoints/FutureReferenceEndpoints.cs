@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Futures;
 using Meridian.Contracts.Api;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Contracts.Futures;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

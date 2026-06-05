@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-06-02
+**Reviewed:** 2026-06-04
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -40,6 +40,12 @@ Meridian is a self-hosted, evidence-backed investment operations platform for:
 The operating question remains:
 
 > Can Meridian prove, book, reconcile, approve, and report an investment decision?
+
+## Active Product Scope Gate
+
+The active product scope is the W1-W5 operational record baseline: data confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, and governed report packs.
+
+Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment execution, full alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work directly strengthens that operational record workflow.
 
 ## Canonical Product Truth Order
 
@@ -96,8 +102,8 @@ Use this compact claim status model for stakeholder-facing updates:
 
 ## Current Wave Posture
 
-- W1–W4 are closed baselines in the registry and treated as preservation targets unless a later registry change says otherwise.
-- W5 is planned as the v0.15 accounting records and operational evidence package.
+- W1-W5 are closed baselines in the registry and treated as the coherent near-term operational record release unless a later registry change says otherwise.
+- W5 is the v0.15 accounting records, operational evidence, and multi-asset coverage package.
 - W6 is the deferred Backtesting Studio evidence loop.
 - W7 remains the controlled live-readiness path.
 - `Paper-first`, `read-only where uncertain`, and `governance-first` defaults remain active by policy.

@@ -4,10 +4,10 @@
 > routing, runtime semantics, or key architecture guidance changes; mirrored Codex and GitHub AI
 > surfaces should follow from here.
 >
-> **Last verified:** 2026-05-21
-> **Primary grounding docs:** `README.md`, `docs/status/ROADMAP.md`,
-> `docs/plans/trading-workstation-migration-blueprint.md`,
-> `docs/plans/governance-fund-ops-blueprint.md`
+> **Last verified:** 2026-06-04
+> **Primary grounding docs:** `README.md`, `docs/roadmap/data/*.yml`,
+> `docs/roadmap/generated/ROADMAP_SUMMARY.md`,
+> `docs/product/meridian-design-document.md`
 
 ---
 
@@ -17,9 +17,14 @@
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already contains strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
-- The current delivery focus is productization: turn those foundations into one cohesive operator
-  experience across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and
-  `Settings`.
+- The current delivery focus is productization around the W1-W5 operational record baseline: data
+  confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset
+  operational coverage, and governed reports across `Trading`, `Portfolio`, `Accounting`,
+  `Reporting`, `Strategy`, `Data`, and `Settings`.
+- Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment
+  execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
+  client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work
+  directly strengthens that operational record workflow.
 - Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
 - `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
   workflows, launch automation, and desktop validation.
@@ -42,18 +47,17 @@
 Read these before changing skills, agents, or workflow guidance:
 
 - `README.md`
+- `docs/roadmap/README.md`
+- `docs/roadmap/data/*.yml`
+- `docs/roadmap/generated/ROADMAP_SUMMARY.md`
+- `docs/roadmap/generated/roadmap-register.md`
+- `docs/product/meridian-design-document.md`
+- `docs/product/README.md`
+- `docs/status/README.md` for migration routing only
 - `docs/architecture/project-structure.md`
 - `docs/architecture/module-map.md`
 - `docs/architecture/mvvm-guidelines.md`
-- `docs/developer/build-test-run.md`
 - `docs/prompts/repo-maintenance-prompts.md`
-- `docs/status/ROADMAP.md`
-- `docs/status/FEATURE_INVENTORY.md`
-- `docs/status/IMPROVEMENTS.md`
-- `docs/status/production-status.md`
-- `docs/plans/trading-workstation-migration-blueprint.md`
-- `docs/plans/governance-fund-ops-blueprint.md`
-- `docs/plans/meridian-6-week-roadmap.md`
 
 ---
 

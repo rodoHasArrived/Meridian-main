@@ -1,4 +1,4 @@
-using Meridian.Application.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Ui.Shared.Contracts.Reconciliation;

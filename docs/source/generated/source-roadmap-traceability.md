@@ -34,6 +34,30 @@ do_not_edit: true
 | `SRC-CORE` | Meridian core | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-CORE` | Meridian core | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-CORE` | Meridian core | `W7-LIVE-001` | Live-readiness governance |
+| `SRC-DESIGN-AUDIT` | Meridian Audit design module | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-DESIGN-AUDIT` | Meridian Audit design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-DATA-INTEGRATION` | Meridian Data Integration design module | `W1-DATA-001` | Provider trust gate and data confidence baseline |
+| `SRC-DESIGN-DATA-INTEGRATION` | Meridian Data Integration design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-DOCUMENTS` | Meridian Documents design module | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-DESIGN-DOCUMENTS` | Meridian Documents design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-IDENTITY` | Meridian Identity design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W5-MULTIASSET-001` | - |
+| `SRC-DESIGN-PLATFORM` | Meridian Platform design module | `W1-DATA-001` | Provider trust gate and data confidence baseline |
+| `SRC-DESIGN-PLATFORM` | Meridian Platform design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-PORTFOLIO-RECORDS` | Meridian Portfolio Records design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
+| `SRC-DESIGN-PORTFOLIO-RECORDS` | Meridian Portfolio Records design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-PORTFOLIO-RECORDS` | Meridian Portfolio Records design module | `W5-MULTIASSET-001` | - |
+| `SRC-DESIGN-REFERENCE-DATA` | Meridian Reference Data design module | `W1-DATA-001` | Provider trust gate and data confidence baseline |
+| `SRC-DESIGN-REFERENCE-DATA` | Meridian Reference Data design module | `W5-MULTIASSET-001` | - |
+| `SRC-DESIGN-REPORTING` | Meridian Reporting design module | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-DESIGN-REPORTING` | Meridian Reporting design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-WORKFLOW` | Meridian Workflow design module | `W3-CONT-001` | Research to paper continuity |
+| `SRC-DESIGN-WORKFLOW` | Meridian Workflow design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DOMAIN` | Meridian domain | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-DOMAIN` | Meridian domain | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-DOMAIN` | Meridian domain | `W4-RECON-001` | Portfolio ledger reconciliation readiness |

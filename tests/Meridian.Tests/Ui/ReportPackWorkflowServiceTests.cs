@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.Reporting;
 using Meridian.Contracts.Workstation;
-using Meridian.Contracts.Auth;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

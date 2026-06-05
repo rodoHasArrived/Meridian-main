@@ -1,5 +1,6 @@
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.UI;

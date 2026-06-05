@@ -171,6 +171,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
   },
   {
+    id: "reporting-operations-record",
+    label: "Operations record",
+    description: "Demo the W1-W5 path from source data through accounting record evidence to report-pack publication.",
+    route: WORKSTATION_ROUTE_CATALOG.reportingOperationsRecord
+  },
+  {
     id: "reporting-report-packs",
     label: "Report packs",
     description: "Open approval-ready report packet review and governed outputs.",

@@ -50,6 +50,7 @@ const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").t
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: module.OperatorReadinessConsole })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
+const OperationsRecordReleaseScreen = lazy(() => import("@/screens/operations-record-release-screen").then((module) => ({ default: module.OperationsRecordReleaseScreen })));
 const EntitySetupWizard = lazy(() => import("@/features/fund-structure/entity-setup-wizard").then((module) => ({ default: module.EntitySetupWizard })));
 const PortfolioScreen = lazy(() => import("@/screens/portfolio-screen").then((module) => ({ default: module.PortfolioScreen })));
 const CoveredCallScreen = lazy(() => import("@/screens/covered-call-screen").then((module) => ({ default: module.CoveredCallScreen })));
@@ -362,6 +363,7 @@ function AppShell() {
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
+                  <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
