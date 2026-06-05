@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.MoneyMarketFunds;
+using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.MoneyMarketFunds;
 using Microsoft.AspNetCore.Builder;

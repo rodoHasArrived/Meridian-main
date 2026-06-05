@@ -1,4 +1,5 @@
 using Meridian.Contracts.FundStructure;
+using Meridian.Entities.FundStructure;
 
 namespace Meridian.Application.FundStructure;
 

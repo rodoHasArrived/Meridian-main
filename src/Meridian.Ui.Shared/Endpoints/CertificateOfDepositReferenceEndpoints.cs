@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Meridian.Application.CertificatesOfDeposit;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.CertificatesOfDeposit;
+using Meridian.Instruments.CertificatesOfDeposit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

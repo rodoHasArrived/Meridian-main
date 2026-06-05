@@ -1,4 +1,4 @@
-using Meridian.Application.CryptoCurrency;
+using Meridian.Instruments.CryptoCurrency;
 using Meridian.Contracts.CryptoCurrency;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;

@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.Options;
+using Meridian.Instruments.Options;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;

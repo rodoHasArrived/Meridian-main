@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Shared.Services;
 using System.Collections.Generic;
@@ -69,7 +70,7 @@ public static class SecurityMasterEndpoints
         /// Lists approved custom asset profile definitions available to profile-backed Security Master create/amend workflows.
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterAssetProfiles, (
-            [FromServices] AppSecurityMaster.ISecurityAssetProfileCatalog profileCatalog) =>
+            [FromServices] ISecurityAssetProfileCatalog profileCatalog) =>
         {
             var profiles = profileCatalog.GetProfiles()
                 .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)

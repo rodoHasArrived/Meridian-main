@@ -5,14 +5,16 @@ doc_schema_version: "1.0.0"
 module_id: SRC-DESIGN-REFERENCE-DATA
 path: src/Meridian.ReferenceData
 status: active
-last_reviewed: 2026-06-04
+owner_lane: Data Confidence and Validation
+last_reviewed: 2026-06-05
 ---
 
 # src/Meridian.ReferenceData
 
 ## Purpose
 
-Physical bounded-context module project for Security Master, identifiers, classifications, reference projections, and data-governance ownership conformance.
+Physical bounded-context module project for Security Master identifiers, classifications,
+taxonomies, profile catalogs, and data-governance ownership conformance.
 
 ## Layer responsibility
 
@@ -21,10 +23,23 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `src/Meridian.ReferenceData` - registered source module root.
+- `SecurityMaster/SecurityKindMapping.cs` - canonical asset-class and instrument-kind
+  normalization for Security Master validation and readiness workflows.
+- `SecurityMaster/SecurityAssetProfileCatalog.cs` - Security Master profile catalog
+  contract plus seeded approved custom/private asset profile templates.
 
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+
+Security Master asset-class mapping, instrument-kind mapping, the profile catalog contract, and
+seeded approved custom/private asset profile templates live here as reference-data ownership.
+Application orchestration consumes these contracts for validation, governance, operational
+readiness, projection rebuilds, and UI endpoint composition.
+
+Asset-specific contract/reference read services now live in `Meridian.Instruments`; keep this
+module focused on Security Master identifier, classification, taxonomy, and profile-catalog
+ownership.
 
 ## Diagrams
 
@@ -49,19 +64,17 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.ReferenceData/Meridian.ReferenceData.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityKindMappingTests|FullyQualifiedName~SecurityValidationServiceTests|FullyQualifiedName~SecurityMasterIngestStatusEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
-## Optional conditional sections
+### Migration and archive notes
 
-Add only the sections that apply to this module:
-
-- `### Plans and roadmap`
-- `### End-user value`
-- `### Benchmarks and performance`
-- `### Operational evidence`
-- `### Security and credentials`
-- `### API and contract notes`
-- `### Migration and archive notes`
+`SecurityKindMapping`, `ISecurityAssetProfileCatalog`, `StaticSecurityAssetProfileCatalog`, and
+the seeded Security Master asset-profile definitions moved from `src/Meridian.Application/SecurityMaster`
+into this physical design module so pure reference-data ownership no longer stays in the
+layer-oriented application project.
+Certificate-of-deposit and commodity projection services were moved onward to
+`src/Meridian.Instruments` with the rest of the asset-specific instrument reference services.
 
 ## Change rules
 

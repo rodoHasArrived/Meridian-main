@@ -1,4 +1,5 @@
 using Meridian.Application.Exceptions;
+using Meridian.ReferenceData.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;

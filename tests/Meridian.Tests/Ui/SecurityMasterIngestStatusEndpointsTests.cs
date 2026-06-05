@@ -6,6 +6,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;

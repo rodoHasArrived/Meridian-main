@@ -1,7 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.AssetOperations;
-using Meridian.Application.FixedIncome;
+using Meridian.Instruments.FixedIncome;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FixedIncome;

@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.Derivatives;
+using Meridian.Instruments.Derivatives;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Derivatives;
 using Microsoft.AspNetCore.Builder;

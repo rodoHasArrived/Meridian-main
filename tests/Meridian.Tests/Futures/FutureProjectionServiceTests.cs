@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Futures;
+using Meridian.Instruments.Futures;
 using Meridian.Contracts.Futures;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;

@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.FixedIncome;
+using Meridian.Instruments.FixedIncome;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Ui.Shared.Endpoints;

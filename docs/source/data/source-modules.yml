@@ -529,10 +529,13 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Entities/Meridian.Entities.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~LedgerGroupingRulesTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~FundStructurePolicyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LedgerGroupingRulesTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-04
+    last_reviewed: 2026-06-05
 
   - id: SRC-DESIGN-DATA-INTEGRATION
     path: src/Meridian.DataIntegration
@@ -565,7 +568,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Physical bounded-context module project for Security Master, identifiers, classifications, reference projections, and data-governance ownership conformance.
+    purpose: Physical bounded-context module project for Security Master identifiers, classifications, taxonomies, profile catalogs, and data-governance ownership conformance.
     readme: src/Meridian.ReferenceData/README.md
     roadmap_items:
       - W1-DATA-001
@@ -575,10 +578,11 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.ReferenceData/Meridian.ReferenceData.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityKindMappingTests|FullyQualifiedName~SecurityValidationServiceTests|FullyQualifiedName~SecurityMasterIngestStatusEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-04
+    last_reviewed: 2026-06-05
 
   - id: SRC-DESIGN-INSTRUMENTS
     path: src/Meridian.Instruments
@@ -596,10 +600,11 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Instruments/Meridian.Instruments.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CryptoProjectionServiceTests|FullyQualifiedName~DepositProjectionServiceTests|FullyQualifiedName~CertificateOfDepositProjectionServiceTests|FullyQualifiedName~CommodityProjectionServiceTests|FullyQualifiedName~SwapProjectionServiceTests|FullyQualifiedName~EquityProjectionServiceTests|FullyQualifiedName~FutureProjectionServiceTests|FullyQualifiedName~FxSpotProjectionServiceTests|FullyQualifiedName~BondProjectionServiceTests|FullyQualifiedName~OptionProjectionServiceTests|FullyQualifiedName~MoneyMarketFundProjectionServiceTests|FullyQualifiedName~OptionReferenceEndpointsRoundtripTests|FullyQualifiedName~BondReferenceEndpointsTests|FullyQualifiedName~ReferenceDataEndpointAuthorizationTests|FullyQualifiedName~AssetOperationsReadServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-04
+    last_reviewed: 2026-06-05
 
   - id: SRC-DESIGN-PORTFOLIO-RECORDS
     path: src/Meridian.PortfolioRecords
@@ -824,10 +829,11 @@ modules:
     validation:
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterIngestStatusEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-05-28
+    last_reviewed: 2026-06-05
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard

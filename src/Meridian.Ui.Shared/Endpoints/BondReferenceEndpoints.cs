@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.FixedIncome;
+using Meridian.Instruments.FixedIncome;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FixedIncome;

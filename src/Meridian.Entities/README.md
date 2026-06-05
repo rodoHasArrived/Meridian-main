@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-ENTITIES
 path: src/Meridian.Entities
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-05
 ---
 
 # src/Meridian.Entities
@@ -22,10 +22,20 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `src/Meridian.Entities` - registered source module root.
+- `FundStructure/LedgerGroupingRules.cs` - ledger-group assignment type policy,
+  assignment-reference normalization, and account ledger-group resolution.
+- `FundStructure/IFundStructurePolicyService.cs` and `FundStructure/FundStructurePolicyService.cs`
+  - ownership-link compatibility, cycle, primary-link, ownership-percent, replacement-window,
+  single-operating-parent, and governance cash-flow query policy.
 
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+
+Fund-structure ledger grouping rules and ownership/cash-flow policy live here as entity ownership.
+Application and UI Shared consume these policies when validating ledger-group assignment mutations,
+grouping accounting views, building the ledger-mapping workbench, enforcing ownership graph rules,
+and validating governance cash-flow query windows.
 
 ## Diagrams
 
@@ -50,19 +60,19 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.Entities/Meridian.Entities.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~LedgerGroupingRulesTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~FundStructurePolicyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LedgerGroupingRulesTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
-## Optional conditional sections
+### Migration and archive notes
 
-Add only the sections that apply to this module:
-
-- `### Plans and roadmap`
-- `### End-user value`
-- `### Benchmarks and performance`
-- `### Operational evidence`
-- `### Security and credentials`
-- `### API and contract notes`
-- `### Migration and archive notes`
+`LedgerGroupingRules` moved from `src/Meridian.Application/FundStructure` into this physical design
+module so fund-structure ledger-group assignment normalization and resolution are no longer owned by
+the layer-oriented application project.
+`IFundStructurePolicyService` and `FundStructurePolicyService` also moved from
+`src/Meridian.Application/FundStructure` into this physical design module so ownership graph and
+cash-flow query policy are owned by the Entities bounded context.
 
 ## Change rules
 

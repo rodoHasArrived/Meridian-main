@@ -7,4 +7,7 @@
     <RootNamespace>Meridian.ReferenceData</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+  </ItemGroup>
 </Project>

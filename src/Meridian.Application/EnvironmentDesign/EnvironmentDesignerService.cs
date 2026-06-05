@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
+using Meridian.Entities.FundStructure;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Application.EnvironmentDesign;

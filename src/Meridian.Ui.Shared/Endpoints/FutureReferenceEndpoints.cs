@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.Futures;
+using Meridian.Instruments.Futures;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Futures;

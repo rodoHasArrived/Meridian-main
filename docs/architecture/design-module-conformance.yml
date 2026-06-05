@@ -48,7 +48,7 @@ modules:
       - src/Meridian.Contracts
       - src/Meridian.Storage
       - src/Meridian.Ui.Shared
-    migration_next: Treat fund structure, legal entities, accounts, assignments, and hierarchy persistence as the entity module boundary until a dedicated project is extracted.
+    migration_next: Fund-structure ledger-group assignment type policy, assignment-reference normalization, account ledger-group resolution, ownership-link compatibility/cycle/primary/percent/replacement-window policy, single-operating-parent policy, and governance cash-flow query policy now live in Meridian.Entities. Continue moving remaining legal entity, fund, account, assignment, hierarchy, persistence policy, and storage-backed entity read/write code out of layer-oriented application/storage/UI owners into the Entities bounded-context module.
 
   - name: Meridian.DataIntegration
     conformance: physical
@@ -73,7 +73,7 @@ modules:
       - src/Meridian.Storage
       - src/Meridian.FSharp.DirectLending.Aggregates
       - src/Meridian.Ui.Shared
-    migration_next: Keep Security Master and reference projections source-owned by shared contracts and storage ports before extracting a physical ReferenceData project.
+    migration_next: Security Master asset-class mapping, instrument-kind mapping, the profile catalog contract, and seeded approved custom/private asset profile templates now live in Meridian.ReferenceData. Continue moving identifier validation, classification/taxonomy governance, and Security Master reference-data read models out of layer-oriented application/storage/UI owners into the ReferenceData bounded-context module; asset-specific contract/reference projections belong in Meridian.Instruments.
 
   - name: Meridian.Instruments
     conformance: physical
@@ -87,7 +87,7 @@ modules:
       - src/Meridian.FSharp.Ledger
       - src/Meridian.Ledger
       - src/Meridian.Storage
-    migration_next: Keep instrument terms, obligation models, Security Master classifications, and ledger projections in shared domain/ledger seams until the object model stabilizes.
+    migration_next: Storage-backed bond, option, equity, futures, FX spot, crypto, deposit, certificate-of-deposit, commodity, swap, and money-market fund contract/reference projection services now live in Meridian.Instruments. Continue moving remaining instrument terms, obligation models, lifecycle schedules, and ledger-projection support out of layer-oriented application/storage owners once behavior is characterized.
 
   - name: Meridian.PortfolioRecords
     conformance: physical

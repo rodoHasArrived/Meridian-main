@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Options;
+using Meridian.Instruments.Options;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Storage.SecurityMaster;

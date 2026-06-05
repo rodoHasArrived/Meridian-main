@@ -100,9 +100,12 @@ and UI presentation concerns in their owning layers.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
-  valuation evidence. The same folder owns the starter custom asset profile catalog and profile-backed
-  validation rules for approved profile-version pinning, typed no-code field values, profile approval
-  metadata, and identifier coverage. Security Master create/amend orchestration preserves pinned
+  valuation evidence. Asset-class mapping, instrument-kind mapping, the profile catalog contract,
+  and seeded approved custom/private asset profile templates are owned by
+  `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
+  validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
+  validation rules still enforce approved profile-version pinning, typed no-code field values,
+  profile approval metadata, and identifier coverage. Security Master create/amend orchestration preserves pinned
   profile-backed `CustomAsset` and `OtherSecurity` payloads in projection and event evidence while
   reusing the existing generic-security domain backing model. The query service keeps ordinary text
   search delegated to the storage index and uses the projected Security Master universe only when
@@ -122,6 +125,11 @@ and UI presentation concerns in their owning layers.
   profile-backed `CustomAsset` rows, where servicer/trustee reports, warehouse tapes, NAV, capital
   calls, distributions, obligation schedules, and valuation approvals are treated as retained
   provider evidence before close readiness can become complete.
+- Asset-specific instrument projection services for bonds, options, equity, futures, FX spot,
+  crypto, deposits, certificates of deposit, commodities, swaps, and money-market funds are owned by
+  `Meridian.Instruments`. Application composition registers the Instruments services and
+  storage-backed projection stores, but application orchestration no longer owns the instrument
+  contract/reference lookup implementations.
 - `AssetOperations/` - Security Master-keyed asset operations read/projection services. Published
   projections from the dedicated Asset Operations store take precedence, while bonds can derive a
   first read-through detail from fixed-income Security Master reference data. Direct Lending
@@ -133,12 +141,13 @@ and UI presentation concerns in their owning layers.
   governance cash-flow projection path as the local JSON/in-memory service, using stored
   structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
   optional Security Master economic rules for realized/projected cash-flow evidence.
-  Ownership-link policy validation prevents invalid setup graphs by blocking self-parenting,
-  active cycles, incompatible relationship types, overlapping primary links, invalid percentage
-  ownership, sibling percentage over-allocation, and invalid effective windows before create,
-  amend, expire, or replacement graph mutations are persisted. Ledger mapping resolution stays
-  server-side and reuses fund-structure assignments before falling back to account ledger
-  references.
+  Ownership-link policy validation is owned by `Meridian.Entities.FundStructure` and prevents
+  invalid setup graphs by blocking self-parenting, active cycles, incompatible relationship types,
+  overlapping primary links, invalid percentage ownership, sibling percentage over-allocation, and
+  invalid effective windows before create, amend, expire, or replacement graph mutations are
+  persisted. Ledger mapping orchestration stays server-side and consumes
+  `Meridian.Entities.FundStructure.LedgerGroupingRules` for ledger-group assignment normalization
+  and resolution before falling back to account ledger references.
 - Identity integration - application code provides fund-structure lineage context to
   `Meridian.Identity` scoped-access services. Scoped access assignments, auth role and permission
   contracts, user profiles, login sessions, auth-mode resolution, role-profile persistence, local

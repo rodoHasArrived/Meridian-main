@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.Equity;
+using Meridian.Instruments.Equity;
 using Meridian.Contracts.Equity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;

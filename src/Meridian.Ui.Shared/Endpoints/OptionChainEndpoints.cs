@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.Options;
+using Meridian.Instruments.Options;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Domain.Models;
@@ -24,12 +24,12 @@ public static class OptionChainEndpoints
         {
             if (context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] is not UserPermission permissions)
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             if ((permissions & UserPermission.ModifySecurityMaster) != UserPermission.ModifySecurityMaster)
             {
-                return Results.Forbid();
+                return EndpointHelpers.Forbidden();
             }
 
             var imported = await importService.ImportSnapshotAsync(snapshot, ct).ConfigureAwait(false);

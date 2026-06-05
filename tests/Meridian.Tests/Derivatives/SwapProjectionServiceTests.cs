@@ -1,4 +1,4 @@
-using Meridian.Application.Derivatives;
+using Meridian.Instruments.Derivatives;
 using Meridian.Contracts.Derivatives;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;

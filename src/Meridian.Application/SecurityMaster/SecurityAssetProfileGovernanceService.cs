@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 
@@ -56,7 +57,8 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
 
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
-    private readonly IReadOnlyList<SecurityAssetProfileDefinitionDto> _seedProfiles = SecurityAssetProfileSeeds.Create();
+    private readonly IReadOnlyList<SecurityAssetProfileDefinitionDto> _seedProfiles =
+        StaticSecurityAssetProfileCatalog.CreateDefault().GetProfiles();
     private readonly string? _persistencePath;
     private SecurityAssetProfileGovernanceSnapshot _inMemorySnapshot = new([], []);
 

@@ -3,6 +3,7 @@ using Meridian.Application.FundAccounts;
 using Meridian.Application.Composition;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Entities.FundStructure;
 using Meridian.FSharp.CashFlowInterop;
 
 namespace Meridian.Application.FundStructure;

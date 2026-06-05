@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.FxSpot;
+using Meridian.Instruments.FxSpot;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FxSpot;
 using Microsoft.AspNetCore.Builder;

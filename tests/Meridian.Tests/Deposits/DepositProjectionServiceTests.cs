@@ -1,4 +1,4 @@
-using Meridian.Application.Deposits;
+using Meridian.Instruments.Deposits;
 using Meridian.Contracts.Deposits;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;

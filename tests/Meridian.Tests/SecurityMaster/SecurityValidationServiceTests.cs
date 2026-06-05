@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;

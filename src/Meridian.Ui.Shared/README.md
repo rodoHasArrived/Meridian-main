@@ -30,7 +30,7 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 ## Important workflows
 
 `FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
-Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links.
+Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links, and the underlying ownership/cash-flow policy is owned by `Meridian.Entities.FundStructure`.
 
 Auth endpoints expose role-profile administration and scoped access assignment administration from
 the shared workstation host while delegating identity state to `Meridian.Identity`. `EndpointAuthorization`
@@ -49,6 +49,10 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
+certificates of deposit, commodities, swaps, and money-market funds adapt `Meridian.Instruments` services
+to shared browser/WPF routes. Keep those endpoints as permission and HTTP adapters; instrument
+contract/reference logic belongs in the Instruments design module.
 The root workstation bootstrap endpoints return canonical `WorkstationDataPayload` and
 `WorkstationAccountingPayload` contract types for Data and Accounting. Retained
 `/api/workstation/data-operations` and `/api/workstation/governance` routes remain compatibility
@@ -258,11 +262,15 @@ provider-to-Security-Master trust without rebuilding mapping logic locally.
 Security Master trust and conflict summaries use downstream Data, Accounting, and Reporting
 workflow labels so browser and WPF clients do not surface retained Governance-era wording for
 operator-facing review.
-The shared Security Master endpoints also expose the approved starter custom asset profile catalog
-at `/api/security-master/asset-profiles` and allow `/api/security-master/search` requests to filter
-profile-backed securities by custom profile id, pinned profile version, profile field key, or
-profile field value without requiring a text query. Browser and WPF clients should use those
-contract-owned filters instead of parsing profile-backed asset-specific JSON locally.
+The shared Security Master endpoints also expose the ReferenceData-owned approved starter custom
+asset profile catalog at `/api/security-master/asset-profiles` and allow `/api/security-master/search`
+requests to filter profile-backed securities by custom profile id, pinned profile version, profile
+field key, or profile field value without requiring a text query. Browser and WPF clients should
+use those contract-owned filters instead of parsing profile-backed asset-specific JSON locally.
+Certificate-of-deposit reference endpoints also consume the ReferenceData-owned
+`ICertificateOfDepositReferenceService` rather than an Application-owned reference lookup.
+Commodity reference endpoints follow the same pattern through ReferenceData-owned
+`ICommodityReferenceService`.
 The same endpoint group now exposes governed profile lineage plus admin-only draft, approve, and
 rollback actions under `/api/security-master/asset-profiles/*`. These routes require
 `AdminMaintenance` and server-resolved actor metadata, returning audit events with rationale,
@@ -397,9 +405,11 @@ events.
 Fund-structure endpoints expose `/api/fund-structure/ledger-mapping-view` as the shared accounting
 control surface for account ledger mappings. The endpoint returns server-derived assignment source,
 unmapped-account issue codes, and recommended action so browser and WPF surfaces do not invent
-client-local mapping or posting readiness rules. Ledger mapping assignment mutations require an
-authenticated operator with `ManageDirectLending` or `AdminMaintenance`, and audit attribution must
-come from the resolved session actor rather than client-supplied request fields.
+client-local mapping or posting readiness rules. Ledger group assignment validation and reference
+normalization use the Entities-owned `LedgerGroupingRules` policy rather than endpoint-local rules.
+Ledger mapping assignment mutations require an authenticated operator with `ManageDirectLending` or
+`AdminMaintenance`, and audit attribution must come from the resolved session actor rather than
+client-supplied request fields.
 Auth endpoints expose `/api/auth/role-profiles` as the governed write path for custom authority
 profiles. The Identity-owned file-backed role-profile store persists profile grants under the
 storage root, merges custom profiles into `/api/auth/roles`, and feeds `UserProfileRegistry` so

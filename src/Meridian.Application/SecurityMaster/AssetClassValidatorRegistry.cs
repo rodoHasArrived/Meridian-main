@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.ReferenceData.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 

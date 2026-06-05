@@ -1,5 +1,5 @@
-using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
+using Meridian.Entities.FundStructure;
 using Xunit;
 
 namespace Meridian.FundStructure.Tests;

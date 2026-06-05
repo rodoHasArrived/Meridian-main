@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.FxSpot;
+using Meridian.Instruments.FxSpot;
 using Meridian.Contracts.FxSpot;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;

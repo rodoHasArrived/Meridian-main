@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.CryptoCurrency;
+using Meridian.Instruments.CryptoCurrency;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.CryptoCurrency;

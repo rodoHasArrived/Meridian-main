@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-05
 ---
 
 # src/Meridian.Instruments
@@ -22,10 +22,25 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `src/Meridian.Instruments` - registered source module root.
+- `FixedIncome/BondProjectionService.cs` - storage-backed bond reference, lifecycle, and
+  accrual-convention read service plus null fallback.
+- `Options/OptionProjectionService.cs` - option contract, series, chain snapshot, expiry ladder,
+  and import projection service plus null fallbacks.
+- `Equity/EquityProjectionService.cs`, `Futures/FutureProjectionService.cs`,
+  `FxSpot/FxSpotProjectionService.cs`, `CryptoCurrency/CryptoProjectionService.cs`,
+  `Deposits/DepositProjectionService.cs`, `CertificatesOfDeposit/CertificateOfDepositProjectionService.cs`,
+  `Commodities/CommodityProjectionService.cs`, `Derivatives/SwapProjectionService.cs`, and
+  `MoneyMarketFunds/MoneyMarketFundProjectionService.cs` - storage-backed asset contract/reference
+  read services for shared endpoint and composition consumers.
 
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+
+Asset-specific instrument reference services live here because they expose financial instrument
+terms, lifecycle, contract, expiry, maturity, accrual, sweep, and chain-linkage details. Application
+composition wires these services to Security Master projection stores, while UI Shared adapts them
+to shared browser/WPF routes without owning the instrument logic.
 
 ## Diagrams
 
@@ -50,19 +65,15 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.Instruments/Meridian.Instruments.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CryptoProjectionServiceTests|FullyQualifiedName~DepositProjectionServiceTests|FullyQualifiedName~CertificateOfDepositProjectionServiceTests|FullyQualifiedName~CommodityProjectionServiceTests|FullyQualifiedName~SwapProjectionServiceTests|FullyQualifiedName~EquityProjectionServiceTests|FullyQualifiedName~FutureProjectionServiceTests|FullyQualifiedName~FxSpotProjectionServiceTests|FullyQualifiedName~BondProjectionServiceTests|FullyQualifiedName~OptionProjectionServiceTests|FullyQualifiedName~MoneyMarketFundProjectionServiceTests|FullyQualifiedName~OptionReferenceEndpointsRoundtripTests|FullyQualifiedName~BondReferenceEndpointsTests|FullyQualifiedName~ReferenceDataEndpointAuthorizationTests|FullyQualifiedName~AssetOperationsReadServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
-## Optional conditional sections
+### Migration and archive notes
 
-Add only the sections that apply to this module:
-
-- `### Plans and roadmap`
-- `### End-user value`
-- `### Benchmarks and performance`
-- `### Operational evidence`
-- `### Security and credentials`
-- `### API and contract notes`
-- `### Migration and archive notes`
+Bond, option, equity, futures, FX spot, crypto, deposit, certificate-of-deposit, commodity, swap,
+and money-market fund projection service contracts and implementations moved out of the layer-oriented
+application/reference-data owners into this physical design module so instrument terms and
+asset-specific contract read models are owned by `Meridian.Instruments`.
 
 ## Change rules
 

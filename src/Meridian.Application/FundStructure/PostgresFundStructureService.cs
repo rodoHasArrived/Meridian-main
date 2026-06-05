@@ -2,6 +2,7 @@ using Meridian.Application.Composition;
 using Meridian.Application.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Entities.FundStructure;
 using Meridian.Storage.FundStructure;
 
 namespace Meridian.Application.FundStructure;

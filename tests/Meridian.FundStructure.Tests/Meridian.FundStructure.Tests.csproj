@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Entities\Meridian.Entities.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
   </ItemGroup>
 

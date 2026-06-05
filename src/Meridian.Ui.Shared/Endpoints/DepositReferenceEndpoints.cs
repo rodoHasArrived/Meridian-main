@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.Deposits;
+using Meridian.Instruments.Deposits;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Deposits;

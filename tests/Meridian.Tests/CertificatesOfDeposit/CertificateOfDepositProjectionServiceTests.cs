@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Application.CertificatesOfDeposit;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.CertificatesOfDeposit;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
 
