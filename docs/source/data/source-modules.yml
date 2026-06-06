@@ -25,7 +25,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06
 
   - id: SRC-APP
     path: src/Meridian.Application
@@ -33,7 +33,7 @@ modules:
     layer: Application
     status: active
     owner_lane: Runtime Host
-    purpose: Application use cases, orchestration services, commands, and workflow coordination.
+    purpose: Application use cases, orchestration services, commands, and workflow coordination that consumes Core configuration/redaction/masking helpers, Platform runtime/diagnostic/API-documentation/performance helpers, Data Integration sample-data, historical-query, and market-data validation helpers, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration-template, environment-override, runtime diagnostic, API-documentation, runtime-performance, data-fixture, historical-data, market-data validation, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
     readme: src/Meridian.Application/README.md
     roadmap_items:
       - W2-TRD-001
@@ -50,7 +50,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -58,7 +58,7 @@ modules:
     layer: Contracts
     status: active
     owner_lane: Contract Compatibility
-    purpose: Shared DTOs, acceptance evidence payloads, and cross-layer contracts used by host, services, dashboard, and WPF.
+    purpose: Shared DTOs, acceptance evidence payloads, fund-structure service contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
     readme: src/Meridian.Contracts/README.md
     roadmap_items:
       - W1-DATA-001
@@ -74,12 +74,20 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
+      - dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~EnvironmentDesignerServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~WorkstationOperatingContextServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracedEventMetricsTests|FullyQualifiedName~EventPipelineMetricsTests|FullyQualifiedName~DiagnosticsEndpointsTests|FullyQualifiedName~DiagnosticsFeatureRegistrationTests|FullyQualifiedName~DiagnosticBundleServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ScopedAccessServiceTests|FullyQualifiedName~FundAccountTraversalQueryServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationalSchedulerTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~GovernanceSharedDataAccessServiceTests|FullyQualifiedName~InMemoryFundStructureServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlJobOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-28
+    last_reviewed: 2026-06-06
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -87,7 +95,7 @@ modules:
     layer: Core
     status: active
     owner_lane: Runtime Host
-    purpose: Shared configuration, exceptions, logging, scheduling, serialization, and cross-cutting infrastructure.
+    purpose: Shared configuration models, environment overrides, configuration templates, exceptions, logging, scheduling, serialization, redaction, masking, flush contracts, and cross-cutting infrastructure.
     readme: src/Meridian.Core/README.md
     roadmap_items:
       - W1-DATA-001
@@ -102,7 +110,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06
 
   - id: SRC-DOMAIN
     path: src/Meridian.Domain
@@ -154,7 +162,7 @@ modules:
     layer: Infrastructure
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Provider adapters, HTTP integration, ETL adapters, resilience helpers, and data-source implementations.
+    purpose: Provider adapters, HTTP integration, ETL adapters including SFTP publisher transport, resilience helpers, and data-source implementations.
     readme: src/Meridian.Infrastructure/README.md
     roadmap_items:
       - W1-DATA-001
@@ -177,7 +185,7 @@ modules:
     layer: Storage
     status: active
     owner_lane: Accounting and Ledger
-    purpose: WAL-backed persistence, archival packaging, storage catalogs, replay, ledger storage, and export support.
+    purpose: WAL-backed persistence, archival packaging, storage catalogs, replay, ledger storage, Core-flushable storage sinks, canonical symbol registry services, fund-structure state stores, ETL job-definition stores, and export support.
     readme: src/Meridian.Storage/README.md
     roadmap_items:
       - W1-DATA-001
@@ -192,11 +200,15 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
+      - dotnet build src/Meridian.Core/Meridian.Core.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConfigEnvironmentOverrideTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~InMemoryFundStructureServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlJobOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution
@@ -269,7 +281,7 @@ modules:
     layer: Strategies
     status: active
     owner_lane: Strategy Analytics
-    purpose: Strategy lifecycle, run storage, promotion records, and strategy read services.
+    purpose: Strategy lifecycle, run storage, promotion records, strategy read services, and reconciliation governance exception classification.
     readme: src/Meridian.Strategies/README.md
     roadmap_items:
       - W2-PROMO-001
@@ -284,7 +296,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06
 
   - id: SRC-BACKTESTING
     path: src/Meridian.Backtesting
@@ -301,11 +313,14 @@ modules:
       - ResearchContinuity
       - BacktestingEvidence
     validation:
+      - dotnet build src/Meridian.Backtesting/Meridian.Backtesting.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~BacktestPreflightServiceTests|FullyQualifiedName~MeridianNativeBacktestStudioEngineTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BacktestStudioRunOrchestratorTests" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06
 
   - id: SRC-BACKTESTING-SDK
     path: src/Meridian.Backtesting.Sdk
@@ -469,7 +484,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06
 
   - id: SRC-DESIGN-PLATFORM
     path: src/Meridian.Platform
@@ -477,7 +492,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Runtime Host
-    purpose: Physical bounded-context module project for Platform ownership, composition, configuration, runtime policy, shared operation result semantics, domain cutover, and shadow-projection conformance.
+    purpose: Physical bounded-context module project for Platform ownership, composition, configuration, runtime policy, CLI/runtime mode resolution, console progress helpers, runtime performance profile activation, operational scheduling and trading-calendar policy, shared operation result semantics, friendly error formatting, API documentation model generation, diagnostic state, shutdown lifecycle DTOs, OpenTelemetry tracing, event-pipeline metrics decoration, domain cutover, and shadow-projection conformance.
     readme: src/Meridian.Platform/README.md
     roadmap_items:
       - W1-DATA-001
@@ -489,6 +504,11 @@ modules:
       - dotnet build src/Meridian.Platform/Meridian.Platform.csproj /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~StorageFeatureRegistrationTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ErrorCodeMappingTests|FullyQualifiedName~DiagnosticsCommandsTests|FullyQualifiedName~StatementImportCommandsTests|FullyQualifiedName~SimulationCommandsTests|FullyQualifiedName~SecurityMasterCommandsEdgarTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EventTraceContextTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EventPipelineTracePropagationTests|FullyQualifiedName~EventTraceContextTests|FullyQualifiedName~TracedEventMetricsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracedEventMetricsTests|FullyQualifiedName~EventPipelineMetricsTests|FullyQualifiedName~DiagnosticsEndpointsTests|FullyQualifiedName~DiagnosticsFeatureRegistrationTests|FullyQualifiedName~DiagnosticBundleServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ApiDocumentationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CoLocationProfileActivatorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
@@ -500,7 +520,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Identity and Access
-    purpose: Physical bounded-context module project for identity auth contracts, scoped access, role/profile, and session ownership conformance.
+    purpose: Physical bounded-context module project for identity auth contracts, scoped access, fund-structure scope lineage, role/profile, and session ownership conformance.
     readme: src/Meridian.Identity/README.md
     roadmap_items:
       - W5-ACCT-001
@@ -508,12 +528,12 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Identity/Meridian.Identity.csproj /p:EnableWindowsTargeting=true
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~ScopedAccessServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ScopedAccessServiceTests|FullyQualifiedName~FundAccountTraversalQueryServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --filter FullyQualifiedName~SensitiveActionPolicyTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-04
+    last_reviewed: 2026-06-06
 
   - id: SRC-DESIGN-ENTITIES
     path: src/Meridian.Entities
@@ -545,7 +565,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Physical bounded-context module project for provider, ingestion, validation, source evidence, and publish-data ownership conformance.
+    purpose: Physical bounded-context module project for provider, ingestion, ETL export, event canonicalization, historical market-data query/aggregation, data-quality validators/analyzers/SLA metrics, source evidence, sample market-event generation, and publish-data ownership conformance.
     readme: src/Meridian.DataIntegration/README.md
     roadmap_items:
       - W1-DATA-001
@@ -559,10 +579,19 @@ modules:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~QuickBooksOnlineProviderCredentialConnectionStoreTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OAuthTokenTests|FullyQualifiedName~CredentialStatusTests|FullyQualifiedName~CredentialTestingServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCredentialStoreTests|FullyQualifiedName~ProviderConnectionEndpointsTests|FullyQualifiedName~CredentialCompatibilityEndpointsTests|FullyQualifiedName~ProviderReadinessEndpointTests|FullyQualifiedName~ProviderRoutingEndpointsTests|FullyQualifiedName~ProviderFactoryCredentialContextTests|FullyQualifiedName~AlpacaBrokerageConnectionServiceTests|FullyQualifiedName~PlaidWorkstationServiceTests|FullyQualifiedName~BrokerageConnectionEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MarketEventFilterTests|FullyQualifiedName~SelfTestCommandTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CredentialStoreExtensionsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlCommandsTests|FullyQualifiedName~CsvPartnerFileParserTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConditionCodeMapperTests|FullyQualifiedName~VenueMicMapperTests|FullyQualifiedName~EventCanonicalizerTests|FullyQualifiedName~CanonicalizingPublisherTests|FullyQualifiedName~CanonicalizationGoldenFixtureTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~PipelineFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~HistoricalDataQueryServiceTests|FullyQualifiedName~HistoricalDataQueryServiceBarsTests|FullyQualifiedName~ExecutionSimulationOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BadTickFilterTests|FullyQualifiedName~TickSizeValidatorTests|FullyQualifiedName~FSharpEventValidatorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DataFreshnessSlaMonitorTests|FullyQualifiedName~DataFreshnessSlaMonitorMarketHoursTests|FullyQualifiedName~SlaStatusSnapshotTests|FullyQualifiedName~LiquidityProfileTests|FullyQualifiedName~PriceContinuityCheckerTests|FullyQualifiedName~GapAnalyzerTests|FullyQualifiedName~SequenceErrorTrackerTests|FullyQualifiedName~CompletenessScoreCalculatorTests|FullyQualifiedName~AnomalyDetectorTests|FullyQualifiedName~DataQualityMonitoringServiceTests|FullyQualifiedName~LatencyHistogramTests|FullyQualifiedName~CrossProviderComparisonServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~GovernanceSharedDataAccessServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-05
+    last_reviewed: 2026-06-06
 
   - id: SRC-DESIGN-REFERENCE-DATA
     path: src/Meridian.ReferenceData
@@ -592,7 +621,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Physical bounded-context module project for instrument terms, contracts, obligations, classifications, asset operations projections, money-market liquidity and sweep projections, and ledger-projection ownership conformance.
+    purpose: Physical bounded-context module project for instrument terms, contracts, obligations, classifications, option-chain query/failover, asset operations projections, money-market liquidity and sweep projections, and ledger-projection ownership conformance.
     readme: src/Meridian.Instruments/README.md
     roadmap_items:
       - W4-RECON-001
@@ -602,11 +631,14 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Instruments/Meridian.Instruments.csproj /p:EnableWindowsTargeting=true
+      - dotnet build src/Meridian.Instruments/Meridian.Instruments.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CryptoProjectionServiceTests|FullyQualifiedName~DepositProjectionServiceTests|FullyQualifiedName~CertificateOfDepositProjectionServiceTests|FullyQualifiedName~CommodityProjectionServiceTests|FullyQualifiedName~SwapProjectionServiceTests|FullyQualifiedName~EquityProjectionServiceTests|FullyQualifiedName~FutureProjectionServiceTests|FullyQualifiedName~FxSpotProjectionServiceTests|FullyQualifiedName~BondProjectionServiceTests|FullyQualifiedName~OptionProjectionServiceTests|FullyQualifiedName~MoneyMarketFundProjectionServiceTests|FullyQualifiedName~MoneyMarketFundServiceTests|FullyQualifiedName~MmfRebuildTests|FullyQualifiedName~MmfLiquidityServiceTests|FullyQualifiedName~MmfFamilyNormalizationTests|FullyQualifiedName~OptionReferenceEndpointsRoundtripTests|FullyQualifiedName~BondReferenceEndpointsTests|FullyQualifiedName~ReferenceDataEndpointAuthorizationTests|FullyQualifiedName~AssetOperationsReadServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TechnicalIndicatorServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OptionsChainServiceTests|FullyQualifiedName~OptionsEndpoints" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-05
+    last_reviewed: 2026-06-06
 
   - id: SRC-DESIGN-PORTFOLIO-RECORDS
     path: src/Meridian.PortfolioRecords
@@ -637,7 +669,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Physical bounded-context module project for reconciliation, accounting records, accounting-close projections, accounting-basis policy, ledger text-journal reporting, payment approvals, bank-transaction records, close workflows, casework, and operational-record ownership conformance.
+    purpose: Physical bounded-context module project for reconciliation, portfolio-vs-ledger reconciliation engine behavior, accounting records, accounting-close projections, accounting-basis policy, ledger text-journal reporting, payment approvals, bank-transaction records, close workflows, casework, and operational-record ownership conformance.
     readme: src/Meridian.FinancialOperations/README.md
     roadmap_items:
       - W4-RECON-001
@@ -652,6 +684,7 @@ modules:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy|FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StatementValidationServiceTests|FullyQualifiedName~StatementRepositoryTests|FullyQualifiedName~StatementReconciliationOrchestratorTests|FullyQualifiedName~StatementReconciliationContextAdapterTests|FullyQualifiedName~StatementMatchingEngineTests|FullyQualifiedName~CanonicalReconciliationMatchingEngineTests|FullyQualifiedName~StatementReconciliationServiceTests|FullyQualifiedName~StatementImportAndMatchingTests|FullyQualifiedName~StatementFixtureScenarioTests|FullyQualifiedName~StatementBreakClassifierTests|FullyQualifiedName~ReconciliationContractsTests|FullyQualifiedName~BrokerCustodianMatchingPipelineTests|FullyQualifiedName~ReconciliationApiServiceTests|FullyQualifiedName~StatementImportCommandsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReconciliationEngineServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AccountingSystemIntegrationServiceTests|FullyQualifiedName~ProviderConnectionEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~AccountingCloseServicesTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PaymentApprovalTests|FullyQualifiedName~BankTransactionSeedTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -667,7 +700,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Physical bounded-context module project for workflow definitions, operator actions, presets, continuity paths, and process ownership conformance.
+    purpose: Physical bounded-context module project for workflow definitions, operator actions, presets, runbook execution, environment design, continuity paths, and process ownership conformance.
     readme: src/Meridian.Workflow/README.md
     roadmap_items:
       - W3-CONT-001
@@ -677,10 +710,12 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Workflow/Meridian.Workflow.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~FundWorkflowCommandHandlerTests|FullyQualifiedName~RunbookServicesTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~EnvironmentDesignerServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-04
+    last_reviewed: 2026-06-06
 
   - id: SRC-DESIGN-AUDIT
     path: src/Meridian.Audit
@@ -710,7 +745,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Physical bounded-context module project for report packs, governed exports, reporting run contracts, template catalogs, orchestration, publication, restatement, distribution, and reporting ownership conformance.
+    purpose: Physical bounded-context module project for report packs, governed exports, reporting run contracts, template catalogs, Security Master-enriched report generation, NAV attribution, orchestration, publication, restatement, distribution, and reporting ownership conformance.
     readme: src/Meridian.Reporting/README.md
     roadmap_items:
       - W4-RPT-001
@@ -720,7 +755,7 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Reporting/Meridian.Reporting.csproj /p:EnableWindowsTargeting=true
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportPackWorkflowServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportPackWorkflowServiceTests|FullyQualifiedName~ReportGenerationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
@@ -764,7 +799,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06
 
   - id: SRC-UI
     path: src/Meridian.Ui
@@ -822,7 +857,7 @@ modules:
     layer: UI Shared
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Shared UI read models, acceptance filters, and compatibility shims for browser and desktop surfaces.
+    purpose: Shared UI read models, endpoint adapters, acceptance filters, and compatibility shims for browser and desktop surfaces.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
       - W2-TRD-001
@@ -890,7 +925,8 @@ modules:
       - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~AppServiceRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06

@@ -1,6 +1,7 @@
 using Meridian.Application.Config;
 using Meridian.Application.Subscriptions;
 using Meridian.Infrastructure;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Application.Monitoring;
 

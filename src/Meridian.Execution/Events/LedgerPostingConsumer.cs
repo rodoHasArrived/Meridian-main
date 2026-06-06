@@ -1,6 +1,7 @@
 using System.Threading.Channels;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Ledger;
 
 namespace Meridian.Execution.Events;

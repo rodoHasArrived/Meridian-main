@@ -5,6 +5,8 @@ using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
+using Meridian.Contracts.Monitoring;
+using Meridian.Platform.Diagnostics;
 using Meridian.ProviderSdk;
 using Xunit;
 

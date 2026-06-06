@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Meridian.Application.Services;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.Ui;

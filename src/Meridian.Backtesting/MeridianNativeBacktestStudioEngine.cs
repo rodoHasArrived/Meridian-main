@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Meridian.Application.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;

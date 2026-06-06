@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
-using Meridian.Application.Backtesting;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;

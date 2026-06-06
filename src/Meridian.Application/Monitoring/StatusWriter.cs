@@ -4,6 +4,7 @@ using System.Threading;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Storage.Archival;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Application.Monitoring;
 

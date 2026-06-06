@@ -1,5 +1,5 @@
 using System.Threading;
-using Meridian.Application.Services;
+using Meridian.Core.Services;
 using Meridian.Domain.Events;
 
 namespace Meridian.Storage.Interfaces;

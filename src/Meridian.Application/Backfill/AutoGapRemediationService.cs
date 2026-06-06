@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using System.Net.Http;
 using Meridian.Application.Logging;
-using Meridian.Application.Monitoring.DataQuality;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
 using Serilog;
-using QualityDataGap = Meridian.Application.Monitoring.DataQuality.DataGap;
+using QualityDataGap = Meridian.DataIntegration.Monitoring.DataQuality.DataGap;
 using StorageGapAnalysisResult = Meridian.Infrastructure.Adapters.Core.GapAnalysisResult;
 
 namespace Meridian.Application.Backfill;

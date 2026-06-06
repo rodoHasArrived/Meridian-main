@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Meridian.Application.Services;
 using Meridian.Contracts.Catalog;
 using Meridian.Storage.Services;
 using Xunit;

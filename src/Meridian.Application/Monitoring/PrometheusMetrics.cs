@@ -2,6 +2,9 @@ using System.Collections.Concurrent;
 using System.Threading;
 using Meridian.Application.Canonicalization;
 using Meridian.Application.Subscriptions.Models;
+using Meridian.DataIntegration.Canonicalization;
+using Meridian.DataIntegration.Monitoring;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Prometheus;
 
 namespace Meridian.Application.Monitoring;
@@ -497,7 +500,7 @@ public static class PrometheusMetrics
         MigrationStreamingFactoriesRegistered.Set(migrationSnapshot.StreamingFactoriesRegistered);
 
         // Update canonicalization metrics
-        var canonSnapshot = Canonicalization.CanonicalizationMetrics.GetSnapshot();
+        var canonSnapshot = CanonicalizationMetrics.GetSnapshot();
         CanonicalizationVersionActive.Set(canonSnapshot.ActiveVersion);
 
         // Update validation pipeline metrics
@@ -610,7 +613,7 @@ public static class PrometheusMetrics
     /// <summary>
     /// Updates SLA metrics from a DataFreshnessSlaMonitor snapshot (ADQ-4.5).
     /// </summary>
-    public static void UpdateSlaMetrics(DataQuality.SlaStatusSnapshot snapshot)
+    public static void UpdateSlaMetrics(SlaStatusSnapshot snapshot)
     {
         SlaViolationsTotal.IncTo(snapshot.TotalViolations);
         SlaCurrentViolations.Set(snapshot.ViolationSymbols);

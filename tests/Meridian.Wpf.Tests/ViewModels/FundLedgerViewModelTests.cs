@@ -13,6 +13,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.Reporting;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -1548,7 +1549,9 @@ public sealed class FundLedgerViewModelTests
         }
     }
 
-    private sealed class StubApplicationSecurityMasterQueryService : AppSecurityMasterQueryService
+    private sealed class StubApplicationSecurityMasterQueryService :
+        AppSecurityMasterQueryService,
+        Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
     {
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<SecurityDetailDto?>(null);

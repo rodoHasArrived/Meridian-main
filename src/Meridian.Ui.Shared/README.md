@@ -13,7 +13,8 @@ last_reviewed: 2026-06-05
 
 ## Purpose
 
-UI shared contains shared UI read models and compatibility shims for browser and desktop surfaces.
+UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser
+and desktop surfaces.
 
 ## Layer responsibility
 
@@ -23,7 +24,9 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Key folders and files
 
-- `Endpoints/` - shared workstation endpoint mapping and projection helpers, including fund-structure ownership lifecycle routes.
+- `Endpoints/` - shared workstation endpoint mapping and projection helpers, including
+  fund-structure ownership lifecycle, portable packaging, archive-maintenance, and data-quality
+  monitoring routes.
 - Shared read models - DTOs and compatibility shims consumed by browser and desktop clients.
 - Project metadata - UI shared dependencies and build settings.
 

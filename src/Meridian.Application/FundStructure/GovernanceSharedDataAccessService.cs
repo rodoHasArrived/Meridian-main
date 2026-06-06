@@ -1,7 +1,8 @@
-using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
+using Meridian.DataIntegration.Historical;
 
 namespace Meridian.Application.FundStructure;
 

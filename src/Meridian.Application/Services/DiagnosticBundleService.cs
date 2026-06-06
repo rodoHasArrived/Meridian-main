@@ -5,6 +5,9 @@ using System.Text.Json;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
+using Meridian.Contracts.Monitoring;
+using Meridian.Core.Diagnostics;
+using Meridian.Platform.Diagnostics;
 using Serilog;
 
 namespace Meridian.Application.Services;

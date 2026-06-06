@@ -1,11 +1,12 @@
 using System.IO;
-using Meridian.Application.EnvironmentDesign;
 using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Workflow.EnvironmentDesign;
 
 namespace Meridian.Wpf.Tests.Services;
 

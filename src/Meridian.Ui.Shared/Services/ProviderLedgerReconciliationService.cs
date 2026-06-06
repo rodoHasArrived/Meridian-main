@@ -5,6 +5,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
 using Meridian.ProviderSdk;

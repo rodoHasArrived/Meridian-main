@@ -8,7 +8,7 @@
 
 ## Purpose
 
-Accounting report packs publish immutable local artifacts for fund-operations reporting from the shared `FundOperationsWorkspaceReadService` and existing `ReportGenerationService`.
+Accounting report packs publish immutable local artifacts for fund-operations reporting from the shared `FundOperationsWorkspaceReadService` and `Meridian.Reporting.ReportGenerationService`.
 
 The Operator v1 audit-pack slice supports trial-balance report packs for a `fundProfileId`, with manifest, provenance, JSON/CSV section files, an XLSX workbook when requested, audit-pack readiness metadata, and line-level ledger provenance drilldown. It does not add cloud storage or Postgres migrations.
 

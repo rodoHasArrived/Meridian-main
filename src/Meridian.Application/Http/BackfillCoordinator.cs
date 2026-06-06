@@ -17,6 +17,7 @@ using Meridian.Storage.Policies;
 using Meridian.Storage.Sinks;
 using Serilog;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Application.UI;
 

@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Services;
+using Meridian.DataIntegration.Historical;
 using System.Text.Json;
 
 namespace Meridian.Tests.Application.Services;

@@ -1,10 +1,10 @@
 using Meridian.Application.Logging;
-using Meridian.Application.Services;
 using Meridian.Application.Subscriptions.Models;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 

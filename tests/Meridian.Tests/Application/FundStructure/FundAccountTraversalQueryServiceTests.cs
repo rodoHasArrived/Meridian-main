@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
 using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;
 

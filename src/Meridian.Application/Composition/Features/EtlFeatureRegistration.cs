@@ -1,6 +1,7 @@
 using Meridian.Application.Etl;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Etl;
+using Meridian.DataIntegration.Etl;
 using Meridian.Infrastructure.Etl;
 using Meridian.Infrastructure.Etl.Sftp;
 using Meridian.Storage.Etl;

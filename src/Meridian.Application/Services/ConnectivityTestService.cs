@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Infrastructure.Http;
+using Meridian.Platform.Runtime;
 using Serilog;
 
 namespace Meridian.Application.Services;

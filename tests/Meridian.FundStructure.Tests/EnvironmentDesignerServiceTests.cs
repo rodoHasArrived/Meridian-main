@@ -1,6 +1,6 @@
-using Meridian.Application.EnvironmentDesign;
 using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
+using Meridian.Workflow.EnvironmentDesign;
 using Xunit;
 
 namespace Meridian.FundStructure.Tests;

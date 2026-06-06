@@ -1,5 +1,6 @@
 using Meridian.Application.Commands;
 using Meridian.Application.Config;
+using Meridian.DataIntegration.Historical;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.Services;
 using Meridian.Application.Subscriptions.Services;
@@ -47,8 +48,8 @@ internal static class CommandServiceRegistration
         services.TryAddSingleton(sp => new StorageSearchService(sp.GetRequiredService<StorageOptions>()));
         services.TryAddSingleton(sp => new HistoricalDataQueryService(sp.GetRequiredService<CommandServicePaths>().DataRoot));
         services.TryAddSingleton<AutoConfigurationService>();
-        services.TryAddSingleton(sp => new Meridian.Application.Runbooks.JsonRunbookStore(sp.GetRequiredService<CommandServicePaths>().DataRoot));
-        services.TryAddSingleton<Meridian.Application.Runbooks.RunbookExecutor>();
+        services.TryAddSingleton(sp => new Meridian.Workflow.Runbooks.JsonRunbookStore(sp.GetRequiredService<CommandServicePaths>().DataRoot));
+        services.TryAddSingleton<Meridian.Workflow.Runbooks.RunbookExecutor>();
         services.AddStatementReconciliationServices(dataRoot);
 
         services.AddSingleton<ICliCommand, HelpCommand>();
@@ -106,8 +107,8 @@ internal static class CommandServiceRegistration
             sp.GetRequiredService<CommandServicePaths>().DataRoot,
             sp.GetRequiredService<ILogger>()));
         services.AddSingleton<ICliCommand>(sp => new RunbookCommands(
-            sp.GetRequiredService<Meridian.Application.Runbooks.JsonRunbookStore>(),
-            sp.GetRequiredService<Meridian.Application.Runbooks.RunbookExecutor>()));
+            sp.GetRequiredService<Meridian.Workflow.Runbooks.JsonRunbookStore>(),
+            sp.GetRequiredService<Meridian.Workflow.Runbooks.RunbookExecutor>()));
         services.AddSingleton<ICliCommand>(sp => new WalRepairCommand(
             sp.GetRequiredService<AppConfig>(),
             sp.GetRequiredService<ILogger>()));

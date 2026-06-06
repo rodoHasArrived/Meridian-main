@@ -1,6 +1,7 @@
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
 

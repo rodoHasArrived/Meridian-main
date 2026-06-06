@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-05-20
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Backtesting
@@ -22,6 +22,13 @@ This layer should keep simulation behavior isolated from live execution while pr
 ## Key folders and files
 
 - `Meridian.Backtesting.csproj` - backtesting runtime project boundary.
+- `BacktestStudioContracts.cs` - Backtest Studio request, handle, status, and engine contracts.
+- `BacktestStudioRunOrchestrator.cs` - records accepted, terminal, cancelled, and failed Studio
+  runs through strategy-run lineage.
+- `MeridianNativeBacktestStudioEngine.cs` - native Meridian engine adapter that returns canonical
+  SDK backtest results.
+- `BacktestPreflightService.cs` - backtest-scoped preflight checks for date range, replay-data
+  coverage, execution-model compatibility, and optional Security Master validation.
 - Runtime and replay implementation files for historical simulation.
 
 ## Important workflows
@@ -42,6 +49,12 @@ portfolio drill-in surfaces.
 - `MeridianNativeBacktestStudioEngine` stamps native engine output through
   `CanonicalBacktestResultNormalizer.FromNative`, matching the metadata contract used by
   QuantConnect Lean imports.
+- `BacktestStudioRunRequest`, `BacktestStudioRunHandle`, `BacktestStudioRunStatus`, and
+  `IBacktestStudioEngine` live in this module so native and external Studio engines share the
+  Backtesting-owned orchestration contract instead of depending on the application layer.
+- `BacktestPreflightService` consumes the shared `ISecurityValidationGateService` contract from
+  `Meridian.Contracts.Services`, keeping Security Master trust-gate validation optional for hosts
+  while preserving fail-closed preflight behavior when the gate reports blocking issues.
 
 ## Benchmarks and performance
 
@@ -75,6 +88,8 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~BacktestPreflightServiceTests|FullyQualifiedName~MeridianNativeBacktestStudioEngineTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BacktestStudioRunOrchestratorTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules

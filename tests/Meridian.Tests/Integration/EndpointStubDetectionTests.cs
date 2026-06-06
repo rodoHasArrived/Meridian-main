@@ -7,6 +7,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Domain.Models;
 using Xunit;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Tests.Integration;
 
@@ -384,6 +385,7 @@ public sealed class EndpointStubDetectionTests : IAsyncLifetime
             ["Config"] = routes.Count(r => r.Route.StartsWith("/api/config")),
             ["Backfill"] = routes.Count(r => r.Route.StartsWith("/api/backfill")),
             ["Provider"] = routes.Count(r => r.Route.StartsWith("/api/providers")),
+            ["ProviderRouting"] = routes.Count(r => r.Route.StartsWith("/api/provider-routing")),
             ["Failover"] = routes.Count(r => r.Route.StartsWith("/api/failover")),
             ["Symbol"] = routes.Count(r => r.Route.StartsWith("/api/symbols")),
             ["Storage"] = routes.Count(r => r.Route.StartsWith("/api/storage")),
@@ -421,6 +423,10 @@ public sealed class EndpointStubDetectionTests : IAsyncLifetime
             ["ReferenceData"] = routes.Count(r => r.Route.StartsWith("/api/reference-data")),
             ["FundStructure"] = routes.Count(r => r.Route.StartsWith("/api/fund-structure")),
             ["FundAccounts"] = routes.Count(r => r.Route.StartsWith("/api/fund-accounts")),
+            ["Ledger"] = routes.Count(r => r.Route.StartsWith("/api/ledger")),
+            ["AccountingSystem"] = routes.Count(r => r.Route.StartsWith("/api/accounting-system")),
+            ["Plaid"] = routes.Count(r => r.Route.StartsWith("/api/plaid")),
+            ["Strategies"] = routes.Count(r => r.Route.StartsWith("/api/strategies")),
             ["Quant"] = routes.Count(r => r.Route.StartsWith("/api/quant")),
             ["Demo"] = routes.Count(r => r.Route.StartsWith("/api/demo")),
             ["Other"] = 0

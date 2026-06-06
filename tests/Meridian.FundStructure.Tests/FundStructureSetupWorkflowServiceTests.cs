@@ -1,6 +1,7 @@
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
 using Meridian.Ui.Shared.Services;
 using Xunit;
 

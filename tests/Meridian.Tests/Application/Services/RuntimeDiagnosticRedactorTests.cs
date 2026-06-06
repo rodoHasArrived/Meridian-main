@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Services;
+using Meridian.Core.Diagnostics;
 using Xunit;
 
 namespace Meridian.Tests.Application.Services;

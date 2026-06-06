@@ -6,14 +6,15 @@ module_id: SRC-DESIGN-IDENTITY
 path: src/Meridian.Identity
 status: active
 owner_lane: Identity and Access
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Identity
 
 ## Purpose
 
-Physical bounded-context module project for identity, scoped access, role/profile, and session ownership conformance.
+Physical bounded-context module project for identity, scoped access, fund-structure scope lineage,
+role/profile, and session ownership conformance.
 
 ## Layer responsibility
 
@@ -27,6 +28,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Application/UserProfileRegistry.cs` - environment-backed user profile loading, credential checks, and role-profile permission resolution.
 - `Application/AuthenticationMode.cs` - optional/required authentication-mode resolution.
 - `Application/ScopedAccessServices.cs` - scoped access assignment and authorization services.
+- `Application/FundStructureAccessScopeLineageProvider.cs` - fund-structure hierarchy lineage
+  provider used by scoped authorization to honor organization/fund/account ancestry.
 - `Infrastructure/RolePermissionProfileStore.cs` - file-backed custom role-profile catalog and audit-event persistence.
 - `Infrastructure/ScopedAccessAssignmentStore.cs` - file and PostgreSQL scoped-access assignment stores.
 
@@ -66,11 +69,12 @@ dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --filter Fu
 Identity contracts publish role/profile, permission, and scoped-access DTOs through
 `Meridian.Identity.Auth`. `LoginSessionService`, `UserProfileRegistry`, and
 `FileRolePermissionProfileStore` own session state, environment-backed user profiles, and custom
-role-profile permission persistence. Application composition supplies fund-structure scope lineage
-through `FundStructureAccessScopeLineageProvider` until the Entity module owns the fund-structure
-implementation. Cross-module endpoint, F#, browser, and WPF consumers should reference Identity
-rather than reintroducing auth DTOs or identity state under `Meridian.Contracts` or
-`Meridian.Ui.Shared`.
+role-profile permission persistence. `FundStructureAccessScopeLineageProvider` is Identity-owned
+and consumes the shared `Meridian.Contracts.Services.IFundStructureService` contract supplied by
+Application composition, so scoped authorization can resolve ancestry without depending on
+Application-only identity adapters. Cross-module endpoint, F#, browser, and WPF consumers should
+reference Identity rather than reintroducing auth DTOs or identity state under `Meridian.Contracts`
+or `Meridian.Ui.Shared`.
 
 ### Migration and archive notes
 

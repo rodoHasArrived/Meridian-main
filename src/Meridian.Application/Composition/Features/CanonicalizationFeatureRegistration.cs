@@ -3,9 +3,11 @@ using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
+using Meridian.DataIntegration.Canonicalization;
 using Meridian.Domain.Events;
 using Meridian.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Application.Composition.Features;
 
@@ -57,7 +59,8 @@ internal sealed class CanonicalizationFeatureRegistration : IServiceFeatureRegis
             var conditions = sp.GetRequiredService<ConditionCodeMapper>();
             var venues = sp.GetRequiredService<VenueMicMapper>();
             var version = (byte)(config.Canonicalization?.Version ?? 1);
-            return new EventCanonicalizer(symbols, conditions, venues, version);
+            var securityIdLookup = sp.GetService<ICanonicalSecurityIdLookup>();
+            return new EventCanonicalizer(symbols, conditions, venues, version, securityIdLookup);
         });
 
         // CanonicalizingPublisher - wraps the inner IMarketEventPublisher (PipelinePublisher).

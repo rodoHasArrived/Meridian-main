@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
-using Meridian.Application.EnvironmentDesign;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Application.SecurityMaster;
@@ -17,6 +16,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Reporting;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
@@ -38,6 +38,7 @@ using Meridian.Wpf.Features;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
+using Meridian.Workflow.EnvironmentDesign;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -521,6 +522,7 @@ public partial class App : System.Windows.Application
         }
 
         services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
+        services.AddSingleton<IBacktestPreflightService, BacktestPreflightService>();
 
         // Wire optional Security Master collaborators into the BacktestService singleton when available.
         services.AddSingleton(sp =>
@@ -528,6 +530,7 @@ public partial class App : System.Windows.Application
             var svc = WpfServices.BacktestService.Instance;
             svc.SecurityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
             svc.CorporateActionAdjustmentService = sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>();
+            svc.BacktestPreflightService = sp.GetService<IBacktestPreflightService>();
             return svc;
         });
 

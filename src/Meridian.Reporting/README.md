@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-05
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Reporting
@@ -14,8 +14,8 @@ last_reviewed: 2026-06-05
 ## Purpose
 
 Physical bounded-context module project for report packs, governed exports, reporting run
-contracts, template catalogs, orchestration, publication, restatement, distribution, and reporting
-ownership conformance.
+contracts, template catalogs, Security Master-enriched report generation, NAV attribution,
+orchestration, publication, restatement, distribution, and reporting ownership conformance.
 
 ## Layer responsibility
 
@@ -30,10 +30,14 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   audit contracts.
 - `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
   lineage rendering, approval transitions, retry/failure state, and run-store persistence handoff.
+- `ReportGenerationService.cs` - trial-balance report-pack generation with Security Master
+  enrichment, lookup-quality classification, and asset-class section grouping.
+- `NavAttributionService.cs` - fund/entity/sleeve/vehicle NAV attribution over ledger snapshots
+  with optional Security Master classification.
 
 ## Important workflows
 
-Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes. Report-template metadata, run contracts, deterministic section rendering, governed report-run orchestration, approval transitions, audit entries, and run persistence handoff live here so UI Shared and UI Services do not own reporting behavior.
+Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes. Report-template metadata, report-pack generation, NAV attribution, run contracts, deterministic section rendering, governed report-run orchestration, approval transitions, audit entries, and run persistence handoff live here so UI Shared and UI Services do not own reporting behavior.
 
 ## Diagrams
 
@@ -58,21 +62,24 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.Reporting/Meridian.Reporting.csproj /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportPackWorkflowServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportPackWorkflowServiceTests|FullyQualifiedName~ReportGenerationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ### API and contract notes
 
-`IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`, and
-`IReportingRunStore` publish the Reporting module seams consumed by UI Shared report-pack workflows
-and UI Services reporting status projections.
+`IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`,
+`IReportingRunStore`, `ReportGenerationService`, and `NavAttributionService` publish the Reporting
+module seams consumed by UI Shared report-pack workflows, UI Services reporting status projections,
+and WPF fund-operation views.
 
 ### Migration and archive notes
 
 Reporting template metadata, run contracts, deterministic section rendering, orchestration,
 approval transition, audit-entry, and run-store seams moved out of the legacy Application reporting
 folder into this module. UI Shared and UI Services consume these module services but do not own the
-reporting behavior.
+reporting behavior. Report-pack generation and NAV attribution also moved from
+`Meridian.Application.Services` into this module and now depend on the contracts-owned Security
+Master query seam.
 
 ## Change rules
 

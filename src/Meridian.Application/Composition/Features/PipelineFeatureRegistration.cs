@@ -2,10 +2,11 @@ using Meridian.Application.Canonicalization;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
-using Meridian.Application.Monitoring.DataQuality;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Core.Performance;
+using Meridian.DataIntegration.Canonicalization;
 using Meridian.Domain.Events;
 using Meridian.Storage;
 using Meridian.Storage.Interfaces;
@@ -13,6 +14,7 @@ using Meridian.Storage.Policies;
 using Meridian.Storage.Sinks;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Application.Composition.Features;
 
@@ -27,7 +29,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         if (options.EnableOpenTelemetry)
         {
             services.AddSingleton<IEventMetrics>(sp =>
-                new Tracing.TracedEventMetrics(new DefaultEventMetrics()));
+                new Meridian.Platform.Tracing.TracedEventMetrics(new DefaultEventMetrics()));
         }
         else
         {
@@ -250,8 +252,9 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                 var venuesPath = canonConfig.VenueMappingPath
                     ?? Path.Combine(AppContext.BaseDirectory, "config", "venue-mapping.json");
                 var venues = VenueMicMapper.LoadFromFile(venuesPath);
+                var securityIdLookup = sp.GetService<ICanonicalSecurityIdLookup>();
                 var canonicalizer = new EventCanonicalizer(
-                    symbolRegistry, conditions, venues, (byte)canonConfig.Version);
+                    symbolRegistry, conditions, venues, (byte)canonConfig.Version, securityIdLookup);
 
                 CanonicalizationMetrics.SetActiveVersion(canonConfig.Version);
 

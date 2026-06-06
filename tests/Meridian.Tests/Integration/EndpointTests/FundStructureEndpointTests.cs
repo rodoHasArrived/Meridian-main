@@ -8,6 +8,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;

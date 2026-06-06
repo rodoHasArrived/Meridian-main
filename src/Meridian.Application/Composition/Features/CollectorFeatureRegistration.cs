@@ -1,6 +1,6 @@
-using Meridian.Application.Services;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
+using Meridian.Instruments.Options;
 using Meridian.ProviderSdk;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -51,9 +51,11 @@ internal sealed class CollectorFeatureRegistration : IServiceFeatureRegistration
         {
             var collector = sp.GetRequiredService<OptionDataCollector>();
             var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<OptionsChainService>>();
-            var healthSource = sp.GetService<IProviderConnectionHealthSource>() ?? new AlwaysHealthyProviderConnectionHealthSource();
+            var healthSource = sp.GetService<IProviderConnectionHealthSource>();
             var providers = sp.GetServices<Infrastructure.Adapters.Core.IOptionsChainProvider>();
-            return new OptionsChainService(collector, logger, healthSource, providers);
+            return healthSource is null
+                ? new OptionsChainService(collector, logger, providers)
+                : new OptionsChainService(collector, logger, healthSource, providers);
         });
 
         return services;

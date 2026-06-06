@@ -1,11 +1,12 @@
 using System.Text.Json;
 using Meridian.Application.Monitoring;
-using Meridian.Application.Monitoring.DataQuality;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Ui.Shared.Endpoints;
 

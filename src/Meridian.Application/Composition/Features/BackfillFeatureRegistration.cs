@@ -5,6 +5,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Application.Scheduling;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -62,7 +63,7 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
         {
             var gateway = sp.GetRequiredService<IBackfillExecutionGateway>();
             var history = sp.GetRequiredService<BackfillExecutionHistory>();
-            var quality = sp.GetService<Monitoring.DataQuality.DataQualityMonitoringService>();
+            var quality = sp.GetService<DataQualityMonitoringService>();
             return new AutoGapRemediationService(gateway, history, quality);
         });
 

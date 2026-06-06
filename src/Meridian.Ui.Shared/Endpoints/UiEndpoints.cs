@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
 using Meridian.Application.Monitoring;
-using Meridian.Application.Monitoring.DataQuality;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Ui.Shared.Services;

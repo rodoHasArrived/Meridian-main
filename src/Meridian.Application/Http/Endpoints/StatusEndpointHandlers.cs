@@ -5,6 +5,7 @@ using Meridian.Contracts.Api;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
 using HealthCheckDto = Meridian.Contracts.Api.HealthCheckItem;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Application.UI;
 

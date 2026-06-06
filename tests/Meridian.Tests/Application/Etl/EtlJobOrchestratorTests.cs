@@ -1,10 +1,11 @@
 using FluentAssertions;
-using Meridian.Application.Canonicalization;
 using Meridian.Application.Etl;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Pipeline;
+using Meridian.DataIntegration.Canonicalization;
+using Meridian.DataIntegration.Etl;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Etl;
 using Meridian.Storage.Etl;

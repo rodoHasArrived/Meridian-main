@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Canonicalization;
+using Meridian.DataIntegration.Canonicalization;
 using Meridian.Contracts.Domain.Enums;
 using Xunit;
 

@@ -26,7 +26,7 @@ modules:
       - src/Meridian.Core
       - src/Meridian.Application
       - src/Meridian.Storage
-    migration_next: Fund-operations persistence cutover contracts, read-mode controls, shadow-projection schemas, file shadow writer, projection-reconciliation hosted service, and shared Result/ErrorCode primitives now live in Meridian.Platform. Continue moving remaining host, configuration, pipeline, storage policy, and composition runtime policy out of layer-oriented owners behind published Platform contracts.
+    migration_next: Fund-operations persistence cutover contracts, read-mode controls, shadow-projection schemas, file shadow writer, projection-reconciliation hosted service, shared Result/ErrorCode primitives, and event trace-context carrier now live in Meridian.Platform. Continue moving remaining host, configuration, pipeline, storage policy, tracing setup, and composition runtime policy out of layer-oriented owners behind published Platform contracts.
 
   - name: Meridian.Identity
     conformance: physical
@@ -56,13 +56,14 @@ modules:
     physical_project: src/Meridian.DataIntegration
     primary_current_owner: Data Confidence and Validation
     current_sources:
+      - src/Meridian.DataIntegration
       - src/Meridian.ProviderSdk
       - src/Meridian.Infrastructure
       - src/Meridian.Storage
       - src/Meridian.Application
       - src/Meridian.Ui.Shared
       - src/Meridian.Ui/dashboard
-    migration_next: QuickBooks accounting-system fixture, online adapter, token exchange, connection verification, credential-backed connection store, read-only company evidence import, DTO mapping, provider credential catalog, encrypted provider credential store, credential status records, OAuth token records, verification metadata, and provider-environment normalization now live in Meridian.DataIntegration behind ProviderSdk and DataIntegration credential contracts. Continue moving provider adapters, ingestion, validation, and source evidence mapping out of layer-oriented infrastructure/application owners; avoid UI-local provider state.
+    migration_next: QuickBooks accounting-system fixture, online adapter, token exchange, connection verification, credential-backed connection store, read-only company evidence import, DTO mapping, provider credential catalog, generic credential-store contract, encrypted provider credential store, credential status records, OAuth token records, validation metadata, verification metadata, provider-environment normalization, market-event filtering, provider depth-buffer self-tests, and ETL job/export/result contracts now live in Meridian.DataIntegration behind ProviderSdk and DataIntegration credential/ETL contracts. Continue moving provider adapters, ingestion, validation, and source evidence mapping out of layer-oriented infrastructure/application owners; avoid UI-local provider state.
 
   - name: Meridian.ReferenceData
     conformance: physical
@@ -125,12 +126,13 @@ modules:
     physical_project: src/Meridian.Workflow
     primary_current_owner: Workstation Shell and UX
     current_sources:
+      - src/Meridian.Workflow
       - src/Meridian.Application
       - src/Meridian.Contracts
       - src/Meridian.Ui.Shared
       - src/Meridian.Wpf
       - src/Meridian.Ui/dashboard
-    migration_next: Keep workflow definitions, operator actions, presets, and continuity flows centralized in shared services and view models before project extraction.
+    migration_next: Runbook definitions, JSON-backed runbook storage, deterministic runbook execution, and fund workflow command-state handling now live in Meridian.Workflow. Continue moving remaining workflow definitions, operator actions, presets, and continuity flows out of application/UI layers behind shared workflow contracts.
 
   - name: Meridian.Audit
     conformance: physical

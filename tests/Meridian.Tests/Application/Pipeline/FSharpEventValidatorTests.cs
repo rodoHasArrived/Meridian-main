@@ -1,9 +1,9 @@
 using FluentAssertions;
-using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Domain.Events;
 using Xunit;
 

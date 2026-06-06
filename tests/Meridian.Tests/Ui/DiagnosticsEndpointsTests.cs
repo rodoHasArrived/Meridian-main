@@ -18,6 +18,7 @@ using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
+using Meridian.Platform.Diagnostics;
 using Meridian.Storage;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Sinks;
@@ -27,6 +28,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using UiConfigStore = Meridian.Ui.Shared.Services.ConfigStore;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Tests.Ui;
 

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using Meridian.Application.Monitoring;
+using Meridian.Core.Services;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 

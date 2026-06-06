@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.DataIntegration.Historical;
 
 namespace Meridian.Application.Services;
 

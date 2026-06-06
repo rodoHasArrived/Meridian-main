@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Backtesting;
+using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Domain.Enums;

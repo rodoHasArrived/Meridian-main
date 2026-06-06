@@ -25,20 +25,13 @@ and `Accounting` before validation or runtime publication.
 - Adds `ClientSegmentKind` integration so advisory clients can be classified as
   `IndividualInvestor` or `FamilyOffice` while funds remain first-class `Fund` nodes.
 
-### Application services
+### Workflow services
 
-`src/Meridian.Application/EnvironmentDesign/`
+`src/Meridian.Workflow/EnvironmentDesign/`
 
-- `IEnvironmentDesignService`
-  Draft CRUD plus published-version queries.
-- `IEnvironmentValidationService`
-  Structural validation and publish-impact checks.
-- `IEnvironmentPublishService`
-  Preview, publish, and rollback workflow.
-- `IEnvironmentRuntimeProjectionService`
-  Read access to the currently published runtime model.
 - `EnvironmentDesignerService`
-  Local-first JSON-backed implementation for all four seams.
+  Local-first JSON-backed implementation for the Contracts-owned draft, validation, publish,
+  rollback, and runtime projection seams.
 
 ## Persistence Model
 

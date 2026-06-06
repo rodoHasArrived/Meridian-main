@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-05
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Instruments
@@ -26,6 +26,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   accrual-convention read service plus null fallback.
 - `Options/OptionProjectionService.cs` - option contract, series, chain snapshot, expiry ladder,
   and import projection service plus null fallbacks.
+- `Options/OptionsChainService.cs` - provider-backed option-chain discovery, failover, filtering,
+  quote/snapshot caching, and summary/status service for UI and strategy consumers.
 - `Equity/EquityProjectionService.cs`, `Futures/FutureProjectionService.cs`,
   `FxSpot/FxSpotProjectionService.cs`, `CryptoCurrency/CryptoProjectionService.cs`,
   `Deposits/DepositProjectionService.cs`, `CertificatesOfDeposit/CertificateOfDepositProjectionService.cs`,
@@ -39,6 +41,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AssetOperations/AssetOperationsReadService.cs` - Security Master-keyed asset operations query,
   command, and projection builder for shared terms, lifecycle, cash-flow, activity,
   reconciliation, ledger, evidence, workflow-audit, and readiness views.
+- `Indicators/TechnicalIndicatorService.cs` - live and historical technical indicator calculations
+  over market trades, quotes, and OHLCV bars using Skender.Stock.Indicators.
 
 ## Important workflows
 
@@ -51,6 +55,14 @@ terms, obligation schedules, projected cash flows, ledger projections, and readi
 the shared Security Master-keyed operational view. Application composition wires these services to
 Security Master, Asset Operations, and money-market projection stores, while UI Shared adapts them
 to shared browser/WPF routes without owning the instrument logic.
+Technical indicator calculation lives here because moving-average, oscillator, volatility, VWAP,
+and volume-derived analytics are instrument-market analytics rather than application orchestration.
+The service keeps per-symbol streaming state bounded by `IndicatorConfiguration.MaxQuotesHistory`
+and accepts historical bar batches for deterministic replay/test calculations.
+Option-chain discovery and quote/snapshot caching also live here because option contracts,
+expirations, strikes, and chain snapshots are instrument-market data rather than host
+orchestration. Application composition still wires provider implementations and collectors, while
+UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsChainService`.
 
 ## Diagrams
 
@@ -76,16 +88,20 @@ to shared browser/WPF routes without owning the instrument logic.
 ```bash
 dotnet build src/Meridian.Instruments/Meridian.Instruments.csproj /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CryptoProjectionServiceTests|FullyQualifiedName~DepositProjectionServiceTests|FullyQualifiedName~CertificateOfDepositProjectionServiceTests|FullyQualifiedName~CommodityProjectionServiceTests|FullyQualifiedName~SwapProjectionServiceTests|FullyQualifiedName~EquityProjectionServiceTests|FullyQualifiedName~FutureProjectionServiceTests|FullyQualifiedName~FxSpotProjectionServiceTests|FullyQualifiedName~BondProjectionServiceTests|FullyQualifiedName~OptionProjectionServiceTests|FullyQualifiedName~MoneyMarketFundProjectionServiceTests|FullyQualifiedName~MoneyMarketFundServiceTests|FullyQualifiedName~MmfRebuildTests|FullyQualifiedName~MmfLiquidityServiceTests|FullyQualifiedName~MmfFamilyNormalizationTests|FullyQualifiedName~OptionReferenceEndpointsRoundtripTests|FullyQualifiedName~BondReferenceEndpointsTests|FullyQualifiedName~ReferenceDataEndpointAuthorizationTests|FullyQualifiedName~AssetOperationsReadServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TechnicalIndicatorServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OptionsChainServiceTests|FullyQualifiedName~OptionsEndpoints" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ### Migration and archive notes
 
 Bond, option, equity, futures, FX spot, crypto, deposit, certificate-of-deposit, commodity, swap,
-money-market fund, Asset Operations, and money-market fund reference/liquidity/sweep service
+money-market fund, Asset Operations, technical indicator analytics, option-chain query/failover,
+and money-market fund
+reference/liquidity/sweep service
 contracts and implementations moved out of the layer-oriented application/reference-data owners into
 this physical design module so instrument terms, asset-specific contract read models, Security
-Master-keyed operational readiness projections, and MMF liquidity projections are owned by
-`Meridian.Instruments`.
+Master-keyed operational readiness projections, technical indicators, option-chain market-data
+services, and MMF liquidity projections are owned by `Meridian.Instruments`.
 
 ## Change rules
 

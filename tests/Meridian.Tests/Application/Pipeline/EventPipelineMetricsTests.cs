@@ -7,6 +7,7 @@ using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Storage.Interfaces;
 using Xunit;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Tests.Pipeline;
 

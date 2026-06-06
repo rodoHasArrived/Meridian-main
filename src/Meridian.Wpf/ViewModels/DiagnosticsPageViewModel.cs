@@ -6,8 +6,8 @@ using System.Text;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Application.Monitoring;
-using Meridian.Application.Services;
 using Meridian.Contracts.Services;
+using Meridian.Platform.Performance;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.ViewModels;

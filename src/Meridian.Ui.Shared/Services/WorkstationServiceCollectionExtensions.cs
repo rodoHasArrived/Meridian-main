@@ -1,6 +1,5 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
-using Meridian.Application.Backtesting;
 using Meridian.Audit.Compliance;
 using Meridian.Application.FundStructure;
 using Meridian.Reporting;

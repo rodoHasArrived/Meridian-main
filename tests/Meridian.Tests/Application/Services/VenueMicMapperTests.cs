@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Canonicalization;
+using Meridian.DataIntegration.Canonicalization;
 using Xunit;
 
 namespace Meridian.Tests.Application.Services;

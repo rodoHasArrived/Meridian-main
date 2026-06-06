@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-05-30
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Contracts
@@ -29,6 +29,15 @@ or provider implementations.
   and query/command service contracts.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
+- `Services/` - cross-module service contracts such as backtest preflight and Security Master
+  validation gates, fund-structure graph/query orchestration, operational scheduling/trading
+  calendar coordination, plus Environment Design draft/publish/runtime projection contracts that
+  must be injectable without depending on Application implementation types.
+- `Etl/` - shared ETL DTOs, the job-definition store contract, and the SFTP publisher port used by
+  Application orchestration, Data Integration ETL services, Infrastructure adapters, and
+  Storage-backed persistence.
+- `Monitoring/` - shared event-pipeline metrics contracts and snapshot payloads consumed by
+  Application, Platform tracing, diagnostics endpoints, WPF, and browser workstation services.
 - Contract DTO files - shared payloads consumed across host, UI services, desktop, and dashboard.
 - Project metadata - serialization and package references for contract consumers.
 
@@ -120,7 +129,7 @@ routes back to run continuity, ledger trial-balance, reconciliation, and Securit
 evidence. Keep these fields shared so browser, WPF, and service tests enforce the same publication,
 drilldown, and no-orphan-evidence rules.
 
-Fund-structure contracts include the shared entity setup draft, validation summary, graph preview, and create-result payloads used by WPF, browser, and `/api/fund-structure` to create organization, business-lane, client/fund, legal-entity, vehicle, investment-portfolio, ownership, and account-handoff records without UI-local command vocabulary. Fund-structure contracts include the ledger mapping workbench payload used by Accounting
+Fund-structure contracts include the shared entity setup draft, validation summary, graph preview, and create-result payloads used by WPF, browser, and `/api/fund-structure` to create organization, business-lane, client/fund, legal-entity, vehicle, investment-portfolio, ownership, and account-handoff records without UI-local command vocabulary. The shared `IFundStructureService` contract lives in `Services/` so browser, WPF, Identity scoped-access lineage, endpoint, and composition consumers can depend on the fund-structure orchestration contract without depending on Application implementation types. The shared `IFundAccountTraversalQueryService` contract also lives in `Services/` so fund-account endpoints can use the same authoritative Fund -> Owns -> Account traversal contract while Application keeps the current cached implementation. `IGovernanceSharedDataAccessService` is contract-owned for the same reason: governance structure views should consume a shared Security Master, price, and backfill accessibility summary shape while Application keeps the current implementation. Fund-structure contracts include the ledger mapping workbench payload used by Accounting
 surfaces to show account-to-ledger-group assignment source, unresolved mapping issues,
 and recommended operator action without requiring clients to duplicate mapping precedence rules.
 Investment Accounting Transaction Lab contracts carry shared preview payloads for trades,
@@ -153,6 +162,26 @@ Evidence workflow contracts now carry policy-owned SLA/freshness assessments and
 Assurance Score on packet completeness. Keep provider validation, replay checks, reconciliation,
 approval, and report freshness policy output in shared DTOs so browser and WPF clients render the
 same cross-workflow readiness signal without local scoring rules.
+The shared `ISecurityValidationGateService` contract lives in `Services/` and returns
+Security Master validation DTOs from `SecurityMaster/`; Backtesting, Execution, Strategies, browser,
+and WPF consumers should depend on this contract rather than the Application-layer implementation.
+Environment Design service contracts also live in `Services/` and return DTOs from
+`EnvironmentDesign/`; browser, WPF, and host composition should depend on those contracts while the
+Workflow module provides the current local-first `EnvironmentDesignerService` implementation.
+ETL contracts include `EtlJobDefinition`, run/export result payloads, `IEtlJobDefinitionStore`,
+and `ISftpFilePublisher`. Keep the SFTP publisher port contract-owned so the Data
+Integration-owned export service can target SFTP without depending on Infrastructure, while the
+Infrastructure adapter implements transport-specific publishing details.
+
+Event-pipeline metrics contracts live in `Monitoring/`. Keep `IEventMetrics` and
+`MetricsSnapshot` contract-owned so the Application default metrics implementation, Platform
+tracing decorator, diagnostics endpoints, WPF shell, and shared browser endpoints can depend on the
+same metric shape without introducing Application-layer dependencies.
+Operational scheduler contracts live in `Services/`. Keep `IOperationalScheduler`,
+`ITradingCalendarProvider`, operation types, resource requirements, scheduling decisions, slots,
+trading sessions, and maintenance-window records contract-owned so scheduling behavior can be
+implemented in Platform while tests, future hosts, and operator surfaces consume the same
+scheduler shape.
 Evidence Vault identities also expose retained artifact metadata for file-backed evidence bundles:
 storage kind, artifact id, kind, relative vault path, content hash, retained size, source route, and
 canonical subject linkage. Keep that metadata shared so packet, report, approval, screenshot,

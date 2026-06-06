@@ -1,4 +1,4 @@
-namespace Meridian.Application.Services;
+namespace Meridian.Core.Services;
 
 /// <summary>
 /// Interface for components that can be flushed during shutdown.

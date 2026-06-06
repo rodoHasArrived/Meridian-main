@@ -5,6 +5,7 @@ using Meridian.FinancialOperations.Banking;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;

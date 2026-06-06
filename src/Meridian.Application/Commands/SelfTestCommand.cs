@@ -1,5 +1,5 @@
 using Meridian.Platform.Results;
-using Meridian.Application.Testing;
+using Meridian.DataIntegration.Testing;
 using Serilog;
 
 namespace Meridian.Application.Commands;

@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Storage
@@ -39,9 +39,12 @@ lookup paths, and evidence trails those layers rely on.
 
 - `Archival/` - safety tools for file-backed records, including the write-ahead log and atomic file
   writer.
+- `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
   that can play saved data back.
+- `Services/CanonicalSymbolRegistry.cs` - storage-backed canonical symbol resolver implementing
+  the contracts-owned `ICanonicalSymbolRegistry` over the symbol registry store.
 - `Ledger/` - accounting journal storage, tax-lot policy inputs, and guardrails for instrument
   postings.
 - `SecurityMaster/` - reference-data stores that identify securities and preserve provenance.
@@ -49,7 +52,9 @@ lookup paths, and evidence trails those layers rely on.
 - `AssetOperations/` - read-model projections for operational terms, lifecycle, cash flow,
   reconciliation, readiness, and evidence views.
 - `FundAccounts/`, `Banking/`, and `FundStructure/` - fund accounts, balances, statements, banking
-  records, and fund-structure persistence.
+  records, and fund-structure persistence. `FundStructure/` owns the local JSON and in-memory
+  fund-structure state stores, while PostgreSQL fund-structure service persistence stays in the
+  storage-backed rows and migrations.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
   tiering, and scheduled cleanup.
 
@@ -59,13 +64,19 @@ lookup paths, and evidence trails those layers rely on.
 
 Market data and evidence records enter through storage sinks. File-backed writes use the
 write-ahead log or atomic file helpers so a crash is less likely to leave a half-written record.
-Saved records feed replay, packaging, exports, catalog lookup, lineage checks, quality scoring, and
-maintenance jobs.
+Storage sink flush behavior uses the Core-owned `Meridian.Core.Services.IFlushable` contract rather
+than an Application service dependency. Saved records feed replay, packaging, exports, catalog
+lookup, lineage checks, quality scoring, and maintenance jobs.
 
 Storage profile presets preserve existing persisted identifiers. The default profile ID remains
 `Research` for compatibility, while APIs and operator surfaces display that preset as `Strategy`
 for historical analysis, backtesting, and paper-validation preparation. The `Archival` preset keeps
 long-retention evidence moving through hot, warm, cold, and archive tiers.
+
+Canonical symbol resolution is Storage-owned because it wraps the durable symbol registry and its
+identifier indexes. Application composition registers the Storage implementation behind
+`Meridian.Contracts.Catalog.ICanonicalSymbolRegistry` for canonicalization and Security Master seed
+workflows.
 
 ### Accounting and Security Master evidence
 
@@ -98,6 +109,15 @@ Asset Operations persistence stays separate from `security_master`. Its default 
 `MERIDIAN_ASSET_OPERATIONS_SCHEMA`, so Direct Lending, bonds, and later asset classes can publish
 shared operational read models without moving servicing or accounting command tables into Security
 Master storage.
+
+Fund-structure local-first persistence uses Storage-owned state stores. The JSON-backed store writes
+complete snapshots through `AtomicFileWriter`, and the in-memory store preserves the same snapshot
+shape for deterministic tests and local workflows while Application keeps orchestration and service
+composition.
+
+ETL local job definitions are also Storage-owned. The JSON-backed `EtlJobDefinitionStore` writes
+operator-created ETL definitions under the storage root using `AtomicFileWriter`; Application wires
+the store through the shared `Meridian.Contracts.Etl` contract.
 
 ## Glossary
 

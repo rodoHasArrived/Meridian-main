@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Meridian.Application.Canonicalization;
-using Meridian.Application.Etl;
 using Meridian.Contracts.Etl;
+using Meridian.DataIntegration.Canonicalization;
+using Meridian.DataIntegration.Etl;
 using Meridian.Domain.Events;
 using NSubstitute;
 

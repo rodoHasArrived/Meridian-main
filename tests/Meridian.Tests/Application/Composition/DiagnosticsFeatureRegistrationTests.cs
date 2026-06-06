@@ -7,8 +7,10 @@ using Meridian.Application.Composition.Features;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
+using Meridian.Contracts.Monitoring;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
+using Meridian.Platform.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 

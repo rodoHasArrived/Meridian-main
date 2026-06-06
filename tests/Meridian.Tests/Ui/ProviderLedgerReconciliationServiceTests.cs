@@ -9,6 +9,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.ProviderSdk;

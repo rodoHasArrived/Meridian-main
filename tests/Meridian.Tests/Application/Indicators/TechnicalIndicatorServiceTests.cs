@@ -1,8 +1,8 @@
 using FluentAssertions;
-using Meridian.Application.Indicators;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
+using Meridian.Instruments.Indicators;
 using Xunit;
 
 namespace Meridian.Tests.Indicators;

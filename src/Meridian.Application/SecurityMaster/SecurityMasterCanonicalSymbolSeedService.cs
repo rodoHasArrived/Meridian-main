@@ -1,5 +1,6 @@
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.DataIntegration.Canonicalization;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
@@ -22,7 +23,7 @@ namespace Meridian.Application.SecurityMaster;
 /// recent seed without any per-call locking.
 /// </para>
 /// </remarks>
-public sealed class SecurityMasterCanonicalSymbolSeedService
+public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurityIdLookup
 {
     private readonly SecurityMasterProjectionCache _cache;
     private readonly ICanonicalSymbolRegistry _registry;

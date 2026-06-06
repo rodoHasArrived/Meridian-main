@@ -4,8 +4,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Meridian.Application.Monitoring;
-using Meridian.Application.Services;
 using Meridian.Contracts.Services;
+using Meridian.Platform.Performance;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
 

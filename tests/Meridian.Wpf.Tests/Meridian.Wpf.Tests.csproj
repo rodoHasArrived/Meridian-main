@@ -58,6 +58,7 @@
   <!-- Windows-only project references -->
   <ItemGroup Condition="'$(IsWindows)' == 'true'">
     <ProjectReference Include="..\..\src\Meridian.Wpf\Meridian.Wpf.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Reporting\Meridian.Reporting.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
   </ItemGroup>
 

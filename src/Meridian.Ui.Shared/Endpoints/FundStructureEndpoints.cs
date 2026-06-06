@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Identity.Auth;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Entities.FundStructure;
 using Meridian.Ui.Shared.Services;

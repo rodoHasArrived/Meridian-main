@@ -1,6 +1,7 @@
 using System.Text;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
+using Meridian.Platform.Runtime;
 using Serilog;
 
 namespace Meridian.Application.Services;

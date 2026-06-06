@@ -53,6 +53,7 @@
     <ProjectReference Include="..\..\src\Meridian.Ledger\Meridian.Ledger.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Platform\Meridian.Platform.csproj" />
     <ProjectReference Include="..\..\src\Meridian.ReferenceData\Meridian.ReferenceData.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Reporting\Meridian.Reporting.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Risk\Meridian.Risk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Strategies\Meridian.Strategies.csproj" />
@@ -60,6 +61,7 @@
     <ProjectReference Include="..\..\src\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Workflow\Meridian.Workflow.csproj" />
   </ItemGroup>
 
 </Project>

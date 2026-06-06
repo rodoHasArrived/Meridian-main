@@ -1,10 +1,10 @@
 using System.Reflection;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.Canonicalization;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.DataIntegration.Canonicalization;
 using Meridian.Domain.Events;
 using NSubstitute;
 using Xunit;

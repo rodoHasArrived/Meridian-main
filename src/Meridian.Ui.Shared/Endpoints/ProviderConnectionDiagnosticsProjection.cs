@@ -1,4 +1,4 @@
-using Meridian.Application.Services;
+using Meridian.Core.Diagnostics;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
 

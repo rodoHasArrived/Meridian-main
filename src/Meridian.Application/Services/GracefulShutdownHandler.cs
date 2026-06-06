@@ -2,6 +2,9 @@ using System.Diagnostics;
 using System.Threading;
 using Meridian.Application.Logging;
 using Meridian.Application.Pipeline;
+using Meridian.Core.Diagnostics;
+using Meridian.Core.Services;
+using Meridian.Platform.Diagnostics;
 using Serilog;
 
 namespace Meridian.Application.Services;
@@ -648,60 +651,5 @@ public sealed record GracefulShutdownConfig
     public static GracefulShutdownConfig Default => new();
 }
 
-/// <summary>
-/// Context information passed to shutdown handlers.
-/// </summary>
-public readonly record struct ShutdownContext(
-    ShutdownReason Reason,
-    string? Message,
-    DateTimeOffset RequestedAt,
-    int TimeoutSeconds,
-    string CorrelationId = ""
-);
-
-/// <summary>
-/// Result of the shutdown operation.
-/// </summary>
-public readonly record struct ShutdownResult(
-    bool Success,
-    ShutdownReason Reason,
-    DateTimeOffset StartedAt = default,
-    DateTimeOffset CompletedAt = default,
-    double DurationMs = 0,
-    long EventsFlushed = 0,
-    bool FlushTimeoutOccurred = false,
-    int ComponentsDisposed = 0,
-    string? ErrorMessage = null,
-    string[]? Warnings = null,
-    string CorrelationId = ""
-);
-
-/// <summary>
-/// Progress information during shutdown.
-/// </summary>
-public readonly record struct ShutdownProgress(
-    string Phase,
-    int CurrentStep,
-    int TotalSteps,
-    int PercentComplete,
-    DateTimeOffset Timestamp,
-    string CorrelationId = ""
-);
-
-/// <summary>
-/// Reason for shutdown.
-/// </summary>
-public enum ShutdownReason : byte
-{
-    Unknown,
-    UserRequested,
-    ProcessExit,
-    SignalReceived,
-    Error,
-    MaintenanceWindow,
-    ConfigurationChange,
-    HealthCheckFailed,
-    ResourceExhausted
-}
-
-// IFlushable interface is defined in GracefulShutdownService.cs.
+// Shutdown lifecycle DTOs are defined in Meridian.Platform.Diagnostics.
+// IFlushable is defined in Meridian.Core.Services.

@@ -1,6 +1,7 @@
 using Meridian.Application.Composition;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Entities.FundStructure;
 using Meridian.Storage.FundStructure;

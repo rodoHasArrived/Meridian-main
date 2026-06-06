@@ -30,19 +30,6 @@
     <!-- ASP.NET Core (for web dashboard) -->
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
-    <!-- OpenTelemetry -->
-    <PackageReference Include="OpenTelemetry" />
-    <PackageReference Include="OpenTelemetry.Api" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
-    <PackageReference Include="OpenTelemetry.Exporter.Console" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
-    <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />
-
-    <!-- Technical Indicators -->
-    <PackageReference Include="Skender.Stock.Indicators" />
-
     <!-- Validation -->
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="Npgsql" />
@@ -55,6 +42,7 @@
     <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
     <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Workflow\Meridian.Workflow.csproj" />
     <ProjectReference Include="..\Meridian.DataIntegration\Meridian.DataIntegration.csproj" />
     <ProjectReference Include="..\Meridian.Entities\Meridian.Entities.csproj" />
     <ProjectReference Include="..\Meridian.Identity\Meridian.Identity.csproj" />

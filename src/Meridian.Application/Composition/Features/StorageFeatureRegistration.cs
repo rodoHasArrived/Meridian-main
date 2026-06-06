@@ -1,12 +1,10 @@
 using Meridian.Application.Config;
 using Meridian.PortfolioRecords.Accounts;
-using Meridian.Application.Backtesting;
 using Meridian.FinancialOperations.Banking;
 using Meridian.Instruments.CryptoCurrency;
 using Meridian.Instruments.Deposits;
 using Meridian.Instruments.Derivatives;
 using Meridian.Application.DirectLending;
-using Meridian.Application.EnvironmentDesign;
 using Meridian.Instruments.Equity;
 using Meridian.Instruments.FixedIncome;
 using Meridian.PortfolioRecords.FundAccounts;
@@ -14,7 +12,6 @@ using Meridian.Platform.FundOperationsPersistence;
 using Meridian.Application.FundStructure;
 using Meridian.Instruments.Futures;
 using Meridian.Instruments.FxSpot;
-using Meridian.Application.Identity;
 using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Instruments.Options;
 using Meridian.FinancialOperations.OperationsContinuity;
@@ -30,6 +27,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Store;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.Historical;
 using Meridian.Domain.Reconciliation;
 using Meridian.Entities.FundStructure;
 using Meridian.Infrastructure.Adapters.Core;
@@ -55,6 +53,7 @@ using Meridian.Storage.Maintenance;
 using Meridian.Storage.Policies;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Services;
+using Meridian.Workflow.EnvironmentDesign;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -81,7 +80,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
-        services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
         services.AddStatementReconciliationServices();
 
         // StorageOptions - configured from AppConfig or defaults

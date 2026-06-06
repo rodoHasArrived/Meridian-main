@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Application.Etl;
 using Meridian.Contracts.Etl;
+using Meridian.Storage.Etl;
 
 namespace Meridian.Tests.Application.Etl;
 

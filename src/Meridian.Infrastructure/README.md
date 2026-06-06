@@ -23,7 +23,8 @@ This layer owns external integration details while depending on lower contracts 
 
 - `Adapters/` - provider and data-source adapters.
 - `Http/` and `Resilience/` - transport and retry support.
-- `Etl/` and `DataSources/` - import/export and source-specific plumbing.
+- `Etl/` and `DataSources/` - import/export and source-specific plumbing, including the concrete
+  SFTP publisher adapter for the Contracts-owned ETL publisher port.
 
 ## Important workflows
 
@@ -68,6 +69,10 @@ Streaming failover state is updated from explicit success, failure, and latency 
 to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider
 failure. Backfill orchestration stores dependency job IDs on each job so chained jobs resume only
 after all upstream dependencies complete.
+
+ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts-owned
+`ISftpFilePublisher` port. Data Integration owns export behavior and composes the port; this layer
+only owns transport connection, directory creation, and upload mechanics.
 
 Broker statement imports hash the source file bytes and persist the resulting content hash with a
 deterministic duplicate key derived from fund account, statement period, and source hash. Source

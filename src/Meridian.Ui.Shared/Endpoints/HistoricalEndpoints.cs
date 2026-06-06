@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Meridian.Application.Services;
 using Meridian.Contracts.Api;
+using Meridian.DataIntegration.Historical;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 

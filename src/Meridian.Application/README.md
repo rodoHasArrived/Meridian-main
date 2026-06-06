@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-05
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Application
@@ -24,7 +24,28 @@ and UI presentation concerns in their owning layers.
 
 ## Key folders and files
 
-- `Commands/` - CLI command handlers and operator workflows.
+- `Commands/` - CLI command handlers and operator workflow adapters. Runbook command flags adapt
+  the Workflow-owned runbook store and executor instead of owning runbook state in Application;
+  fund workflow command-state transitions also live in `Meridian.Workflow.Workflows`.
+- Provider credential setup, testing, and token-refresh orchestration consumes
+  `Meridian.DataIntegration.Credentials`; Application no longer owns generic provider credential
+  store contracts.
+- ETL commands, composition, and orchestration services consume
+  `Meridian.DataIntegration.Etl` contracts and normalization services. Application still owns
+  current ETL job/orchestrator adapters while pipeline and ingestion job dependencies remain here.
+  The ETL export service now lives in `Meridian.DataIntegration.Etl`. The ETL job-definition store
+  and SFTP publisher port contracts live in `Meridian.Contracts.Etl`, and the local JSON-backed
+  job-definition store implementation lives in `Meridian.Storage.Etl`.
+- Canonicalization composition consumes `Meridian.DataIntegration.Canonicalization` contracts,
+  provider condition-code mapping, venue normalization, parity metrics, and the default
+  `EventCanonicalizer`. Application still owns the event-pipeline publisher decorator and
+  pipeline-specific quarantine wiring until those pipeline dependencies can move or invert cleanly.
+- Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
+  propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry, and
+  the Platform `TracedEventMetrics` decorator. Application owns the default static-backed
+  `IEventMetrics` implementation while the shared metrics contract and snapshot shape live in
+  `Meridian.Contracts.Monitoring`; F# validation counters and market-data quality
+  validators/analyzers live in `Meridian.DataIntegration.Monitoring`.
 - `DirectLending/` - loan command/query orchestration, direct-lending ledger projection, and the
   daily accrual worker. Recurring accrual posting now checks ledger accounting-period state before
   calling the direct-lending command service; period-blocked originating accruals are routed to the
@@ -87,13 +108,16 @@ and UI presentation concerns in their owning layers.
   invoke `Meridian.FinancialOperations.Reconciliation` services for statement intake, validation,
   matching, decision journals, and statement-run persistence. Reconciliation workflow state, match
   rules, break classification, repository implementations, and durable case materialization are
-  owned by the Financial Operations design module rather than the application layer.
+  owned by the Financial Operations design module rather than the application layer. The
+  Security Master-enriched portfolio-vs-ledger reconciliation engine also lives in Financial
+  Operations and consumes the contracts-owned Security Master query interface.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot
   supply the required feed.
 - `Config/Credentials/` - application-owned credential testing, OAuth refresh, legacy resolver
-  compatibility, and composition support. Provider credential descriptors, encrypted vault storage,
+  compatibility, and composition support. Shared configuration environment overrides and template
+  generation live in Core under `Meridian.Application.Config`. Provider credential descriptors, encrypted vault storage,
   verification metadata, expiration/status records, OAuth token records, and provider-environment normalization now live in
   `Meridian.DataIntegration.Credentials`. Plaid setup remains credential-only from the application
   orchestration perspective: it stores client credentials through the Data Integration vault seam
@@ -133,11 +157,21 @@ and UI presentation concerns in their owning layers.
   crypto, deposits, certificates of deposit, commodities, swaps, money-market funds, and shared
   Asset Operations read/projection flows are owned by `Meridian.Instruments`. Money-market fund
   reference, liquidity, sweep-profile, family, and rebuild services are also owned there.
+  Technical indicator calculation for live and historical market data also lives in
+  `Meridian.Instruments.Indicators`, with Application no longer carrying the Skender indicator
+  package dependency. Option-chain provider failover, discovery, quote/snapshot caching, and
+  summary/status behavior live in `Meridian.Instruments.Options.OptionsChainService`.
   Application composition registers the Instruments services and storage-backed projection stores,
   but application orchestration no longer owns the instrument contract/reference lookup, asset
-  operations projection, or MMF reference/liquidity implementations.
+  operations projection, option-chain query behavior, or MMF reference/liquidity implementations.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
-  mapping workbench orchestration. The PostgreSQL-backed service now supports the same shared
+  mapping workbench orchestration. The shared `IFundStructureService` contract lives in
+  `Meridian.Contracts.Services`; the fund-account traversal query contract also lives there while
+  Application keeps the current cached traversal implementation. The governance shared-data access
+  contract also lives in `Meridian.Contracts.Services`; Application keeps the current
+  Security Master, price, and backfill accessibility implementation, in-memory/PostgreSQL
+  service implementations, and composition wiring. Local JSON and in-memory fund-structure state
+  stores live in `Meridian.Storage.FundStructure` instead of Application. The PostgreSQL-backed service now supports the same shared
   governance cash-flow projection path as the local JSON/in-memory service, using stored
   structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
   optional Security Master economic rules for realized/projected cash-flow evidence.
@@ -148,21 +182,51 @@ and UI presentation concerns in their owning layers.
   persisted. Ledger mapping orchestration stays server-side and consumes
   `Meridian.Entities.FundStructure.LedgerGroupingRules` for ledger-group assignment normalization
   and resolution before falling back to account ledger references.
-- Identity integration - application code provides fund-structure lineage context to
-  `Meridian.Identity` scoped-access services. Scoped access assignments, auth role and permission
-  contracts, user profiles, login sessions, auth-mode resolution, role-profile persistence, local
-  JSON storage, and Postgres-backed scoped access persistence are owned by the Identity design
-  module rather than the application layer.
-- `EnvironmentDesign/` - local-first organization environment drafts, validation, publishing,
-  rollback, and runtime projection. Lane defaults normalize legacy `Research`, `Data Operations`,
-  and `Governance` workspace/page tags into the canonical operator roots (`Strategy`, `Data`, and
-  `Accounting`) while validation accepts the full design-document root set:
-  `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+- Identity integration - application composition wires the Identity-owned
+  `FundStructureAccessScopeLineageProvider` against the shared fund-structure service contract.
+  Scoped access assignments, auth role and permission contracts, user profiles, login sessions,
+  auth-mode resolution, role-profile persistence, local JSON storage, and Postgres-backed scoped
+  access persistence are owned by the Identity design module rather than the application layer.
+- Environment Design integration - application composition registers the Workflow-owned
+  `EnvironmentDesignerService` through `Meridian.Contracts.Services` interfaces. Lane defaults
+  normalize legacy `Research`, `Data Operations`, and `Governance` workspace/page tags into the
+  canonical operator roots (`Strategy`, `Data`, and `Accounting`) while validation accepts the full
+  design-document root set: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`,
+  and `Settings`.
+- `Scheduling/` - Application-owned backfill schedule managers and scheduled backfill execution
+  coordination. The general operational scheduler implementation lives in
+  `Meridian.Platform.Scheduling`, the US-market `TradingCalendar` implementation also lives in
+  `Meridian.Platform.Scheduling`, and the scheduler/trading-calendar contracts live in
+  `Meridian.Contracts.Services`.
 - Portfolio Records integration - account query/management ports, internal account balance
   snapshots, statement intake, account readiness, provider-link history, reconciliation runs, and
   margin snapshots now live in `Meridian.PortfolioRecords`. Application composition registers those
   account-record services while orchestration consumers use the PortfolioRecords contracts.
-- `Services/` - application use cases and orchestration services.
+- `Services/` - application use cases and orchestration services. Cross-domain trading-calendar
+  status is provided by `Meridian.Platform.Scheduling.TradingCalendar` instead of an
+  Application-owned service, and deployment/startup mode decisions use
+  `Meridian.Platform.Runtime.CliModeResolver` instead of an Application-local resolver.
+  Connectivity diagnostics use the Platform runtime console progress helpers rather than
+  Application-local display primitives. Runtime colocation profile activation is provided by
+  `Meridian.Platform.Performance.CoLocationProfileActivator`. Graceful shutdown services consume the Core-owned
+  `Meridian.Core.Services.IFlushable` contract and Platform-owned shutdown lifecycle diagnostics
+  rather than defining shared lifecycle DTOs or diagnostic snapshots in Application. Diagnostic
+  bundles and endpoints use Core-owned redaction/masking helpers and Platform-owned error tracking
+  and friendly error formatting rather than Application-local utility services. Sample market-event
+  generation is registered from `Meridian.DataIntegration.Testing.SampleDataGenerator`. Canonical
+  symbol resolution is registered from `Meridian.Storage.Services.CanonicalSymbolRegistry`.
+  API documentation model generation is registered from
+  `Meridian.Platform.ApiDocumentation.ApiDocumentationService`.
+  Historical market-data JSONL query and bar aggregation is registered from
+  `Meridian.DataIntegration.Historical.HistoricalDataQueryService`.
+  Reconciliation governance exception classification now lives in
+  `Meridian.Strategies.Services.GovernanceExceptionService`. Report-pack generation and NAV
+  attribution live in `Meridian.Reporting` rather than Application-local services.
+- `Monitoring/` - application monitoring services plus the default static-backed implementation of
+  the contracts-owned event metrics interface.
+- `Http/` - core host-facing runtime services such as `ConfigStore`, `BackfillCoordinator`, and
+  status response generation. ASP.NET endpoint adapter extensions for packaging, archive
+  maintenance, and data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`.
 - `Composition/` - application feature registration and service wiring.
 
 ## Important workflows
@@ -170,17 +234,26 @@ and UI presentation concerns in their owning layers.
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
+Application command handlers adapt design-module services to CLI flags. For example, `--selftest`
+invokes the Data Integration-owned depth-buffer self-test runner instead of owning provider stream
+validation logic in Application.
+
 The interactive configuration wizard presents historical analysis and backtesting as the canonical
 `Strategy` use case while retaining the older `Research` enum member only as a compatibility alias.
 Backtest Studio run orchestration records accepted and terminal runs through the shared
 `StrategyRunEntry` lineage model: `StrategyId`, `StrategyName`, run id, engine, dataset/feed
 references, parameter set, sweep id, and canonical sweep-definition hash stay with the run evidence.
+Studio run request, handle, status, engine contracts, and preflight trust-gate implementation now
+live in `Meridian.Backtesting`; the shared Security Master validation gate abstraction lives in
+`Meridian.Contracts.Services` while Application continues to provide the concrete Security Master
+gate implementation and snapshot persistence.
 Keep W6-BTSTUDIO-001 acceptance criteria in roadmap exit criteria and verify this lane with
 `BacktestStudioRunOrchestratorTests` when changing backtesting evidence behavior.
 
 ## API contract notes
 
-- Options-chain provider IDs are normalized with trim plus invariant lowercase before deduplication, health lookup, fallback detection, logging, and metrics.
+- Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase
+  before deduplication, health lookup, fallback detection, logging, and metrics.
 - `ExecutionSimulationOrchestrator` backs the `--simulate-execution` CLI path and now emits
   inferred queue diagnostics, confidence grade, warnings, fill-rate, average-slippage placeholder,
   and `isInferred` labels in simulation artifacts. This is a baseline L3-style inference path, not

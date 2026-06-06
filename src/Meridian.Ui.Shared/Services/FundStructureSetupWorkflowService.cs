@@ -1,5 +1,6 @@
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
 
 namespace Meridian.Ui.Shared.Services;
 

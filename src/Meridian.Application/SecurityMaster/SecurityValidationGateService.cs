@@ -1,26 +1,7 @@
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 
 namespace Meridian.Application.SecurityMaster;
-
-public interface ISecurityValidationGateService
-{
-    Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
-        string symbol,
-        SecurityValidationWorkflowDto workflow,
-        string? workflowReference = null,
-        string? actor = null,
-        bool persistSnapshot = false,
-        CancellationToken ct = default);
-
-    Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
-        Guid securityId,
-        SecurityValidationWorkflowDto workflow,
-        string? workflowReference = null,
-        string? actor = null,
-        bool persistSnapshot = false,
-        string? symbol = null,
-        CancellationToken ct = default);
-}
 
 public sealed class SecurityValidationGateService : ISecurityValidationGateService
 {

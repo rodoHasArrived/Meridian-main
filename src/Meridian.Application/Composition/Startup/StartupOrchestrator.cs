@@ -2,6 +2,7 @@ using Meridian.Application.Composition.Startup.ModeRunners;
 using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Config;
 using Meridian.Application.Services;
+using Meridian.Core.Diagnostics;
 using Serilog;
 
 namespace Meridian.Application.Composition.Startup;

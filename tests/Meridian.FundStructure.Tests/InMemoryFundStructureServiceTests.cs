@@ -3,6 +3,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Entities.FundStructure;
 using Meridian.Storage.FundStructure;
 using Xunit;

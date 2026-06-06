@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-02
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Wpf
@@ -48,6 +48,10 @@ provenance, and open-lot review sections.
 Run Cash Flow consumes `StrategyRunContinuityService` when the desktop shell provides it, so the
 cash-flow drill-in presents the same run, portfolio, ledger, cash-flow, reconciliation, and warning
 posture used by shared workstation continuity endpoints.
+Desktop backtest services register the Backtesting-owned `IBacktestPreflightService` implementation
+and attach it to the singleton `BacktestService`, so WPF strategy runs use the same date-range,
+replay-coverage, execution-model, and optional Security Master preflight checks as shared
+Backtesting flows.
 Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
 queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
@@ -79,6 +83,9 @@ The WPF workflow library also projects the shared v0.15 `Accounting Records Evid
 workflow, preserving the source-record, normalized-activity, reconciliation-case, ledger-evidence,
 approval-history, report-lineage, export-evidence, and restatement-lineage action sequence from the
 shared catalog.
+The desktop diagnostics surface reads colocation profile state through
+`Meridian.Platform.Performance.ICoLocationProfileActivator`, keeping runtime-performance ownership
+in Platform while WPF remains a presentation surface.
 When shared workflow actions carry parameterized evidence targets such as
 `EvidenceWorkbench:accounting-record/{recordId}`, the workflow library keeps the raw target tag for
 navigation and filtering but presents the operator action target as `EvidenceWorkbench` so route
@@ -260,6 +267,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```powershell
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~AppServiceRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:NodeReuse=false
 ```
 
 ## Change rules

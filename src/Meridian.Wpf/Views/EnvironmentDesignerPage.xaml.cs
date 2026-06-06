@@ -5,9 +5,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Controls;
-using Meridian.Application.EnvironmentDesign;
 using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
 
 namespace Meridian.Wpf.Views;
 

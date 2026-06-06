@@ -10,6 +10,7 @@ using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Serilog;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Application.Backfill;
 

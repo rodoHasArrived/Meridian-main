@@ -1,5 +1,5 @@
-using Meridian.Application.Monitoring;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.Logging;
@@ -27,7 +27,7 @@ namespace Meridian.Application.Pipeline;
 /// window or strict spread check would produce excessive false positives.</para>
 ///
 /// <para>Validation outcomes are tracked by <see cref="ValidationMetrics"/> and exported to
-/// Prometheus via <see cref="PrometheusMetrics"/> on the periodic update cycle.</para>
+/// Prometheus by the Application metrics adapter on the periodic update cycle.</para>
 /// </remarks>
 [ImplementsAdr("ADR-007", "F# validation gate before WAL/sink persistence")]
 public sealed class FSharpEventValidator : IEventValidator

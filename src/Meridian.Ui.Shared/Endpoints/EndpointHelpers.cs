@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Meridian.Application.Services;
 using Microsoft.AspNetCore.Http;
+using Meridian.Platform.Results;
 
 namespace Meridian.Ui.Shared.Endpoints;
 

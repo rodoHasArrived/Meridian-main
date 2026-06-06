@@ -1,5 +1,6 @@
 using FluentAssertions;
-using Meridian.Application.Scheduling;
+using Meridian.Contracts.Services;
+using Meridian.Platform.Scheduling;
 using Moq;
 using Xunit;
 

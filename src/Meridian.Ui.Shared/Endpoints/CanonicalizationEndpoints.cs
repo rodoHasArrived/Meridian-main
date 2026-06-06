@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Meridian.Application.Canonicalization;
 using Meridian.Contracts.Api;
+using Meridian.DataIntegration.Canonicalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 

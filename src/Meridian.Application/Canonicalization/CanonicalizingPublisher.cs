@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Threading;
 using Meridian.Application.Pipeline;
+using Meridian.DataIntegration.Canonicalization;
 using Meridian.Domain.Events;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

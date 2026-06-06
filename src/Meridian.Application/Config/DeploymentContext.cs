@@ -1,4 +1,4 @@
-using Meridian.Application.Services;
+using Meridian.Platform.Runtime;
 
 namespace Meridian.Application.Config;
 

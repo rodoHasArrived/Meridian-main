@@ -1,6 +1,12 @@
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring.Core;
+using Meridian.DataIntegration.Historical;
+using Meridian.DataIntegration.Testing;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Platform.ApiDocumentation;
+using Meridian.Platform.Diagnostics;
+using Meridian.Platform.Runtime;
+using Meridian.Platform.Scheduling;
 using Serilog;
 
 namespace Meridian.Application.Services;
@@ -65,7 +71,7 @@ public sealed record ServiceInfo(
 /// - Lifecycle: GracefulShutdownService, StartupSummary
 /// - Data: HistoricalDataQueryService, DryRunService, SampleDataGenerator
 /// - Calendar: TradingCalendar
-/// - Reporting: ProgressDisplayService, DailySummaryWebhook, ApiDocumentationService
+/// - Reporting: ProgressDisplayService, DailySummaryWebhook, Platform ApiDocumentationService
 /// </remarks>
 [ImplementsAdr("ADR-001", "Centralized service registry for organization and discovery")]
 public sealed class ServiceRegistry : IDisposable, IAsyncDisposable

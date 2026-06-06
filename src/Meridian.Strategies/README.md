@@ -6,14 +6,15 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-05-27
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Strategies
 
 ## Purpose
 
-Strategies owns strategy lifecycle, run storage, promotion records, and strategy read services.
+Strategies owns strategy lifecycle, run storage, promotion records, strategy read services, and
+strategy-facing reconciliation governance.
 
 ## Layer responsibility
 
@@ -26,7 +27,8 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 - `Interfaces/` - strategy lifecycle contracts.
 - `Models/` and `Serialization/` - strategy run payloads and serialization support.
 - `Promotions/` - promotion evidence and review records.
-- `Services/` and `Storage/` - strategy read and persistence services.
+- `Services/` and `Storage/` - strategy read, persistence, reconciliation governance, and
+  promotion support services.
 
 ## Important workflows
 
@@ -45,6 +47,8 @@ evidence so accounting operations can route principal-paydown blockers precisely
 Security Master adapter preserves mortgage-backed, asset-backed, and amortizing-loan asset classes
 when normalizing economic definitions so factor paydowns stay principal events instead of being
 collapsed into generic unsupported instruments.
+`GovernanceExceptionService` classifies ledger reconciliation breaks into strategy-governance
+exception severities and dashboard projections from this module instead of the Application layer.
 
 ## Diagrams
 

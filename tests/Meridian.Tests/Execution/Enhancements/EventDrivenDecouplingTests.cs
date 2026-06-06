@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;

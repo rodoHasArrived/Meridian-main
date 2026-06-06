@@ -5,15 +5,16 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
-using Meridian.Application.Monitoring.DataQuality;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Infrastructure.Http;
+using Meridian.Platform.Scheduling;
 using Serilog;
 
 namespace Meridian.Application.Services;
 
 // Type alias: StaleDataAlert is a DataAnomaly with Type = StaleData
-using StaleDataAlert = Meridian.Application.Monitoring.DataQuality.DataAnomaly;
+using StaleDataAlert = Meridian.DataIntegration.Monitoring.DataQuality.DataAnomaly;
 
 /// <summary>
 /// Sends end-of-day summary digests via webhook to external services.
