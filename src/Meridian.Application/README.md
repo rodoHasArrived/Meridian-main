@@ -45,7 +45,8 @@ and UI presentation concerns in their owning layers.
   the Platform `TracedEventMetrics` decorator. Application owns the default static-backed
   `IEventMetrics` implementation while the shared metrics contract and snapshot shape live in
   `Meridian.Contracts.Monitoring`; F# validation counters and market-data quality
-  validators/analyzers live in `Meridian.DataIntegration.Monitoring`.
+  validators/analyzers, provider latency histograms, and provider metrics snapshots live in
+  `Meridian.DataIntegration.Monitoring`.
 - `DirectLending/` - loan command/query orchestration, direct-lending ledger projection, and the
   daily accrual worker. Recurring accrual posting now checks ledger accounting-period state before
   calling the direct-lending command service; period-blocked originating accruals are routed to the
@@ -222,8 +223,10 @@ and UI presentation concerns in their owning layers.
   Reconciliation governance exception classification now lives in
   `Meridian.Strategies.Services.GovernanceExceptionService`. Report-pack generation and NAV
   attribution live in `Meridian.Reporting` rather than Application-local services.
-- `Monitoring/` - application monitoring services plus the default static-backed implementation of
-  the contracts-owned event metrics interface.
+- `Monitoring/` - application monitoring adapters, connection-health/degradation scoring, status
+  server support, and the default static-backed implementation of the contracts-owned event metrics
+  interface. Provider latency histograms, provider metrics status snapshots, market-data validators,
+  and data-quality analyzers live in `Meridian.DataIntegration.Monitoring`.
 - `Http/` - core host-facing runtime services such as `ConfigStore`, `BackfillCoordinator`, and
   status response generation. ASP.NET endpoint adapter extensions for packaging, archive
   maintenance, and data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`.

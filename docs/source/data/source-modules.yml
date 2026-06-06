@@ -565,7 +565,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Physical bounded-context module project for provider, ingestion, ETL export, event canonicalization, historical market-data query/aggregation, data-quality validators/analyzers/SLA metrics, source evidence, sample market-event generation, and publish-data ownership conformance.
+    purpose: Physical bounded-context module project for provider, ingestion, ETL export, event canonicalization, historical market-data query/aggregation, data-quality validators/analyzers/SLA metrics, provider latency and provider metrics telemetry models, source evidence, sample market-event generation, and publish-data ownership conformance.
     readme: src/Meridian.DataIntegration/README.md
     roadmap_items:
       - W1-DATA-001
@@ -585,7 +585,7 @@ modules:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConditionCodeMapperTests|FullyQualifiedName~VenueMicMapperTests|FullyQualifiedName~EventCanonicalizerTests|FullyQualifiedName~CanonicalizingPublisherTests|FullyQualifiedName~CanonicalizationGoldenFixtureTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~PipelineFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~HistoricalDataQueryServiceTests|FullyQualifiedName~HistoricalDataQueryServiceBarsTests|FullyQualifiedName~ExecutionSimulationOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BadTickFilterTests|FullyQualifiedName~TickSizeValidatorTests|FullyQualifiedName~FSharpEventValidatorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BadTickFilterTests|FullyQualifiedName~TickSizeValidatorTests|FullyQualifiedName~FSharpEventValidatorTests|FullyQualifiedName~ProviderLatencyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DataFreshnessSlaMonitorTests|FullyQualifiedName~DataFreshnessSlaMonitorMarketHoursTests|FullyQualifiedName~SlaStatusSnapshotTests|FullyQualifiedName~LiquidityProfileTests|FullyQualifiedName~PriceContinuityCheckerTests|FullyQualifiedName~GapAnalyzerTests|FullyQualifiedName~SequenceErrorTrackerTests|FullyQualifiedName~CompletenessScoreCalculatorTests|FullyQualifiedName~AnomalyDetectorTests|FullyQualifiedName~DataQualityMonitoringServiceTests|FullyQualifiedName~LatencyHistogramTests|FullyQualifiedName~CrossProviderComparisonServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~GovernanceSharedDataAccessServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:

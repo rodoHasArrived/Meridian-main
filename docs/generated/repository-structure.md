@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-06 19:45:45 UTC. Do not edit manually.
+> Auto-generated on 2026-06-06 20:07:06 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2142,8 +2142,6 @@ Meridian-main
 │   │   │   ├── PrometheusMetrics.cs
 │   │   │   ├── ProviderDegradationCalibration.cs
 │   │   │   ├── ProviderDegradationScorer.cs
-│   │   │   ├── ProviderLatencyService.cs
-│   │   │   ├── ProviderMetricsStatus.cs
 │   │   │   ├── SchemaValidationService.cs
 │   │   │   ├── SpreadMonitor.cs
 │   │   │   ├── StatusHttpServer.cs
@@ -2722,6 +2720,8 @@ Meridian-main
 │   │   │   │   ├── PriceContinuityChecker.cs
 │   │   │   │   └── SequenceErrorTracker.cs
 │   │   │   ├── BadTickFilter.cs
+│   │   │   ├── ProviderLatencyService.cs
+│   │   │   ├── ProviderMetricsStatus.cs
 │   │   │   ├── TickSizeValidator.cs
 │   │   │   ├── TimestampMonotonicityChecker.cs
 │   │   │   └── ValidationMetrics.cs
@@ -5316,7 +5316,6 @@ Meridian-main
 │   │   │   │   ├── PrometheusMetricsTests.cs
 │   │   │   │   ├── ProviderDegradationCalibrationTests.cs
 │   │   │   │   ├── ProviderDegradationScorerTests.cs
-│   │   │   │   ├── ProviderLatencyServiceTests.cs
 │   │   │   │   ├── QualityTrendCalculationTests.cs
 │   │   │   │   ├── SchemaValidationServiceTests.cs
 │   │   │   │   ├── SloDefinitionRegistryTests.cs
@@ -5427,6 +5426,7 @@ Meridian-main
 │   │   │   │   │   └── LiquidityProfileTests.cs
 │   │   │   │   ├── BadTickFilterTests.cs
 │   │   │   │   ├── PriceContinuityCheckerTests.cs
+│   │   │   │   ├── ProviderLatencyServiceTests.cs
 │   │   │   │   └── TickSizeValidatorTests.cs
 │   │   │   ├── Services
 │   │   │   │   └── DataQuality

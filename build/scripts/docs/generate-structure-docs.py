@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import fnmatch
+import os
 from pathlib import Path
 
 
@@ -209,12 +210,29 @@ def generate_workflows_overview(root: Path) -> str:
 
 def generate_provider_registry(root: Path) -> str:
     src = root / "src"
-    providers = sorted(
-        [
-            path.relative_to(root)
-            for path in src.rglob("*.cs")
-            if "Provider" in path.stem and not is_excluded(path, root)
+    providers: list[Path] = []
+
+    for dirpath, dirnames, filenames in os.walk(src):
+        current = Path(dirpath)
+        dirnames[:] = [
+            dirname
+            for dirname in dirnames
+            if not is_excluded(current / dirname, root)
         ]
+
+        for filename in filenames:
+            path = current / filename
+            if path.suffix != ".cs":
+                continue
+            if "Provider" not in path.stem:
+                continue
+            if is_excluded(path, root):
+                continue
+            providers.append(path.relative_to(root))
+
+    providers = sorted(
+        providers,
+        key=lambda path: str(path).lower(),
     )
 
     lines = [

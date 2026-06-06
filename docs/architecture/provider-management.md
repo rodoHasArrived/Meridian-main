@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.5 | **Last Updated:** 2026-05-20
+**Version:** 3.6 | **Last Updated:** 2026-06-06
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -433,7 +433,7 @@ Monitors connection health for streaming providers:
 
 ### ProviderLatencyService
 
-**Location:** `src/Meridian.Application/Monitoring/ProviderLatencyService.cs`
+**Location:** `src/Meridian.DataIntegration/Monitoring/ProviderLatencyService.cs`
 
 Tracks per-provider latency with full percentile histograms:
 
@@ -469,7 +469,7 @@ Computes a composite health/degradation score (0.0 = fully healthy, 1.0 = fully 
 
 ### ProviderMetricsStatus
 
-**Location:** `src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs`
+**Location:** `src/Meridian.DataIntegration/Monitoring/ProviderMetricsStatus.cs`
 
 Aggregates provider metrics for the `/api/providers/metrics` endpoint.
 
@@ -758,3 +758,10 @@ export TIINGO__TOKEN=your-token
 - Extended `SubscriptionManager` with subscription status, last-message timestamps, last-error text, recovery-attempt counts, and optional request-source metadata.
 - Added `ValidateSubscriptionRequest(...)`, `SubscribeOrGetExisting(...)`, `RecordMessageReceived(...)`, `RecordSubscriptionError(...)`, `RecordRecoveryAttempt(...)`, and `GetStaleSubscriptions(...)` for reconnect/failover-safe subscription supervision.
 - Kept the existing `Subscribe(...)` behavior intact for providers that intentionally maintain separate per-caller subscription IDs.
+
+## Migration Notes (v3.5 -> v3.6)
+
+- Moved `ProviderLatencyService`, provider latency summary records, `ProviderMetricsStatus`, and
+  `ProviderMetrics` from Application monitoring into `Meridian.DataIntegration.Monitoring`.
+- Kept `ConnectionHealthMonitor`, `ProviderDegradationScorer`, and status endpoint composition in
+  Application as consumers of the Data Integration-owned provider telemetry models.

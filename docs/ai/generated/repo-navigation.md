@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-06T19:45:33Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-06T20:06:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Application/README.md` | Host and Composition | `58a690bab` (2026-06-05T22:49:10-07:00) | 45 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `58a690bab` (2026-06-05T22:49:10-07:00) | 43 |
-| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `58a690bab` (2026-06-05T22:49:10-07:00) | 26 |
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `58a690bab` (2026-06-05T22:49:10-07:00) | 18 |
-| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `58a690bab` (2026-06-05T22:49:10-07:00) | 16 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | Desktop and UI Workflows | `58a690bab` (2026-06-05T22:49:10-07:00) | 13 |
-| `src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs` | Desktop and UI Workflows | `58a690bab` (2026-06-05T22:49:10-07:00) | 13 |
-| `src/Meridian.Wpf/App.xaml.cs` | Desktop and UI Workflows | `58a690bab` (2026-06-05T22:49:10-07:00) | 12 |
-| `src/Meridian/UiServer.cs` | Host and Composition | `58a690bab` (2026-06-05T22:49:10-07:00) | 11 |
-| `src/Meridian.Application/FundStructure/PostgresFundStructureService.cs` | Host and Composition | `58a690bab` (2026-06-05T22:49:10-07:00) | 10 |
-| `src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs` | Host and Composition | `58a690bab` (2026-06-05T22:49:10-07:00) | 9 |
-| `src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs` | Desktop and UI Workflows | `58a690bab` (2026-06-05T22:49:10-07:00) | 8 |
-| `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs` | Desktop and UI Workflows | `58a690bab` (2026-06-05T22:49:10-07:00) | 7 |
-| `src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs` | Desktop and UI Workflows | `58a690bab` (2026-06-05T22:49:10-07:00) | 7 |
-| `src/Meridian.Application/DirectLending/LoanAccountingProjector.cs` | Host and Composition | `58a690bab` (2026-06-05T22:49:10-07:00) | 6 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `207e04787` (2026-06-06T12:53:01-07:00) | 59 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `207e04787` (2026-06-06T12:53:01-07:00) | 51 |
+| `src/Meridian.Application/README.md` | Host and Composition | `207e04787` (2026-06-06T12:53:01-07:00) | 46 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `207e04787` (2026-06-06T12:53:01-07:00) | 37 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `207e04787` (2026-06-06T12:53:01-07:00) | 27 |
+| `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | `207e04787` (2026-06-06T12:53:01-07:00) | 26 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `207e04787` (2026-06-06T12:53:01-07:00) | 19 |
+| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `207e04787` (2026-06-06T12:53:01-07:00) | 17 |
+| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | Desktop and UI Workflows | `207e04787` (2026-06-06T12:53:01-07:00) | 14 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `207e04787` (2026-06-06T12:53:01-07:00) | 13 |
+| `src/Meridian.Wpf/App.xaml.cs` | Desktop and UI Workflows | `207e04787` (2026-06-06T12:53:01-07:00) | 13 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `207e04787` (2026-06-06T12:53:01-07:00) | 12 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `207e04787` (2026-06-06T12:53:01-07:00) | 12 |
+| `src/Meridian.Application/FundStructure/PostgresFundStructureService.cs` | Host and Composition | `207e04787` (2026-06-06T12:53:01-07:00) | 11 |
+| `src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs` | Host and Composition | `207e04787` (2026-06-06T12:53:01-07:00) | 10 |
 

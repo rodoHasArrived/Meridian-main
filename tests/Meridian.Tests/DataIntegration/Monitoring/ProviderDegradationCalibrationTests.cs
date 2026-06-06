@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 
-namespace Meridian.Tests.Application.Monitoring;
+namespace Meridian.Tests.DataIntegration.Monitoring;
 
 public sealed class ProviderDegradationCalibrationTests
 {

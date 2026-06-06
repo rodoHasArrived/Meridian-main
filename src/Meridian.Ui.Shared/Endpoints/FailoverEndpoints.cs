@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Failover;
 using Meridian.Ui.Shared.Services;

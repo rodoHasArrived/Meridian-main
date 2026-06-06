@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Platform.Results;
 using Serilog;
 

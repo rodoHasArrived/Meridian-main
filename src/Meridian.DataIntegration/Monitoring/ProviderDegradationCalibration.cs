@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace Meridian.Application.Monitoring;
+namespace Meridian.DataIntegration.Monitoring;
 
 /// <summary>
 /// Historical labeled incident dataset used for offline provider-degradation kernel calibration.
