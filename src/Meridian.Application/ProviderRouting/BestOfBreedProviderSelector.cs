@@ -1,5 +1,5 @@
-using Meridian.Application.Monitoring;
 using Meridian.Application.UI;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.ProviderSdk;
 using Meridian.Storage.Services;
 

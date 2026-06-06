@@ -30,7 +30,7 @@ public sealed class ConfigStore
     public System.Threading.Tasks.Task SaveAsync(Meridian.Application.Config.AppConfig cfg)
         => _core.SaveAsync(cfg);
 
-    public Meridian.Application.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics()
+    public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics()
         => _core.TryLoadProviderMetrics();
 
     public string? TryLoadStatusJson() => _core.TryLoadStatusJson();

@@ -2,6 +2,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Plaid;

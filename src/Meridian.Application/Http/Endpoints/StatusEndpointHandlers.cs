@@ -2,6 +2,7 @@ using System.Text;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Api;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
 using HealthCheckDto = Meridian.Contracts.Api.HealthCheckItem;

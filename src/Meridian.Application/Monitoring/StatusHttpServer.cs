@@ -7,6 +7,7 @@ using Meridian.Application.Logging;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;

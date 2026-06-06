@@ -8,6 +8,7 @@ using FluentAssertions;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;

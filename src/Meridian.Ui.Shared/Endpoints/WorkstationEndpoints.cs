@@ -5,6 +5,7 @@ using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;

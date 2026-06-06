@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
-using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Configuration;
 using Meridian.ProviderSdk.AccountingSystem;
 using Microsoft.Extensions.Logging;

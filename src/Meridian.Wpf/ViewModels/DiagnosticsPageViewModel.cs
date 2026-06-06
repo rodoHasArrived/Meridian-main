@@ -5,8 +5,8 @@ using System.IO;
 using System.Text;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Application.Monitoring;
 using Meridian.Contracts.Services;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Platform.Performance;
 using Meridian.Wpf.ViewModels;
 

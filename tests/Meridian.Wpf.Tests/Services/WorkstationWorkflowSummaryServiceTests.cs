@@ -1,6 +1,6 @@
 using System.IO;
 using System.Text.Json;
-using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Application.UI;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;

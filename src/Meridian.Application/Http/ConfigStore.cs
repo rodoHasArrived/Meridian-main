@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Application.Backfill;
 using Meridian.Application.Config;
-using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage;
