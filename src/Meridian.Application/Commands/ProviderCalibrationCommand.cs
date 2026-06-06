@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.Monitoring;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Serilog;
 
 namespace Meridian.Application.Commands;

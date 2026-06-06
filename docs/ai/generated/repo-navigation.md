@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-05T20:54:10Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-06T05:46:38Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 59 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `936b27585` (2026-06-05T05:45:55-07:00) | 52 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 44 |
-| `src/Meridian.Application/README.md` | Host and Composition | `936b27585` (2026-06-05T05:45:55-07:00) | 43 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 41 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 33 |
-| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 27 |
-| `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 24 |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 18 |
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `936b27585` (2026-06-05T05:45:55-07:00) | 16 |
-| `src/Meridian.Ui.Services/README.md` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 15 |
-| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 15 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 15 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 13 |
-| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | `936b27585` (2026-06-05T05:45:55-07:00) | 13 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `a27e5d794` (2026-06-05T14:08:55-07:00) | 58 |
+| `src/Meridian.Application/README.md` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 44 |
+| `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | `a27e5d794` (2026-06-05T14:08:55-07:00) | 25 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 17 |
+| `src/Meridian.Application/FundStructure/PostgresFundStructureService.cs` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 9 |
+| `src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 8 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 8 |
+| `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | Desktop and UI Workflows | `a27e5d794` (2026-06-05T14:08:55-07:00) | 7 |
+| `src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj` | Desktop and UI Workflows | `a27e5d794` (2026-06-05T14:08:55-07:00) | 5 |
+| `src/Meridian.Application/SecurityMaster/AssetClassValidatorRegistry.cs` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 4 |
+| `src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 4 |
+| `src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 3 |
+| `src/Meridian.Application/FundStructure/LedgerMappingWorkbenchService.cs` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 2 |
+| `src/Meridian.Application/Meridian.Application.csproj` | Host and Composition | `a27e5d794` (2026-06-05T14:08:55-07:00) | 2 |
+| `src/Meridian.Entities/Meridian.Entities.csproj` | Unmapped | `a27e5d794` (2026-06-05T14:08:55-07:00) | 2 |
 

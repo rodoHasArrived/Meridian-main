@@ -1,4 +1,4 @@
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage;
 using Meridian.Storage.FundAccounts;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
-using Meridian.Application.Ledger;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;

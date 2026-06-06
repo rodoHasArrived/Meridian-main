@@ -1,4 +1,4 @@
-using Meridian.Application.Accounts;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;

@@ -6,14 +6,15 @@ module_id: SRC-DESIGN-PLATFORM
 path: src/Meridian.Platform
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Platform
 
 ## Purpose
 
-Physical bounded-context module project for Platform ownership, composition, configuration, and runtime policy conformance.
+Physical bounded-context module project for Platform ownership, composition, configuration, runtime
+policy, shared operation result semantics, domain cutover, and shadow-projection conformance.
 
 ## Layer responsibility
 
@@ -21,11 +22,26 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 ## Key folders and files
 
-- `src/Meridian.Platform` - registered source module root.
+- `FundOperationsPersistence/FundOperationsPersistenceContracts.cs` - domain cutover mode,
+  read-mode, discrepancy, reconciliation-job, and shadow-projection writer contracts.
+- `FundOperationsPersistence/CanonicalProjectionSchemas.cs` - canonical shadow-projection schemas
+  for fund structure, fund accounts, direct lending, banking, and money-market domains.
+- `FundOperationsPersistence/FileShadowProjectionWriter.cs` - sanitized file-backed shadow
+  projection writer for platform cutover validation.
+- `FundOperationsPersistence/DomainReadSwitch.cs` - read-mode selector used during
+  persisted-projection cutovers.
+- `FundOperationsPersistence/ProjectionReconciliationHostedService.cs` - hosted reconciliation
+  loop for domain projection discrepancies.
+- `Results/` - shared `Result`, `OperationError`, and `ErrorCode` primitives used by commands,
+  startup validation, diagnostics endpoints, and other cross-domain runtime flows.
 
 ## Important workflows
 
-Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+Use this module when changing cross-domain runtime cutover controls, shadow-write behavior,
+persisted-projection read switching, hosted projection-reconciliation plumbing, or shared
+command/startup result semantics. Application composition may register these services, but it
+should not own the platform cutover contracts, shadow-projection schemas, or shared error-code
+taxonomy.
 
 ## Diagrams
 
@@ -50,6 +66,8 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.Platform/Meridian.Platform.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~StorageFeatureRegistrationTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ErrorCodeMappingTests|FullyQualifiedName~DiagnosticsCommandsTests|FullyQualifiedName~StatementImportCommandsTests|FullyQualifiedName~SimulationCommandsTests|FullyQualifiedName~SecurityMasterCommandsEdgarTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ## Optional conditional sections
@@ -66,7 +84,9 @@ Add only the sections that apply to this module:
 
 ## Change rules
 
-Preserve the module boundary declared in `docs/source/data/source-modules.yml` and update the nearest docs when behavior or workflow semantics change.
+Preserve the module boundary declared in `docs/source/data/source-modules.yml` and update the
+nearest docs when platform cutover, configuration, runtime policy, result/error semantics,
+shadow-projection, or hosted reconciliation workflow semantics change.
 
 ## Related docs
 

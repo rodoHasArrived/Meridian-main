@@ -5,7 +5,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Coordination;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Meridian.Application.Services;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;

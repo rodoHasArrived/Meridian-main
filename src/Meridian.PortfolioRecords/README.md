@@ -6,14 +6,16 @@ module_id: SRC-DESIGN-PORTFOLIO-RECORDS
 path: src/Meridian.PortfolioRecords
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-05
 ---
 
 # src/Meridian.PortfolioRecords
 
 ## Purpose
 
-Physical bounded-context module project for portfolio records, positions, activity, holdings, account records, and fund-operation ownership conformance.
+Physical bounded-context module project for portfolio records, positions, activity, holdings,
+account records, fund-account balances, account readiness, statement intake, reconciliation runs,
+sync history, margin snapshots, and fund-operation ownership conformance.
 
 ## Layer responsibility
 
@@ -21,7 +23,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 ## Key folders and files
 
-- `src/Meridian.PortfolioRecords` - registered source module root.
+- `Accounts/` - account query and account management service ports consumed by fund-structure,
+  shared UI, and desktop/browser account-record workflows.
+- `FundAccounts/` - in-memory and PostgreSQL-backed fund-account services for account snapshots,
+  statement intake, account readiness, provider-link sync history, reconciliation runs, and margin
+  snapshots.
 
 ## Important workflows
 
@@ -51,6 +57,7 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~FundAccountServiceTests" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ## Optional conditional sections

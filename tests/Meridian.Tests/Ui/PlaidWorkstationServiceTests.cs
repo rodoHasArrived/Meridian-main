@@ -1,8 +1,8 @@
 using FluentAssertions;
-using Meridian.Application.Banking;
+using Meridian.FinancialOperations.Banking;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Plaid;

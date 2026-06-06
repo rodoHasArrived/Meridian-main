@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 using Microsoft.Extensions.DependencyInjection;

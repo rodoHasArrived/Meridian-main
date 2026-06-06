@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.AssetOperations;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Instruments.FixedIncome;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
@@ -16,7 +16,7 @@ public sealed class AssetOperationsReadServiceTests
     public async Task GetOperationsAsync_ForBond_ShouldDeriveCouponAndMaturityRowsFromSecurityMasterReference()
     {
         var securityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        var securityMaster = Substitute.For<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>();
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
         securityMaster.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(BuildSecurity(securityId, "Bond", "Meridian 5.875% 2031 Corporate Bond"));
         var bondService = Substitute.For<IBondReferenceService>();

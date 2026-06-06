@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Meridian.Application.AssetOperations;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.FSharp.DirectLending.Aggregates;
 using Meridian.FSharp.DirectLendingInterop;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.DirectLending;
 
 namespace Meridian.Application.DirectLending;

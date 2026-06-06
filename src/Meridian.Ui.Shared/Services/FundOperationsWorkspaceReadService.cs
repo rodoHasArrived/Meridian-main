@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.FinancialOperations.OperationsContinuity;
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;

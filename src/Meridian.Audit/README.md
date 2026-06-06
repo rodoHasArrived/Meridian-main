@@ -6,14 +6,16 @@ module_id: SRC-DESIGN-AUDIT
 path: src/Meridian.Audit
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Audit
 
 ## Purpose
 
-Physical bounded-context module project for evidence packets, audit hashes, retained manifests, lineage, and export-verification ownership conformance.
+Physical bounded-context module project for evidence packets, immutable audit hashes, compliance
+policy checks, access-review records, retained manifests, lineage, and export-verification
+ownership conformance.
 
 ## Layer responsibility
 
@@ -21,11 +23,17 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 ## Key folders and files
 
-- `src/Meridian.Audit` - registered source module root.
+- `Compliance/ComplianceModels.cs` - sensitive-action, actor, compliance request, audit-event,
+  access-review, and audit-hash records.
+- `Compliance/ComplianceServices.cs` - compliance policy engine, immutable audit-log service, and
+  access-review service.
 
 ## Important workflows
 
-Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+Use this module when changing compliance policy checks, step-up/dual-approval requirements,
+segregation-of-duties enforcement, immutable audit hash-chain behavior, or access-review record
+ownership. UI endpoints and host composition should register these services, but should not own the
+audit/compliance state.
 
 ## Diagrams
 
@@ -50,6 +58,7 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.Audit/Meridian.Audit.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CompliancePolicyEngineTests" /p:EnableWindowsTargeting=true
 ```
 
 ## Optional conditional sections
@@ -66,7 +75,9 @@ Add only the sections that apply to this module:
 
 ## Change rules
 
-Preserve the module boundary declared in `docs/source/data/source-modules.yml` and update the nearest docs when behavior or workflow semantics change.
+Preserve the module boundary declared in `docs/source/data/source-modules.yml` and update the
+nearest docs when compliance, audit-hash, access-review, or retained-evidence workflow semantics
+change.
 
 ## Related docs
 

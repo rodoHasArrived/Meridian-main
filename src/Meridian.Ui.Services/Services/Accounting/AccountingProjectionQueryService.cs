@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using Meridian.Application.AccountingClose;
+using Meridian.FinancialOperations.AccountingClose;
 
 namespace Meridian.Ui.Services.Services.Accounting;
 

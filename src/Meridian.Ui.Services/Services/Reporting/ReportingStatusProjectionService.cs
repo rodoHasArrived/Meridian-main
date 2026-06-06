@@ -1,4 +1,4 @@
-using Meridian.Application.Reporting;
+using Meridian.Reporting;
 
 namespace Meridian.Ui.Services.Services.Reporting;
 

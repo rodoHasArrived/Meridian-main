@@ -1,7 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.Accounts;
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.Accounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;

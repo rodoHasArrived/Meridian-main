@@ -1,5 +1,5 @@
-using Meridian.Application.LedgerTextJournal;
-using Meridian.Application.ResultTypes;
+using Meridian.FinancialOperations.LedgerTextJournal;
+using Meridian.Platform.Results;
 using Meridian.Ledger;
 
 namespace Meridian.Application.Commands;

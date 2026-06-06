@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 using Meridian.Application.DirectLending;
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Identity.Auth;
 using Meridian.Application.FundStructure;
 using Meridian.Application.Monitoring;

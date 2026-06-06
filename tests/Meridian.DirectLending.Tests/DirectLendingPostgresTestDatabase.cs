@@ -1,5 +1,5 @@
 using Meridian.Application.DirectLending;
-using Meridian.Application.Ledger;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ledger;

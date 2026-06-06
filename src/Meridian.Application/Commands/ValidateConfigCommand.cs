@@ -1,4 +1,4 @@
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Meridian.Application.Services;
 using Serilog;
 

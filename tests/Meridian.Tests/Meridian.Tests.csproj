@@ -39,6 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Meridian\Meridian.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Audit\Meridian.Audit.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Backtesting\Meridian.Backtesting.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.DataIntegration\Meridian.DataIntegration.csproj" />
@@ -50,6 +51,7 @@
     <ProjectReference Include="..\..\src\Meridian.Identity\Meridian.Identity.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Instruments\Meridian.Instruments.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ledger\Meridian.Ledger.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Platform\Meridian.Platform.csproj" />
     <ProjectReference Include="..\..\src\Meridian.ReferenceData\Meridian.ReferenceData.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Risk\Meridian.Risk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Storage\Meridian.Storage.csproj" />

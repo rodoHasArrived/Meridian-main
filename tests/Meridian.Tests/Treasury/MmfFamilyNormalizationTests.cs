@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Treasury;
+using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Contracts.Treasury;
 
 namespace Meridian.Tests.Treasury;

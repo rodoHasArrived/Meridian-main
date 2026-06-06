@@ -1,4 +1,4 @@
-using Meridian.Application.AccountingClose;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Contracts.Ledger;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;

@@ -201,7 +201,7 @@ public sealed class SymbolCommandsTests
     ///   </description></item>
     ///   <item><description>
     ///     <b>ExecuteAsync validation tests</b> (missing required argument) – the command
-    ///     returns <see cref="Meridian.Application.ResultTypes.ErrorCode.RequiredFieldMissing"/>
+    ///     returns <see cref="Meridian.Platform.Results.ErrorCode.RequiredFieldMissing"/>
     ///     (exit code 2) before invoking the service, so no real config state is needed.
     ///   </description></item>
     /// </list>

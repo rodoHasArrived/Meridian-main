@@ -352,7 +352,7 @@ public static class DiagnosticsEndpoints
         // Error codes reference
         group.MapGet(UiApiRoutes.DiagnosticsErrorCodes, () =>
         {
-            var codes = Enum.GetValues<Meridian.Application.ResultTypes.ErrorCode>()
+            var codes = Enum.GetValues<Meridian.Platform.Results.ErrorCode>()
                 .Select(e => new { code = (int)e, name = e.ToString() });
             return Results.Json(new { errorCodes = codes, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })

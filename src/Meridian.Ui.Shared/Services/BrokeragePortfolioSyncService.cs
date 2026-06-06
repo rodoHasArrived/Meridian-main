@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.Application.Accounts;
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.Accounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;

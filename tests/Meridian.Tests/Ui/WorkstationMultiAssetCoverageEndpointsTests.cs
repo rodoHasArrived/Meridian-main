@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
-using Meridian.Application.AssetOperations;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Workstation;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.AssetOperations;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;

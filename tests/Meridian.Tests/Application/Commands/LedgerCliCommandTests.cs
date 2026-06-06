@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
-using Meridian.Application.LedgerTextJournal;
+using Meridian.FinancialOperations.LedgerTextJournal;
 using Xunit;
 
 namespace Meridian.Tests.Application.Commands;

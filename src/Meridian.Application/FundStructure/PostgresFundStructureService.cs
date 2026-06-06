@@ -1,5 +1,5 @@
 using Meridian.Application.Composition;
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Entities.FundStructure;

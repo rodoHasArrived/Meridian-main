@@ -32,14 +32,24 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   `Commodities/CommodityProjectionService.cs`, `Derivatives/SwapProjectionService.cs`, and
   `MoneyMarketFunds/MoneyMarketFundProjectionService.cs` - storage-backed asset contract/reference
   read services for shared endpoint and composition consumers.
+- `MoneyMarketFunds/IMoneyMarketFundService.cs`,
+  `MoneyMarketFunds/InMemoryMoneyMarketFundService.cs`, and
+  `MoneyMarketFunds/PostgresMoneyMarketFundService.cs` - money-market fund reference, liquidity,
+  sweep-profile, fund-family, and rebuild projection services.
+- `AssetOperations/AssetOperationsReadService.cs` - Security Master-keyed asset operations query,
+  command, and projection builder for shared terms, lifecycle, cash-flow, activity,
+  reconciliation, ledger, evidence, workflow-audit, and readiness views.
 
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
 
 Asset-specific instrument reference services live here because they expose financial instrument
-terms, lifecycle, contract, expiry, maturity, accrual, sweep, and chain-linkage details. Application
-composition wires these services to Security Master projection stores, while UI Shared adapts them
+terms, lifecycle, contract, expiry, maturity, accrual, sweep, liquidity, fund-family, and
+chain-linkage details. Asset Operations projections also live here because they adapt instrument
+terms, obligation schedules, projected cash flows, ledger projections, and readiness evidence into
+the shared Security Master-keyed operational view. Application composition wires these services to
+Security Master, Asset Operations, and money-market projection stores, while UI Shared adapts them
 to shared browser/WPF routes without owning the instrument logic.
 
 ## Diagrams
@@ -65,15 +75,17 @@ to shared browser/WPF routes without owning the instrument logic.
 
 ```bash
 dotnet build src/Meridian.Instruments/Meridian.Instruments.csproj /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CryptoProjectionServiceTests|FullyQualifiedName~DepositProjectionServiceTests|FullyQualifiedName~CertificateOfDepositProjectionServiceTests|FullyQualifiedName~CommodityProjectionServiceTests|FullyQualifiedName~SwapProjectionServiceTests|FullyQualifiedName~EquityProjectionServiceTests|FullyQualifiedName~FutureProjectionServiceTests|FullyQualifiedName~FxSpotProjectionServiceTests|FullyQualifiedName~BondProjectionServiceTests|FullyQualifiedName~OptionProjectionServiceTests|FullyQualifiedName~MoneyMarketFundProjectionServiceTests|FullyQualifiedName~OptionReferenceEndpointsRoundtripTests|FullyQualifiedName~BondReferenceEndpointsTests|FullyQualifiedName~ReferenceDataEndpointAuthorizationTests|FullyQualifiedName~AssetOperationsReadServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CryptoProjectionServiceTests|FullyQualifiedName~DepositProjectionServiceTests|FullyQualifiedName~CertificateOfDepositProjectionServiceTests|FullyQualifiedName~CommodityProjectionServiceTests|FullyQualifiedName~SwapProjectionServiceTests|FullyQualifiedName~EquityProjectionServiceTests|FullyQualifiedName~FutureProjectionServiceTests|FullyQualifiedName~FxSpotProjectionServiceTests|FullyQualifiedName~BondProjectionServiceTests|FullyQualifiedName~OptionProjectionServiceTests|FullyQualifiedName~MoneyMarketFundProjectionServiceTests|FullyQualifiedName~MoneyMarketFundServiceTests|FullyQualifiedName~MmfRebuildTests|FullyQualifiedName~MmfLiquidityServiceTests|FullyQualifiedName~MmfFamilyNormalizationTests|FullyQualifiedName~OptionReferenceEndpointsRoundtripTests|FullyQualifiedName~BondReferenceEndpointsTests|FullyQualifiedName~ReferenceDataEndpointAuthorizationTests|FullyQualifiedName~AssetOperationsReadServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ### Migration and archive notes
 
 Bond, option, equity, futures, FX spot, crypto, deposit, certificate-of-deposit, commodity, swap,
-and money-market fund projection service contracts and implementations moved out of the layer-oriented
-application/reference-data owners into this physical design module so instrument terms and
-asset-specific contract read models are owned by `Meridian.Instruments`.
+money-market fund, Asset Operations, and money-market fund reference/liquidity/sweep service
+contracts and implementations moved out of the layer-oriented application/reference-data owners into
+this physical design module so instrument terms, asset-specific contract read models, Security
+Master-keyed operational readiness projections, and MMF liquidity projections are owned by
+`Meridian.Instruments`.
 
 ## Change rules
 

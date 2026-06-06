@@ -21,11 +21,12 @@ modules:
     physical_project: src/Meridian.Platform
     primary_current_owner: Runtime Host
     current_sources:
+      - src/Meridian.Platform
       - src/Meridian
       - src/Meridian.Core
       - src/Meridian.Application
       - src/Meridian.Storage
-    migration_next: Keep host, configuration, pipeline, storage policy, and composition changes behind published contracts before considering a physical Platform project.
+    migration_next: Fund-operations persistence cutover contracts, read-mode controls, shadow-projection schemas, file shadow writer, projection-reconciliation hosted service, and shared Result/ErrorCode primitives now live in Meridian.Platform. Continue moving remaining host, configuration, pipeline, storage policy, and composition runtime policy out of layer-oriented owners behind published Platform contracts.
 
   - name: Meridian.Identity
     conformance: physical
@@ -87,7 +88,7 @@ modules:
       - src/Meridian.FSharp.Ledger
       - src/Meridian.Ledger
       - src/Meridian.Storage
-    migration_next: Storage-backed bond, option, equity, futures, FX spot, crypto, deposit, certificate-of-deposit, commodity, swap, and money-market fund contract/reference projection services now live in Meridian.Instruments. Continue moving remaining instrument terms, obligation models, lifecycle schedules, and ledger-projection support out of layer-oriented application/storage owners once behavior is characterized.
+    migration_next: Storage-backed bond, option, equity, futures, FX spot, crypto, deposit, certificate-of-deposit, commodity, swap, money-market fund, Security Master-keyed Asset Operations query/command/projection-builder services, and money-market fund reference/liquidity/sweep/family/rebuild services now live in Meridian.Instruments. Continue moving remaining instrument terms, obligation models, lifecycle schedules, and ledger-projection support out of layer-oriented application/storage owners once behavior is characterized.
 
   - name: Meridian.PortfolioRecords
     conformance: physical
@@ -102,7 +103,7 @@ modules:
       - src/Meridian.Ui.Shared
       - src/Meridian.Wpf
       - src/Meridian.Ui/dashboard
-    migration_next: Keep positions, accounts, activity, holdings, cost basis, and fund-operation read models tied to shared contracts before extracting physical portfolio records.
+    migration_next: Account query/management ports plus in-memory and PostgreSQL-backed fund-account services now live in Meridian.PortfolioRecords, including balance snapshots, statement intake, account readiness, provider-link sync history, reconciliation runs, and margin snapshots. Continue moving remaining positions, activity, holdings, cost basis, and fund-operation read models out of layer-oriented application/UI owners behind shared contracts.
 
   - name: Meridian.FinancialOperations
     conformance: physical
@@ -117,7 +118,7 @@ modules:
       - src/Meridian.Ui.Shared
       - src/Meridian.Wpf
       - src/Meridian.Ui/dashboard
-    migration_next: Operations Continuity aggregate, command workflow service, status derivation, repositories, audit hashing, Postgres workflow store, approval-policy matrix, close-calendar services, accounting-system GL import/reconciliation service, statement reconciliation services, statement-run workflow, validation, matching engines, break classification, decision journals, and reconciliation repositories now live in Meridian.FinancialOperations. Continue moving accounting records, approval/casework support, and remaining close/reconciliation adapters out of application/UI layers behind shared read models and ledger services.
+    migration_next: Operations Continuity aggregate, command workflow service, status derivation, repositories, audit hashing, Postgres workflow store, approval-policy matrix, close-calendar services, accounting-close projection services, accounting-system GL import/reconciliation service, accounting-basis policy/projection services, ledger text-journal parser/reporting services, payment approval and bank-transaction services, statement reconciliation services, statement-run workflow, validation, matching engines, break classification, decision journals, and reconciliation repositories now live in Meridian.FinancialOperations. Continue moving remaining accounting records, approval/casework support, and close/reconciliation adapters out of application/UI layers behind shared read models and ledger services.
 
   - name: Meridian.Workflow
     conformance: physical
@@ -136,11 +137,12 @@ modules:
     physical_project: src/Meridian.Audit
     primary_current_owner: Accounting and Ledger
     current_sources:
+      - src/Meridian.Audit
       - src/Meridian.Application
       - src/Meridian.Contracts
       - src/Meridian.Storage
       - src/Meridian.Ui.Shared
-    migration_next: Keep evidence packets, audit hashes, retained manifests, lineage, and export verification source-backed and fail closed.
+    migration_next: Compliance policy checks, sensitive-action contracts, immutable audit hash chains, and access-review records now live in Meridian.Audit. Continue moving remaining evidence packets, retained manifests, lineage, and export verification source-backed and fail-closed out of layer-oriented application/storage/UI owners.
 
   - name: Meridian.Reporting
     conformance: physical
@@ -153,7 +155,7 @@ modules:
       - src/Meridian.Ui.Services
       - src/Meridian.Wpf
       - src/Meridian.Ui/dashboard
-    migration_next: Keep report packs, exports, publication, restatement, and distribution evidence in shared contracts and services consumed by both UI surfaces.
+    migration_next: Reporting template metadata, run contracts, deterministic section rendering, orchestration, approval transition, audit-entry, and run-store seams now live in Meridian.Reporting. Continue moving remaining report packs, governed exports, publication, restatement, and distribution evidence out of UI/application owners behind shared contracts and services consumed by both UI surfaces.
 
   - name: Meridian.Documents
     conformance: physical

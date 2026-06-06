@@ -1,4 +1,4 @@
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Ui.Shared.Services;
@@ -21,7 +21,9 @@ public sealed class FundStructureSetupWorkflowServiceTests
         Assert.Equal("FUND", result.Fund?.Code);
         Assert.Equal("PORT", result.InvestmentPortfolio.Code);
         Assert.Equal(FundStructureSetupWorkflowService.AccountHandoffAssignmentType, result.AccountHandoffAssignment.AssignmentType);
-        Assert.Contains(result.Graph.Nodes, node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio && node.Code == "PORT");
+        Assert.Equal(result.InvestmentPortfolio.InvestmentPortfolioId, result.AccountHandoffAssignment.NodeId);
+        Assert.Contains(result.Graph.Nodes, node => node.Kind == FundStructureNodeKindDto.Fund && node.Code == "FUND");
+        Assert.DoesNotContain(result.Graph.Nodes, node => node.Kind == FundStructureNodeKindDto.InvestmentPortfolio);
     }
 
 

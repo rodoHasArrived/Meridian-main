@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
-using Meridian.Application.Reporting;
+using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;

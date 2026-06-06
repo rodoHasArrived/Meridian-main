@@ -1,6 +1,6 @@
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Domain.Reconciliation;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Serilog;
 
 namespace Meridian.Application.Commands;

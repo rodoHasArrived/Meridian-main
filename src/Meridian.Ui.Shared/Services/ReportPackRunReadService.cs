@@ -1,4 +1,4 @@
-using Meridian.Application.Reporting;
+using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Export;
 

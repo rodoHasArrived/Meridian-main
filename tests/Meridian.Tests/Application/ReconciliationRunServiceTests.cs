@@ -1,7 +1,7 @@
 using FluentAssertions;
 using System.Text.Json;
 using Meridian.Application.SecurityMaster;
-using Meridian.Application.Banking;
+using Meridian.FinancialOperations.Banking;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.SecurityMaster;

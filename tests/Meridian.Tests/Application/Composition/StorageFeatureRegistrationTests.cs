@@ -2,7 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.DirectLending;
-using Meridian.Application.FundOperationsPersistence;
+using Meridian.Platform.FundOperationsPersistence;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.UI;

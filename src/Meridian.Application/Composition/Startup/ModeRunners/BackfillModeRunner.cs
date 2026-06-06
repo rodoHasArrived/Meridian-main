@@ -3,7 +3,7 @@ using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Meridian.Infrastructure.Adapters.Core;
 using Serilog;
 

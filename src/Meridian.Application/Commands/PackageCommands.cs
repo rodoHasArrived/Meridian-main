@@ -1,5 +1,5 @@
 using Meridian.Application.Config;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Meridian.Storage.Packaging;
 using Serilog;
 

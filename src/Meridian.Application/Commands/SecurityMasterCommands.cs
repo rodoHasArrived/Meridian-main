@@ -1,4 +1,4 @@
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Polygon;

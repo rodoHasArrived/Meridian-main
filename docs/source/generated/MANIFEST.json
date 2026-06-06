@@ -10,7 +10,7 @@
     },
     {
       "path": "docs/source/data/source-modules.yml",
-      "sha256": "1ef7273bfe8be963f17c36f2284284202b823d0769da678b71dde40b56cba87f"
+      "sha256": "31c167df3dd037a0af347886ea4e8bc5635f9823e5c914f0f8cad0738a555c14"
     },
     {
       "path": "docs/source/data/source-readme-coverage.yml",
@@ -18,7 +18,7 @@
     },
     {
       "path": "docs/source/data/source-readme-ignore.yml",
-      "sha256": "890025565359694dba817fe32f3b64e3069a1c9cd57e08c7a4f0adde2f6f6abb"
+      "sha256": "ddeb85fca254efdbde4546f93a094fd12f6b9253599dd4afb7b5c7f400c99573"
     },
     {
       "path": "docs/source/data/source-todos.yml",

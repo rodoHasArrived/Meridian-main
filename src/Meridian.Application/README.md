@@ -63,7 +63,11 @@ and UI presentation concerns in their owning layers.
   breakdown, blocker codes, next actions, and approval counts instead of
   client-local scheduling rules; governed owner/due-date overrides persist under
   `governance/operations-close-calendar-items.json` with actor, rationale, and correlation
-  evidence. Ledger posting commands also enforce line-level Security Master symbol, identity,
+  evidence. Payment approval and bank-side transaction records are also registered from
+  `Meridian.FinancialOperations.Banking`; Application composition wires the module service but does
+  not own the banking workflow state. Financial Operations ledger policy/projection services now
+  own accounting-basis policy lookup and ledger write metadata stamping; application commands and
+  composition consume those services. Ledger posting commands also enforce line-level Security Master symbol, identity,
   explicit approval reference, provenance, and ledger-mapping evidence for every instrument-bearing
   journal line before the durable journal can be appended, including securities-style account lines
   that omit symbol metadata. Candidate and line-level provenance must reference the resolved
@@ -126,16 +130,12 @@ and UI presentation concerns in their owning layers.
   calls, distributions, obligation schedules, and valuation approvals are treated as retained
   provider evidence before close readiness can become complete.
 - Asset-specific instrument projection services for bonds, options, equity, futures, FX spot,
-  crypto, deposits, certificates of deposit, commodities, swaps, and money-market funds are owned by
-  `Meridian.Instruments`. Application composition registers the Instruments services and
-  storage-backed projection stores, but application orchestration no longer owns the instrument
-  contract/reference lookup implementations.
-- `AssetOperations/` - Security Master-keyed asset operations read/projection services. Published
-  projections from the dedicated Asset Operations store take precedence, while bonds can derive a
-  first read-through detail from fixed-income Security Master reference data. Direct Lending
-  projections are adapted into the shared terms, lifecycle, cash-flow, activity, reconciliation,
-  ledger, evidence, workflow-audit, and readiness model through the shared builder instead of
-  moving loan servicing or command tables into Security Master.
+  crypto, deposits, certificates of deposit, commodities, swaps, money-market funds, and shared
+  Asset Operations read/projection flows are owned by `Meridian.Instruments`. Money-market fund
+  reference, liquidity, sweep-profile, family, and rebuild services are also owned there.
+  Application composition registers the Instruments services and storage-backed projection stores,
+  but application orchestration no longer owns the instrument contract/reference lookup, asset
+  operations projection, or MMF reference/liquidity implementations.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. The PostgreSQL-backed service now supports the same shared
   governance cash-flow projection path as the local JSON/in-memory service, using stored
@@ -158,10 +158,10 @@ and UI presentation concerns in their owning layers.
   and `Governance` workspace/page tags into the canonical operator roots (`Strategy`, `Data`, and
   `Accounting`) while validation accepts the full design-document root set:
   `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
-- `FundAccounts/` - internal account balance snapshots, statement intake, account readiness, and
-  provider-link history. Balance snapshots preserve optional realized and unrealized P&L values so
-  shared provider-ledger reconciliation can compare broker marks with retained internal book
-  measures without UI-local calculations.
+- Portfolio Records integration - account query/management ports, internal account balance
+  snapshots, statement intake, account readiness, provider-link history, reconciliation runs, and
+  margin snapshots now live in `Meridian.PortfolioRecords`. Application composition registers those
+  account-record services while orchestration consumers use the PortfolioRecords contracts.
 - `Services/` - application use cases and orchestration services.
 - `Composition/` - application feature registration and service wiring.
 

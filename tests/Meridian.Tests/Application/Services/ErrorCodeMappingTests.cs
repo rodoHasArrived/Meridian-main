@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Exceptions;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Xunit;
 
 namespace Meridian.Tests.Application.Services;

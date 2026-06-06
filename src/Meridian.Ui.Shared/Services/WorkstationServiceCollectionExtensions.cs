@@ -1,10 +1,9 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
-using Meridian.Application.AssetOperations;
 using Meridian.Application.Backtesting;
-using Meridian.Application.Compliance;
+using Meridian.Audit.Compliance;
 using Meridian.Application.FundStructure;
-using Meridian.Application.Reporting;
+using Meridian.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
@@ -23,6 +22,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
+using Meridian.Instruments.AssetOperations;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
@@ -214,7 +214,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
         services.TryAddSingleton(sp => new FamilyOfficeReadService(
             sp.GetService<IFundStructureService>(),
-            sp.GetService<Meridian.Application.FundAccounts.IFundAccountService>(),
+            sp.GetService<Meridian.PortfolioRecords.FundAccounts.IFundAccountService>(),
             sp.GetService<StrategyRunReadService>()));
         services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
         services.TryAddSingleton<IOperationsContinuityRepository>(sp =>

@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using Meridian.Application.AccountingClose;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Ui.Services.Services.Accounting;
 
 namespace Meridian.Wpf.ViewModels.Accounting;

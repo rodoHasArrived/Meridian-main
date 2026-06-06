@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Application.Identity;
 using Meridian.Identity.Auth;

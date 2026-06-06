@@ -1,4 +1,4 @@
-using Meridian.Application.Compliance;
+using Meridian.Audit.Compliance;
 
 namespace Meridian.Tests.Compliance;
 

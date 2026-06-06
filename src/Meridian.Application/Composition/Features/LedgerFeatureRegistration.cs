@@ -1,4 +1,4 @@
-using Meridian.Application.Ledger;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

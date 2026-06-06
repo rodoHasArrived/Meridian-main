@@ -6,14 +6,16 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-05
 ---
 
 # src/Meridian.Reporting
 
 ## Purpose
 
-Physical bounded-context module project for report packs, governed exports, publication, restatement, distribution, and reporting ownership conformance.
+Physical bounded-context module project for report packs, governed exports, reporting run
+contracts, template catalogs, orchestration, publication, restatement, distribution, and reporting
+ownership conformance.
 
 ## Layer responsibility
 
@@ -22,10 +24,16 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `src/Meridian.Reporting` - registered source module root.
+- `DefaultReportingTemplateCatalog.cs` - canonical investor statement, SEC filing, and shadow NAV
+  template metadata.
+- `ReportingContracts.cs` - reporting run, schedule, lineage, template, approval, manifest, and
+  audit contracts.
+- `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
+  lineage rendering, approval transitions, retry/failure state, and run-store persistence handoff.
 
 ## Important workflows
 
-Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
+Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes. Report-template metadata, run contracts, deterministic section rendering, governed report-run orchestration, approval transitions, audit entries, and run persistence handoff live here so UI Shared and UI Services do not own reporting behavior.
 
 ## Diagrams
 
@@ -50,19 +58,21 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.Reporting/Meridian.Reporting.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingOrchestrationServiceTests|FullyQualifiedName~ReportPackWorkflowServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
-## Optional conditional sections
+### API and contract notes
 
-Add only the sections that apply to this module:
+`IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`, and
+`IReportingRunStore` publish the Reporting module seams consumed by UI Shared report-pack workflows
+and UI Services reporting status projections.
 
-- `### Plans and roadmap`
-- `### End-user value`
-- `### Benchmarks and performance`
-- `### Operational evidence`
-- `### Security and credentials`
-- `### API and contract notes`
-- `### Migration and archive notes`
+### Migration and archive notes
+
+Reporting template metadata, run contracts, deterministic section rendering, orchestration,
+approval transition, audit-entry, and run-store seams moved out of the legacy Application reporting
+folder into this module. UI Shared and UI Services consume these module services but do not own the
+reporting behavior.
 
 ## Change rules
 

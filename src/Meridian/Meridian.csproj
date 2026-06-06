@@ -68,6 +68,7 @@
   <!-- Layer Assembly References -->
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\Meridian.Audit\Meridian.Audit.csproj" />
     <ProjectReference Include="..\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />

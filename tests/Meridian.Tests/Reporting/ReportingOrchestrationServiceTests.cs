@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Reporting;
+using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 

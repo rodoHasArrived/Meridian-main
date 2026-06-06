@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Meridian.Application.Subscriptions.Services;
 using Serilog;
 

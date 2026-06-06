@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.Reporting;
+using Meridian.Reporting;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 

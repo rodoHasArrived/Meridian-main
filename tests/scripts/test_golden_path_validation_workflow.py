@@ -57,7 +57,7 @@ class GoldenPathValidationWorkflowTests(unittest.TestCase):
     def test_workflow_triggers_on_shared_golden_path_surfaces(self) -> None:
         for watched_path in [
             "src/Meridian.Application/Commands/LedgerCliCommand.cs",
-            "src/Meridian.Application/Ledger/TextJournal/**",
+            "src/Meridian.FinancialOperations/Ledger/TextJournal/**",
             "src/Meridian.Contracts/Workstation/**",
             "src/Meridian.Execution/**",
             "src/Meridian.Ledger/**",

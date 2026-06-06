@@ -1,6 +1,6 @@
 using Meridian.Application.Composition;
 using Meridian.Application.Etl;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Meridian.Contracts.Etl;
 using Serilog;
 

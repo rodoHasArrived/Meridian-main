@@ -1,5 +1,5 @@
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 
 namespace Meridian.Application.Commands;
 

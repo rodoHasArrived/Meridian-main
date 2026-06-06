@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-05 20:54:10 UTC. Do not edit manually.
+> Auto-generated on 2026-06-06 05:46:09 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1958,15 +1958,6 @@ Meridian-main
 │   │   ├── runtimeconfig.template.json
 │   │   └── UiServer.cs
 │   ├── Meridian.Application
-│   │   ├── AccountingClose
-│   │   │   ├── AccountingCloseModels.cs
-│   │   │   └── AccountingCloseServices.cs
-│   │   ├── Accounts
-│   │   │   ├── IAccountManagementService.cs
-│   │   │   └── IAccountQueryService.cs
-│   │   ├── AssetOperations
-│   │   │   └── AssetOperationsReadService.cs
-│   │   ├── Auth
 │   │   ├── Backfill
 │   │   │   ├── AutoGapRemediationService.cs
 │   │   │   ├── BackfillCoordinatorExecutionGateway.cs
@@ -1982,11 +1973,6 @@ Meridian-main
 │   │   ├── Backtesting
 │   │   │   ├── BacktestPreflightService.cs
 │   │   │   └── BacktestStudioContracts.cs
-│   │   ├── Banking
-│   │   │   ├── BankingException.cs
-│   │   │   ├── IBankingService.cs
-│   │   │   ├── InMemoryBankingService.cs
-│   │   │   └── PostgresBankingService.cs
 │   │   ├── Canonicalization
 │   │   │   ├── CanonicalizationMetrics.cs
 │   │   │   ├── CanonicalizingPublisher.cs
@@ -2020,9 +2006,6 @@ Meridian-main
 │   │   │   ├── SymbolCommands.cs
 │   │   │   ├── ValidateConfigCommand.cs
 │   │   │   └── WalRepairCommand.cs
-│   │   ├── Compliance
-│   │   │   ├── ComplianceModels.cs
-│   │   │   └── ComplianceServices.cs
 │   │   ├── Composition
 │   │   │   ├── Features
 │   │   │   │   ├── BackfillFeatureRegistration.cs
@@ -2143,16 +2126,6 @@ Meridian-main
 │   │   │   └── EtlServices.cs
 │   │   ├── Filters
 │   │   │   └── MarketEventFilter.cs
-│   │   ├── FundAccounts
-│   │   │   ├── IFundAccountService.cs
-│   │   │   ├── InMemoryFundAccountService.cs
-│   │   │   └── PostgresFundAccountService.cs
-│   │   ├── FundOperationsPersistence
-│   │   │   ├── CanonicalProjectionSchemas.cs
-│   │   │   ├── DomainReadSwitch.cs
-│   │   │   ├── FileShadowProjectionWriter.cs
-│   │   │   ├── FundOperationsPersistenceContracts.cs
-│   │   │   └── ProjectionReconciliationHostedService.cs
 │   │   ├── FundStructure
 │   │   │   ├── FundAccountTraversalQueryService.cs
 │   │   │   ├── GovernanceSharedDataAccessService.cs
@@ -2177,16 +2150,6 @@ Meridian-main
 │   │   │   └── FundStructureAccessScopeLineageProvider.cs
 │   │   ├── Indicators
 │   │   │   └── TechnicalIndicatorService.cs
-│   │   ├── Ledger
-│   │   │   ├── TextJournal
-│   │   │   │   ├── LedgerTextJournalDocument.cs
-│   │   │   │   ├── LedgerTextJournalException.cs
-│   │   │   │   ├── LedgerTextJournalParser.cs
-│   │   │   │   ├── LedgerTextJournalReportService.cs
-│   │   │   │   ├── LedgerTextReportOptions.cs
-│   │   │   │   ├── LedgerTextReportRenderer.cs
-│   │   │   │   └── LedgerTextTransaction.cs
-│   │   │   └── AccountingPolicyService.cs
 │   │   ├── Monitoring
 │   │   │   ├── Core
 │   │   │   │   ├── AlertDispatcher.cs
@@ -2232,7 +2195,6 @@ Meridian-main
 │   │   │   ├── TickSizeValidator.cs
 │   │   │   ├── TimestampMonotonicityChecker.cs
 │   │   │   └── ValidationMetrics.cs
-│   │   ├── OperationsContinuity
 │   │   ├── Pipeline
 │   │   │   ├── DeadLetterSink.cs
 │   │   │   ├── DroppedEventAuditTrail.cs
@@ -2254,15 +2216,6 @@ Meridian-main
 │   │   │   ├── ProviderRoutingEngine.cs
 │   │   │   ├── ProviderRoutingMapper.cs
 │   │   │   └── ProviderSetupService.cs
-│   │   ├── Reconciliation
-│   │   ├── Reporting
-│   │   │   ├── DefaultReportingTemplateCatalog.cs
-│   │   │   ├── ReportingContracts.cs
-│   │   │   └── ReportingOrchestrationService.cs
-│   │   ├── Results
-│   │   │   ├── ErrorCode.cs
-│   │   │   ├── OperationError.cs
-│   │   │   └── Result.cs
 │   │   ├── Runbooks
 │   │   │   ├── RunbookExecutor.cs
 │   │   │   ├── RunbookModels.cs
@@ -2365,11 +2318,6 @@ Meridian-main
 │   │   │   ├── EventTraceContext.cs
 │   │   │   ├── OpenTelemetrySetup.cs
 │   │   │   └── TracedEventMetrics.cs
-│   │   ├── Treasury
-│   │   │   ├── IMmfLiquidityService.cs
-│   │   │   ├── IMoneyMarketFundService.cs
-│   │   │   ├── InMemoryMoneyMarketFundService.cs
-│   │   │   └── PostgresMoneyMarketFundService.cs
 │   │   ├── Wizard
 │   │   │   ├── Core
 │   │   │   │   ├── IWizardStep.cs
@@ -2401,6 +2349,9 @@ Meridian-main
 │   │   ├── Meridian.Application.csproj
 │   │   └── README.md
 │   ├── Meridian.Audit
+│   │   ├── Compliance
+│   │   │   ├── ComplianceModels.cs
+│   │   │   └── ComplianceServices.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.Audit.csproj
 │   │   └── README.md
@@ -2943,8 +2894,26 @@ Meridian-main
 │   │   ├── README.md
 │   │   └── TaxLot.cs
 │   ├── Meridian.FinancialOperations
+│   │   ├── AccountingClose
+│   │   │   ├── AccountingCloseModels.cs
+│   │   │   └── AccountingCloseServices.cs
 │   │   ├── AccountingSystem
 │   │   │   └── AccountingSystemIntegrationService.cs
+│   │   ├── Banking
+│   │   │   ├── BankingException.cs
+│   │   │   ├── IBankingService.cs
+│   │   │   ├── InMemoryBankingService.cs
+│   │   │   └── PostgresBankingService.cs
+│   │   ├── Ledger
+│   │   │   ├── TextJournal
+│   │   │   │   ├── LedgerTextJournalDocument.cs
+│   │   │   │   ├── LedgerTextJournalException.cs
+│   │   │   │   ├── LedgerTextJournalParser.cs
+│   │   │   │   ├── LedgerTextJournalReportService.cs
+│   │   │   │   ├── LedgerTextReportOptions.cs
+│   │   │   │   ├── LedgerTextReportRenderer.cs
+│   │   │   │   └── LedgerTextTransaction.cs
+│   │   │   └── AccountingPolicyService.cs
 │   │   ├── OperationsContinuity
 │   │   │   ├── OperationsApprovalPolicyMatrixService.cs
 │   │   │   ├── OperationsCloseCalendarService.cs
@@ -3267,6 +3236,8 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.Infrastructure.CppTrader
 │   ├── Meridian.Instruments
+│   │   ├── AssetOperations
+│   │   │   └── AssetOperationsReadService.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   ├── CertificateOfDepositProjectionService.cs
 │   │   │   └── ICertificateOfDepositReferenceService.cs
@@ -3295,8 +3266,12 @@ Meridian-main
 │   │   │   ├── FxSpotProjectionService.cs
 │   │   │   └── IFxSpotReferenceService.cs
 │   │   ├── MoneyMarketFunds
+│   │   │   ├── IMmfLiquidityService.cs
 │   │   │   ├── IMoneyMarketFundReferenceService.cs
-│   │   │   └── MoneyMarketFundProjectionService.cs
+│   │   │   ├── IMoneyMarketFundService.cs
+│   │   │   ├── InMemoryMoneyMarketFundService.cs
+│   │   │   ├── MoneyMarketFundProjectionService.cs
+│   │   │   └── PostgresMoneyMarketFundService.cs
 │   │   ├── Options
 │   │   │   ├── IOptionChainImportService.cs
 │   │   │   ├── IOptionReferenceService.cs
@@ -3416,10 +3391,27 @@ Meridian-main
 │   │   ├── Program.cs
 │   │   └── README.md
 │   ├── Meridian.Platform
+│   │   ├── FundOperationsPersistence
+│   │   │   ├── CanonicalProjectionSchemas.cs
+│   │   │   ├── DomainReadSwitch.cs
+│   │   │   ├── FileShadowProjectionWriter.cs
+│   │   │   ├── FundOperationsPersistenceContracts.cs
+│   │   │   └── ProjectionReconciliationHostedService.cs
+│   │   ├── Results
+│   │   │   ├── ErrorCode.cs
+│   │   │   ├── OperationError.cs
+│   │   │   └── Result.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.Platform.csproj
 │   │   └── README.md
 │   ├── Meridian.PortfolioRecords
+│   │   ├── Accounts
+│   │   │   ├── IAccountManagementService.cs
+│   │   │   └── IAccountQueryService.cs
+│   │   ├── FundAccounts
+│   │   │   ├── IFundAccountService.cs
+│   │   │   ├── InMemoryFundAccountService.cs
+│   │   │   └── PostgresFundAccountService.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.PortfolioRecords.csproj
 │   │   └── README.md
@@ -3497,9 +3489,12 @@ Meridian-main
 │   │   ├── Meridian.ReferenceData.csproj
 │   │   └── README.md
 │   ├── Meridian.Reporting
+│   │   ├── DefaultReportingTemplateCatalog.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.Reporting.csproj
-│   │   └── README.md
+│   │   ├── README.md
+│   │   ├── ReportingContracts.cs
+│   │   └── ReportingOrchestrationService.cs
 │   ├── Meridian.Risk
 │   │   ├── Rules
 │   │   │   ├── DrawdownCircuitBreaker.cs
@@ -5136,15 +5131,13 @@ Meridian-main
 │   │   ├── DesignModulePhysicalConformanceTests.cs
 │   │   └── Meridian.DesignModules.Tests.csproj
 │   ├── Meridian.DirectLending.Tests
-│   │   ├── BankTransactionSeedTests.cs
 │   │   ├── DirectLendingDatabaseFactAttribute.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
 │   │   ├── DirectLendingServiceTests.cs
 │   │   ├── DirectLendingWorkflowTests.cs
 │   │   ├── GlobalUsings.cs
-│   │   ├── Meridian.DirectLending.Tests.csproj
-│   │   └── PaymentApprovalTests.cs
+│   │   └── Meridian.DirectLending.Tests.csproj
 │   ├── Meridian.FSharp.Tests
 │   │   ├── AccountDetailsTests.fs
 │   │   ├── CalculationTests.fs
@@ -5283,14 +5276,11 @@ Meridian-main
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
 │   │   │   │   └── EtlNormalizationServiceTests.cs
 │   │   │   ├── FundAccounts
-│   │   │   │   └── FundAccountServiceTests.cs
 │   │   │   ├── FundStructure
 │   │   │   │   ├── FundAccountTraversalQueryServiceTests.cs
 │   │   │   │   └── LedgerGroupIdTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
-│   │   │   ├── Ledger
-│   │   │   │   └── AccountingPolicyServiceTests.cs
 │   │   │   ├── Logging
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
@@ -5470,6 +5460,14 @@ Meridian-main
 │   │   │   ├── PaperTradingPortfolioTests.cs
 │   │   │   ├── PositionLotSelectorTests.cs
 │   │   │   └── TradierExecutionReconciliationTests.cs
+│   │   ├── FinancialOperations
+│   │   │   ├── AccountingClose
+│   │   │   │   └── AccountingCloseServicesTests.cs
+│   │   │   ├── Banking
+│   │   │   │   ├── BankTransactionSeedTests.cs
+│   │   │   │   └── PaymentApprovalTests.cs
+│   │   │   └── Ledger
+│   │   │       └── AccountingPolicyServiceTests.cs
 │   │   ├── FixedIncome
 │   │   │   └── BondProjectionServiceTests.cs
 │   │   ├── Futures
@@ -5627,6 +5625,9 @@ Meridian-main
 │   │   │   └── OptionProjectionServiceTests.cs
 │   │   ├── Performance
 │   │   │   └── AllocationBudgetIntegrationTests.cs
+│   │   ├── PortfolioRecords
+│   │   │   └── FundAccounts
+│   │   │       └── FundAccountServiceTests.cs
 │   │   ├── Providers
 │   │   │   └── ProviderCapabilityDescriptorCatalogTests.cs
 │   │   ├── ProviderSdk
@@ -5842,7 +5843,6 @@ Meridian-main
 │   │   │   └── WorkstationStatementReconciliationEndpointTests.cs
 │   │   ├── Wpf
 │   │   │   └── WpfAssetOperationsReadModelTests.cs
-│   │   ├── AccountingCloseServicesTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Tests.csproj
 │   │   ├── StatementReconciliationServiceTests.cs

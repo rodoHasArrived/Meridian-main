@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
@@ -827,7 +827,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
                     .ToArray(),
                 Status = GovernanceReportPackStatusDto.Unknown,
                 ValidationIssues = [],
-                LifecycleEvents = []
+                LifecycleEvents = [],
+                AuditPackReadiness = null
             };
             await File.WriteAllTextAsync(
                 manifestPath,

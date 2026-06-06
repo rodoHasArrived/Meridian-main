@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.Banking;
+using Meridian.FinancialOperations.Banking;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Banking;
 using Microsoft.AspNetCore.Builder;

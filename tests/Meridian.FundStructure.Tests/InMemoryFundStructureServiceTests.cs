@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.FundAccounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
@@ -396,7 +396,7 @@ public sealed class InMemoryFundStructureServiceTests
             var activeGraph = await reloadedStructureService.GetOrganizationStructureAsync(
                 new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: true, AsOf: now.AddDays(2)));
             var historicalGraph = await reloadedStructureService.GetOrganizationStructureAsync(
-                new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: false, AsOf: now.AddDays(2)));
+                new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: false, AsOf: now.AddDays(1)));
 
             Assert.Equal(OwnershipRelationshipTypeDto.CustodiesFor, updated.RelationshipType);
             Assert.Equal(75m, updated.OwnershipPercent);
@@ -441,7 +441,7 @@ public sealed class InMemoryFundStructureServiceTests
         var activeGraph = await fixture.StructureService.GetOrganizationStructureAsync(
             new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: true, AsOf: now.AddDays(2)));
         var allLinksGraph = await fixture.StructureService.GetOrganizationStructureAsync(
-            new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: false, AsOf: now.AddDays(2)));
+            new OrganizationStructureQuery(OrganizationId: fixture.OrganizationId, ActiveOnly: false, AsOf: now.AddDays(1)));
 
         Assert.Equal(replacementLinkId, replacement.OwnershipLinkId);
         Assert.Equal(fixture.SleeveId, replacement.ParentNodeId);

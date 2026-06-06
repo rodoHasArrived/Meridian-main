@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
-using Meridian.Application.ResultTypes;
+using Meridian.Platform.Results;
 using Meridian.Application.Services;
 
 namespace Meridian.Tests.Application.Commands;
