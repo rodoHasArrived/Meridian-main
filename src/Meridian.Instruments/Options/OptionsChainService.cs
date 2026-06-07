@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;

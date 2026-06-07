@@ -1,9 +1,9 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using Meridian.Application.Canonicalization;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.DataIntegration.Canonicalization;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 

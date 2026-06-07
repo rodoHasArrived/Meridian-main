@@ -1,4 +1,4 @@
-using Meridian.Application.Exceptions;
+using Meridian.Core.Exceptions;
 
 namespace Meridian.Ledger;
 

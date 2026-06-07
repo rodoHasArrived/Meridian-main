@@ -3,7 +3,7 @@ using Meridian.DataIntegration.Canonicalization;
 using Meridian.Contracts.Domain.Enums;
 using Xunit;
 
-namespace Meridian.Tests.Application.Services;
+namespace Meridian.Tests.DataIntegration.Canonicalization;
 
 /// <summary>
 /// Tests for <see cref="ConditionCodeMapper"/>.

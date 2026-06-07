@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Meridian.Application.Serialization;
+using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;

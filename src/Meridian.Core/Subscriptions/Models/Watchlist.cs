@@ -1,4 +1,4 @@
-namespace Meridian.Application.Subscriptions.Models;
+namespace Meridian.Core.Subscriptions.Models;
 
 /// <summary>
 /// A named group of symbols for organization and bulk operations.

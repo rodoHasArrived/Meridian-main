@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
-using Meridian.Application.Logging;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Logging;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Storage.Archival;
 using Serilog;
 

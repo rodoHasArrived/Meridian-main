@@ -2,8 +2,8 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.Application.Config;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Config;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Application.UI;
 using Meridian.Infrastructure.Http;
 

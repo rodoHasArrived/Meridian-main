@@ -293,7 +293,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             });
             services.AddSingleton(sp => new AlpacaBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
-                new Meridian.Application.Config.AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
+                new Meridian.Core.Config.AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
                 NullLogger<AlpacaBrokerageGateway>.Instance));
             services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
             services.AddBrokerageExecution(config =>

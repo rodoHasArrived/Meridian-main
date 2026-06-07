@@ -1,6 +1,6 @@
 using System.Net;
-using Meridian.Application.Exceptions;
-using Meridian.Application.Logging;
+using Meridian.Core.Exceptions;
+using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
 using Serilog;

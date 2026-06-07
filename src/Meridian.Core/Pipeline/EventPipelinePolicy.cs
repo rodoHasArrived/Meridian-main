@@ -1,7 +1,7 @@
 using System.Threading.Channels;
 using Meridian.Contracts.Pipeline;
 
-namespace Meridian.Application.Pipeline;
+namespace Meridian.Core.Pipeline;
 
 /// <summary>
 /// Central configuration policy for bounded-channel pipelines.

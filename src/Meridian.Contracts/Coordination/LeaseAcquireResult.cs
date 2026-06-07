@@ -1,4 +1,4 @@
-namespace Meridian.Application.Coordination;
+namespace Meridian.Contracts.Coordination;
 
 public sealed record LeaseAcquireResult(
     bool Acquired,

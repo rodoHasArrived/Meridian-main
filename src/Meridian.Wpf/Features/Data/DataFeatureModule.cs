@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Copy;
 using Meridian.Wpf.Features.Data.Shell;

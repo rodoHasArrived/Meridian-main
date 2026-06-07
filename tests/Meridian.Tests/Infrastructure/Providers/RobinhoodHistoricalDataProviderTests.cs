@@ -2,7 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.Exceptions;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Xunit;
 

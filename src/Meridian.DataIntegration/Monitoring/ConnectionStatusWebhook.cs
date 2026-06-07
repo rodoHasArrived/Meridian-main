@@ -1,9 +1,10 @@
 using System.Threading;
-using Meridian.DataIntegration.Monitoring;
+using Meridian.Core.Monitoring;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Meridian.Contracts.Monitoring;
 
-namespace Meridian.Application.Monitoring;
+namespace Meridian.DataIntegration.Monitoring;
 
 /// <summary>
 /// Sends webhook notifications for connection status changes.

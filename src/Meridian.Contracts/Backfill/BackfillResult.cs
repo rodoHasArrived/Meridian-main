@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace Meridian.Application.Backfill;
+namespace Meridian.Contracts.Backfill;
 
 /// <summary>
 /// Shared outcome payload for a single historical backfill run.

@@ -3,7 +3,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Meridian.Application.Logging;
+namespace Meridian.Core.Logging;
 
 /// <summary>
 /// Configures Serilog logging infrastructure for the Meridian.

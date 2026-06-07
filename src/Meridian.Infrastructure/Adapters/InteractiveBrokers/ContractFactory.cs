@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Domain.Enums;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;

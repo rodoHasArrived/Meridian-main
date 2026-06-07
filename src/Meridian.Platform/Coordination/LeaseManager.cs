@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
-using Meridian.Application.Config;
+using Meridian.Contracts.Coordination;
+using Meridian.Core.Config;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Meridian.Application.Coordination;
+namespace Meridian.Platform.Coordination;
 
 /// <summary>
 /// Platform-owned lease manager with automatic renewal and operator diagnostics.

@@ -1,4 +1,4 @@
-namespace Meridian.Application.Monitoring;
+namespace Meridian.Core.Monitoring;
 
 /// <summary>
 /// Abstraction for recording WebSocket reconnection metrics.

@@ -2,7 +2,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Meridian.Application.Serialization;
+using Meridian.Core.Serialization;
 
 namespace Meridian.Storage.Packaging;
 

@@ -1,4 +1,4 @@
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Configuration for the built-in synthetic market data provider used for local development,

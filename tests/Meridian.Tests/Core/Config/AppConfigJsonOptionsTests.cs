@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Xunit;
 
 namespace Meridian.Tests.Core.Config;

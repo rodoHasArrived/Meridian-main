@@ -4,6 +4,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
+using Meridian.Contracts.Backfill;
 
 namespace Meridian.Ui.Shared.Endpoints;
 

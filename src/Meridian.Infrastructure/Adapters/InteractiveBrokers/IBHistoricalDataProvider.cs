@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Threading;
 using IBApi;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Contracts;
@@ -530,7 +530,7 @@ public sealed record IntradayBar(
 );
 #else
 
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;

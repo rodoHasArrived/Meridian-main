@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.UI;
 using Meridian.ProviderSdk;

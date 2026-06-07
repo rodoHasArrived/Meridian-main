@@ -4,7 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Contracts.Monitoring;

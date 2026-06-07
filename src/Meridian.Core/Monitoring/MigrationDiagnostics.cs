@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace Meridian.Application.Monitoring;
+namespace Meridian.Core.Monitoring;
 
 /// <summary>
 /// Temporary observability counters for the provider-registry migration.
@@ -16,8 +16,8 @@ namespace Meridian.Application.Monitoring;
 ///
 /// NOTE: This class lives in the Core project (not Application) so that
 /// Infrastructure can reference it without creating a circular dependency.
-/// The namespace is kept as Meridian.Application.Monitoring for
-/// consistency with other monitoring abstractions in this namespace.
+/// The namespace is Core-owned because these counters are shared runtime
+/// primitives, not Application orchestration services.
 /// </summary>
 public static class MigrationDiagnostics
 {

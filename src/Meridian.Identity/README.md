@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-IDENTITY
 path: src/Meridian.Identity
 status: active
 owner_lane: Identity and Access
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.Identity
@@ -30,7 +30,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Application/ScopedAccessServices.cs` - scoped access assignment and authorization services.
 - `Application/FundStructureAccessScopeLineageProvider.cs` - fund-structure hierarchy lineage
   provider used by scoped authorization to honor organization/fund/account ancestry.
-- `Application/FundStructure/FundAccountTraversalQueryService.cs` - cached Fund -> Owns ->
+- `FundStructure/FundAccountTraversalQueryService.cs` - cached Fund -> Owns ->
   Account traversal query used by scoped-access and fund-account endpoint consumers.
 - `Infrastructure/RolePermissionProfileStore.cs` - file-backed custom role-profile catalog and audit-event persistence.
 - `Infrastructure/ScopedAccessAssignmentStore.cs` - file and PostgreSQL scoped-access assignment stores.
@@ -75,11 +75,11 @@ role-profile permission persistence. `FundStructureAccessScopeLineageProvider` i
 and consumes the shared `Meridian.Contracts.Services.IFundStructureService` contract supplied by
 Application composition, so scoped authorization can resolve ancestry without depending on
 Application-only identity adapters. `FundAccountTraversalQueryService` also lives here under the
-compatibility namespace `Meridian.Application.FundStructure`; it consumes only shared
-`IFundStructureService` and cache abstractions so endpoints can reuse the authoritative Fund ->
-Owns -> Account traversal without keeping the implementation in Application. Cross-module
-endpoint, F#, browser, and WPF consumers should reference Identity rather than reintroducing auth
-DTOs or identity state under `Meridian.Contracts` or `Meridian.Ui.Shared`.
+`Meridian.Identity` namespace; it consumes only shared `IFundStructureService` and cache
+abstractions so endpoints can reuse the authoritative Fund -> Owns -> Account traversal without
+keeping the implementation in Application. Cross-module endpoint, F#, browser, and WPF consumers
+should reference Identity rather than reintroducing auth DTOs or identity state under
+`Meridian.Contracts` or `Meridian.Ui.Shared`.
 
 ### Migration and archive notes
 

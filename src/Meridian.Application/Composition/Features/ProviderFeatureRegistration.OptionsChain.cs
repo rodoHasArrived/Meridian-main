@@ -1,5 +1,5 @@
 using System.Net.Http;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Alpaca;

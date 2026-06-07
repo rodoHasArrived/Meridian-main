@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Meridian.Core.Serialization;
 using Meridian.Contracts.Schema;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
@@ -136,7 +137,7 @@ public sealed class SchemaUpcasterRegistry
 
                 // For multi-step chains, re-serialize for the next upcaster
                 currentJson = System.Text.Json.JsonSerializer.Serialize(
-                    upcastResult, Serialization.MarketDataJsonContext.HighPerformanceOptions);
+                    upcastResult, MarketDataJsonContext.HighPerformanceOptions);
                 currentVersion = upcaster.ToSchemaVersion;
             }
             catch (Exception ex)

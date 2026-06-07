@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Platform.Results;
 using Meridian.Storage.Packaging;
 using Serilog;

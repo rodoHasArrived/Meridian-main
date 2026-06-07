@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using Meridian.Application.Exceptions;
-using Meridian.Application.Logging;
+using Meridian.Core.Exceptions;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Contracts;

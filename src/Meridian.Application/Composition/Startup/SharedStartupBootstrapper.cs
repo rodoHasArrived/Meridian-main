@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using Meridian.Application.Commands;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
 using Serilog;
-using DeploymentContext = Meridian.Application.Config.DeploymentContext;
+using DeploymentContext = Meridian.Platform.Runtime.DeploymentContext;
 
 namespace Meridian.Application.Composition.Startup;
 

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;

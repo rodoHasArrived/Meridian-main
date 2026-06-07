@@ -1,5 +1,5 @@
-using Meridian.Application.Config;
-using Meridian.Application.Monitoring.Core;
+using Meridian.Core.Config;
+using Meridian.Core.Monitoring.Core;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;

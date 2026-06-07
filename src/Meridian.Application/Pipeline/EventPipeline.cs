@@ -15,6 +15,8 @@ using Meridian.Storage.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Pipeline;
+using Meridian.Core.Pipeline;
 
 namespace Meridian.Application.Pipeline;
 

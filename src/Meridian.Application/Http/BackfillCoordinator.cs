@@ -1,7 +1,7 @@
 using System.Threading;
 using Meridian.Application.Backfill;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Infrastructure.Adapters.Core;
@@ -19,6 +19,8 @@ using Meridian.Storage.Sinks;
 using Serilog;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Backfill;
+using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.UI;
 

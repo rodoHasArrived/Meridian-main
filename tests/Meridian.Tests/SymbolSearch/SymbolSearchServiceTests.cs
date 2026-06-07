@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;

@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Application.Config;
-using Meridian.Application.Services;
+using Meridian.Core.Config;
+using Meridian.Platform.Runtime;
 using Xunit;
 
 namespace Meridian.Tests.Platform.Runtime;

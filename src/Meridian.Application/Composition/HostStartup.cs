@@ -1,6 +1,6 @@
-using Meridian.Application.Config;
-using Meridian.Application.Coordination;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Contracts.Coordination;
+using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Services;
@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using DeploymentContext = Meridian.Platform.Runtime.DeploymentContext;
+using DeploymentMode = Meridian.Platform.Runtime.DeploymentMode;
 
 namespace Meridian.Application.Composition;
 

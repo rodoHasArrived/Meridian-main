@@ -1,9 +1,9 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using Meridian.Application.Indicators;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
+using Meridian.Instruments.Indicators;
 
 namespace Meridian.Benchmarks;
 

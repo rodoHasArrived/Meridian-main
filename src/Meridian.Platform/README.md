@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-PLATFORM
 path: src/Meridian.Platform
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.Platform
@@ -40,25 +40,28 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `FundOperationsPersistence/ProjectionReconciliationHostedService.cs` - hosted reconciliation
   loop for domain projection discrepancies.
 - `Coordination/` - platform-owned lease renewal, cluster coordinator election, split-brain
-  detection, scheduled-work ownership, and subscription ownership runtime services that implement
-  the contracts-owned coordination ports.
+  detection, scheduled-work ownership, and subscription ownership runtime services published under
+  `Meridian.Platform.Coordination` and implementing the `Meridian.Contracts.Coordination` ports.
 - `Results/` - shared `Result`, `OperationError`, `ErrorCode`, and friendly error-formatting
   primitives used by commands, startup validation, diagnostics endpoints, and other cross-domain
   runtime flows.
 - `Diagnostics/` - process-level error tracking, runtime error ring-buffer retention,
   system-health resource snapshots, diagnostic bundle generation, shutdown-sequence diagnostic
-  snapshots, and shutdown lifecycle DTOs consumed by Application orchestration and shared endpoint
-  projections.
+  snapshots, and shutdown lifecycle DTOs published under `Meridian.Platform.Diagnostics` and
+  consumed by Application orchestration and shared endpoint projections.
 - `Monitoring/CircuitBreakerStatusService.cs` - runtime circuit-breaker state dashboard,
   transition events, and health snapshot records consumed by Application composition and shared
   resilience endpoints.
 - `Monitoring/BackpressureAlertService.cs` - runtime pipeline backpressure detection and alert
-  publishing over the Contracts-owned pipeline statistics DTO and monitoring webhook sink contract.
+  publishing under `Meridian.Platform.Monitoring` over the Contracts-owned pipeline statistics DTO
+  and monitoring webhook sink contract.
 - `Monitoring/Core/` - runtime alert dispatcher, health-check aggregator, SLO registry, and
-  alert-to-runbook registry implementations over the Core-owned monitoring contracts.
+  alert-to-runbook registry implementations under `Meridian.Platform.Monitoring.Core` over the
+  Core-owned monitoring contracts.
 - `Runtime/` - shared deployment context, CLI/runtime mode policy, startup summary display,
   hosted graceful-shutdown flush behavior, shutdown sequence handling, and console progress display
-  helpers used by startup summaries and diagnostics/connectivity workflows.
+  helpers published under `Meridian.Platform.Runtime` and used by startup summaries and
+  diagnostics/connectivity workflows.
 - `Performance/CoLocationProfileActivator.cs` - platform-owned runtime performance profile
   activation for the desktop diagnostics surface and latency-sensitive host startup flows.
 - `Scheduling/OperationalScheduler.cs` - trading-hours-aware runtime scheduling policy for
@@ -83,13 +86,15 @@ persisted-projection read switching, hosted projection-reconciliation plumbing, 
 command/startup result semantics. Application composition may register these services and consume
 Platform diagnostics, monitoring core services, trace context carriers, event metrics counters, and metrics decorators, but it should not own the platform cutover
 contracts, shadow-projection schemas, cluster lease renewal, coordinator election, split-brain
-detection, scheduled-work ownership, subscription ownership, runtime alert dispatch, health
+detection, scheduled-work ownership, subscription ownership, the `Meridian.Platform.Coordination`
+implementation namespace, runtime alert dispatch, health
 aggregation, SLO/runbook registries, trace context carriers, OpenTelemetry setup, market-data
 tracing helpers, default event metrics counters, OpenTelemetry-compatible event metrics decoration, trading-hours-aware operational
-scheduling policy, trading-calendar implementation, deployment context, runtime mode resolution,
-startup summary display, hosted graceful-shutdown flush behavior, shutdown sequence handling, colocation profile activation,
-diagnostic state snapshots, diagnostic bundle generation, shutdown lifecycle DTOs, API documentation model generation, runtime circuit-breaker status dashboards,
-runtime error ring buffers, or shared system-health resource snapshots, or shared error-code
+scheduling policy, trading-calendar implementation, deployment context and runtime mode resolution
+under `Meridian.Platform.Runtime`, startup summary display, hosted graceful-shutdown flush behavior, shutdown sequence handling, colocation profile activation,
+diagnostic state snapshots and diagnostic bundle generation under `Meridian.Platform.Diagnostics`, shutdown lifecycle DTOs, API documentation model generation, runtime circuit-breaker status dashboards,
+runtime error ring buffers, shared system-health resource snapshots, runtime backpressure alerting
+under `Meridian.Platform.Monitoring`, or shared error-code
 taxonomy.
 
 ## Diagrams
@@ -115,6 +120,8 @@ taxonomy.
 
 ```bash
 dotnet build src/Meridian.Platform/Meridian.Platform.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~ClusterCoordinatorServiceTests|FullyQualifiedName~SplitBrainDetectorTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StartupSummaryTests|FullyQualifiedName~GracefulShutdownTests|FullyQualifiedName~GracefulShutdownIntegrationTests|FullyQualifiedName~ConfigurationUnificationTests|FullyQualifiedName~CommandModeRunnerTests|FullyQualifiedName~DiagnosticBundleServiceTests|FullyQualifiedName~DiagnosticsFeatureRegistrationTests|FullyQualifiedName~BackpressureAlertServiceTests|FullyQualifiedName~AlertDispatcherTests|FullyQualifiedName~HealthCheckAggregatorTests|FullyQualifiedName~SloDefinitionRegistryTests|FullyQualifiedName~AlertRunbookRegistryTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~StorageFeatureRegistrationTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ErrorCodeMappingTests|FullyQualifiedName~DiagnosticsCommandsTests|FullyQualifiedName~StatementImportCommandsTests|FullyQualifiedName~SimulationCommandsTests|FullyQualifiedName~SecurityMasterCommandsEdgarTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EventTraceContextTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false

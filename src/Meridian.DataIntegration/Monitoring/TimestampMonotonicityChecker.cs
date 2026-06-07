@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Serilog;
 
 namespace Meridian.DataIntegration.Monitoring;

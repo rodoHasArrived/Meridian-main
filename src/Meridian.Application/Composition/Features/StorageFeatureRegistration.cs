@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.FinancialOperations.Banking;
 using Meridian.Instruments.CryptoCurrency;

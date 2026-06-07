@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Serilog;
 
 namespace Meridian.Storage.Export;

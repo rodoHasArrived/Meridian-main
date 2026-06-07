@@ -19,8 +19,8 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
         services.TryAddSingleton<AlpacaBrokerageGateway>(sp =>
         {
             var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-            var options = sp.GetService<Meridian.Application.Config.AlpacaOptions>()
-                ?? new Meridian.Application.Config.AlpacaOptions();
+            var options = sp.GetService<Meridian.Core.Config.AlpacaOptions>()
+                ?? new Meridian.Core.Config.AlpacaOptions();
             var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
             return new AlpacaBrokerageGateway(httpClientFactory, options, logger);
         });
@@ -31,8 +31,8 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
 
         services.TryAddSingleton<IBBrokerageGateway>(sp =>
         {
-            var options = sp.GetService<Meridian.Application.Config.IBOptions>()
-                ?? new Meridian.Application.Config.IBOptions();
+            var options = sp.GetService<Meridian.Core.Config.IBOptions>()
+                ?? new Meridian.Core.Config.IBOptions();
             var logger = sp.GetRequiredService<ILogger<IBBrokerageGateway>>();
             return new IBBrokerageGateway(options, logger);
         });

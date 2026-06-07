@@ -1,6 +1,5 @@
-using Meridian.Application.Canonicalization;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
@@ -16,6 +15,8 @@ using Meridian.Storage.Sinks;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Meridian.Contracts.Monitoring;
+using Meridian.Core.Monitoring;
+using Meridian.Core.Pipeline;
 
 namespace Meridian.Application.Composition.Features;
 

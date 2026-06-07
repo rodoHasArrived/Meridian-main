@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Meridian.Application.Backfill;
 using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
@@ -8,6 +7,8 @@ using Meridian.Storage.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using BackfillCostEstimator = Meridian.Application.Backfill.BackfillCostEstimator;
+using BackfillCostRequest = Meridian.Application.Backfill.BackfillCostRequest;
 
 namespace Meridian.Ui.Shared.Endpoints;
 

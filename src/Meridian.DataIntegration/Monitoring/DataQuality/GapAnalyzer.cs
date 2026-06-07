@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
 using Serilog;
 

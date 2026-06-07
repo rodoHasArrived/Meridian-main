@@ -1,5 +1,6 @@
 using FluentAssertions;
-using Meridian.Application.Coordination;
+using Meridian.Contracts.Coordination;
+using Meridian.Platform.Coordination;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;

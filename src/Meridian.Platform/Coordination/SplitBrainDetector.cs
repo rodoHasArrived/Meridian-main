@@ -1,7 +1,8 @@
+using Meridian.Contracts.Coordination;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Meridian.Application.Coordination;
+namespace Meridian.Platform.Coordination;
 
 /// <summary>
 /// Background service that detects and heals split-brain conditions in the Meridian cluster.

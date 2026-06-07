@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Core.Services;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;

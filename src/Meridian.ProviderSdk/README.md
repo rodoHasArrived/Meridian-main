@@ -6,7 +6,7 @@ module_id: SRC-PROVIDER-SDK
 path: src/Meridian.ProviderSdk
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-05-20
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.ProviderSdk
@@ -31,10 +31,9 @@ This layer is the plugin contract for provider adapters. It should expose stable
 
 Use this module when a provider abstraction must be consumed by multiple adapters or higher-level services.
 `Backfill/BackfillJob.cs` owns the shared backfill job descriptors and `DataGranularity`
-conversion helpers. The compatibility namespace is preserved so existing Infrastructure,
-Application, and UI call sites continue to compile while the physical owner is ProviderSdk.
+conversion helpers.
 `PluginLoaderService` owns non-recursive provider plugin assembly scanning and registration against
-`DataSourceRegistry`; WPF and host composition consume that ProviderSdk-owned loader rather than
+`DataSourceRegistry` under the `Meridian.ProviderSdk` namespace; WPF and host composition consume that ProviderSdk-owned loader rather than
 keeping reflection-based provider discovery in Application.
 Provider routing capabilities are contract-level workflow gates; `FactorSchedule` is distinct from
 generic `CorporateActions` so accounting workflows can degrade fixed-income, structured-credit,

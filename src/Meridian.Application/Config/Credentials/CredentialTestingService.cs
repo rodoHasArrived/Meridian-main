@@ -3,7 +3,8 @@ using Meridian.DataIntegration.Credentials;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Http;
 using Serilog;
 

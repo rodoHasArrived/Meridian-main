@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Meridian.Application.Config;
-using Meridian.Application.Coordination;
+using Meridian.Core.Config;
+using Meridian.Contracts.Coordination;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Services;

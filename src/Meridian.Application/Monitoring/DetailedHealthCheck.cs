@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Platform.Diagnostics;
 using Serilog;
+using Meridian.Contracts.Pipeline;
 
 namespace Meridian.Application.Monitoring;
 

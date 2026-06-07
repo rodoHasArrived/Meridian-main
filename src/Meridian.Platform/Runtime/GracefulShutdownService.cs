@@ -6,7 +6,7 @@ using Meridian.Platform.Tracing;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace Meridian.Application.Services;
+namespace Meridian.Platform.Runtime;
 
 /// <summary>
 /// IHostedService that ensures graceful shutdown by flushing all registered buffers

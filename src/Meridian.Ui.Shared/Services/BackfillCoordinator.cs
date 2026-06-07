@@ -1,11 +1,12 @@
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Contracts;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
-using BackfillResult = Meridian.Application.Backfill.BackfillResult;
+using BackfillResult = Meridian.Contracts.Backfill.BackfillResult;
 using CoreBackfillCoordinator = Meridian.Application.UI.BackfillCoordinator;
+using Meridian.Contracts.Backfill;
 
 namespace Meridian.Ui.Shared.Services;
 

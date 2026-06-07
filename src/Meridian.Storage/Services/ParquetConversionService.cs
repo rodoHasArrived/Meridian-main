@@ -1,6 +1,6 @@
 using System.IO.Compression;
 using System.Text.Json;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Parquet;
 using Parquet.Data;
 using Parquet.Schema;

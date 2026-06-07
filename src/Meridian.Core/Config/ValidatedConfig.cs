@@ -1,4 +1,4 @@
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Represents a validated, normalized configuration that has passed through the full configuration pipeline.

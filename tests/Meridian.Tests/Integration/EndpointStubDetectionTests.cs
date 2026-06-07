@@ -8,6 +8,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Domain.Models;
 using Xunit;
 using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Pipeline;
 
 namespace Meridian.Tests.Integration;
 

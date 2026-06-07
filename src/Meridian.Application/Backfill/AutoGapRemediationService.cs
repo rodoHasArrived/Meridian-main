@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.Http;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;

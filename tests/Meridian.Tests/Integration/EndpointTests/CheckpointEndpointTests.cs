@@ -8,6 +8,8 @@ using Meridian.Application.Backfill;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Meridian.Contracts.Backfill;
+using Meridian.Storage.Backfill;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 

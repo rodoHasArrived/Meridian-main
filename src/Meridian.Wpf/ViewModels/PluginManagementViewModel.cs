@@ -1,6 +1,6 @@
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Application.Services;
+using Meridian.ProviderSdk;
 
 namespace Meridian.Wpf.ViewModels;
 

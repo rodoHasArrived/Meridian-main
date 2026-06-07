@@ -1,6 +1,6 @@
 using Meridian.Infrastructure.Contracts;
 
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Configuration change notification event args.

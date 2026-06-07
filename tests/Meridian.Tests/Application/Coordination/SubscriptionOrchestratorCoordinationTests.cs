@@ -1,12 +1,14 @@
 using FluentAssertions;
-using Meridian.Application.Config;
-using Meridian.Application.Coordination;
+using Meridian.Core.Config;
+using Meridian.Contracts.Coordination;
 using Meridian.Application.Subscriptions;
 using Meridian.Contracts.Configuration;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Platform.Coordination;
+using Meridian.Storage.Coordination;
 using Meridian.Tests.TestHelpers;
 using Xunit;
 

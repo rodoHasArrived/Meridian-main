@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace Meridian.Application.Monitoring;
+namespace Meridian.Contracts.Monitoring;
 
 /// <summary>
 /// Contract for delivery services that can publish monitoring alert messages.

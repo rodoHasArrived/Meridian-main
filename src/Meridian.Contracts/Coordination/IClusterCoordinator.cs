@@ -1,4 +1,4 @@
-namespace Meridian.Application.Coordination;
+namespace Meridian.Contracts.Coordination;
 
 /// <summary>Event data raised when this instance gains or loses the coordinator role.</summary>
 public sealed class LeadershipChangedEventArgs(bool isLeader, string instanceId) : EventArgs

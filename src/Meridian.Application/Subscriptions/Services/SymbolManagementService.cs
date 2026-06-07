@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Application.UI;
 using Meridian.Storage;
 using Serilog;

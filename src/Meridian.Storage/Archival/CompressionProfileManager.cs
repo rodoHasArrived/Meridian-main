@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using K4os.Compression.LZ4;
 using K4os.Compression.LZ4.Streams;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Serilog;
 using ZstdSharp;
 

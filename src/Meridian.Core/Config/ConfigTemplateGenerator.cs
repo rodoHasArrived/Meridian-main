@@ -1,10 +1,10 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Serilog;
 
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Service for generating configuration templates.

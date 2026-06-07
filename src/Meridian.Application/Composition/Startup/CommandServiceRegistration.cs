@@ -1,5 +1,5 @@
 using Meridian.Application.Commands;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Historical;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.Services;

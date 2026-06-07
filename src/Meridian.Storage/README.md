@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.Storage
@@ -39,11 +39,12 @@ lookup paths, and evidence trails those layers rely on.
 
 - `Archival/` - safety tools for file-backed records, including the write-ahead log and atomic file
   writer.
-- `Backfill/` - durable last-run backfill status plus per-symbol checkpoint and bar-count sidecars.
+- `Backfill/` - durable last-run backfill status plus per-symbol checkpoint and bar-count sidecars
+  published under `Meridian.Storage.Backfill`.
 - `Config/StorageConfigExtensions.cs` - Storage-owned mapping from shared `StorageConfig` values
   into `StorageOptions`, including naming convention, date partition, sink, and profile defaults.
-- `Coordination/` - file-backed shared-storage lease store implementation for contracts-owned
-  coordination records.
+- `Coordination/` - file-backed shared-storage lease store implementation published under
+  `Meridian.Storage.Coordination` for contracts-owned `Meridian.Contracts.Coordination` records.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
@@ -73,13 +74,15 @@ Storage sink flush behavior uses the Core-owned `Meridian.Core.Services.IFlushab
 than an Application service dependency. Saved records feed replay, packaging, exports, catalog
 lookup, lineage checks, quality scoring, and maintenance jobs.
 
-Backfill status and checkpoint sidecars are Storage-owned durable records. They persist the shared
-Contracts-owned backfill result payload plus per-symbol checkpoint and bar-count maps under the
-storage root through `AtomicFileWriter`, allowing interrupted jobs to resume without Application
-owning file persistence details.
+Backfill status and checkpoint sidecars are Storage-owned durable records published under
+`Meridian.Storage.Backfill`. They persist the shared Contracts-owned
+`Meridian.Contracts.Backfill` result payload plus per-symbol checkpoint and bar-count maps under
+the storage root through `AtomicFileWriter`, allowing interrupted jobs to resume without
+Application owning file persistence details.
 
 Shared-storage coordination lease persistence is Storage-owned durable state. The
-`SharedStorageCoordinationStore` persists Contracts-owned lease records under the configured
+`SharedStorageCoordinationStore` in `Meridian.Storage.Coordination` persists Contracts-owned
+lease records under the configured
 coordination root with per-resource lock files and `AtomicFileWriter`; Platform owns lease renewal,
 coordinator election, split-brain detection, scheduled-work ownership, and subscription ownership
 decisions, while Application consumes those services through the shared contracts.
@@ -209,6 +212,8 @@ flowchart TB
 ## Validation
 
 ```bash
+dotnet build src/Meridian.Storage/Meridian.Storage.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 

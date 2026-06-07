@@ -1,6 +1,6 @@
 using Meridian.Domain.Events;
 
-namespace Meridian.Application.Monitoring;
+namespace Meridian.Core.Monitoring;
 
 /// <summary>
 /// Lightweight schema validation for <see cref="MarketEvent"/> instances before they are persisted.

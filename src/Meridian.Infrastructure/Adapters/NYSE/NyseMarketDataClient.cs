@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Reactive.Disposables;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;

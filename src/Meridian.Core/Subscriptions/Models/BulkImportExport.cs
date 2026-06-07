@@ -1,4 +1,4 @@
-namespace Meridian.Application.Subscriptions.Models;
+namespace Meridian.Core.Subscriptions.Models;
 
 /// <summary>
 /// Result of a bulk CSV import operation.

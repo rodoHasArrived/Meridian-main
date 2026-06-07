@@ -6,6 +6,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Platform.Results;
 using Meridian.Infrastructure.Adapters.Core;
 using Serilog;
+using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.Composition.Startup.ModeRunners;
 

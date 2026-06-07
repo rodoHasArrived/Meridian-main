@@ -1,4 +1,4 @@
-namespace Meridian.Application.Exceptions;
+namespace Meridian.Core.Exceptions;
 
 /// <summary>
 /// Exception raised when an asset class is not supported by a requested workflow.

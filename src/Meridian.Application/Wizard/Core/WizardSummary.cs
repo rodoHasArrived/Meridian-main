@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 
 namespace Meridian.Application.Wizard.Core;
 

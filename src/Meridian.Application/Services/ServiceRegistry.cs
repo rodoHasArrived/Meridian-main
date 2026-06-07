@@ -1,5 +1,5 @@
-using Meridian.Application.Logging;
-using Meridian.Application.Monitoring.Core;
+using Meridian.Core.Logging;
+using Meridian.Core.Monitoring.Core;
 using Meridian.DataIntegration.Historical;
 using Meridian.DataIntegration.Testing;
 using Meridian.Infrastructure.Contracts;

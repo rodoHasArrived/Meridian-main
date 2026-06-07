@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
-using Meridian.Application.Monitoring;
-using Meridian.Application.Monitoring.Core;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
+using Meridian.Core.Monitoring;
+using Meridian.Core.Monitoring.Core;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;

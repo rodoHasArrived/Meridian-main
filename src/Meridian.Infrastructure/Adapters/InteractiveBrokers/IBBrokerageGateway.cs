@@ -1,14 +1,14 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
-using Meridian.Application.Pipeline;
+using Meridian.Core.Pipeline;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.Logging;
-using IBOptions = Meridian.Application.Config.IBOptions;
+using IBOptions = Meridian.Core.Config.IBOptions;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
 using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
 using OrderType = Meridian.Execution.Sdk.OrderType;

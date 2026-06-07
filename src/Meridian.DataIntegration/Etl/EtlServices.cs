@@ -1,12 +1,11 @@
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Pipeline;
-using Meridian.DataIntegration.Etl;
 using Meridian.Storage.Etl;
 using Meridian.Storage.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Meridian.Application.Etl;
+namespace Meridian.DataIntegration.Etl;
 
 public sealed class EtlJobService : IEtlJobService
 {

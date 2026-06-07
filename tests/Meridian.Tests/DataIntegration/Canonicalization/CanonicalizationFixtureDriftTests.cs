@@ -3,14 +3,14 @@ using System.Text.Json;
 using FluentAssertions;
 using Xunit;
 
-namespace Meridian.Tests.Application.Canonicalization;
+namespace Meridian.Tests.DataIntegration.Canonicalization;
 
 public sealed class CanonicalizationFixtureDriftTests
 {
     private static readonly string RepoRoot = ResolveRepoRoot();
     private static readonly string FixturesDir = Path.Combine(
         RepoRoot,
-        "tests", "Meridian.Tests", "Application", "Canonicalization", "Fixtures");
+        "tests", "Meridian.Tests", "DataIntegration", "Canonicalization", "Fixtures");
 
     [Fact]
     public void CanonicalizationGoldenFixture_DriftReport_HasNoUnmappedFixtureCodesOrVenues()

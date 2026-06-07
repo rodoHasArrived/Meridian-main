@@ -22,12 +22,12 @@ public sealed class ConfigStore
 
     public string ConfigPath => _core.ConfigPath;
 
-    public static Meridian.Application.Config.AppConfig LoadConfig(string path)
+    public static Meridian.Core.Config.AppConfig LoadConfig(string path)
         => CoreConfigStore.LoadConfig(path);
 
-    public Meridian.Application.Config.AppConfig Load() => _core.Load();
+    public Meridian.Core.Config.AppConfig Load() => _core.Load();
 
-    public System.Threading.Tasks.Task SaveAsync(Meridian.Application.Config.AppConfig cfg)
+    public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg)
         => _core.SaveAsync(cfg);
 
     public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics()
@@ -35,13 +35,13 @@ public sealed class ConfigStore
 
     public string? TryLoadStatusJson() => _core.TryLoadStatusJson();
 
-    public string GetDataRoot(Meridian.Application.Config.AppConfig? cfg = null)
+    public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null)
         => _core.GetDataRoot(cfg);
 
-    public string GetStatusPath(Meridian.Application.Config.AppConfig? cfg = null)
+    public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null)
         => _core.GetStatusPath(cfg);
 
-    public string GetBackfillStatusPath(Meridian.Application.Config.AppConfig? cfg = null)
+    public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null)
         => _core.GetBackfillStatusPath(cfg);
 
     private static string GetWebDefaultPath()

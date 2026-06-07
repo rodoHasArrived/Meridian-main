@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
@@ -11,6 +11,8 @@ using Meridian.Infrastructure.Http;
 using Meridian.Platform.Diagnostics;
 using Meridian.Platform.Scheduling;
 using Serilog;
+using Meridian.Contracts.Pipeline;
+using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Application.Services;
 

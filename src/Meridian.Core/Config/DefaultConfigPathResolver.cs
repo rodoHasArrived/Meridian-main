@@ -1,4 +1,4 @@
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Resolves the default configuration file by searching the current directory and its ancestors.

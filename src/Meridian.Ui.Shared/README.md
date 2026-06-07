@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-05
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.Ui.Shared
@@ -42,7 +42,9 @@ governance-core routes can require a permission on a specific organization, fund
 entity, or account.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
-source-of-truth services authoritative. `FamilyOfficeReadService` composes the family-office
+source-of-truth services authoritative. `SecurityMasterWorkbenchQueryService` is published under
+`Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
+workstation drill-in projection. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
 services, and emits degraded guidance when linked accounts cannot provide balances, liabilities,
 reconciliation state, or evidence completeness. Workstation endpoint registration is split by domain through

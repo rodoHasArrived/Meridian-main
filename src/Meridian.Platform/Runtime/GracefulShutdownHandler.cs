@@ -1,12 +1,12 @@
 using System.Diagnostics;
 using System.Threading;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Core.Diagnostics;
 using Meridian.Core.Services;
 using Meridian.Platform.Diagnostics;
 using Serilog;
 
-namespace Meridian.Application.Services;
+namespace Meridian.Platform.Runtime;
 
 /// <summary>
 /// Handles graceful shutdown of the application, ensuring all buffered events

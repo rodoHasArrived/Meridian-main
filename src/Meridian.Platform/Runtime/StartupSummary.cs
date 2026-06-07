@@ -1,11 +1,11 @@
 using System.Text;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Configuration;
 using Meridian.Platform.Runtime;
 using Serilog;
 
-namespace Meridian.Application.Services;
+namespace Meridian.Platform.Runtime;
 
 /// <summary>
 /// Generates and displays a user-friendly summary of the configuration at startup.

@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
 using Serilog;

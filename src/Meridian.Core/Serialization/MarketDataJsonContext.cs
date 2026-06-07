@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
@@ -9,7 +9,7 @@ using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using ContractEvents = Meridian.Contracts.Domain.Events;
 
-namespace Meridian.Application.Serialization;
+namespace Meridian.Core.Serialization;
 
 /// <summary>
 /// High-performance JSON serialization using source generators.

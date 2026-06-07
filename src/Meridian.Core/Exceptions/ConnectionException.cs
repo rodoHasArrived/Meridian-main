@@ -1,4 +1,4 @@
-namespace Meridian.Application.Exceptions;
+namespace Meridian.Core.Exceptions;
 
 /// <summary>
 /// Exception thrown when there are connection issues with data providers

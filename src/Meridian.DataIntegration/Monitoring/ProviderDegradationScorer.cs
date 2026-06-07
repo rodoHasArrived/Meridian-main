@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Contracts.RuleEvaluation;
 using Serilog;
 

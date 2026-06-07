@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Commands;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Platform.Results;

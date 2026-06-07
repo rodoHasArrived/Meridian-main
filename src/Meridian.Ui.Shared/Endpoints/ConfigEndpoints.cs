@@ -1,8 +1,7 @@
 using System.Text.Json;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
-using Meridian.Core.Config;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 // Import extension methods for DTO to domain conversion
@@ -221,7 +220,7 @@ public static class ConfigEndpoints
         group.MapGet(UiApiRoutes.ConfigDerivatives, (ConfigStore store) =>
         {
             var cfg = store.Load();
-            return Results.Json(cfg.Derivatives ?? new Application.Config.DerivativesConfig(), jsonOptions);
+            return Results.Json(cfg.Derivatives ?? new DerivativesConfig(), jsonOptions);
         }).WithName("GetDerivatives")
         .WithDescription("Returns the current derivatives trading configuration.")
         .Produces(200);

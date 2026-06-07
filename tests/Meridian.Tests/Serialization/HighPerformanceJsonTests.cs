@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.Serialization;
+using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;

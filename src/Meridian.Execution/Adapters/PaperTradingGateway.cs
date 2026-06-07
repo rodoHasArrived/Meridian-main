@@ -7,6 +7,7 @@ using Meridian.Execution.Sdk;
 using GatewayExecutionMode = Meridian.Execution.Models.ExecutionMode;
 using GatewayOrderStatus = Meridian.Execution.Models.OrderStatus;
 using OrderType = Meridian.Execution.Sdk.OrderType;
+using Meridian.Core.Pipeline;
 
 namespace Meridian.Execution.Adapters;
 

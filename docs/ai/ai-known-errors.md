@@ -312,19 +312,19 @@ label alone will update this file.
 ### AI-20260220-cs0104-backfill-result-ambiguity
 - **ID**: AI-20260220-cs0104-backfill-result-ambiguity
 - **Area**: build/namespaces
-- **Symptoms**: Build fails with CS0104: "'BackfillResult' is an ambiguous reference between 'Meridian.Contracts.Api.BackfillResult' and 'Meridian.Application.Backfill.BackfillResult'". Using alias directives (`using BackfillResult = ...`) fail to resolve the ambiguity when the conflicting namespace is also imported via a `using` namespace directive.
-- **Root cause**: Both `Meridian.Contracts.Api` and `Meridian.Application.Backfill` define types named `BackfillResult` and `BackfillRequest`. When both namespaces are imported via `using` directives alongside `using` alias directives for disambiguation, the compiler still reports CS0104. The fix is to remove the `using Meridian.Application.Backfill;` namespace directive entirely, keeping only the explicit aliases for the specific types needed.
+- **Symptoms**: Build fails with CS0104 around `BackfillResult` when endpoint code imports multiple backfill-related namespaces and also aliases the result type. Before the ownership split this involved `Meridian.Application.Backfill.BackfillResult`; the shared result payload now lives in `Meridian.Contracts.Backfill.BackfillResult`.
+- **Root cause**: Backfill endpoint code often needs Application-owned `BackfillRequest` plus Contracts-owned `BackfillResult`. Importing broad namespaces alongside aliases can still make intent unclear and can surface ambiguous-type failures when similarly named DTOs are added. Keep request/result ownership explicit.
 - **Prevention checklist**:
   - [ ] When two imported namespaces contain types with the same name, do NOT import both namespaces — import only one and use aliases for types from the other
   - [ ] Search for duplicate type names across namespaces before adding new `using` directives: `grep -rn "class TypeName\|record TypeName" src/ --include="*.cs"`
-  - [ ] When adding a new type to `Contracts.Api`, check if a type with the same name exists in `Application.Backfill` (or vice versa)
+  - [ ] When adding a new type to `Contracts.Api`, check if a type with the same name exists in `Application.Backfill` or `Contracts.Backfill`
   - [ ] Prefer fully qualified names or using aliases over importing both conflicting namespaces
 - **Verification commands**:
   - `dotnet build src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj -c Release`
-  - `grep -rn "using Meridian.Application.Backfill;" src/Meridian.Ui.Shared --include="*.cs"` (should return no results after fix)
+  - `grep -rn "using Meridian.Application.Backfill;" src/Meridian.Ui.Shared --include="*.cs"` (endpoint files should prefer explicit aliases when they only need `BackfillRequest`)
 - **Source issue**: CI build failure
 - **Status**: fixed
-- **Fixed in**: `BackfillEndpoints.cs` and `BackfillCoordinator.cs` — removed `using Meridian.Application.Backfill;` namespace directive, kept explicit `using` aliases for `BackfillRequest` and `BackfillResult`, and fully qualified `HistoricalBackfillService`
+- **Fixed in**: `BackfillEndpoints.cs` and `BackfillCoordinator.cs` — keep explicit ownership for Application `BackfillRequest`, Contracts `BackfillResult`, and Storage `BackfillStatusStore`
 
 ### AI-20260305-cs0266-narrowing-type-cast
 - **ID**: AI-20260305-cs0266-narrowing-type-cast

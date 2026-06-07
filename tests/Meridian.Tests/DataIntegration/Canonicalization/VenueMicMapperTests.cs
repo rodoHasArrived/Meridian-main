@@ -2,7 +2,7 @@ using FluentAssertions;
 using Meridian.DataIntegration.Canonicalization;
 using Xunit;
 
-namespace Meridian.Tests.Application.Services;
+namespace Meridian.Tests.DataIntegration.Canonicalization;
 
 /// <summary>
 /// Tests for <see cref="VenueMicMapper"/>.

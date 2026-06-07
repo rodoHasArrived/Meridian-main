@@ -1,4 +1,4 @@
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Resolves Alpaca Trading API credentials from the canonical local environment contract.

@@ -1,5 +1,5 @@
-using Meridian.Application.Config;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Config;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.DataSources;
 
 namespace Meridian.Infrastructure.Adapters.Synthetic;

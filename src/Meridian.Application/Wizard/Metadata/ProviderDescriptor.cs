@@ -6,7 +6,7 @@ namespace Meridian.Application.Wizard.Metadata;
 /// so that both <c>ConfigurationWizard</c> and <c>AutoConfigurationService</c>
 /// can share the same source of truth.
 /// </summary>
-/// <param name="Name">Provider identifier (matches <see cref="Config.DataSourceKind"/> names).</param>
+/// <param name="Name">Provider identifier (matches <see cref="Meridian.Core.Config.DataSourceKind"/> names).</param>
 /// <param name="DisplayName">Human-readable name shown in the wizard UI.</param>
 /// <param name="RequiredEnvVars">
 /// Env-vars that must all be set for the provider to be considered "configured".

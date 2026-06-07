@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Api;
 using Meridian.ProviderSdk;
 

@@ -1,4 +1,4 @@
-namespace Meridian.Application.Exceptions;
+namespace Meridian.Core.Exceptions;
 
 /// <summary>
 /// Exception thrown when an async operation times out

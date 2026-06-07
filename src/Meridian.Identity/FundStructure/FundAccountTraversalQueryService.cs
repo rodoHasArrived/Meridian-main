@@ -2,7 +2,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 
-namespace Meridian.Application.FundStructure;
+namespace Meridian.Identity;
 
 /// <summary>
 /// Authoritative traversal for fund account discovery:

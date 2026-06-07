@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
 using Microsoft.AspNetCore.Builder;

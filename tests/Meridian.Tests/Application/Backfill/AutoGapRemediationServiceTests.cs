@@ -9,6 +9,7 @@ using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using QualityDataGap = Meridian.DataIntegration.Monitoring.DataQuality.DataGap;
 using QualityGapSeverity = Meridian.DataIntegration.Monitoring.DataQuality.GapSeverity;
 using StorageGapAnalysisResult = Meridian.Infrastructure.Adapters.Core.GapAnalysisResult;
+using Meridian.Contracts.Backfill;
 
 namespace Meridian.Tests.Application.Backfill;
 

@@ -1,6 +1,6 @@
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
-using Meridian.Application.Monitoring;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
+using Meridian.Core.Monitoring;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
@@ -17,15 +17,15 @@ using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
 using Serilog;
-using AlphaVantageBackfillConfig = Meridian.Application.Config.AlphaVantageConfig;
-using FinnhubBackfillConfig = Meridian.Application.Config.FinnhubConfig;
-using FredBackfillConfig = Meridian.Application.Config.FredConfig;
-using NasdaqBackfillConfig = Meridian.Application.Config.NasdaqDataLinkConfig;
-using PolygonBackfillConfig = Meridian.Application.Config.PolygonConfig;
-using StooqBackfillConfig = Meridian.Application.Config.StooqConfig;
-using TiingoBackfillConfig = Meridian.Application.Config.TiingoConfig;
+using AlphaVantageBackfillConfig = Meridian.Core.Config.AlphaVantageConfig;
+using FinnhubBackfillConfig = Meridian.Core.Config.FinnhubConfig;
+using FredBackfillConfig = Meridian.Core.Config.FredConfig;
+using NasdaqBackfillConfig = Meridian.Core.Config.NasdaqDataLinkConfig;
+using PolygonBackfillConfig = Meridian.Core.Config.PolygonConfig;
+using StooqBackfillConfig = Meridian.Core.Config.StooqConfig;
+using TiingoBackfillConfig = Meridian.Core.Config.TiingoConfig;
 // Type aliases for clarity when dealing with backfill provider configs
-using YahooBackfillConfig = Meridian.Application.Config.YahooFinanceConfig;
+using YahooBackfillConfig = Meridian.Core.Config.YahooFinanceConfig;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 

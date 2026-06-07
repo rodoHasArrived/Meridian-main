@@ -1,6 +1,7 @@
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Infrastructure.Shared;
 using Serilog;
+using Meridian.Contracts.Backfill;
 
 namespace Meridian.Application.Backfill;
 

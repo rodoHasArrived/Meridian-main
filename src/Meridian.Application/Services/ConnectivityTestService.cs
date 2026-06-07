@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Net.Sockets;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Infrastructure.Http;
 using Meridian.Platform.Runtime;
 using Serilog;

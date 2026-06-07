@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.Contracts
@@ -27,9 +27,11 @@ or provider implementations.
 - `Workstation/` - workstation and operator workflow DTOs.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   and query/command service contracts.
-- `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads.
+- `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
+  published under `Meridian.Contracts.Backfill`.
 - `Coordination/` - shared cluster lease, leadership, scheduled-work ownership, subscription
-  ownership, lease-record, and coordination snapshot contracts.
+  ownership, lease-record, and coordination snapshot contracts published under
+  `Meridian.Contracts.Coordination`.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
 - `Services/` - cross-module service contracts such as backtest preflight and Security Master
@@ -96,7 +98,7 @@ evidence routes such as `EvidenceWorkbench:accounting-record/{recordId}`, allowi
 clients to preserve the subject and source target while resolving to their local audit surfaces.
 
 Cluster coordination contracts define the shared lease and ownership vocabulary for distributed
-runtime work. Keep `IClusterCoordinator`, `ILeaseManager`, `ICoordinationStore`,
+runtime work under `Meridian.Contracts.Coordination`. Keep `IClusterCoordinator`, `ILeaseManager`, `ICoordinationStore`,
 `IScheduledWorkOwnershipService`, `ISubscriptionOwnershipService`, `LeaseRecord`,
 `LeaseAcquireResult`, and `CoordinationSnapshot` contract-owned so Application orchestration,
 Platform runtime coordination, Storage lease persistence, diagnostics, WPF, and browser endpoints
@@ -104,7 +106,8 @@ use the same leadership and ownership semantics without depending on Application
 types.
 
 Historical backfill contracts include the shared run outcome and per-symbol validation/completeness
-signals consumed by Application orchestration, Storage status persistence, endpoints, tests, and
+signals published under `Meridian.Contracts.Backfill` and consumed by Application orchestration,
+Storage status persistence, endpoints, tests, and
 operator surfaces. Keep these payloads transport-safe and additive so backfill status can move
 between services without reintroducing Application-layer dependencies into durable storage.
 
@@ -193,11 +196,13 @@ and `ISftpFilePublisher`. Keep the SFTP publisher port contract-owned so the Dat
 Integration-owned export service can target SFTP without depending on Infrastructure, while the
 Infrastructure adapter implements transport-specific publishing details.
 
-Event-pipeline metrics and monitoring delivery contracts live in `Monitoring/`. Keep
-`IEventMetrics`, `MetricsSnapshot`, and `IMonitoringWebhookSink` contract-owned so Application
+Event-pipeline metrics and monitoring delivery contracts live in `Monitoring/` under
+`Meridian.Contracts.Monitoring`. Keep `IEventMetrics`, `MetricsSnapshot`, and
+`IMonitoringWebhookSink` contract-owned so Application
 notification services, Platform tracing/monitoring, diagnostics endpoints, WPF shell, and shared
 browser endpoints can depend on the same metric and alert-delivery shapes without introducing
-Application-layer dependencies. Runtime pipeline statistics live in `Pipeline/`; keep
+Application-layer dependencies. Runtime pipeline statistics live in `Pipeline/` under
+`Meridian.Contracts.Pipeline`; keep
 `PipelineStatistics` contract-owned so Platform backpressure alerting can observe Application
 pipeline state without referencing Application implementation assemblies.
 Operational scheduler contracts live in `Services/`. Keep `IOperationalScheduler`,
@@ -404,6 +409,8 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~ClusterCoordinatorServiceTests|FullyQualifiedName~SplitBrainDetectorTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 

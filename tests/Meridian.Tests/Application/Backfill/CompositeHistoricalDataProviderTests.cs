@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Exceptions;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;

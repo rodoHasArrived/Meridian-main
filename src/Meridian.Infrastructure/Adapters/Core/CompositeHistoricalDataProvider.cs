@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
-using Meridian.Application.Exceptions;
-using Meridian.Application.Logging;
+using Meridian.Core.Exceptions;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;

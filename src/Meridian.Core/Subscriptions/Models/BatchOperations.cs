@@ -1,4 +1,4 @@
-namespace Meridian.Application.Subscriptions.Models;
+namespace Meridian.Core.Subscriptions.Models;
 
 /// <summary>
 /// Request for batch symbol deletion.

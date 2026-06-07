@@ -1,9 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using Meridian.Application.Exceptions;
-using Meridian.Application.Logging;
-using Meridian.Application.Monitoring;
+using Meridian.Core.Exceptions;
+using Meridian.Core.Logging;
+using Meridian.Core.Monitoring;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
@@ -12,7 +12,7 @@ using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
-using PolygonOptions = Meridian.Application.Config.PolygonOptions;
+using PolygonOptions = Meridian.Core.Config.PolygonOptions;
 
 namespace Meridian.Infrastructure.Adapters.Polygon;
 

@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Core;

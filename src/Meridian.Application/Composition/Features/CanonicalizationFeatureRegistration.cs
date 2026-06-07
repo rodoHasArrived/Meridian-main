@@ -1,5 +1,4 @@
-using Meridian.Application.Canonicalization;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;

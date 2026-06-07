@@ -1,6 +1,6 @@
 using System.Threading.Channels;
 
-namespace Meridian.Application.Pipeline;
+namespace Meridian.Contracts.Pipeline;
 
 /// <summary>
 /// Snapshot of pipeline performance statistics.

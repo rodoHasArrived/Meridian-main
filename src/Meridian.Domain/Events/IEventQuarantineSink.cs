@@ -1,6 +1,4 @@
-using Meridian.Domain.Events;
-
-namespace Meridian.Application.Pipeline;
+namespace Meridian.Domain.Events;
 
 /// <summary>
 /// Contract for retaining market events that require quarantine or dead-letter review.

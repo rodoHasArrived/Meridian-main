@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
-using Meridian.Application.Logging;
-using Meridian.Application.Serialization;
+using Meridian.Core.Logging;
+using Meridian.Core.Serialization;
 using Serilog;
 
 namespace Meridian.Storage.Archival;

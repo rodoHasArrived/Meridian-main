@@ -1,9 +1,9 @@
 using System.Reflection;
 using System.Text.Json;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Serilog;
 
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Service for applying environment variable overrides to configuration.

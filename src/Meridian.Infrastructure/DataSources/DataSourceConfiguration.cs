@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Credentials;
 using Meridian.Infrastructure.Adapters.NYSE;
 

@@ -1,7 +1,7 @@
 using FluentValidation;
 using Serilog;
 
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Validates AppConfig using FluentValidation patterns.

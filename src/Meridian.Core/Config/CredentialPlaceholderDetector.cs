@@ -1,4 +1,4 @@
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Detects placeholder credential values that should not be treated as configured secrets.

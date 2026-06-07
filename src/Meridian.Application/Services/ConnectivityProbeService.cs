@@ -2,7 +2,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Services;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;

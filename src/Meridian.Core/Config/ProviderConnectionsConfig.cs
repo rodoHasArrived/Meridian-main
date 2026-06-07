@@ -1,6 +1,6 @@
 using Meridian.ProviderSdk;
 
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Relationship-aware provider operations configuration.

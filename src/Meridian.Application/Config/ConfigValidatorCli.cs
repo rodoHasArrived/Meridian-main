@@ -1,7 +1,8 @@
 using System.Text.Json;
 using FluentValidation;
 using FluentValidation.Results;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
+using Meridian.Core.Config;
 using Serilog;
 
 namespace Meridian.Application.Config;

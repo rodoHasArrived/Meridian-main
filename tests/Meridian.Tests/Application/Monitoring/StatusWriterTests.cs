@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 
 namespace Meridian.Tests.Application.Monitoring;

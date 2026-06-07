@@ -7,6 +7,7 @@ using Meridian.Domain.Models;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 using Xunit;
+using Meridian.Core.Pipeline;
 
 namespace Meridian.Tests.Pipeline;
 

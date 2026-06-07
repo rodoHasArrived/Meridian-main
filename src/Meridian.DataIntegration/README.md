@@ -144,7 +144,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MarketEventFilterTests|FullyQualifiedName~SelfTestCommandTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CredentialStoreExtensionsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlExportServiceTests|FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlCommandsTests|FullyQualifiedName~CsvPartnerFileParserTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConditionCodeMapperTests|FullyQualifiedName~VenueMicMapperTests|FullyQualifiedName~EventCanonicalizerTests|FullyQualifiedName~CanonicalizingPublisherTests|FullyQualifiedName~CanonicalizationGoldenFixtureTests" --logger "console;verbosity=normal" /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConditionCodeMapperTests|FullyQualifiedName~VenueMicMapperTests|FullyQualifiedName~EventCanonicalizerTests|FullyQualifiedName~CanonicalizingPublisherTests|FullyQualifiedName~CanonicalizationGoldenFixtureTests|FullyQualifiedName~CanonicalizationFixtureDriftTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~PipelineFeatureRegistrationTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~HistoricalDataQueryServiceTests|FullyQualifiedName~HistoricalDataQueryServiceBarsTests|FullyQualifiedName~ExecutionSimulationOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BadTickFilterTests|FullyQualifiedName~TickSizeValidatorTests|FullyQualifiedName~FSharpEventValidatorTests|FullyQualifiedName~ProviderLatencyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -173,11 +173,11 @@ diagnostics registration as adapters that invoke the Data Integration-owned test
 `IEtlJobService`, `IEtlExportService`, `IEtlIngestionJobCoordinator`, `IEtlEventPipeline`,
 `NormalizationOutcome`, `EtlRunResult`, `EtlExportResult`, `PartnerSchemaRegistry`,
 `EtlJobOrchestrator`, `EtlJobService`, `EtlNormalizationService`, and `EtlExportService` moved
-from Application ETL abstractions/implementations into this module. `IEtlJobDefinitionStore` and
-`ISftpFilePublisher` moved to `Meridian.Contracts.Etl`, and the local JSON-backed
-`EtlJobDefinitionStore` moved to `Meridian.Storage.Etl`. Application now keeps composition and
-concrete runtime adapters for its ingestion-job lifecycle and event pipeline while Data Integration
-owns ETL job orchestration.
+from Application ETL abstractions/implementations into this module and now use the
+`Meridian.DataIntegration.Etl` namespace. `IEtlJobDefinitionStore` and `ISftpFilePublisher` moved
+to `Meridian.Contracts.Etl`, and the local JSON-backed `EtlJobDefinitionStore` moved to
+`Meridian.Storage.Etl`. Application now keeps composition and concrete runtime adapters for its
+ingestion-job lifecycle and event pipeline while Data Integration owns ETL job orchestration.
 
 `IEventCanonicalizer`, `EventCanonicalizer`, `ICanonicalSecurityIdLookup`,
 `ConditionCodeMapper`, `VenueMicMapper`, `ICanonicalizationMetrics`,

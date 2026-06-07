@@ -1,7 +1,6 @@
 using Meridian.Contracts.FundStructure;
-using Meridian.Entities.FundStructure;
 
-namespace Meridian.Application.FundStructure;
+namespace Meridian.Entities.FundStructure;
 
 public static class LedgerMappingWorkbenchService
 {

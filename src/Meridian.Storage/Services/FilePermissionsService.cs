@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Serilog;
 
 namespace Meridian.Storage.Services;

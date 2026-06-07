@@ -1,4 +1,4 @@
-namespace Meridian.Application.Coordination;
+namespace Meridian.Contracts.Coordination;
 
 /// <summary>
 /// Durable lease record used for shared-storage resource ownership.

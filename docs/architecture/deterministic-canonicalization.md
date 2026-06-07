@@ -41,12 +41,12 @@ Equivalent market events from different providers for the same instrument should
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| `CanonicalSymbolRegistry` | `Application/Services/CanonicalSymbolRegistry.cs` | ✅ Multi-identifier resolution (ISIN, FIGI, aliases, provider mappings). Wired into `EventCanonicalizer`. |
-| `IEventCanonicalizer` / `EventCanonicalizer` | `Application/Canonicalization/` | ✅ Resolves symbols, maps venues, enriches trade condition codes using `with` expression pattern. |
-| `CanonicalizingPublisher` | `Application/Canonicalization/CanonicalizingPublisher.cs` | ✅ Decorator over `IMarketEventPublisher` with dual-write, pilot symbol filtering, quarantine sink, and per-publisher metrics. |
-| `ConditionCodeMapper` | `Application/Canonicalization/ConditionCodeMapper.cs` | ✅ Loaded from `config/condition-codes.json` into `FrozenDictionary`. Supports halt/resume detection helpers. |
-| `VenueMicMapper` | `Application/Canonicalization/VenueMicMapper.cs` | ✅ Loaded from `config/venue-mapping.json` into `FrozenDictionary`. Case-insensitive provider and venue lookup. |
-| `CanonicalizationMetrics` | `Application/Canonicalization/CanonicalizationMetrics.cs` | ✅ Static thread-safe counters with per-provider `ProviderParityStats` and immutable snapshot export. |
+| `CanonicalSymbolRegistry` | `Storage/Services/CanonicalSymbolRegistry.cs` | ✅ Multi-identifier resolution (ISIN, FIGI, aliases, provider mappings). Wired into `EventCanonicalizer`. |
+| `IEventCanonicalizer` / `EventCanonicalizer` | `DataIntegration/Canonicalization/` | ✅ Resolves symbols, maps venues, enriches trade condition codes using `with` expression pattern. |
+| `CanonicalizingPublisher` | `DataIntegration/Canonicalization/CanonicalizingPublisher.cs` | ✅ Decorator over `IMarketEventPublisher` with dual-write, pilot symbol filtering, quarantine sink, and per-publisher metrics. |
+| `ConditionCodeMapper` | `DataIntegration/Canonicalization/ConditionCodeMapper.cs` | ✅ Loaded from `config/condition-codes.json` into `FrozenDictionary`. Supports halt/resume detection helpers. |
+| `VenueMicMapper` | `DataIntegration/Canonicalization/VenueMicMapper.cs` | ✅ Loaded from `config/venue-mapping.json` into `FrozenDictionary`. Case-insensitive provider and venue lookup. |
+| `CanonicalizationMetrics` | `DataIntegration/Canonicalization/CanonicalizationMetrics.cs` | ✅ Static thread-safe counters with per-provider `ProviderParityStats` and immutable snapshot export. |
 | `CanonicalizationConfig` | `Core/Config/AppConfig.cs` | ✅ `Enabled`, `PilotSymbols`, `DualWriteRawAndCanonical`, `ConditionCodesPath`, `VenueMappingPath`, `Version`. |
 | `SymbolRegistry.ProviderMappings` | `Contracts/Catalog/SymbolRegistry.cs` | ✅ Populated by config tooling; queried by `CanonicalSymbolRegistry.ResolveToCanonical()`. |
 | `SymbolNormalization` | `Infrastructure/Utilities/SymbolNormalization.cs` | ✅ Per-provider format normalization (uppercase, Tiingo dashes, etc.). Runs before canonicalization. |
@@ -512,7 +512,7 @@ public static class CanonicalizationMetrics
 
 ### Golden fixtures
 
-Eight parameterized fixtures are in `tests/Meridian.Tests/Application/Canonicalization/Fixtures/`, one per provider-event-type combination:
+Eight parameterized fixtures are in `tests/Meridian.Tests/DataIntegration/Canonicalization/Fixtures/`, one per provider-event-type combination:
 
 | Fixture | Provider | Event | Venue | Expected MIC | Condition |
 |---------|----------|-------|-------|-------------|-----------|
@@ -656,12 +656,12 @@ All items listed below were delivered as part of Phases 1–3.
 | `src/Meridian.Domain/Events/MarketEvent.cs` | Added `CanonicalSymbol`, `CanonicalizationVersion` (`byte`), `CanonicalVenue`, `EffectiveSymbol` |
 | `src/Meridian.Contracts/Domain/Events/MarketEvent.cs` | Mirrored new fields and `EffectiveSymbol` in contract record |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | Registered `CanonicalTradeCondition` enum and new types for source generation |
-| `src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs` | New interface |
-| `src/Meridian.Application/Canonicalization/EventCanonicalizer.cs` | New implementation: symbol, venue, condition code enrichment |
-| `src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs` | New decorator with dual-write, pilot filtering, quarantine, and metrics |
-| `src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs` | New: `FrozenDictionary`-based mapper with halt/resume helpers |
-| `src/Meridian.Application/Canonicalization/VenueMicMapper.cs` | New: `FrozenDictionary`-based mapper with case-insensitive fallback |
-| `src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs` | New: static thread-safe counters with per-provider parity tracking |
+| `src/Meridian.DataIntegration/Canonicalization/IEventCanonicalizer.cs` | New interface |
+| `src/Meridian.DataIntegration/Canonicalization/EventCanonicalizer.cs` | New implementation: symbol, venue, condition code enrichment |
+| `src/Meridian.DataIntegration/Canonicalization/CanonicalizingPublisher.cs` | New decorator with dual-write, pilot filtering, quarantine, and metrics |
+| `src/Meridian.DataIntegration/Canonicalization/ConditionCodeMapper.cs` | New: `FrozenDictionary`-based mapper with halt/resume helpers |
+| `src/Meridian.DataIntegration/Canonicalization/VenueMicMapper.cs` | New: `FrozenDictionary`-based mapper with case-insensitive fallback |
+| `src/Meridian.DataIntegration/Canonicalization/CanonicalizationMetrics.cs` | New: static thread-safe counters with per-provider parity tracking |
 | `src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs` | Updated `ResolveToCanonical()` to accept aliases, ISIN, FIGI, provider symbols |
 | `src/Meridian.Application/Composition/ServiceCompositionRoot.cs` | Added `AddCanonicalizationServices()` and `EnableCanonicalizationServices` option |
 | `src/Meridian.Application/Monitoring/PrometheusMetrics.cs` | Added `mdc_canonicalization_*` counters and histogram |
@@ -675,8 +675,8 @@ All items listed below were delivered as part of Phases 1–3.
 | `config/condition-codes.json` | Provider condition code mapping table (version 1) |
 | `config/venue-mapping.json` | Raw venue to ISO 10383 MIC mapping (version 1) |
 | `config/appsettings.sample.json` | Added `Canonicalization` section |
-| `tests/Meridian.Tests/Application/Services/EventCanonicalizerTests.cs` | 27 tests |
-| `tests/Meridian.Tests/Application/Services/CanonicalizingPublisherTests.cs` | Dual-write, pilot filtering, backpressure, quarantine, and metrics tests |
-| `tests/Meridian.Tests/Application/Canonicalization/CanonicalizationGoldenFixtureTests.cs` | 8 golden fixture regression tests |
-| `tests/Meridian.Tests/Application/Canonicalization/Fixtures/*.json` | 8 fixture files (Alpaca + Polygon trades) |
+| `tests/Meridian.Tests/DataIntegration/Canonicalization/EventCanonicalizerTests.cs` | 27 tests |
+| `tests/Meridian.Tests/DataIntegration/Canonicalization/CanonicalizingPublisherTests.cs` | Dual-write, pilot filtering, backpressure, quarantine, and metrics tests |
+| `tests/Meridian.Tests/DataIntegration/Canonicalization/CanonicalizationGoldenFixtureTests.cs` | 8 golden fixture regression tests |
+| `tests/Meridian.Tests/DataIntegration/Canonicalization/Fixtures/*.json` | 8 fixture files (Alpaca + Polygon trades) |
 | `tests/Meridian.Tests/Domain/Models/EffectiveSymbolTests.cs` | `EffectiveSymbol` property tests |

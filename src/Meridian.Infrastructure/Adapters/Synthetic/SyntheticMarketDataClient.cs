@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Meridian.Application.Config;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Config;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;

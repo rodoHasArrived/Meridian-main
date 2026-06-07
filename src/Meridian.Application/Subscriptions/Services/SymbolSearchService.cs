@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using Meridian.Application.Logging;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Logging;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;

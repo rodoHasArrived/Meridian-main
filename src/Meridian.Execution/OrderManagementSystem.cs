@@ -4,6 +4,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
+using Meridian.Core.Pipeline;
 
 namespace Meridian.Execution;
 

@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
-using Meridian.Application.Config;
-using Meridian.Application.Exceptions;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Exceptions;
+using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Domain.Events;
@@ -12,6 +12,8 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Platform.Tracing;
 using Serilog;
 using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Backfill;
+using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.Backfill;
 

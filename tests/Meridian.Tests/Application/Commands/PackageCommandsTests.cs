@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Storage.Packaging;
 using Serilog;
 using Xunit;

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-07T07:29:31Z",
+  "generatedAt": "2026-06-07T13:10:24Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -802,7 +802,9 @@
       "keyContracts": [
         "src/Meridian.Mcp/Program.cs"
       ],
-      "projectReferences": [],
+      "projectReferences": [
+        "Meridian.Core"
+      ],
       "relatedDocs": []
     },
     {
@@ -1917,6 +1919,11 @@
       "reason": "Meridian.Ledger references Meridian.FSharp.Ledger directly via project reference."
     },
     {
+      "from": "Meridian.Mcp",
+      "to": "Meridian.Core",
+      "reason": "Meridian.Mcp references Meridian.Core directly via project reference."
+    },
+    {
       "from": "Meridian.ProviderSdk",
       "to": "Meridian.Contracts",
       "reason": "Meridian.ProviderSdk references Meridian.Contracts directly via project reference."
@@ -2176,18 +2183,98 @@
     {
       "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 53
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 54
     },
     {
       "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 49
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 50
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.DataIntegration/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Domain/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Identity/Meridian.Identity.csproj",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Identity/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/EtlFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Canonicalization/CanonicalizingPublisher.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Etl/EtlAbstractions.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline/IngestionJobService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.DataIntegration/Etl/EtlServices.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-07T01:12:55-07:00",
+      "lastCommit": "2eaf9a1e7",
+      "lastSummary": "4455",
+      "touches": 1
     },
     {
       "path": "src/Meridian.Storage/README.md",
@@ -2198,24 +2285,8 @@
       "touches": 15
     },
     {
-      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 5
-    },
-    {
       "path": "src/Meridian.Core/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.DataIntegration/README.md",
-      "subsystem": "Unmapped",
       "lastModified": "2026-06-06T23:56:41-07:00",
       "lastCommit": "7c191a2d5",
       "lastSummary": "4986789456",
@@ -2256,14 +2327,6 @@
     {
       "path": "src/Meridian.Contracts/Pipeline/PipelineStatistics.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Canonicalization/CanonicalizingPublisher.cs",
-      "subsystem": "Unmapped",
       "lastModified": "2026-06-06T23:56:41-07:00",
       "lastCommit": "7c191a2d5",
       "lastSummary": "4986789456",
@@ -2431,62 +2494,6 @@
     },
     {
       "path": "src/Meridian.Application/Composition/HostStartup.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Config/ConfigurationPipeline.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Http/BackfillCoordinator.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Monitoring/DetailedHealthCheck.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Monitoring/PrometheusMetrics.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Monitoring/StatusSnapshot.cs",
       "subsystem": "Host and Composition",
       "lastModified": "2026-06-06T21:16:30-07:00",
       "lastCommit": "0ffe68f65",

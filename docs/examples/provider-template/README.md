@@ -56,7 +56,7 @@ Implement only the file(s) relevant to your provider — not every provider need
 ## Architecture rules
 
 - `*Constants.cs` — keep all types `internal`; no public API surface.
-- `*Config.cs` — records live in `Meridian.Application.Config` after integration;
+- `*Config.cs` — records live in `Meridian.Core.Config` after integration;
   the template uses the `Adapters.Template` namespace as a staging area only.
 - `*MarketDataClient.cs` — implement `IMarketDataClient`; prefer `WebSocketProviderBase`
   for WebSocket-based providers.

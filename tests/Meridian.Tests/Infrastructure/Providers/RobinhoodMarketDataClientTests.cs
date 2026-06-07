@@ -1,6 +1,7 @@
 using System.Net;
 using System.Reflection;
 using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Robinhood;
@@ -81,7 +82,7 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
 
         var act = () => sut.ConnectAsync(cts.Token);
 
-        await act.Should().ThrowAsync<Meridian.Application.Exceptions.ConnectionException>()
+        await act.Should().ThrowAsync<ConnectionException>()
             .WithMessage("*ROBINHOOD_ACCESS_TOKEN*");
     }
 

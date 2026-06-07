@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Meridian.Application.Serialization;
+using Meridian.Core.Serialization;
 
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Centralized JSON serializer options for reading/writing AppConfig.

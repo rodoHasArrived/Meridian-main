@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-07T07:29:31Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-07T13:10:24Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/README.md` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 53 |
-| `src/Meridian.Application/README.md` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 49 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 54 |
+| `src/Meridian.Application/README.md` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 50 |
+| `src/Meridian.Application/Pipeline/EventPipeline.cs` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 6 |
+| `src/Meridian.DataIntegration/README.md` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 6 |
+| `src/Meridian.Domain/README.md` | Domain, Ledger, and F# | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 4 |
+| `src/Meridian.Identity/Meridian.Identity.csproj` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 3 |
+| `src/Meridian.Identity/README.md` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 3 |
+| `src/Meridian.Application/Composition/Features/EtlFeatureRegistration.cs` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 2 |
+| `src/Meridian.DataIntegration/Canonicalization/CanonicalizingPublisher.cs` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 2 |
+| `src/Meridian.DataIntegration/Etl/EtlAbstractions.cs` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 2 |
+| `src/Meridian.Application/Pipeline/IngestionJobService.cs` | Host and Composition | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 1 |
+| `src/Meridian.DataIntegration/Etl/EtlServices.cs` | Unmapped | `2eaf9a1e7` (2026-06-07T01:12:55-07:00) | 1 |
 | `src/Meridian.Storage/README.md` | Providers and Storage | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 15 |
-| `src/Meridian.Application/Pipeline/EventPipeline.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
 | `src/Meridian.Core/README.md` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
-| `src/Meridian.DataIntegration/README.md` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
 | `src/Meridian.Platform/README.md` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
-| `src/Meridian.Application/Pipeline/DeadLetterSink.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 3 |
-| `src/Meridian.Application/Services/DailySummaryWebhook.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 3 |
-| `src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
-| `src/Meridian.Contracts/Pipeline/PipelineStatistics.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
-| `src/Meridian.DataIntegration/Canonicalization/CanonicalizingPublisher.cs` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
-| `src/Meridian.DataIntegration/Monitoring/ConnectionStatusWebhook.cs` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
-| `src/Meridian.Domain/Events/IEventQuarantineSink.cs` | Domain, Ledger, and F# | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
-| `src/Meridian.Platform/GlobalUsings.cs` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
 

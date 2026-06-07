@@ -1,9 +1,10 @@
 using System.Threading;
-using Meridian.Application.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Meridian.Contracts.Pipeline;
+using Meridian.Contracts.Monitoring;
 
-namespace Meridian.Application.Monitoring;
+namespace Meridian.Platform.Monitoring;
 
 /// <summary>
 /// Monitors pipeline backpressure and sends alerts when thresholds are exceeded.

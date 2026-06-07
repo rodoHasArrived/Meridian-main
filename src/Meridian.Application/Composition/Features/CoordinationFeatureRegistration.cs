@@ -1,6 +1,8 @@
-using Meridian.Application.Config;
-using Meridian.Application.Coordination;
 using Meridian.Application.UI;
+using Meridian.Contracts.Coordination;
+using Meridian.Core.Config;
+using Meridian.Platform.Coordination;
+using Meridian.Storage.Coordination;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 

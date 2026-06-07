@@ -1,6 +1,6 @@
 using System.Collections.Frozen;
 using System.Text.Json;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.FSharp.Canonicalization;
 using Serilog;
 

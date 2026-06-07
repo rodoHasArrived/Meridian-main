@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Failover;

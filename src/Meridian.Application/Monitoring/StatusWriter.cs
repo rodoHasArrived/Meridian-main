@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Meridian.Contracts.Monitoring;
 using Meridian.Platform.Tracing;

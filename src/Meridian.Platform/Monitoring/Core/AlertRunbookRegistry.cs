@@ -1,8 +1,9 @@
 using System.Collections.Concurrent;
+using Meridian.Core.Monitoring.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Meridian.Application.Monitoring.Core;
+namespace Meridian.Platform.Monitoring.Core;
 
 /// <summary>
 /// Provides explicit mapping between alert rules and operator runbook sections.

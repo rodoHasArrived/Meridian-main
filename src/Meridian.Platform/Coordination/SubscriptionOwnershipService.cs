@@ -1,4 +1,6 @@
-namespace Meridian.Application.Coordination;
+using Meridian.Contracts.Coordination;
+
+namespace Meridian.Platform.Coordination;
 
 public sealed class SubscriptionOwnershipService : ISubscriptionOwnershipService
 {

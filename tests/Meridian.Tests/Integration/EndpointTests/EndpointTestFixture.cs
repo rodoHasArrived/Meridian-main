@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Pipeline;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 

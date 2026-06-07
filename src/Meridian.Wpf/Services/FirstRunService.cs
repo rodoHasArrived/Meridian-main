@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
 
 namespace Meridian.Wpf.Services;

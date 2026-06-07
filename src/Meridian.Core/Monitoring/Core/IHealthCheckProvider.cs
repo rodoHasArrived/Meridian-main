@@ -1,6 +1,6 @@
 using Meridian.Infrastructure.Contracts;
 
-namespace Meridian.Application.Monitoring.Core;
+namespace Meridian.Core.Monitoring.Core;
 
 /// <summary>
 /// Represents the severity of a health status.

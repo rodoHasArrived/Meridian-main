@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Xunit;

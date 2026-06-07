@@ -1,7 +1,7 @@
 using System.Net.WebSockets;
 using System.Threading;
-using Meridian.Application.Logging;
-using Meridian.Application.Monitoring;
+using Meridian.Core.Logging;
+using Meridian.Core.Monitoring;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Resilience;

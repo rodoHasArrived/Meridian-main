@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Parquet;
 using Parquet.Data;
 using Parquet.Schema;

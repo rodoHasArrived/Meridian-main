@@ -1,6 +1,6 @@
 using FluentValidation.Results;
 
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Abstraction over configuration validation so that validation logic

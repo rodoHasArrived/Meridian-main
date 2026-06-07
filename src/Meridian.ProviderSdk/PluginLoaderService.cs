@@ -3,7 +3,7 @@ using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.Logging;
 
-namespace Meridian.Application.Services;
+namespace Meridian.ProviderSdk;
 
 /// <summary>
 /// Result of attempting to load a plugin assembly.

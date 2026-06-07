@@ -4,14 +4,14 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
-using Meridian.Application.Monitoring;
-using Meridian.Application.Serialization;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Meridian.Core.Monitoring;
 
 namespace Meridian.Storage.Sinks;
 

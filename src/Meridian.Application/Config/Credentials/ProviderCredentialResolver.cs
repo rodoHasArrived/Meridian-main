@@ -1,4 +1,5 @@
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;

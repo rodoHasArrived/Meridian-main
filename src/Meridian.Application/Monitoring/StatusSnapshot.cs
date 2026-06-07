@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Subscriptions;
 using Meridian.Infrastructure;
 using Meridian.Contracts.Monitoring;

@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Exceptions;
+using Meridian.Core.Exceptions;
 using Meridian.Platform.Results;
 using Xunit;
 

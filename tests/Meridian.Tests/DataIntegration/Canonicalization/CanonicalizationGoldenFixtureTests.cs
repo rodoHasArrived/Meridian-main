@@ -9,7 +9,7 @@ using Meridian.Domain.Events;
 using NSubstitute;
 using Xunit;
 
-namespace Meridian.Tests.Application.Canonicalization;
+namespace Meridian.Tests.DataIntegration.Canonicalization;
 
 /// <summary>
 /// Golden fixture tests for <see cref="EventCanonicalizer"/> using curated
@@ -37,7 +37,7 @@ public sealed class CanonicalizationGoldenFixtureTests
 
         FixturesDir = Path.Combine(
             candidate?.FullName ?? assemblyDir,
-            "tests", "Meridian.Tests", "Application", "Canonicalization", "Fixtures");
+            "tests", "Meridian.Tests", "DataIntegration", "Canonicalization", "Fixtures");
     }
 
     public CanonicalizationGoldenFixtureTests()

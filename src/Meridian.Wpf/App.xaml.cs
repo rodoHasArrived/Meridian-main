@@ -460,8 +460,8 @@ public partial class App : System.Windows.Application
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
-        services.AddSingleton<Meridian.Application.Services.IPluginLoaderService,
-                              Meridian.Application.Services.PluginLoaderService>();
+        services.AddSingleton<Meridian.ProviderSdk.IPluginLoaderService,
+                              Meridian.ProviderSdk.PluginLoaderService>();
     }
 
     private static void RegisterStrategyWorkspaceServices(IServiceCollection services)

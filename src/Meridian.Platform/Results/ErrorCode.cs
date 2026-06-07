@@ -263,7 +263,7 @@ public static class ErrorCodeExtensions
 
     /// <summary>
     /// Maps a domain exception to the most appropriate <see cref="ErrorCode"/>.
-    /// Uses the exception type hierarchy from <c>Meridian.Application.Exceptions</c>
+    /// Uses the exception type hierarchy from <c>Meridian.Core.Exceptions</c>
     /// to produce category-accurate exit codes via <see cref="ToExitCode"/>.
     /// </summary>
     public static ErrorCode FromException(Exception ex)
@@ -273,7 +273,7 @@ public static class ErrorCodeExtensions
             OperationCanceledException => ErrorCode.Cancelled,
             TimeoutException => ErrorCode.Timeout,
 
-            // Domain exception types (Meridian.Application.Exceptions namespace)
+            // Domain exception types (Meridian.Core.Exceptions namespace)
             _ when ex.GetType().Name == "RateLimitException" => ErrorCode.RateLimitExceeded,
             _ when ex.GetType().Name == "ConfigurationException" => ErrorCode.ConfigurationInvalid,
             _ when ex.GetType().Name == "ValidationException" => ErrorCode.ValidationFailed,

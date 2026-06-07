@@ -4,7 +4,7 @@ using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.DataIntegration.Canonicalization;

@@ -1,6 +1,6 @@
 using Meridian.Application.Backfill;
-using Meridian.Application.Config;
-using Meridian.Application.Coordination;
+using Meridian.Core.Config;
+using Meridian.Contracts.Coordination;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Scheduling;
 using Meridian.Application.Subscriptions.Services;

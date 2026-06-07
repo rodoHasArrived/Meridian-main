@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Ui.Shared.Services;

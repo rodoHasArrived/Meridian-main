@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.Json;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Serilog;
 

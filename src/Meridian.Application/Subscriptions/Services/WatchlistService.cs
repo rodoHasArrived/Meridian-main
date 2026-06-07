@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Meridian.Application.Config;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Config;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Application.UI;
 using Meridian.Storage.Archival;
 

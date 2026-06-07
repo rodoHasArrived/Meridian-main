@@ -1,6 +1,4 @@
-namespace Meridian.Application.Config;
-
-using Meridian.Platform.Runtime;
+namespace Meridian.Platform.Runtime;
 
 /// <summary>
 /// Unified deployment context that captures all deployment-related settings at startup.

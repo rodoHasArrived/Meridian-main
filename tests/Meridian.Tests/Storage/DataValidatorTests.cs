@@ -2,7 +2,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using System.Threading;
 using FluentAssertions;
-using Meridian.Application.Serialization;
+using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;

@@ -2,7 +2,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Contracts.Monitoring;

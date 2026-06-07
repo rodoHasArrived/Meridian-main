@@ -1,11 +1,12 @@
 using System.Text.Json;
 using Meridian.Application.Backfill;
 using Meridian.Application.Commands;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
-using DeploymentContext = Meridian.Application.Config.DeploymentContext;
+using DeploymentContext = Meridian.Platform.Runtime.DeploymentContext;
 
 namespace Meridian.Application.Composition.Startup;
 
@@ -65,13 +66,13 @@ public static class SharedStartupHelpers
         }
         catch (UnauthorizedAccessException)
         {
-            throw new Application.Exceptions.ConfigurationException(
+            throw new ConfigurationException(
                 $"Access denied reading configuration file: {path}. Check file permissions.",
                 path, null);
         }
         catch (IOException ex)
         {
-            throw new Application.Exceptions.ConfigurationException(
+            throw new ConfigurationException(
                 $"I/O error reading configuration file: {path}. {ex.Message}",
                 path, null);
         }

@@ -1,12 +1,14 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Application.Backfill;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
+using Meridian.Contracts.Backfill;
+using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.UI;
 

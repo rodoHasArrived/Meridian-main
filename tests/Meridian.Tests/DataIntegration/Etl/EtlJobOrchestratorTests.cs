@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Meridian.Application.Etl;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Etl;

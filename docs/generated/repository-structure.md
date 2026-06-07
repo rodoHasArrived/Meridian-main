@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-07 07:29:14 UTC. Do not edit manually.
+> Auto-generated on 2026-06-07 13:02:54 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2078,11 +2078,9 @@ Meridian-main
 │   │   │   └── PostgresDirectLendingService.cs
 │   │   ├── EnvironmentDesign
 │   │   ├── Etl
-│   │   │   └── EtlServices.cs
 │   │   ├── FundStructure
 │   │   │   ├── GovernanceSharedDataAccessService.cs
 │   │   │   ├── InMemoryFundStructureService.cs
-│   │   │   ├── LedgerMappingWorkbenchService.cs
 │   │   │   └── PostgresFundStructureService.cs
 │   │   ├── Http
 │   │   │   ├── Endpoints
@@ -2666,7 +2664,8 @@ Meridian-main
 │   │   ├── Etl
 │   │   │   ├── EtlAbstractions.cs
 │   │   │   ├── EtlExportService.cs
-│   │   │   └── EtlNormalizationService.cs
+│   │   │   ├── EtlNormalizationService.cs
+│   │   │   └── EtlServices.cs
 │   │   ├── Filters
 │   │   │   └── MarketEventFilter.cs
 │   │   ├── Historical
@@ -2750,7 +2749,8 @@ Meridian-main
 │   │   ├── FundStructure
 │   │   │   ├── FundStructurePolicyService.cs
 │   │   │   ├── IFundStructurePolicyService.cs
-│   │   │   └── LedgerGroupingRules.cs
+│   │   │   ├── LedgerGroupingRules.cs
+│   │   │   └── LedgerMappingWorkbenchService.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.Entities.csproj
 │   │   └── README.md
@@ -3006,7 +3006,6 @@ Meridian-main
 │   ├── Meridian.Identity
 │   │   ├── Application
 │   │   │   ├── FundStructure
-│   │   │   │   └── FundAccountTraversalQueryService.cs
 │   │   │   ├── AuthenticationMode.cs
 │   │   │   ├── FundStructureAccessScopeLineageProvider.cs
 │   │   │   ├── LoginSessionService.cs
@@ -3018,6 +3017,8 @@ Meridian-main
 │   │   │       ├── ScopedAccessDtos.cs
 │   │   │       ├── UserPermission.cs
 │   │   │       └── UserRole.cs
+│   │   ├── FundStructure
+│   │   │   └── FundAccountTraversalQueryService.cs
 │   │   ├── Infrastructure
 │   │   │   ├── RolePermissionProfileStore.cs
 │   │   │   └── ScopedAccessAssignmentStore.cs
@@ -5244,17 +5245,7 @@ Meridian-main
 │   │   │   ├── Backtesting
 │   │   │   │   └── BacktestStudioRunOrchestratorTests.cs
 │   │   │   ├── Canonicalization
-│   │   │   │   ├── Fixtures
-│   │   │   │   │   ├── alpaca_trade_extended_hours.json
-│   │   │   │   │   ├── alpaca_trade_odd_lot.json
-│   │   │   │   │   ├── alpaca_trade_regular.json
-│   │   │   │   │   ├── alpaca_xnas_identity.json
-│   │   │   │   │   ├── polygon_trade_extended_hours.json
-│   │   │   │   │   ├── polygon_trade_odd_lot.json
-│   │   │   │   │   ├── polygon_trade_regular.json
-│   │   │   │   │   └── polygon_xnas_identity.json
-│   │   │   │   ├── CanonicalizationFixtureDriftTests.cs
-│   │   │   │   └── CanonicalizationGoldenFixtureTests.cs
+│   │   │   │   └── Fixtures
 │   │   │   ├── Commands
 │   │   │   │   ├── CliArgumentsTests.cs
 │   │   │   │   ├── CommandDispatcherTests.cs
@@ -5301,9 +5292,6 @@ Meridian-main
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   └── PostgresDirectLendingCommandServiceTests.cs
 │   │   │   ├── Etl
-│   │   │   │   ├── EtlJobDefinitionStoreTests.cs
-│   │   │   │   ├── EtlJobOrchestratorTests.cs
-│   │   │   │   └── EtlNormalizationServiceTests.cs
 │   │   │   ├── FundAccounts
 │   │   │   ├── FundStructure
 │   │   │   │   └── LedgerGroupIdTests.cs
@@ -5356,19 +5344,16 @@ Meridian-main
 │   │   │   ├── Services
 │   │   │   │   ├── DataQuality
 │   │   │   │   ├── CliModeResolverTests.cs
-│   │   │   │   ├── ConditionCodeMapperTests.cs
 │   │   │   │   ├── ConfigurationPresetsTests.cs
 │   │   │   │   ├── ConfigurationServiceTests.cs
 │   │   │   │   ├── CronExpressionParserTests.cs
 │   │   │   │   ├── ErrorCodeMappingTests.cs
-│   │   │   │   ├── EventCanonicalizerTests.cs
 │   │   │   │   ├── ExecutionSimulationOrchestratorTests.cs
 │   │   │   │   ├── FundOperationsWorkspaceReadServiceTests.cs
 │   │   │   │   ├── GracefulShutdownTests.cs
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
-│   │   │   │   ├── RuntimeDiagnosticRedactorTests.cs
-│   │   │   │   └── VenueMicMapperTests.cs
+│   │   │   │   └── RuntimeDiagnosticRedactorTests.cs
 │   │   │   ├── Ui
 │   │   │   │   └── ConfigStoreTests.cs
 │   │   │   ├── Wizard
@@ -5411,12 +5396,28 @@ Meridian-main
 │   │   │   │   └── QuickBooks
 │   │   │   │       └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
 │   │   │   ├── Canonicalization
-│   │   │   │   └── CanonicalizingPublisherTests.cs
+│   │   │   │   ├── Fixtures
+│   │   │   │   │   ├── alpaca_trade_extended_hours.json
+│   │   │   │   │   ├── alpaca_trade_odd_lot.json
+│   │   │   │   │   ├── alpaca_trade_regular.json
+│   │   │   │   │   ├── alpaca_xnas_identity.json
+│   │   │   │   │   ├── polygon_trade_extended_hours.json
+│   │   │   │   │   ├── polygon_trade_odd_lot.json
+│   │   │   │   │   ├── polygon_trade_regular.json
+│   │   │   │   │   └── polygon_xnas_identity.json
+│   │   │   │   ├── CanonicalizationFixtureDriftTests.cs
+│   │   │   │   ├── CanonicalizationGoldenFixtureTests.cs
+│   │   │   │   ├── CanonicalizingPublisherTests.cs
+│   │   │   │   ├── ConditionCodeMapperTests.cs
+│   │   │   │   ├── EventCanonicalizerTests.cs
+│   │   │   │   └── VenueMicMapperTests.cs
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
 │   │   │   ├── Etl
-│   │   │   │   └── EtlExportServiceTests.cs
+│   │   │   │   ├── EtlExportServiceTests.cs
+│   │   │   │   ├── EtlJobOrchestratorTests.cs
+│   │   │   │   └── EtlNormalizationServiceTests.cs
 │   │   │   ├── Historical
 │   │   │   │   ├── HistoricalDataQueryServiceBarsTests.cs
 │   │   │   │   └── HistoricalDataQueryServiceTests.cs
@@ -5768,6 +5769,8 @@ Meridian-main
 │   │   ├── Storage
 │   │   │   ├── Backfill
 │   │   │   │   └── BackfillStatusStoreTests.cs
+│   │   │   ├── Etl
+│   │   │   │   └── EtlJobDefinitionStoreTests.cs
 │   │   │   ├── AccountingConfigurationPostgresStoreTests.cs
 │   │   │   ├── AnalysisExportServiceTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs

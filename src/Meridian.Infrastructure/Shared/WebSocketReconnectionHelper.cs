@@ -1,5 +1,5 @@
-using Meridian.Application.Logging;
-using Meridian.Application.Monitoring;
+using Meridian.Core.Logging;
+using Meridian.Core.Monitoring;
 using Meridian.Infrastructure.Contracts;
 using Serilog;
 

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Threading;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;

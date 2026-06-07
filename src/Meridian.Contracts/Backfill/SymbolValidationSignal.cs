@@ -1,4 +1,4 @@
-namespace Meridian.Application.Backfill;
+namespace Meridian.Contracts.Backfill;
 
 /// <summary>
 /// Shared per-symbol completeness signal produced at the end of a backfill run.

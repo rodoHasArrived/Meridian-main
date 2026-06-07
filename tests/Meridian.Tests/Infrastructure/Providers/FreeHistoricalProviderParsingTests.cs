@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
-using Meridian.Application.Exceptions;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;

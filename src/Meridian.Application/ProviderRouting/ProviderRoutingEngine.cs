@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.IO;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;

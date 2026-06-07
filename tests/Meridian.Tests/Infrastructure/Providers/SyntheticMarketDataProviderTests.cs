@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using FluentAssertions;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Domain.Events;
 using Meridian.Contracts.Domain.Models;

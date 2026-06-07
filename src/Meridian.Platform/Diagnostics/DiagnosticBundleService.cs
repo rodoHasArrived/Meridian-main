@@ -2,15 +2,14 @@ using System.IO.Compression;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
-using Meridian.Application.Monitoring;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Monitoring;
 using Meridian.Core.Diagnostics;
 using Meridian.Platform.Diagnostics;
 using Serilog;
 
-namespace Meridian.Application.Services;
+namespace Meridian.Platform.Diagnostics;
 
 /// <summary>
 /// Platform service for generating diagnostic bundles containing system state and logs.

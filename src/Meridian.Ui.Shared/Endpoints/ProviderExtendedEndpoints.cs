@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Text.Json;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;

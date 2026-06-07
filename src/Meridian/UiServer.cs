@@ -5,7 +5,7 @@ using System.Text;
 using Meridian.Audit.Compliance;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;

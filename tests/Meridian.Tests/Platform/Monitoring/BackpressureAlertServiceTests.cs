@@ -1,7 +1,8 @@
 using FluentAssertions;
-using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
+using Meridian.Platform.Monitoring;
 using Xunit;
+using Meridian.Contracts.Pipeline;
 
 namespace Meridian.Tests.Platform.Monitoring;
 

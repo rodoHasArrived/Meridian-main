@@ -3,14 +3,15 @@ using System.Linq;
 using System.Threading;
 using FluentAssertions;
 using Meridian.Application.Backfill;
-using Meridian.Application.Config;
-using Meridian.Application.Exceptions;
+using Meridian.Core.Config;
+using Meridian.Core.Exceptions;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Interfaces;
 using Xunit;
+using Meridian.Storage.Backfill;
 
 // Disambiguate from the infrastructure-layer BackfillRequest used by the job-queue subsystem
 using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
@@ -745,9 +746,10 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             result.Error.Should().Contain("QQQ");
 
             var spySignal = result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "SPY").Which;
-            spySignal.Status.Should().Be("Pass");
+            spySignal.Status.Should().Be("Warn");
             spySignal.EffectiveFrom.Should().Be(new DateOnly(2024, 2, 16));
-            spySignal.EffectiveTo.Should().Be(new DateOnly(2024, 3, 29));
+            spySignal.EffectiveTo.Should().Be(new DateOnly(2024, 3, 31));
+            spySignal.Reason.Should().Contain("partial bars");
 
             var qqqSignal = result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "QQQ").Which;
             qqqSignal.Status.Should().Be("Fail");
@@ -999,8 +1001,9 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             spySignal.CheckpointBarsWritten.Should().Be(10);       // from sidecar
 
             var aaplSignal = result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "AAPL").Which;
-            aaplSignal.Status.Should().Be("Pass");
-            aaplSignal.BarsWritten.Should().Be(1);
+            aaplSignal.Status.Should().Be("Warn");
+            aaplSignal.BarsWritten.Should().Be(0);
+            aaplSignal.Reason.Should().Contain("partial bars");
 
             // SPY was NOT re-fetched — no data duplication
             fetchedSymbols.Should().NotContain("SPY");

@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Contracts.Etl;
 using Meridian.Storage.Archival;
 using Serilog;

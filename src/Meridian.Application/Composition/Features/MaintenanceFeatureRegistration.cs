@@ -1,4 +1,4 @@
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Scheduling;
 using Meridian.Application.UI;
 using Meridian.Storage;

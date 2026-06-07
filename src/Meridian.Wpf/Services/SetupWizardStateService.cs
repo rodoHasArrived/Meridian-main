@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;

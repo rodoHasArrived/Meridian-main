@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Services;
 using Meridian.Core.Services;
 using Meridian.Platform.Diagnostics;
+using Meridian.Platform.Runtime;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;

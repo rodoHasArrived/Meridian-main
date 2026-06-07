@@ -7,6 +7,7 @@ using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
+using Meridian.Platform.Runtime;
 using Meridian.Storage.Interfaces;
 using Xunit;
 using Xunit.Abstractions;

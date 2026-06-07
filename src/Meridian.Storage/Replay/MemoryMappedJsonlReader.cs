@@ -4,7 +4,7 @@ using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Meridian.Application.Serialization;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 
 namespace Meridian.Storage.Replay;

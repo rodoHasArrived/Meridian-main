@@ -10,7 +10,7 @@ using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
-using AlpacaOptions = Meridian.Application.Config.AlpacaOptions;
+using AlpacaOptions = Meridian.Core.Config.AlpacaOptions;
 
 namespace Meridian.Infrastructure.Adapters.Alpaca;
 

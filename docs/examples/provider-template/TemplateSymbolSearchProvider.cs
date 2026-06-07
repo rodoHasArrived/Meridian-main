@@ -1,6 +1,6 @@
 // Replace every occurrence of "Template" with your provider name.
 // Replace the namespace segment "Template" with your provider's namespace segment.
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;

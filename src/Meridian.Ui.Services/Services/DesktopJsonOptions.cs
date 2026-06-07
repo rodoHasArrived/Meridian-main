@@ -7,8 +7,8 @@ namespace Meridian.Ui.Services;
 /// Centralized JSON serialization options for desktop applications (WPF).
 /// Consolidates all JsonSerializerOptions to avoid duplication across services.
 ///
-/// This mirrors the patterns from Meridian.Application.Serialization.MarketDataJsonContext
-/// but provides desktop-specific defaults without requiring a reference to the core assembly.
+/// This mirrors the patterns from Meridian.Core.Serialization.MarketDataJsonContext
+/// but provides desktop-specific defaults without using the generated context directly.
 /// </summary>
 public static class DesktopJsonOptions
 {

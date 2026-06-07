@@ -2,9 +2,9 @@ using System.Buffers;
 using System.Text.Json;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
-using Meridian.Application.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 

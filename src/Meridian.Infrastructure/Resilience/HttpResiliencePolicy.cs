@@ -1,4 +1,4 @@
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;

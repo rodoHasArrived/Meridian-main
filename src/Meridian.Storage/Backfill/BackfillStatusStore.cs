@@ -1,9 +1,10 @@
 using System.Text.Json;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Archival;
+using Meridian.Contracts.Backfill;
 
-namespace Meridian.Application.Backfill;
+namespace Meridian.Storage.Backfill;
 
 /// <summary>
 /// Storage-owned persistence for last backfill status and per-symbol checkpoint sidecars.

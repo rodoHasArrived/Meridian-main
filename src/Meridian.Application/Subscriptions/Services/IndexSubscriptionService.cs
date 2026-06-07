@@ -1,7 +1,7 @@
 using System.Threading;
-using Meridian.Application.Config;
-using Meridian.Application.Logging;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Application.UI;
 using Serilog;
 

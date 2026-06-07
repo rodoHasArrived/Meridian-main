@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Meridian.Application.Serialization;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Policies;

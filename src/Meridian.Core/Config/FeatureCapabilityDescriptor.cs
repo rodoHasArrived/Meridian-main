@@ -1,4 +1,4 @@
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 public sealed record FeatureCapabilityDescriptor(
     string CapabilityKey,

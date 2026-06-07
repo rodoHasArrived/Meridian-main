@@ -1,7 +1,8 @@
 using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.UI;
 using Meridian.Contracts.Configuration;
@@ -13,6 +14,7 @@ using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Platform.Runtime;
 using Meridian.ProviderSdk;
 using Serilog;
 using static Meridian.Application.Services.AutoConfigurationService;

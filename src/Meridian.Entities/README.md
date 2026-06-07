@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-ENTITIES
 path: src/Meridian.Entities
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-05
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.Entities
@@ -24,6 +24,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `src/Meridian.Entities` - registered source module root.
 - `FundStructure/LedgerGroupingRules.cs` - ledger-group assignment type policy,
   assignment-reference normalization, and account ledger-group resolution.
+- `FundStructure/LedgerMappingWorkbenchService.cs` - ledger mapping workbench projection
+  builder that applies entity-owned ledger grouping rules to accounting structure views.
 - `FundStructure/IFundStructurePolicyService.cs` and `FundStructure/FundStructurePolicyService.cs`
   - ownership-link compatibility, cycle, primary-link, ownership-percent, replacement-window,
   single-operating-parent, and governance cash-flow query policy.
@@ -32,7 +34,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
 
-Fund-structure ledger grouping rules and ownership/cash-flow policy live here as entity ownership.
+Fund-structure ledger grouping rules, ledger mapping workbench projection, and ownership/cash-flow policy live here as entity ownership.
 Application and UI Shared consume these policies when validating ledger-group assignment mutations,
 grouping accounting views, building the ledger-mapping workbench, enforcing ownership graph rules,
 and validating governance cash-flow query windows.
@@ -61,6 +63,7 @@ and validating governance cash-flow query windows.
 ```bash
 dotnet build src/Meridian.Entities/Meridian.Entities.csproj /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~LedgerGroupingRulesTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~LedgerMappingWorkbench_Build_ReportsAssignedAndUnmappedAccounts" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~FundStructurePolicyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LedgerGroupingRulesTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
@@ -70,6 +73,9 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 `LedgerGroupingRules` moved from `src/Meridian.Application/FundStructure` into this physical design
 module so fund-structure ledger-group assignment normalization and resolution are no longer owned by
 the layer-oriented application project.
+`LedgerMappingWorkbenchService` also moved from `src/Meridian.Application/FundStructure` into this
+module so server-side ledger mapping workbench projection follows the same entity-owned ledger-group
+rule boundary.
 `IFundStructurePolicyService` and `FundStructurePolicyService` also moved from
 `src/Meridian.Application/FundStructure` into this physical design module so ownership graph and
 cash-flow query policy are owned by the Entities bounded context.

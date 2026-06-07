@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Backfill;
 
-namespace Meridian.Application.Backfill;
+namespace Meridian.Storage.Backfill;
 
 /// <summary>
 /// Storage-owned ADR-014 source-generated serialization context for persisted backfill status

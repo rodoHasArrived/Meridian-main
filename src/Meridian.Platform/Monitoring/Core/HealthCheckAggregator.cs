@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Meridian.Core.Monitoring.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Meridian.Application.Monitoring.Core;
+namespace Meridian.Platform.Monitoring.Core;
 
 /// <summary>
 /// Default implementation of IHealthCheckAggregator that runs health checks

@@ -1,12 +1,10 @@
 using System.Diagnostics;
 using System.Threading;
-using Meridian.Application.Pipeline;
-using Meridian.DataIntegration.Canonicalization;
 using Meridian.Domain.Events;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Meridian.Application.Canonicalization;
+namespace Meridian.DataIntegration.Canonicalization;
 
 /// <summary>
 /// Decorator that canonicalizes events before forwarding them to the inner publisher.

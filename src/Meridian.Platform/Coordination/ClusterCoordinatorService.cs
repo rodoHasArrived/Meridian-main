@@ -1,7 +1,8 @@
+using Meridian.Contracts.Coordination;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Meridian.Application.Coordination;
+namespace Meridian.Platform.Coordination;
 
 /// <summary>
 /// Background service that maintains a single cluster coordinator via shared-storage lease competition.

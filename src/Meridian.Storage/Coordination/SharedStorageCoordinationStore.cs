@@ -1,8 +1,9 @@
 using System.Text.Json;
-using Meridian.Application.Config;
+using Meridian.Contracts.Coordination;
+using Meridian.Core.Config;
 using Meridian.Storage.Archival;
 
-namespace Meridian.Application.Coordination;
+namespace Meridian.Storage.Coordination;
 
 /// <summary>
 /// Storage-owned shared lease store using per-resource lock files and JSON lease records.

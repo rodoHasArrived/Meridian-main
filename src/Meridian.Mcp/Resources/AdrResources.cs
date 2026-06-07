@@ -1,3 +1,4 @@
+using Meridian.Core.Pipeline;
 namespace Meridian.Mcp.Resources;
 
 [McpServerResourceType]

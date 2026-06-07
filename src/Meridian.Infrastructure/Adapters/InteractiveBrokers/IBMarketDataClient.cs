@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Threading;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;

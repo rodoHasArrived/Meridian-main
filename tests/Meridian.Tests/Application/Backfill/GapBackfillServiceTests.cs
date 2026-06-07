@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Infrastructure.Shared;
 using Xunit;
+using Meridian.Contracts.Backfill;
 
 namespace Meridian.Tests.Application.Backfill;
 

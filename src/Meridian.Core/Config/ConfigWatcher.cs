@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Threading;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Serilog;
 
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Core-owned watcher for JSON config files that raises debounced change events with the parsed AppConfig.

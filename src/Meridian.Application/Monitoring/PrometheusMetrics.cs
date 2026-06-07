@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using System.Threading;
-using Meridian.Application.Canonicalization;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.DataIntegration.Canonicalization;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Prometheus;
+using Meridian.Core.Monitoring;
 
 namespace Meridian.Application.Monitoring;
 

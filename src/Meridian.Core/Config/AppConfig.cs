@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Meridian.Application.Config;
+namespace Meridian.Core.Config;
 
 /// <summary>
 /// Root configuration model loaded from appsettings.json.

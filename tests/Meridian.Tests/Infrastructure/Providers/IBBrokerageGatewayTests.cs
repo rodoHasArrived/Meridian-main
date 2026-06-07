@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Microsoft.Extensions.Logging.Abstractions;

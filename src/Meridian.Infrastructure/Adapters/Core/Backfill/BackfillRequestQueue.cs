@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Channels;
-using Meridian.Application.Logging;
-using Meridian.Application.Pipeline;
+using Meridian.Core.Logging;
+using Meridian.Core.Pipeline;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;

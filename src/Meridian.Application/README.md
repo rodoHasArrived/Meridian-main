@@ -133,7 +133,7 @@ and UI presentation concerns in their owning layers.
   configuration JSON options, JSON Schema generation, FluentValidation rules, validation pipeline
   stages, credential placeholder detection, default config-path resolution, environment overrides,
   template generation, and config file hot-reload watching live in Core under
-  `Meridian.Application.Config`; conversion from shared `StorageConfig` into durable
+  `Meridian.Core.Config`; conversion from shared `StorageConfig` into durable
   `StorageOptions` lives in `Meridian.Storage`. Provider credential descriptors, encrypted vault storage,
   verification metadata, expiration/status records, OAuth token records, and provider-environment normalization now live in
   `Meridian.DataIntegration.Credentials`. Plaid setup remains credential-only from the application
@@ -181,8 +181,8 @@ and UI presentation concerns in their owning layers.
   Application composition registers the Instruments services and storage-backed projection stores,
   but application orchestration no longer owns the instrument contract/reference lookup, asset
   operations projection, option-chain query behavior, or MMF reference/liquidity implementations.
-- `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
-  mapping workbench orchestration. The shared `IFundStructureService` contract lives in
+- `FundStructure/` - organization, fund, portfolio, account, ledger-group, and cash-flow
+  orchestration. The shared `IFundStructureService` contract lives in
   `Meridian.Contracts.Services`; the fund-account traversal query contract also lives there while
   Identity owns the cached traversal implementation for scoped-access and fund-account endpoint
   lineage. The governance shared-data access contract also lives in
@@ -197,9 +197,9 @@ and UI presentation concerns in their owning layers.
   invalid setup graphs by blocking self-parenting, active cycles, incompatible relationship types,
   overlapping primary links, invalid percentage ownership, sibling percentage over-allocation, and
   invalid effective windows before create, amend, expire, or replacement graph mutations are
-  persisted. Ledger mapping orchestration stays server-side and consumes
-  `Meridian.Entities.FundStructure.LedgerGroupingRules` for ledger-group assignment normalization
-  and resolution before falling back to account ledger references.
+  persisted. Ledger mapping workbench projection also lives in
+  `Meridian.Entities.FundStructure` and consumes `LedgerGroupingRules` for ledger-group assignment
+  normalization and resolution before falling back to account ledger references.
 - Identity integration - application composition wires the Identity-owned
   `FundStructureAccessScopeLineageProvider` against the shared fund-structure service contract.
   Scoped access assignments, auth role and permission contracts, user profiles, login sessions,

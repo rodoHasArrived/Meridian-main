@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
@@ -7,7 +6,8 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using BackfillResult = Meridian.Application.Backfill.BackfillResult;
+using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
+using BackfillResult = Meridian.Contracts.Backfill.BackfillResult;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -68,7 +68,7 @@ public static class BackfillScheduleEndpoints
 
             try
             {
-                var request = new Application.Backfill.BackfillRequest(
+                var request = new BackfillRequest(
                     req.Provider ?? "stooq",
                     req.Symbols,
                     req.From,

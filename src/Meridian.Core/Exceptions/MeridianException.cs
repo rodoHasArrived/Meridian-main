@@ -1,4 +1,4 @@
-namespace Meridian.Application.Exceptions;
+namespace Meridian.Core.Exceptions;
 
 /// <summary>
 /// Base exception for all Meridian-specific exceptions

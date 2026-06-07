@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
@@ -10,7 +11,7 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 
-namespace Meridian.Application.SecurityMaster;
+namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
 /// Composes the selected-security trust snapshot used by the Security Master workstation.

@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Meridian.Application.Logging;
+using Meridian.Core.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;

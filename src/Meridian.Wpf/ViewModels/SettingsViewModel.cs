@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Features;

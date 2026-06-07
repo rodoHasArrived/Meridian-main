@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Application.Services;
 using Meridian.Infrastructure.DataSources;
+using Meridian.ProviderSdk;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 

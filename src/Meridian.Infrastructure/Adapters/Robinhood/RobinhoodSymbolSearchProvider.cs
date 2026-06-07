@@ -4,7 +4,7 @@
 // ✅ ADR-014: Source-generated JSON via RobinhoodJsonContext
 
 using System.Text.Json;
-using Meridian.Application.Subscriptions.Models;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;

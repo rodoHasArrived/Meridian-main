@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Application.Config;
-using Meridian.Application.Exceptions;
+using Meridian.Core.Config;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;

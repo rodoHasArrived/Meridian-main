@@ -1,6 +1,7 @@
 using System.Linq;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.Backfill;
 

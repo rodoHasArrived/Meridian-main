@@ -1,4 +1,4 @@
-namespace Meridian.Application.Monitoring;
+namespace Meridian.Core.Monitoring;
 
 /// <summary>
 /// Interface for monitoring connection health of market data providers.

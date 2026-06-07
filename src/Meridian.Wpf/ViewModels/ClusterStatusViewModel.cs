@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Media;
-using Meridian.Application.Coordination;
-using Meridian.Application.Logging;
+using Meridian.Contracts.Coordination;
+using Meridian.Core.Logging;
 using Serilog;
 
 namespace Meridian.Wpf.ViewModels;

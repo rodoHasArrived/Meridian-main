@@ -1,5 +1,5 @@
 using System.Threading;
-using Meridian.Application.Config;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 
