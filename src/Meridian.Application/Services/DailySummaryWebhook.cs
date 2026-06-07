@@ -21,7 +21,7 @@ using StaleDataAlert = Meridian.DataIntegration.Monitoring.DataQuality.DataAnoma
 /// Sends end-of-day summary digests via webhook to external services.
 /// Supports Slack, Discord, Microsoft Teams, and generic JSON webhooks.
 /// </summary>
-public sealed class DailySummaryWebhook : IAsyncDisposable
+public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposable
 {
     private readonly ILogger _log = LoggingSetup.ForContext<DailySummaryWebhook>();
     private readonly DailySummaryWebhookConfig _config;
@@ -151,6 +151,11 @@ public sealed class DailySummaryWebhook : IAsyncDisposable
         }
 
         return results;
+    }
+
+    async Task IMonitoringWebhookSink.SendMonitoringMessageAsync(string message, string? title, CancellationToken ct)
+    {
+        await SendMessageAsync(message, title, ct).ConfigureAwait(false);
     }
 
     private DailySummary BuildSummary()

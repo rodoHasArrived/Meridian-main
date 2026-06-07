@@ -2,7 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Monitoring.Core;
 using Xunit;
 
-namespace Meridian.Tests.Application.Monitoring;
+namespace Meridian.Tests.Platform.Monitoring;
 
 /// <summary>
 /// Tests for <see cref="SloDefinitionRegistry"/> and <see cref="AlertRunbookRegistry"/>.

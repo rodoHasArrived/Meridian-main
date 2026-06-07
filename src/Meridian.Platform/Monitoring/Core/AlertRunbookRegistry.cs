@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Meridian.Application.Logging;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Monitoring.Core;
 
@@ -17,7 +17,7 @@ namespace Meridian.Application.Monitoring.Core;
 public sealed class AlertRunbookRegistry
 {
     private readonly ConcurrentDictionary<string, AlertRunbookEntry> _entries = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ILogger _log = LoggingSetup.ForContext<AlertRunbookRegistry>();
+    private readonly ILogger<AlertRunbookRegistry> _log = NullLogger<AlertRunbookRegistry>.Instance;
 
     private static readonly Lazy<AlertRunbookRegistry> _instance = new(() =>
     {
@@ -295,7 +295,7 @@ public sealed class AlertRunbookRegistry
             }
         });
 
-        _log.Information("Registered {Count} alert-runbook entries", _entries.Count);
+        _log.LogInformation("Registered {Count} alert-runbook entries", _entries.Count);
     }
 
     /// <summary>

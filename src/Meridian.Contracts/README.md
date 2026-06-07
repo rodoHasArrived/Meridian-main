@@ -28,6 +28,8 @@ or provider implementations.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   and query/command service contracts.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads.
+- `Coordination/` - shared cluster lease, leadership, scheduled-work ownership, subscription
+  ownership, lease-record, and coordination snapshot contracts.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
 - `Services/` - cross-module service contracts such as backtest preflight and Security Master
@@ -37,8 +39,12 @@ or provider implementations.
 - `Etl/` - shared ETL DTOs, the job-definition store contract, and the SFTP publisher port used by
   Application orchestration, Data Integration ETL services, Infrastructure adapters, and
   Storage-backed persistence.
-- `Monitoring/` - shared event-pipeline metrics contracts and snapshot payloads consumed by
-  Application, Platform tracing, diagnostics endpoints, WPF, and browser workstation services.
+- `Monitoring/` - shared event-pipeline metrics contracts, snapshot payloads, and monitoring
+  webhook sink contracts consumed by Application, Platform tracing/monitoring, diagnostics
+  endpoints, WPF, and browser workstation services.
+- `Pipeline/` - shared pipeline policy constants and runtime pipeline statistics DTOs consumed by
+  Application pipelines, Platform monitoring, diagnostics endpoints, WPF, and browser workstation
+  services.
 - Contract DTO files - shared payloads consumed across host, UI services, desktop, and dashboard.
 - Project metadata - serialization and package references for contract consumers.
 
@@ -88,6 +94,14 @@ generic evidence subject string.
 `FundOperationsNavigationContext` also carries optional evidence subject metadata for shared
 evidence routes such as `EvidenceWorkbench:accounting-record/{recordId}`, allowing browser and WPF
 clients to preserve the subject and source target while resolving to their local audit surfaces.
+
+Cluster coordination contracts define the shared lease and ownership vocabulary for distributed
+runtime work. Keep `IClusterCoordinator`, `ILeaseManager`, `ICoordinationStore`,
+`IScheduledWorkOwnershipService`, `ISubscriptionOwnershipService`, `LeaseRecord`,
+`LeaseAcquireResult`, and `CoordinationSnapshot` contract-owned so Application orchestration,
+Platform runtime coordination, Storage lease persistence, diagnostics, WPF, and browser endpoints
+use the same leadership and ownership semantics without depending on Application implementation
+types.
 
 Historical backfill contracts include the shared run outcome and per-symbol validation/completeness
 signals consumed by Application orchestration, Storage status persistence, endpoints, tests, and
@@ -179,10 +193,13 @@ and `ISftpFilePublisher`. Keep the SFTP publisher port contract-owned so the Dat
 Integration-owned export service can target SFTP without depending on Infrastructure, while the
 Infrastructure adapter implements transport-specific publishing details.
 
-Event-pipeline metrics contracts live in `Monitoring/`. Keep `IEventMetrics` and
-`MetricsSnapshot` contract-owned so the Application default metrics implementation, Platform
-tracing decorator, diagnostics endpoints, WPF shell, and shared browser endpoints can depend on the
-same metric shape without introducing Application-layer dependencies.
+Event-pipeline metrics and monitoring delivery contracts live in `Monitoring/`. Keep
+`IEventMetrics`, `MetricsSnapshot`, and `IMonitoringWebhookSink` contract-owned so Application
+notification services, Platform tracing/monitoring, diagnostics endpoints, WPF shell, and shared
+browser endpoints can depend on the same metric and alert-delivery shapes without introducing
+Application-layer dependencies. Runtime pipeline statistics live in `Pipeline/`; keep
+`PipelineStatistics` contract-owned so Platform backpressure alerting can observe Application
+pipeline state without referencing Application implementation assemblies.
 Operational scheduler contracts live in `Services/`. Keep `IOperationalScheduler`,
 `ITradingCalendarProvider`, operation types, resource requirements, scheduling decisions, slots,
 trading sessions, and maintenance-window records contract-owned so scheduling behavior can be

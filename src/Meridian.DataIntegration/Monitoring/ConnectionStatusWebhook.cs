@@ -1,8 +1,7 @@
 using System.Threading;
-using Meridian.Application.Logging;
-using Meridian.Application.Services;
 using Meridian.DataIntegration.Monitoring;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Monitoring;
 
@@ -12,9 +11,9 @@ namespace Meridian.Application.Monitoring;
 /// </summary>
 public sealed class ConnectionStatusWebhook : IAsyncDisposable
 {
-    private readonly ILogger _log = LoggingSetup.ForContext<ConnectionStatusWebhook>();
+    private readonly ILogger<ConnectionStatusWebhook> _log;
     private readonly ConnectionStatusWebhookConfig _config;
-    private readonly DailySummaryWebhook? _webhook;
+    private readonly IMonitoringWebhookSink? _webhook;
     private readonly ConnectionHealthMonitor _connectionMonitor;
     private readonly CancellationTokenSource _cts = new();
     private volatile bool _isDisposed;
@@ -25,12 +24,14 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
 
     public ConnectionStatusWebhook(
         ConnectionHealthMonitor connectionMonitor,
-        DailySummaryWebhook? webhook = null,
-        ConnectionStatusWebhookConfig? config = null)
+        IMonitoringWebhookSink? webhook = null,
+        ConnectionStatusWebhookConfig? config = null,
+        ILogger<ConnectionStatusWebhook>? logger = null)
     {
         _connectionMonitor = connectionMonitor ?? throw new ArgumentNullException(nameof(connectionMonitor));
         _webhook = webhook;
         _config = config ?? ConnectionStatusWebhookConfig.Default;
+        _log = logger ?? NullLogger<ConnectionStatusWebhook>.Instance;
 
         // Subscribe to connection events
         _connectionMonitor.OnConnectionLost += HandleConnectionLost;
@@ -38,7 +39,7 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
         _connectionMonitor.OnHeartbeatMissed += HandleHeartbeatMissed;
         _connectionMonitor.OnHighLatency += HandleHighLatency;
 
-        _log.Information("ConnectionStatusWebhook initialized with min alert interval {Interval}s",
+        _log.LogInformation("ConnectionStatusWebhook initialized with min alert interval {Interval}s",
             _config.MinAlertIntervalSeconds);
     }
 
@@ -51,17 +52,17 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
             return;
 
         var message = FormatConnectionLostMessage(evt);
-        _log.Warning("Connection lost: {ConnectionId} ({Provider}) - {Reason}",
+        _log.LogWarning("Connection lost: {ConnectionId} ({Provider}) - {Reason}",
             evt.ConnectionId, evt.ProviderName, evt.Reason);
 
         try
         {
-            await _webhook.SendMessageAsync(message, "Connection Lost", _cts.Token);
+            await _webhook.SendMonitoringMessageAsync(message, "Connection Lost", _cts.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to send connection lost webhook");
+            _log.LogWarning(ex, "Failed to send connection lost webhook");
         }
     }
 
@@ -74,17 +75,17 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
             return;
 
         var message = FormatConnectionRecoveredMessage(evt);
-        _log.Information("Connection recovered: {ConnectionId} ({Provider}) after {Downtime}",
+        _log.LogInformation("Connection recovered: {ConnectionId} ({Provider}) after {Downtime}",
             evt.ConnectionId, evt.ProviderName, evt.DowntimeDuration);
 
         try
         {
-            await _webhook.SendMessageAsync(message, "Connection Recovered", _cts.Token);
+            await _webhook.SendMonitoringMessageAsync(message, "Connection Recovered", _cts.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to send connection recovered webhook");
+            _log.LogWarning(ex, "Failed to send connection recovered webhook");
         }
     }
 
@@ -101,17 +102,17 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
             return;
 
         var message = FormatHeartbeatMissedMessage(evt);
-        _log.Warning("Heartbeat missed: {ConnectionId} ({Provider}) - {MissedCount} missed",
+        _log.LogWarning("Heartbeat missed: {ConnectionId} ({Provider}) - {MissedCount} missed",
             evt.ConnectionId, evt.ProviderName, evt.MissedCount);
 
         try
         {
-            await _webhook.SendMessageAsync(message, "Heartbeat Warning", _cts.Token);
+            await _webhook.SendMonitoringMessageAsync(message, "Heartbeat Warning", _cts.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to send heartbeat missed webhook");
+            _log.LogWarning(ex, "Failed to send heartbeat missed webhook");
         }
     }
 
@@ -128,17 +129,17 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
             return;
 
         var message = FormatHighLatencyMessage(evt);
-        _log.Warning("High latency: {ConnectionId} ({Provider}) - {LatencyMs:F1}ms",
+        _log.LogWarning("High latency: {ConnectionId} ({Provider}) - {LatencyMs:F1}ms",
             evt.ConnectionId, evt.ProviderName, evt.LatencyMs);
 
         try
         {
-            await _webhook.SendMessageAsync(message, "High Latency Alert", _cts.Token);
+            await _webhook.SendMonitoringMessageAsync(message, "High Latency Alert", _cts.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to send high latency webhook");
+            _log.LogWarning(ex, "Failed to send high latency webhook");
         }
     }
 
@@ -221,11 +222,11 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
 
         try
         {
-            await _webhook.SendMessageAsync(message, title ?? "Connection Status Update");
+            await _webhook.SendMonitoringMessageAsync(message, title ?? "Connection Status Update", ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to send status update webhook");
+            _log.LogWarning(ex, "Failed to send status update webhook");
         }
     }
 
@@ -242,11 +243,11 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
 
         try
         {
-            await _webhook.SendMessageAsync(message, "Connection Summary");
+            await _webhook.SendMonitoringMessageAsync(message, "Connection Summary", ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to send connection summary webhook");
+            _log.LogWarning(ex, "Failed to send connection summary webhook");
         }
     }
 

@@ -3,7 +3,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Xunit;
 
-namespace Meridian.Tests.Monitoring;
+namespace Meridian.Tests.Platform.Monitoring;
 
 public sealed class BackpressureAlertServiceTests : IDisposable
 {

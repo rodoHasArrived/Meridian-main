@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-07 04:04:24 UTC. Do not edit manually.
+> Auto-generated on 2026-06-07 06:40:06 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -2058,20 +2058,6 @@ Meridian-main
 │   │   │   ├── ConfigurationPipeline.cs
 │   │   │   └── ConfigValidatorCli.cs
 │   │   ├── Coordination
-│   │   │   ├── ClusterCoordinatorService.cs
-│   │   │   ├── CoordinationSnapshot.cs
-│   │   │   ├── IClusterCoordinator.cs
-│   │   │   ├── ICoordinationStore.cs
-│   │   │   ├── ILeaseManager.cs
-│   │   │   ├── IScheduledWorkOwnershipService.cs
-│   │   │   ├── ISubscriptionOwnershipService.cs
-│   │   │   ├── LeaseAcquireResult.cs
-│   │   │   ├── LeaseManager.cs
-│   │   │   ├── LeaseRecord.cs
-│   │   │   ├── ScheduledWorkOwnershipService.cs
-│   │   │   ├── SharedStorageCoordinationStore.cs
-│   │   │   ├── SplitBrainDetector.cs
-│   │   │   └── SubscriptionOwnershipService.cs
 │   │   ├── Credentials
 │   │   ├── DirectLending
 │   │   │   ├── AccrualLedgerService.cs
@@ -2109,13 +2095,7 @@ Meridian-main
 │   │   ├── Indicators
 │   │   ├── Monitoring
 │   │   │   ├── Core
-│   │   │   │   ├── AlertDispatcher.cs
-│   │   │   │   ├── AlertRunbookRegistry.cs
-│   │   │   │   ├── HealthCheckAggregator.cs
-│   │   │   │   └── SloDefinitionRegistry.cs
 │   │   │   ├── DataQuality
-│   │   │   ├── BackpressureAlertService.cs
-│   │   │   ├── ConnectionStatusWebhook.cs
 │   │   │   ├── DetailedHealthCheck.cs
 │   │   │   ├── PrometheusMetrics.cs
 │   │   │   ├── StatusHttpServer.cs
@@ -2375,6 +2355,15 @@ Meridian-main
 │   │   │   ├── ProviderConnectionDtos.cs
 │   │   │   ├── ProviderConnectionsConfigDto.cs
 │   │   │   └── SymbolConfig.cs
+│   │   ├── Coordination
+│   │   │   ├── CoordinationSnapshot.cs
+│   │   │   ├── IClusterCoordinator.cs
+│   │   │   ├── ICoordinationStore.cs
+│   │   │   ├── ILeaseManager.cs
+│   │   │   ├── IScheduledWorkOwnershipService.cs
+│   │   │   ├── ISubscriptionOwnershipService.cs
+│   │   │   ├── LeaseAcquireResult.cs
+│   │   │   └── LeaseRecord.cs
 │   │   ├── Credentials
 │   │   │   ├── CredentialModels.cs
 │   │   │   └── ISecretProvider.cs
@@ -2485,12 +2474,14 @@ Meridian-main
 │   │   │   └── MoneyMarketFundReferenceDtos.cs
 │   │   ├── Monitoring
 │   │   │   ├── IEventMetrics.cs
+│   │   │   ├── IMonitoringWebhookSink.cs
 │   │   │   └── MetricsSnapshot.cs
 │   │   ├── Options
 │   │   │   └── OptionReferenceDtos.cs
 │   │   ├── Pipeline
 │   │   │   ├── IngestionJob.cs
 │   │   │   ├── PipelinePolicyConstants.cs
+│   │   │   ├── PipelineStatistics.cs
 │   │   │   └── UflOutboxMessage.cs
 │   │   ├── Plaid
 │   │   │   └── PlaidModels.cs
@@ -2699,6 +2690,7 @@ Meridian-main
 │   │   │   ├── BadTickFilter.cs
 │   │   │   ├── ClockSkewEstimator.cs
 │   │   │   ├── ConnectionHealthMonitor.cs
+│   │   │   ├── ConnectionStatusWebhook.cs
 │   │   │   ├── DataLossAccounting.cs
 │   │   │   ├── ProviderDegradationCalibration.cs
 │   │   │   ├── ProviderDegradationConfig.cs
@@ -3365,6 +3357,12 @@ Meridian-main
 │   ├── Meridian.Platform
 │   │   ├── ApiDocumentation
 │   │   │   └── ApiDocumentationService.cs
+│   │   ├── Coordination
+│   │   │   ├── ClusterCoordinatorService.cs
+│   │   │   ├── LeaseManager.cs
+│   │   │   ├── ScheduledWorkOwnershipService.cs
+│   │   │   ├── SplitBrainDetector.cs
+│   │   │   └── SubscriptionOwnershipService.cs
 │   │   ├── Diagnostics
 │   │   │   ├── DiagnosticBundleService.cs
 │   │   │   ├── ErrorRingBuffer.cs
@@ -3379,6 +3377,12 @@ Meridian-main
 │   │   │   ├── FundOperationsPersistenceContracts.cs
 │   │   │   └── ProjectionReconciliationHostedService.cs
 │   │   ├── Monitoring
+│   │   │   ├── Core
+│   │   │   │   ├── AlertDispatcher.cs
+│   │   │   │   ├── AlertRunbookRegistry.cs
+│   │   │   │   ├── HealthCheckAggregator.cs
+│   │   │   │   └── SloDefinitionRegistry.cs
+│   │   │   ├── BackpressureAlertService.cs
 │   │   │   └── CircuitBreakerStatusService.cs
 │   │   ├── Performance
 │   │   │   └── CoLocationProfileActivator.cs
@@ -3404,6 +3408,7 @@ Meridian-main
 │   │   │   ├── OpenTelemetrySetup.cs
 │   │   │   └── TracedEventMetrics.cs
 │   │   ├── DesignModule.cs
+│   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Platform.csproj
 │   │   └── README.md
 │   ├── Meridian.PortfolioRecords
@@ -3537,6 +3542,8 @@ Meridian-main
 │   │   │   └── PostgresBankingStore.cs
 │   │   ├── Config
 │   │   │   └── StorageConfigExtensions.cs
+│   │   ├── Coordination
+│   │   │   └── SharedStorageCoordinationStore.cs
 │   │   ├── DirectLending
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_direct_lending.sql
@@ -5283,9 +5290,6 @@ Meridian-main
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   └── ProviderCredentialStoreTests.cs
 │   │   │   ├── Coordination
-│   │   │   │   ├── ClusterCoordinatorServiceTests.cs
-│   │   │   │   ├── LeaseManagerTests.cs
-│   │   │   │   ├── SplitBrainDetectorTests.cs
 │   │   │   │   └── SubscriptionOrchestratorCoordinationTests.cs
 │   │   │   ├── Credentials
 │   │   │   │   └── CredentialTestingServiceTests.cs
@@ -5308,11 +5312,8 @@ Meridian-main
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
 │   │   │   │   ├── DataQuality
-│   │   │   │   ├── AlertDispatcherTests.cs
-│   │   │   │   ├── BackpressureAlertServiceTests.cs
 │   │   │   │   ├── PrometheusMetricsTests.cs
 │   │   │   │   ├── QualityTrendCalculationTests.cs
-│   │   │   │   ├── SloDefinitionRegistryTests.cs
 │   │   │   │   └── StatusWriterTests.cs
 │   │   │   ├── Pipeline
 │   │   │   │   ├── BackfillProgressTrackerTests.cs
@@ -5424,6 +5425,7 @@ Meridian-main
 │   │   │   │   │   └── LiquidityProfileTests.cs
 │   │   │   │   ├── BadTickFilterTests.cs
 │   │   │   │   ├── ClockSkewEstimatorTests.cs
+│   │   │   │   ├── ConnectionStatusWebhookTests.cs
 │   │   │   │   ├── DataLossAccountingTests.cs
 │   │   │   │   ├── PriceContinuityCheckerTests.cs
 │   │   │   │   ├── ProviderDegradationCalibrationTests.cs
@@ -5669,12 +5671,20 @@ Meridian-main
 │   │   ├── Platform
 │   │   │   ├── ApiDocumentation
 │   │   │   │   └── ApiDocumentationServiceTests.cs
+│   │   │   ├── Coordination
+│   │   │   │   ├── ClusterCoordinatorServiceTests.cs
+│   │   │   │   ├── LeaseManagerTests.cs
+│   │   │   │   └── SplitBrainDetectorTests.cs
 │   │   │   ├── Diagnostics
 │   │   │   │   ├── DiagnosticBundleServiceTests.cs
 │   │   │   │   ├── ErrorRingBufferTests.cs
 │   │   │   │   └── SystemHealthCheckerTests.cs
 │   │   │   ├── Monitoring
-│   │   │   │   └── CircuitBreakerStatusServiceTests.cs
+│   │   │   │   ├── AlertDispatcherTests.cs
+│   │   │   │   ├── BackpressureAlertServiceTests.cs
+│   │   │   │   ├── CircuitBreakerStatusServiceTests.cs
+│   │   │   │   ├── HealthCheckAggregatorTests.cs
+│   │   │   │   └── SloDefinitionRegistryTests.cs
 │   │   │   ├── Performance
 │   │   │   │   └── CoLocationProfileActivatorTests.cs
 │   │   │   ├── Runtime

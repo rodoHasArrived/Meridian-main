@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace Meridian.Tests.Application.Coordination;
+namespace Meridian.Tests.Platform.Coordination;
 
 public sealed class SplitBrainDetectorTests
 {

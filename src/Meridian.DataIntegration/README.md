@@ -50,12 +50,13 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   `Monitoring/ClockSkewEstimator.cs`, `Monitoring/SpreadMonitor.cs`,
   `Monitoring/DataLossAccounting.cs`, `Monitoring/SchemaValidationService.cs`,
   `Monitoring/ProviderLatencyService.cs`, `Monitoring/ProviderMetricsStatus.cs`,
-  `Monitoring/ConnectionHealthMonitor.cs`, `Monitoring/ProviderDegradationScorer.cs`,
+  `Monitoring/ConnectionHealthMonitor.cs`, `Monitoring/ConnectionStatusWebhook.cs`,
+  `Monitoring/ProviderDegradationScorer.cs`,
   `Monitoring/ProviderDegradationConfig.cs`, and
   `Monitoring/ProviderDegradationCalibration.cs` - provider data-quality validation filters,
   clock-skew estimation, spread monitoring, pipeline data-loss accounting, stored market-event
-  schema compatibility checks, connection health, latency histograms, provider metrics snapshots,
-  degradation scoring, degradation-scoring
+  schema compatibility checks, connection health, connection-status notification, latency
+  histograms, provider metrics snapshots, degradation scoring, degradation-scoring
   configuration, calibration datasets/snapshots/governance, and F# validation-stage counters used
   by ingestion, routing, diagnostics, and Application/UI adapters.
 - `Monitoring/DataQuality/` - provider data-quality analyzers, freshness SLA monitor, quality
@@ -102,7 +103,8 @@ owning file-backed historical-data query logic.
 Provider data-quality validators, analyzers, freshness SLA monitoring, report generation,
 clock-skew estimation, spread monitoring, pipeline data-loss accounting, stored market-event schema
 compatibility checks, and validation-stage counters live in this module. Connection-health
-monitoring, provider latency histograms, provider metrics snapshot contracts, provider degradation
+monitoring and connection-status notification over the Contracts-owned monitoring webhook sink,
+provider latency histograms, provider metrics snapshot contracts, provider degradation
 scoring/config, and provider calibration datasets/snapshots also live here so routing,
 diagnostics, browser, and desktop surfaces consume a single provider-trust model. Application
 pipeline, backfill remediation, Prometheus, health, daily-summary, and UI Shared endpoint adapters consume
@@ -202,10 +204,11 @@ keeps status endpoint handlers and composition adapters that consume the Data In
 provider telemetry models.
 
 `ConnectionHealthMonitor`, connection-health config/snapshot/status records,
+`ConnectionStatusWebhook`, connection notification configuration records,
 `ProviderDegradationScorer`, degradation score/event/reason records, and provider degradation
 delta helpers moved from `src/Meridian.Application/Monitoring` into this module. Application keeps
-status server, diagnostics, startup, and endpoint adapters that consume the Data Integration-owned
-provider health and degradation scoring models.
+status server, diagnostics, startup, daily-summary delivery, and endpoint adapters that consume the
+Data Integration-owned provider health, notification, and degradation scoring models.
 
 `ProviderDegradationConfig`, provider incident calibration datasets/windows, kernel calibration
 snapshots/policies, promotion gate decisions, governance workflow service, and calibration report

@@ -1,8 +1,7 @@
 using System.Threading;
-using Meridian.Application.Logging;
 using Meridian.Application.Pipeline;
-using Meridian.Application.Services;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Monitoring;
 
@@ -12,10 +11,10 @@ namespace Meridian.Application.Monitoring;
 /// </summary>
 public sealed class BackpressureAlertService : IDisposable
 {
-    private readonly ILogger _log = LoggingSetup.ForContext<BackpressureAlertService>();
+    private readonly ILogger<BackpressureAlertService> _log;
     private readonly BackpressureAlertConfig _config;
     private readonly Timer _checkTimer;
-    private readonly DailySummaryWebhook? _webhook;
+    private readonly IMonitoringWebhookSink? _webhook;
     private volatile bool _isDisposed;
 
     // State tracking
@@ -36,17 +35,21 @@ public sealed class BackpressureAlertService : IDisposable
     /// </summary>
     public event Action<BackpressureResolvedEvent>? OnBackpressureResolved;
 
-    public BackpressureAlertService(BackpressureAlertConfig? config = null, DailySummaryWebhook? webhook = null)
+    public BackpressureAlertService(
+        BackpressureAlertConfig? config = null,
+        IMonitoringWebhookSink? webhook = null,
+        ILogger<BackpressureAlertService>? logger = null)
     {
         _config = config ?? BackpressureAlertConfig.Default;
         _webhook = webhook;
+        _log = logger ?? NullLogger<BackpressureAlertService>.Instance;
         _checkTimer = new Timer(
             CheckBackpressure,
             null,
             TimeSpan.FromSeconds(_config.CheckIntervalSeconds),
             TimeSpan.FromSeconds(_config.CheckIntervalSeconds));
 
-        _log.Information(
+        _log.LogInformation(
             "BackpressureAlertService initialized. Thresholds: warning={WarningPercent}%, critical={CriticalPercent}%",
             _config.WarningUtilizationPercent,
             _config.CriticalUtilizationPercent);
@@ -102,7 +105,7 @@ public sealed class BackpressureAlertService : IDisposable
         if (_isDisposed)
             return;
 
-        // Timer callbacks must not be async void; fire-and-forget with logging wrapper
+        // Timer callbacks must not be async void; fire-and-forget with logging wrapper.
         _ = CheckBackpressureCoreAsync();
     }
 
@@ -123,9 +126,8 @@ public sealed class BackpressureAlertService : IDisposable
             _lastDroppedCount = stats.Value.DroppedCount;
 
             var level = GetBackpressureLevel(utilization, dropRate);
-            var wasInBackpressure = _isInBackpressureState;
 
-            // Track consecutive high utilization
+            // Track consecutive high utilization.
             if (utilization >= _config.WarningUtilizationPercent || droppedDelta > 0)
             {
                 _consecutiveHighUtilization++;
@@ -143,7 +145,7 @@ public sealed class BackpressureAlertService : IDisposable
                     _isInBackpressureState = false;
                     var duration = DateTimeOffset.UtcNow - _backpressureStartTime;
 
-                    _log.Information("Backpressure resolved after {Duration}", duration);
+                    _log.LogInformation("Backpressure resolved after {Duration}", duration);
 
                     try
                     {
@@ -152,16 +154,19 @@ public sealed class BackpressureAlertService : IDisposable
                             Duration: duration,
                             TotalDropped: stats.Value.DroppedCount));
                     }
-                    catch (Exception ex) { _log.Debug(ex, "Error invoking OnBackpressureResolved event"); }
+                    catch (Exception ex)
+                    {
+                        _log.LogDebug(ex, "Error invoking OnBackpressureResolved event");
+                    }
 
                     if (_webhook != null && _config.SendWebhookOnResolved)
                     {
-                        await SendWebhookAsync($"Backpressure resolved after {duration.TotalMinutes:F1} minutes");
+                        await SendWebhookAsync($"Backpressure resolved after {duration.TotalMinutes:F1} minutes", ct);
                     }
                 }
             }
 
-            // Send alert if in backpressure state
+            // Send alert if in backpressure state.
             if (_isInBackpressureState && ShouldSendAlert(level))
             {
                 var alert = new BackpressureAlert(
@@ -174,7 +179,7 @@ public sealed class BackpressureAlertService : IDisposable
                     Timestamp: DateTimeOffset.UtcNow,
                     Message: GetAlertMessage(level, utilization, droppedDelta));
 
-                _log.Warning(
+                _log.LogWarning(
                     "Backpressure {Level}: utilization={Utilization:F1}%, dropped={DroppedRecent} (rate: {DropRate:F2}%)",
                     level, utilization, droppedDelta, dropRate);
 
@@ -182,11 +187,14 @@ public sealed class BackpressureAlertService : IDisposable
                 {
                     OnBackpressureDetected?.Invoke(alert);
                 }
-                catch (Exception ex) { _log.Debug(ex, "Error invoking OnBackpressureDetected event"); }
+                catch (Exception ex)
+                {
+                    _log.LogDebug(ex, "Error invoking OnBackpressureDetected event");
+                }
 
                 if (_webhook != null && level >= BackpressureLevel.Warning)
                 {
-                    await SendWebhookAsync(alert.Message);
+                    await SendWebhookAsync(alert.Message, ct);
                 }
 
                 _lastAlertTime = DateTimeOffset.UtcNow;
@@ -194,7 +202,7 @@ public sealed class BackpressureAlertService : IDisposable
         }
         catch (Exception ex)
         {
-            _log.Error(ex, "Error checking backpressure");
+            _log.LogError(ex, "Error checking backpressure");
         }
     }
 
@@ -229,11 +237,11 @@ public sealed class BackpressureAlertService : IDisposable
 
         try
         {
-            await _webhook.SendMessageAsync(message, "Backpressure Alert");
+            await _webhook.SendMonitoringMessageAsync(message, "Backpressure Alert", ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _log.Warning(ex, "Failed to send backpressure webhook");
+            _log.LogWarning(ex, "Failed to send backpressure webhook");
         }
     }
 

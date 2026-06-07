@@ -42,6 +42,8 @@ lookup paths, and evidence trails those layers rely on.
 - `Backfill/` - durable last-run backfill status plus per-symbol checkpoint and bar-count sidecars.
 - `Config/StorageConfigExtensions.cs` - Storage-owned mapping from shared `StorageConfig` values
   into `StorageOptions`, including naming convention, date partition, sink, and profile defaults.
+- `Coordination/` - file-backed shared-storage lease store implementation for contracts-owned
+  coordination records.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
@@ -75,6 +77,12 @@ Backfill status and checkpoint sidecars are Storage-owned durable records. They 
 Contracts-owned backfill result payload plus per-symbol checkpoint and bar-count maps under the
 storage root through `AtomicFileWriter`, allowing interrupted jobs to resume without Application
 owning file persistence details.
+
+Shared-storage coordination lease persistence is Storage-owned durable state. The
+`SharedStorageCoordinationStore` persists Contracts-owned lease records under the configured
+coordination root with per-resource lock files and `AtomicFileWriter`; Platform owns lease renewal,
+coordinator election, split-brain detection, scheduled-work ownership, and subscription ownership
+decisions, while Application consumes those services through the shared contracts.
 
 Storage profile presets preserve existing persisted identifiers. The default profile ID remains
 `Research` for compatibility, while APIs and operator surfaces display that preset as `Strategy`

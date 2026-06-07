@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Meridian.Application.Logging;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Monitoring.Core;
 
@@ -16,7 +16,7 @@ namespace Meridian.Application.Monitoring.Core;
 public sealed class SloDefinitionRegistry
 {
     private readonly ConcurrentDictionary<string, SloDefinition> _definitions = new();
-    private readonly ILogger _log = LoggingSetup.ForContext<SloDefinitionRegistry>();
+    private readonly ILogger<SloDefinitionRegistry> _log = NullLogger<SloDefinitionRegistry>.Instance;
 
     private static readonly Lazy<SloDefinitionRegistry> _instance = new(() =>
     {
@@ -176,7 +176,7 @@ public sealed class SloDefinitionRegistry
             SloDocSection = "docs/operations/service-level-objectives.md#slo-pc-001"
         });
 
-        _log.Information("Registered {Count} default SLO definitions", _definitions.Count);
+        _log.LogInformation("Registered {Count} default SLO definitions", _definitions.Count);
     }
 
     /// <summary>

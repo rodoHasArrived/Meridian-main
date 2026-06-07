@@ -21,7 +21,7 @@ namespace Meridian.Application.Canonicalization;
 /// only the canonicalized event is published.</para>
 /// <para>Pilot symbol filtering limits canonicalization to a configurable subset
 /// during rollout. Events for non-pilot symbols pass through unchanged.</para>
-/// <para><b>Quarantine Sink:</b> When a <see cref="DeadLetterSink"/> is provided via
+/// <para><b>Quarantine Sink:</b> When an <see cref="IEventQuarantineSink"/> is provided via
 /// the <c>quarantine</c> constructor parameter, events whose symbol cannot be resolved are written
 /// to the quarantine file in addition to being published with raw data.
 /// This prevents unmappable events from silently accumulating with no audit trail.</para>
@@ -32,7 +32,7 @@ public sealed class CanonicalizingPublisher : IMarketEventPublisher
     private readonly IEventCanonicalizer _canonicalizer;
     private readonly HashSet<string>? _pilotSymbols;
     private readonly bool _dualWrite;
-    private readonly DeadLetterSink? _quarantine;
+    private readonly IEventQuarantineSink? _quarantine;
     private readonly ILogger<CanonicalizingPublisher> _logger;
 
     // Metrics counters (lock-free via Interlocked)
@@ -48,7 +48,7 @@ public sealed class CanonicalizingPublisher : IMarketEventPublisher
         IEventCanonicalizer canonicalizer,
         IEnumerable<string>? pilotSymbols = null,
         bool dualWrite = true,
-        DeadLetterSink? quarantine = null,
+        IEventQuarantineSink? quarantine = null,
         ILogger<CanonicalizingPublisher>? logger = null)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));

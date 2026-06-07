@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Monitoring.Core;
 
-namespace Meridian.Tests.Application.Monitoring;
+namespace Meridian.Tests.Platform.Monitoring;
 
 public sealed class AlertDispatcherTests : IDisposable
 {

@@ -47,8 +47,8 @@ and UI presentation concerns in their owning layers.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
-  decorator. The shared metrics contract and snapshot shape live in
-  `Meridian.Contracts.Monitoring`; F# validation counters and market-data quality
+  decorator. The shared metrics contract, snapshot shape, monitoring webhook sink contract, and
+  pipeline statistics DTO live in `Meridian.Contracts`; F# validation counters and market-data quality
   validators/analyzers, clock-skew estimation, spread monitoring, data-loss accounting, provider
   latency histograms, provider metrics snapshots, connection-health monitoring, and provider
   degradation scoring/config/calibration records live in
@@ -245,11 +245,13 @@ and UI presentation concerns in their owning layers.
   static-backed implementation of the contracts-owned event metrics interface lives in
   `Meridian.Platform.Tracing`. Stored
   market-event schema compatibility checks, clock-skew estimation, spread monitoring, data-loss
-  accounting, connection-health monitoring, provider latency histograms, provider metrics status
-  snapshots, provider degradation scoring/config/calibration records, market-data validators, and
+  accounting, connection-health monitoring, connection-status notification, provider latency
+  histograms, provider metrics status snapshots, provider degradation scoring/config/calibration records, market-data validators, and
   data-quality analyzers live in `Meridian.DataIntegration.Monitoring`. Runtime circuit-breaker
-  status dashboards live in `Meridian.Platform.Monitoring`; runtime error ring-buffer diagnostics
-  and system-health snapshots live in `Meridian.Platform.Diagnostics`.
+  status dashboards, pipeline backpressure alerting, alert dispatch, health aggregation, SLO
+  definitions, and alert-runbook registries live in `Meridian.Platform.Monitoring`; shared alert and health-check contracts live
+  in `Meridian.Core.Monitoring`; runtime error ring-buffer diagnostics and system-health snapshots
+  live in `Meridian.Platform.Diagnostics`.
 - `Http/` - core host-facing runtime services such as `ConfigStore`, `BackfillCoordinator`, and
   status response generation. ASP.NET endpoint adapter extensions for packaging, archive
   maintenance, and data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`.
@@ -259,6 +261,14 @@ and UI presentation concerns in their owning layers.
 
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
+
+Application consumes coordination through the shared contract ports and module-owned
+implementations. Lease, leadership, scheduled-work ownership, subscription ownership, lease-record,
+and coordination snapshot contracts live in `Meridian.Contracts.Coordination`; lease renewal,
+cluster coordinator election, split-brain detection, scheduled-work ownership, and subscription
+ownership services live in `Meridian.Platform.Coordination`; shared-storage lease persistence lives
+in `Meridian.Storage.Coordination`. Application should wire and orchestrate those services rather
+than owning cluster coordination primitives.
 
 Application command handlers adapt design-module services to CLI flags. For example, `--selftest`
 invokes the Data Integration-owned depth-buffer self-test runner instead of owning provider stream

@@ -16,8 +16,10 @@ last_reviewed: 2026-06-06
 Physical bounded-context module project for Platform ownership, composition, configuration, runtime
 policy, deployment context, runtime mode resolution, startup summary display, operational
 performance controls, hosted graceful-shutdown flush behavior, shutdown sequence handling,
-operational scheduling and trading-calendar utilities, shared operation result semantics,
-diagnostic state, diagnostic bundle generation, runtime error ring-buffer retention, system-health
+operational scheduling and trading-calendar utilities, cluster lease management, coordinator
+election, split-brain detection, scheduled-work ownership, subscription ownership, shared operation
+result semantics, diagnostic state, diagnostic bundle generation, runtime alert dispatch, health
+aggregation, SLO and alert-runbook registries, runtime error ring-buffer retention, system-health
 resource snapshots, default event-pipeline metrics counters, domain cutover, and shadow-projection
 conformance.
 
@@ -37,6 +39,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   persisted-projection cutovers.
 - `FundOperationsPersistence/ProjectionReconciliationHostedService.cs` - hosted reconciliation
   loop for domain projection discrepancies.
+- `Coordination/` - platform-owned lease renewal, cluster coordinator election, split-brain
+  detection, scheduled-work ownership, and subscription ownership runtime services that implement
+  the contracts-owned coordination ports.
 - `Results/` - shared `Result`, `OperationError`, `ErrorCode`, and friendly error-formatting
   primitives used by commands, startup validation, diagnostics endpoints, and other cross-domain
   runtime flows.
@@ -47,6 +52,10 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Monitoring/CircuitBreakerStatusService.cs` - runtime circuit-breaker state dashboard,
   transition events, and health snapshot records consumed by Application composition and shared
   resilience endpoints.
+- `Monitoring/BackpressureAlertService.cs` - runtime pipeline backpressure detection and alert
+  publishing over the Contracts-owned pipeline statistics DTO and monitoring webhook sink contract.
+- `Monitoring/Core/` - runtime alert dispatcher, health-check aggregator, SLO registry, and
+  alert-to-runbook registry implementations over the Core-owned monitoring contracts.
 - `Runtime/` - shared deployment context, CLI/runtime mode policy, startup summary display,
   hosted graceful-shutdown flush behavior, shutdown sequence handling, and console progress display
   helpers used by startup summaries and diagnostics/connectivity workflows.
@@ -72,8 +81,10 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 Use this module when changing cross-domain runtime cutover controls, shadow-write behavior,
 persisted-projection read switching, hosted projection-reconciliation plumbing, or shared
 command/startup result semantics. Application composition may register these services and consume
-Platform diagnostics, trace context carriers, event metrics counters, and metrics decorators, but it should not own the platform cutover
-contracts, shadow-projection schemas, trace context carriers, OpenTelemetry setup, market-data
+Platform diagnostics, monitoring core services, trace context carriers, event metrics counters, and metrics decorators, but it should not own the platform cutover
+contracts, shadow-projection schemas, cluster lease renewal, coordinator election, split-brain
+detection, scheduled-work ownership, subscription ownership, runtime alert dispatch, health
+aggregation, SLO/runbook registries, trace context carriers, OpenTelemetry setup, market-data
 tracing helpers, default event metrics counters, OpenTelemetry-compatible event metrics decoration, trading-hours-aware operational
 scheduling policy, trading-calendar implementation, deployment context, runtime mode resolution,
 startup summary display, hosted graceful-shutdown flush behavior, shutdown sequence handling, colocation profile activation,
@@ -136,7 +147,8 @@ nearest docs when platform cutover, configuration, runtime policy, operational s
 trading-calendar behavior, runtime mode resolution, startup summary behavior, result/error semantics, runtime diagnostics, diagnostic bundle generation,
 deployment context behavior, hosted graceful-shutdown flush behavior, shutdown sequence handling, shutdown lifecycle DTOs,
 API documentation model generation, runtime performance profile behavior, runtime circuit-breaker status behavior, runtime error ring-buffer
-behavior, default event metrics counter behavior, shadow-projection, system-health resource snapshot behavior, trace context propagation, or hosted reconciliation
+behavior, default event metrics counter behavior, cluster coordination behavior, runtime monitoring
+core behavior, shadow-projection, system-health resource snapshot behavior, trace context propagation, or hosted reconciliation
 workflow semantics change.
 
 ## Related docs

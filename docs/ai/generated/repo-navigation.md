@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-07T04:04:24Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-07T06:40:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Application/README.md` | Host and Composition | `c3149926e` (2026-06-06T14:35:49-07:00) | 47 |
-| `src/Meridian.Application/Commands/ProviderCalibrationCommand.cs` | Host and Composition | `c3149926e` (2026-06-06T14:35:49-07:00) | 4 |
-| `src/Meridian.DataIntegration/README.md` | Unmapped | `c3149926e` (2026-06-06T14:35:49-07:00) | 3 |
-| `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs` | Desktop and UI Workflows | `c3149926e` (2026-06-06T14:35:49-07:00) | 3 |
-| `src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs` | Unmapped | `c3149926e` (2026-06-06T14:35:49-07:00) | 1 |
-| `src/Meridian.DataIntegration/Monitoring/ProviderDegradationConfig.cs` | Unmapped | `c3149926e` (2026-06-06T14:35:49-07:00) | 1 |
-| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `a14a30b81` (2026-06-06T13:25:05-07:00) | 44 |
-| `src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs` | Desktop and UI Workflows | `a14a30b81` (2026-06-06T13:25:05-07:00) | 4 |
-| `src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs` | Desktop and UI Workflows | `a14a30b81` (2026-06-06T13:25:05-07:00) | 3 |
-| `src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs` | Host and Composition | `a14a30b81` (2026-06-06T13:25:05-07:00) | 2 |
-| `src/Meridian.Application/Monitoring/StatusHttpServer.cs` | Host and Composition | `a14a30b81` (2026-06-06T13:25:05-07:00) | 2 |
-| `src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs` | Desktop and UI Workflows | `a14a30b81` (2026-06-06T13:25:05-07:00) | 2 |
-| `src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs` | Desktop and UI Workflows | `a14a30b81` (2026-06-06T13:25:05-07:00) | 2 |
-| `src/Meridian.Application/Http/ConfigStore.cs` | Host and Composition | `a14a30b81` (2026-06-06T13:25:05-07:00) | 1 |
-| `src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs` | Host and Composition | `a14a30b81` (2026-06-06T13:25:05-07:00) | 1 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 52 |
+| `src/Meridian.Application/README.md` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 48 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 14 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 13 |
+| `src/Meridian/UiServer.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 12 |
+| `src/Meridian.Application/Composition/Startup/StartupValidationRunner.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
+| `src/Meridian.Application/Pipeline/EventPipeline.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
+| `src/Meridian.Core/README.md` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
+| `src/Meridian.DataIntegration/README.md` | Unmapped | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
+| `src/Meridian.Platform/README.md` | Unmapped | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
+| `src/Meridian.ProviderSdk/README.md` | Providers and Storage | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
+| `src/Meridian.Application/Backfill/HistoricalBackfillService.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 3 |
+| `src/Meridian.Application/Composition/Features/DiagnosticsFeatureRegistration.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 3 |
+| `src/Meridian.Application/Composition/Features/PipelineFeatureRegistration.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 3 |
+| `src/Meridian.Application/Composition/ServiceCompositionRoot.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 3 |
 

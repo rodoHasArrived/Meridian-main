@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
-using Meridian.Application.Logging;
-using Meridian.Infrastructure.Contracts;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Monitoring.Core;
 
@@ -9,12 +8,11 @@ namespace Meridian.Application.Monitoring.Core;
 /// Default implementation of IAlertDispatcher providing centralized
 /// alert publishing and subscription management.
 /// </summary>
-[ImplementsAdr("ADR-001", "Alert dispatcher implementation")]
 public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
 {
     private readonly ConcurrentDictionary<Guid, AlertSubscription> _subscriptions = new();
     private readonly ConcurrentQueue<MonitoringAlert> _recentAlerts = new();
-    private readonly ILogger _log;
+    private readonly ILogger<AlertDispatcher> _log;
     private readonly int _maxRecentAlerts;
 
     // Statistics tracking
@@ -31,10 +29,10 @@ public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
     /// </summary>
     /// <param name="maxRecentAlerts">Maximum number of recent alerts to retain (default: 1000).</param>
     /// <param name="log">Optional logger.</param>
-    public AlertDispatcher(int maxRecentAlerts = 1000, ILogger? log = null)
+    public AlertDispatcher(int maxRecentAlerts = 1000, ILogger<AlertDispatcher>? log = null)
     {
         _maxRecentAlerts = maxRecentAlerts;
-        _log = log ?? LoggingSetup.ForContext<AlertDispatcher>();
+        _log = log ?? NullLogger<AlertDispatcher>.Instance;
     }
 
     /// <inheritdoc/>
@@ -68,7 +66,7 @@ public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    _log.Error(ex, "Error in alert subscriber for alert {AlertId}", alert.Id);
+                    _log.LogError(ex, "Error in alert subscriber for alert {AlertId}", alert.Id);
                 }
             }
         }
@@ -110,7 +108,7 @@ public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    _log.Error(ex, "Error in alert subscriber for alert {AlertId}", alert.Id);
+                    _log.LogError(ex, "Error in alert subscriber for alert {AlertId}", alert.Id);
                 }
             }
         }
@@ -123,7 +121,7 @@ public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
             }
             catch (Exception ex)
             {
-                _log.Error(ex, "Error in async alert subscribers for alert {AlertId}", alert.Id);
+                _log.LogError(ex, "Error in async alert subscribers for alert {AlertId}", alert.Id);
             }
         }
     }
@@ -140,7 +138,7 @@ public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
             null);
 
         _subscriptions[subscription.Id] = subscription;
-        _log.Debug("Added alert subscription {SubscriptionId}", subscription.Id);
+        _log.LogDebug("Added alert subscription {SubscriptionId}", subscription.Id);
 
         return new SubscriptionHandle(this, subscription.Id);
     }
@@ -157,7 +155,7 @@ public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
             handler);
 
         _subscriptions[subscription.Id] = subscription;
-        _log.Debug("Added async alert subscription {SubscriptionId}", subscription.Id);
+        _log.LogDebug("Added async alert subscription {SubscriptionId}", subscription.Id);
 
         return new SubscriptionHandle(this, subscription.Id);
     }
@@ -195,22 +193,22 @@ public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
         switch (alert.Severity)
         {
             case AlertSeverity.Info:
-                _log.Information(logMessage, args);
+                _log.LogInformation(logMessage, args);
                 break;
             case AlertSeverity.Warning:
-                _log.Warning(logMessage, args);
+                _log.LogWarning(logMessage, args);
                 break;
             case AlertSeverity.Error:
                 if (alert.Exception != null)
-                    _log.Error(alert.Exception, logMessage, args);
+                    _log.LogError(alert.Exception, logMessage, args);
                 else
-                    _log.Error(logMessage, args);
+                    _log.LogError(logMessage, args);
                 break;
             case AlertSeverity.Critical:
                 if (alert.Exception != null)
-                    _log.Fatal(alert.Exception, logMessage, args);
+                    _log.LogCritical(alert.Exception, logMessage, args);
                 else
-                    _log.Fatal(logMessage, args);
+                    _log.LogCritical(logMessage, args);
                 break;
         }
     }
@@ -227,7 +225,7 @@ public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
     {
         if (_subscriptions.TryRemove(subscriptionId, out _))
         {
-            _log.Debug("Removed alert subscription {SubscriptionId}", subscriptionId);
+            _log.LogDebug("Removed alert subscription {SubscriptionId}", subscriptionId);
         }
     }
 

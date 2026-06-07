@@ -24,7 +24,7 @@ namespace Meridian.Application.Pipeline;
 /// when multiple callers record rejections concurrently.
 /// </remarks>
 [ImplementsAdr("ADR-007", "Dead-letter persistence for events rejected by the validation gate")]
-public sealed class DeadLetterSink : IAsyncDisposable
+public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
 {
     private readonly string _deadLetterDirectory;
     private readonly ILogger<DeadLetterSink> _logger;

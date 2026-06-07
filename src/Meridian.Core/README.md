@@ -32,9 +32,9 @@ This layer provides low-level reusable infrastructure. It must stay independent 
 - `Exceptions/` - base exception and error types.
 - `Serialization/` - source-generated JSON context support.
 - `Pipeline/`, `Scheduling/`, `Services/`, and `Monitoring/` - reusable runtime primitives,
-  including the `IFlushable` shutdown/flush contract and optional flush queue-diagnostics
-  contract used by storage sinks, Platform runtime shutdown handlers, and Application pipeline
-  components.
+  including shared alert/health-check monitoring contracts, the `IFlushable` shutdown/flush
+  contract, and optional flush queue-diagnostics contract used by storage sinks, Platform runtime
+  shutdown handlers, and Application pipeline components.
 
 ## Important workflows
 

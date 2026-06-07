@@ -1,8 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using Meridian.Application.Logging;
-using Meridian.Infrastructure.Contracts;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Monitoring.Core;
 
@@ -10,11 +9,10 @@ namespace Meridian.Application.Monitoring.Core;
 /// Default implementation of IHealthCheckAggregator that runs health checks
 /// in parallel and aggregates results.
 /// </summary>
-[ImplementsAdr("ADR-001", "Health check aggregator implementation")]
 public sealed class HealthCheckAggregator : IHealthCheckAggregator
 {
     private readonly ConcurrentDictionary<string, IHealthCheckProvider> _providers = new();
-    private readonly ILogger _log;
+    private readonly ILogger<HealthCheckAggregator> _log;
     private readonly TimeSpan _checkTimeout;
 
     /// <summary>
@@ -22,10 +20,10 @@ public sealed class HealthCheckAggregator : IHealthCheckAggregator
     /// </summary>
     /// <param name="checkTimeout">Timeout for individual health checks (default: 5 seconds).</param>
     /// <param name="log">Optional logger.</param>
-    public HealthCheckAggregator(TimeSpan? checkTimeout = null, ILogger? log = null)
+    public HealthCheckAggregator(TimeSpan? checkTimeout = null, ILogger<HealthCheckAggregator>? log = null)
     {
         _checkTimeout = checkTimeout ?? TimeSpan.FromSeconds(5);
-        _log = log ?? LoggingSetup.ForContext<HealthCheckAggregator>();
+        _log = log ?? NullLogger<HealthCheckAggregator>.Instance;
     }
 
     /// <inheritdoc/>
@@ -35,11 +33,11 @@ public sealed class HealthCheckAggregator : IHealthCheckAggregator
 
         if (_providers.TryAdd(provider.ComponentName, provider))
         {
-            _log.Debug("Registered health check provider: {ComponentName}", provider.ComponentName);
+            _log.LogDebug("Registered health check provider: {ComponentName}", provider.ComponentName);
         }
         else
         {
-            _log.Warning("Health check provider already registered: {ComponentName}", provider.ComponentName);
+            _log.LogWarning("Health check provider already registered: {ComponentName}", provider.ComponentName);
         }
     }
 
@@ -48,7 +46,7 @@ public sealed class HealthCheckAggregator : IHealthCheckAggregator
     {
         if (_providers.TryRemove(componentName, out _))
         {
-            _log.Debug("Unregistered health check provider: {ComponentName}", componentName);
+            _log.LogDebug("Unregistered health check provider: {ComponentName}", componentName);
         }
     }
 
@@ -112,7 +110,7 @@ public sealed class HealthCheckAggregator : IHealthCheckAggregator
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
             sw.Stop();
-            _log.Warning("Health check timed out for {ComponentName}", provider.ComponentName);
+            _log.LogWarning("Health check timed out for {ComponentName}", provider.ComponentName);
             return HealthCheckResult.Unhealthy(
                 provider.ComponentName,
                 "Health check timed out",
@@ -121,7 +119,7 @@ public sealed class HealthCheckAggregator : IHealthCheckAggregator
         catch (Exception ex)
         {
             sw.Stop();
-            _log.Error(ex, "Health check failed for {ComponentName}", provider.ComponentName);
+            _log.LogError(ex, "Health check failed for {ComponentName}", provider.ComponentName);
             return HealthCheckResult.Unhealthy(
                 provider.ComponentName,
                 $"Health check failed: {ex.Message}",

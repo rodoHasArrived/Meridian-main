@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-07T04:04:24Z",
+  "generatedAt": "2026-06-07T06:40:06Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2174,324 +2174,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Application/README.md",
+      "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T14:35:49-07:00",
-      "lastCommit": "c3149926e",
-      "lastSummary": "8282",
-      "touches": 47
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 52
     },
     {
-      "path": "src/Meridian.Application/Commands/ProviderCalibrationCommand.cs",
+      "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T14:35:49-07:00",
-      "lastCommit": "c3149926e",
-      "lastSummary": "8282",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 48
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 13
+    },
+    {
+      "path": "src/Meridian/UiServer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Startup/StartupValidationRunner.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Core/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
       "touches": 4
     },
     {
       "path": "src/Meridian.DataIntegration/README.md",
       "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T14:35:49-07:00",
-      "lastCommit": "c3149926e",
-      "lastSummary": "8282",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T14:35:49-07:00",
-      "lastCommit": "c3149926e",
-      "lastSummary": "8282",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T14:35:49-07:00",
-      "lastCommit": "c3149926e",
-      "lastSummary": "8282",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/ProviderDegradationConfig.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T14:35:49-07:00",
-      "lastCommit": "c3149926e",
-      "lastSummary": "8282",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
-      "touches": 44
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
       "touches": 4
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
+      "path": "src/Meridian.Platform/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.ProviderSdk/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Application/Backfill/HistoricalBackfillService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/DiagnosticsFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/PipelineFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
       "touches": 3
     },
     {
       "path": "src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
-      "touches": 2
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 3
     },
     {
       "path": "src/Meridian.Application/Monitoring/StatusHttpServer.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Monitoring/StatusWriter.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/Commands/SchemaCheckCommand.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
+      "path": "src/Meridian.Application/Composition/HostStartup.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
+      "path": "src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Application/Http/ConfigStore.cs",
+      "path": "src/Meridian.Application/Config/ConfigurationPipeline.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/Http/BackfillCoordinator.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/Monitoring/DetailedHealthCheck.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/Monitoring/PrometheusMetrics.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/Monitoring/StatusSnapshot.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/Services/DailySummaryWebhook.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Core/Services/IFlushable.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/Composition/CircuitBreakerCallbackRouter.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs",
+      "path": "src/Meridian.Application/Composition/Features/HttpClientFeatureRegistration.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ConfigStore.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T13:25:05-07:00",
-      "lastCommit": "a14a30b81",
-      "lastSummary": "154",
+      "path": "src/Meridian.Application/Config/ConfigValidatorCli.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 59
-    },
-    {
-      "path": "src/Meridian.Contracts/README.md",
+      "path": "src/Meridian.Contracts/Backfill/BackfillResult.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 51
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Wpf/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 37
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 27
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 26
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
+      "path": "src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 19
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 17
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 14
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 13
-    },
-    {
-      "path": "src/Meridian.Wpf/App.xaml.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 13
-    },
-    {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Strategies/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Application/FundStructure/PostgresFundStructureService.cs",
+      "path": "src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 11
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs",
+      "path": "src/Meridian.Contracts/Coordination/IClusterCoordinator.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 10
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FundStructureSetupWorkflowService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/CommandServiceRegistration.cs",
+      "path": "src/Meridian.Contracts/Coordination/ICoordinationStore.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 4
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Application/Meridian.Application.csproj",
+      "path": "src/Meridian.Contracts/Coordination/ILeaseManager.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 4
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs",
+      "path": "src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 4
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Backtesting/README.md",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Instruments/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-06-06T12:53:01-07:00",
-      "lastCommit": "207e04787",
-      "lastSummary": "15",
-      "touches": 4
+      "path": "src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-06T21:16:30-07:00",
+      "lastCommit": "0ffe68f65",
+      "lastSummary": "1235",
+      "touches": 1
     }
   ],
   "recentChangesWindowDays": 14,

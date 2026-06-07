@@ -3,7 +3,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Coordination;
 using Xunit;
 
-namespace Meridian.Tests.Application.Coordination;
+namespace Meridian.Tests.Platform.Coordination;
 
 public sealed class LeaseManagerTests
 {
