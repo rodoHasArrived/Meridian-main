@@ -158,41 +158,17 @@ public sealed class ProviderCredentialResolver
         }
 
         // 2. Try config value if provided and not a placeholder
-        if (!string.IsNullOrWhiteSpace(configValue) && !IsPlaceholder(configValue))
+        var trimmedConfigValue = configValue?.Trim();
+        if (trimmedConfigValue is not null && CredentialPlaceholderDetector.LooksLikeRealCredential(trimmedConfigValue))
         {
             _log.Debug("Resolved {CredentialName} from configuration (consider using env var {EnvVar} instead)",
                 credentialName, envVarName);
-            return configValue.Trim();
+            return trimmedConfigValue;
         }
 
         // 3. Not found
         _log.Debug("{CredentialName} not configured. Set {EnvVar} environment variable.", credentialName, envVarName);
         return null;
-    }
-
-    /// <summary>
-    /// Checks if a value is a placeholder that should be treated as empty.
-    /// </summary>
-    private static bool IsPlaceholder(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return true;
-
-        var normalized = value.Trim().ToUpperInvariant();
-        return normalized is
-            "__SET_ME__" or
-            "SET_ME" or
-            "YOUR_KEY_HERE" or
-            "YOUR-KEY-HERE" or
-            "YOUR_API_KEY" or
-            "YOUR_SECRET" or
-            "CHANGE_ME" or
-            "TODO" or
-            "XXX" or
-            "PLACEHOLDER" or
-            "<YOUR_KEY>" or
-            "<API_KEY>" or
-            "";
     }
 
     /// <summary>

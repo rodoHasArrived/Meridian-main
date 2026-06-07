@@ -28,11 +28,12 @@ C# remains the primary language for the system's orchestration and integration c
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| **Application Layer** | `src/Meridian/Application/` | Program.cs, ConfigWatcher, StatusWriter, metrics |
-| **Infrastructure** | `src/Meridian/Infrastructure/` | Provider clients (IB, Alpaca), subscription management |
-| **Storage Policy** | `src/Meridian/Storage/` | JSONL sinks, retention, tier migration orchestration |
-| **Web UI** | `src/Meridian/Application/StatusHttpServer.cs` | ASP.NET dashboard, REST API, Prometheus metrics |
-| **Provider Integration** | `src/Meridian/Infrastructure/Adapters/` | Official SDK wrappers (IB API, Alpaca SDK) |
+| **Application Layer** | `src/Meridian.Application/` | Program.cs, StatusWriter, metrics, orchestration consuming Core config hot reload |
+| **Core Configuration** | `src/Meridian.Core/Config/` | AppConfig, ConfigWatcher, validation, JSON options, configuration templates |
+| **Infrastructure** | `src/Meridian.Infrastructure/` | Provider clients (IB, Alpaca), subscription management |
+| **Storage Policy** | `src/Meridian.Storage/` | JSONL sinks, retention, tier migration orchestration |
+| **Web UI** | `src/Meridian.Application/Monitoring/StatusHttpServer.cs` | ASP.NET dashboard, REST API, Prometheus metrics |
+| **Provider Integration** | `src/Meridian.Infrastructure/Adapters/` | Official SDK wrappers (IB API, Alpaca SDK) |
 | **WPF Desktop App** | `src/Meridian.Wpf/` | WPF desktop application (Windows) |
 
 ### Rationale for C#

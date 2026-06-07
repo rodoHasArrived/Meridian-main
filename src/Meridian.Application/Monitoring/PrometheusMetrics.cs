@@ -441,7 +441,7 @@ public static class PrometheusMetrics
     /// </summary>
     public static void UpdateFromSnapshot()
     {
-        var combined = Metrics.GetCombinedSnapshot();
+        var combined = Meridian.Platform.Tracing.Metrics.GetCombinedSnapshot();
         var snapshot = combined.Core;
         var resubSnapshot = combined.Resubscription;
 

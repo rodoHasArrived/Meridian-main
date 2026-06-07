@@ -26,10 +26,14 @@ and UI presentation concerns in their owning layers.
 
 - `Commands/` - CLI command handlers and operator workflow adapters. Runbook command flags adapt
   the Workflow-owned runbook store and executor instead of owning runbook state in Application;
-  fund workflow command-state transitions also live in `Meridian.Workflow.Workflows`.
+  fund workflow command-state transitions also live in `Meridian.Workflow.Workflows`. The schema
+  compatibility command adapts the Data Integration-owned `SchemaValidationService` instead of
+  owning stored market-event schema checks in Application.
 - Provider credential setup, testing, and token-refresh orchestration consumes
   `Meridian.DataIntegration.Credentials`; Application no longer owns generic provider credential
-  store contracts.
+  store contracts. Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
+  ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
+  discovery in Application services.
 - ETL commands, composition, and orchestration services consume
   `Meridian.DataIntegration.Etl` contracts and normalization services. Application still owns
   current ETL job/orchestrator adapters while pipeline and ingestion job dependencies remain here.
@@ -41,11 +45,13 @@ and UI presentation concerns in their owning layers.
   `EventCanonicalizer`. Application still owns the event-pipeline publisher decorator and
   pipeline-specific quarantine wiring until those pipeline dependencies can move or invert cleanly.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
-  propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry, and
-  the Platform `TracedEventMetrics` decorator. Application owns the default static-backed
-  `IEventMetrics` implementation while the shared metrics contract and snapshot shape live in
+  propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
+  the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
+  decorator. The shared metrics contract and snapshot shape live in
   `Meridian.Contracts.Monitoring`; F# validation counters and market-data quality
-  validators/analyzers, provider latency histograms, and provider metrics snapshots live in
+  validators/analyzers, clock-skew estimation, spread monitoring, data-loss accounting, provider
+  latency histograms, provider metrics snapshots, connection-health monitoring, and provider
+  degradation scoring/config/calibration records live in
   `Meridian.DataIntegration.Monitoring`.
 - `DirectLending/` - loan command/query orchestration, direct-lending ledger projection, and the
   daily accrual worker. Recurring accrual posting now checks ledger accounting-period state before
@@ -112,13 +118,20 @@ and UI presentation concerns in their owning layers.
   owned by the Financial Operations design module rather than the application layer. The
   Security Master-enriched portfolio-vs-ledger reconciliation engine also lives in Financial
   Operations and consumes the contracts-owned Security Master query interface.
+- `Backfill/` - historical backfill request orchestration and execution coordination. Shared run
+  results and per-symbol validation signals live in `Meridian.Contracts.Backfill`, while durable
+  last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot
   supply the required feed.
 - `Config/Credentials/` - application-owned credential testing, OAuth refresh, legacy resolver
-  compatibility, and composition support. Shared configuration environment overrides and template
-  generation live in Core under `Meridian.Application.Config`. Provider credential descriptors, encrypted vault storage,
+  compatibility, CLI validation adapters, and composition support. Shared
+  configuration JSON options, JSON Schema generation, FluentValidation rules, validation pipeline
+  stages, credential placeholder detection, default config-path resolution, environment overrides,
+  template generation, and config file hot-reload watching live in Core under
+  `Meridian.Application.Config`; conversion from shared `StorageConfig` into durable
+  `StorageOptions` lives in `Meridian.Storage`. Provider credential descriptors, encrypted vault storage,
   verification metadata, expiration/status records, OAuth token records, and provider-environment normalization now live in
   `Meridian.DataIntegration.Credentials`. Plaid setup remains credential-only from the application
   orchestration perspective: it stores client credentials through the Data Integration vault seam
@@ -206,14 +219,19 @@ and UI presentation concerns in their owning layers.
 - `Services/` - application use cases and orchestration services. Cross-domain trading-calendar
   status is provided by `Meridian.Platform.Scheduling.TradingCalendar` instead of an
   Application-owned service, and deployment/startup mode decisions use
-  `Meridian.Platform.Runtime.CliModeResolver` instead of an Application-local resolver.
-  Connectivity diagnostics use the Platform runtime console progress helpers rather than
+  Platform-owned runtime helpers including `DeploymentContext` and
+  `Meridian.Platform.Runtime.CliModeResolver` instead of Application-local runtime policy.
+  Connectivity diagnostics and startup summaries use Platform runtime display helpers rather than
   Application-local display primitives. Runtime colocation profile activation is provided by
-  `Meridian.Platform.Performance.CoLocationProfileActivator`. Graceful shutdown services consume the Core-owned
-  `Meridian.Core.Services.IFlushable` contract and Platform-owned shutdown lifecycle diagnostics
-  rather than defining shared lifecycle DTOs or diagnostic snapshots in Application. Diagnostic
-  bundles and endpoints use Core-owned redaction/masking helpers and Platform-owned error tracking
-  and friendly error formatting rather than Application-local utility services. Sample market-event
+  `Meridian.Platform.Performance.CoLocationProfileActivator`. Hosted graceful-shutdown flush and
+  shutdown sequence services live in Platform Runtime and consume the Core-owned
+  `Meridian.Core.Services.IFlushable` and `IFlushableQueueDiagnostics` contracts. Application
+  pipeline components expose queue diagnostics through that Core seam while consuming
+  Platform-owned shutdown lifecycle diagnostics rather than defining shared lifecycle DTOs or
+  diagnostic snapshots in Application. Diagnostic bundle generation lives in
+  `Meridian.Platform.Diagnostics`; Application composition and endpoints consume it with Core-owned
+  redaction/masking helpers, Platform-owned error tracking, and friendly error formatting rather
+  than Application-local utility services. Sample market-event
   generation is registered from `Meridian.DataIntegration.Testing.SampleDataGenerator`. Canonical
   symbol resolution is registered from `Meridian.Storage.Services.CanonicalSymbolRegistry`.
   API documentation model generation is registered from
@@ -223,10 +241,15 @@ and UI presentation concerns in their owning layers.
   Reconciliation governance exception classification now lives in
   `Meridian.Strategies.Services.GovernanceExceptionService`. Report-pack generation and NAV
   attribution live in `Meridian.Reporting` rather than Application-local services.
-- `Monitoring/` - application monitoring adapters, connection-health/degradation scoring, status
-  server support, and the default static-backed implementation of the contracts-owned event metrics
-  interface. Provider latency histograms, provider metrics status snapshots, market-data validators,
-  and data-quality analyzers live in `Meridian.DataIntegration.Monitoring`.
+- `Monitoring/` - application monitoring adapters and status server support. The default
+  static-backed implementation of the contracts-owned event metrics interface lives in
+  `Meridian.Platform.Tracing`. Stored
+  market-event schema compatibility checks, clock-skew estimation, spread monitoring, data-loss
+  accounting, connection-health monitoring, provider latency histograms, provider metrics status
+  snapshots, provider degradation scoring/config/calibration records, market-data validators, and
+  data-quality analyzers live in `Meridian.DataIntegration.Monitoring`. Runtime circuit-breaker
+  status dashboards live in `Meridian.Platform.Monitoring`; runtime error ring-buffer diagnostics
+  and system-health snapshots live in `Meridian.Platform.Diagnostics`.
 - `Http/` - core host-facing runtime services such as `ConfigStore`, `BackfillCoordinator`, and
   status response generation. ASP.NET endpoint adapter extensions for packaging, archive
   maintenance, and data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`.

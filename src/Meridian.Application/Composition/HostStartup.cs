@@ -12,6 +12,7 @@ using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;
+using Meridian.Platform.Monitoring;
 using Meridian.Storage;
 using Meridian.Storage.Policies;
 using Meridian.Storage.Sinks;

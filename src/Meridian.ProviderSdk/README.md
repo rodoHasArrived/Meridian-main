@@ -13,8 +13,8 @@ last_reviewed: 2026-05-20
 
 ## Purpose
 
-ProviderSdk defines provider-facing abstractions for streaming, historical, symbol-search, and
-accounting-system integrations.
+ProviderSdk defines provider-facing abstractions for streaming, historical, symbol-search, backfill
+job descriptors, dynamic provider plugin discovery, and accounting-system integrations.
 
 ## Layer responsibility
 
@@ -22,12 +22,20 @@ This layer is the plugin contract for provider adapters. It should expose stable
 
 ## Key folders and files
 
+- `Backfill/` - provider-facing backfill job, status, priority, progress, and granularity
+  descriptors consumed by Infrastructure workers, Application scheduling, and UI adapters.
 - Provider-facing interfaces such as market data client and accounting-system contracts.
-- Shared provider metadata and attribute types.
+- Shared provider metadata, attribute types, module loading, and plugin assembly discovery.
 
 ## Important workflows
 
 Use this module when a provider abstraction must be consumed by multiple adapters or higher-level services.
+`Backfill/BackfillJob.cs` owns the shared backfill job descriptors and `DataGranularity`
+conversion helpers. The compatibility namespace is preserved so existing Infrastructure,
+Application, and UI call sites continue to compile while the physical owner is ProviderSdk.
+`PluginLoaderService` owns non-recursive provider plugin assembly scanning and registration against
+`DataSourceRegistry`; WPF and host composition consume that ProviderSdk-owned loader rather than
+keeping reflection-based provider discovery in Application.
 Provider routing capabilities are contract-level workflow gates; `FactorSchedule` is distinct from
 generic `CorporateActions` so accounting workflows can degrade fixed-income, structured-credit,
 amortization, and paydown evidence when a provider cannot route the required factor/coupon feed.
@@ -59,6 +67,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PluginLoaderServiceTests|FullyQualifiedName~ProviderModuleLoaderTests|FullyQualifiedName~DataSourceRegistryTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ## Change rules

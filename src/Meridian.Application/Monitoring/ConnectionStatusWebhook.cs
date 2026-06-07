@@ -1,6 +1,7 @@
 using System.Threading;
 using Meridian.Application.Logging;
 using Meridian.Application.Services;
+using Meridian.DataIntegration.Monitoring;
 using Serilog;
 
 namespace Meridian.Application.Monitoring;

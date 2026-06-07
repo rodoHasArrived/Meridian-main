@@ -9,6 +9,7 @@ using Meridian.Platform.Results;
 using Meridian.Application.Services;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure;

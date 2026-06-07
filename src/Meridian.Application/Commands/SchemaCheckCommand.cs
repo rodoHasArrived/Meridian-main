@@ -1,5 +1,5 @@
 using Meridian.Application.Config;
-using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
 using Serilog;

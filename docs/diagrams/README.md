@@ -94,7 +94,8 @@ Detailed view of the core collector internals:
 
 - **Infrastructure Layer**: Streaming clients (IB, Alpaca, NYSE, Polygon, StockSharp), Historical providers (10+), Connection/Resilience management, Performance optimizations (source-generated JSON, connection warmup)
 - **Domain Layer**: Collectors (Trade, Quote, Depth), Domain models, F# validation pipeline
-- **Application Layer**: EventPipeline (100K bounded channel policy), Technical indicators, Config/Monitoring, Backfill service, **Onboarding & Diagnostics** (AutoConfiguration, Wizard, FirstRunDetector, ConnectivityTest, CredentialValidation, ErrorFormatter, ProgressDisplay, StartupSummary)
+- **Application Layer**: EventPipeline (100K bounded channel policy), Technical indicators, Config/Monitoring, Backfill service, **Onboarding & Diagnostics** (AutoConfiguration, Wizard, FirstRunDetector, ConnectivityTest, CredentialValidation)
+- **Platform Runtime**: Runtime mode resolution, progress display, startup summary, error formatting, diagnostics snapshots, and system-health helpers.
 - **Storage Layer**: Write path (WAL, JSONL, Parquet), Compression profiles, Export service, Quality reporting
 
 ### Data Flow Diagram

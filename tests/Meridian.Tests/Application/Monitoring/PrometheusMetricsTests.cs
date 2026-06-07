@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Monitoring;
+using Meridian.Platform.Tracing;
 using Xunit;
 
 namespace Meridian.Tests;

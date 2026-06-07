@@ -8,6 +8,7 @@ using Meridian.DataIntegration.Testing;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Platform.ApiDocumentation;
 using Meridian.Platform.Diagnostics;
+using Meridian.Platform.Monitoring;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Store;
 using Microsoft.Extensions.DependencyInjection;

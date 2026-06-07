@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-06-06 20:20:15 UTC. Do not edit manually.
+> Auto-generated on 2026-06-06 23:38:03 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -10,8 +10,6 @@
 | `src\Meridian.Application\Composition\Features\ProviderFeatureRegistration.Registry.cs` |
 | `src\Meridian.Application\Composition\Features\ProviderRoutingFeatureRegistration.cs` |
 | `src\Meridian.Application\Config\Credentials\ProviderCredentialResolver.cs` |
-| `src\Meridian.Application\Monitoring\ProviderDegradationCalibration.cs` |
-| `src\Meridian.Application\Monitoring\ProviderDegradationScorer.cs` |
 | `src\Meridian.Application\ProviderRouting\BestOfBreedProviderSelector.cs` |
 | `src\Meridian.Application\ProviderRouting\ProviderBindingService.cs` |
 | `src\Meridian.Application\ProviderRouting\ProviderConnectionService.cs` |
@@ -44,6 +42,9 @@
 | `src\Meridian.DataIntegration\Credentials\ProviderCredentialCatalog.cs` |
 | `src\Meridian.DataIntegration\Monitoring\DataQuality\CrossProviderComparisonService.cs` |
 | `src\Meridian.DataIntegration\Monitoring\DataQuality\LiquidityProfileProvider.cs` |
+| `src\Meridian.DataIntegration\Monitoring\ProviderDegradationCalibration.cs` |
+| `src\Meridian.DataIntegration\Monitoring\ProviderDegradationConfig.cs` |
+| `src\Meridian.DataIntegration\Monitoring\ProviderDegradationScorer.cs` |
 | `src\Meridian.DataIntegration\Monitoring\ProviderLatencyService.cs` |
 | `src\Meridian.DataIntegration\Monitoring\ProviderMetricsStatus.cs` |
 | `src\Meridian.Execution\MultiCurrency\IFxRateProvider.cs` |

@@ -52,7 +52,7 @@ Equivalent market events from different providers for the same instrument should
 | `SymbolNormalization` | `Infrastructure/Utilities/SymbolNormalization.cs` | ✅ Per-provider format normalization (uppercase, Tiingo dashes, etc.). Runs before canonicalization. |
 | `MarketEventTier` enum | `Contracts/Domain/Enums/` | ✅ `Raw` → `Enriched` transition applied by `EventCanonicalizer`. |
 | `EffectiveSymbol` property | `Domain/Events/MarketEvent.cs` | ✅ `CanonicalSymbol ?? Symbol` — used by storage sinks, dedup ledger, and audit trail. |
-| `DataQualityMonitoringService` | `Application/Monitoring/DataQuality/` | ✅ Full quality pipeline including cross-provider comparison. |
+| `DataQualityMonitoringService` | `DataIntegration/Monitoring/DataQuality/` | ✅ Full quality pipeline including cross-provider comparison. |
 | `CanonicalizationEndpoints` | `Ui.Shared/Endpoints/CanonicalizationEndpoints.cs` | ✅ REST API for status, per-provider parity breakdown, and config view. |
 | `AddCanonicalizationServices()` | `Application/Composition/ServiceCompositionRoot.cs` | ✅ DI wiring: mappers → canonicalizer → publisher decorator. Enabled by default in all presets. |
 
@@ -662,7 +662,7 @@ All items listed below were delivered as part of Phases 1–3.
 | `src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs` | New: `FrozenDictionary`-based mapper with halt/resume helpers |
 | `src/Meridian.Application/Canonicalization/VenueMicMapper.cs` | New: `FrozenDictionary`-based mapper with case-insensitive fallback |
 | `src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs` | New: static thread-safe counters with per-provider parity tracking |
-| `src/Meridian.Application/Services/CanonicalSymbolRegistry.cs` | Updated `ResolveToCanonical()` to accept aliases, ISIN, FIGI, provider symbols |
+| `src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs` | Updated `ResolveToCanonical()` to accept aliases, ISIN, FIGI, provider symbols |
 | `src/Meridian.Application/Composition/ServiceCompositionRoot.cs` | Added `AddCanonicalizationServices()` and `EnableCanonicalizationServices` option |
 | `src/Meridian.Application/Monitoring/PrometheusMetrics.cs` | Added `mdc_canonicalization_*` counters and histogram |
 | `src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs` | New: status, parity, and config endpoints |

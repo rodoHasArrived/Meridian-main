@@ -158,7 +158,7 @@ Why first:
 Best-fit boundaries:
 
 - `ProviderTrustScoringService` in `src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs`
-- `ProviderDegradationScorer` in `src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs`
+- `ProviderDegradationScorer` in `src/Meridian.DataIntegration/Monitoring/ProviderDegradationScorer.cs`
 
 Scope guidance:
 

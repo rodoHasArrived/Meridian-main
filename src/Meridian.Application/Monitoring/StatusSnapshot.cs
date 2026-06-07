@@ -2,6 +2,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Subscriptions;
 using Meridian.Infrastructure;
 using Meridian.Contracts.Monitoring;
+using Meridian.Platform.Tracing;
 
 namespace Meridian.Application.Monitoring;
 

@@ -27,6 +27,7 @@ or provider implementations.
 - `Workstation/` - workstation and operator workflow DTOs.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   and query/command service contracts.
+- `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads.
 - `FundStructure/` - fund-structure command, query, DTO, ownership lifecycle, and graph-validation payloads.
 - `Plaid/` - Plaid provider, account-link, transaction, investment, identity, webhook, and transfer DTOs.
 - `Services/` - cross-module service contracts such as backtest preflight and Security Master
@@ -87,6 +88,11 @@ generic evidence subject string.
 `FundOperationsNavigationContext` also carries optional evidence subject metadata for shared
 evidence routes such as `EvidenceWorkbench:accounting-record/{recordId}`, allowing browser and WPF
 clients to preserve the subject and source target while resolving to their local audit surfaces.
+
+Historical backfill contracts include the shared run outcome and per-symbol validation/completeness
+signals consumed by Application orchestration, Storage status persistence, endpoints, tests, and
+operator surfaces. Keep these payloads transport-safe and additive so backfill status can move
+between services without reintroducing Application-layer dependencies into durable storage.
 
 Plaid contracts define the shared provider lane for bank account linking, transaction sync,
 balance evidence, investment snapshots, identity verification, webhook retention, and sandbox

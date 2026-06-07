@@ -12,8 +12,8 @@ This note expands on the data-quality goals for the collector so downstream user
 | Symbol mapping in ingestion | ✅ Done | `CanonicalSymbolRegistry` + `CanonicalizingPublisher` |
 | Condition code normalization | ✅ Done | `ConditionCodeMapper` + `CanonicalTradeCondition` enum |
 | Venue normalization (ISO MIC) | ✅ Done | `VenueMicMapper` with `config/venue-mapping.json` |
-| Clock skew estimation | ✅ Done | `ClockSkewEstimator` (EWMA per provider) |
-| Schema validation | ✅ Done | `EventSchemaValidator` (contract validation at ingestion) |
+| Clock skew estimation | ✅ Done | `Meridian.DataIntegration.Monitoring.ClockSkewEstimator` (EWMA per provider) |
+| Schema validation | ✅ Done | `EventSchemaValidator` plus `Meridian.DataIntegration.Monitoring.SchemaValidationService` |
 | Event canonicalization pipeline | ✅ Done | `EventCanonicalizer` (symbol + venue + condition enrichment) |
 | Event filtering | ✅ Done | `MarketEventFilter` (Symbol / Type / Tier predicates) |
 | Manifest files | ✅ Done | `PackageManifest` with per-file metadata |
@@ -41,7 +41,7 @@ This note expands on the data-quality goals for the collector so downstream user
 ## Metadata and identifiers
 * **Provider provenance** ✅ — `MarketEvent.Source` carries the provider name on every row; `CanonicalizingPublisher` preserves both raw and canonical values.
 * **Symbol mapping registry** ✅ — `CanonicalSymbolRegistry` resolves provider symbols → canonical identifiers (ISIN/FIGI/alias). The [Deterministic Canonicalization](../architecture/deterministic-canonicalization.md) design describes how this populates `CanonicalSymbol` on the `MarketEvent` envelope while preserving the raw `Symbol`. Use `MarketEvent.EffectiveSymbol` in storage paths, dedup keys, and metrics labels to get `CanonicalSymbol` when available and fall back to `Symbol` otherwise.
-* **Clock domains** ✅ — `ExchangeTimestamp`, `ReceivedAtUtc`, and `ReceivedAtMonotonic` fields on `MarketEvent` are populated. `ClockSkewEstimator` tracks per-provider drift using EWMA, exposing `ClockSkewSnapshot` records (EWMA skew, sample count, min/max). `MarketEvent.EstimatedLatencyMs` provides a best-effort wall-clock latency figure when both timestamps are present. A `ClockQuality` enum to qualify timestamp trustworthiness remains a future enhancement.
+* **Clock domains** ✅ — `ExchangeTimestamp`, `ReceivedAtUtc`, and `ReceivedAtMonotonic` fields on `MarketEvent` are populated. `Meridian.DataIntegration.Monitoring.ClockSkewEstimator` tracks per-provider drift using EWMA, exposing `ClockSkewSnapshot` records (EWMA skew, sample count, min/max). `MarketEvent.EstimatedLatencyMs` provides a best-effort wall-clock latency figure when both timestamps are present. A `ClockQuality` enum to qualify timestamp trustworthiness remains a future enhancement.
 * **Condition code normalization** ✅ — `ConditionCodeMapper` maps provider-specific codes to `CanonicalTradeCondition` using `config/condition-codes.json`. The enum covers regular trading, halt and circuit-breaker levels (Level 1/2/3), LULD pauses, regulatory and IPO halts, and trading-resumed. See [condition code mapping](../architecture/deterministic-canonicalization.md#c-condition-code-mapping).
 * **Venue normalization** ✅ — `VenueMicMapper` normalizes venue identifiers to ISO 10383 MIC codes using `config/venue-mapping.json`. See [venue normalization](../architecture/deterministic-canonicalization.md#d-venue-normalization).
 
@@ -51,7 +51,7 @@ This note expands on the data-quality goals for the collector so downstream user
 * **Currency context:** Currency is tracked at the symbol level via `CanonicalSymbolRegistry` (each `CanonicalSymbolDefinition` carries a `Currency` field). Events themselves do not carry a `quoteCurrency` field; downstream consumers should resolve currency from the symbol registry using `EffectiveSymbol`.
 
 ## Validation and integrity tagging
-* **Schema validators** ✅ — `EventSchemaValidator` enforces contract validation (timestamp, symbol, type, schema version, payload presence) at ingestion before events reach the pipeline.
+* **Schema validators** ✅ — `EventSchemaValidator` enforces contract validation (timestamp, symbol, type, schema version, payload presence) at ingestion before events reach the pipeline. `Meridian.DataIntegration.Monitoring.SchemaValidationService` performs stored JSONL schema compatibility checks for startup and CLI validation adapters.
 * **Integrity codes** ✅ — Machine-readable codes (`SEQ_GAP`, `SEQ_OOO`, `DEPTH_STALE`, `UNKNOWN_SYMBOL`, `CLOCK_DRIFT`) are emitted as `IntegrityEvent` payloads and tracked in dashboards.
 * **Quarantine channel** ⚠️ Partial — The storage layer recognizes `_quarantine/` directory naming convention, but automatic routing of critically-failed events to a quarantine sink is not yet wired.
 

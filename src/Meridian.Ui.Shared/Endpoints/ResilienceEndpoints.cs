@@ -3,6 +3,7 @@ using Meridian.Application.Backfill;
 using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Platform.Monitoring;
 using Meridian.Storage.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

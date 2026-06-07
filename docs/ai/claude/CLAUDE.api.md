@@ -147,7 +147,7 @@ The application exposes a REST API when running with `--mode desktop`.
 
 ## Data Quality Monitoring
 
-Located in `src/Meridian.Application/Monitoring/DataQuality/`.
+Located in `src/Meridian.DataIntegration/Monitoring/DataQuality/`.
 
 ### Quality Services
 | Service | Purpose |
@@ -188,12 +188,19 @@ Located in `src/Meridian.Application/Monitoring/DataQuality/`.
 | `DiagnosticBundleService` | Comprehensive diagnostics |
 | `TradingCalendar` | Market hours and holidays |
 
-### Monitoring Services (`src/Meridian.Application/Monitoring/`)
+### Provider Monitoring Services (`src/Meridian.DataIntegration/Monitoring/`)
 | Service | Purpose |
 |---------|---------|
 | `ConnectionHealthMonitor` | Provider connection health |
 | `ProviderLatencyService` | Latency tracking |
 | `SpreadMonitor` | Bid-ask spread monitoring |
+| `ClockSkewEstimator` | Provider clock-skew estimation |
+| `DataLossAccounting` | Provider pipeline data-loss reconciliation |
+| `ProviderDegradationScorer` | Composite provider health scoring |
+
+### Application Monitoring Adapters (`src/Meridian.Application/Monitoring/`)
+| Service | Purpose |
+|---------|---------|
 | `BackpressureAlertService` | Backpressure alerts |
 | `ErrorTracker` | Error categorization |
 | `PrometheusMetrics` | Metrics export |
@@ -205,7 +212,7 @@ Located in `src/Meridian.Application/Monitoring/DataQuality/`.
 | `PortableDataPackager` | `Storage/Packaging/` | Data package creation |
 | `TierMigrationService` | `Storage/Services/` | Hot/warm/cold tier migration |
 | `ScheduledArchiveMaintenanceService` | `Storage/Maintenance/` | Scheduled maintenance |
-| `HistoricalDataQueryService` | `Application/Services/` | Query stored data |
+| `HistoricalDataQueryService` | `DataIntegration/Historical/` | Query stored data |
 
 ---
 

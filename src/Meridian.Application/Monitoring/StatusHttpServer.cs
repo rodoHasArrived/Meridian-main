@@ -11,6 +11,7 @@ using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
+using Meridian.Platform.Diagnostics;
 using Serilog;
 using Meridian.Contracts.Monitoring;
 

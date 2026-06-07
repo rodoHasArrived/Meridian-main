@@ -67,8 +67,9 @@ APIs.
 
 Streaming failover state is updated from explicit success, failure, and latency signals in addition
 to the periodic evaluator. Cancellation is propagated as cancellation, not treated as a provider
-failure. Backfill orchestration stores dependency job IDs on each job so chained jobs resume only
-after all upstream dependencies complete.
+failure. Backfill worker and queue orchestration consumes ProviderSdk-owned job descriptors and
+stores dependency job IDs on each job so chained jobs resume only after all upstream dependencies
+complete.
 
 ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts-owned
 `ISftpFilePublisher` port. Data Integration owns export behavior and composes the port; this layer

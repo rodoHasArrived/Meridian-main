@@ -1,14 +1,29 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-06-06T20:06:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-07T04:04:24Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
+| `src/Meridian.Application/README.md` | Host and Composition | 2026-06-06T14:35:49-07:00 | `c3149926e` | 8282 | 47 |
+| `src/Meridian.Application/Commands/ProviderCalibrationCommand.cs` | Host and Composition | 2026-06-06T14:35:49-07:00 | `c3149926e` | 8282 | 4 |
+| `src/Meridian.DataIntegration/README.md` | Unmapped | 2026-06-06T14:35:49-07:00 | `c3149926e` | 8282 | 3 |
+| `src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs` | Desktop and UI Workflows | 2026-06-06T14:35:49-07:00 | `c3149926e` | 8282 | 3 |
+| `src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs` | Unmapped | 2026-06-06T14:35:49-07:00 | `c3149926e` | 8282 | 1 |
+| `src/Meridian.DataIntegration/Monitoring/ProviderDegradationConfig.cs` | Unmapped | 2026-06-06T14:35:49-07:00 | `c3149926e` | 8282 | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 44 |
+| `src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs` | Desktop and UI Workflows | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 4 |
+| `src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs` | Desktop and UI Workflows | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 3 |
+| `src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs` | Host and Composition | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 2 |
+| `src/Meridian.Application/Monitoring/StatusHttpServer.cs` | Host and Composition | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 2 |
+| `src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs` | Desktop and UI Workflows | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 2 |
+| `src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs` | Desktop and UI Workflows | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 2 |
+| `src/Meridian.Application/Http/ConfigStore.cs` | Host and Composition | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 1 |
+| `src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs` | Host and Composition | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 1 |
+| `src/Meridian.Ui.Shared/Services/ConfigStore.cs` | Desktop and UI Workflows | 2026-06-06T13:25:05-07:00 | `a14a30b81` | 154 | 1 |
 | `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 59 |
 | `src/Meridian.Contracts/README.md` | Host and Composition | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 51 |
-| `src/Meridian.Application/README.md` | Host and Composition | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 46 |
 | `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 37 |
 | `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 27 |
 | `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 26 |
@@ -31,19 +46,4 @@ Rolling source-file activity for the last 14 days.
 | `src/Meridian.Instruments/README.md` | Unmapped | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 4 |
 | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 4 |
 | `src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 4 |
-| `src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.OptionsChain.cs` | Host and Composition | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Application/Pipeline/EventPipeline.cs` | Host and Composition | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Core/README.md` | Host and Composition | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Instruments/Meridian.Instruments.csproj` | Unmapped | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Platform/Meridian.Platform.csproj` | Unmapped | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Platform/README.md` | Unmapped | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Reporting/README.md` | Unmapped | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Strategies/Services/ReconciliationRunService.cs` | Execution, Risk, and Strategies | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Ui.Shared/Services/ReportPackValidationService.cs` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Wpf/Meridian.Wpf.csproj` | Desktop and UI Workflows | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 3 |
-| `src/Meridian.Application/Backfill/HistoricalBackfillService.cs` | Host and Composition | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 2 |
-| `src/Meridian.Application/Commands/EtlCommands.cs` | Host and Composition | 2026-06-06T12:53:01-07:00 | `207e04787` | 15 | 2 |
 

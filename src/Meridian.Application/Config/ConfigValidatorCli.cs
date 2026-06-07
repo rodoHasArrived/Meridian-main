@@ -239,11 +239,11 @@ public sealed class ConfigValidatorCli
             var keyId = config.Alpaca?.KeyId;
             var secretKey = config.Alpaca?.SecretKey;
 
-            if (string.IsNullOrEmpty(keyId) || keyId == "__SET_ME__")
+            if (CredentialPlaceholderDetector.IsPlaceholderValue(keyId))
             {
                 hints.Add("ALPACA_KEY_ID - Your Alpaca API key ID");
             }
-            if (string.IsNullOrEmpty(secretKey) || secretKey == "__SET_ME__")
+            if (CredentialPlaceholderDetector.IsPlaceholderValue(secretKey))
             {
                 hints.Add("ALPACA_SECRET_KEY - Your Alpaca API secret key");
             }

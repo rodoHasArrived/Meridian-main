@@ -12,6 +12,7 @@ using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Platform.Tracing;
 using Meridian.Storage;
 using Meridian.Storage.Policies;
 using Meridian.Storage.Sinks;

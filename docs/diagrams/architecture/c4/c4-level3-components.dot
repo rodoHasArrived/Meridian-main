@@ -171,10 +171,19 @@ digraph C4_Components {
         FIRST_RUN [label="FirstRunDetector\n[Component]\n\nFirst-run detection\nWelcome message display\nSetup guidance", fillcolor="#fbd38d"];
         CONNECTIVITY [label="ConnectivityTestService\n[Component]\n\nProvider connectivity tests\nNetwork diagnostics\nResponse time measurement", fillcolor="#fbd38d"];
         CRED_VALIDATE [label="CredentialValidationService\n[Component]\n\nAPI key validation\nParallel credential testing\nAccount info extraction", fillcolor="#fbd38d"];
-        ERROR_FMT [label="FriendlyErrorFormatter\n[Component]\n\n24 error codes (Meridian-XXX)\nUser-friendly messages\nTroubleshooting suggestions", fillcolor="#fbd38d"];
-        PROGRESS [label="ProgressDisplayService\n[Component]\n\nProgress bars, spinners\nReal-time status updates\nTTY-aware display", fillcolor="#fbd38d"];
-        STARTUP_SUM [label="StartupSummary\n[Component]\n\nConfiguration review\nQuick health checks\nIssue severity reporting", fillcolor="#fbd38d"];
       }
+    }
+
+    // Platform Runtime
+    subgraph cluster_platform_runtime {
+      label="Platform Runtime";
+      style="rounded";
+      color="#0f766e";
+      bgcolor="#ccfbf1";
+
+      ERROR_FMT [label="FriendlyErrorFormatter\n[Component]\n\n24 error codes (Meridian-XXX)\nUser-friendly messages\nTroubleshooting suggestions", fillcolor="#99f6e4"];
+      PROGRESS [label="ProgressDisplayService\n[Component]\n\nProgress bars, spinners\nReal-time status updates\nTTY-aware display", fillcolor="#99f6e4"];
+      STARTUP_SUM [label="StartupSummary\n[Component]\n\nConfiguration review\nQuick health checks\nIssue severity reporting", fillcolor="#99f6e4"];
     }
 
     // Storage Layer

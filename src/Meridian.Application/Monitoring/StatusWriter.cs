@@ -5,6 +5,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Storage.Archival;
 using Meridian.Contracts.Monitoring;
+using Meridian.Platform.Tracing;
 
 namespace Meridian.Application.Monitoring;
 

@@ -8,6 +8,7 @@ using Meridian.Application.UI;
 using Meridian.Core.Performance;
 using Meridian.DataIntegration.Canonicalization;
 using Meridian.Domain.Events;
+using Meridian.Platform.Tracing;
 using Meridian.Storage;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Policies;
@@ -29,7 +30,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         if (options.EnableOpenTelemetry)
         {
             services.AddSingleton<IEventMetrics>(sp =>
-                new Meridian.Platform.Tracing.TracedEventMetrics(new DefaultEventMetrics()));
+                new TracedEventMetrics(new DefaultEventMetrics()));
         }
         else
         {

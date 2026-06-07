@@ -5,6 +5,8 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Contracts.Monitoring;
+using Meridian.Platform.Monitoring;
+using Meridian.Platform.Tracing;
 
 namespace Meridian.Application.Composition;
 

@@ -447,6 +447,21 @@ public class GracefulShutdownTests
     }
 
     [Fact]
+    public async Task Handler_UsesFlushableQueueDiagnosticsForEventsFlushed()
+    {
+        await using var handler = new GracefulShutdownHandler(
+            new GracefulShutdownConfig { ForceExitOnTimeout = false });
+        var flushable = new DiagnosticFlushable(pendingFlushItemCount: 7);
+        handler.RegisterFlushable(flushable);
+
+        var result = await handler.InitiateShutdownAsync(ShutdownReason.UserRequested, "diagnostic queue depth");
+
+        result.Success.Should().BeTrue();
+        result.EventsFlushed.Should().Be(7);
+        flushable.WasFlushed.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task Handler_FlushFailure_RedactsFailureReasonAndWarnings()
     {
         var originalLogger = Log.Logger;
@@ -496,6 +511,24 @@ public class GracefulShutdownTests
         {
             Log.CloseAndFlush();
             Log.Logger = originalLogger;
+        }
+    }
+
+    private sealed class DiagnosticFlushable : IFlushable, IFlushableQueueDiagnostics
+    {
+        public DiagnosticFlushable(long pendingFlushItemCount)
+        {
+            PendingFlushItemCount = pendingFlushItemCount;
+        }
+
+        public long PendingFlushItemCount { get; }
+
+        public bool WasFlushed { get; private set; }
+
+        public Task FlushAsync(CancellationToken ct = default)
+        {
+            WasFlushed = true;
+            return Task.CompletedTask;
         }
     }
 

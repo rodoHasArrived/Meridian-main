@@ -39,6 +39,9 @@ lookup paths, and evidence trails those layers rely on.
 
 - `Archival/` - safety tools for file-backed records, including the write-ahead log and atomic file
   writer.
+- `Backfill/` - durable last-run backfill status plus per-symbol checkpoint and bar-count sidecars.
+- `Config/StorageConfigExtensions.cs` - Storage-owned mapping from shared `StorageConfig` values
+  into `StorageOptions`, including naming convention, date partition, sink, and profile defaults.
 - `Etl/` - ETL staging, audit, reject, and local JSON job-definition stores.
 - `Interfaces/` and `Sinks/` - contracts and implementations that receive data to be saved.
 - `Store/`, `Policies/`, and `Replay/` - JSONL market-data storage, rules for using it, and readers
@@ -68,10 +71,17 @@ Storage sink flush behavior uses the Core-owned `Meridian.Core.Services.IFlushab
 than an Application service dependency. Saved records feed replay, packaging, exports, catalog
 lookup, lineage checks, quality scoring, and maintenance jobs.
 
+Backfill status and checkpoint sidecars are Storage-owned durable records. They persist the shared
+Contracts-owned backfill result payload plus per-symbol checkpoint and bar-count maps under the
+storage root through `AtomicFileWriter`, allowing interrupted jobs to resume without Application
+owning file persistence details.
+
 Storage profile presets preserve existing persisted identifiers. The default profile ID remains
 `Research` for compatibility, while APIs and operator surfaces display that preset as `Strategy`
 for historical analysis, backtesting, and paper-validation preparation. The `Archival` preset keeps
-long-retention evidence moving through hot, warm, cold, and archive tiers.
+long-retention evidence moving through hot, warm, cold, and archive tiers. `Config/StorageConfigExtensions.cs`
+keeps the shared AppConfig storage section-to-`StorageOptions` mapping in the same project that owns
+the durable storage option types and profile presets.
 
 Canonical symbol resolution is Storage-owned because it wraps the durable symbol registry and its
 identifier indexes. Application composition registers the Storage implementation behind

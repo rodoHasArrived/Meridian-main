@@ -31,7 +31,7 @@ namespace Meridian.Application.Pipeline;
 /// <see cref="PublishAsync"/> defer WAL writes to the consumer to ensure each event is
 /// recorded exactly once, preventing duplicate records during recovery.
 /// </remarks>
-public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable, IFlushable
+public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable, IFlushable, IFlushableQueueDiagnostics
 {
     private readonly Channel<TracedMarketEvent> _channel;
     private readonly IStorageSink _sink;
@@ -291,6 +291,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
 
     /// <summary>Gets the current number of events in the queue.</summary>
     public int CurrentQueueSize => _channel.Reader.Count;
+
+    /// <summary>Gets the approximate number of events pending flush during shutdown diagnostics.</summary>
+    public long PendingFlushItemCount => CurrentQueueSize;
 
     /// <summary>Gets the queue capacity utilization as a percentage (0-100).</summary>
     public double QueueUtilization => (double)CurrentQueueSize / _capacity * 100;

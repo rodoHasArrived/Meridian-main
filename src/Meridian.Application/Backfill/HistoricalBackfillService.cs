@@ -9,6 +9,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Platform.Tracing;
 using Serilog;
 using Meridian.Contracts.Monitoring;
 

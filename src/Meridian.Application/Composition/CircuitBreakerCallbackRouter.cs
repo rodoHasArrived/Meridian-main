@@ -1,4 +1,4 @@
-using Meridian.Application.Monitoring;
+using Meridian.Platform.Monitoring;
 
 namespace Meridian.Application.Composition;
 

@@ -17,6 +17,7 @@
 
     <!-- Configuration (for LoggingSetup) -->
     <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="FluentValidation" />
   </ItemGroup>
 
   <ItemGroup>

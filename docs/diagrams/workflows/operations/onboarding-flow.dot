@@ -128,7 +128,7 @@ digraph OnboardingFlow {
     bgcolor="#c6f6d5";
 
     STARTUP_SUM [fillcolor="#68d391",
-                 label="StartupSummary\n\nConfiguration review\nProvider status\nHealth checks"];
+                 label="Platform StartupSummary\n\nConfiguration review\nProvider status\nHealth checks"];
 
     RUN_NORMAL [fillcolor="#38a169", fontcolor="white",
                 label="Normal Operation\n\n--mode desktop (local API + collector)\n--backfill (historical)\ndefault/headless (streaming)"];

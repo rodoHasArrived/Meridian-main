@@ -8,6 +8,7 @@ using Meridian.Application.Monitoring;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Infrastructure.Http;
+using Meridian.Platform.Diagnostics;
 using Meridian.Platform.Scheduling;
 using Serilog;
 

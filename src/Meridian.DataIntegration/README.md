@@ -47,9 +47,17 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   adapters.
 - `Monitoring/BadTickFilter.cs`, `Monitoring/TickSizeValidator.cs`,
   `Monitoring/TimestampMonotonicityChecker.cs`, `Monitoring/ValidationMetrics.cs`,
-  `Monitoring/ProviderLatencyService.cs`, and `Monitoring/ProviderMetricsStatus.cs` - provider
-  data-quality validation filters, latency histograms, provider metrics snapshots, and F#
-  validation-stage counters used by ingestion, routing, diagnostics, and Application/UI adapters.
+  `Monitoring/ClockSkewEstimator.cs`, `Monitoring/SpreadMonitor.cs`,
+  `Monitoring/DataLossAccounting.cs`, `Monitoring/SchemaValidationService.cs`,
+  `Monitoring/ProviderLatencyService.cs`, `Monitoring/ProviderMetricsStatus.cs`,
+  `Monitoring/ConnectionHealthMonitor.cs`, `Monitoring/ProviderDegradationScorer.cs`,
+  `Monitoring/ProviderDegradationConfig.cs`, and
+  `Monitoring/ProviderDegradationCalibration.cs` - provider data-quality validation filters,
+  clock-skew estimation, spread monitoring, pipeline data-loss accounting, stored market-event
+  schema compatibility checks, connection health, latency histograms, provider metrics snapshots,
+  degradation scoring, degradation-scoring
+  configuration, calibration datasets/snapshots/governance, and F# validation-stage counters used
+  by ingestion, routing, diagnostics, and Application/UI adapters.
 - `Monitoring/DataQuality/` - provider data-quality analyzers, freshness SLA monitor, quality
   report generator, gap/sequence/anomaly/completeness/latency trackers, and liquidity-aware
   quality thresholds used by ingestion, backfill remediation, health, and shared endpoint
@@ -91,11 +99,13 @@ commands, execution simulation, diagnostics registration, UI endpoints, and fund
 data access consume `Meridian.DataIntegration.Historical.HistoricalDataQueryService` instead of
 owning file-backed historical-data query logic.
 
-Provider data-quality validators, analyzers, freshness SLA monitoring, report generation, and
-validation-stage counters live in this module. Provider latency histograms and provider metrics
-snapshot contracts also live here so routing, diagnostics, browser, and desktop surfaces consume a
-single provider-telemetry model. Application pipeline, backfill remediation,
-Prometheus, health, daily-summary, and UI Shared endpoint adapters consume
+Provider data-quality validators, analyzers, freshness SLA monitoring, report generation,
+clock-skew estimation, spread monitoring, pipeline data-loss accounting, stored market-event schema
+compatibility checks, and validation-stage counters live in this module. Connection-health
+monitoring, provider latency histograms, provider metrics snapshot contracts, provider degradation
+scoring/config, and provider calibration datasets/snapshots also live here so routing,
+diagnostics, browser, and desktop surfaces consume a single provider-trust model. Application
+pipeline, backfill remediation, Prometheus, health, daily-summary, and UI Shared endpoint adapters consume
 `Meridian.DataIntegration.Monitoring` and `Meridian.DataIntegration.Monitoring.DataQuality`
 instead of keeping provider trust primitives in the application layer.
 
@@ -133,6 +143,8 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~PipelineFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~HistoricalDataQueryServiceTests|FullyQualifiedName~HistoricalDataQueryServiceBarsTests|FullyQualifiedName~ExecutionSimulationOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BadTickFilterTests|FullyQualifiedName~TickSizeValidatorTests|FullyQualifiedName~FSharpEventValidatorTests|FullyQualifiedName~ProviderLatencyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ClockSkewEstimatorTests|FullyQualifiedName~SpreadMonitorTests|FullyQualifiedName~DataLossAccountingTests|FullyQualifiedName~SchemaValidationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderDegradationScorerTests|FullyQualifiedName~ProviderDegradationCalibrationTests|FullyQualifiedName~StreamingFailoverServiceTests|FullyQualifiedName~FailoverAwareMarketDataClientTests|FullyQualifiedName~StreamingFailoverServiceResilienceTests|FullyQualifiedName~FailoverEndpointTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DataFreshnessSlaMonitorTests|FullyQualifiedName~DataFreshnessSlaMonitorMarketHoursTests|FullyQualifiedName~SlaStatusSnapshotTests|FullyQualifiedName~LiquidityProfileTests|FullyQualifiedName~PriceContinuityCheckerTests|FullyQualifiedName~GapAnalyzerTests|FullyQualifiedName~SequenceErrorTrackerTests|FullyQualifiedName~CompletenessScoreCalculatorTests|FullyQualifiedName~AnomalyDetectorTests|FullyQualifiedName~DataQualityMonitoringServiceTests|FullyQualifiedName~LatencyHistogramTests|FullyQualifiedName~CrossProviderComparisonServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~GovernanceSharedDataAccessServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
@@ -186,8 +198,30 @@ quality services.
 
 `ProviderLatencyService`, provider latency summary records, `ProviderMetricsStatus`, and
 `ProviderMetrics` moved from `src/Meridian.Application/Monitoring` into this module. Application
-keeps connection health, degradation scoring, status endpoint handlers, and composition adapters
-that consume the Data Integration-owned provider telemetry models.
+keeps status endpoint handlers and composition adapters that consume the Data Integration-owned
+provider telemetry models.
+
+`ConnectionHealthMonitor`, connection-health config/snapshot/status records,
+`ProviderDegradationScorer`, degradation score/event/reason records, and provider degradation
+delta helpers moved from `src/Meridian.Application/Monitoring` into this module. Application keeps
+status server, diagnostics, startup, and endpoint adapters that consume the Data Integration-owned
+provider health and degradation scoring models.
+
+`ProviderDegradationConfig`, provider incident calibration datasets/windows, kernel calibration
+snapshots/policies, promotion gate decisions, governance workflow service, and calibration report
+writer moved from `src/Meridian.Application/Monitoring` into this module. Application keeps the
+provider calibration command adapter and endpoint composition that consume the Data
+Integration-owned degradation calibration model.
+
+`ClockSkewEstimator`, `SpreadMonitor`, `DataLossAccounting`, clock-skew snapshots, spread alert and
+statistics records, and provider data-loss reconciliation records moved from
+`src/Meridian.Application/Monitoring` into this module. Application keeps only adapters that
+consume Data Integration-owned provider data-quality evidence.
+
+`SchemaValidationService`, schema validation options/results, startup schema compatibility result
+records, and schema incompatibility records moved from `src/Meridian.Application/Monitoring` into
+this module. Application keeps the CLI and startup validation adapters that invoke the Data
+Integration-owned schema compatibility service.
 
 ## Change rules
 

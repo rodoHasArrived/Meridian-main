@@ -420,7 +420,7 @@ Computes weighted quality scores across dimensions: completeness, accuracy, time
 
 ### ConnectionHealthMonitor
 
-**Location:** `src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs`
+**Location:** `src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs`
 
 Monitors connection health for streaming providers:
 
@@ -446,7 +446,7 @@ Tracks per-provider latency with full percentile histograms:
 
 ### ProviderDegradationScorer
 
-**Location:** `src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs`
+**Location:** `src/Meridian.DataIntegration/Monitoring/ProviderDegradationScorer.cs`
 
 Computes a composite health/degradation score (0.0 = fully healthy, 1.0 = fully degraded) per provider by combining four weighted components:
 
@@ -459,6 +459,9 @@ Computes a composite health/degradation score (0.0 = fully healthy, 1.0 = fully 
 
 **Configurable thresholds (`ProviderDegradationConfig`):**
 
+**Config/calibration location:** `src/Meridian.DataIntegration/Monitoring/ProviderDegradationConfig.cs`,
+`src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs`
+
 - `DegradationThreshold` — Composite score at which a provider is considered degraded (default: 0.6)
 - `EvaluationIntervalSeconds` — Scoring frequency (default: 30s)
 - All component weights and thresholds are configurable
@@ -466,6 +469,11 @@ Computes a composite health/degradation score (0.0 = fully healthy, 1.0 = fully 
 **Events:** `OnProviderDegraded`, `OnProviderRecovered`
 
 **Key APIs:** `GetScore(providerName)`, `GetAllScores()`, `GetProvidersByHealth()`, `IsDegraded(providerName)`
+
+Provider degradation calibration datasets, incident windows, kernel profiles, calibration
+snapshots, promotion gate policy, governance workflow, and calibration report generation also live
+in `Meridian.DataIntegration.Monitoring`. The Application-owned calibration command and endpoints
+are runtime adapters that consume that Data Integration-owned provider trust model.
 
 ### ProviderMetricsStatus
 
@@ -763,5 +771,16 @@ export TIINGO__TOKEN=your-token
 
 - Moved `ProviderLatencyService`, provider latency summary records, `ProviderMetricsStatus`, and
   `ProviderMetrics` from Application monitoring into `Meridian.DataIntegration.Monitoring`.
-- Kept `ConnectionHealthMonitor`, `ProviderDegradationScorer`, and status endpoint composition in
-  Application as consumers of the Data Integration-owned provider telemetry models.
+- Moved `ConnectionHealthMonitor`, connection-health config/snapshot/status records,
+  `ProviderDegradationScorer`, provider degradation score/event/reason records, and degradation
+  delta helpers into `Meridian.DataIntegration.Monitoring`.
+- Moved `ProviderDegradationConfig`, provider degradation calibration datasets/snapshots, kernel
+  calibration policies, governance workflow service, and calibration report writer into
+  `Meridian.DataIntegration.Monitoring`.
+- Moved `ClockSkewEstimator`, `SpreadMonitor`, `DataLossAccounting`, and their provider
+  data-quality evidence records into `Meridian.DataIntegration.Monitoring`.
+- Moved `SchemaValidationService` and stored market-event schema compatibility result records into
+  `Meridian.DataIntegration.Monitoring`.
+- Kept provider calibration command and status endpoint composition in Application as consumers of
+  the Data Integration-owned provider telemetry, health, scoring, calibration, and data-quality
+  evidence models.

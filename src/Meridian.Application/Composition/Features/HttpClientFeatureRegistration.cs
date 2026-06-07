@@ -1,5 +1,5 @@
-using Meridian.Application.Monitoring;
 using Meridian.Infrastructure.Http;
+using Meridian.Platform.Monitoring;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Application.Composition.Features;

@@ -1,7 +1,7 @@
 using System.Threading;
 using FluentAssertions;
 using Meridian.Application.Config;
-using Meridian.Application.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;

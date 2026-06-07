@@ -195,7 +195,8 @@ The repository currently includes **32 concrete provider implementations** plus 
 - `ProviderRateLimitTracker.cs` - Rate limit tracking across providers
 
 **Queue files:**
-- `BackfillJob.cs` - Backfill job model
+- `src/Meridian.ProviderSdk/Backfill/BackfillJob.cs` - Provider-facing backfill job, status,
+  priority, progress, and granularity descriptors
 - `BackfillJobManager.cs` - Job lifecycle management
 - `BackfillRequestQueue.cs` - Request queue implementation
 - `BackfillWorkerService.cs` - Background worker service

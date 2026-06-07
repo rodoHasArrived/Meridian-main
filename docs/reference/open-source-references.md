@@ -608,7 +608,7 @@ Recent optimizations and patterns:
 1. **✅ FluentValidation Configuration Validation**
    - Comprehensive validation for AppConfig, provider options, storage, and symbols
    - Clear error messages with property-level validation
-   - Implemented in `Application/Config/ConfigValidationHelper.cs`
+   - Implemented in `src/Meridian.Core/Config/ConfigValidationHelper.cs`
 
 2. **✅ Polly Resilience Policies for WebSocket**
    - Connection retry with exponential backoff and jitter

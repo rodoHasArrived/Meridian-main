@@ -146,10 +146,13 @@
 - **Status:** Complete.
 - **What was done:**
   - `IEventMetrics` interface with properties (`Published`, `Dropped`, `Trades`, etc.) and increment methods (`IncPublished()`, etc.).
-  - `DefaultEventMetrics` delegates to static `Metrics` class with `[MethodImpl(AggressiveInlining)]` for zero-allocation hot path.
-  - `TracedEventMetrics` wraps `DefaultEventMetrics` for OpenTelemetry export.
+  - Platform-owned `DefaultEventMetrics` delegates to the Platform static `Metrics` class with `[MethodImpl(AggressiveInlining)]` for zero-allocation hot path.
+  - Platform-owned `TracedEventMetrics` wraps `DefaultEventMetrics` for OpenTelemetry export.
 - **Key files:**
-  - `src/Meridian.Application/Monitoring/IEventMetrics.cs`
+  - `src/Meridian.Contracts/Monitoring/IEventMetrics.cs`
+  - `src/Meridian.Platform/Tracing/DefaultEventMetrics.cs`
+  - `src/Meridian.Platform/Tracing/Metrics.cs`
+  - `src/Meridian.Platform/Tracing/TracedEventMetrics.cs`
 
 ### Step 4.2 — Inject metrics into hot pipeline paths ✅
 - **Status:** Complete.
@@ -198,8 +201,8 @@
   - `ConfigValidationHelper` deprecated static methods removed (Phase 7.1).
   - FluentValidation validators preserved: `AppConfigValidator`, `AlpacaOptionsValidator`, `StockSharpConfigValidator`, `StorageConfigValidator`, `SymbolConfigValidator`.
 - **Key files:**
-  - `src/Meridian.Application/Config/IConfigValidator.cs`
-  - `src/Meridian.Application/Config/ConfigValidationHelper.cs` (validators only)
+  - `src/Meridian.Core/Config/IConfigValidator.cs`
+  - `src/Meridian.Core/Config/ConfigValidationHelper.cs` (validators only)
 
 ---
 
@@ -212,7 +215,7 @@
   - Preserved all FluentValidation validator classes (`AppConfigValidator`, `AlpacaOptionsValidator`, etc.) as they're used by `ConfigValidationPipeline`.
   - Polygon reconnection logic consolidated to `WebSocketReconnectionHelper`.
 - **Key files:**
-  - `src/Meridian.Application/Config/ConfigValidationHelper.cs`
+  - `src/Meridian.Core/Config/ConfigValidationHelper.cs`
 
 ### Step 7.2 — Update architecture docs and ADRs ✅
 - **Status:** Complete.

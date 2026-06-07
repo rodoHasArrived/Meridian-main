@@ -319,19 +319,9 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         }
     }
 
-
-
-    private static readonly string[] PlaceholderValues =
-        ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"];
-
     private static bool IsLikelyRealCredential(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return false;
-
-        // Skip placeholder values
-        return !PlaceholderValues.Any(p =>
-            value.Contains(p, StringComparison.OrdinalIgnoreCase));
+        return CredentialPlaceholderDetector.LooksLikeRealCredential(value);
     }
 
     private void WarnIfCredentialsInConfigFile(AppConfig config, List<string> warnings)

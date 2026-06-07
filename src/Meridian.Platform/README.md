@@ -14,9 +14,12 @@ last_reviewed: 2026-06-06
 ## Purpose
 
 Physical bounded-context module project for Platform ownership, composition, configuration, runtime
-policy, runtime mode resolution, operational performance controls, operational scheduling and
-trading-calendar utilities, shared operation result semantics, diagnostic state, domain cutover,
-and shadow-projection conformance.
+policy, deployment context, runtime mode resolution, startup summary display, operational
+performance controls, hosted graceful-shutdown flush behavior, shutdown sequence handling,
+operational scheduling and trading-calendar utilities, shared operation result semantics,
+diagnostic state, diagnostic bundle generation, runtime error ring-buffer retention, system-health
+resource snapshots, default event-pipeline metrics counters, domain cutover, and shadow-projection
+conformance.
 
 ## Layer responsibility
 
@@ -37,10 +40,16 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Results/` - shared `Result`, `OperationError`, `ErrorCode`, and friendly error-formatting
   primitives used by commands, startup validation, diagnostics endpoints, and other cross-domain
   runtime flows.
-- `Diagnostics/` - process-level error tracking, shutdown-sequence diagnostic snapshots, and
-  shutdown lifecycle DTOs consumed by Application orchestration and shared endpoint projections.
-- `Runtime/` - shared CLI/runtime mode policy and console progress display helpers used by
-  deployment context, startup summaries, and diagnostics/connectivity workflows.
+- `Diagnostics/` - process-level error tracking, runtime error ring-buffer retention,
+  system-health resource snapshots, diagnostic bundle generation, shutdown-sequence diagnostic
+  snapshots, and shutdown lifecycle DTOs consumed by Application orchestration and shared endpoint
+  projections.
+- `Monitoring/CircuitBreakerStatusService.cs` - runtime circuit-breaker state dashboard,
+  transition events, and health snapshot records consumed by Application composition and shared
+  resilience endpoints.
+- `Runtime/` - shared deployment context, CLI/runtime mode policy, startup summary display,
+  hosted graceful-shutdown flush behavior, shutdown sequence handling, and console progress display
+  helpers used by startup summaries and diagnostics/connectivity workflows.
 - `Performance/CoLocationProfileActivator.cs` - platform-owned runtime performance profile
   activation for the desktop diagnostics surface and latency-sensitive host startup flows.
 - `Scheduling/OperationalScheduler.cs` - trading-hours-aware runtime scheduling policy for
@@ -51,8 +60,10 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   event pipeline to preserve trace parent/correlation IDs across queued market events.
 - `Tracing/OpenTelemetrySetup.cs` - host OpenTelemetry setup, exporter configuration, and
   `MarketDataTracing` activity source/counter helpers for platform-level market-data telemetry.
+- `Tracing/Metrics.cs` and `Tracing/DefaultEventMetrics.cs` - hot-path event-pipeline counters
+  and the default implementation of the contracts-owned `IEventMetrics` interface.
 - `Tracing/TracedEventMetrics.cs` - OpenTelemetry-compatible event-pipeline metrics decorator
-  that preserves the shared contracts-owned metrics shape while emitting platform telemetry.
+  that wraps the default metrics implementation while emitting platform telemetry.
 - `ApiDocumentation/ApiDocumentationService.cs` - lightweight OpenAPI, Swagger HTML, and
   markdown documentation model generation for host diagnostics and API explorer surfaces.
 
@@ -61,12 +72,14 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 Use this module when changing cross-domain runtime cutover controls, shadow-write behavior,
 persisted-projection read switching, hosted projection-reconciliation plumbing, or shared
 command/startup result semantics. Application composition may register these services and consume
-Platform diagnostics, trace context carriers, and metrics decorators, but it should not own the platform cutover
+Platform diagnostics, trace context carriers, event metrics counters, and metrics decorators, but it should not own the platform cutover
 contracts, shadow-projection schemas, trace context carriers, OpenTelemetry setup, market-data
-tracing helpers, OpenTelemetry-compatible event metrics decoration, trading-hours-aware operational
-scheduling policy, trading-calendar implementation, runtime mode resolution, colocation profile
-activation, diagnostic state snapshots, shutdown lifecycle DTOs, API documentation model
-generation, or shared error-code taxonomy.
+tracing helpers, default event metrics counters, OpenTelemetry-compatible event metrics decoration, trading-hours-aware operational
+scheduling policy, trading-calendar implementation, deployment context, runtime mode resolution,
+startup summary display, hosted graceful-shutdown flush behavior, shutdown sequence handling, colocation profile activation,
+diagnostic state snapshots, diagnostic bundle generation, shutdown lifecycle DTOs, API documentation model generation, runtime circuit-breaker status dashboards,
+runtime error ring buffers, or shared system-health resource snapshots, or shared error-code
+taxonomy.
 
 ## Diagrams
 
@@ -94,11 +107,14 @@ dotnet build src/Meridian.Platform/Meridian.Platform.csproj /p:EnableWindowsTarg
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~StorageFeatureRegistrationTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ErrorCodeMappingTests|FullyQualifiedName~DiagnosticsCommandsTests|FullyQualifiedName~StatementImportCommandsTests|FullyQualifiedName~SimulationCommandsTests|FullyQualifiedName~SecurityMasterCommandsEdgarTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EventTraceContextTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EventPipelineTracePropagationTests|FullyQualifiedName~EventTraceContextTests|FullyQualifiedName~TracedEventMetricsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracedEventMetricsTests|FullyQualifiedName~EventPipelineMetricsTests|FullyQualifiedName~DiagnosticsEndpointsTests|FullyQualifiedName~DiagnosticsFeatureRegistrationTests|FullyQualifiedName~DiagnosticBundleServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EventPipelineTracePropagationTests|FullyQualifiedName~EventTraceContextTests|FullyQualifiedName~DefaultEventMetricsTests|FullyQualifiedName~TracedEventMetricsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DefaultEventMetricsTests|FullyQualifiedName~TracedEventMetricsTests|FullyQualifiedName~EventPipelineMetricsTests|FullyQualifiedName~DiagnosticsEndpointsTests|FullyQualifiedName~DiagnosticsFeatureRegistrationTests|FullyQualifiedName~DiagnosticBundleServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TradingCalendarTests|FullyQualifiedName~OperationalSchedulerTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ApiDocumentationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CoLocationProfileActivatorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CircuitBreakerStatusServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ErrorRingBufferTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SystemHealthCheckerTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ## Optional conditional sections
@@ -117,9 +133,11 @@ Add only the sections that apply to this module:
 
 Preserve the module boundary declared in `docs/source/data/source-modules.yml` and update the
 nearest docs when platform cutover, configuration, runtime policy, operational scheduling,
-trading-calendar behavior, runtime mode resolution, result/error semantics, runtime diagnostics,
-shutdown lifecycle DTOs, API documentation model generation, runtime performance profile behavior,
-shadow-projection, trace context propagation, or hosted reconciliation workflow semantics change.
+trading-calendar behavior, runtime mode resolution, startup summary behavior, result/error semantics, runtime diagnostics, diagnostic bundle generation,
+deployment context behavior, hosted graceful-shutdown flush behavior, shutdown sequence handling, shutdown lifecycle DTOs,
+API documentation model generation, runtime performance profile behavior, runtime circuit-breaker status behavior, runtime error ring-buffer
+behavior, default event metrics counter behavior, shadow-projection, system-health resource snapshot behavior, trace context propagation, or hosted reconciliation
+workflow semantics change.
 
 ## Related docs
 

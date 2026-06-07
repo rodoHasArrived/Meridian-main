@@ -540,16 +540,8 @@ Meridian/
 │   │   ├── Config/
 │   │   │   ├── Credentials/
 │   │   │   │   ...
-│   │   │   ├── AppConfigJsonOptions.cs
-│   │   │   ├── ConfigDtoMapper.cs
 │   │   │   ├── ConfigurationPipeline.cs
-│   │   │   ├── ConfigValidationHelper.cs
-│   │   │   ├── ConfigValidatorCli.cs
-│   │   │   ├── ConfigWatcher.cs
-│   │   │   ├── DeploymentContext.cs
-│   │   │   ├── IConfigValidator.cs
-│   │   │   ├── SensitiveValueMasker.cs
-│   │   │   └── StorageConfigExtensions.cs
+│   │   │   └── ConfigValidatorCli.cs
 │   │   ├── Credentials/
 │   │   │   └── ICredentialStore.cs
 │   │   ├── Filters/
@@ -566,32 +558,13 @@ Meridian/
 │   │   ├── Monitoring/
 │   │   │   ├── Core/
 │   │   │   │   ...
-│   │   │   ├── DataQuality/
-│   │   │   │   ...
 │   │   │   ├── BackpressureAlertService.cs
-│   │   │   ├── BadTickFilter.cs
-│   │   │   ├── CircuitBreakerStatusService.cs
-│   │   │   ├── ClockSkewEstimator.cs
-│   │   │   ├── ConnectionHealthMonitor.cs
 │   │   │   ├── ConnectionStatusWebhook.cs
-│   │   │   ├── DataLossAccounting.cs
 │   │   │   ├── DetailedHealthCheck.cs
-│   │   │   ├── ErrorRingBuffer.cs
-│   │   │   ├── IEventMetrics.cs
-│   │   │   ├── Metrics.cs
 │   │   │   ├── PrometheusMetrics.cs
-│   │   │   ├── ProviderDegradationScorer.cs
-│   │   │   ├── ProviderLatencyService.cs
-│   │   │   ├── ProviderMetricsStatus.cs
-│   │   │   ├── SchemaValidationService.cs
-│   │   │   ├── SpreadMonitor.cs
 │   │   │   ├── StatusHttpServer.cs
 │   │   │   ├── StatusSnapshot.cs
-│   │   │   ├── StatusWriter.cs
-│   │   │   ├── SystemHealthChecker.cs
-│   │   │   ├── TickSizeValidator.cs
-│   │   │   ├── TimestampMonotonicityChecker.cs
-│   │   │   └── ValidationMetrics.cs
+│   │   │   └── StatusWriter.cs
 │   │   ├── Pipeline/
 │   │   │   ├── DeadLetterSink.cs
 │   │   │   ├── DroppedEventAuditTrail.cs
@@ -603,53 +576,29 @@ Meridian/
 │   │   │   ├── IngestionJobService.cs
 │   │   │   ├── PersistentDedupLedger.cs
 │   │   │   └── SchemaUpcasterRegistry.cs
-│   │   ├── Results/
-│   │   │   ├── ErrorCode.cs
-│   │   │   ├── OperationError.cs
-│   │   │   └── Result.cs
 │   │   ├── Scheduling/
 │   │   │   ├── BackfillExecutionLog.cs
 │   │   │   ├── BackfillSchedule.cs
 │   │   │   ├── BackfillScheduleManager.cs
-│   │   │   ├── IOperationalScheduler.cs
-│   │   │   ├── OperationalScheduler.cs
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── Services/
-│   │   │   ├── ApiDocumentationService.cs
 │   │   │   ├── AutoConfigurationService.cs
-│   │   │   ├── CanonicalSymbolRegistry.cs
-│   │   │   ├── CliModeResolver.cs
-│   │   │   ├── ConfigEnvironmentOverride.cs
-│   │   │   ├── ConfigTemplateGenerator.cs
 │   │   │   ├── ConfigurationService.cs
 │   │   │   ├── ConfigurationServiceCredentialAdapter.cs
 │   │   │   ├── ConfigurationWizard.cs
+│   │   │   ├── ConnectivityProbeService.cs
 │   │   │   ├── ConnectivityTestService.cs
 │   │   │   ├── CredentialValidationService.cs
 │   │   │   ├── DailySummaryWebhook.cs
-│   │   │   ├── DiagnosticBundleService.cs
 │   │   │   ├── DryRunService.cs
-│   │   │   ├── ErrorTracker.cs
-│   │   │   ├── FriendlyErrorFormatter.cs
-│   │   │   ├── GracefulShutdownHandler.cs
-│   │   │   ├── GracefulShutdownService.cs
-│   │   │   ├── HistoricalDataQueryService.cs
-│   │   │   ├── OptionsChainService.cs
+│   │   │   ├── ExecutionSimulationOrchestrator.cs
 │   │   │   ├── PreflightChecker.cs
-│   │   │   ├── ProgressDisplayService.cs
-│   │   │   ├── SampleDataGenerator.cs
 │   │   │   ├── ServiceRegistry.cs
-│   │   │   ├── StartupSummary.cs
-│   │   │   └── TradingCalendar.cs
+│   │   │   └── StoredProviderCredentialResolver.cs
 │   │   ├── Subscriptions/
 │   │   │   ├── Services/
 │   │   │   │   ...
 │   │   │   └── SubscriptionOrchestrator.cs
-│   │   ├── Testing/
-│   │   │   └── DepthBufferSelfTests.cs
-│   │   ├── Tracing/
-│   │   │   ├── OpenTelemetrySetup.cs
-│   │   │   └── TracedEventMetrics.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Application.csproj
 │   ├── Meridian.Backtesting/
@@ -757,6 +706,8 @@ Meridian/
 │   │   │   └── StandardPresets.cs
 │   │   ├── Manifest/
 │   │   │   └── DataManifest.cs
+│   │   ├── Monitoring/
+│   │   │   └── IEventMetrics.cs
 │   │   ├── Pipeline/
 │   │   │   ├── IngestionJob.cs
 │   │   │   └── PipelinePolicyConstants.cs
@@ -772,13 +723,23 @@ Meridian/
 │   │   ├── Config/
 │   │   │   ├── AlpacaOptions.cs
 │   │   │   ├── AppConfig.cs
+│   │   │   ├── AppConfigJsonOptions.cs
 │   │   │   ├── BackfillConfig.cs
 │   │   │   ├── CanonicalizationConfig.cs
+│   │   │   ├── ConfigEnvironmentOverride.cs
+│   │   │   ├── ConfigJsonSchemaGenerator.cs
+│   │   │   ├── ConfigTemplateGenerator.cs
+│   │   │   ├── ConfigValidationHelper.cs
+│   │   │   ├── ConfigWatcher.cs
+│   │   │   ├── CredentialPlaceholderDetector.cs
 │   │   │   ├── DataSourceConfig.cs
 │   │   │   ├── DataSourceKind.cs
 │   │   │   ├── DataSourceKindConverter.cs
+│   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DerivativesConfig.cs
 │   │   │   ├── IConfigurationProvider.cs
+│   │   │   ├── IConfigValidator.cs
+│   │   │   ├── SensitiveValueMasker.cs
 │   │   │   ├── StockSharpConfig.cs
 │   │   │   └── ValidatedConfig.cs
 │   │   ├── Exceptions/
@@ -816,6 +777,47 @@ Meridian/
 │   │   │       ...
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Core.csproj
+│   ├── Meridian.DataIntegration/
+│   │   ├── Monitoring/
+│   │   │   ├── DataQuality/
+│   │   │   │   ...
+│   │   │   ├── BadTickFilter.cs
+│   │   │   ├── ClockSkewEstimator.cs
+│   │   │   ├── ConnectionHealthMonitor.cs
+│   │   │   ├── DataLossAccounting.cs
+│   │   │   ├── ProviderDegradationCalibration.cs
+│   │   │   ├── ProviderDegradationConfig.cs
+│   │   │   ├── ProviderDegradationScorer.cs
+│   │   │   ├── ProviderLatencyService.cs
+│   │   │   ├── ProviderMetricsStatus.cs
+│   │   │   ├── SchemaValidationService.cs
+│   │   │   ├── SpreadMonitor.cs
+│   │   │   ├── TickSizeValidator.cs
+│   │   │   ├── TimestampMonotonicityChecker.cs
+│   │   │   └── ValidationMetrics.cs
+│   │   ├── GlobalUsings.cs
+│   │   └── Meridian.DataIntegration.csproj
+│   ├── Meridian.Platform/
+│   │   ├── Diagnostics/
+│   │   │   ├── DiagnosticBundleService.cs
+│   │   │   ├── ErrorRingBuffer.cs
+│   │   │   └── SystemHealthChecker.cs
+│   │   ├── Monitoring/
+│   │   │   └── CircuitBreakerStatusService.cs
+│   │   ├── Runtime/
+│   │   │   ├── CliModeResolver.cs
+│   │   │   ├── DeploymentContext.cs
+│   │   │   ├── GracefulShutdownHandler.cs
+│   │   │   ├── GracefulShutdownService.cs
+│   │   │   ├── ProgressDisplayService.cs
+│   │   │   └── StartupSummary.cs
+│   │   ├── Tracing/
+│   │   │   ├── DefaultEventMetrics.cs
+│   │   │   ├── EventTraceContext.cs
+│   │   │   ├── Metrics.cs
+│   │   │   ├── OpenTelemetrySetup.cs
+│   │   │   └── TracedEventMetrics.cs
+│   │   └── Meridian.Platform.csproj
 │   ├── Meridian.Domain/
 │   │   ├── Collectors/
 │   │   │   ├── IQuoteStateStore.cs
@@ -948,6 +950,7 @@ Meridian/
 │   │   ├── IProviderModule.cs
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
+│   │   ├── PluginLoaderService.cs
 │   │   └── ProviderHttpUtilities.cs
 │   ├── Meridian.Storage/
 │   │   ├── Archival/
@@ -956,6 +959,8 @@ Meridian/
 │   │   │   ├── CompressionProfileManager.cs
 │   │   │   ├── SchemaVersionManager.cs
 │   │   │   └── WriteAheadLog.cs
+│   │   ├── Config/
+│   │   │   └── StorageConfigExtensions.cs
 │   │   ├── Export/
 │   │   │   ├── AnalysisExportService.cs
 │   │   │   ├── AnalysisExportService.Features.cs
@@ -1579,3 +1584,12 @@ Meridian/
 *Last Updated: 2026-03-18*
 <!-- readme-tree start -->
 <!-- readme-tree end -->
+## Repository Structure
+
+Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained sources instead:
+
+- `docs/ai/navigation/README.md` for the generated repo-navigation workflow.
+- `docs/ai/generated/repo-navigation.md` for subsystem routing and entrypoints.
+- `docs\generated\repository-structure.md` for the full generated repository tree.
+- `docs/ai/agents/README.md` for agent catalogs.
+- `docs/ai/skills/README.md` for skill catalogs and validation commands.

@@ -33,7 +33,7 @@ modules:
     layer: Application
     status: active
     owner_lane: Runtime Host
-    purpose: Application use cases, orchestration services, commands, and workflow coordination that consumes Core configuration/redaction/masking helpers, Platform runtime/diagnostic/API-documentation/performance helpers, Data Integration sample-data, historical-query, and market-data validation helpers, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration-template, environment-override, runtime diagnostic, API-documentation, runtime-performance, data-fixture, historical-data, market-data validation, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
+    purpose: Application use cases, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Contracts-owned backfill run-result and per-symbol completeness payloads, Storage-owned storage-option mapping and backfill status/checkpoint persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Data Integration sample-data, historical-query, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/degradation scoring, and provider calibration helpers, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, data-fixture, historical-data, market-data validation, schema validation services, provider data-quality monitors, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
     readme: src/Meridian.Application/README.md
     roadmap_items:
       - W2-TRD-001
@@ -58,7 +58,7 @@ modules:
     layer: Contracts
     status: active
     owner_lane: Contract Compatibility
-    purpose: Shared DTOs, acceptance evidence payloads, fund-structure service contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
+    purpose: Shared DTOs, backfill run-result and per-symbol completeness payloads, acceptance evidence payloads, fund-structure service contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
     readme: src/Meridian.Contracts/README.md
     roadmap_items:
       - W1-DATA-001
@@ -95,7 +95,7 @@ modules:
     layer: Core
     status: active
     owner_lane: Runtime Host
-    purpose: Shared configuration models, environment overrides, configuration templates, exceptions, logging, scheduling, serialization, redaction, masking, flush contracts, and cross-cutting infrastructure.
+    purpose: Shared configuration models, configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline stages, credential placeholder detection, default config-path resolution, environment overrides, configuration templates, config file hot-reload watching, exceptions, logging, scheduling, serialization, redaction, masking, flush contracts, flush queue-diagnostics contracts, and cross-cutting infrastructure.
     readme: src/Meridian.Core/README.md
     roadmap_items:
       - W1-DATA-001
@@ -141,7 +141,7 @@ modules:
     layer: Provider SDK
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Provider-facing abstractions for market data, historical data, and symbol search adapters.
+    purpose: Provider-facing abstractions for market data, historical data, symbol search adapters, backfill job/granularity descriptors, provider metadata, module loading, and dynamic plugin assembly discovery.
     readme: src/Meridian.ProviderSdk/README.md
     roadmap_items:
       - W1-DATA-001
@@ -151,6 +151,7 @@ modules:
       - LiveReadiness
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PluginLoaderServiceTests|FullyQualifiedName~ProviderModuleLoaderTests|FullyQualifiedName~DataSourceRegistryTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
@@ -162,7 +163,7 @@ modules:
     layer: Infrastructure
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Provider adapters, HTTP integration, ETL adapters including SFTP publisher transport, resilience helpers, and data-source implementations.
+    purpose: Provider adapters, HTTP integration, ETL adapters including SFTP publisher transport, resilience helpers, data-source implementations, and backfill worker/queue orchestration that consumes ProviderSdk-owned backfill job descriptors.
     readme: src/Meridian.Infrastructure/README.md
     roadmap_items:
       - W1-DATA-001
@@ -185,7 +186,7 @@ modules:
     layer: Storage
     status: active
     owner_lane: Accounting and Ledger
-    purpose: WAL-backed persistence, archival packaging, storage catalogs, replay, ledger storage, Core-flushable storage sinks, canonical symbol registry services, fund-structure state stores, ETL job-definition stores, and export support.
+    purpose: WAL-backed persistence, archival packaging, backfill status/checkpoint sidecar persistence, storage catalogs, replay, ledger storage, storage-option mapping from shared config, Core-flushable storage sinks, canonical symbol registry services, fund-structure state stores, ETL job-definition stores, and export support.
     readme: src/Meridian.Storage/README.md
     roadmap_items:
       - W1-DATA-001
@@ -492,7 +493,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Runtime Host
-    purpose: Physical bounded-context module project for Platform ownership, composition, configuration, runtime policy, CLI/runtime mode resolution, console progress helpers, runtime performance profile activation, operational scheduling and trading-calendar policy, shared operation result semantics, friendly error formatting, API documentation model generation, diagnostic state, shutdown lifecycle DTOs, OpenTelemetry tracing, event-pipeline metrics decoration, domain cutover, and shadow-projection conformance.
+    purpose: Physical bounded-context module project for Platform ownership, composition, configuration, runtime policy, deployment context, CLI/runtime mode resolution, startup summary display, console progress helpers, hosted graceful-shutdown flush and shutdown sequence behavior, runtime performance profile activation, operational scheduling and trading-calendar policy, shared operation result semantics, friendly error formatting, API documentation model generation, diagnostic state, diagnostic bundle generation, runtime error ring-buffer retention, system-health resource snapshots, default event-pipeline metrics counters, shutdown lifecycle DTOs, runtime circuit-breaker status dashboards, OpenTelemetry tracing, event-pipeline metrics decoration, domain cutover, and shadow-projection conformance.
     readme: src/Meridian.Platform/README.md
     roadmap_items:
       - W1-DATA-001
@@ -505,10 +506,13 @@ modules:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~StorageFeatureRegistrationTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ErrorCodeMappingTests|FullyQualifiedName~DiagnosticsCommandsTests|FullyQualifiedName~StatementImportCommandsTests|FullyQualifiedName~SimulationCommandsTests|FullyQualifiedName~SecurityMasterCommandsEdgarTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EventTraceContextTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EventPipelineTracePropagationTests|FullyQualifiedName~EventTraceContextTests|FullyQualifiedName~TracedEventMetricsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracedEventMetricsTests|FullyQualifiedName~EventPipelineMetricsTests|FullyQualifiedName~DiagnosticsEndpointsTests|FullyQualifiedName~DiagnosticsFeatureRegistrationTests|FullyQualifiedName~DiagnosticBundleServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EventPipelineTracePropagationTests|FullyQualifiedName~EventTraceContextTests|FullyQualifiedName~DefaultEventMetricsTests|FullyQualifiedName~TracedEventMetricsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DefaultEventMetricsTests|FullyQualifiedName~TracedEventMetricsTests|FullyQualifiedName~EventPipelineMetricsTests|FullyQualifiedName~DiagnosticsEndpointsTests|FullyQualifiedName~DiagnosticsFeatureRegistrationTests|FullyQualifiedName~DiagnosticBundleServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ApiDocumentationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CoLocationProfileActivatorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CircuitBreakerStatusServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ErrorRingBufferTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SystemHealthCheckerTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
@@ -565,7 +569,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Physical bounded-context module project for provider, ingestion, ETL export, event canonicalization, historical market-data query/aggregation, data-quality validators/analyzers/SLA metrics, provider latency and provider metrics telemetry models, source evidence, sample market-event generation, and publish-data ownership conformance.
+    purpose: Physical bounded-context module project for provider, ingestion, ETL export, event canonicalization, historical market-data query/aggregation, data-quality validators/analyzers/SLA metrics, stored market-event schema compatibility checks, clock-skew estimation, spread monitoring, pipeline data-loss accounting, provider connection health, provider degradation scoring, provider latency and provider metrics telemetry models, provider degradation config/calibration governance, source evidence, sample market-event generation, and publish-data ownership conformance.
     readme: src/Meridian.DataIntegration/README.md
     roadmap_items:
       - W1-DATA-001
@@ -586,6 +590,8 @@ modules:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~PipelineFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~HistoricalDataQueryServiceTests|FullyQualifiedName~HistoricalDataQueryServiceBarsTests|FullyQualifiedName~ExecutionSimulationOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BadTickFilterTests|FullyQualifiedName~TickSizeValidatorTests|FullyQualifiedName~FSharpEventValidatorTests|FullyQualifiedName~ProviderLatencyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ClockSkewEstimatorTests|FullyQualifiedName~SpreadMonitorTests|FullyQualifiedName~DataLossAccountingTests|FullyQualifiedName~SchemaValidationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderDegradationScorerTests|FullyQualifiedName~ProviderDegradationCalibrationTests|FullyQualifiedName~StreamingFailoverServiceTests|FullyQualifiedName~FailoverAwareMarketDataClientTests|FullyQualifiedName~StreamingFailoverServiceResilienceTests|FullyQualifiedName~FailoverEndpointTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DataFreshnessSlaMonitorTests|FullyQualifiedName~DataFreshnessSlaMonitorMarketHoursTests|FullyQualifiedName~SlaStatusSnapshotTests|FullyQualifiedName~LiquidityProfileTests|FullyQualifiedName~PriceContinuityCheckerTests|FullyQualifiedName~GapAnalyzerTests|FullyQualifiedName~SequenceErrorTrackerTests|FullyQualifiedName~CompletenessScoreCalculatorTests|FullyQualifiedName~AnomalyDetectorTests|FullyQualifiedName~DataQualityMonitoringServiceTests|FullyQualifiedName~LatencyHistogramTests|FullyQualifiedName~CrossProviderComparisonServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~GovernanceSharedDataAccessServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
