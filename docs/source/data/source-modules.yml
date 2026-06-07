@@ -33,7 +33,7 @@ modules:
     layer: Application
     status: active
     owner_lane: Runtime Host
-    purpose: Application use cases, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Data Integration sample-data, historical-query, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, and provider calibration helpers, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, data-fixture, historical-data, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
+    purpose: Application use cases, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, and provider calibration helpers, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
     readme: src/Meridian.Application/README.md
     roadmap_items:
       - W2-TRD-001
@@ -50,7 +50,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-06
+    last_reviewed: 2026-06-07
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -80,10 +80,10 @@ modules:
       - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~EnvironmentDesignerServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~WorkstationOperatingContextServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracedEventMetricsTests|FullyQualifiedName~EventPipelineMetricsTests|FullyQualifiedName~DiagnosticsEndpointsTests|FullyQualifiedName~DiagnosticsFeatureRegistrationTests|FullyQualifiedName~DiagnosticBundleServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ScopedAccessServiceTests|FullyQualifiedName~FundAccountTraversalQueryServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ScopedAccessServiceTests|FullyQualifiedName~FundAccountTraversalQueryServiceTests" --logger "console;verbosity=normal" /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationalSchedulerTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~GovernanceSharedDataAccessServiceTests|FullyQualifiedName~InMemoryFundStructureServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlJobOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlJobOrchestratorTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
@@ -118,7 +118,7 @@ modules:
     layer: Domain
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Domain events, market data collectors, models, reconciliation concepts, and telemetry primitives.
+    purpose: Domain events, event quarantine sink port, market data collectors, models, reconciliation concepts, and telemetry primitives.
     readme: src/Meridian.Domain/README.md
     roadmap_items:
       - W1-DATA-001
@@ -133,7 +133,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-06
 
   - id: SRC-PROVIDER-SDK
     path: src/Meridian.ProviderSdk
@@ -205,7 +205,7 @@ modules:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConfigEnvironmentOverrideTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~InMemoryFundStructureServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlJobOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlJobOrchestratorTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
@@ -524,7 +524,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Identity and Access
-    purpose: Physical bounded-context module project for identity auth contracts, scoped access, fund-structure scope lineage, role/profile, and session ownership conformance.
+    purpose: Physical bounded-context module project for identity auth contracts, scoped access, fund-structure scope lineage, fund-account traversal queries, role/profile, and session ownership conformance.
     readme: src/Meridian.Identity/README.md
     roadmap_items:
       - W5-ACCT-001
@@ -532,7 +532,7 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Identity/Meridian.Identity.csproj /p:EnableWindowsTargeting=true
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ScopedAccessServiceTests|FullyQualifiedName~FundAccountTraversalQueryServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ScopedAccessServiceTests|FullyQualifiedName~FundAccountTraversalQueryServiceTests" --logger "console;verbosity=normal" /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false
       - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --filter FullyQualifiedName~SensitiveActionPolicyTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
     diagrams:
       - DIA-ASSURANCE-LOOP
@@ -569,7 +569,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Data Confidence and Validation
-    purpose: Physical bounded-context module project for provider, ingestion, ETL export, event canonicalization, historical market-data query/aggregation, data-quality validators/analyzers/SLA metrics, stored market-event schema compatibility checks, clock-skew estimation, spread monitoring, pipeline data-loss accounting, provider connection health and connection-status notification, provider degradation scoring, provider latency and provider metrics telemetry models, provider degradation config/calibration governance, source evidence, sample market-event generation, and publish-data ownership conformance.
+    purpose: Physical bounded-context module project for provider, ingestion, ETL job orchestration, ETL service/export ports, event canonicalization and the canonicalizing publisher decorator, historical market-data query/aggregation, data-quality validators/analyzers/SLA metrics, stored market-event schema compatibility checks, clock-skew estimation, spread monitoring, pipeline data-loss accounting, provider connection health and connection-status notification, provider degradation scoring, provider latency and provider metrics telemetry models, provider degradation config/calibration governance, source evidence, sample market-event generation, and publish-data ownership conformance.
     readme: src/Meridian.DataIntegration/README.md
     roadmap_items:
       - W1-DATA-001
@@ -578,16 +578,16 @@ modules:
       - DataConfidence
       - AccountingRecords
     validation:
-      - dotnet build src/Meridian.DataIntegration/Meridian.DataIntegration.csproj /p:EnableWindowsTargeting=true
+      - dotnet build src/Meridian.DataIntegration/Meridian.DataIntegration.csproj /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AccountingSystemIntegrationServiceTests|FullyQualifiedName~ProviderConnectionEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~QuickBooksOnlineProviderCredentialConnectionStoreTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OAuthTokenTests|FullyQualifiedName~CredentialStatusTests|FullyQualifiedName~CredentialTestingServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCredentialStoreTests|FullyQualifiedName~ProviderConnectionEndpointsTests|FullyQualifiedName~CredentialCompatibilityEndpointsTests|FullyQualifiedName~ProviderReadinessEndpointTests|FullyQualifiedName~ProviderRoutingEndpointsTests|FullyQualifiedName~ProviderFactoryCredentialContextTests|FullyQualifiedName~AlpacaBrokerageConnectionServiceTests|FullyQualifiedName~PlaidWorkstationServiceTests|FullyQualifiedName~BrokerageConnectionEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MarketEventFilterTests|FullyQualifiedName~SelfTestCommandTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CredentialStoreExtensionsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlCommandsTests|FullyQualifiedName~CsvPartnerFileParserTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConditionCodeMapperTests|FullyQualifiedName~VenueMicMapperTests|FullyQualifiedName~EventCanonicalizerTests|FullyQualifiedName~CanonicalizingPublisherTests|FullyQualifiedName~CanonicalizationGoldenFixtureTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~PipelineFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlCommandsTests|FullyQualifiedName~CsvPartnerFileParserTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConditionCodeMapperTests|FullyQualifiedName~VenueMicMapperTests|FullyQualifiedName~EventCanonicalizerTests|FullyQualifiedName~CanonicalizingPublisherTests|FullyQualifiedName~CanonicalizationGoldenFixtureTests" --logger "console;verbosity=normal" /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~PipelineFeatureRegistrationTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~HistoricalDataQueryServiceTests|FullyQualifiedName~HistoricalDataQueryServiceBarsTests|FullyQualifiedName~ExecutionSimulationOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BadTickFilterTests|FullyQualifiedName~TickSizeValidatorTests|FullyQualifiedName~FSharpEventValidatorTests|FullyQualifiedName~ProviderLatencyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ClockSkewEstimatorTests|FullyQualifiedName~SpreadMonitorTests|FullyQualifiedName~DataLossAccountingTests|FullyQualifiedName~SchemaValidationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -597,7 +597,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-06
+    last_reviewed: 2026-06-07
 
   - id: SRC-DESIGN-REFERENCE-DATA
     path: src/Meridian.ReferenceData

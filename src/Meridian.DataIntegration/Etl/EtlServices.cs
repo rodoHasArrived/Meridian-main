@@ -1,21 +1,20 @@
-using Meridian.Application.Logging;
-using Meridian.Application.Pipeline;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Pipeline;
 using Meridian.DataIntegration.Etl;
 using Meridian.Storage.Etl;
 using Meridian.Storage.Interfaces;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Etl;
 
 public sealed class EtlJobService : IEtlJobService
 {
-    private readonly IngestionJobService _ingestionJobService;
+    private readonly IEtlIngestionJobCoordinator _ingestionJobService;
     private readonly IEtlJobDefinitionStore _definitionStore;
     private readonly EtlJobOrchestrator _orchestrator;
 
-    public EtlJobService(IngestionJobService ingestionJobService, IEtlJobDefinitionStore definitionStore, EtlJobOrchestrator orchestrator)
+    public EtlJobService(IEtlIngestionJobCoordinator ingestionJobService, IEtlJobDefinitionStore definitionStore, EtlJobOrchestrator orchestrator)
     {
         _ingestionJobService = ingestionJobService;
         _definitionStore = definitionStore;
@@ -75,29 +74,30 @@ public sealed class EtlJobService : IEtlJobService
 
 public sealed class EtlJobOrchestrator
 {
-    private readonly ILogger _log = LoggingSetup.ForContext<EtlJobOrchestrator>();
-    private readonly IngestionJobService _ingestionJobService;
+    private readonly ILogger<EtlJobOrchestrator> _logger;
+    private readonly IEtlIngestionJobCoordinator _ingestionJobService;
     private readonly IEtlJobDefinitionStore _definitionStore;
     private readonly IEnumerable<IEtlSourceReader> _sourceReaders;
     private readonly IPartnerFileParser _parser;
     private readonly EtlNormalizationService _normalizer;
-    private readonly EventPipeline _pipeline;
+    private readonly IEtlEventPipeline _pipeline;
     private readonly IStorageCatalogService _catalog;
     private readonly EtlAuditStore _auditStore;
     private readonly EtlRejectSink _rejectSink;
     private readonly IEtlExportService _exportService;
 
     public EtlJobOrchestrator(
-        IngestionJobService ingestionJobService,
+        IEtlIngestionJobCoordinator ingestionJobService,
         IEtlJobDefinitionStore definitionStore,
         IEnumerable<IEtlSourceReader> sourceReaders,
         IPartnerFileParser parser,
         EtlNormalizationService normalizer,
-        EventPipeline pipeline,
+        IEtlEventPipeline pipeline,
         IStorageCatalogService catalog,
         EtlAuditStore auditStore,
         EtlRejectSink rejectSink,
-        IEtlExportService exportService)
+        IEtlExportService exportService,
+        ILogger<EtlJobOrchestrator>? logger = null)
     {
         _ingestionJobService = ingestionJobService;
         _definitionStore = definitionStore;
@@ -109,6 +109,7 @@ public sealed class EtlJobOrchestrator
         _auditStore = auditStore;
         _rejectSink = rejectSink;
         _exportService = exportService;
+        _logger = logger ?? NullLogger<EtlJobOrchestrator>.Instance;
     }
 
     public async Task<EtlRunResult> RunAsync(string jobId, CancellationToken ct = default)
@@ -233,7 +234,7 @@ public sealed class EtlJobOrchestrator
         catch (Exception ex)
         {
             errors.Add(ex.Message);
-            _log.Error(ex, "ETL job {JobId} failed", jobId);
+            _logger.LogError(ex, "ETL job {JobId} failed", jobId);
             await _ingestionJobService.TransitionAsync(jobId, IngestionJobState.Failed, ex.Message, ct).ConfigureAwait(false);
             await _auditStore.WriteEventAsync(jobId, new EtlAuditEvent { Stage = "failed", Message = ex.Message }, ct).ConfigureAwait(false);
             return new EtlRunResult

@@ -3,6 +3,7 @@ using System.Text.Json;
 using Meridian.Application.Coordination;
 using Meridian.Application.Logging;
 using Meridian.Contracts.Pipeline;
+using Meridian.DataIntegration.Etl;
 using Serilog;
 
 namespace Meridian.Application.Pipeline;
@@ -16,7 +17,7 @@ namespace Meridian.Application.Pipeline;
 /// Addresses P0 gap: "No unified job contract across realtime/backfill flows"
 /// from the Ingestion Orchestration evaluation.
 /// </remarks>
-public sealed class IngestionJobService : IDisposable
+public sealed class IngestionJobService : IEtlIngestionJobCoordinator, IDisposable
 {
     private readonly ConcurrentDictionary<string, IngestionJob> _jobs = new();
     private readonly ILogger _log = LoggingSetup.ForContext<IngestionJobService>();

@@ -13,7 +13,7 @@ using Meridian.Storage.Interfaces;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
-namespace Meridian.Tests.Application.Etl;
+namespace Meridian.Tests.DataIntegration.Etl;
 
 public sealed class EtlJobOrchestratorTests : IDisposable
 {

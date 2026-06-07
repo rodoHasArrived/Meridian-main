@@ -1,5 +1,6 @@
 import unittest
 import xml.etree.ElementTree as ET
+import os
 from pathlib import Path
 
 
@@ -33,6 +34,7 @@ class CentralPackageVersionTests(unittest.TestCase):
             "Microsoft.Extensions.DependencyInjection.Abstractions",
             "Microsoft.Extensions.Hosting",
             "Microsoft.Extensions.Hosting.Abstractions",
+            "Microsoft.Extensions.Caching.Memory",
             "Microsoft.Extensions.Logging",
             "Microsoft.Extensions.Logging.Abstractions",
             "Microsoft.Extensions.Logging.Debug",
@@ -73,6 +75,10 @@ class CentralPackageVersionTests(unittest.TestCase):
 
     def test_nuget_audit_suppression_is_advisory_specific(self) -> None:
         root = ET.parse(BUILD_PROPS).getroot()
+        advisory_suppressions = [
+            item.attrib["Include"]
+            for item in root.findall(".//MeridianNuGetAuditSuppression")
+        ]
         suppressions = [
             item.attrib["Include"]
             for item in root.findall(".//NuGetAuditSuppress")
@@ -80,16 +86,24 @@ class CentralPackageVersionTests(unittest.TestCase):
 
         self.assertEqual(
             ["https://github.com/advisories/GHSA-xhg6-9j5j-w4vf"],
-            suppressions,
+            advisory_suppressions,
         )
+        self.assertEqual(["@(MeridianNuGetAuditSuppression)"], suppressions)
 
     def test_all_project_package_references_have_central_versions(self) -> None:
         missing: list[str] = []
+        excluded_dirs = {"bin", "obj", "node_modules", ".git"}
 
-        for project_path in sorted(REPO_ROOT.glob("**/*.*proj")):
-            if any(part in {"bin", "obj", "node_modules", ".git"} for part in project_path.parts):
-                continue
+        project_paths: list[Path] = []
+        for current_root, dirnames, filenames in os.walk(REPO_ROOT):
+            dirnames[:] = [name for name in dirnames if name not in excluded_dirs]
+            project_paths.extend(
+                Path(current_root) / filename
+                for filename in filenames
+                if filename.endswith("proj") and "." in filename
+            )
 
+        for project_path in sorted(project_paths):
             root = ET.parse(project_path).getroot()
             for reference in root.findall(".//PackageReference"):
                 package = reference.attrib.get("Include")

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.DataIntegration
@@ -29,14 +29,15 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Credentials/FileProviderCredentialStore.cs` - local encrypted provider credential vault with audit metadata, verification status, and environment fallback handling.
 - `Credentials/CredentialStatus.cs` - provider credential status, test-result, cached-status, and expiration-warning records.
 - `Credentials/OAuthToken.cs` - provider-neutral OAuth token, provider config, and token-refresh result records.
-- `Etl/EtlAbstractions.cs`, `Etl/EtlExportService.cs`, and `Etl/EtlNormalizationService.cs` - ETL
-  job-service/export-service contracts, export implementation, normalization outcome, run-result,
-  export-result, partner schema registry, and partner-record normalization services used by
-  Application adapters.
+- `Etl/EtlAbstractions.cs`, `Etl/EtlServices.cs`, `Etl/EtlExportService.cs`, and
+  `Etl/EtlNormalizationService.cs` - ETL job-service/orchestrator behavior, ingestion-job and
+  event-pipeline ports, export-service contracts, export implementation, normalization outcome,
+  run-result, export-result, partner schema registry, and partner-record normalization services
+  used by Application adapters.
 - `Canonicalization/` - provider event canonicalization contract, default event canonicalizer,
-  Security Master id lookup seam, condition-code mapper, venue-to-MIC mapper, and
-  canonicalization parity metrics used by ingestion, ETL, pipeline, and workstation status
-  surfaces.
+  canonicalizing publisher decorator, Security Master id lookup seam, condition-code mapper,
+  venue-to-MIC mapper, and canonicalization parity metrics used by ingestion, ETL, pipeline, and
+  workstation status surfaces.
 - `AccountingSystem/QuickBooks/QuickBooksFixtureAccountingProvider.cs` - read-only fixture GL evidence provider for contract and workstation validation.
 - `AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs` - read-only QuickBooks Online accounting-system adapter, token refresh, connection verification, company evidence import, and DTO projection.
 - `AccountingSystem/QuickBooks/QuickBooksOnlineProviderCredentialConnectionStore.cs` - QuickBooks Online connection metadata, refresh-token, and verification-state adapter backed by the provider credential vault.
@@ -82,18 +83,20 @@ depth-buffer validation behavior. Sample market-event generation also lives here
 fixtures and diagnostics use the provider/data-ingestion module instead of Application-local data
 fabrication.
 
-ETL service/export contracts, the export service implementation, result records, partner schema
-registry, and partner-record normalization live in this module. The job-definition store and SFTP
-publisher port contracts live in `Meridian.Contracts.Etl`, and the local JSON-backed
-job-definition store implementation lives in `Meridian.Storage.Etl`. Application still owns the
-current ETL job/orchestrator adapters while ingestion job orchestration and event-pipeline
-dependencies remain layer-oriented prerequisites.
+ETL service/export contracts, job service/orchestrator behavior, ingestion-job and event-pipeline
+ports, result records, partner schema registry, and partner-record normalization live in this
+module. The job-definition store and SFTP publisher port contracts live in
+`Meridian.Contracts.Etl`, and the local JSON-backed job-definition store implementation lives in
+`Meridian.Storage.Etl`. Application supplies adapters over its concrete ingestion-job lifecycle
+and event-pipeline publisher so this module can own ETL orchestration without depending on the
+layer-oriented Application project.
 
-Canonicalization contracts, the default event canonicalizer, provider condition-code mapping, venue
-normalization, Security Master id lookup seam, and parity metrics also live in this module.
-Application can still compose the event-pipeline decorator and quarantine wiring, but
-provider-ingestion normalization primitives should stay behind the
-`Meridian.DataIntegration.Canonicalization` seam.
+Canonicalization contracts, the default event canonicalizer, the canonicalizing publisher
+decorator, provider condition-code mapping, venue normalization, Security Master id lookup seam,
+and parity metrics also live in this module. Application composes the Data Integration-owned
+decorator with its concrete event pipeline and dead-letter/quarantine implementation, while the
+quarantine sink port lives in Domain so canonicalization does not depend on Application-local
+pipeline storage.
 
 Historical market-data JSONL query and OHLCV aggregation behavior lives in this module. Application
 commands, execution simulation, diagnostics registration, UI endpoints, and fund-structure shared
@@ -133,16 +136,16 @@ instead of keeping provider trust primitives in the application layer.
 ## Validation
 
 ```bash
-dotnet build src/Meridian.DataIntegration/Meridian.DataIntegration.csproj /p:EnableWindowsTargeting=true
+dotnet build src/Meridian.DataIntegration/Meridian.DataIntegration.csproj /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AccountingSystemIntegrationServiceTests|FullyQualifiedName~ProviderConnectionEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~QuickBooksOnlineProviderCredentialConnectionStoreTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OAuthTokenTests|FullyQualifiedName~CredentialStatusTests|FullyQualifiedName~CredentialTestingServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCredentialStoreTests|FullyQualifiedName~ProviderConnectionEndpointsTests|FullyQualifiedName~CredentialCompatibilityEndpointsTests|FullyQualifiedName~ProviderReadinessEndpointTests|FullyQualifiedName~ProviderRoutingEndpointsTests|FullyQualifiedName~ProviderFactoryCredentialContextTests|FullyQualifiedName~AlpacaBrokerageConnectionServiceTests|FullyQualifiedName~PlaidWorkstationServiceTests|FullyQualifiedName~BrokerageConnectionEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MarketEventFilterTests|FullyQualifiedName~SelfTestCommandTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CredentialStoreExtensionsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlExportServiceTests|FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlCommandsTests|FullyQualifiedName~CsvPartnerFileParserTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConditionCodeMapperTests|FullyQualifiedName~VenueMicMapperTests|FullyQualifiedName~EventCanonicalizerTests|FullyQualifiedName~CanonicalizingPublisherTests|FullyQualifiedName~CanonicalizationGoldenFixtureTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~PipelineFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlExportServiceTests|FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~EtlJobDefinitionStoreTests|FullyQualifiedName~EtlCommandsTests|FullyQualifiedName~CsvPartnerFileParserTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ConditionCodeMapperTests|FullyQualifiedName~VenueMicMapperTests|FullyQualifiedName~EventCanonicalizerTests|FullyQualifiedName~CanonicalizingPublisherTests|FullyQualifiedName~CanonicalizationGoldenFixtureTests" --logger "console;verbosity=normal" /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EtlNormalizationServiceTests|FullyQualifiedName~EtlJobOrchestratorTests|FullyQualifiedName~PipelineFeatureRegistrationTests" --logger "console;verbosity=normal" /m:1 /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false --no-restore
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~HistoricalDataQueryServiceTests|FullyQualifiedName~HistoricalDataQueryServiceBarsTests|FullyQualifiedName~ExecutionSimulationOrchestratorTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BadTickFilterTests|FullyQualifiedName~TickSizeValidatorTests|FullyQualifiedName~FSharpEventValidatorTests|FullyQualifiedName~ProviderLatencyServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ClockSkewEstimatorTests|FullyQualifiedName~SpreadMonitorTests|FullyQualifiedName~DataLossAccountingTests|FullyQualifiedName~SchemaValidationServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -167,20 +170,21 @@ The QuickBooks adapter implements `IAccountingSystemProvider`, `IAccountingSyste
 `src/Meridian.Application` into this module. Application keeps the `--selftest` command and
 diagnostics registration as adapters that invoke the Data Integration-owned testing helpers.
 
-`IEtlJobService`, `IEtlExportService`, `NormalizationOutcome`, `EtlRunResult`,
-`EtlExportResult`, `PartnerSchemaRegistry`, `EtlNormalizationService`, and `EtlExportService`
-moved from Application ETL abstractions/implementations into this module. `IEtlJobDefinitionStore`
-and `ISftpFilePublisher` moved to `Meridian.Contracts.Etl`, and the local JSON-backed
-`EtlJobDefinitionStore` moved to `Meridian.Storage.Etl`. Application keeps current ETL
-job/orchestrator implementations until pipeline and ingestion job dependencies can move or invert
-cleanly.
+`IEtlJobService`, `IEtlExportService`, `IEtlIngestionJobCoordinator`, `IEtlEventPipeline`,
+`NormalizationOutcome`, `EtlRunResult`, `EtlExportResult`, `PartnerSchemaRegistry`,
+`EtlJobOrchestrator`, `EtlJobService`, `EtlNormalizationService`, and `EtlExportService` moved
+from Application ETL abstractions/implementations into this module. `IEtlJobDefinitionStore` and
+`ISftpFilePublisher` moved to `Meridian.Contracts.Etl`, and the local JSON-backed
+`EtlJobDefinitionStore` moved to `Meridian.Storage.Etl`. Application now keeps composition and
+concrete runtime adapters for its ingestion-job lifecycle and event pipeline while Data Integration
+owns ETL job orchestration.
 
 `IEventCanonicalizer`, `EventCanonicalizer`, `ICanonicalSecurityIdLookup`,
 `ConditionCodeMapper`, `VenueMicMapper`, `ICanonicalizationMetrics`,
-`DefaultCanonicalizationMetrics`, and canonicalization snapshot/parity records moved from
-Application into this module. Application keeps the Security Master seed implementation and
-`CanonicalizingPublisher` decorator until their remaining Security Master and event-pipeline
-dependencies can move or invert cleanly.
+`DefaultCanonicalizationMetrics`, `CanonicalizingPublisher`, and canonicalization snapshot/parity
+records moved from Application into this module. Application keeps the Security Master seed
+implementation plus concrete event-pipeline and dead-letter/quarantine wiring that consumes the
+Data Integration decorator and Domain quarantine sink port.
 
 `HistoricalDataQueryService` moved from `src/Meridian.Application/Services` into this module.
 Application keeps CLI command, diagnostics, execution-simulation, and composition adapters that

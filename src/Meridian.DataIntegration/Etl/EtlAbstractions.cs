@@ -17,6 +17,38 @@ public interface IEtlExportService
     Task<EtlExportResult> ExportAsync(IngestionJob job, EtlJobDefinition definition, CancellationToken ct = default);
 }
 
+public interface IEtlIngestionJobCoordinator
+{
+    Task<IngestionJob> CreateJobAsync(
+        IngestionWorkloadType workloadType,
+        string[] symbols,
+        string provider,
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        IngestionSla? sla = null,
+        CancellationToken ct = default);
+
+    IngestionJob? GetJob(string jobId);
+
+    Task<bool> TransitionAsync(
+        string jobId,
+        IngestionJobState newState,
+        string? errorMessage = null,
+        CancellationToken ct = default);
+
+    Task UpdateCheckpointAsync(
+        string jobId,
+        IngestionCheckpointToken checkpoint,
+        CancellationToken ct = default);
+}
+
+public interface IEtlEventPipeline
+{
+    long DeduplicatedCount { get; }
+    ValueTask PublishAsync(MarketEvent evt, CancellationToken ct = default);
+    Task FlushAsync(CancellationToken ct = default);
+}
+
 public sealed class NormalizationOutcome
 {
     public required EtlRecordDisposition Disposition { get; init; }

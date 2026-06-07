@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.Application
@@ -35,15 +35,18 @@ and UI presentation concerns in their owning layers.
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services.
 - ETL commands, composition, and orchestration services consume
-  `Meridian.DataIntegration.Etl` contracts and normalization services. Application still owns
-  current ETL job/orchestrator adapters while pipeline and ingestion job dependencies remain here.
-  The ETL export service now lives in `Meridian.DataIntegration.Etl`. The ETL job-definition store
-  and SFTP publisher port contracts live in `Meridian.Contracts.Etl`, and the local JSON-backed
+  `Meridian.DataIntegration.Etl` contracts, normalization services, and job service/orchestrator.
+  Application composes Data Integration-owned ETL behavior through `IEtlIngestionJobCoordinator`
+  and `IEtlEventPipeline` adapters over the concrete `IngestionJobService` and `EventPipeline`
+  implementations that still own runtime job lifecycle and publish-queue wiring here. The ETL
+  export service now lives in `Meridian.DataIntegration.Etl`. The ETL job-definition store and
+  SFTP publisher port contracts live in `Meridian.Contracts.Etl`, and the local JSON-backed
   job-definition store implementation lives in `Meridian.Storage.Etl`.
 - Canonicalization composition consumes `Meridian.DataIntegration.Canonicalization` contracts,
-  provider condition-code mapping, venue normalization, parity metrics, and the default
-  `EventCanonicalizer`. Application still owns the event-pipeline publisher decorator and
-  pipeline-specific quarantine wiring until those pipeline dependencies can move or invert cleanly.
+  provider condition-code mapping, venue normalization, parity metrics, the default
+  `EventCanonicalizer`, and the Data Integration-owned `CanonicalizingPublisher` decorator.
+  Application still owns the concrete event pipeline, dead-letter/quarantine implementation, and
+  composition wiring that supplies the Domain-owned quarantine sink port.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
@@ -181,10 +184,11 @@ and UI presentation concerns in their owning layers.
 - `FundStructure/` - organization, fund, portfolio, account, ledger-group, cash-flow, and ledger
   mapping workbench orchestration. The shared `IFundStructureService` contract lives in
   `Meridian.Contracts.Services`; the fund-account traversal query contract also lives there while
-  Application keeps the current cached traversal implementation. The governance shared-data access
-  contract also lives in `Meridian.Contracts.Services`; Application keeps the current
-  Security Master, price, and backfill accessibility implementation, in-memory/PostgreSQL
-  service implementations, and composition wiring. Local JSON and in-memory fund-structure state
+  Identity owns the cached traversal implementation for scoped-access and fund-account endpoint
+  lineage. The governance shared-data access contract also lives in
+  `Meridian.Contracts.Services`; Application keeps the current Security Master, price, and
+  backfill accessibility implementation, in-memory/PostgreSQL service implementations, and
+  composition wiring. Local JSON and in-memory fund-structure state
   stores live in `Meridian.Storage.FundStructure` instead of Application. The PostgreSQL-backed service now supports the same shared
   governance cash-flow projection path as the local JSON/in-memory service, using stored
   structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and

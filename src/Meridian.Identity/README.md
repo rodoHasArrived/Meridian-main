@@ -30,6 +30,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Application/ScopedAccessServices.cs` - scoped access assignment and authorization services.
 - `Application/FundStructureAccessScopeLineageProvider.cs` - fund-structure hierarchy lineage
   provider used by scoped authorization to honor organization/fund/account ancestry.
+- `Application/FundStructure/FundAccountTraversalQueryService.cs` - cached Fund -> Owns ->
+  Account traversal query used by scoped-access and fund-account endpoint consumers.
 - `Infrastructure/RolePermissionProfileStore.cs` - file-backed custom role-profile catalog and audit-event persistence.
 - `Infrastructure/ScopedAccessAssignmentStore.cs` - file and PostgreSQL scoped-access assignment stores.
 
@@ -59,7 +61,7 @@ Use this README to understand the module before editing source files. Update the
 
 ```bash
 dotnet build src/Meridian.Identity/Meridian.Identity.csproj /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~ScopedAccessServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ScopedAccessServiceTests|FullyQualifiedName~FundAccountTraversalQueryServiceTests" --logger "console;verbosity=normal" /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~RoleAuthorizationTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --filter FullyQualifiedName~SensitiveActionPolicyTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 ```
@@ -72,9 +74,12 @@ Identity contracts publish role/profile, permission, and scoped-access DTOs thro
 role-profile permission persistence. `FundStructureAccessScopeLineageProvider` is Identity-owned
 and consumes the shared `Meridian.Contracts.Services.IFundStructureService` contract supplied by
 Application composition, so scoped authorization can resolve ancestry without depending on
-Application-only identity adapters. Cross-module endpoint, F#, browser, and WPF consumers should
-reference Identity rather than reintroducing auth DTOs or identity state under `Meridian.Contracts`
-or `Meridian.Ui.Shared`.
+Application-only identity adapters. `FundAccountTraversalQueryService` also lives here under the
+compatibility namespace `Meridian.Application.FundStructure`; it consumes only shared
+`IFundStructureService` and cache abstractions so endpoints can reuse the authoritative Fund ->
+Owns -> Account traversal without keeping the implementation in Application. Cross-module
+endpoint, F#, browser, and WPF consumers should reference Identity rather than reintroducing auth
+DTOs or identity state under `Meridian.Contracts` or `Meridian.Ui.Shared`.
 
 ### Migration and archive notes
 
@@ -84,8 +89,10 @@ or `Meridian.Ui.Shared`.
 `RolePermissions`, `UserPermission`, `UserRole`, scoped-access assignment DTOs, and role-profile
 request/result DTOs moved from `src/Meridian.Contracts/Auth` into this module. `LoginSessionService`,
 `UserProfileRegistry`, `AuthenticationModeResolver`, `IRolePermissionProfileStore`, and
-`FileRolePermissionProfileStore` moved from `src/Meridian.Ui.Shared` into this module. Remaining
-Identity migration work is endpoint/middleware adapters and browser/WPF identity presentation.
+`FileRolePermissionProfileStore` moved from `src/Meridian.Ui.Shared` into this module.
+`FundAccountTraversalQueryService` moved from `src/Meridian.Application/FundStructure` into this
+module. Remaining Identity migration work is endpoint/middleware adapters and browser/WPF identity
+presentation.
 
 ## Change rules
 

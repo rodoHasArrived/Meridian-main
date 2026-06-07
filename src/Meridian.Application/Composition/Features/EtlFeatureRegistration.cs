@@ -45,6 +45,8 @@ internal sealed class EtlFeatureRegistration : IServiceFeatureRegistration
             var storageOptions = sp.GetRequiredService<Meridian.Storage.StorageOptions>();
             return new EtlExportService(storageOptions.RootPath, sp.GetServices<ISftpFilePublisher>());
         });
+        services.AddSingleton<IEtlIngestionJobCoordinator>(sp => sp.GetRequiredService<IngestionJobService>());
+        services.AddSingleton<IEtlEventPipeline>(sp => sp.GetRequiredService<EventPipeline>());
         services.AddSingleton<EtlJobOrchestrator>();
         services.AddSingleton<IEtlJobService, EtlJobService>();
         return services;

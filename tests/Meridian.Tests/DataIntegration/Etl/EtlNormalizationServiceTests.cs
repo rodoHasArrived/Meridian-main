@@ -5,7 +5,7 @@ using Meridian.DataIntegration.Etl;
 using Meridian.Domain.Events;
 using NSubstitute;
 
-namespace Meridian.Tests.Application.Etl;
+namespace Meridian.Tests.DataIntegration.Etl;
 
 public sealed class EtlNormalizationServiceTests
 {

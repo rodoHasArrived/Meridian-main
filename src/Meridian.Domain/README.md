@@ -6,7 +6,7 @@ module_id: SRC-DOMAIN
 path: src/Meridian.Domain
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-05-28
+last_reviewed: 2026-06-06
 ---
 
 # src/Meridian.Domain
@@ -22,7 +22,8 @@ This layer owns domain concepts without depending on application orchestration, 
 ## Key folders and files
 
 - `Collectors/` - market data and ingestion collectors.
-- `Events/` - domain event shapes and event-flow contracts.
+- `Events/` - domain event shapes and event-flow contracts, including the quarantine sink port
+  used by canonicalization and pipeline dead-letter retention.
 - `Models/` - core domain models.
 - `Reconciliation/` and `Telemetry/` - domain-level reconciliation and observability types,
   including durable reconciliation cases with owner, SLA, comments, attachments, disposition,
@@ -35,6 +36,10 @@ Use this module for domain behavior that should remain stable across providers, 
 ## API contract notes
 
 - Statement reconciliation domain models include typed normalized positions, cash balances, transactions, security references, and source-row references. Each normalized entity carries `StatementRunId`, `SourceRowNumber`, `SourceRowHash`, and `RawSnapshot` traceability fields so downstream reconciliation evidence can be tied back to the raw statement line.
+- `IEventQuarantineSink` is the domain event-flow port for retaining market events that require
+  quarantine or dead-letter review. Application supplies the concrete dead-letter implementation;
+  Data Integration can depend on the port while keeping canonicalization free of Application
+  storage dependencies.
 
 ## Diagrams
 

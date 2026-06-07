@@ -14,6 +14,8 @@ Filtering rules:
   - `all`: no activity filtering
   - `suspended`/`closed`: retained for API compatibility and treated as non-default broad queries
 
-Implementation lives in `FundAccountTraversalQueryService` and is reused by `/api/funds/{fundId}/accounts`.
+Implementation lives in `src/Meridian.Identity/Application/FundStructure/FundAccountTraversalQueryService.cs`
+under the compatibility namespace `Meridian.Application.FundStructure` and is reused by
+`/api/funds/{fundId}/accounts`.
 The query service caches per-fund traversal snapshots for 30 seconds to protect high-frequency callers
 (e.g., fund account lists and reconciliation break workflows) from repeated full graph scans.

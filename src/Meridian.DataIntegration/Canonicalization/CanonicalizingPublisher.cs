@@ -23,7 +23,7 @@ namespace Meridian.Application.Canonicalization;
 /// during rollout. Events for non-pilot symbols pass through unchanged.</para>
 /// <para><b>Quarantine Sink:</b> When an <see cref="IEventQuarantineSink"/> is provided via
 /// the <c>quarantine</c> constructor parameter, events whose symbol cannot be resolved are written
-/// to the quarantine file in addition to being published with raw data.
+/// to that retention sink in addition to being published with raw data.
 /// This prevents unmappable events from silently accumulating with no audit trail.</para>
 /// </remarks>
 public sealed class CanonicalizingPublisher : IMarketEventPublisher

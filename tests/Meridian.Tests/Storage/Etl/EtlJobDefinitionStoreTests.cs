@@ -2,7 +2,7 @@ using FluentAssertions;
 using Meridian.Contracts.Etl;
 using Meridian.Storage.Etl;
 
-namespace Meridian.Tests.Application.Etl;
+namespace Meridian.Tests.Storage.Etl;
 
 public sealed class EtlJobDefinitionStoreTests : IDisposable
 {

@@ -5,7 +5,7 @@ using Meridian.Contracts.Services;
 using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;
 
-namespace Meridian.Tests.Application.FundStructure;
+namespace Meridian.Tests.Identity.FundStructure;
 
 public sealed class FundAccountTraversalQueryServiceTests
 {
@@ -53,7 +53,7 @@ public sealed class FundAccountTraversalQueryServiceTests
                     Guid.Empty,
                     "CLIENT-1",
                     "Client",
-                    null,
+                    "USD",
                     true,
                     DateTimeOffset.UtcNow,
                     null,

@@ -6,6 +6,7 @@ using System.Threading.Channels;
 using Meridian.Application.Monitoring;
 using Meridian.Core.Performance;
 using Meridian.Core.Services;
+using Meridian.DataIntegration.Etl;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Shared;
 using Meridian.Platform.Tracing;
@@ -31,7 +32,7 @@ namespace Meridian.Application.Pipeline;
 /// <see cref="PublishAsync"/> defer WAL writes to the consumer to ensure each event is
 /// recorded exactly once, preventing duplicate records during recovery.
 /// </remarks>
-public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable, IFlushable, IFlushableQueueDiagnostics
+public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IBackpressureSignal, IAsyncDisposable, IFlushable, IFlushableQueueDiagnostics
 {
     private readonly Channel<TracedMarketEvent> _channel;
     private readonly IStorageSink _sink;

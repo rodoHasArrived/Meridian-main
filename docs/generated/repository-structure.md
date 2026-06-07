@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-07 06:40:06 UTC. Do not edit manually.
+> Auto-generated on 2026-06-07 07:29:14 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -1968,7 +1968,6 @@ Meridian-main
 │   │   │   └── IBackfillExecutionGateway.cs
 │   │   ├── Backtesting
 │   │   ├── Canonicalization
-│   │   │   └── CanonicalizingPublisher.cs
 │   │   ├── Commands
 │   │   │   ├── CatalogCommand.cs
 │   │   │   ├── CliArguments.cs
@@ -2081,7 +2080,6 @@ Meridian-main
 │   │   ├── Etl
 │   │   │   └── EtlServices.cs
 │   │   ├── FundStructure
-│   │   │   ├── FundAccountTraversalQueryService.cs
 │   │   │   ├── GovernanceSharedDataAccessService.cs
 │   │   │   ├── InMemoryFundStructureService.cs
 │   │   │   ├── LedgerMappingWorkbenchService.cs
@@ -2652,6 +2650,7 @@ Meridian-main
 │   │   │       └── QuickBooksOnlineProviderCredentialConnectionStore.cs
 │   │   ├── Canonicalization
 │   │   │   ├── CanonicalizationMetrics.cs
+│   │   │   ├── CanonicalizingPublisher.cs
 │   │   │   ├── ConditionCodeMapper.cs
 │   │   │   ├── EventCanonicalizer.cs
 │   │   │   ├── ICanonicalSecurityIdLookup.cs
@@ -2727,6 +2726,7 @@ Meridian-main
 │   │   │   ├── Publishers
 │   │   │   │   └── CompositePublisher.cs
 │   │   │   ├── IBackpressureSignal.cs
+│   │   │   ├── IEventQuarantineSink.cs
 │   │   │   ├── IMarketEventPublisher.cs
 │   │   │   ├── MarketEvent.cs
 │   │   │   ├── MarketEventPayload.cs
@@ -3005,6 +3005,8 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.Identity
 │   │   ├── Application
+│   │   │   ├── FundStructure
+│   │   │   │   └── FundAccountTraversalQueryService.cs
 │   │   │   ├── AuthenticationMode.cs
 │   │   │   ├── FundStructureAccessScopeLineageProvider.cs
 │   │   │   ├── LoginSessionService.cs
@@ -5304,7 +5306,6 @@ Meridian-main
 │   │   │   │   └── EtlNormalizationServiceTests.cs
 │   │   │   ├── FundAccounts
 │   │   │   ├── FundStructure
-│   │   │   │   ├── FundAccountTraversalQueryServiceTests.cs
 │   │   │   │   └── LedgerGroupIdTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
@@ -5354,7 +5355,6 @@ Meridian-main
 │   │   │   │   └── SecurityMasterMappingInteropTests.cs
 │   │   │   ├── Services
 │   │   │   │   ├── DataQuality
-│   │   │   │   ├── CanonicalizingPublisherTests.cs
 │   │   │   │   ├── CliModeResolverTests.cs
 │   │   │   │   ├── ConditionCodeMapperTests.cs
 │   │   │   │   ├── ConfigurationPresetsTests.cs
@@ -5410,6 +5410,8 @@ Meridian-main
 │   │   │   ├── AccountingSystem
 │   │   │   │   └── QuickBooks
 │   │   │   │       └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
+│   │   │   ├── Canonicalization
+│   │   │   │   └── CanonicalizingPublisherTests.cs
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialStatusTests.cs
 │   │   │   │   └── OAuthTokenTests.cs
@@ -5514,6 +5516,9 @@ Meridian-main
 │   │   │   └── FutureProjectionServiceTests.cs
 │   │   ├── FxSpot
 │   │   │   └── FxSpotProjectionServiceTests.cs
+│   │   ├── Identity
+│   │   │   └── FundStructure
+│   │   │       └── FundAccountTraversalQueryServiceTests.cs
 │   │   ├── Infrastructure
 │   │   │   ├── Adapters
 │   │   │   │   └── TradierCanonicalMappersTests.cs

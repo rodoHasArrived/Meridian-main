@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-06-07T06:40:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-06-07T07:29:31Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -133,19 +133,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/README.md` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 52 |
-| `src/Meridian.Application/README.md` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 48 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 14 |
-| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 13 |
-| `src/Meridian/UiServer.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 12 |
-| `src/Meridian.Application/Composition/Startup/StartupValidationRunner.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
-| `src/Meridian.Application/Pipeline/EventPipeline.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
-| `src/Meridian.Core/README.md` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
-| `src/Meridian.DataIntegration/README.md` | Unmapped | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
-| `src/Meridian.Platform/README.md` | Unmapped | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
-| `src/Meridian.ProviderSdk/README.md` | Providers and Storage | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 4 |
-| `src/Meridian.Application/Backfill/HistoricalBackfillService.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 3 |
-| `src/Meridian.Application/Composition/Features/DiagnosticsFeatureRegistration.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 3 |
-| `src/Meridian.Application/Composition/Features/PipelineFeatureRegistration.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 3 |
-| `src/Meridian.Application/Composition/ServiceCompositionRoot.cs` | Host and Composition | `0ffe68f65` (2026-06-06T21:16:30-07:00) | 3 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 53 |
+| `src/Meridian.Application/README.md` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 49 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 15 |
+| `src/Meridian.Application/Pipeline/EventPipeline.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
+| `src/Meridian.Core/README.md` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
+| `src/Meridian.DataIntegration/README.md` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
+| `src/Meridian.Platform/README.md` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 5 |
+| `src/Meridian.Application/Pipeline/DeadLetterSink.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 3 |
+| `src/Meridian.Application/Services/DailySummaryWebhook.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 3 |
+| `src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
+| `src/Meridian.Contracts/Pipeline/PipelineStatistics.cs` | Host and Composition | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
+| `src/Meridian.DataIntegration/Canonicalization/CanonicalizingPublisher.cs` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
+| `src/Meridian.DataIntegration/Monitoring/ConnectionStatusWebhook.cs` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
+| `src/Meridian.Domain/Events/IEventQuarantineSink.cs` | Domain, Ledger, and F# | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
+| `src/Meridian.Platform/GlobalUsings.cs` | Unmapped | `7c191a2d5` (2026-06-06T23:56:41-07:00) | 1 |
 
