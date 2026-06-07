@@ -67,7 +67,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         }
 
         await RefreshAsync();
-        await RestoreDockLayoutAsync(AccountingDockManager);
+        await RestoreShellDockLayoutAsync(AccountingDockManager);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
@@ -80,7 +80,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
             _operatingContextService.WindowModeChanged -= OnSignalsChanged;
         }
 
-        _ = SaveDockLayoutAsync(AccountingDockManager);
+        SaveShellDockLayout(AccountingDockManager);
     }
 
     private async Task RefreshAsync()
@@ -240,7 +240,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
     }
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-        => OpenWorkspacePage(AccountingDockManager, e.PageTag, e.Action);
+        => OpenDroppedPane(AccountingDockManager, e);
 
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e) => ExecuteAction(e.Command.Id, navigate: false);
     private void SwitchFund_Click(object sender, RoutedEventArgs e) => RequestContextSelection();

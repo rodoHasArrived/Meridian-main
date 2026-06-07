@@ -106,6 +106,12 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
         LoadDefaultDocking(dockManager, state);
     }
 
+    protected async Task RestoreShellDockLayoutAsync(MeridianDockingManager dockManager)
+        => await RestoreDockLayoutAsync(dockManager).ConfigureAwait(true);
+
+    protected void SaveShellDockLayout(MeridianDockingManager dockManager)
+        => _ = SaveDockLayoutAsync(dockManager);
+
     protected void OpenWorkspacePage(MeridianDockingManager dockManager, string pageTag, PaneDropAction action, object? parameter = null)
     {
         ArgumentNullException.ThrowIfNull(dockManager);
@@ -127,6 +133,39 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
                 ShellNavigationCatalog.GetPageTitle(pageTag),
                 WorkspaceShellFallbackContentFactory.CreateDockFailureContent(ShellNavigationCatalog.GetPageTitle(pageTag), ex),
                 NormalizeDockAction(action));
+        }
+    }
+
+    protected void OpenDroppedPane(MeridianDockingManager dockManager, PaneDropEventArgs e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+
+        OpenWorkspacePage(dockManager, e.PageTag, e.Action);
+    }
+
+    protected void NavigateToRegisteredPage(string pageTag)
+    {
+        if (!string.IsNullOrWhiteSpace(pageTag))
+        {
+            _navigationService.NavigateTo(pageTag);
+        }
+    }
+
+    protected void NavigateToTaggedPage(object sender)
+    {
+        if (TryGetButtonTag(sender, out var pageTag))
+        {
+            NavigateToRegisteredPage(pageTag);
+        }
+    }
+
+    protected async Task ExecuteTaggedActionAsync(object sender, Func<string, Task> executeAsync)
+    {
+        ArgumentNullException.ThrowIfNull(executeAsync);
+
+        if (TryGetButtonTag(sender, out var actionId))
+        {
+            await executeAsync(actionId).ConfigureAwait(true);
         }
     }
 
@@ -173,6 +212,18 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
 
     protected static bool ShouldRestoreSerializedLayout(WorkstationLayoutState layoutState)
         => layoutState.WindowMode != BoundedWindowMode.Focused && !string.IsNullOrWhiteSpace(layoutState.DockLayoutXml);
+
+    protected static bool TryGetButtonTag(object sender, out string tag)
+    {
+        if (sender is Button { Tag: string value } && !string.IsNullOrWhiteSpace(value))
+        {
+            tag = value;
+            return true;
+        }
+
+        tag = string.Empty;
+        return false;
+    }
 
     private IServiceScope? ResolveWorkspaceScopeForDockedPage(string pageTag)
     {

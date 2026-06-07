@@ -1,5 +1,4 @@
 using System.Windows;
-using System.Windows.Controls;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -34,7 +33,7 @@ public partial class DataWorkspaceShellPage : DataWorkspaceShellPageBase
         DataViewModel.Start();
 
         await RefreshShellAsync();
-        await RestoreDockLayoutAsync(DataDockManager);
+        await RestoreShellDockLayoutAsync(DataDockManager);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
@@ -42,22 +41,17 @@ public partial class DataWorkspaceShellPage : DataWorkspaceShellPageBase
         DataViewModel.Stop();
         DataViewModel.RefreshRequested -= OnRefreshRequested;
         DataViewModel.ActionRequested -= OnActionRequested;
-        _ = SaveDockLayoutAsync(DataDockManager);
+        SaveShellDockLayout(DataDockManager);
     }
 
-    private async Task RefreshShellAsync()
+    private Task RefreshShellAsync()
         => DataViewModel.RefreshAsync();
 
     private async void OnQueueStateActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ExecuteActionAsync(actionId, navigate: false);
-        }
-    }
+        => await ExecuteTaggedActionAsync(sender, actionId => ExecuteActionAsync(actionId, navigate: false));
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-        => OpenWorkspacePage(DataDockManager, e.PageTag, e.Action);
+        => OpenDroppedPane(DataDockManager, e);
 
     private async void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
         => await ExecuteActionAsync(e.Command.Id, navigate: true);
@@ -66,28 +60,13 @@ public partial class DataWorkspaceShellPage : DataWorkspaceShellPageBase
         => await ExecuteActionAsync(e.ActionId, navigate: false);
 
     private async void OnRecentActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ExecuteActionAsync(actionId, navigate: false);
-        }
-    }
+        => await ExecuteTaggedActionAsync(sender, actionId => ExecuteActionAsync(actionId, navigate: false));
 
     private async void OnOperationsHeroPrimaryActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ExecuteActionAsync(actionId, navigate: false);
-        }
-    }
+        => await ExecuteTaggedActionAsync(sender, actionId => ExecuteActionAsync(actionId, navigate: false));
 
     private async void OnOperationsHeroSecondaryActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ExecuteActionAsync(actionId, navigate: false);
-        }
-    }
+        => await ExecuteTaggedActionAsync(sender, actionId => ExecuteActionAsync(actionId, navigate: false));
 
     private async Task ExecuteActionAsync(string actionId, bool navigate)
         => await DataViewModel.ExecuteActionAsync(actionId, navigate);
@@ -100,7 +79,7 @@ public partial class DataWorkspaceShellPage : DataWorkspaceShellPageBase
                 RequestContextSelection(_fundContextService, _operatingContextService);
                 break;
             case DataWorkspaceShellActionKind.Navigate:
-                NavigationService.NavigateTo(e.ActionId);
+                NavigateToRegisteredPage(e.ActionId);
                 break;
             case DataWorkspaceShellActionKind.OpenPane:
                 OpenWorkspacePage(DataDockManager, e.ActionId, e.DockAction);
@@ -111,12 +90,12 @@ public partial class DataWorkspaceShellPage : DataWorkspaceShellPageBase
     private void OnRefreshRequested(object? sender, EventArgs e)
         => DispatchRefresh(RefreshShellAsync);
 
-    private void OpenProviders_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("Provider");
-    private void OpenBackfill_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("Backfill");
-    private void OpenSymbols_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("Symbols");
-    private void OpenStorage_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("Storage");
-    private void OpenCollectionSessions_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("CollectionSessions");
-    private void OpenDataExport_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("DataExport");
-    private void OpenSchedules_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("Schedules");
-    private void OpenPackageManager_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("PackageManager");
+    private void OpenProviders_Click(object sender, RoutedEventArgs e) => NavigateToRegisteredPage("Provider");
+    private void OpenBackfill_Click(object sender, RoutedEventArgs e) => NavigateToRegisteredPage("Backfill");
+    private void OpenSymbols_Click(object sender, RoutedEventArgs e) => NavigateToRegisteredPage("Symbols");
+    private void OpenStorage_Click(object sender, RoutedEventArgs e) => NavigateToRegisteredPage("Storage");
+    private void OpenCollectionSessions_Click(object sender, RoutedEventArgs e) => NavigateToRegisteredPage("CollectionSessions");
+    private void OpenDataExport_Click(object sender, RoutedEventArgs e) => NavigateToRegisteredPage("DataExport");
+    private void OpenSchedules_Click(object sender, RoutedEventArgs e) => NavigateToRegisteredPage("Schedules");
+    private void OpenPackageManager_Click(object sender, RoutedEventArgs e) => NavigateToRegisteredPage("PackageManager");
 }

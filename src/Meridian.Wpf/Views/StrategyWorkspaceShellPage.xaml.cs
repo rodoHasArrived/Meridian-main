@@ -33,14 +33,14 @@ public partial class StrategyWorkspaceShellPage : StrategyWorkspaceShellPageBase
         ApplyToneBindings();
         await ViewModel.StartAsync().ConfigureAwait(true);
         ApplyToneBindings();
-        await RestoreDockLayoutAsync(StrategyDockManager).ConfigureAwait(true);
+        await RestoreShellDockLayoutAsync(StrategyDockManager).ConfigureAwait(true);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
         DetachViewModelEvents();
         ViewModel.Stop();
-        _ = SaveDockLayoutAsync(StrategyDockManager);
+        SaveShellDockLayout(StrategyDockManager);
     }
 
     private void AttachViewModelEvents()
@@ -112,7 +112,7 @@ public partial class StrategyWorkspaceShellPage : StrategyWorkspaceShellPageBase
         => ApplyTone(StrategyHeroBadgeBorder, StrategyHeroBadgeText, ViewModel.StrategyHeroBadgeTone);
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-        => OpenWorkspacePage(StrategyDockManager, e.PageTag, e.Action);
+        => OpenDroppedPane(StrategyDockManager, e);
 
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
         => ViewModel.ExecuteCommandAction(e.Command.Id);

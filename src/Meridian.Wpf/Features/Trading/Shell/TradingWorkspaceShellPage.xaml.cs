@@ -37,14 +37,14 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         ApplyToneBindings();
         await ViewModel.StartAsync().ConfigureAwait(true);
         ApplyToneBindings();
-        await RestoreDockLayoutAsync(TradingDockManager).ConfigureAwait(true);
+        await RestoreShellDockLayoutAsync(TradingDockManager).ConfigureAwait(true);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
         DetachViewModelEvents();
         ViewModel.Stop();
-        _ = SaveDockLayoutAsync(TradingDockManager);
+        SaveShellDockLayout(TradingDockManager);
     }
 
     private void AttachViewModelEvents()
@@ -138,7 +138,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     }
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-        => OpenWorkspacePage(TradingDockManager, e.PageTag, e.Action);
+        => OpenDroppedPane(TradingDockManager, e);
 
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
         => ViewModel.ExecuteCommandAction(e.Command.Id);

@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -26,13 +25,13 @@ public partial class SettingsWorkspaceShellPage : SettingsWorkspaceShellPageBase
         AttachViewModelEvents();
         await ViewModel.RefreshAsync().ConfigureAwait(true);
         ApplyToneBindings();
-        await RestoreDockLayoutAsync(SettingsDockManager).ConfigureAwait(true);
+        await RestoreShellDockLayoutAsync(SettingsDockManager).ConfigureAwait(true);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
         DetachViewModelEvents();
-        _ = SaveDockLayoutAsync(SettingsDockManager);
+        SaveShellDockLayout(SettingsDockManager);
     }
 
     private void AttachViewModelEvents()
@@ -86,7 +85,7 @@ public partial class SettingsWorkspaceShellPage : SettingsWorkspaceShellPageBase
         switch (e.Kind)
         {
             case SettingsWorkspaceShellActionKind.Navigate:
-                NavigationService.NavigateTo(e.ActionId);
+                NavigateToRegisteredPage(e.ActionId);
                 break;
             case SettingsWorkspaceShellActionKind.OpenPane:
                 OpenWorkspacePage(SettingsDockManager, e.ActionId, e.DockAction);
@@ -104,23 +103,13 @@ public partial class SettingsWorkspaceShellPage : SettingsWorkspaceShellPageBase
         => await ViewModel.ExecuteActionAsync(e.ActionId, navigate: false).ConfigureAwait(true);
 
     private async void OnQuickLinkActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ViewModel.ExecuteActionAsync(actionId, navigate: false).ConfigureAwait(true);
-        }
-    }
+        => await ExecuteTaggedActionAsync(sender, actionId => ViewModel.ExecuteActionAsync(actionId, navigate: false));
 
     private async void OnHeroActionClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string actionId })
-        {
-            await ViewModel.ExecuteActionAsync(actionId, navigate: false).ConfigureAwait(true);
-        }
-    }
+        => await ExecuteTaggedActionAsync(sender, actionId => ViewModel.ExecuteActionAsync(actionId, navigate: false));
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-        => OpenWorkspacePage(SettingsDockManager, e.PageTag, e.Action);
+        => OpenDroppedPane(SettingsDockManager, e);
 
     private void ApplyToneBindings()
     {

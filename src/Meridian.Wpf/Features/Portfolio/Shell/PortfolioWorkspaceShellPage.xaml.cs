@@ -19,16 +19,16 @@ public partial class PortfolioWorkspaceShellPage : PortfolioWorkspaceShellPageBa
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await RestoreDockLayoutAsync(PortfolioDockManager).ConfigureAwait(true);
+        await RestoreShellDockLayoutAsync(PortfolioDockManager).ConfigureAwait(true);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-        _ = SaveDockLayoutAsync(PortfolioDockManager);
+        SaveShellDockLayout(PortfolioDockManager);
     }
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-        => OpenWorkspacePage(PortfolioDockManager, e.PageTag, e.Action);
+        => OpenDroppedPane(PortfolioDockManager, e);
 
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
         => NavigateToRegisteredPage(e.Command.Id);
@@ -37,18 +37,5 @@ public partial class PortfolioWorkspaceShellPage : PortfolioWorkspaceShellPageBa
         => NavigateToRegisteredPage(e.ActionId);
 
     private void OnNavigateButtonClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is FrameworkElement { Tag: string pageTag })
-        {
-            NavigateToRegisteredPage(pageTag);
-        }
-    }
-
-    private void NavigateToRegisteredPage(string pageTag)
-    {
-        if (!string.IsNullOrWhiteSpace(pageTag))
-        {
-            NavigationService.NavigateTo(pageTag);
-        }
-    }
+        => NavigateToTaggedPage(sender);
 }

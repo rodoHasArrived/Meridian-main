@@ -19,16 +19,16 @@ public partial class ReportingWorkspaceShellPage : ReportingWorkspaceShellPageBa
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        await RestoreDockLayoutAsync(ReportingDockManager).ConfigureAwait(true);
+        await RestoreShellDockLayoutAsync(ReportingDockManager).ConfigureAwait(true);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-        _ = SaveDockLayoutAsync(ReportingDockManager);
+        SaveShellDockLayout(ReportingDockManager);
     }
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-        => OpenWorkspacePage(ReportingDockManager, e.PageTag, e.Action);
+        => OpenDroppedPane(ReportingDockManager, e);
 
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
         => NavigateToRegisteredPage(e.Command.Id);
@@ -37,18 +37,5 @@ public partial class ReportingWorkspaceShellPage : ReportingWorkspaceShellPageBa
         => NavigateToRegisteredPage(e.ActionId);
 
     private void OnNavigateButtonClick(object sender, RoutedEventArgs e)
-    {
-        if (sender is FrameworkElement { Tag: string pageTag })
-        {
-            NavigateToRegisteredPage(pageTag);
-        }
-    }
-
-    private void NavigateToRegisteredPage(string pageTag)
-    {
-        if (!string.IsNullOrWhiteSpace(pageTag))
-        {
-            NavigationService.NavigateTo(pageTag);
-        }
-    }
+        => NavigateToTaggedPage(sender);
 }
