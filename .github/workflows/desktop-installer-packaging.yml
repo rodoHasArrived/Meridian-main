@@ -131,7 +131,7 @@ jobs:
 
     steps:
       - name: Download packaged installer artifacts
-        uses: actions/download-artifact@v5.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           pattern: meridian-desktop-installer-*-${{ github.run_id }}
           merge-multiple: true
